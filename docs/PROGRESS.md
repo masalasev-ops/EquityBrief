@@ -19543,3 +19543,45 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because this asserts what a claim already placed states rather than
             adding any. Both gates ran over the tree carrying this entry, and the operator's store
             under `data/` was not touched by either.
+
+### 5.6 - correction: the run page's duration row states the rowid ordering reached the default night at 6.0 and the duration only at the 5.6 correction, and a run-log read taking its newest row by its instant is refused   2026-09-22
+Corrects:   the 5.6 correction above, which read the duration's run choice as a defect first
+            found by the third phase 8 sign-off review. It was named at 6.0: the carried
+            obligation row (owes: The run page's route, duration and the worker's refusal reached by tests)
+            stated "the duration orders a night's runs by a start a replay stamps from 21:10Z on its
+            session" and then "the duration is repaired", where the repair 6.0 made ordered the run
+            page's default night by the rowid and left the duration choosing the newest start. The
+            row read discharged and the duration drew the wrong run from 6.0 until that correction.
+            The label stays 5.6, as the operator ruled; this entry records what the ruling was made
+            without.
+Found:      on 2026-09-22, by the operator's question whether the architecture and the build plan
+            reflect the corrections, answered by reading both for the duration.
+Repaired:   `BUILD_PLAN.md`'s row says the ordering reached the run page's default night at 6.0 and
+            the duration only at the 5.6 correction, and names the check below, the prior text in
+            `CHANGELOG.md`. `ARCHITECTURE.html` states the night header's "run duration" and names
+            no run, so it needs no edit. The two test-only corrections of the same day state rules
+            the decision, section 17 and SCHEMA already carry, so neither needs one.
+Guarded:    `read-surface`, one test added,
+            `ARunLogReadTakesItsNewestRowByTheOrderTheRowsWereWrittenOutsideTheTwoThatStateWhyTheyMayNot`:
+            every source of `EquityBrief.Api`, comments stripped, is read for a run-log read
+            ordered on `started_at` descending in SQL or on `StartedAt` descending in code, and the
+            reads found are exactly the two named with their reason, `PassRowsForName` and
+            `BackfillRows`. The matcher is shown to find each form and to leave `rowid` and a
+            session date alone.
+Expected:   derived: the rule is the write order, stated at 6.0 and in the 5.6 correction, and read
+            off the shipped source. No expectation file changes; the fixture holds no source.
+Tests:      1170, from 1169. One added to `read-surface`. No migration. No file this correction
+            edits is a source either evaluator version or the ladder rules' code version pins, so
+            no pin moves.
+Mutated:    the rule, stated before the sweep: reintroduce the defect's shape at the duration's own
+            read, once in each form the matcher reads.
+            Predicted:
+            MR the listings runs read ordered on `started_at` descending in SQL: the new test red,
+            naming `ListingsRunsInWindow`, and the duration test of the 5.6 correction red, and
+            every other test green.
+            ML the duration's run chosen by the rows ordered on `StartedAt` descending in code, as
+            before the 5.6 correction: the same two red, the new test naming the source file, and
+            every other test green.
+            Results: FILL
+Held:       FILL
+Verified:   FILL

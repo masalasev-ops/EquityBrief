@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-22 - BUILD_PLAN.md - the run page's duration row says the ordering reached the default night at 6.0 and the duration only at the 5.6 correction
+Corrects: the row stated the duration repaired at 6.0 where 6.0's rowid ordering reached the run page's default night alone; found by the operator's question after the 5.6 correction of 2026-09-22
+Was:
+> The duration is repaired rather than tested around: the newest run is ordered by the rowid, which is the write order, and not by the instant a replay stamps from 21:10Z, so a night replayed for an older session after tonight's no longer takes over the page.
+Now:
+> The run page's default night is repaired rather than tested around: the newest run is ordered by the rowid, which is the write order, and not by the instant a replay stamps from 21:10Z, so a night replayed for an older session after tonight's no longer takes over the page. The duration was not repaired here: its run was still chosen by the newest start until the 5.6 correction of 2026-09-22, which takes the run that wrote the night's listings row last, by the rowid, and `read-surface` refuses a run-log read that takes its newest row by the instant it carries, outside the two reads that state why they may.
+Why: the row read as discharging a repair the code did not carry, which is how the duration's wrong run stayed live from 6.0 to the phase 8 sign-off's third review.
+
 ### 2026-09-21 - ARCHITECTURE.html - section 1 states the purpose as a selection of the stocks worth buying or paying attention to
 Authorised by: Tonight's list selects the stocks worth buying or paying attention to that evening, and the improvement loop exists to make that selection better
 Was:
