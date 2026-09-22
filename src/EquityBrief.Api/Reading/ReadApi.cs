@@ -8,6 +8,7 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Web.Marks;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Api.Reading;
@@ -245,6 +246,27 @@ public sealed record CandidateSetupRow(
 // One night and one candidate it evaluated or skipped, which is one candidate standing when that
 // night started.
 public sealed record CandidateNightRow(DateOnly SessionDate, string Candidate);
+
+// One open window of a ladder rule, as the versions region reads it.
+public sealed record OpenVersionRow(string Version, string Parameters, DateOnly OpenedOn);
+
+// One label a version gave the night's names, how many carried it, and how many of those are not
+// the label the night itself stored.
+public sealed record VersionLabelRow(string Version, string Label, int Names, int Moved);
+
+// One setup of the live rule on a night a version was scored over, and whether that version's
+// label takes it away. No name is carried and no surface could draw one from it.
+public sealed record VersionSetupRow(
+    string Version,
+    DateOnly SessionDate,
+    string? Outcome,
+    double? Null,
+    double? NullAtSensitivity,
+    double? BreakEven,
+    double? ReturnPct,
+    double? PlannedRisk,
+    bool OnEarnings,
+    bool Removed);
 
 // One of a name's biggest moves, as the store holds it.
 //
@@ -998,6 +1020,68 @@ public sealed class ReadApi : IComponent
         UNION
         SELECT DISTINCT l.session_date, json_extract(s.value, '$.candidate')
         FROM listing l, json_each(COALESCE(l.shadow_reasons, '{}'), '$.skipped') s
+        ORDER BY 1, 2;
+    ";
+
+    const string OpenVersions = @"
+        SELECT version, parameters, opened_at
+        FROM rule_version
+        WHERE rule = $rule AND closed_at IS NULL
+        ORDER BY opened_at, version;
+    ";
+
+    // What each version labelled the night's names, beside the label the night stored for the same
+    // name, so the count of names a version moves is read here rather than computed on a page.
+    const string VersionLabels = @"
+        SELECT v.version, json_extract(v.plan, '$.trend'), COUNT(*),
+               SUM(CASE WHEN json_extract(v.plan, '$.trend') <> d.trend_state THEN 1 ELSE 0 END)
+        FROM version_score v
+        JOIN ladder d ON d.ticker = v.ticker AND d.as_of = v.session_date
+        WHERE v.rule = $rule AND v.session_date = $session
+        GROUP BY v.version, json_extract(v.plan, '$.trend')
+        ORDER BY v.version, json_extract(v.plan, '$.trend');
+    ";
+
+    const string LiveLabels = @"
+        SELECT trend_state, COUNT(*) FROM ladder WHERE as_of = $session GROUP BY trend_state ORDER BY trend_state;
+    ";
+
+    const string NightsOfLabels = "SELECT COUNT(DISTINCT as_of) FROM ladder;";
+
+    // Every night-to-night pair of one name's stored labels, the ones where the label changed, and
+    // the ones where the label before it came back the next night or the night after.
+    //
+    // Read over the stored labels and never over a version's, because what the confirmation
+    // version's own number is settled from is how often the night's own rule changed its mind.
+    // owes: The trend confirmation's nights settled from flip-backs
+    const string LabelFlips = @"
+        WITH labelled AS (
+            SELECT trend_state,
+                   LAG(trend_state, 1) OVER name AS before,
+                   LEAD(trend_state, 1) OVER name AS next,
+                   LEAD(trend_state, 2) OVER name AS after
+            FROM ladder
+            WINDOW name AS (PARTITION BY ticker ORDER BY as_of)
+        )
+        SELECT SUM(CASE WHEN before IS NOT NULL THEN 1 ELSE 0 END),
+               SUM(CASE WHEN before IS NOT NULL AND trend_state <> before THEN 1 ELSE 0 END),
+               SUM(CASE WHEN before IS NOT NULL AND trend_state <> before AND next = before THEN 1 ELSE 0 END),
+               SUM(CASE WHEN before IS NOT NULL AND trend_state <> before AND (next = before OR after = before) THEN 1 ELSE 0 END)
+        FROM labelled;
+    ";
+
+    // The setups the live rule listed on the nights a version was scored over, with the flag that
+    // says the version's label takes each away. No ticker is selected and none could be: what a
+    // version's record is over is a count of setups and the sessions they were listed on.
+    const string VersionSetups = @"
+        SELECT v.version, f.session_date, f.outcome, f.null_win, f.null_win_at_sensitivity,
+               f.break_even, f.return_pct, f.planned_risk, f.on_earnings,
+               CASE WHEN json_extract(v.plan, '$.trend') = $downtrend AND d.trend_state <> $downtrend THEN 1 ELSE 0 END
+        FROM version_score v
+        JOIN ladder d ON d.ticker = v.ticker AND d.as_of = v.session_date
+        JOIN forward_return f
+            ON f.ticker = v.ticker AND f.session_date = v.session_date AND f.horizon = $horizon
+        WHERE v.rule = $rule
         ORDER BY 1, 2;
     ";
 
@@ -2372,6 +2456,147 @@ public sealed class ReadApi : IComponent
             rows.Add(new CandidateNightRow(
                 DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.GetString(1)));
+        }
+
+        return rows;
+    }
+
+    // The windows open now, which is what the versions region draws a row for.
+    public async Task<IReadOnlyList<OpenVersionRow>> OpenVersionsAsync(string rule)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = OpenVersions;
+        command.Parameters.AddWithValue("$rule", rule);
+
+        var rows = new List<OpenVersionRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new OpenVersionRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                DateOnly.ParseExact(reader.GetString(2)[..10], "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+        }
+
+        return rows;
+    }
+
+    // What each open version of a rule labelled the night's names, and how many of those labels
+    // are not the one the night itself stored.
+    public async Task<IReadOnlyList<VersionLabelRow>> VersionLabelsAsync(string rule, DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = VersionLabels;
+        command.Parameters.AddWithValue("$rule", rule);
+        command.Parameters.AddWithValue("$session", On(night));
+
+        var rows = new List<VersionLabelRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            if (reader.IsDBNull(1))
+            {
+                continue;
+            }
+
+            rows.Add(new VersionLabelRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetInt32(2),
+                reader.GetInt32(3)));
+        }
+
+        return rows;
+    }
+
+    // What the night's own rule labelled the same names.
+    public async Task<IReadOnlyList<VersionLabelRow>> LiveLabelsAsync(DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LiveLabels;
+        command.Parameters.AddWithValue("$session", On(night));
+
+        var rows = new List<VersionLabelRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new VersionLabelRow(string.Empty, reader.GetString(0), reader.GetInt32(1), 0));
+        }
+
+        return rows;
+    }
+
+    // How often a stored label changed from one night to the next and how often the old one came
+    // back, over every night the store holds, with the count of those nights.
+    public async Task<(LabelReturns Returns, int Nights)> LabelReturnsAsync()
+    {
+        await using var connection = Open();
+
+        int nights;
+
+        await using (var counted = connection.CreateCommand())
+        {
+            counted.CommandText = NightsOfLabels;
+
+            nights = Convert.ToInt32(await counted.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
+        }
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LabelFlips;
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync() && !reader.IsDBNull(0)
+            ? (new LabelReturns(reader.GetInt32(0), reader.GetInt32(1), reader.GetInt32(2), reader.GetInt32(3)), nights)
+            : (new LabelReturns(0, 0, 0, 0), nights);
+    }
+
+    // Every setup the live rule listed on a night a version was scored over, with whether that
+    // version's label takes it away. A version of the trend rule only ever takes a setup away,
+    // since the label it changes is changed to the one that carries no tranche at all, so the
+    // version's own setups are these rows less the ones it removes and the outcomes are the ones
+    // already stored.
+    // see: A trend version is judged by the candidates' test on its difference from the live rule
+    public async Task<IReadOnlyList<VersionSetupRow>> VersionSetupsAsync(string rule)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = VersionSetups;
+        command.Parameters.AddWithValue("$rule", rule);
+        command.Parameters.AddWithValue("$horizon", EquityBrief.Core.Returns.ForwardReturnSeries.Setup);
+        command.Parameters.AddWithValue("$downtrend", EquityBrief.Core.Ladders.TrendState.Downtrend);
+
+        var rows = new List<VersionSetupRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new VersionSetupRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.IsDBNull(2) ? null : reader.GetString(2),
+                reader.IsDBNull(3) ? null : reader.GetDouble(3),
+                reader.IsDBNull(4) ? null : reader.GetDouble(4),
+                reader.IsDBNull(5) ? null : reader.GetDouble(5),
+                reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                reader.IsDBNull(7) ? null : reader.GetDouble(7),
+                !reader.IsDBNull(8) && reader.GetInt64(8) == 1,
+                reader.GetInt64(9) == 1));
         }
 
         return rows;

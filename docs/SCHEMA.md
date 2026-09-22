@@ -473,7 +473,7 @@ Grain: one row per rule per version. Append only but for the close.
 
 | Column | Type | Notes |
 |---|---|---|
-| `rule` | TEXT | one of the four ladder rules the build carries, refused at the write where it carries none |
+| `rule` | TEXT | one of the five ladder rules the build carries, refused at the write where it carries none |
 | `version` | TEXT | the version's name, `live` for the rule the night itself applies |
 | `parameters` | TEXT | JSON, the values this version is replayed with, each one the replay applies as given |
 | `parameters_hash` | TEXT | a hash of those parameters with the code version, which is what the night compares the live rule against |

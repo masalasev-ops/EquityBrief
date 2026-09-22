@@ -26,6 +26,27 @@ public readonly record struct Trend(string State, string? Reason)
     public bool Classified => Reason is null;
 }
 
+// One version of the trend rule, as a version's parameters carry it.
+//
+// The live values are the rule the night applies, so a version opened at them
+// would store the live rule's labels under a version's name and is refused.
+// see: The trend rule is a fifth ladder rule a version replays, and none of its three versions is live
+public sealed record TrendRuleSet(
+    int DowntrendFromAverages = TrendSeries.FromAveragesNever,
+    int NightsTheNewLabelHolds = TrendSeries.TheNightItIsRead)
+{
+    public static TrendRuleSet Live { get; } = new();
+
+    // What a version of this rule is hashed over, which is how the night notices
+    // the live rule moving inside an open window.
+    public IReadOnlyDictionary<string, double> AsParameters =>
+        new Dictionary<string, double>(StringComparer.Ordinal)
+        {
+            [TrendSeries.DowntrendFromAverages] = DowntrendFromAverages,
+            [TrendSeries.NightsTheNewLabelHolds] = NightsTheNewLabelHolds,
+        };
+}
+
 // The trend classifier's rule.
 //
 // Section 10 said "from the averages and the last two swings", which is a
@@ -49,6 +70,80 @@ public static class TrendSeries
     // The two swings of one kind the rule compares. Two rather than one, because
     // the rule is about a structure moving rather than about where a swing sits.
     public const int SwingsCompared = 2;
+
+    // The two parameters a version of this rule carries, and the values the live
+    // rule holds them at.
+    public const string DowntrendFromAverages = "downtrendFromAverages";
+
+    public const string NightsTheNewLabelHolds = "nightsTheNewLabelHolds";
+
+    // What a close below both averages does to the label: nothing, or a
+    // downtrend whatever the swings say, or a downtrend only where the short
+    // average sits below the long one.
+    public const int FromAveragesNever = 0;
+
+    public const int FromAveragesBelowBoth = 1;
+
+    public const int FromAveragesBelowBothUnderACross = 2;
+
+    // The label applies the night it is read, which is the live rule: nothing is
+    // held back and nothing waits for a second night.
+    public const int TheNightItIsRead = 1;
+
+    // The longest a version may hold a name in downtrend after its label left,
+    // and so the count of stored labels a replay reads behind the night. A week
+    // of sessions: a version that waited longer would keep a name off the list
+    // for longer than the label it is waiting on took to form, and a bound the
+    // replay's own read cannot serve is a window measuring something no night
+    // computes.
+    public const int MostNightsTheNewLabelHolds = 5;
+
+    // The label a version applies, from the label the night stored.
+    //
+    // Two arms, and neither reclassifies: the first adds a downtrend the live
+    // rule did not reach, and the second keeps one the live rule has left. That
+    // is what lets the live values reproduce every stored label exactly, since
+    // with the averages arm off and the hold at one night both arms stand aside.
+    //
+    // The first arm can only turn a range into a downtrend. An uptrend has the
+    // close above the short average by its own rule, and a name with no long
+    // average has no reading to be below.
+    // see: The trend rule is a fifth ladder rule a version replays, and none of its three versions is live
+    public static string Applied(
+        string stored,
+        decimal close,
+        decimal? shortAverage,
+        decimal? longAverage,
+        IReadOnlyList<string> nightsBefore,
+        TrendRuleSet rules)
+    {
+        var label = stored;
+
+        if (rules.DowntrendFromAverages != FromAveragesNever
+            && shortAverage is { } shortMean
+            && longAverage is { } longMean
+            && close < shortMean
+            && close < longMean
+            && (rules.DowntrendFromAverages == FromAveragesBelowBoth || shortMean < longMean))
+        {
+            label = TrendState.Downtrend;
+        }
+
+        // Entering a downtrend applies at once, so the hold is read only where
+        // tonight's label is not one. The nights it reads are the stored labels
+        // of the nights before, newest first, and one fewer than the version
+        // asks for, because the night being scored is the first of them.
+        if (!string.Equals(label, TrendState.Downtrend, StringComparison.Ordinal)
+            && rules.NightsTheNewLabelHolds > TheNightItIsRead
+            && nightsBefore
+                .Take(rules.NightsTheNewLabelHolds - 1)
+                .Any(night => string.Equals(night, TrendState.Downtrend, StringComparison.Ordinal)))
+        {
+            label = TrendState.Downtrend;
+        }
+
+        return label;
+    }
 
     public static Trend For(
         decimal close,

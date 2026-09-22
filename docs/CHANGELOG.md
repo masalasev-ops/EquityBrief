@@ -25,6 +25,33 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-22 - ARCHITECTURE.html - the rule version bound counts the trend rule's windows
+Authorised by: The trend rule is a fifth ladder rule a version replays, and none of its three versions is live
+Was:
+> at most 2 windows of the merge distance and 4 of each of the other 3 ladder rules, each rule's live window among them, which is 14 at once, marked proposed
+> [...] The fullest register the caps admit replays 1 merge distance version and 9 others, 193 seconds, which puts the night at 688 seconds against a deadline of 900. [...] 14 is the sum of the caps.
+Now:
+> at most 2 windows of the merge distance and 4 of each of the other 4 ladder rules, each rule's live window among them, which is 18 at once, marked proposed
+> [...] The fullest register the caps admit replays 1 merge distance version and 12 others, 208 seconds, which puts the night at 703 seconds against a deadline of 900. [...] 18 is the sum of the caps.
+Why: the trend rule becomes the fifth ladder rule a version replays, and it takes the cap of four every rule but the merge distance has. The arithmetic is the same night's stage durations: three more ladder replays at 5 seconds each.
+
+### 2026-09-22 - BUILD_PLAN.md - the two restatements of the bound follow the fifth rule
+Authorised by: The trend rule is a fifth ladder rule a version replays, and none of its three versions is live
+Was:
+> which is fourteen at once, marked proposed [...] the fullest register the caps admit replays one of the first and nine of the second, which puts the night at 688 seconds against the deadline of 900.
+> fourteen at once, marked proposed, and its arithmetic is the night of 2026-09-14 [...] so the fullest register the caps admit adds 193 seconds and sits at 688 against a deadline of 900.
+Now:
+> which is eighteen at once, marked proposed [...] the fullest register the caps admit replays one of the first and twelve of the second, which puts the night at 703 seconds against the deadline of 900.
+> eighteen at once, marked proposed, and its arithmetic is the night of 2026-09-14 [...] so the fullest register the caps admit adds 208 seconds and sits at 703 against a deadline of 900.
+Why: the phase 8 section and the operating row both state the bound, and a figure stated in three places is three places that have to agree with the constant.
+
+### 2026-09-22 - RUNBOOK.md - the three trend versions are opened by name
+Authorised by: The trend rule is a fifth ladder rule a version replays, and none of its three versions is live
+Was: the file carried no procedure for opening a version of the trend rule.
+Now:
+> a procedure naming `version --trend-version`, the three names the code offers and what each reads, with the live window opened first.
+Why: the parameters a version runs at are written in code rather than typed at the prompt, for the reason the three candidates' registration is: a rule retyped by hand is a rule nobody can check afterwards against the replay that ran.
+
 ### 2026-09-22 - BUILD_PLAN.md - 10.3's done condition names what the checkpoint changes
 Authorised by: A crossing is a candidate condition only where the close sits half a typical move past the edge it crossed
 Was:

@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Returns;
+using EquityBrief.Core.Rules;
 using EquityBrief.Core.Shortlist;
 
 namespace EquityBrief.Web.Marks;
@@ -344,6 +345,44 @@ public sealed record CandidateRegion(
     IReadOnlyList<int> LooksAt,
     double Cost,
     double Sensitivity);
+
+// One open version of the trend rule as the versions region draws it: the labels it gave the
+// night's names, the difference between them and the live rule's, and its record where it has one.
+//
+// The labels are counts and never names, for the reason a candidate's record carries none: a
+// version is a rule being measured, and a screen that named the stocks it moved would be showing
+// a list nobody chose to show.
+// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+public sealed record TrendVersionRow(
+    string Version,
+    string Parameters,
+    DateOnly OpenedOn,
+    IReadOnlyList<LabelCount> Labels,
+    int Moved,
+    VersionMeasured? Record);
+
+// One trend label and how many of the night's names carried it under a version.
+public sealed record LabelCount(string Label, int Names);
+
+// How often a label flipped from one night to the next and how often the old one came back,
+// which is the reading the confirmation version's nights are settled from.
+public sealed record LabelReturns(int Pairs, int Flipped, int ReturnedTheNextNight, int ReturnedWithinTwo);
+
+// The trend rule's versions, the labels the live rule gave the same night, and the flip-backs the
+// stored labels show. The A-over-B margin and the Reality Check stand with them, because the
+// better of several versions is not read against the level one version is read at.
+// owes: The trend confirmation's nights settled from flip-backs
+// see: A trend version is judged by the candidates' test on its difference from the live rule
+public sealed record TrendVersionRegion(
+    IReadOnlyList<TrendVersionRow> Versions,
+    IReadOnlyList<LabelCount> Live,
+    LabelReturns Returns,
+    DateOnly Night,
+    int Nights,
+    int MostAtOnce,
+    int Open,
+    double Margin,
+    RealityCheck.Checked? Best);
 
 // The four verdict counts of the last phase report.
 //
@@ -3154,6 +3193,82 @@ public sealed class MarkRenderer : IComponent
     // see: The nightly running figure is monitoring and never the verdict
     // see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow
     // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // The trend rule's versions: what each labelled the night's names, how far each stands from
+    // the live rule, and how often a label the stored nights show went away and came back.
+    //
+    // The returns are drawn whether or not a version is open, because they are the reading the
+    // confirmation version's own number is settled from and that reading is about the stored
+    // labels rather than about any version of them.
+    // owes: The trend confirmation's nights settled from flip-backs
+    // see: A trend version is judged by the candidates' test on its difference from the live rule
+    public string TrendVersions(TrendVersionRegion region)
+    {
+        var drawn = new StringBuilder();
+
+        drawn.Append(Invariant, $"<section class=\"trend-versions\" data-open=\"{region.Open}\" data-most-at-once=\"{region.MostAtOnce}\" ");
+        drawn.Append(Invariant, $"data-nights=\"{region.Nights}\" data-margin=\"{region.Margin:0.#}\">");
+
+        drawn.Append(Invariant, $"<p data-labels=\"live\">On {region.Night:yyyy-MM-dd} the live rule labelled ");
+        drawn.Append(Labels(region.Live));
+        drawn.Append(".</p>");
+
+        drawn.Append(Invariant, $"<p data-returns=\"true\" data-pairs=\"{region.Returns.Pairs}\" data-flipped=\"{region.Returns.Flipped}\" ");
+        drawn.Append(Invariant, $"data-returned-next=\"{region.Returns.ReturnedTheNextNight}\" data-returned-within-two=\"{region.Returns.ReturnedWithinTwo}\">");
+        drawn.Append(Invariant, $"Over {region.Nights} stored night(s), a label changed on {region.Returns.Flipped} of {region.Returns.Pairs} night-to-night pairs, ");
+        drawn.Append(Invariant, $"and the old label came back the next night {region.Returns.ReturnedTheNextNight} time(s) and within two nights {region.Returns.ReturnedWithinTwo}. ");
+        drawn.Append("A version that holds the new label for a night or two is measured against that and settled by no other reading.</p>");
+
+        if (region.Versions.Count == 0)
+        {
+            drawn.Append(Invariant, $"<p data-versions=\"none\">no version of the trend rule has an open window, of the {region.MostAtOnce} windows the bound allows at once</p></section>");
+
+            return drawn.ToString();
+        }
+
+        foreach (var version in region.Versions)
+        {
+            drawn.Append(Invariant, $"<article class=\"trend-version\" data-version=\"{Escaped(version.Version)}\" data-parameters=\"{Escaped(version.Parameters)}\" ");
+            drawn.Append(Invariant, $"data-opened=\"{version.OpenedOn:yyyy-MM-dd}\" data-moved=\"{version.Moved}\">");
+            drawn.Append(Invariant, $"<h4>{Escaped(version.Version)}</h4>");
+            drawn.Append(Invariant, $"<p data-labels=\"version\">Opened {version.OpenedOn:yyyy-MM-dd} at {Escaped(version.Parameters)}. It labelled ");
+            drawn.Append(Labels(version.Labels));
+            drawn.Append(Invariant, $", which moves {version.Moved} name(s) off the live rule's label.</p>");
+
+            if (version.Record is { } record)
+            {
+                drawn.Append(Invariant, $"<p data-field=\"verdict\" data-blocks=\"{record.Blocks}\" data-floor=\"{record.Floor}\" ");
+                drawn.Append(Invariant, $"data-live-setups=\"{record.LiveSetups}\" data-version-setups=\"{record.VersionSetups}\" ");
+                drawn.Append(Invariant, $"data-excess=\"{Figure(record.Excess)}\" data-p=\"{Figure(record.PValue)}\" data-verdict=\"{Escaped(record.Verdict)}\">");
+                drawn.Append(Invariant, $"{Escaped(record.Verdict)}. {record.VersionSetups} setup(s) against the live rule's {record.LiveSetups}, ");
+                drawn.Append(Invariant, $"over {record.Blocks} block(s) of the {record.Floor} a verdict is read at.</p>");
+            }
+
+            drawn.Append("</article>");
+        }
+
+        if (region.Best is { } best)
+        {
+            drawn.Append(Invariant, $"<p data-reality-check=\"true\" data-best=\"{Escaped(best.Best)}\" data-p=\"{best.PValue:0.#####}\" data-challengers=\"{best.Challengers}\">");
+            drawn.Append(Invariant, $"Of {best.Challengers} version(s) read against the live rule as the benchmark, the largest difference is '{Escaped(best.Best)}', ");
+            drawn.Append(Invariant, $"at {best.PValue:0.#####} over every sign vector its blocks allow, which is the figure the best of several is read at ");
+            drawn.Append(Invariant, $"and never its own. Two that both cross keep the narrower, unless the wider is ahead by {region.Margin:0.#} point(s).</p>");
+        }
+        else
+        {
+            drawn.Append(Invariant, $"<p data-reality-check=\"none\">nothing is compared until every open version holds the same {Blocks.Floor} whole blocks, ");
+            drawn.Append("because the best of several is read against the benchmark over one set of blocks and not each over its own</p>");
+        }
+
+        drawn.Append("</section>");
+
+        return drawn.ToString();
+    }
+
+    static string Labels(IReadOnlyList<LabelCount> labels) =>
+        labels.Count == 0
+            ? "no name at all"
+            : string.Join(", ", labels.Select(label => Formatted($"{label.Names} {Escaped(label.Label)}")));
+
     public string CandidateRecords(CandidateRegion region)
     {
         var drawn = new StringBuilder();

@@ -168,6 +168,18 @@ public sealed class RuleVersionScorer : IComponent
         SELECT trend_state FROM ladder WHERE ticker = $ticker AND as_of = $session;
     ";
 
+    // The labels of the nights before the one being scored, newest first, which
+    // is what a version that holds a name in downtrend after its label left
+    // reads. The stored raw labels and never a version's own, because the hold
+    // is stated over what the nights recorded.
+    // see: The trend rule is a fifth ladder rule a version replays, and none of its three versions is live
+    const string LabelsBefore = @"
+        SELECT trend_state FROM ladder
+        WHERE ticker = $ticker AND as_of < $session
+        ORDER BY as_of DESC
+        LIMIT $nights;
+    ";
+
     const string ScaleOn = @"
         SELECT close, raw_close FROM bar WHERE ticker = $ticker AND session_date = $session;
     ";
@@ -179,7 +191,9 @@ public sealed class RuleVersionScorer : IComponent
         LIMIT $window;
     ";
 
-    const string TypicalMoveFor = @"
+    // One stored reading at or before a session: the typical move the replay
+    // scales its prices by, and the two averages a trend version reads.
+    const string LatestIndicatorFor = @"
         SELECT value FROM indicator
         WHERE ticker = $ticker AND name = $name AND session_date <= $session
         ORDER BY session_date DESC
@@ -379,6 +393,7 @@ public sealed class RuleVersionScorer : IComponent
             LadderRules.StopPlacement => new Dictionary<string, double>(StringComparer.Ordinal) { ["stopTrailsTheLastHigherLow"] = ladder["stopTrailsTheLastHigherLow"] },
             LadderRules.NearExitSkip => new Dictionary<string, double>(StringComparer.Ordinal) { ["nearExitInTypicalDays"] = ladder["nearExitInTypicalDays"] },
             LadderRules.ZoneEdgesFromNonAverageAnchors => new Dictionary<string, double>(StringComparer.Ordinal) { ["zoneEdgesFromNonAverageAnchorsOnly"] = ladder["zoneEdgesFromNonAverageAnchorsOnly"] },
+            LadderRules.TrendRule => TrendRuleSet.Live.AsParameters,
             _ => throw new ArgumentOutOfRangeException(nameof(rule), rule, "not a ladder rule this build carries"),
         };
     }
@@ -400,7 +415,10 @@ public sealed class RuleVersionScorer : IComponent
         IReadOnlyList<LevelBar> Window,
         DateOnly AsOf,
         IReadOnlyList<decimal> SwingLows,
-        bool MemberSources);
+        bool MemberSources,
+        decimal? ShortAverage = null,
+        decimal? LongAverage = null,
+        IReadOnlyList<string>? LabelsBefore = null);
 
     // The plan one version produces for one name-night.
     //
@@ -436,8 +454,22 @@ public sealed class RuleVersionScorer : IComponent
             StopTrailsTheLastHigherLow: parameters.GetValueOrDefault("stopTrailsTheLastHigherLow", 1) != 0,
             ZoneEdgesFromNonAverageAnchorsOnly: parameters.GetValueOrDefault("zoneEdgesFromNonAverageAnchorsOnly", 0) != 0);
 
+        // The label the version applies, which the live values leave as the night
+        // stored it. It is handed to the same builder the night ran rather than
+        // built into it, because the trend rule selects the ladder's shape and
+        // changes none of its arithmetic.
+        var trend = TrendSeries.Applied(
+            inputs.TrendState,
+            inputs.Close,
+            inputs.ShortAverage,
+            inputs.LongAverage,
+            inputs.LabelsBefore ?? [],
+            new TrendRuleSet(
+                DowntrendFromAverages: (int)parameters.GetValueOrDefault(TrendSeries.DowntrendFromAverages, TrendSeries.FromAveragesNever),
+                NightsTheNewLabelHolds: (int)parameters.GetValueOrDefault(TrendSeries.NightsTheNewLabelHolds, TrendSeries.TheNightItIsRead)));
+
         // The swing lows the live stop trails, and no event, since a version's plan carries no second book.
-        var plan = LadderSeries.For(bands, inputs.Close, inputs.TypicalMove, inputs.Recent, inputs.TrendState, inputs.SwingLows, rules: rules);
+        var plan = LadderSeries.For(bands, inputs.Close, inputs.TypicalMove, inputs.Recent, trend, inputs.SwingLows, rules: rules);
 
         return JsonSerializer.Serialize(new
         {
@@ -455,6 +487,12 @@ public sealed class RuleVersionScorer : IComponent
             }).ToArray(),
             invalidation = plan.Invalidation is { } low ? Money.ToStorage(low) : null,
             reason = plan.Reason,
+
+            // The label the plan was built under, which is the stored one for
+            // every rule but the trend rule. A version of that rule changes the
+            // label and nothing else, so a score that kept only the tranches
+            // could not be read against the label that produced them.
+            trend,
         });
     }
 
@@ -517,6 +555,14 @@ public sealed class RuleVersionScorer : IComponent
             $"'{name}' is a whole number of typical days from 0, which is how the replay counts them, and was given {value}."),
         "stopTrailsTheLastHigherLow" or "zoneEdgesFromNonAverageAnchorsOnly" when value is not (0d or 1d) => FormattableString.Invariant(
             $"'{name}' is a flag of 1 or 0, which is all the replay reads it as, and was given {value}."),
+        TrendSeries.DowntrendFromAverages when value is not (0d or 1d or 2d) => FormattableString.Invariant(
+            $"'{name}' is {TrendSeries.FromAveragesNever} for the label as the night read it, {TrendSeries.FromAveragesBelowBoth} for a close below both averages read as a downtrend whatever the swings say, ")
+            + FormattableString.Invariant($"or {TrendSeries.FromAveragesBelowBothUnderACross} for that reading only where the short average is below the long one, and was given {value}."),
+        TrendSeries.NightsTheNewLabelHolds when !(value >= TrendSeries.TheNightItIsRead
+            && value <= TrendSeries.MostNightsTheNewLabelHolds
+            && Math.Floor(value) == value) => FormattableString.Invariant(
+            $"'{name}' is a whole number of nights from {TrendSeries.TheNightItIsRead}, the night being scored among them, to {TrendSeries.MostNightsTheNewLabelHolds}, ")
+            + FormattableString.Invariant($"which is the count of stored labels the replay reads behind the night, and was given {value}."),
         _ => null,
     };
 
@@ -925,7 +971,7 @@ public sealed class RuleVersionScorer : IComponent
 
         await using (var command = connection.CreateCommand())
         {
-            command.CommandText = TypicalMoveFor;
+            command.CommandText = LatestIndicatorFor;
             command.Parameters.AddWithValue("$ticker", ticker);
             command.Parameters.AddWithValue("$name", Core.Indicators.IndicatorSeries.Atr14);
             command.Parameters.AddWithValue("$session", on);
@@ -956,6 +1002,27 @@ public sealed class RuleVersionScorer : IComponent
             return null;
         }
 
+        // The two averages the trend rule's versions read, at the session's own
+        // scale as the typical move is, and the labels behind the night.
+        var shortAverage = await AverageAsync(connection, ticker, on, Core.Indicators.IndicatorSeries.Sma50, cancellation);
+        var longAverage = await AverageAsync(connection, ticker, on, Core.Indicators.IndicatorSeries.Sma200, cancellation);
+        var labelsBefore = new List<string>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = LabelsBefore;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$session", on);
+            command.Parameters.AddWithValue("$nights", TrendSeries.MostNightsTheNewLabelHolds - 1);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                labelsBefore.Add(reader.GetString(0));
+            }
+        }
+
         // The candidates and the window a merge distance version needs to replay
         // the level arithmetic. Taken from the bands the night already wrote:
         // every member the merge kept is in them, which is the candidate set less
@@ -983,7 +1050,31 @@ public sealed class RuleVersionScorer : IComponent
             window,
             session,
             lows,
-            memberSources);
+            memberSources,
+            shortAverage is { } shortMean ? Scaled(shortMean) : null,
+            longAverage is { } longMean ? Scaled(longMean) : null,
+            labelsBefore);
+    }
+
+    // One stored average at or before the session, as a price, or null where the
+    // name has too short a history for it.
+    static async Task<decimal?> AverageAsync(
+        SqliteConnection connection,
+        string ticker,
+        string session,
+        string name,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LatestIndicatorFor;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$name", name);
+        command.Parameters.AddWithValue("$session", session);
+
+        var value = await command.ExecuteScalarAsync(cancellation);
+
+        return value is null or DBNull ? null : Statistic.ToPrice(Convert.ToDouble(value));
     }
 
     // Null for a band set stored before member sources were written.

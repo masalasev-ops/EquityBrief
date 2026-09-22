@@ -19,12 +19,17 @@ public static class VersionVerb
 
     public const string RunPrefix = "version-";
 
+    // One of the trend rule's three versions, opened at the numbers the code
+    // carries rather than at numbers typed at the prompt.
+    public const string TrendVersion = "--trend-version";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--list", [], [], ["--list"]),
         new("--backfill", ["--backfill"], [], []),
         new("--live-window", ["--rule"], [], ["--live-window"]),
         new("--version", ["--rule", "--version", "--parameters"], [], []),
+        new(TrendVersion, [TrendVersion], [], []),
         new("--close", ["--rule", "--close", "--evidence"], [], []),
         new("--replace", ["--rule", "--replace", "--with", "--parameters", "--evidence"], [], []),
     ];
@@ -107,6 +112,7 @@ public static class VersionVerb
                 $"opened '{Given("--version")}' of '{Given("--rule")}' with {RuleVersions.Write(parameters)}",
                 output,
                 error),
+            TrendVersion => await TrendAsync(Given(TrendVersion), scorer, runId, output, error),
             "--close" => await Said(
                 await scorer.CloseAsync(Given("--rule"), Given("--close"), Given("--evidence"), runId),
                 $"closed '{Given("--close")}' of '{Given("--rule")}' with nothing replacing it",
@@ -190,6 +196,36 @@ public static class VersionVerb
         {
             return await RefusedAsync(scorer, runId, stopped.Message, error);
         }
+    }
+
+    // One of the trend rule's three versions, at the numbers the code carries.
+    // A name the code does not offer is refused with the three it does, because
+    // a version opened under a misspelling would be a window measuring the live
+    // rule under a name nobody can find again.
+    // see: The trend rule is a fifth ladder rule a version replays, and none of its three versions is live
+    static async Task<int> TrendAsync(
+        string named,
+        RuleVersionScorer scorer,
+        string runId,
+        TextWriter output,
+        TextWriter error)
+    {
+        if (TheTrendVersions.Named(named) is not { } version)
+        {
+            return await RefusedAsync(
+                scorer,
+                runId,
+                $"'{named}' is not a version of '{LadderRules.TrendRule}' this build carries. " +
+                $"Carried: {string.Join(", ", TheTrendVersions.All.Select(one => $"'{one.Version}'"))}.",
+                error);
+        }
+
+        return await Said(
+            await scorer.OpenAsync(LadderRules.TrendRule, version.Version, version.Rules.AsParameters, runId),
+            $"opened '{version.Version}' of '{LadderRules.TrendRule}' with {RuleVersions.Write(version.Rules.AsParameters)}, " +
+            $"which reads {version.Reads}",
+            output,
+            error);
     }
 
     static async Task<int> RefusedAsync(RuleVersionScorer scorer, string runId, string refusal, TextWriter error)
