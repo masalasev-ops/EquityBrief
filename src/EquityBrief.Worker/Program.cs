@@ -46,7 +46,7 @@ static int NoVerb()
         "'drain' works through the reports a screen asked for, oldest first, running the research verb for each, and " +
         "'register --candidate <name> --rule <rule> --test <test> --evaluator <evaluator> --parameters <name=value,...>' " +
         "registers a candidate condition before anything scores it, with '--retire <name> --evidence <figures>' " +
-        "writing the new row that withdraws one, and " +
+        "writing the new row that withdraws one and '--the-three' writing phase 10's three rows at one instant, and " +
         "'version --rule <rule> --live-window' opens a ladder rule's live window, '--version <name> --parameters <name=value,...>' " +
         "opens a version beside it, '--replace <name> --with <name> --parameters <name=value,...> --evidence <text>' closes one and " +
         "opens the version replacing it, '--close <name> --evidence <text>' closes one, '--backfill <yyyy-MM-dd>' scores a past " +

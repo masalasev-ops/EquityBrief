@@ -60,13 +60,25 @@ public abstract class CandidateEvaluator
     public const string VersionDeclaration = "public override string Version =>";
 
     // The sources besides an evaluator's own that decide a value it reads or the verdict it returns, from the repository root.
+    //
+    // The levels and the ladder are in it because a night's values are read off
+    // the bands and the plan those two write, so a change to either moves what a
+    // registered condition would have fired on. That is what makes a registration
+    // stall rather than drift: an evaluation under a rule the register does not
+    // name is evidence about a different condition.
     public static IReadOnlyList<string> EvaluationSources { get; } =
     [
         "src/EquityBrief.Data/Money.cs",
         "src/EquityBrief.Core/Prices/Statistic.cs",
         "src/EquityBrief.Core/Indicators/IndicatorSeries.cs",
         "src/EquityBrief.Worker/Indicators/IndicatorEngine.cs",
+        "src/EquityBrief.Core/Levels/LevelSeries.cs",
+        "src/EquityBrief.Worker/Levels/LevelBuilder.cs",
+        "src/EquityBrief.Core/Ladders/LadderSeries.cs",
+        "src/EquityBrief.Worker/Ladders/LadderBuilder.cs",
         "src/EquityBrief.Worker/Shortlist/ShortlistBuilder.cs",
+        "src/EquityBrief.Core/Candidates/NightValues.cs",
+        "src/EquityBrief.Core/Candidates/NightReading.cs",
         "src/EquityBrief.Core/Candidates/ShadowColumn.cs",
         "src/EquityBrief.Core/Candidates/CandidateEvaluators.cs",
         "src/EquityBrief.Core/Candidates/CandidateEvaluator.cs",
@@ -119,4 +131,22 @@ public abstract class CandidateEvaluator
                 $"{night.Ticker} on {night.Session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} " +
                 $"carries no '{key}', which this evaluator reads. A night missing a value is not a night " +
                 "the condition did not fire on.");
+
+    // A value the night writes only where the name has the thing it describes,
+    // and nothing where there is nothing to describe.
+    //
+    // Told apart from a value the night could not compute by a companion count
+    // the evaluator reads as required: a name whose plan holds no buying zone
+    // carries a zone count of nought and no edges, and a night that could not say
+    // how many zones it held carries no count either and is refused before this
+    // is reached. Without that count this would be the default `Required` exists
+    // to refuse, read afterwards as a measurement.
+    protected static double? Optional(CandidateNight night, string key) =>
+        night.Values.TryGetValue(key, out var value) ? value : null;
+
+    // A figure as a verdict records it, and what it records where the night wrote
+    // none. The words rather than a blank, because a value that was never written
+    // and a value of nought read the same way in a blank.
+    protected static string Figure(double? value) =>
+        value is { } figure ? figure.ToString("0.####", CultureInfo.InvariantCulture) : "not stored";
 }

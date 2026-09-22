@@ -992,6 +992,7 @@ public partial class ArchitectureConformance
     // Rows the document gained after the prediction, each one claim.
     static readonly string[] AddedAfterThePrediction =
     [
+        CheckReach.Key(Scope.LimitsTable, "The three candidates' numbers"),
         CheckReach.Key(Scope.FailureTable, "A ticker the index feed stops listing"),
         CheckReach.Key(Scope.FailureTable, "The provider serves no year for a name the backfill asks for"),
         CheckReach.Key(Scope.LimitsTable, "Waiting on another writer"),

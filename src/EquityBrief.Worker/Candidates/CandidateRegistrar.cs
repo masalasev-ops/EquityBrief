@@ -134,6 +134,108 @@ public sealed class CandidateRegistrar : IComponent
         return new RegistrationOutcome(Registered, id, detail);
     }
 
+    // Several candidates registered at one instant, in one transaction, or none of them.
+    //
+    // At one instant because a candidate's level is divided across the candidates the first night
+    // evaluated it also evaluated: registered one at a time, the first would be evaluated on a
+    // night the others did not exist for and would be tested at the whole level rather than its
+    // share. All or none for the same reason: a set half written leaves the level of the ones that
+    // landed divided by a family that never stood.
+    // see: The three candidates are registered at one instant
+    // see: The candidate family is at most eight and the threshold is divided by it
+    public async Task<RegistrationOutcome> RegisterTogetherAsync(
+        IReadOnlyList<Registration> registrations,
+        string runId,
+        CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        var rows = await RowsAsync(connection, cancellation);
+
+        if (registrations.Count == 0)
+        {
+            await transaction.RollbackAsync(cancellation);
+
+            const string nothing = "a registration of nothing is not a registration.";
+
+            await RecordAsync(connection, runId, startedAt, Refused, 0, nothing, cancellation);
+
+            return new RegistrationOutcome(Refused, null, nothing);
+        }
+
+        // Each is judged against the register as it stands plus the ones already taken in this
+        // command, so a set naming one candidate twice, or one more than the family admits, is
+        // refused here rather than written and counted afterwards.
+        var taken = rows.ToList();
+
+        foreach (var one in registrations)
+        {
+            if ((Unstated(one.Rule, one.Test) ?? Refusal(taken, one.Candidate, one.Evaluator, one.Parameters, startedAt)) is { } refusal)
+            {
+                await transaction.RollbackAsync(cancellation);
+
+                var said = $"'{one.Candidate}' was refused, so none of the {registrations.Count} was registered: {refusal}";
+
+                await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation);
+
+                return new RegistrationOutcome(Refused, null, said);
+            }
+
+            taken.Add(new RegisterRow(
+                taken.Count == 0 ? 1 : taken.Max(row => row.Id) + 1,
+                one.Candidate,
+                one.Rule,
+                one.Test,
+                one.Evaluator,
+                CandidateEvaluator.Write(one.Parameters),
+                CandidateEvaluators.Find(one.Evaluator)!.Version,
+                Registered,
+                null,
+                startedAt,
+                null));
+        }
+
+        var written = new List<string>();
+        var appended = rows;
+
+        foreach (var one in registrations)
+        {
+            var carried = CandidateEvaluators.Find(one.Evaluator)!;
+
+            var id = await AppendAsync(
+                connection,
+                appended,
+                one.Candidate,
+                one.Rule,
+                one.Test,
+                one.Evaluator,
+                CandidateEvaluator.Write(one.Parameters),
+                carried.Version,
+                Registered,
+                retires: null,
+                startedAt,
+                evidence: null,
+                cancellation);
+
+            appended = [.. appended, taken.Single(row => row.Id == id)];
+            written.Add($"'{one.Candidate}' as {id} on {one.Evaluator} at {carried.Version}");
+        }
+
+        var detail = FormattableString.Invariant(
+            $"registered {written.Count} at one instant, family of {CandidateFamily.Standing(appended, startedAt).Count} of {CandidateFamily.Maximum}: ")
+            + string.Join("; ", written);
+
+        await RecordAsync(connection, runId, startedAt, Registered, written.Count, detail, cancellation);
+        await transaction.CommitAsync(cancellation);
+
+        return new RegistrationOutcome(Registered, null, detail);
+    }
+
     public async Task<RegistrationOutcome> RetireAsync(
         string candidate,
         string evidence,

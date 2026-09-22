@@ -79,6 +79,7 @@ public class PinnedConstants
         const string LooksRow = "Looks a candidate's verdict is read at";
         const string CalibrationRow = "The calibrated bar";
         const string PowerRow = "Power stated at a look";
+        const string CandidatesRow = "The three candidates' numbers";
 
         return
         [
@@ -147,7 +148,14 @@ public class PinnedConstants
             new(CalibrationRow, "20260922", NullWin.Seed, "NullWin.Seed"),
             new(CalibrationRow, "10", (decimal)NullWin.CostBasisPoints, "NullWin.CostBasisPoints"),
             new(CalibrationRow, "30", (decimal)NullWin.SensitivityBasisPoints, "NullWin.SensitivityBasisPoints"),
+            new(CandidatesRow, "1", (decimal)ArrivedAndNarrow.ProposedWidth, "ArrivedAndNarrow.ProposedWidth"),
+            new(CandidatesRow, "2", (decimal)VolumeAgainstTheNight.ProposedMultiple, "VolumeAgainstTheNight.ProposedMultiple"),
+            new(CandidatesRow, "0.5", (decimal)CrossedByAMargin.SettledMargin, "CrossedByAMargin.SettledMargin"),
             new(PowerRow, "80", (decimal)Looks.PowerStatedAt * 100, "Looks.PowerStatedAt as a percentage"),
+            new(PowerRow, "0.43", null, Measured, () => Recorded("0.43")),
+            new(PowerRow, "3.26", null, Measured, () => Recorded("3.26")),
+            new(PowerRow, "2.61", null, Measured, () => Recorded("2.61")),
+            new(PowerRow, "1.43", null, Measured, () => Recorded("1.43")),
             new(Versions, "2", RuleVersions.MostOfTheMergeDistance, "RuleVersions.MostOfTheMergeDistance"),
             new(Versions, "4", RuleVersions.MostPerRule, "RuleVersions.MostPerRule"),
             new(Versions, "3", LadderRules.All.Count - 1, "the ladder rules other than the merge distance"),

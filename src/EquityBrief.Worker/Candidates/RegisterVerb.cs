@@ -18,10 +18,15 @@ public static class RegisterVerb
 
     public const string RunPrefix = "register-";
 
+    // The flag that registers phase 10's three at one instant, which takes nothing else: what
+    // would be typed after it is written down in the set it names.
+    public const string TheThree = "--the-three";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
         new("--retire", ["--retire", "--evidence"], [], []),
+        new(TheThree, [], [], [TheThree]),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -76,6 +81,11 @@ public static class RegisterVerb
         if (form.Flag == "--retire")
         {
             return await Said(await registrar.RetireAsync(Given("--retire"), Given("--evidence"), runId), output, error);
+        }
+
+        if (form.Flag == TheThree)
+        {
+            return await Said(await registrar.RegisterTogetherAsync(TheThreeCandidates.All, runId), output, error);
         }
 
         IReadOnlyDictionary<string, double> parameters;

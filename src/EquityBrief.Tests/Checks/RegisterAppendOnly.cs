@@ -2,10 +2,14 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Ladders;
+using EquityBrief.Core.Levels;
 using EquityBrief.Core.Prices;
 using EquityBrief.Data;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Indicators;
+using EquityBrief.Worker.Ladders;
+using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Shortlist;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Returns;
@@ -504,8 +508,8 @@ public class RegisterAppendOnly
     {
         var evaluators = CandidateEvaluators.All;
 
-        Assert.True(evaluators.Count >= 2, $"The code carries {evaluators.Count} evaluator(s), expected at least 2.");
-        Assert.Equal(8, CandidateEvaluator.EvaluationSources.Count);
+        Assert.True(evaluators.Count >= 5, $"The code carries {evaluators.Count} evaluator(s), expected at least 5.");
+        Assert.Equal(14, CandidateEvaluator.EvaluationSources.Count);
 
         var shared = CandidateEvaluator.EvaluationSources
             .Select(path => File.ReadAllText(Path.Combine(Repository.Root, path)))
@@ -561,13 +565,23 @@ public class RegisterAppendOnly
         Assert.All(onThePath, path => Assert.Contains(path, CandidateEvaluator.EvaluationSources));
 
         // And each source is the file of a type the evaluation calls, so none is a file nothing on the path lives in.
+        //
+        // The levels and the ladder are on the path because a night's values are
+        // read off the bands and the plan they write, so a change to either moves
+        // what a registered condition would have fired on.
         Type[] called =
         [
             typeof(Money),
             typeof(Statistic),
             typeof(IndicatorSeries),
             typeof(IndicatorEngine),
+            typeof(LevelSeries),
+            typeof(LevelBuilder),
+            typeof(LadderSeries),
+            typeof(LadderBuilder),
             typeof(ShortlistBuilder),
+            typeof(NightValues),
+            typeof(NightReading),
             typeof(ShadowColumn),
             typeof(CandidateEvaluators),
             typeof(CandidateEvaluator),
@@ -1100,7 +1114,7 @@ public class RegisterAppendOnly
 
         (string[] Args, string Refused)[] cases =
         [
-            ([], "no form was given. The forms are '--candidate', '--retire'"),
+            ([], "no form was given. The forms are '--candidate', '--retire', '--the-three'"),
             (["--candidate", "x", "--retire", "y", "--evidence", "e"], "'--candidate' and '--retire' are 2 forms given together"),
             (["--retire", "x"], "the '--retire' form needs '--evidence'"),
             (["--candidate", "x", "--rule", "--test", "t", "--evaluator", "e"], "'--rule' is followed by '--test', where it takes a value"),

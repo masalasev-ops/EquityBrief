@@ -53,6 +53,7 @@ internal static class Scope
     const string ByRegister = "register-append-only";
     const string ByRules = "rule-versions-scored";
     const string ByCandidateVerdicts = "candidate-verdicts";
+    const string ByCandidateConditions = "candidate-conditions";
 
     internal const string MatrixTable = "Read and write matrix";
     internal const string CatalogueTable = "7. Component catalogue";
@@ -533,6 +534,11 @@ internal static class Scope
             Verdict.Pass,
             "a plan whose target sits three times as far as its stop is given a lower bar than one whose target and stop are the same distance away, the round trip raises the bar and the sensitivity raises it further, and the same setup yields the same bar however often it is read",
             ByCandidateVerdicts),
+        // 10.3, the numbers the three conditions are registered at.
+        [CheckReach.Key(LimitsTable, "The three candidates' numbers")] = new Scoped(
+            Verdict.Pass,
+            "each condition fires where the expectation worked by hand says it does and nowhere else, at the numbers the registration writes and over the edges each turns on, being a close that fell through the zone, a zone exactly one typical move wide, a quiet night's median, a night the whole index traded heavily, a ratio exactly at the multiple, and a close exactly at the margin and a tenth short of it; and the command writes the three rows at one instant at those numbers or writes none of them",
+            ByCandidateConditions),
         [CheckReach.Key(LimitsTable, "Power stated at a look")] = new Scoped(
             Verdict.Pass,
             "each look states the smallest excess it could have detected beside what it read, drawn on the region and read back off it, with the approximation it is named there",

@@ -5,6 +5,7 @@ using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Levels;
+using EquityBrief.Core.Prices;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
@@ -126,10 +127,40 @@ public sealed class ShortlistBuilder : IComponent
     // reason the ladder builder's band query gives.
     // see: A stored price is chosen and ordered by its value and never by the text it is stored as
     const string EdgesFor = @"
-        SELECT low_edge, high_edge, role
+        SELECT low_edge, high_edge, role, strength, members
         FROM level
         WHERE ticker = $ticker
               AND as_of = (SELECT MAX(as_of) FROM level WHERE ticker = $ticker);
+    ";
+
+    // The name's own volume window, newest first, which is what a session's rank
+    // inside it is read against. The window is the fifty-day average's own, so
+    // the rank and the ratio are about the same sessions.
+    const string VolumeWindowFor = @"
+        SELECT volume
+        FROM bar
+        WHERE ticker = $ticker
+        ORDER BY session_date DESC
+        LIMIT 50;
+    ";
+
+    // Every member's ratio of tonight's volume to its fifty-day average, for the
+    // night's median.
+    //
+    // One statement before the loop rather than a figure accumulated inside it:
+    // the median is the same number for every name evaluated, and a median taken
+    // as the loop went would give the names at the top of the alphabet a
+    // different night from the ones at the bottom. It reads the store and makes
+    // no request and no model call.
+    // see: Unusual volume measured against the night's own median is a candidate condition
+    const string RatiosOn = @"
+        SELECT b.ticker, b.volume, i.value
+        FROM bar b
+        JOIN indicator i
+          ON i.ticker = b.ticker AND i.session_date = b.session_date AND i.name = $name
+        WHERE b.session_date = $session_date
+          AND b.volume > 0
+          AND i.value > 0;
     ";
 
     // The last two ladder rows, which is what the trend-changed reason compares.
@@ -257,9 +288,17 @@ public sealed class ShortlistBuilder : IComponent
         // read as stale against it.
         var newest = await NewestSessionAsync(connection, cancellation);
 
+        // The night's median volume ratio, taken over the members that traded on
+        // the night's own session and hold a fifty-day average, before any name
+        // is evaluated. Nothing where the store holds no session at all, which
+        // leaves the condition reading it skipped rather than fired.
+        var medianRatio = newest is { } tonight
+            ? await MedianRatioAsync(connection, members, tonight, cancellation)
+            : null;
+
         foreach (var ticker in members)
         {
-            var (inputs, sessionDate, plan) = await InputsAsync(connection, ticker, cancellation);
+            var (inputs, sessionDate, plan, bands) = await InputsAsync(connection, ticker, cancellation);
 
             // A member whose newest bar is older than the newest session any name
             // holds, being a name the day's file carried nothing for. It is listed
@@ -354,7 +393,7 @@ public sealed class ShortlistBuilder : IComponent
                     ticker,
                     session,
                     withheld is null
-                        ? await IndicatorsAsync(connection, ticker, cancellation)
+                        ? await ValuesAsync(connection, ticker, session, inputs, bands, medianRatio, cancellation)
                         : new Dictionary<string, double>(StringComparer.Ordinal)),
                 withheld);
 
@@ -665,7 +704,12 @@ public sealed class ShortlistBuilder : IComponent
         return members;
     }
 
-    async Task<(ReasonInputs Inputs, DateOnly? SessionDate, string? Plan)> InputsAsync(
+    // One of the night's bands as the store holds it, which is more than the two
+    // edges the live reasons read: a candidate records the strength of the band
+    // its zone sits on and how old that band's newest member is.
+    sealed record StoredBand(decimal LowEdge, decimal HighEdge, int Strength, string Members);
+
+    async Task<(ReasonInputs Inputs, DateOnly? SessionDate, string? Plan, IReadOnlyList<StoredBand> Bands)> InputsAsync(
         SqliteConnection connection,
         string ticker,
         CancellationToken cancellation)
@@ -715,6 +759,7 @@ public sealed class ShortlistBuilder : IComponent
 
         var edges = new List<EdgeAt>();
         var bands = new List<Band>();
+        var stored = new List<StoredBand>();
 
         await using (var command = connection.CreateCommand())
         {
@@ -732,10 +777,12 @@ public sealed class ShortlistBuilder : IComponent
                 edges.Add(new EdgeAt(low, role));
                 edges.Add(new EdgeAt(high, role));
                 bands.Add(new Band(low, high));
+                stored.Add(new StoredBand(low, high, reader.GetInt32(3), reader.GetString(4)));
             }
 
             edges.Sort((left, right) => left.Price.CompareTo(right.Price));
             bands.Sort((left, right) => left.LowEdge.CompareTo(right.LowEdge));
+            stored.Sort((left, right) => left.LowEdge.CompareTo(right.LowEdge));
         }
 
         string? trendState = null;
@@ -834,7 +881,184 @@ public sealed class ShortlistBuilder : IComponent
                 nextEvent,
                 sessionsToEvent),
             sessionDate,
-            plan);
+            plan,
+            stored);
+    }
+
+    // The night's median volume ratio, over the members that traded on the
+    // night's own session and hold a fifty-day average above nought.
+    //
+    // The members and not every row on the session: a name that has left the
+    // index still holds bars, and a median taken over those is a median of a
+    // population the night does not evaluate.
+    // see: Unusual volume measured against the night's own median is a candidate condition
+    static async Task<double?> MedianRatioAsync(
+        SqliteConnection connection,
+        IReadOnlyList<string> members,
+        DateOnly session,
+        CancellationToken cancellation)
+    {
+        var index = members.ToHashSet(StringComparer.Ordinal);
+        var ratios = new List<double>();
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = RatiosOn;
+        command.Parameters.AddWithValue("$name", IndicatorSeries.VolAvg50);
+        command.Parameters.AddWithValue("$session_date", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            if (index.Contains(reader.GetString(0)))
+            {
+                ratios.Add(Statistic.FromVolume(reader.GetInt64(1)) / reader.GetDouble(2));
+            }
+        }
+
+        if (ratios.Count == 0)
+        {
+            return null;
+        }
+
+        ratios.Sort();
+
+        // The middle of an odd count and the mean of the two middles of an even
+        // one, which is what a median is and what the measurement it reproduces
+        // took.
+        return ratios.Count % 2 == 1
+            ? ratios[ratios.Count / 2]
+            : (ratios[(ratios.Count / 2) - 1] + ratios[ratios.Count / 2]) / 2;
+    }
+
+    // What a candidate condition is evaluated over: the indicator readings the
+    // night computed, and the figures a condition reads that no indicator holds.
+    //
+    // A value is written where the night could compute it and left out where it
+    // could not, because an evaluator refuses a night missing a value it reads
+    // rather than treating the absence as a nought. The two counts, the zones the
+    // plan held and the bands the close crossed, are written whenever the
+    // question could be asked at all, which is what lets a condition tell a name
+    // with nothing to arrive at from a name the night could not read.
+    async Task<IReadOnlyDictionary<string, double>> ValuesAsync(
+        SqliteConnection connection,
+        string ticker,
+        DateOnly session,
+        ReasonInputs inputs,
+        IReadOnlyList<StoredBand> bands,
+        double? medianRatio,
+        CancellationToken cancellation)
+    {
+        var values = new Dictionary<string, double>(
+            await IndicatorsAsync(connection, ticker, cancellation),
+            StringComparer.Ordinal);
+
+        if (inputs.Close is { } close)
+        {
+            values[NightValues.Close] = Statistic.FromPrice(close);
+        }
+
+        if (inputs.PreviousClose is { } previous)
+        {
+            values[NightValues.PreviousClose] = Statistic.FromPrice(previous);
+        }
+
+        // The plan's zones, nearest the close first, so the zone a condition
+        // reads is the one the plan's first tranche sits on.
+        values[NightValues.Zones] = inputs.Zones.Count;
+
+        if (inputs.Zones.Count > 0)
+        {
+            var nearest = inputs.Zones[0];
+
+            values[NightValues.ZoneLow] = Statistic.FromPrice(nearest.LowEdge);
+            values[NightValues.ZoneHigh] = Statistic.FromPrice(nearest.HighEdge);
+
+            if (bands.FirstOrDefault(band => band.LowEdge == nearest.LowEdge && band.HighEdge == nearest.HighEdge) is { } on)
+            {
+                values[NightValues.ZoneStrength] = on.Strength;
+
+                // How old the band's newest member is, counted on the exchange's
+                // own calendar, and nothing where the set was stored before member
+                // sources were written.
+                if (NewestMember(on.Members) is { } member && ExchangeClosures.SessionsUntil(member, session) is { } since)
+                {
+                    values[NightValues.ZoneNewestMemberSessions] = since;
+                }
+            }
+        }
+
+        if (inputs.Close is { } today && inputs.PreviousClose is { } yesterday)
+        {
+            var (count, past) = NightReading.Crossings(today, yesterday, inputs.Bands);
+
+            values[NightValues.Crossings] = count;
+
+            if (past is { } distance)
+            {
+                values[NightValues.CrossingDistance] = Statistic.FromPrice(distance);
+            }
+        }
+
+        if (inputs.Volume is { } volume and > 0 && inputs.VolumeAverage50 is { } average and > 0)
+        {
+            values[NightValues.VolumeRatio] = Statistic.FromVolume(volume) / average;
+            values[NightValues.VolumeRank] = NightReading.RankOf(volume, await VolumeWindowAsync(connection, ticker, cancellation));
+        }
+
+        if (medianRatio is { } median)
+        {
+            values[NightValues.NightMedianRatio] = median;
+        }
+
+        return values;
+    }
+
+    // The name's last fifty sessions of volume, newest first, which is the window
+    // the fifty-day average is taken over.
+    static async Task<IReadOnlyList<long>> VolumeWindowAsync(
+        SqliteConnection connection,
+        string ticker,
+        CancellationToken cancellation)
+    {
+        var window = new List<long>();
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = VolumeWindowFor;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            window.Add(reader.GetInt64(0));
+        }
+
+        return window;
+    }
+
+    // The newest session any of a band's members was anchored on, and nothing
+    // where the set was stored before members were written.
+    static DateOnly? NewestMember(string members)
+    {
+        using var document = JsonDocument.Parse(members);
+
+        DateOnly? newest = null;
+
+        foreach (var member in document.RootElement.EnumerateArray())
+        {
+            if (member.TryGetProperty("date", out var dated)
+                && dated.ValueKind == JsonValueKind.String
+                && DateOnly.TryParseExact(dated.GetString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var on)
+                && (newest is null || on > newest))
+            {
+                newest = on;
+            }
+        }
+
+        return newest;
     }
 
     async Task RecordAsync(

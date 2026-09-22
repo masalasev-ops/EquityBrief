@@ -20254,3 +20254,133 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    A candidate's power re-read at each look, and The candidates' proposed numbers read at
             their looks, both operating: the region this builds is the surface each is read on, and
             neither fires until a registered candidate reaches its first look.
+
+### 10.3 - the three candidate conditions, the values a night hands them, and the one command that registers all three at one instant   2026-09-22
+Built:      the three conditions phase 10 registers, each an evaluator the register may name and
+            none of them live. Arrived and narrow fires where the previous close sat above the
+            nearest buying zone's high edge, tonight's close is inside that zone at either edge,
+            and the zone is no wider than the registered multiple of the name's typical daily move.
+            Volume against the night fires where the ratio of tonight's volume to the fifty-day
+            average is above the registered multiple of the night's median ratio and above that
+            multiple on its own. Crossed by a margin fires where the close went through a whole
+            band since the previous session and finished at least the registered margin of a typical
+            move past the edge it crossed, the high edge on a rise and the low edge on a fall.
+Handed:     the night's stage computes what the three read beside the indicator readings it already
+            handed over: the close and the one before it, the plan's zone count and the nearest
+            zone's edges, the volume ratio, the crossings and how far past the furthest crossed edge
+            the close finished, and the night's median ratio. Two of those are counts, and they are
+            what lets a condition tell a name with nothing to arrive at from a name the night could
+            not read: a zone count of nought is a measurement, and a value an evaluator reads and
+            the night could not compute is a skip naming the key. The strength of the band the
+            nearest zone sits on, how many sessions have passed since that band's newest member, and
+            where tonight's volume ranks inside the name's own fifty-day window are written on every
+            verdict and read by no condition.
+Median:     taken once before the loop, over the members that traded on the night's own session and
+            hold a fifty-day average above nought, and carried on every verdict so a night can be
+            replayed. Before the loop rather than inside it, because a median taken as the loop went
+            would give the names at the top of the alphabet a different night from the ones at the
+            bottom. It is one statement against the store: the stage takes a clock and a store file,
+            holds no feed and declares none.
+Registered: one command, `register --the-three`, writing the three rows at one instant and none of
+            them if any is refused, with the rule and the test of each written in code rather than
+            typed at the prompt. At one instant because a candidate's level is divided across the
+            candidates the first night evaluated it also evaluated, so three registered a day apart
+            would test the first at the whole level. The command is the operator's to run, once, and
+            it is not a done condition of this checkpoint.
+Settled:    the crossing margin, at 0.5 of a typical move, by the operator on 2026-09-22 over counts
+            re-derived here. The decision naming it is superseded by one that states the number and
+            what chose it, the old entry moving to Previously decided with its reasoning, section
+            22's open question is answered, and the build plan's row of proposed numbers now carries
+            two rather than three. The margin is registered with the candidate from here, so
+            changing it is a new registration.
+Counts:     re-derived over a copy of the operator's store, never `data/` itself, on the nine nights
+            2026-09-09 to 09-21, 501 to 507 members a night, and each figure reproduces the
+            planning session's. Arrived and narrow would have fired 14, 9, 2, 2, 8, 5, 3, 6 and 3
+            times, 52 in all. Volume against the night 8, 4, 8, 5, 8, 17, 8, 18 and 5, which is 81,
+            on median ratios of 0.867, 0.89, 0.811, 0.922, 0.942, 0.961, 0.941, 2.0 and 0.95.
+            Crossed by a margin fires 38 to 89 a night at 0.25, a mean of 64.0 and 576 in all, and
+            18 to 46 at 0.5, a mean of 30.1 and 271, against 112 to 176 for the live reason, which
+            fires on any edge crossed.
+Calibrated: the null each setup is judged against, measured on a copy where every setup was scored
+            again so the rows decided before migration 32 carry one. Over the 359 setups with a bar
+            the calibrated null averages 0.4304, against a mean planned break-even of 41.4%, and it
+            runs from 0.07 to 0.79; at the sensitivity of 30 basis points it averages 0.4472. So a
+            plan with no edge wins more often than its own arithmetic asks for, which is what the
+            calibration is for. 351 of 585 decided setups carry a bar, a share of 0.6, which is the
+            figure the planning session used.
+Reported:   from the same copy, and tested nowhere. A loss costs 1.489 planned risks on average over
+            244 of them, a median of 1.246, a ninetieth percentile of 1.941 and a largest of 12.425,
+            because a stop is a close through a level and a session can open below it. A win comes
+            to 1.434 planned risks on average over 107, a median of 0.765 and a ninetieth of 2.467.
+            47 of the 585 decided setups resolved on a session the name reported on.
+Recomputed: scoring every setup again on that copy disagrees with the store on 4 of 587 rows, two
+            wins and two losses that read as never entered or as still in play. All four names carry
+            a dividend adjustment, and the filler restates a stored plan by the listing session's
+            own adjustment factor, so a row decided before the adjustment landed is a row decided at
+            a scale the recomputation no longer uses. That is the rule working as written, an
+            outcome once decided never being rewritten, and it is why the figures above are stated
+            over the recomputation rather than over the store's own decided rows.
+Power:      re-derived on that calibrated null rather than on the plan's simulated judgement, over
+            the setups each candidate's own per-night count gives a block, stated as resolved with a
+            bar rather than as listed. At a design effect of one the second look detects 3.26 points
+            of excess at 80% power for arrived and narrow, on 218 resolved of 364 listed a block,
+            2.61 for volume against the night on 340 of 567, and 1.43 for crossed by a margin on
+            1,138 of 1,897; at a design effect of three those become 5.65, 4.53 and 2.47. Against a
+            4.6-point edge the second look reads 99%, 100% and 100% at a design effect of one and
+            59%, 82% and 100% at three. The first look detects nothing at all whatever the
+            approximation says, because the smallest p-value eight blocks can produce is 1 in 256
+            and the level it spends is 0.00071.
+Checked:    `candidate-conditions` joins the roster, asserting what each condition fires on over the
+            fixture's own night and over constructed input at the edges each turns on, since the
+            conditions are code no other check reaches: the register's check asserts what the table
+            refuses and the read surface's asserts what the page draws.
+Fixture:    a new expectation. Fifteen constructed name-nights work each condition by hand at its
+            edges, four crossings work the count and the distance against bands, and the fixture's
+            own night of 2026-09-04 is worked from its four names' closes, bands and plans: a median
+            ratio of 0.6268, arrived and narrow firing on MSFT alone, crossed by a margin on MSFT
+            and NFLX, and volume against the night on none of them, three of the twelve in all.
+            Constructed input beside the fixture because the edges each condition turns on are
+            values no four names of real bars happen to sit on.
+Amended:    this checkpoint amends its own done condition. It asked for each candidate's per-night
+            counts over the stored nights as a derived expectation, which no fixture file can hold,
+            since the fixture carries four names of committed bars and the store's nights are not
+            committed. It now says where each half lands, names the edges the constructed input
+            covers, and names the registration command's own property, which the previous wording
+            left out of the condition while the checkpoint's text asked for it.
+Moved:      every evaluator's version, the two registered ones among them, because the levels and
+            the ladder join the sources an evaluation runs through: a night's values are read off
+            the bands and the plan those two write, so a change to either moves what a registered
+            condition would have fired on. No candidate stands registered on the operator's store,
+            so no window moved. It is also why the registration command is run once the phase's code
+            is in and not before.
+Tests:      FILLED IN FROM THE RUN, from 1198.
+Claims:     406, from 405. Section 17 gains the row naming the numbers the three are registered at.
+Mutated:    the rule, stated before the sweep: break the property each condition turns on, one from
+            each of the three, each a property a reader of the record would see change. Not mutated:
+            the median taken once before the loop, which is asserted against a second derivation of
+            it from the store rather than against the figure the stage wrote; the two counts read as
+            measurements, asserted in both directions over a night that crossed nothing and a name
+            with no zone; and the registration command writing three rows or none, asserted over a
+            store by running the command twice.
+            Foreseen and not a prediction held: each of the three edits a source the evaluator pin
+            covers, so the check that holds every evaluator's version to the pin of its sources goes
+            red in all three and says nothing about the arithmetic. That is the property working:
+            an evaluation that has moved is a registration to make again.
+            Predicted:
+            M1 arrival read off tonight's close alone, dropping the previous session: red in the
+            conditions test, where the name already inside its zone yesterday would fire.
+            M2 volume against the night dropping the half about the name's own average: red in the
+            conditions test, where the name at 1.8 times its average on a night whose median is 0.85
+            would fire.
+            M3 a rise measured from the band's low edge and a fall from its high edge: red in the
+            crossings test, where a rise that finished inside the band would count as having gone
+            through it, and in the night test over the fixture, where MSFT and NFLX finish a
+            different distance past a different edge.
+            Results: FILLED IN AFTER THE SWEEP.
+Rehearsed:  FILLED IN AFTER THE REHEARSAL.
+Verified:   `tools/ci.ps1` green end to end, FILLED IN FROM THE RUN. `tools/verify-phase.ps1` green, FILLED IN
+            FROM THE RUN.
+Carried:    The candidates' proposed numbers read at their looks, operating: two of the three
+            numbers are still proposed and the third is settled, and none is read until a registered
+            candidate reaches its first look. A candidate's power re-read at each look, operating:
+            the figures above are what the region will re-read, on the same calibrated null.

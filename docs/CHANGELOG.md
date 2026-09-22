@@ -25,6 +25,54 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-22 - BUILD_PLAN.md - 10.3's done condition names what the checkpoint changes
+Authorised by: A crossing is a candidate condition only where the close sits half a typical move past the edge it crossed
+Was:
+> **Done when** each evaluator matches nights worked by hand over the fixture and over constructed input at its edges, a close that fell through the zone and a quiet night whose median is below 1 among them; a night missing a value an evaluator reads refuses; the pre-pass makes no request; every pin agrees; each candidate's per-night counts over the stored nights are re-derived as a derived expectation; the crossing counts at 0.25 and at 0.5 are brought to the operator before the registration command is written; and the looks' power is re-derived on the pinned calibration and stated in section 17.
+Now:
+> **Done when** each evaluator matches the fixture's own night worked by hand and constructed input at its edges, a close that fell through the zone, a close already inside it, a zone exactly a typical move wide, a quiet night whose median is below 1 and a close exactly at the margin among them; a night missing a value an evaluator reads is skipped by name rather than read as a nought, while a zone count of nought and a crossing count of nought are scored; the pre-pass makes no request and one median reaches every verdict; every pin agrees; each candidate's per-night counts over the stored nights are re-derived from a copy of the store and recorded in the entry, the fixture's own night standing as the derived expectation, since the store's nights are not committed and cannot be a fixture file; the crossing counts at 0.25 and at 0.5 are brought to the operator before the registration command is written; the command registers the three at one instant or none of them; and the looks' power is re-derived on the pinned calibration and stated in section 17.
+Why: the condition asked for the store's nine nights as a derived expectation, which no fixture file can hold, since the fixture carries four names of committed bars and the store's nights are not committed. It now says where each half lands: the counts re-derived from a copy and recorded, the fixture's own night derived by hand, and the registration command's own property named, which the previous wording left out of the condition while the checkpoint's text asked for it.
+
+### 2026-09-22 - BUILD_PLAN.md - the candidates' proposed numbers row carries the settled margin
+Authorised by: A crossing is a candidate condition only where the close sits half a typical move past the edge it crossed
+Was:
+> The zone width of 1 typical move, the volume multiple of 2 and the crossing margin of 0.25 are read there, and a changed number is a new registration with its own window counted in the lifetime count, never a change to the running one
+Now:
+> The zone width of 1 typical move and the volume multiple of 2 are read there, both proposed, and the crossing margin of 0.5 beside them, settled by the operator at 10.3 on the per-night counts and registered rather than proposed; a changed number is a new registration with its own window counted in the lifetime count, never a change to the running one
+Why: the obligation is read at each look, and the row named a margin the operator has since settled at a different value. Two numbers are still proposed and one is not, which is what the row now says.
+
+### 2026-09-22 - ARCHITECTURE.html - section 13's crossing candidate carries the margin the operator settled
+Authorised by: A crossing is a candidate condition only where the close sits half a typical move past the edge it crossed
+Was:
+> Crossed by a margin: the close sits at least 0.25 of a typical daily move past the edge it crossed, the high edge on a rise and the low edge on a fall, the 0.25 proposed and brought back to the operator beside 0.5 before registration (see: A crossing is a candidate condition only where the close sits a margin of the typical move past the edge it crossed).
+Now:
+> Crossed by a margin: the close sits at least 0.5 of a typical daily move past the edge it crossed, the high edge on a rise and the low edge on a fall, the 0.5 settled by the operator on 2026-09-22 over counts re-derived from the nine stored nights, where it fires 18 to 46 names a night against 38 to 89 at 0.25 and 112 to 176 for the live reason (see: A crossing is a candidate condition only where the close sits half a typical move past the edge it crossed).
+Why: 10.3 re-derived the counts at both margins from the store before writing the registration command, as the done condition required, and the operator settled the margin at 0.5. The number is registered with the candidate from here, so changing it is a new registration rather than an edit to this sentence.
+
+### 2026-09-22 - ARCHITECTURE.html - section 22's open question on the crossing margin is answered
+Authorised by: A crossing is a candidate condition only where the close sits half a typical move past the edge it crossed
+Was:
+> <tr id="open-crossing-margin"><td>How far past an edge a close must sit for a crossing to count</td><td>No study found sets the margin; 0.25 and 0.5 of a typical move go back to the operator before registration.</td></tr>
+Now:
+> <tr id="open-crossing-margin"><td>How far past an edge a close must sit for a crossing to count</td><td>No study found sets the margin. The operator settled it at 0.5 of a typical move on 2026-09-22, on per-night counts alone, and changing it is a new registration rather than an edit.</td></tr>
+Why: the question was what the counts at the two margins came to and which the operator wanted. Both were re-derived at 10.3 and the choice was made, so what stays open is only that no study bears on it, which is what the row now says.
+
+### 2026-09-22 - ARCHITECTURE.html - section 17's power row carries the figures re-derived on the calibrated null
+Authorised by: Power is stated for the looks that exist as well as for a single read
+Was:
+> <tr><td>Power stated at a look</td><td>the smallest excess a look could detect is stated at 80% power, on the level that look spends and the design effect the record measures, beside the excess observed (see: Power is stated for the looks that exist as well as for a single read)</td>
+Now:
+> <tr><td>Power stated at a look</td><td>the smallest excess a look could detect is stated at 80% power, on the level that look spends and the design effect the record measures, beside the excess observed; re-derived before registration on the calibrated null measured over the store's own setups, a mean of 0.43, the second look at a design effect of one detects 3.26 points of excess for arrived and narrow, 2.61 for volume against the night and 1.43 for crossed by a margin, and the first look detects nothing at all, since the smallest p-value eight blocks can produce sits above the level it spends (see: Power is stated for the looks that exist as well as for a single read)</td>
+Why: the plan's power table was simulated judgement taken before the calibrated bar existed. 10.3 re-derived it on the calibrated null the code computes, over the setups each candidate's own per-night count gives a block, and section 17 states the figures the registration is made under rather than the ones it was planned under.
+
+### 2026-09-22 - RUNBOOK.md - the evaluators the registrar carries
+Authorised by: The three candidates are registered at one instant
+Was:
+> The evaluators carried are `momentum-index-reading`, which reads `level`, and `momentum-histogram-turn`, which reads `margin`.
+Now:
+> The evaluators carried are `momentum-index-reading`, which reads `level`, `momentum-histogram-turn`, which reads `margin`, `arrived-and-narrow`, which reads `width`, `volume-against-the-night`, which reads `multiple`, and `crossed-by-a-margin`, which reads `margin`.
+Why: 10.3 builds the three conditions phase 10 registers, and the sentence naming what may be registered is the one a person reads before registering anything. The procedure for the one command that writes all three is added above it.
+
 ### 2026-09-22 - ARCHITECTURE.html - section 13.3's shadow before live guardrail says where a candidate's record is drawn
 Authorised by: The nightly running figure is monitoring and never the verdict
 Was:
