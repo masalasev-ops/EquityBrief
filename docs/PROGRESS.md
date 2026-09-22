@@ -19582,6 +19582,25 @@ Mutated:    the rule, stated before the sweep: reintroduce the defect's shape at
             ML the duration's run chosen by the rows ordered on `StartedAt` descending in code, as
             before the 5.6 correction: the same two red, the new test naming the source file, and
             every other test green.
-            Results: FILL
-Held:       FILL
-Verified:   FILL
+            Results: each mutation over the whole suite in a scratch worktree, never a filter, and
+            reverted between runs. Each commit's entry did not yet say its Windows run, so
+            `two-platform`'s record test was red there before any mutation, and each result below
+            is that one and the mutation's own. At 2f3389b, MR: red, the new test naming
+            `ListingsRunsInWindow` and the duration test at 00:06:04, 1167 of 1170 green. ML: red,
+            the same two, 1167 of 1170 green, but the new test named `AppendRun`, the constant
+            above the read, where the prediction named the file. The test was changed to name a read
+            in code by its file and line, and the change's first form keyed the choice on a match
+            opening with "ORDER" ignoring case, which `OrderByDescending` also opens with: ML run
+            again over it still named `AppendRun`. Keyed on `started_at`, at 4002b1c: ML red, the
+            new test naming `ReadApi.cs line 1279` and the duration test at 00:06:04, 1167 of 1170
+            green; MR red, the new test naming `ListingsRunsInWindow` and the duration test at
+            00:06:04, 1167 of 1170 green.
+Held:       MR exactly. ML at the tests that fail and the points they fail at, and at the name the
+            new test reports only from 4002b1c, after the two changes above.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1170 of 1170 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. Both gates ran
+            over the tree carrying this entry, and the operator's store under `data/` was not
+            touched by either.
