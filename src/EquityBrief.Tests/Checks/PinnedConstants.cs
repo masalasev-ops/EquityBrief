@@ -227,7 +227,7 @@ public class PinnedConstants
                 In((Architecture, 1), (Plan, 1), (Decisions, 1))),
             new("the candidate family's maximum", CandidateFamily.Maximum,
                 [@"maximum\s+family\s+size\s+of\s+{N}\b", @"the\s+other,\s+at\s+most\s+{N}\b", @"family\s+of\s+{N},\s+needs", @"family\s+is\s+at\s+most\s+{N}\b", @"{N}\s+is\s+the\s+size\s+at\s+which"],
-                In((Architecture, 4), (Plan, 4), (Decisions, 3))),
+                In((Architecture, 4), (Plan, 4), (Decisions, 5))),
             new("the registration past the family's maximum", CandidateFamily.Maximum + 1,
                 [@"\ba\s+{O}\s+candidate\b"],
                 In((Runbook, 1), (Decisions, 1))),
