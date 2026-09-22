@@ -20494,8 +20494,17 @@ Fixture:    a new expectation. Eight constructed name-nights work the two arms a
             the committed bars rather than read back from a run, showing that no name of the four
             closes below both of its averages, which is why no version moves a plan there and why
             the cases each version turns on are constructed.
-Tests:      FILLED IN FROM THE RUN, from 1206.
-Claims:     FILLED IN FROM THE RUN, from 406.
+Tests:      1216, from 1206. Ten added, all in the new check. Eight constructed name-nights worked
+            by hand against each of the three versions, the populations each cause puts a name in,
+            the property that a version only ever takes a setup away, the live values replaying
+            every plan the fixture's night stored with no version moving one, the paired difference
+            and the p-value eight equal blocks give, the check over the best of several standing
+            above that version's own figure, the margin at and either side of itself, the three
+            versions the code offers each refused at its rule's live values, the cap and the night
+            it projects, and what the region states.
+Claims:     406, unchanged. This checkpoint adds no claim: the rules it builds were written into
+            section 10.1 and section 13.6 by the planning pass and placed at 10.4, and what lands
+            here is the code that answers them.
 Mutated:    the rule, stated before the sweep: break the property each new piece turns on, one from
             each, each a property a reader of the record would see change. Not mutated: the
             versions' own names and numbers, which are asserted against the expectation in both
@@ -20513,10 +20522,48 @@ Mutated:    the rule, stated before the sweep: break the property each new piece
             M4 the Reality Check reading one version's statistic rather than the largest of
             them: red in the comparison test, where the figure would fall to what the last
             version alone reaches and the penalty for having picked the best of two would go.
-            Results: FILLED IN AFTER THE SWEEP.
-Rehearsed:  FILLED IN AFTER THE REHEARSAL.
-Verified:   `tools/ci.ps1` green end to end, FILLED IN FROM THE RUN. `tools/verify-phase.ps1`
-            green, FILLED IN FROM THE RUN.
+            Results: four runs of the whole suite, never a filter, in a detached worktree at
+            d5afc01, each mutation reverted with `git checkout` and the file read back equal to the
+            committed text before the next, and the tree read clean after. The baseline is 1216 of
+            1216. M1 and M2 each turned 2 red, the labels test predicted for them and the ladder
+            rules' pin, which any edit to a source the pin reads moves. M3 turned 1 red and M4
+            turned 1, each the test predicted for it, the two sitting in a file no pin reads. All
+            four predictions held, each in the test named for it. The sweep ran twice, once at the
+            commit before the rehearsal's finding and once over the tree being merged, and both
+            times all four went red in the same tests; what is recorded here is the second.
+Rehearsed:  over a copy of the operator's store in the session scratchpad, never `data/` itself,
+            migrated from schema 30 to 32 with nothing else written to it, and it stopped where the
+            night would: the store holds the merge distance's live window and a version beside it,
+            and the zone edges rule's, all four opened under the code version this checkpoint
+            moves, so the scorer refused to score anything and named both rules. That is the rule
+            working as written, and the remedy is the operator's, so it was rehearsed too: the two
+            versions closed, then the two live windows, then the live windows opened again, then
+            the trend rule's own live window and its three versions, each through the verb a person
+            runs, and a name the code does not carry refused with the three it does. The night of
+            2026-09-21 was then scored under them: 6 windows, 3 replayed, 1,506 scores over 502
+            names in seven tenths of a second, with nothing left out. The live rule labelled 96
+            downtrend, 340 range, 64 uptrend and 3 it could not classify. Below both averages
+            labelled 216 downtrend, moving 120 names; below both under a cross 123, moving 27; and
+            the new label holds two nights moved none, no name having left a downtrend the night
+            before. Of the 1,506 setups read for a difference, 147 would be taken away. Over the 11
+            nights the store holds, a label changed on 242 of 4,026 night-to-night pairs, came back
+            the next night 36 times and within two nights 53, which reproduces the planning
+            session's 36 and 53 on one night fewer. Six screens fetched, each 200, the run page and
+            its 2026-09-21 both carrying the versions region at 866,304 characters. It found one
+            defect, and this entry is where it is recorded: a comment stated that the averages
+            arm could only turn a range into a downtrend, and the arm reached a name the night
+            could not classify. Such a name carries no tranche either, so the property the
+            difference rests on is unchanged and the sentence stating the rule was wrong; it is
+            corrected, and the ladder rules' code version moves with the words because the file it
+            sits in is one the pin reads. It ran as a scratch test in the sweep's worktree, removed
+            after, and the worktree read clean.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1216 of 1216
+            tests ran with none failed, migrations 0 to 32 with none added and none pending,
+            schema version 32, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1`
+            green at 406 claims, 406 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 413 placements and
+            verdicts reconciled against a floor of 34, 41 of 41 roster checks carried and all 41
+            run, 1216 of 1216 tests. Both gates ran over d5afc01 with this entry in place, and the
+            operator's store under `data/` was not touched by either; the rehearsal read a copy.
 Carried:    The trend confirmation's nights settled from flip-backs, operating: the region this
             builds is the surface that reading is taken on, and it states the flip-backs from the
             night this lands. The rule version bound set from nights the version scorer ran,
