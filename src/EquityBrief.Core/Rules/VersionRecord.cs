@@ -53,7 +53,7 @@ public static class VersionRecord
     // version is kept where the two are within it, because the evidence behind
     // the narrower one is the evidence a study supports and the wider one adds
     // names on a judgement.
-    // see: No parameter is settled from the outcomes of the candidate or version it belongs to
+    // see: Nothing a candidate or a version is registered with changes while it runs, and a proposed number is settled only by a new registration
     public const double MarginInPoints = 5;
 
     // A version's difference from the live rule, one number per block.

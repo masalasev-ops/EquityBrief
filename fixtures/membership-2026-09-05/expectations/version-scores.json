@@ -71,6 +71,24 @@
     "zoneEdgesFromNonAverageAnchorsOnly": 1
    },
    "openedAt": "2026-09-03T22:07:00Z"
+  },
+  {
+   "rule": "the trend rule",
+   "version": "live",
+   "parameters": {
+    "downtrendFromAverages": 0,
+    "nightsTheNewLabelHolds": 1
+   },
+   "openedAt": "2026-09-03T22:08:00Z"
+  },
+  {
+   "rule": "the trend rule",
+   "version": "below both averages",
+   "parameters": {
+    "downtrendFromAverages": 1,
+    "nightsTheNewLabelHolds": 1
+   },
+   "openedAt": "2026-09-03T22:09:00Z"
   }
  ],
  "sample": "scored",
@@ -282,6 +300,55 @@
      ],
      "invalidation": "68.7982"
     }
+   },
+   "below both averages": {
+    "AAPL": {
+     "tranches": [
+      "299.7415|320.28|AvailableNow|283.439",
+      "273.5141|273.5141|ReachesTheZone|264.5978"
+     ],
+     "exits": [
+      "334.7013|true",
+      "344.2731|true"
+     ],
+     "invalidation": "264.5978"
+    },
+    "KEYS": {
+     "tranches": [
+      "300.87|332.78|AvailableNow|293.55",
+      "288.5134|293.55|ReachesTheZone|266.47"
+     ],
+     "exits": [
+      "366.41|true",
+      "374.963|true"
+     ],
+     "invalidation": "266.47"
+    },
+    "MSFT": {
+     "tranches": [
+      "492.1166|501.9168|AvailableNow|485.1401",
+      "485.1401|485.1401|FirstCloseBackAbove|476.2534",
+      "476.2534|476.2534|ReachesTheZone|443.5621"
+     ],
+     "exits": [
+      "507.9797|false"
+     ],
+     "invalidation": "443.5621"
+    },
+    "NFLX": {
+     "tranches": [
+      "75.4402|75.8178|ReachesTheZone|72.951",
+      "72.951|73.877|ReachesTheZone|70.86",
+      "70.86|71.7172|ReachesTheZone|68.7982"
+     ],
+     "exits": [
+      "78.3545|false",
+      "81.16|true",
+      "82.455|true",
+      "86.8835|true"
+     ],
+     "invalidation": "68.7982"
+    }
    }
   }
  },
@@ -289,6 +356,15 @@
   "a quarter of a typical move": "the wide bands split where two neighbouring candidates sit a quarter of a typical move or more apart. AAPL's 299.7415 to 320.28 band breaks into six, and its three nearest supports carry the tranches, 319.0748 to 320.28 with the close inside it, then 312.7508 to 316.0175 and 310.425 to 310.6626, each with a close in the last ten sessions below its low edge; every stop is the band beneath, because AAPL's last swing low beneath each, 300.57, sits lower. NFLX's 72.951 to 73.877 band splits at the 0.809 gap between 72.951 and 73.76, and its 78.3545 to 79.31 resistance at the 0.9555 gap, which is a fifth exit, listed and not traded at 4.586 above a blended entry of 74.72375 against two typical days of 4.7916.",
   "the band beneath": "a stop no longer trails. KEYS's first tranche stops at the band beneath at 288.5134 rather than at the swing low at 293.55, and AAPL's and KEYS's second tranches, each the lowest support band its name has, carry no stop, so their invalidations fall to their own low edges, 273.5141 and 288.5134. MSFT's stops were the bands beneath already and NFLX is a range, so neither moves.",
   "three typical days": "NFLX's exit at 81.16 is 6.6385 above its blended entry of 74.5215, which clears two typical days of 4.7916 and not three of 7.1874, so it is listed and not traded. Every other exit is either past three typical days, as 82.455 is at 7.9335, or was inside two already.",
-  "non-average anchors alone": "KEYS's second tranche narrows from 288.5134 to 293.55 down to 293.55, its 200-day average being the outermost member, and NFLX's first from 75.4402 to 75.8178 down to 75.8178, its 50-day average being outermost with touches at 75.45 to 75.71 between it and the retracement, which are evidence and not anchors. The narrowed midpoints move KEYS's blended entry to 305.1875 and NFLX's to 74.6159, and no exit crosses its bar. AAPL's and MSFT's zones are bounded by swings and retracements already."
- }
+  "non-average anchors alone": "KEYS's second tranche narrows from 288.5134 to 293.55 down to 293.55, its 200-day average being the outermost member, and NFLX's first from 75.4402 to 75.8178 down to 75.8178, its 50-day average being outermost with touches at 75.45 to 75.71 between it and the retracement, which are evidence and not anchors. The narrowed midpoints move KEYS's blended entry to 305.1875 and NFLX's to 74.6159, and no exit crosses its bar. AAPL's and MSFT's zones are bounded by swings and retracements already.",
+  "below both averages": "the trend rule's wider version reads a close below both the 50-day and the 200-day average as a downtrend, and no name of the four is below both on this night: AAPL closes at 319.97 against 314.9878 and 283.439, KEYS at 327.21 against 326.1178 and 288.5134, MSFT at 499.7 against 443.5621 and 429.3729, and NFLX at 78.25 against 75.4402 and 86.8835, which is below the long average alone. So the version labels every name what the night labelled it and replays the plan the night stored, tranche for tranche, which is the plan the ladder expectation states. A version of this rule can only write the label that carries no tranche, so where it moves nothing the plans are the live rule's and where it moves a name the plan is empty."
+ },
+ "movesAName": {
+  "a quarter of a typical move": true,
+  "the band beneath": true,
+  "three typical days": true,
+  "non-average anchors alone": true,
+  "below both averages": false
+ },
+ "movesANameNote": "whether a version's plans differ from the live rule's for any name of the four. A version that moves none is not a version measuring nothing: the trend rule's arms read each name's close against its own two averages, and none of these four is below both, which is a fact about four names of committed bars and not about the rule. The constructed name-nights in trend-versions.json are where its edges are worked, and this states which way each version falls here so a version that stopped moving a name it does move would fail."
 }

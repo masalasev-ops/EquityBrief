@@ -77,6 +77,68 @@ public sealed class TrendVersions
     }
 
     [Fact]
+    public void TheVersionPopulationsAreCountedByTheCauseThatPutsANameInThem()
+    {
+        var expectation = Expected("trend-versions");
+        var populations = expectation.GetProperty("populationsByCause");
+
+        var above = 0;
+        var below = 0;
+        var held = 0;
+
+        foreach (var night in expectation.GetProperty("labels").EnumerateArray())
+        {
+            var close = night.GetProperty("close").GetDecimal();
+            var shortAverage = Average(night, "shortAverage");
+            var longAverage = Average(night, "longAverage");
+
+            // Counted over the name-night's own figures whatever the night labelled it, so the
+            // two averages populations partition the names a version's first arm reaches and the
+            // third is the one its second arm holds down.
+            if (shortAverage is { } shortMean && longAverage is { } longMean && close < shortMean && close < longMean)
+            {
+                if (shortMean < longMean)
+                {
+                    below++;
+                }
+                else
+                {
+                    above++;
+                }
+            }
+
+            if (night.GetProperty("nightsBefore").EnumerateArray().Take(1)
+                .Any(one => one.GetString() == TrendState.Downtrend))
+            {
+                held++;
+            }
+        }
+
+        var constructed = populations.GetProperty("overTheConstructedNightNights");
+
+        Assert.Equal(
+            (constructed.GetProperty("belowBothWithTheShortAverageAbove").GetInt32(),
+             constructed.GetProperty("belowBothWithTheShortAverageBelow").GetInt32(),
+             constructed.GetProperty("leftADowntrendWithinTheHold").GetInt32()),
+            (above, below, held));
+
+        // The same three over the fixture's own night, each nought, which is the derivation the
+        // expectation states for no version moving a plan there.
+        var overTheFixture = populations.GetProperty("onTheFixtureNight");
+
+        Assert.Equal(
+            (0, 0, 0),
+            (overTheFixture.GetProperty("belowBothWithTheShortAverageAbove").GetInt32(),
+             overTheFixture.GetProperty("belowBothWithTheShortAverageBelow").GetInt32(),
+             overTheFixture.GetProperty("leftADowntrendWithinTheHold").GetInt32()));
+
+        Assert.All(
+            expectation.GetProperty("overTheFixtureNights").GetProperty("nights").EnumerateArray()
+                .SelectMany(one => one.GetProperty("names").EnumerateArray()),
+            name => Assert.False(name.GetProperty("belowBoth").GetBoolean()));
+    }
+
+    [Fact]
     public void AVersionOfTheTrendRuleOnlyEverTakesASetupAwayAndNeverAddsOne()
     {
         var expectation = Expected("trend-versions");
@@ -115,10 +177,8 @@ public sealed class TrendVersions
 
         using var store = await FixtureExpectations.WithListings();
 
-        var session = DateOnly.ParseExact(
-            Query(store, "SELECT MAX(as_of) FROM ladder;").Single(),
-            "yyyy-MM-dd",
-            CultureInfo.InvariantCulture);
+        var on = Query(store, "SELECT MAX(as_of) FROM ladder;").Single();
+        var session = DateOnly.ParseExact(on, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
 
@@ -127,7 +187,7 @@ public sealed class TrendVersions
         var moved = 0;
         var read = 0;
 
-        foreach (var ticker in Query(store, $"SELECT ticker FROM ladder WHERE as_of = '{session:yyyy-MM-dd}' ORDER BY ticker;"))
+        foreach (var ticker in Query(store, $"SELECT ticker FROM ladder WHERE as_of = '{on}' ORDER BY ticker;"))
         {
             var inputs = await RuleVersionScorer.InputsAsync(connection, ticker, session, default);
 
@@ -135,7 +195,7 @@ public sealed class TrendVersions
 
             read++;
 
-            var stored = Query(store, $"SELECT plan FROM ladder WHERE ticker = '{ticker}' AND as_of = '{session:yyyy-MM-dd}';").Single();
+            var stored = Query(store, $"SELECT plan FROM ladder WHERE ticker = '{ticker}' AND as_of = '{on}';").Single();
 
             // The live window's own parameters, which is the rule the night ran.
             var live = RuleVersionScorer.Replayed(

@@ -2209,9 +2209,10 @@ public partial class FixtureExpectations
         // that, and so it did the two expectation files 6.9 added, the overnight queue's
         // statement of what it froze and its three notes at 6.10, and the research record's
         // note on its theme and the theme record's note on its results at 6.11, and the
-        // membership file's name note after them. Which is what it is for.
+        // membership file's name note after them, and the version scores file's note on
+        // which versions move a name at 10.4. Which is what it is for.
         Assert.Equal(
-            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.industryNote", "membership.nameNote", "membership.note", "membership.sectorNote", "overnight-queue.askedNote", "overnight-queue.frozen", "overnight-queue.listedNote", "overnight-queue.queuedNote", "prose.frozen", "reason-verdicts.note", "research-record.frozen", "research-record.themeNote", "search-admissibility.note", "series-state.note", "shadow-column.note", "staleness.aNameWithNoRecordNote", "staleness.note", "stored-filings.note", "theme-record.frozen", "theme-record.handedNote", "theme-record.note", "theme-record.resultsNote"],
+            ["admissibility.note", "archive-extracts.note", "claims.note", "facts.frozen", "fetch.rowsInFile", "gap-stop.note", "ladder.note", "membership.index", "membership.industryNote", "membership.nameNote", "membership.note", "membership.sectorNote", "overnight-queue.askedNote", "overnight-queue.frozen", "overnight-queue.listedNote", "overnight-queue.queuedNote", "prose.frozen", "reason-verdicts.note", "research-record.frozen", "research-record.themeNote", "search-admissibility.note", "series-state.note", "shadow-column.note", "staleness.aNameWithNoRecordNote", "staleness.note", "stored-filings.note", "theme-record.frozen", "theme-record.handedNote", "theme-record.note", "theme-record.resultsNote", "version-scores.movesANameNote"],
             unread.OrderBy(name => name, StringComparer.Ordinal));
     }
 

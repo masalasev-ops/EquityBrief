@@ -21,28 +21,48 @@
  "commands": [
   {
    "at": "2026-09-08T03:59:59Z",
-   "args": ["--rule", "where the stop sits", "--version", "under the zone", "--parameters", "stopTrailsTheLastHigherLow=0"],
+   "args": [
+    "--rule",
+    "where the stop sits",
+    "--version",
+    "under the zone",
+    "--parameters",
+    "stopTrailsTheLastHigherLow=0"
+   ],
    "exit": 0,
    "outcome": "ok"
   },
   {
    "at": "2026-09-08T04:00:00Z",
-   "args": ["--rule", "zone edges from non-average anchors only", "--version", "anchors only", "--parameters", "zoneEdgesFromNonAverageAnchorsOnly=1"],
+   "args": [
+    "--rule",
+    "zone edges from non-average anchors only",
+    "--version",
+    "anchors only",
+    "--parameters",
+    "zoneEdgesFromNonAverageAnchorsOnly=1"
+   ],
    "exit": 0,
    "outcome": "ok"
   },
   {
    "at": "2026-09-08T23:50:00Z",
-   "args": ["--backfill", "2026-09-08"],
+   "args": [
+    "--backfill",
+    "2026-09-08"
+   ],
    "exit": 0,
    "outcome": "ok",
    "written": 6,
-   "kept": 12,
-   "worked": "six versions open over three names: the two opened above hold no score yet, and the four the night scored hold theirs"
+   "kept": 15,
+   "worked": "seven versions open over three names: the two opened above hold no score yet, and the five the night scored, one of each ladder rule, hold theirs"
   },
   {
    "at": "2026-09-08T23:51:00Z",
-   "args": ["--backfill", "2026-09-05"],
+   "args": [
+    "--backfill",
+    "2026-09-05"
+   ],
    "exit": 1,
    "outcome": "refused",
    "refusal": "is not a session",
@@ -50,7 +70,10 @@
   },
   {
    "at": "2026-09-08T23:52:00Z",
-   "args": ["--backfill", "2026-09-07"],
+   "args": [
+    "--backfill",
+    "2026-09-07"
+   ],
    "exit": 1,
    "outcome": "refused",
    "refusal": "is not a session",
@@ -58,7 +81,10 @@
   },
   {
    "at": "2026-09-08T23:53:00Z",
-   "args": ["--backfill", "2026-09-04"],
+   "args": [
+    "--backfill",
+    "2026-09-04"
+   ],
    "exit": 1,
    "outcome": "refused",
    "refusal": "no night's plan",
@@ -66,7 +92,10 @@
   },
   {
    "at": "2026-09-08T23:54:00Z",
-   "args": ["--backfill", "2026-09-09"],
+   "args": [
+    "--backfill",
+    "2026-09-09"
+   ],
    "exit": 1,
    "outcome": "refused",
    "refusal": "holds no bar",
@@ -74,7 +103,12 @@
   },
   {
    "at": "2026-09-08T23:55:00Z",
-   "args": ["--rule", "where the stop sits", "--close", "under the zone"],
+   "args": [
+    "--rule",
+    "where the stop sits",
+    "--close",
+    "under the zone"
+   ],
    "exit": 1,
    "outcome": "refused",
    "refusal": "needs '--evidence'",
@@ -82,18 +116,32 @@
   },
   {
    "at": "2026-09-08T23:56:00Z",
-   "args": ["--rule", "where the stop sits", "--replace", "under the zone", "--with", "under the zone again", "--parameters", "stopTrailsTheLastHigherLow=0", "--evidence", "the fixture's one night, which is not evidence about the rule"],
+   "args": [
+    "--rule",
+    "where the stop sits",
+    "--replace",
+    "under the zone",
+    "--with",
+    "under the zone again",
+    "--parameters",
+    "stopTrailsTheLastHigherLow=0",
+    "--evidence",
+    "the fixture's one night, which is not evidence about the rule"
+   ],
    "exit": 0,
    "outcome": "ok"
   },
   {
    "at": "2026-09-09T00:10:00Z",
-   "args": ["--backfill", "2026-09-08"],
+   "args": [
+    "--backfill",
+    "2026-09-08"
+   ],
    "exit": 0,
    "outcome": "ok",
    "written": 3,
-   "kept": 15,
-   "worked": "the replacement holds no score yet; the four versions the night scored and anchors only hold theirs; the version it replaced is closed and not scored"
+   "kept": 18,
+   "worked": "the replacement holds no score yet; the five versions the night scored and anchors only hold theirs; the version it replaced is closed and its scores stay as they were"
   }
  ],
  "windows": [
@@ -152,6 +200,13 @@
    "worked": "opened on the evening of 2026-09-03 in New York, before the night"
   },
   {
+   "rule": "the trend rule",
+   "version": "below both averages",
+   "sample": "scored",
+   "rows": 3,
+   "worked": "opened on the evening of 2026-09-03 in New York, before the night"
+  },
+  {
    "rule": "where the stop sits",
    "version": "under the zone",
    "sample": "scored",
@@ -173,5 +228,5 @@
    "worked": "opened at 19:56 on 2026-09-08 in New York, after that night was read"
   }
  ],
- "rowsWritten": 21
+ "rowsWritten": 24
 }
