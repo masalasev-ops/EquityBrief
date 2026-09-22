@@ -20064,7 +20064,11 @@ Store:      measured over a copy of the operator's store, never `data/` itself: 
             2026-09-16 to 09-21, 593 have no reward to risk, each with one of the plan's three
             reasons. None of its rows records the band strength, since all were written before this,
             so the region there states that no night is measured yet.
-Tests:      FILLED IN FROM THE RUN, from 1179.
+Tests:      1183, from 1179. Four added: both fixture nights read against the expectation, a
+            session's block and a whole window counted at their edges, the region's counts over
+            constructed nights either side of the floor, and the run route drawing the region.
+            Three rewritten for the plan the listing kept: the ordering test, the earlier night's
+            order and the walk when newer plans are stored, each once about band strength.
 Claims:     392, from 384. Tonight's list row gains the reward to risk it draws, the run page's new
             region arrives as the six parts its row states, and section 17 gains the blocks row, each
             passing where it is drawn.
@@ -20084,10 +20088,33 @@ Mutated:    the rule, stated before the sweep: break the property a reader sees 
             region test, at the night the eighth block closes.
             M3 the listings builder writing no strength: red in the run route test, whose region
             then measures no night, and in the table count, whose run page then draws one fewer.
-            Results: FILLED IN AFTER THE SWEEP.
-Rehearsed:  FILLED IN AFTER THE REHEARSAL.
-Verified:   `tools/ci.ps1` green end to end, FILLED IN FROM THE RUN. `tools/verify-phase.ps1` green, FILLED IN
-            FROM THE RUN.
+            Results: three runs of the whole suite, never a filter, in a detached worktree at
+            15cf019, each mutation reverted with `git checkout` and the file read back equal to the
+            committed text before the next, and the tree read clean after. The baseline is 1183 of
+            1183. M1 turned 5 red, the five predicted, and the region test stayed green. M2 turned
+            2 red, the two predicted. M3 turned 3 red, the two predicted and the evaluator pin
+            test, which reads the listings builder as one of the registered evaluators' pinned
+            sources and so goes red on any edit to that file. That red was seen coming before the
+            sweep and is not written in the prediction above, so it is recorded as one more red
+            than predicted rather than as a prediction held. No mutation survived.
+Rehearsed:  over a copy of the operator's store, migrated from schema 30 to 31, with the night of
+            2026-09-21's listings written again by this checkpoint's builder: 503 rows and 357
+            fired, as the night itself wrote. Nine screens fetched, each 200: tonight, and tonight
+            for 2026-09-18 and 09-16, the run page and its 2026-09-18, AAPL's page and its
+            2026-09-18, the universe and the queue. Tonight's twenty on 2026-09-21: C, the one name
+            firing four reasons, then the three-reason group by ratio from OXY at 2.99 to SCHW at
+            0.65, then ACN, META and WBD, whose plans trade no exit, then the two-reason group from
+            PGR at 5.74. The run page's region measured the one night that recorded the strength:
+            13 setups among the old order's twenty, 17 among the ruled order's and 20 among the
+            ratio alone's, none closed, 0 of 8 blocks each, and no comparison drawn. It ran as a
+            scratch test in the sweep's worktree, removed before the sweep.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1183 of 1183 tests
+            ran with none failed, migrations 0 to 31 with one added and none pending, schema version
+            31, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 392
+            claims, 392 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 399 placements and verdicts
+            reconciled against a floor of 34, 38 of 38 roster checks carried and all 38 run, 1183 of
+            1183 tests. Both gates ran over 15cf019 with this entry in place, and the operator's store
+            under `data/` was not touched by either; the measurements and the rehearsal read copies.
 Carried:    The three orders of tonight's list compared, operating: its region now exists and is the
             surface its trigger is read on, at 0 of 8 blocks on every store until a recorded night's
             window closes.
