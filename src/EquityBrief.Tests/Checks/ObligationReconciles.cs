@@ -454,6 +454,56 @@ public class ObligationReconciles
         Assert.Equal(1, Reconciled($"### 9.9 A row its checkpoint names\nIt builds it {marker}.\n", row));
     }
 
+    // Every operating row a phase opened, named in that phase's own report entry.
+    //
+    // A phase's report is where what the phase leaves running is handed over, and an operating row
+    // is the only kind of obligation nothing the build does can discharge: it waits on nights. A
+    // report that lists the rows it happens to remember is a handover with a hole in it, and the
+    // hole is invisible from inside the entry, because prose about three rows reads exactly like
+    // prose about four.
+    //
+    // Read over the newest report entry alone, which is the one the phase in hand writes. The
+    // entries before it were written under no such rule and are not reopened by one; from here
+    // every phase report is read this way as it lands.
+    [Fact]
+    public void EveryOperatingRowThePhaseOpenedIsNamedInItsOwnReportEntry()
+    {
+        var progress = Corpus.Read("docs/PROGRESS.md");
+
+        var reports = Regex
+            .Matches(progress, @"^### (?<phase>\d+)\.(?<checkpoint>\d+) - the phase (?<named>\d+) report", RegexOptions.Multiline)
+            .Where(match => match.Groups["phase"].Value == match.Groups["named"].Value)
+            .ToArray();
+
+        Assert.NotEmpty(reports);
+
+        var report = reports[^1];
+        var phase = report.Groups["phase"].Value;
+        var body = Body(progress, report.Index);
+
+        var opened = All()
+            .Where(row => row.SaysOperating)
+            .Where(row => row.CreatedAt.TrimStart().StartsWith(phase + ".", StringComparison.Ordinal))
+            .ToArray();
+
+        // A phase that opened none would assert this over nothing, so the count is stated.
+        Assert.True(opened.Length >= 2, $"Phase {phase} opened {opened.Length} operating row(s), expected at least 2.");
+
+        Assert.Empty(opened.Where(row => !body.Contains(row.Name, StringComparison.Ordinal)).Select(row => row.Name));
+
+        // The reader is shown to find the fault it exists for: a row the entry does not name.
+        Assert.DoesNotContain("A row no report entry names", body, StringComparison.Ordinal);
+    }
+
+    // One entry, from its heading to the next one, which is what a phase's report says and not
+    // what the entry after it says.
+    static string Body(string progress, int at)
+    {
+        var next = progress.IndexOf("\n### ", at + 1, StringComparison.Ordinal);
+
+        return next < 0 ? progress[at..] : progress[at..next];
+    }
+
     static int Reconciled(string checkpoints, string row)
     {
         var plan = checkpoints + "\n" + Table(row);

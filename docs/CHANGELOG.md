@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-22 - .claude/rules/checks.md - the obligations roster row carries the report entry property
+Authorised by: A deferral names what produces the evidence, not a phase
+Was:
+> and an open row whose due point the plan lacks or the record already shows as landed |
+Now:
+> and an open row whose due point the plan lacks or the record already shows as landed. Every operating row a phase opened is named in that phase's own report entry, read over the newest report entry alone, because an operating row is the one obligation nothing the build discharges and a report that names three of four reads exactly like one that names four |
+Why: 10.5 adds the assertion and the roster is where a check states what it asserts, so a property held by a test and absent from the row is a property nobody reading the roster knows about.
+
 ### 2026-09-22 - ARCHITECTURE.html - the rule version bound counts the trend rule's windows
 Authorised by: The trend rule is a fifth ladder rule a version replays, and none of its three versions is live
 Was:

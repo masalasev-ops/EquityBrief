@@ -20569,3 +20569,73 @@ Carried:    The trend confirmation's nights settled from flip-backs, operating: 
             night this lands. The rule version bound set from nights the version scorer ran,
             operating: the cap moves to 18 as a projection and the row that settles it still reads
             the scorer's own nights.
+
+### 10.5 - the phase 10 report   2026-09-22
+Built:      the report over phase 10, and one assertion it needed. `tools/verify-phase` already
+            reaches every claim this phase added, because each of them was placed at the
+            checkpoint that ends it by the planning pass and each of those checkpoints has landed;
+            what the phase report could not say is whether this entry hands over what the phase
+            leaves running. It says it now: every operating row a phase opened is named in that
+            phase's own report entry, read over the newest report entry alone, which is the one
+            the phase in hand writes.
+Rules:      an operating row is the only obligation nothing the build can discharge, because what
+            it waits on is nights. A report that lists the rows it happens to remember is a
+            handover with a hole in it, and the hole cannot be seen from inside the entry: prose
+            about three rows reads exactly like prose about four. The entries written before this
+            checkpoint were written under no such rule and are not reopened by one; from here each
+            phase report is read this way as it lands.
+Owed:       four operating rows, every one of them opened at 10.0, each named here with the
+            trigger that fires it and the surface it is read on.
+            The three orders of tonight's list compared: 8 non-empty blocks of 63 sessions of
+            closed-window setups among the twenty each order draws, read on the run page's
+            ordering region, which 10.1 built. Nothing is compared until every order holds them.
+            A candidate's power re-read at each look: 8 non-empty blocks of a registered
+            candidate's closed-window setups, which is its first look, read on the run page's
+            candidate record region, which 10.2 built.
+            The candidates' proposed numbers read at their looks: the same trigger and the same
+            region. Two of the three numbers are proposed, the zone's width at 1 typical move and
+            the volume multiple at 2, and the crossing margin of 0.5 is settled; a change to any of
+            them is a new registration and not an edit.
+            The trend confirmation's nights settled from flip-backs: 60 stored nights of trend
+            labels after the third version opens, read on the run page's rule versions region,
+            which 8.6 built and 10.4 extended to the trend rule. That reading is a count of labels
+            and never of outcomes, and a changed count is a new version.
+Calendar:   what the nights have to produce before any of it is read, counted in exchange sessions
+            from the first night that evaluates the candidate or scores the version, at 63 sessions
+            to a block and about 252 to a year.
+            A candidate's first look falls at 8 non-empty blocks, 504 sessions, about two years,
+            and it cannot promote: the level that look releases is 0.00071 and the smallest
+            p-value eight blocks can produce is 1 in 256, so it retires or it passes.
+            The second falls at 12 blocks, 756 sessions, about three years, and is the earliest a
+            promotion can happen. The third and last falls at 16 blocks, 1,008 sessions, about four
+            years, and a candidate reaching it without crossing is retired by reaching it.
+            Each look reads only the setups whose whole outcome window has closed, so the evidence
+            a look reads ends up to 63 sessions before the look itself.
+            A trend version is read at the same counts, on the difference between its blocks and
+            the live rule's, from the night after its own window opened. None of the three has been
+            opened on the operator's store, and none of the three candidates has been registered
+            there, so every one of those clocks starts at nought.
+Registered: nothing, and that is the state this phase ends in. The three candidates are registered
+            by one command the operator runs once, and the three trend versions by one command
+            each, all of them after this phase's code is in the checkout. Until then the register
+            holds no row, no window measures the trend rule, and every record region says so rather
+            than drawing an empty record.
+Expected:   derived, and a derivation rather than a file: this checkpoint adds no stage, so there
+            is no stage output to freeze. What it adds is read off `BUILD_PLAN.md`'s own rows and
+            this entry, and `tools/verify-phase` covers it from here because
+            `obligation-reconciles` runs inside it, which is how the other reconciliations between
+            the plan and the record are covered.
+Tests:      FILLED IN FROM THE RUN, from 1216.
+Claims:     FILLED IN FROM THE RUN, from 406.
+Mutated:    the rule, stated before the sweep: break the property the one assertion this checkpoint
+            adds turns on, which is that a row is named in its own phase's entry rather than
+            anywhere in the record. Not mutated: nothing else, because nothing else was added.
+            Predicted:
+            M1 the check reading the oldest report entry rather than the newest: red in the new
+            test, where the phase that entry belongs to opened no operating row and the count
+            stated in advance would refuse the empty set rather than pass over it.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, FILLED IN FROM THE RUN. `tools/verify-phase.ps1`
+            green, FILLED IN FROM THE RUN.
+Carried:    the four rows above, all four still open, and the phase 10 sign-off, which is owed to a
+            fresh session because this one committed the code.
