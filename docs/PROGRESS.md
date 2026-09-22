@@ -19928,8 +19928,15 @@ Questions:  two for the operator about the live family, which phase 10 does not 
             and stopped in one session. Both stand in section 22's open questions.
 Thresholds: every threshold this plan picked was chosen on per-night counts, with no forward return
             and no setup outcome read, which is what keeps three an accurate count of what was tried.
-Tests:      TO BE FILLED IN FROM THE RUN.
-Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+Tests:      1179, the four the research entry below adds; this commit adds none. No migration.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1179 of 1179 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 38 of 38 roster checks carried and all 38 run. No claim moves:
+            the rules this pass adds are prose paragraphs, and the two tables it adds are placed as
+            records. Both gates ran over the tree carrying both 10.0 entries and the ruling, and the
+            operator's store under `data/` was not touched by either; the measurements read a copy.
 
 ### 10.0 ruling - the trend guard's population, both versions   2026-09-22
 Not a checkpoint entry. It lands nothing.
@@ -19981,12 +19988,21 @@ Checked:    `research-marked`, a new check on the roster: every paragraph marked
             count in `done-condition-producible` moves from 9 to 11, and `pinned-constants`' count of
             the family maximum's restatements in `DECISIONS.md` from 3 to 5, both for rows and
             citations this pass adds.
-Tests:      TO BE FILLED IN FROM THE RUN, from 1164. Four added, all in `research-marked`. No
-            migration.
+Tests:      1179, from 1175. Four added, all in `research-marked`. No migration.
 Mutated:    the rule, stated before the sweep: reintroduce what the check refuses, one phase 10 rule
             with its marks taken out.
             Predicted:
             MF the Judgement mark removed from section 11.1's paragraph on the plan's three facts,
             its only mark: `EveryPhaseTenRuleSaysWhatItRestsOn` red, and every other test green.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+            Results: MF over the whole suite in a scratch worktree at 9c7a2b2, never a filter, and
+            removed: red, one test and the predicted one, 1178 of 1179 green, naming the paragraph
+            as carrying no Evidence, Judgement or Not settled by research mark.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1179 of 1179 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 38 of 38 roster checks carried and all 38 run. No claim moves:
+            the rules this pass adds are prose paragraphs, and the two tables it adds are placed as
+            records. Both gates ran over the tree carrying both 10.0 entries and the ruling, and the
+            operator's store under `data/` was not touched by either; the measurements read a copy.
