@@ -20189,7 +20189,23 @@ Mapped:     section 13.3's rewritten guardrail, clause by clause. Its first clau
             test that adds a night's setups and reads the field again. The two clauses of every
             change is recorded that the discharged obligation owed for a promotion are now held by
             tests: the evidence a promotion writes, and the registration its retirement names.
-Tests:      FILLED IN FROM THE RUN, from 1183.
+Tests:      1198, from 1183. Fifteen added. Ten work the verdict's arithmetic by hand: the share of
+            arrangements at least as large as the observed one, a case where the sign-flip and the
+            Poisson binomial disagree over where the wins sit inside a block, a permutation of the
+            outcomes across setups returning one, a first look at eight blocks that cannot cross at
+            the level a family of three is tested at, the levels the spending function releases, a
+            record below the floor withheld with its count against the floor, a look reading only
+            the setups whose whole window has closed with a nightly reading never moving the
+            verdict field, the graph passing a promoted level in equal shares and a retired one to
+            no one, a setup entered and stopped on one session counted as the loss it is against the
+            bar its zone's worst fill sets, and the calibrated bar falling where the plan asks for
+            more and rising with the round trip. Five read the region off the page: each look's
+            power beside the numbers the candidate was registered with, a record below the floor
+            drawing no verdict and saying how far it has to go, the run page drawing every
+            registered candidate's record with no ticker beside one, a promotion leaving the family
+            by a retirement whose evidence says so, and the registration a retirement names. One
+            rewritten: the guardrail that no screen carries a shadow evaluation of a name, now over
+            the four routes that must not name a candidate and the one region that may.
 Claims:     405, from 392. The record region arrives as the ten parts its row enumerates, and
             section 17 gains the looks, the calibrated bar and the power stated at a look.
 Mutated:    the rule, stated before the sweep: break the property the verdict turns on, and then the
@@ -20207,10 +20223,34 @@ Mutated:    the rule, stated before the sweep: break the property the verdict tu
             night's setups and reads the verdict field again.
             M3 the round trip subtracted from the calibrated bar rather than added: red in the
             calibration test, where the bar at a round trip would fall below the bar at none.
-            Results: FILLED IN AFTER THE SWEEP.
-Rehearsed:  FILLED IN AFTER THE REHEARSAL.
-Verified:   `tools/ci.ps1` green end to end, FILLED IN FROM THE RUN. `tools/verify-phase.ps1` green, FILLED IN
-            FROM THE RUN.
+            Results: three runs of the whole suite, never a filter, in a detached worktree at
+            687bad4, each mutation reverted with `git checkout` and the file read back equal to the
+            committed text before the next, and the tree read clean after. The baseline is 1198 of
+            1198. M1 turned 2 red, the two predicted. M2 turned 1 red, one of the two predicted: the
+            record below the floor stayed green, because its seven blocks hold one setup each and
+            none sits in an eighth, and a completeness rule loosened by a block cannot make an empty
+            block count, only a whole one arrive early. That prediction named a test the mutation
+            cannot reach rather than a property nothing asserts: the rule it breaks is held at its
+            edge by the test that adds a setup after the eighth block and reads the verdict field
+            again, which is the one that went red. M3 turned 1 red, the one predicted. No mutation
+            survived.
+Rehearsed:  over a copy of the operator's store, never `data/` itself, migrated from schema 30 to 32
+            with the two migrations applied and nothing else written to it. Nine screens fetched,
+            each 200: tonight, and tonight for 2026-09-18 and 09-16, the run page and its
+            2026-09-18, AAPL's page and its 2026-09-18, the universe and the queue, the run page
+            drawn in two tenths of a second at 862,638 characters and its 2026-09-18 at 978,346. No
+            candidate condition stands registered on that store, so the record region says so rather
+            than drawing an empty record, and it carries what a reader needs either way: the looks
+            at 8, 12 and 16, the floor of 8, the block of 63 sessions, and the round trip of 10
+            basis points with 30 as its sensitivity. It ran as a scratch test in the sweep's
+            worktree once the sweep was done, removed after, and the worktree read clean.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1198 of 1198 tests
+            ran with none failed, migrations 0 to 32 with one added and none pending, schema version
+            32, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 405
+            claims, 405 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 412 placements and verdicts
+            reconciled against a floor of 34, 39 of 39 roster checks carried and all 39 run, 1198 of
+            1198 tests. Both gates ran over 687bad4 with this entry in place, and the operator's
+            store under `data/` was not touched by either; the rehearsal read a copy.
 Carried:    A candidate's power re-read at each look, and The candidates' proposed numbers read at
             their looks, both operating: the region this builds is the surface each is read on, and
             neither fires until a registered candidate reaches its first look.
