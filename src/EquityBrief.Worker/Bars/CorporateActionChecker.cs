@@ -222,8 +222,20 @@ public sealed class CorporateActionChecker : IComponent
         // night it stays suspect.
         var suspects = await SuspectAsync(connection, indexCode, session);
 
+        // A night run again for its session is that night: a name last asked for on
+        // tonight's own session was due tonight, so it is asked again as that night
+        // asked it, and its count already holds the session.
+        bool AskedTonight(SuspectRow name) => LastAskedSession(name) == session;
+
         bool Due(SuspectRow name) =>
-            name.Retries < RetryNights || session >= LastAskedSession(name).AddDays(WeeklyRetryDays);
+            AskedTonight(name)
+            || name.Retries < RetryNights
+            || session >= LastAskedSession(name).AddDays(WeeklyRetryDays);
+
+        var askedTonight = suspects
+            .Where(AskedTonight)
+            .Select(name => name.Ticker)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var retried = suspects
             .Where(Due)
@@ -296,9 +308,12 @@ public sealed class CorporateActionChecker : IComponent
                 // like a check that found nothing.
                 await transaction.RollbackAsync();
 
-                // A night an action lands on the name starts its count again,
-                // and any other night it is asked for counts one more.
-                var retries = acted.Contains(ticker) ? 0 : counted.GetValueOrDefault(ticker) + 1;
+                // A night an action lands on the name starts its count again, a
+                // session the count already holds adds nothing, and any other night
+                // it is asked for counts one more. The count is of sessions, not runs.
+                var retries = acted.Contains(ticker)
+                    ? 0
+                    : counted.GetValueOrDefault(ticker) + (askedTonight.Contains(ticker) ? 0 : 1);
 
                 await MarkAsync(connection, ticker, Suspect, failure.Message, observed, retries);
                 suspect.Add(ticker);
