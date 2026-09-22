@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-22 - BUILD_PLAN.md - the run page's duration row says the first 5.6 correction's run could be a stop and names the second
+Corrects: the row stated the duration repaired at the 5.6 correction, whose run was the last to write a listings row, which a stop recorded under the stage also writes; found by the fourth phase 8 sign-off review over 40f5a77
+Was:
+> The duration was not repaired here: its run was still chosen by the newest start until the 5.6 correction of 2026-09-22, which takes the run that wrote the night's listings row last, by the rowid, and `read-surface` refuses a run-log read that takes its newest row by the instant it carries, outside the two reads that state why they may.
+Now:
+> The duration was not repaired here: its run was still chosen by the newest start until the 5.6 correction of 2026-09-22, which took the run that wrote the night's listings row last, by the rowid. That row can be a stop the night records under the stage, where a step that failed or was stopped rolled its list back and the store holds the list of the run before it, so a second 5.6 correction of the same day takes the last run whose listings row the stage wrote itself, told from a stop by its outcome, and the last to reach the stage only where no run wrote a list. `read-surface` refuses a run-log read that takes its newest row by the instant it carries, outside the two reads that state why they may.
+Why: the row read as discharging a repair that a night run again whose listings step failed still defeated, drawing the failed run's span beside the earlier run's fired count.
+
 ### 2026-09-22 - BUILD_PLAN.md - the run page's duration row says the ordering reached the default night at 6.0 and the duration only at the 5.6 correction
 Corrects: the row stated the duration repaired at 6.0 where 6.0's rowid ordering reached the run page's default night alone; found by the operator's question after the 5.6 correction of 2026-09-22
 Was:

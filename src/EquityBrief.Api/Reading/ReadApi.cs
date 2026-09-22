@@ -1271,6 +1271,20 @@ public sealed class ReadApi : IComponent
     // order the rows were written and not by the instant they carry, for the
     // reason `NewestRun` states: a night run again for a named session stamps
     // its stages from 21:10Z on that session, earlier than the run it follows.
+    //
+    // A listings row is proof of a list only where the stage wrote it. A step
+    // that fails, passes the deadline or is stopped before it starts records a
+    // stop under the stage's name, and its list, if it began one, rolled back,
+    // so the store holds the list of the run before it. The stage's own row
+    // carries one of the outcomes it writes, and a stop carries one of the
+    // night's stop outcomes. Where no run wrote a list for the night, the span
+    // is the last run to reach the stage.
+    //
+    // The stage writes its own row just after its list commits. A deadline
+    // passing between the two leaves a committed list under a stop, and this
+    // reads the run before it. Writing the row inside the list's transaction
+    // would close that gap and move the pin of every registered candidate's
+    // evaluator, whose sources include the stage, so the gap is stated here.
     public async Task<string?> NightDurationAsync(DateOnly night)
     {
         var rows = await RunLogAsync(night);
@@ -1293,14 +1307,17 @@ public sealed class ReadApi : IComponent
         return (ended - started).ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
     }
 
-    // The run that wrote a night's listings row last, the night decided by the clock over
-    // each row's own start as `RunLogAsync` decides it.
+    // The run that wrote a night's list last, and where none did the run that wrote its
+    // listings row last, the night decided by the clock over each row's own start as
+    // `RunLogAsync` decides it.
     async Task<string?> LastListingsRunAsync(DateOnly night)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
         command.CommandText = ListingsRunsInWindow;
+        command.Parameters.AddWithValue("$ok", ListingsStageOutcomes[0]);
+        command.Parameters.AddWithValue("$shadow_fault", ListingsStageOutcomes[1]);
         command.Parameters.AddWithValue("$from", night.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$to", night.AddDays(2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
@@ -1317,11 +1334,17 @@ public sealed class ReadApi : IComponent
         return null;
     }
 
+    // The outcomes the listings stage writes on its own row: its list written, and its list
+    // written with a registered candidate unevaluated in shadow. Stated here because the read
+    // surface holds no reference to the worker; `read-surface` asserts they are the stage's
+    // own and that no stop writes either.
+    public static IReadOnlyList<string> ListingsStageOutcomes { get; } = ["ok", "ok, with a registered candidate's evaluator missing or moved"];
+
     const string ListingsRunsInWindow = @"
         SELECT run_id, started_at
         FROM run_log
         WHERE stage = 'listings' AND started_at >= $from AND started_at < $to
-        ORDER BY rowid DESC;
+        ORDER BY outcome IN ($ok, $shadow_fault) DESC, rowid DESC;
     ";
 
     public async Task<IReadOnlyList<ForwardReturnRow>> ForwardReturnsAsync(string? ticker = null)
