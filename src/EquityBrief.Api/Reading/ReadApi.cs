@@ -1266,17 +1266,15 @@ public sealed class ReadApi : IComponent
     // sign-off a night that wrote its list and stopped at the next step, and
     // then was run again, spanned both runs: the two by-hand runs of
     // 2026-09-10 each wrote a list, and the header measured from the first's
-    // start to the second's end. The run is the newest to reach the list,
-    // being the one whose list the store holds.
+    // start to the second's end. The run is the one whose list the store holds,
+    // which is the last to write a listings row for the night. Last by the
+    // order the rows were written and not by the instant they carry, for the
+    // reason `NewestRun` states: a night run again for a named session stamps
+    // its stages from 21:10Z on that session, earlier than the run it follows.
     public async Task<string?> NightDurationAsync(DateOnly night)
     {
         var rows = await RunLogAsync(night);
-
-        var run = rows
-            .Where(row => row.Stage == "listings")
-            .OrderByDescending(row => row.StartedAt)
-            .Select(row => row.RunId)
-            .FirstOrDefault();
+        var run = await LastListingsRunAsync(night);
 
         // The arithmetic's span, which the wall clock row bounds. The overnight queue's row
         // sits under the same run and runs for up to its own limit after the close, so a
@@ -1294,6 +1292,37 @@ public sealed class ReadApi : IComponent
 
         return (ended - started).ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
     }
+
+    // The run that wrote a night's listings row last, the night decided by the clock over
+    // each row's own start as `RunLogAsync` decides it.
+    async Task<string?> LastListingsRunAsync(DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ListingsRunsInWindow;
+        command.Parameters.AddWithValue("$from", night.AddDays(-1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$to", night.AddDays(2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            if (clock.SessionDateAt(DateTimeOffset.Parse(reader.GetString(1), CultureInfo.InvariantCulture)) == night)
+            {
+                return reader.GetString(0);
+            }
+        }
+
+        return null;
+    }
+
+    const string ListingsRunsInWindow = @"
+        SELECT run_id, started_at
+        FROM run_log
+        WHERE stage = 'listings' AND started_at >= $from AND started_at < $to
+        ORDER BY rowid DESC;
+    ";
 
     public async Task<IReadOnlyList<ForwardReturnRow>> ForwardReturnsAsync(string? ticker = null)
     {
