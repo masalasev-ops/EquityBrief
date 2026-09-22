@@ -19434,3 +19434,57 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because this corrects what a claim already placed asserts rather than
             adding any. Both gates ran over the tree carrying this entry, and the operator's store
             under `data/` was not touched by either.
+
+### 6.0 - correction: a night run again for its session after midnight UTC is asserted to be that night, where every night run again started at 21:10 UTC and reading its session off the UTC date left every test green   2026-09-22
+Corrects:   a name whose refetch after a corporate action fails is asked for again on the five
+            nights after the one that marked it, then weekly, and a night run again for its session
+            is that night, asked for as it asked and counted once (see: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds).
+            The check decides a night was already asked by the session its row's instant belongs
+            to, through the clock. No test could tell that from the instant's UTC date: that read
+            left 1167 of 1167 green, because every night run again in `corporate-actions` starts at
+            21:10 UTC, where the two dates agree. The code is right; the assertion was missing.
+Found:      on 2026-09-22, by the phase 8 sign-off review over 358fc8a, as mutant U177, and
+            reproduced by this correction in a scratch worktree at 358fc8a before any change,
+            1167 of 1167 green. The two dates differ for any night whose check starts after
+            midnight UTC, which the operator's store already holds: `night-20260919T024430Z` ran
+            its check at 02:44 UTC for the session of 2026-09-18.
+Repaired:   no shipped source changes. One test added to `corporate-actions`,
+            `ANightRunAgainForItsSessionAfterMidnightUtcIsThatNightOnTheNightlyRetriesAndTheWeeklyOne`:
+            AAPL marked on the session of 2026-08-10, each of its five retry sessions run at 02:44
+            UTC on the day after and run again at 02:50 UTC, each run asking for the name once with
+            the count at that night's; then a night four days on that asks for nothing, run again
+            or not, and the week night of 2026-08-24, 7 days on from the session and 6 from the
+            instant's UTC date, asking once and, run again, asking once with the count unmoved.
+Expected:   derived, as the 6.0 correction that counted a session once met it: the schedule is
+            stated in the decision and in SCHEMA's `retries` and asserted over a constructed store.
+            No expectation file changes, because the committed fixture is one night and holds
+            neither a night run again nor a night after midnight UTC.
+Tests:      1169, from 1168. One added to `corporate-actions`. No migration. No file this correction
+            edits is a source either evaluator version or the ladder rules' code version pins, so
+            no pin moves.
+Mutated:    the rule, stated before the sweep: read a name's last asked session off the UTC date of
+            its instant, at each point the check reads that session.
+            Predicted:
+            MU the session already asked read off the UTC date: the new test red, at the first
+            retry session run again, which holds 2 retries where the night held 1, and every other
+            test green.
+            MW the week counted from the UTC date: the new test red and
+            `ASpentNamesWeekIsCountedFromTheSessionItWasLastAskedForWhenThatNightStartedAfterMidnightUtc`
+            red, each at the week night of 2026-08-24, which asks for nothing, and every other test
+            green.
+            Results: each mutation over the whole suite in a scratch worktree at e1a23a1, never a
+            filter, and reverted between runs. That commit's entry did not yet say its Windows run,
+            so `two-platform`'s record test was red there before any mutation, and each result below
+            is that one and the mutation's own. MU: red, the new test, at the first retry session
+            run again, which held 2 retries where the night held 1, 1167 of 1169 green. MW: red,
+            the new test and the week test after midnight UTC, each at the week night of
+            2026-08-24, which asked for AAPL 0 times, 1166 of 1169 green.
+Held:       the prediction, exactly, for both.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1169 of 1169 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this asserts what a claim already placed states rather than
+            adding any. Both gates ran over the tree carrying this entry, and the operator's store
+            under `data/` was not touched by either.
