@@ -19420,6 +19420,17 @@ Mutated:    the rule, stated before the sweep: reintroduce the read the review f
             MS the listings rows read newest start first: the new test red, at the duration, which
             reads 00:06:04, and every other test green, the three duration tests already in
             `read-surface` among them.
-            Results: FILL
-Held:       FILL
-Verified:   FILL
+            Results: MS over the whole suite in a scratch worktree at 7663967, never a filter, and
+            reverted. That commit's entry did not yet say its Windows run, so `two-platform`'s
+            record test was red there before any mutation, and the result below is that one and the
+            mutation's own. MS: red, the new test, at the duration, which read 00:06:04 where the
+            rule gives 00:05:52, 1166 of 1168 green.
+Held:       the prediction, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1168 of 1168 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this corrects what a claim already placed asserts rather than
+            adding any. Both gates ran over the tree carrying this entry, and the operator's store
+            under `data/` was not touched by either.
