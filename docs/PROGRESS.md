@@ -19733,4 +19733,7 @@ Mutated:    the rule, stated before the run: write the stage's own row after the
             order before this correction.
             Predicted:
             MC the row after the commit: the new test red, at the listing count, which holds the
-            fixture's 4 members where the rule holds 0, and every other test green.
+            fixture's 4 members where the rule holds 0; `register-append-only`'s pin test red,
+            naming both evaluators, since any edit to the stage moves their pin; and every other
+            test green. The prediction as first written left the pin test out and was corrected
+            before the run.
