@@ -611,11 +611,19 @@ public class ListingsCoverage
     [Fact]
     public void EveryReadingAnEvaluatorReadsIsOneTheNightHandsOver()
     {
+        // The indicator readings under their own names, and the keys the night
+        // writes beside them. Read off the two sets the night hands over rather
+        // than listed here, so a key added to one and read under another spelling
+        // is a failure here rather than a candidate skipped on every name-night.
         var handed = IndicatorSeries.Names
             .Concat(IndicatorSeries.Names.Select(name => name + ShortlistBuilder.PreviousSuffix))
+            .Concat(typeof(NightValues).GetFields()
+                .Where(field => field.IsLiteral && field.FieldType == typeof(string))
+                .Select(field => (string)field.GetRawConstantValue()!))
             .ToHashSet(StringComparer.Ordinal);
 
-        Assert.True(CandidateEvaluators.All.Count >= 2, $"Read {CandidateEvaluators.All.Count} evaluator(s), expected at least 2.");
+        Assert.True(handed.Count >= 32, $"The night hands over {handed.Count} key(s), expected at least 32.");
+        Assert.True(CandidateEvaluators.All.Count >= 5, $"Read {CandidateEvaluators.All.Count} evaluator(s), expected at least 5.");
         Assert.All(CandidateEvaluators.All, evaluator => Assert.All(evaluator.Reads, key => Assert.Contains(key, handed)));
         Assert.Contains(CandidateEvaluators.All, evaluator => evaluator.Reads.Any(key => key.EndsWith(ShortlistBuilder.PreviousSuffix, StringComparison.Ordinal)));
     }

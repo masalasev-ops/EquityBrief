@@ -1,0 +1,171 @@
+{
+ "stage": "candidate-conditions",
+ "derivation": "derived",
+ "derivedFrom": "the three registered conditions' own rules, worked by hand over the name-nights below rather than read back from a run. Arrived and narrow fires where the previous close was above the nearest buying zone's high edge, tonight's close is inside that zone at either edge inclusive, and the zone is no wider than the registered multiple of the typical daily move, so a close that went from above the zone to below its low edge fell through it and did not arrive, and a close that was already inside yesterday is standing in the zone rather than arriving at it. Volume against the night fires where the ratio of tonight's volume to the fifty-day average is above the registered multiple of the night's median ratio and above that multiple on its own, so a name at 1.8 times its own average on a quiet night whose median is 0.85 does not fire although the median half alone would, and a name at 3.5 times on a night whose median is 2.0 does not fire although the second half alone would. Crossed by a margin fires where the close went through a whole band since the previous session and finished at least the registered margin of a typical move past the edge it crossed, the high edge on a rise and the low edge on a fall, so a close that finished inside the band reached the level and did not go through it. The name-nights are constructed rather than taken from the committed fixture, for the reason the shadow column's are: every one of the fixture's four names fires a live reason, so the fixture cannot supply the name-night this is most about, and the edges each condition turns on are values no four names of real bars happen to sit on.",
+ "tables": [
+  "listing"
+ ],
+ "constructed": true,
+ "registrations": [
+  { "candidate": "arrived and narrow", "evaluator": "arrived-and-narrow", "parameters": { "width": 1 } },
+  { "candidate": "volume against the night", "evaluator": "volume-against-the-night", "parameters": { "multiple": 2 } },
+  { "candidate": "crossed by a margin", "evaluator": "crossed-by-a-margin", "parameters": { "margin": 0.5 } }
+ ],
+ "nameNights": [
+  {
+   "ticker": "AAAA",
+   "candidate": "arrived and narrow",
+   "case": "came down into the zone from above it, and the zone is narrower than a typical move",
+   "values": { "close": 100.0, "close_previous": 105.0, "zones": 1, "zone_low": 99.0, "zone_high": 101.0, "atr14": 3.0 },
+   "fires": true
+  },
+  {
+   "ticker": "BBBB",
+   "candidate": "arrived and narrow",
+   "case": "fell through the zone: from above its high edge to below its low edge in one session",
+   "values": { "close": 98.5, "close_previous": 105.0, "zones": 1, "zone_low": 99.0, "zone_high": 101.0, "atr14": 3.0 },
+   "fires": false
+  },
+  {
+   "ticker": "CCCC",
+   "candidate": "arrived and narrow",
+   "case": "arrived, and the zone is wider than a typical move",
+   "values": { "close": 100.0, "close_previous": 105.0, "zones": 1, "zone_low": 96.0, "zone_high": 104.0, "atr14": 3.0 },
+   "fires": false
+  },
+  {
+   "ticker": "DDDD",
+   "candidate": "arrived and narrow",
+   "case": "already inside the zone yesterday, which is standing in it rather than arriving",
+   "values": { "close": 100.0, "close_previous": 100.5, "zones": 1, "zone_low": 99.0, "zone_high": 101.0, "atr14": 3.0 },
+   "fires": false
+  },
+  {
+   "ticker": "EEEE",
+   "candidate": "arrived and narrow",
+   "case": "closed exactly on the high edge, and the zone is exactly one typical move wide, both inclusive",
+   "values": { "close": 101.0, "close_previous": 101.5, "zones": 1, "zone_low": 98.0, "zone_high": 101.0, "atr14": 3.0 },
+   "fires": true
+  },
+  {
+   "ticker": "FFFF",
+   "candidate": "arrived and narrow",
+   "case": "the plan held no buying zone, so there was nothing to arrive at",
+   "values": { "close": 100.0, "close_previous": 105.0, "zones": 0, "atr14": 3.0 },
+   "fires": false
+  },
+  {
+   "ticker": "GGGG",
+   "candidate": "volume against the night",
+   "case": "a quiet night whose median is below 1: above twice the median and not above twice its own average",
+   "values": { "volume_ratio": 1.8, "night_median_ratio": 0.85 },
+   "fires": false
+  },
+  {
+   "ticker": "HHHH",
+   "candidate": "volume against the night",
+   "case": "a quiet night, and the name is above both halves",
+   "values": { "volume_ratio": 2.2, "night_median_ratio": 0.85 },
+   "fires": true
+  },
+  {
+   "ticker": "IIII",
+   "candidate": "volume against the night",
+   "case": "a night the whole index traded heavily: above twice its own average and not above twice the night",
+   "values": { "volume_ratio": 3.5, "night_median_ratio": 2.0 },
+   "fires": false
+  },
+  {
+   "ticker": "JJJJ",
+   "candidate": "volume against the night",
+   "case": "the same night, and the name is above both halves",
+   "values": { "volume_ratio": 4.5, "night_median_ratio": 2.0 },
+   "fires": true
+  },
+  {
+   "ticker": "KKKK",
+   "candidate": "volume against the night",
+   "case": "exactly twice its own average, which is not above it",
+   "values": { "volume_ratio": 2.0, "night_median_ratio": 0.5 },
+   "fires": false
+  },
+  {
+   "ticker": "LLLL",
+   "candidate": "crossed by a margin",
+   "case": "rose through a band and finished exactly the margin past its high edge, which is inclusive",
+   "values": { "crossings": 1, "crossing_distance": 1.0, "atr14": 2.0 },
+   "fires": true
+  },
+  {
+   "ticker": "MMMM",
+   "candidate": "crossed by a margin",
+   "case": "rose through a band and finished short of the margin",
+   "values": { "crossings": 1, "crossing_distance": 0.9, "atr14": 2.0 },
+   "fires": false
+  },
+  {
+   "ticker": "NNNN",
+   "candidate": "crossed by a margin",
+   "case": "fell through a band and finished well past its low edge",
+   "values": { "crossings": 1, "crossing_distance": 1.5, "atr14": 2.0 },
+   "fires": true
+  },
+  {
+   "ticker": "OOOO",
+   "candidate": "crossed by a margin",
+   "case": "crossed nothing, which the night could tell and wrote as a count of nought",
+   "values": { "crossings": 0, "atr14": 2.0 },
+   "fires": false
+  }
+ ],
+ "crossings": [
+  {
+   "case": "a rise that finished inside the band reached the level and did not go through it",
+   "close": 101.0,
+   "previousClose": 99.0,
+   "bands": [ { "low": 100.0, "high": 102.0 } ],
+   "count": 0,
+   "past": null
+  },
+  {
+   "case": "a rise that cleared the whole band is measured from its high edge",
+   "close": 103.0,
+   "previousClose": 99.0,
+   "bands": [ { "low": 100.0, "high": 102.0 } ],
+   "count": 1,
+   "past": 1.0
+  },
+  {
+   "case": "a fall that closed on the low edge is a crossing at no distance at all",
+   "close": 100.0,
+   "previousClose": 103.0,
+   "bands": [ { "low": 100.0, "high": 102.0 } ],
+   "count": 1,
+   "past": 0.0
+  },
+  {
+   "case": "two bands crossed, and the distance is the furthest of them",
+   "close": 106.0,
+   "previousClose": 99.0,
+   "bands": [ { "low": 100.0, "high": 102.0 }, { "low": 104.0, "high": 105.0 } ],
+   "count": 2,
+   "past": 4.0
+  }
+ ],
+ "overTheFixtureNight": {
+  "session": "2026-09-04",
+  "nightMedianRatio": "0.6268",
+  "derivedFrom": "the four names' own figures on the fixture's night, worked by hand from the closes, the bands and the plans the other expectations state rather than read back from the run. The night's median ratio is the middle of the four names' volume over their fifty-day averages, which are 0.4245 for KEYS, 0.5096 for MSFT, 0.7439 for AAPL and 1.0181 for NFLX, so the median of an even count is the mean of the middle two, 0.6268, and no name is above twice it or above twice its own average, which is why volume against the night fires on none of them. Arrived and narrow fires on MSFT alone: its previous close of 510.12 was above the nearest zone's high edge of 501.9168, its close of 499.70 is inside that zone, and the zone is 9.8002 wide against a typical move of 11.8243. AAPL arrived in the same way and its zone is 20.5385 wide against 7.6339, which is wider than a move; KEYS closed at 327.21 with a previous close of 322.62, which is below its zone's high edge of 332.78, so it did not come down into anything; and NFLX closed at 78.25, above the whole of its nearest zone of 75.4402 to 75.8178. Crossed by a margin fires on MSFT and NFLX: MSFT fell from 510.12 to 499.70 through the band at 507.9797 to 517.78 and finished 8.2797 below its low edge, against a margin of 5.9121, being half of 11.8243; NFLX fell from 82.67 to 78.25 through three bands, at 82.455, at 81.16 and at 78.3545 to 79.31, and the furthest of them leaves it 4.205 below 82.455, against a margin of 1.1979. AAPL and KEYS crossed nothing at all, neither close reaching a band's far edge.",
+  "byName": {
+   "AAPL": { "arrived and narrow": false, "volume against the night": false, "crossed by a margin": false },
+   "KEYS": { "arrived and narrow": false, "volume against the night": false, "crossed by a margin": false },
+   "MSFT": { "arrived and narrow": true, "volume against the night": false, "crossed by a margin": true },
+   "NFLX": { "arrived and narrow": false, "volume against the night": false, "crossed by a margin": true }
+  }
+ },
+ "firedSomewhere": {
+  "arrived and narrow": 2,
+  "volume against the night": 2,
+  "crossed by a margin": 2
+ }
+}

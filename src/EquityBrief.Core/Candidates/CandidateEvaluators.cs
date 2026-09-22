@@ -18,6 +18,9 @@ public static class CandidateEvaluators
     [
         new MomentumIndexReading(),
         new MomentumHistogramTurn(),
+        new ArrivedAndNarrow(),
+        new VolumeAgainstTheNight(),
+        new CrossedByAMargin(),
     ];
 
     public static CandidateEvaluator? Find(string name) =>
