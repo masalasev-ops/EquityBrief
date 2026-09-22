@@ -1276,15 +1276,10 @@ public sealed class ReadApi : IComponent
     // that fails, passes the deadline or is stopped before it starts records a
     // stop under the stage's name, and its list, if it began one, rolled back,
     // so the store holds the list of the run before it. The stage's own row
-    // carries one of the outcomes it writes, and a stop carries one of the
-    // night's stop outcomes. Where no run wrote a list for the night, the span
-    // is the last run to reach the stage.
-    //
-    // The stage writes its own row just after its list commits. A deadline
-    // passing between the two leaves a committed list under a stop, and this
-    // reads the run before it. Writing the row inside the list's transaction
-    // would close that gap and move the pin of every registered candidate's
-    // evaluator, whose sources include the stage, so the gap is stated here.
+    // carries one of the outcomes it writes and is written in the transaction
+    // that writes its list, so it stands exactly where the list committed; a
+    // stop carries one of the night's stop outcomes. Where no run wrote a list
+    // for the night, the span is the last run to reach the stage.
     public async Task<string?> NightDurationAsync(DateOnly night)
     {
         var rows = await RunLogAsync(night);
