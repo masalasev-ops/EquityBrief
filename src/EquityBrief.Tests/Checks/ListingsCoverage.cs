@@ -159,6 +159,29 @@ public class ListingsCoverage
             .ToDictionary(value => value.Name, value => value.Value.GetString()!, StringComparer.Ordinal);
 
     [Fact]
+    public async Task TheStagesOwnRowIsWrittenWithItsListSoAListingsRowTheStageDidNotWriteLeavesNoList()
+    {
+        // The night's duration reads a listings row carrying one of the stage's outcomes as the
+        // stage having written its list, which holds only where the row and the list are one
+        // write. A run whose log already holds a row under the stage cannot add the stage's
+        // own, and the list it built goes with it.
+        using var store = await FixtureExpectations.WithListings();
+
+        Insert(store, "DELETE FROM listing;");
+        Insert(
+            store,
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) " +
+            "VALUES ('coverage-one-write', 'listings', '2026-09-08T21:00:00Z', '2026-09-08T21:00:00Z', 'stopped', 0, 0, 0, '0', 'stopped before step ''listings''');");
+
+        await Assert.ThrowsAsync<SqliteException>(() => new ShortlistBuilder(
+            FixedClock.At(new DateTimeOffset(2026, 9, 8, 21, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+            store.DatabaseFile).RunAsync("GSPC", "coverage-one-write", new DateTimeOffset(2026, 9, 8, 21, 0, 0, TimeSpan.Zero)));
+
+        Assert.Equal(["0"], Query(store, "SELECT COUNT(*) FROM listing;"));
+        Assert.Equal(["stopped"], Query(store, "SELECT outcome FROM run_log WHERE run_id = 'coverage-one-write';"));
+    }
+
+    [Fact]
     public async Task AMemberTheDaysFileCarriedNothingForIsListedTonightWithNothingFired()
     {
         // The other case the committed fixture cannot reach: a member whose bars

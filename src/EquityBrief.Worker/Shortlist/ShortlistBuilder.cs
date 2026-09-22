@@ -376,8 +376,6 @@ public sealed class ShortlistBuilder : IComponent
             reasonsFired += count;
         }
 
-        await transaction.CommitAsync(cancellation);
-
         var beyond = beyondTheCalendar.Count == 0
             ? string.Empty
             : "; " + beyondTheCalendar.Count.ToString(CultureInfo.InvariantCulture) +
@@ -408,8 +406,13 @@ public sealed class ShortlistBuilder : IComponent
                         : FormattableString.Invariant($"; FAILURE: {faults.Count} registered candidate(s) skipped on every name, the code carrying no evaluator by its name or a moved one: ")
                             + string.Join("; ", faults.Select(entry => $"'{entry.Key}' {entry.Value}")));
 
+        // The stage's own row is written in the transaction that writes its list, so a listings
+        // row carrying one of the stage's outcomes stands exactly where the list it describes
+        // does. A step that stops records its stop under the stage's name instead, and the
+        // night's duration tells the two apart by that outcome.
         await RecordAsync(
             connection,
+            (SqliteTransaction)transaction,
             runId,
             startedAt,
             members.Count,
@@ -418,6 +421,8 @@ public sealed class ShortlistBuilder : IComponent
             stop.Report() + beyond + shadowSaid,
             faults.Count == 0 ? Ok : Failed,
             cancellation);
+
+        await transaction.CommitAsync(cancellation);
 
         return new ShortlistOutcome(members.Count, members.Count, fired, reasonsFired);
     }
@@ -806,6 +811,7 @@ public sealed class ShortlistBuilder : IComponent
 
     async Task RecordAsync(
         SqliteConnection connection,
+        SqliteTransaction transaction,
         string runId,
         DateTimeOffset startedAt,
         int members,
@@ -818,6 +824,7 @@ public sealed class ShortlistBuilder : IComponent
         await using var command = connection.CreateCommand();
 
         command.CommandText = AppendRun;
+        command.Transaction = transaction;
         command.Parameters.AddWithValue("$run_id", runId);
         command.Parameters.AddWithValue("$stage", Stage);
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));

@@ -19698,3 +19698,56 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because this corrects what a claim already placed asserts rather than
             adding any. Both gates ran over the tree carrying this entry, and the operator's store
             under `data/` was not touched by either.
+
+### 5.6 - correction: the listings stage's own row is written in the transaction that writes its list, where it followed the commit and a deadline between the two left a committed list under a stop, which the correction above left open on a register the operator's store does not hold   2026-09-22
+Corrects:   the 5.6 correction above, which reads the night's duration off the listings row the
+            stage wrote itself and left one case open: the stage wrote that row just after its list
+            committed, so a deadline passing between the two left a committed list under a stop,
+            and the duration read the run before it. Its `Bounded:` line gave the reason as every
+            candidate standing in the operator's register faulting in shadow once the evaluator pins
+            moved. The operator's register holds no row, so the pins' move faults nothing there, and
+            the reason does not hold.
+Found:      on 2026-09-22, by this session while gathering the figures for the phase 8 sign-off
+            prompt, read off the operator's store without writing to it: `candidate_register` holds
+            0 rows.
+Repaired:   `ShortlistBuilder` writes its own run-log row inside the transaction that writes the
+            night's list, then commits, so a listings row carrying one of the stage's outcomes stands
+            exactly where the list it describes does, and the read's comment says so in place of the
+            gap. `ShortlistBuilder.cs` is one of the eight evaluation sources, so both evaluator
+            versions move to the new pin: `momentum-histogram-turn` from 8a362854507f to
+            7252c1432864, and `momentum-index-reading` from 79ae94cd071d to 53fbca81a57c. A
+            candidate registered under an old version would fault as moved and is registered again,
+            which is the rule the register states; no store the operator holds carries one.
+Guarded:    `listings-coverage`, one test added,
+            `TheStagesOwnRowIsWrittenWithItsListSoAListingsRowTheStageDidNotWriteLeavesNoList`: a run
+            whose log already holds a stop under the stage cannot add the stage's own row, the stage
+            throws, and the store holds no listing row and the stop alone on that run.
+            `register-append-only`'s pin test holds the two versions to the sources.
+Expected:   derived: the property is the one the duration's rule rests on, stated at the read and in
+            the correction above, and asserted over the committed fixture's members. No expectation
+            file changes, because no stage's output over the fixture moves.
+Tests:      1175, from 1174. One added to `listings-coverage`. No migration. Both evaluator versions
+            move, as above; the ladder rules' code version pins none of the files edited, so it does
+            not move.
+Mutated:    the rule, stated before the run: write the stage's own row after the list commits, the
+            order before this correction.
+            Predicted:
+            MC the row after the commit: the new test red, at the listing count, which holds the
+            fixture's 4 members where the rule holds 0; `register-append-only`'s pin test red,
+            naming both evaluators, since any edit to the stage moves their pin; and every other
+            test green. The prediction as first written left the pin test out and was corrected
+            before the run.
+            Results: over the whole suite in a scratch worktree at 42291fb, never a filter, and
+            reverted. That commit's entry did not yet say its Windows run, so `two-platform`'s
+            record test was red there before any mutation, and the result below is that one and
+            the mutation's own. MC: red, the new test at the listing count, which read 4 where the
+            rule gives 0, and the pin test naming both evaluators, 1172 of 1175 green.
+Held:       the prediction as corrected before the run, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1175 of 1175 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this corrects what a claim already placed asserts rather than
+            adding any. Both gates ran over the tree carrying this entry, and the operator's store
+            under `data/` was not touched by either.
