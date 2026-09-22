@@ -221,7 +221,30 @@ public sealed record CandidateRow(
     string Evaluator,
     string Event,
     string? Retires,
-    DateTimeOffset RegisteredAt);
+    DateTimeOffset RegisteredAt,
+    string Parameters = "{}",
+    string? Evidence = null);
+
+// One name-night a candidate fired on, with what its setup came to.
+//
+// The name is not carried and no surface could draw one from this: what a record is over is a
+// count of setups and the sessions they were listed on, and a candidate's evaluation of a name is
+// the thing the shadow exists to keep off every screen.
+// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+public sealed record CandidateSetupRow(
+    string Candidate,
+    DateOnly SessionDate,
+    string? Outcome,
+    double? Null,
+    double? NullAtSensitivity,
+    double? BreakEven,
+    double? ReturnPct,
+    double? PlannedRisk,
+    bool OnEarnings);
+
+// One night and one candidate it evaluated or skipped, which is one candidate standing when that
+// night started.
+public sealed record CandidateNightRow(DateOnly SessionDate, string Candidate);
 
 // One of a name's biggest moves, as the store holds it.
 //
@@ -944,9 +967,38 @@ public sealed class ReadApi : IComponent
     // The candidate register, for the run page's count and its divisor. The
     // columns the region draws from and no others.
     const string RegisteredCandidates = @"
-        SELECT id, candidate, evaluator, event, retires, registered_at
+        SELECT id, candidate, evaluator, event, retires, registered_at, parameters, evidence
         FROM candidate_register
         ORDER BY id;
+    ";
+
+    // Every name-night a candidate fired on, with what the setup listed that night came to, the
+    // bar its own plan set and the bar the calibration set for it.
+    //
+    // The fired ones alone. A candidate's record is over the setups it produced, and a name-night
+    // it did not fire on produced none; the quiet rows are what the base rate is over and are read
+    // by the query that reads them.
+    // see: A candidate is judged by a sign-flip test over blocks of 63 sessions, with at least eight blocks
+    const string CandidateSetups = @"
+        SELECT json_extract(c.value, '$.candidate'), l.session_date, f.outcome,
+               f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings
+        FROM listing l, json_each(COALESCE(l.shadow_reasons, '{}'), '$.candidates') c
+        LEFT JOIN forward_return f
+            ON f.ticker = l.ticker AND f.session_date = l.session_date AND f.horizon = $horizon
+        WHERE json_extract(c.value, '$.fired') = 1
+        ORDER BY 1, 2;
+    ";
+
+    // Which candidates each night evaluated, evaluated or skipped, which is the set standing when
+    // that night started. A candidate's first such night is the night its window opened, and the
+    // candidates that night held are the family its level is divided by.
+    const string CandidateNights = @"
+        SELECT DISTINCT l.session_date, json_extract(c.value, '$.candidate')
+        FROM listing l, json_each(COALESCE(l.shadow_reasons, '{}'), '$.candidates') c
+        UNION
+        SELECT DISTINCT l.session_date, json_extract(s.value, '$.candidate')
+        FROM listing l, json_each(COALESCE(l.shadow_reasons, '{}'), '$.skipped') s
+        ORDER BY 1, 2;
     ";
 
     // The current members whose stored series does not end on the newest session
@@ -2259,7 +2311,67 @@ public sealed class ReadApi : IComponent
                     reader.GetString(5),
                     "yyyy-MM-ddTHH:mm:ssZ",
                     CultureInfo.InvariantCulture,
-                    DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal)));
+                    DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
+                reader.IsDBNull(6) ? "{}" : reader.GetString(6),
+                reader.IsDBNull(7) ? null : reader.GetString(7)));
+        }
+
+        return rows;
+    }
+
+    // Every setup a registered candidate produced, for the run page's record region.
+    public async Task<IReadOnlyList<CandidateSetupRow>> CandidateSetupsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = CandidateSetups;
+        command.Parameters.AddWithValue("$horizon", EquityBrief.Core.Returns.ForwardReturnSeries.Setup);
+
+        var rows = new List<CandidateSetupRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new CandidateSetupRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.IsDBNull(2) ? null : reader.GetString(2),
+                reader.IsDBNull(3) ? null : reader.GetDouble(3),
+                reader.IsDBNull(4) ? null : reader.GetDouble(4),
+                reader.IsDBNull(5) ? null : reader.GetDouble(5),
+                reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                reader.IsDBNull(7) ? null : reader.GetDouble(7),
+                !reader.IsDBNull(8) && reader.GetInt64(8) == 1));
+        }
+
+        return rows;
+    }
+
+    // The candidates each night evaluated, which is what a candidate's first night and its family
+    // are read from.
+    public async Task<IReadOnlyList<CandidateNightRow>> CandidateNightsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = CandidateNights;
+
+        var rows = new List<CandidateNightRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            if (reader.IsDBNull(1))
+            {
+                continue;
+            }
+
+            rows.Add(new CandidateNightRow(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(1)));
         }
 
         return rows;

@@ -737,7 +737,13 @@ app.MapGet("/screens/run/{night?}", async (
             RunScreen.Shadow(await read.RegisteredCandidatesAsync(), clock.UtcNow),
             RunScreen.Priced(await read.PaidCallSpendsAsync()),
             TonightScreen.WrittenBeforeTheCorrection(await read.ListingsAsync(dated)),
-            RunScreen.Orders(everyListing, dated)),
+            RunScreen.Orders(everyListing, dated),
+            RunScreen.Candidates(
+                await read.RegisteredCandidatesAsync(),
+                await read.CandidateNightsAsync(),
+                await read.CandidateSetupsAsync(),
+                dated,
+                clock.UtcNow)),
         "text/html; charset=utf-8");
 });
 

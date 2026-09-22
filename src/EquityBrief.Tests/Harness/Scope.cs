@@ -52,6 +52,7 @@ internal static class Scope
     const string ByAdmissibility = "claim-admissibility";
     const string ByRegister = "register-append-only";
     const string ByRules = "rule-versions-scored";
+    const string ByCandidateVerdicts = "candidate-verdicts";
 
     internal const string MatrixTable = "Read and write matrix";
     internal const string CatalogueTable = "7. Component catalogue";
@@ -524,6 +525,18 @@ internal static class Scope
             "the exact one-sided tail matches four cases worked by hand, including one where no two break-evens agree so a binomial at any single value differs, the binomial at the mean is asserted to bound it at counts at or above the mean plus one and to be strictly larger over a spread, and the threshold, the level it was divided from as the record carries it, and the divisor are read off the run page beside every verdict, with the exact p drawn to five places and below them as the bound it lies under",
             ByReadSurface),
         // 10.1, the blocks the ordering region counts in, which 10.2's test reads as well.
+        [CheckReach.Key(LimitsTable, "Looks a candidate's verdict is read at")] = new Scoped(
+            Verdict.Pass,
+            "the looks are read at the block counts section 17 states, the level each releases is the spending function's own figure at that fraction, and a first look over eight blocks all one way does not cross at the level the family is tested at while the same blocks cross at the whole level, each worked by hand",
+            ByCandidateVerdicts),
+        [CheckReach.Key(LimitsTable, "The calibrated bar")] = new Scoped(
+            Verdict.Pass,
+            "a plan whose target sits three times as far as its stop is given a lower bar than one whose target and stop are the same distance away, the round trip raises the bar and the sensitivity raises it further, and the same setup yields the same bar however often it is read",
+            ByCandidateVerdicts),
+        [CheckReach.Key(LimitsTable, "Power stated at a look")] = new Scoped(
+            Verdict.Pass,
+            "each look states the smallest excess it could have detected beside what it read, drawn on the region and read back off it, with the approximation it is named there",
+            ByReadSurface),
         [CheckReach.Key(LimitsTable, "Blocks a record is judged over")] = new Scoped(
             Verdict.Pass,
             "a session's block is counted in exchange sessions from the record's first, read at the last session of one block and the first of the next, a setup's window has closed at the sixty-third session traded after its listing and not the session before, and the region draws no comparison below the floor and says it is due at it, over constructed nights worked by hand",
@@ -1194,6 +1207,46 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Tonight's order, no comparison drawn before every order reaches it")] = new Scoped(
             Verdict.Pass,
             "the region states that no comparison is drawn while any order holds fewer blocks than the floor and says the comparison is due once every order reaches it, over constructed nights either side of the floor",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Candidates' records, the verdict field stating what the last look read and what triggers the next")] = new Scoped(
+            Verdict.Pass,
+            "the field states what the last look came to, how many looks remain and the block count the next waits for, read off the region over a record at its first look and over one below the floor of blocks, which states no verdict at all",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Candidates' records, the nightly figure beside it labelled as monitoring")] = new Scoped(
+            Verdict.Pass,
+            "the running figure is drawn as monitoring rather than as a verdict, with the setups and the share they won against the calibrated bar, read off the region",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Candidates' records, the Poisson-binomial tail labelled and deciding nothing")] = new Scoped(
+            Verdict.Pass,
+            "the tail that assumes the setups independent is drawn beside the verdict saying so, read off the region, and the arithmetic behind it is the live family's own",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Candidates' records, each look's setups and the share they won against the bar the calibration set")] = new Scoped(
+            Verdict.Pass,
+            "the look's row carries the setups its blocks hold and the share of them that won against the mean calibrated bar, read off the region against a record worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Candidates' records, the level that look spent and whether it crossed its boundary")] = new Scoped(
+            Verdict.Pass,
+            "the look's row carries the level the spending function released at that look and whether the record crossed the boundary found over its own arrangements, read off the region against the level computed from the candidate's own",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Candidates' records, the smallest excess that look could have detected")] = new Scoped(
+            Verdict.Pass,
+            "each look states the smallest excess it could have detected beside what it read, named on the region as the approximation it is",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Candidates' records, the design effect and what a loss cost in multiples of the planned risk")] = new Scoped(
+            Verdict.Pass,
+            "both are drawn in the reported line the region ends with, from the blocks' own scatter and the losses' own returns over the risk their plans stated, and the line says they are tested nowhere",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Candidates' records, the setups entered and stopped on one session and those stopped out on a session the name reported on")] = new Scoped(
+            Verdict.Pass,
+            "both counts are drawn in the reported line, the first over the losses whose fill the store does not place and the second over the losses whose resolving session the calendar dates as a print",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Candidates' records, the step the graph stands at with its level and the count of candidates ever registered")] = new Scoped(
+            Verdict.Pass,
+            "the step and the level the graph gives are drawn on the candidate's own entry and the lifetime count on the region, read off the markup over a family of one",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Candidates' records, no name anywhere in it")] = new Scoped(
+            Verdict.Pass,
+            "every ticker the store holds is looked for inside the region as the run route draws it, and the shadow column the night writes for every member reaches no screen",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Overnight queue")] = new Scoped(
             Verdict.Pass,
@@ -2092,6 +2145,16 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Tonight's order, the setups whose whole window has closed")] = "10.1",
         [CheckReach.Key("15.10 Run", "Tonight's order, the blocks holding one against the floor")] = "10.1",
         [CheckReach.Key("15.10 Run", "Tonight's order, no comparison drawn before every order reaches it")] = "10.1",
+        [CheckReach.Key("15.10 Run", "Candidates' records, the verdict field stating what the last look read and what triggers the next")] = "10.2",
+        [CheckReach.Key("15.10 Run", "Candidates' records, the nightly figure beside it labelled as monitoring")] = "10.2",
+        [CheckReach.Key("15.10 Run", "Candidates' records, the Poisson-binomial tail labelled and deciding nothing")] = "10.2",
+        [CheckReach.Key("15.10 Run", "Candidates' records, each look's setups and the share they won against the bar the calibration set")] = "10.2",
+        [CheckReach.Key("15.10 Run", "Candidates' records, the level that look spent and whether it crossed its boundary")] = "10.2",
+        [CheckReach.Key("15.10 Run", "Candidates' records, the smallest excess that look could have detected")] = "10.2",
+        [CheckReach.Key("15.10 Run", "Candidates' records, the design effect and what a loss cost in multiples of the planned risk")] = "10.2",
+        [CheckReach.Key("15.10 Run", "Candidates' records, the setups entered and stopped on one session and those stopped out on a session the name reported on")] = "10.2",
+        [CheckReach.Key("15.10 Run", "Candidates' records, the step the graph stands at with its level and the count of candidates ever registered")] = "10.2",
+        [CheckReach.Key("15.10 Run", "Candidates' records, no name anywhere in it")] = "10.2",
 
     };
 
@@ -2188,6 +2251,22 @@ internal static class Scope
             "the setups whose whole window has closed",
             "the blocks holding one against the floor",
             "no comparison drawn before every order reaches it",
+        ],
+        // The candidates' record region, one part for each thing the row says it holds. A single
+        // verdict over ten statements passes when one is drawn and nine are not, which is the
+        // reading the shadow region's own decomposition was written for.
+        [CheckReach.Key("15.10 Run", "Candidates' records")] =
+        [
+            "the verdict field stating what the last look read and what triggers the next",
+            "the nightly figure beside it labelled as monitoring",
+            "the Poisson-binomial tail labelled and deciding nothing",
+            "each look's setups and the share they won against the bar the calibration set",
+            "the level that look spent and whether it crossed its boundary",
+            "the smallest excess that look could have detected",
+            "the design effect and what a loss cost in multiples of the planned risk",
+            "the setups entered and stopped on one session and those stopped out on a session the name reported on",
+            "the step the graph stands at with its level and the count of candidates ever registered",
+            "no name anywhere in it",
         ],
         [CheckReach.Key("15.10 Run", "Shadow candidates")] =
         [

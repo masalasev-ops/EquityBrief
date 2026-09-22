@@ -200,6 +200,135 @@ public static class RunScreen
             CandidateFamily.Maximum);
     }
 
+    // What each registered candidate's setups have come to, read at the looks it was registered
+    // with and at the level the graph gives it now.
+    //
+    // A candidate's window opens on the first night that evaluated it, and the candidates that
+    // night evaluated are the family its level is divided by: a candidate registered after a
+    // window opened was not among the things being tried over the evidence that window holds.
+    // Nothing here names a ticker, and nothing it hands the page could: a record is a count of
+    // setups and the sessions they were listed on.
+    // see: A candidate is judged by a sign-flip test over blocks of 63 sessions, with at least eight blocks
+    // see: Holm's level passes between the candidates by a graph fixed when they are registered, and every verdict shows the lifetime count
+    public static CandidateRegion Candidates(
+        IReadOnlyList<CandidateRow> register,
+        IReadOnlyList<CandidateNightRow> nights,
+        IReadOnlyList<CandidateSetupRow> setups,
+        DateOnly night,
+        DateTimeOffset at)
+    {
+        var rows = register
+            .Select(row => new RegisterRow(
+                row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
+                row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence))
+            .ToArray();
+
+        var standing = CandidateFamily.Standing(rows, at).ToDictionary(row => row.Candidate, StringComparer.Ordinal);
+
+        var registered = rows
+            .Where(row => row.Event == CandidateFamily.Registered)
+            .Select(row => row.Candidate)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        var opened = nights
+            .GroupBy(row => row.Candidate, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Min(row => row.SessionDate), StringComparer.Ordinal);
+
+        var evaluatedOn = nights
+            .GroupBy(row => row.SessionDate)
+            .ToDictionary(group => group.Key, group => group.Select(row => row.Candidate).ToArray());
+
+        var fired = setups
+            .GroupBy(row => row.Candidate, StringComparer.Ordinal)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<CandidateSetup>)
+                [
+                    .. group.Select(row => new CandidateSetup(
+                        row.SessionDate, row.Outcome ?? string.Empty, row.Null, row.NullAtSensitivity,
+                        row.BreakEven, row.ReturnPct, row.PlannedRisk, row.OnEarnings)),
+                ],
+                StringComparer.Ordinal);
+
+        // A retired candidate's record stops at the night it was retired on. Its blocks would
+        // otherwise go on completing over setups it stopped producing, and a look read after a
+        // candidate left the family would be a look nobody registered.
+        DateOnly Until(string candidate) =>
+            standing.ContainsKey(candidate)
+                ? night
+                : rows.Where(row => row.Event == CandidateFamily.Retired && row.Retires == candidate)
+                    .Select(row => DateOnly.FromDateTime(row.RegisteredAt.UtcDateTime))
+                    .DefaultIfEmpty(night)
+                    .Min();
+
+        Measured Read(string candidate, double level) =>
+            CandidateRecord.For(
+                fired.GetValueOrDefault(candidate, []),
+                opened.GetValueOrDefault(candidate, night),
+                Until(candidate),
+                level);
+
+        // A retirement the operator wrote after a promotion says so in its evidence, which is what
+        // tells a candidate that left the family having been shown from one that left having not.
+        bool Promoted(string candidate) =>
+            rows.Any(row => row.Event == CandidateFamily.Retired
+                && row.Retires == candidate
+                && row.Evidence is { } evidence
+                && evidence.StartsWith(CandidateFamily.PromotedBy, StringComparison.Ordinal));
+
+        var levels = new Dictionary<string, GraphLevel>(StringComparer.Ordinal);
+
+        foreach (var family in registered.GroupBy(candidate => opened.GetValueOrDefault(candidate, night)))
+        {
+            var members = (evaluatedOn.GetValueOrDefault(family.Key, [.. family])
+                .Where(candidate => registered.Contains(candidate, StringComparer.Ordinal))
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(candidate => candidate, StringComparer.Ordinal)
+                .Select(candidate => new GraphMember(
+                    candidate,
+                    Promoted(candidate),
+                    !standing.ContainsKey(candidate),
+                    level => Read(candidate, level).Verdict == CandidateRecord.Crossed)))
+                .ToArray();
+
+            foreach (var level in HolmGraph.Levels(members, ReasonVerdict.Significance))
+            {
+                levels[level.Candidate] = level;
+            }
+        }
+
+        return new CandidateRegion(
+            [
+                .. registered
+                    .OrderBy(candidate => candidate, StringComparer.Ordinal)
+                    .Select(candidate =>
+                    {
+                        var level = levels.GetValueOrDefault(
+                            candidate,
+                            new GraphLevel(candidate, ReasonVerdict.Significance, 1, false));
+
+                        return new CandidateRecordRow(
+                            candidate,
+                            standing.GetValueOrDefault(candidate)?.Parameters ?? "{}",
+                            standing.ContainsKey(candidate),
+                            level.Crossed,
+                            level.Level,
+                            level.Step,
+                            Read(candidate, level.Level));
+                    }),
+            ],
+            registered.Length,
+            standing.Count,
+            CandidateFamily.Maximum,
+            ReasonVerdict.Significance,
+            Blocks.Sessions,
+            Blocks.Floor,
+            Looks.At,
+            NullWin.CostBasisPoints,
+            NullWin.SensitivityBasisPoints);
+    }
+
     // The three orders of tonight's list over the nights whose listings record what each order
     // reads, up to the night shown: on each night the first rows each order would have drawn, the
     // setups among them, how many have had their whole outcome window by the night shown, and the

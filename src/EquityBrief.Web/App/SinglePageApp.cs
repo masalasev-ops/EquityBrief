@@ -1277,7 +1277,8 @@ public sealed class SinglePageApp : IComponent
         ShadowRegion shadow,
         PricedCalls? priced = null,
         IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null,
-        OrderComparison? orders = null)
+        OrderComparison? orders = null,
+        CandidateRegion? candidates = null)
     {
         var region = new StringBuilder();
 
@@ -1312,6 +1313,17 @@ public sealed class SinglePageApp : IComponent
             title: "Registered variants, measured but not listed",
             lede: "The correction divisor is shown because testing many variants makes one look good by chance.",
             region: "shadow"));
+
+        if (candidates is { } judged)
+        {
+            region.Append(Cards.Computed(
+                "Candidates' records",
+                marks.CandidateRecords(judged),
+                title: "What each registered candidate's setups have come to",
+                lede: "The running figure is monitoring; only a look changes a verdict, and no name is named.",
+                stamp: Cards.Night(night),
+                region: "candidates"));
+        }
 
         if (orders is { } comparison)
         {

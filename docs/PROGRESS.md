@@ -20118,3 +20118,139 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    The three orders of tonight's list compared, operating: its region now exists and is the
             surface its trigger is read on, at 0 of 8 blocks on every store until a recorded night's
             window closes.
+
+### 10.2 - a registered candidate is judged by a sign-flip test over its blocks at looks fixed when it was registered, against a bar simulated from each setup's own plan   2026-09-22
+Built:      the record a registered candidate is judged by. Its setups are the name-nights it fired
+            on, grouped into blocks of 63 exchange sessions keyed on the listing's session and
+            counted from the first night that evaluated it. A block counts once every session it
+            holds has had its whole outcome window, which is stricter than the cut-off the decision
+            states and is what keeps a block's sum from moving after a look has read it. Each
+            block's sum is the wins inside it less the bars their setups were given, and the verdict
+            is the share of the arrangements of those blocks' signs whose statistic is at least the
+            observed one, every arrangement enumerated since a look holds at most 16 blocks. The
+            Poisson-binomial tail over the same setups is drawn beside it, labelled, and decides
+            nothing.
+Looks:      a verdict is read at 8, 12 and 16 non-empty whole blocks and at no other count, with the
+            level spent across them by a Lan-DeMets function of the O'Brien-Fleming type. Each
+            look's boundary is found over the arrangements the blocks it holds allow, the
+            arrangements that crossed at an earlier look kept marked, and the boundary is the lowest
+            statistic at which the share crossing by that look stays inside the level released. The
+            first look cannot promote on the level a family of three is tested at: it releases
+            0.00071 and eight blocks cannot produce a p-value below 1 in 256. Below 8 blocks no
+            verdict is read at all and the region says how far there is to go.
+Calibrated: each setup's bar is simulated from the fill it was scored from, under the scatter of its
+            name's last 63 session changes, over the sessions its own cap left, with the round trip
+            added to the bar rather than to the paths. It is written on the night the setup resolves
+            and never recomputed, because the bars it reads and the calendar it reads are both kept
+            for a year while a record is read over about four years of nights: migration 32 adds
+            `null_win`, `null_win_at_sensitivity`, `planned_risk` and `on_earnings` to
+            `forward_return`, and a row decided before them carries none of them. A setup entered
+            and stopped on one session is counted as the loss it is, against the bar the worst fill
+            its zone offered sets, since the store does not say where in the zone that fill sat.
+Graph:      the level at the first step is 0.05 over the candidates the window opened with, and a
+            candidate whose record crosses passes its share in equal parts to those still standing,
+            while a candidate retired passes its to no one. A promotion is a retirement row whose
+            evidence opens with the word the runbook's procedure writes, which is what tells a
+            candidate that left the family having been shown from one that left having not.
+Drawn:      the run page gains a region between the shadow count and the order comparison. For each
+            registered candidate it states the verdict field, being what the last look read, how
+            many looks remain and the count the next waits for; the running figure beside it
+            labelled as monitoring; each look's setups, the share they won against the bar, the
+            level it spent, whether it crossed and the smallest excess it could have detected; the
+            design effect, what a loss cost in multiples of the planned risk, the realized
+            break-even beside the planned one, the setups entered and stopped on one session and
+            those stopped out on a session the name reported on, each reported and tested nowhere;
+            and the step the graph stands at with its level and the count ever registered. No name
+            appears in it, and the shadow column the night writes for every member still reaches no
+            screen.
+Superseded: the looks decision, by one that states how a boundary is found, because a look holds at
+            most sixteen blocks and an enumeration of its arrangements is exact where a simulation
+            of independent setups would assume the independence within a block that the blocks exist
+            because the setups do not have; and the decision naming what a registration fixes, whose
+            list named a boundary simulation's draw count and seed, which the boundary no longer
+            has. Both move to Previously decided with their reasoning, their citations are
+            repointed, and section 13.3's shadow before live guardrail is rewritten, since the
+            operator's ruling of 2026-09-22 draws a candidate's own record on the run page while the
+            guardrail said the shadow was shown nowhere. The prior text of each is in
+            `CHANGELOG.md`.
+Discharged: A candidate's shadow record computed, and a promotion written against it. Phase 8 built
+            the register and the shadow column and nothing that computed a record from them; this
+            builds the record, the looks, the graph, the calibrated bar and the two procedures a
+            person runs. Its trigger, one candidate registered, fires after 10.3 writes the command.
+Checked:    `candidate-verdicts` joins the roster, asserting the arithmetic the verdict turns on
+            against arrangements worked by hand, since the record is code no other check reaches:
+            the register's check asserts what the table refuses and the read surface's asserts what
+            the page draws.
+Mapped:     section 13.3's rewritten guardrail, clause by clause. Its first clause is held by the
+            first look's own test, the clause that no evaluation of a name is shown anywhere by the
+            test that fetches every route, the clause that a candidate's own record is drawn on the
+            run page beside the candidate by the region's test, and the clause that the nightly
+            figure is labelled as monitoring and the verdict field changed only by a look by the
+            test that adds a night's setups and reads the field again. The two clauses of every
+            change is recorded that the discharged obligation owed for a promotion are now held by
+            tests: the evidence a promotion writes, and the registration its retirement names.
+Tests:      1198, from 1183. Fifteen added. Ten work the verdict's arithmetic by hand: the share of
+            arrangements at least as large as the observed one, a case where the sign-flip and the
+            Poisson binomial disagree over where the wins sit inside a block, a permutation of the
+            outcomes across setups returning one, a first look at eight blocks that cannot cross at
+            the level a family of three is tested at, the levels the spending function releases, a
+            record below the floor withheld with its count against the floor, a look reading only
+            the setups whose whole window has closed with a nightly reading never moving the
+            verdict field, the graph passing a promoted level in equal shares and a retired one to
+            no one, a setup entered and stopped on one session counted as the loss it is against the
+            bar its zone's worst fill sets, and the calibrated bar falling where the plan asks for
+            more and rising with the round trip. Five read the region off the page: each look's
+            power beside the numbers the candidate was registered with, a record below the floor
+            drawing no verdict and saying how far it has to go, the run page drawing every
+            registered candidate's record with no ticker beside one, a promotion leaving the family
+            by a retirement whose evidence says so, and the registration a retirement names. One
+            rewritten: the guardrail that no screen carries a shadow evaluation of a name, now over
+            the four routes that must not name a candidate and the one region that may.
+Claims:     405, from 392. The record region arrives as the ten parts its row enumerates, and
+            section 17 gains the looks, the calibrated bar and the power stated at a look.
+Mutated:    the rule, stated before the sweep: break the property the verdict turns on, and then the
+            two properties that decide whether a verdict is read at all and what it is read against.
+            Not mutated: the graph's passing of a level, which is read over hand-worked members in
+            both directions and has no arithmetic to bend that the tests do not already state; and
+            the futility guideline, whose own clause is a comparison of two figures the record
+            already draws apart.
+            Predicted:
+            M1 the p-value counting only the arrangements strictly above the observed one: red in
+            the sign-flip test, whose eight blocks one way would read nought rather than one in 256,
+            and in the test where the sign-flip and the Poisson binomial disagree.
+            M2 a block counted whole one block before its window has closed: red in the record below
+            the floor, which would read eight blocks where seven stand, and in the test that adds a
+            night's setups and reads the verdict field again.
+            M3 the round trip subtracted from the calibrated bar rather than added: red in the
+            calibration test, where the bar at a round trip would fall below the bar at none.
+            Results: three runs of the whole suite, never a filter, in a detached worktree at
+            687bad4, each mutation reverted with `git checkout` and the file read back equal to the
+            committed text before the next, and the tree read clean after. The baseline is 1198 of
+            1198. M1 turned 2 red, the two predicted. M2 turned 1 red, one of the two predicted: the
+            record below the floor stayed green, because its seven blocks hold one setup each and
+            none sits in an eighth, and a completeness rule loosened by a block cannot make an empty
+            block count, only a whole one arrive early. That prediction named a test the mutation
+            cannot reach rather than a property nothing asserts: the rule it breaks is held at its
+            edge by the test that adds a setup after the eighth block and reads the verdict field
+            again, which is the one that went red. M3 turned 1 red, the one predicted. No mutation
+            survived.
+Rehearsed:  over a copy of the operator's store, never `data/` itself, migrated from schema 30 to 32
+            with the two migrations applied and nothing else written to it. Nine screens fetched,
+            each 200: tonight, and tonight for 2026-09-18 and 09-16, the run page and its
+            2026-09-18, AAPL's page and its 2026-09-18, the universe and the queue, the run page
+            drawn in two tenths of a second at 862,638 characters and its 2026-09-18 at 978,346. No
+            candidate condition stands registered on that store, so the record region says so rather
+            than drawing an empty record, and it carries what a reader needs either way: the looks
+            at 8, 12 and 16, the floor of 8, the block of 63 sessions, and the round trip of 10
+            basis points with 30 as its sensitivity. It ran as a scratch test in the sweep's
+            worktree once the sweep was done, removed after, and the worktree read clean.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1198 of 1198 tests
+            ran with none failed, migrations 0 to 32 with one added and none pending, schema version
+            32, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 405
+            claims, 405 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 412 placements and verdicts
+            reconciled against a floor of 34, 39 of 39 roster checks carried and all 39 run, 1198 of
+            1198 tests. Both gates ran over 687bad4 with this entry in place, and the operator's
+            store under `data/` was not touched by either; the rehearsal read a copy.
+Carried:    A candidate's power re-read at each look, and The candidates' proposed numbers read at
+            their looks, both operating: the region this builds is the surface each is read on, and
+            neither fires until a registered candidate reaches its first look.

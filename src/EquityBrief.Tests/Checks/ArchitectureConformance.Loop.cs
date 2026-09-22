@@ -82,11 +82,14 @@ public partial class ArchitectureConformance
             "AnUnresolvedSetupIsCountedInItsOwnColumnAndInNoFloorNoShareAndNoTail", "ForwardReturnSeries.IsScored"),
         Held("Shadow before live", "no condition appears on the list",
             "ACandidateThatFiresOnEveryMemberReachesNoRowsReasons", "ShortlistSeries.Reasons"),
-        Owed("Shadow before live", "until it has a shadow record meeting the minimum", PromotionOwed),
-        Held("Shadow before live", "Shadow conditions are scored and stored nightly",
-            "AShadowCandidateIsEvaluatedOnTheNightsNoLiveReasonFired", "shadow_reasons", Named.Stored),
-        Held("Shadow before live", "shown nowhere",
+        Held("Shadow before live", "until its record has crossed the boundary of a look",
+            "AFirstLookAtEightBlocksCannotCrossAtTheLevelTheFamilyIsTestedAt", "Looks.CrossedAt"),
+        Held("Shadow before live", "no evaluation of a name is shown anywhere",
             "NoScreenCarriesAShadowEvaluationOfAName", "shadow_reasons", Named.Stored),
+        Held("Shadow before live", "A candidate's own record is drawn on the run page, beside the candidate and never beside a name",
+            "TheRecordRegionStatesEachLooksPowerAndTheNumbersTheCandidateWasRegisteredWith", "MarkRenderer.CandidateRecords"),
+        Held("Shadow before live", "with the nightly figure labelled as monitoring and the verdict field changed only by a look",
+            "ALookReadsOnlyTheSetupsWhoseWholeWindowHasClosedAndANightlyReadingNeverMovesTheVerdictField", "CandidateRecord.For"),
         Held("Frozen windows", "is not changed during a window it is being measured over",
             "ALiveRuleThatMovedInsideAnOpenWindowIsFoundAndOneThatHasNotIsNot", "RuleVersions.Drifted", subject: "a rule"),
         Held("Frozen windows", "is not changed during a window it is being measured over",
@@ -107,8 +110,12 @@ public partial class ArchitectureConformance
             "AVersionIsReplacedInOneWriteThatClosesItWithItsEvidenceAndOpensTheVersionReplacingIt", "RuleVersionRow.Evidence", subject: "a rule version change"),
         Held("Every change is recorded", "the version it replaced",
             "TheVersionVerbOpensAWindowBesideItsLiveOneListsThemAndClosesOneNamingWhatReplacedIt", "RuleVersionRow.ReplacedBy", subject: "a rule version change"),
-        Owed("Every change is recorded", "is written with the evidence that produced it", PromotionOwed, subject: "a promotion"),
-        Owed("Every change is recorded", "the version it replaced", PromotionOwed, subject: "a promotion"),
+        Held("Every change is recorded", "is written with the evidence that produced it",
+            "APromotedCandidateLeavesTheFamilyByARetirementWhoseEvidenceSaysSo",
+            "CandidateFamily.PromotedBy", subject: "a promotion"),
+        Held("Every change is recorded", "the version it replaced",
+            "ARetirementNamesTheRegistrationItRetiresAndOnlyAPromotedOnesLevelPasses",
+            "CandidateRow.Retires", subject: "a promotion"),
     ];
 
     // The words a cell may join its clauses with, which no clause need hold.
@@ -955,7 +962,8 @@ public partial class ArchitectureConformance
 
     // Phase 10's rows, each drawn by the checkpoint that added it, so none reads as out of scope:
     // 10.1's reward to risk on tonight's list, the run page's measure of the list's order as the
-    // six parts its row states, and the blocks section 17 pins.
+    // six parts its row states, and the blocks section 17 pins; 10.2's record region as the ten
+    // parts its own row states, with the looks, the calibrated bar and the power section 17 pins.
     static readonly string[] PhaseTenRows =
     [
         CheckReach.Key("15.7 Tonight", "The list, the reward to risk or the plan's reason for none"),
@@ -966,6 +974,19 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.10 Run", "Tonight's order, the blocks holding one against the floor"),
         CheckReach.Key("15.10 Run", "Tonight's order, no comparison drawn before every order reaches it"),
         CheckReach.Key(Scope.LimitsTable, "Blocks a record is judged over"),
+        CheckReach.Key("15.10 Run", "Candidates' records, the verdict field stating what the last look read and what triggers the next"),
+        CheckReach.Key("15.10 Run", "Candidates' records, the nightly figure beside it labelled as monitoring"),
+        CheckReach.Key("15.10 Run", "Candidates' records, the Poisson-binomial tail labelled and deciding nothing"),
+        CheckReach.Key("15.10 Run", "Candidates' records, each look's setups and the share they won against the bar the calibration set"),
+        CheckReach.Key("15.10 Run", "Candidates' records, the level that look spent and whether it crossed its boundary"),
+        CheckReach.Key("15.10 Run", "Candidates' records, the smallest excess that look could have detected"),
+        CheckReach.Key("15.10 Run", "Candidates' records, the design effect and what a loss cost in multiples of the planned risk"),
+        CheckReach.Key("15.10 Run", "Candidates' records, the setups entered and stopped on one session and those stopped out on a session the name reported on"),
+        CheckReach.Key("15.10 Run", "Candidates' records, the step the graph stands at with its level and the count of candidates ever registered"),
+        CheckReach.Key("15.10 Run", "Candidates' records, no name anywhere in it"),
+        CheckReach.Key(Scope.LimitsTable, "Looks a candidate's verdict is read at"),
+        CheckReach.Key(Scope.LimitsTable, "The calibrated bar"),
+        CheckReach.Key(Scope.LimitsTable, "Power stated at a look"),
     ];
 
     // Rows the document gained after the prediction, each one claim.

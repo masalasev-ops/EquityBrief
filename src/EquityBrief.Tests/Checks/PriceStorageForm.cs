@@ -309,10 +309,15 @@ public class PriceStorageForm
         // shipped source when the reader was written and in no stated set.
         Assert.Equal(
             [
+                "CandidateRecord.cs: (double)inside.Length",
+                "CandidateRecord.cs: (double)setups.Count",
+                "ForwardReturnFiller.cs: (double?)null",
                 "ForwardReturnSeries.cs: (double)counted.Count",
                 "LadderBuilder.cs: (decimal?)null",
                 "LadderBuilder.cs: (double)value",
                 "LevelBuilder.cs: (double)value",
+                "Looks.cs: (double)(",
+                "Looks.cs: (double)At[look]",
                 "MarkRenderer.cs: (double)(",
                 "MarkRenderer.cs: (double)(",
                 "MarkRenderer.cs: (double)(",
@@ -321,8 +326,10 @@ public class PriceStorageForm
                 "MarkRenderer.cs: (double)bar.Volume",
                 "MarkRenderer.cs: (double)price",
                 "MarkRenderer.cs: (double)track.Total",
+                "NullWin.cs: (double)wins",
                 "RuleVersionScorer.cs: Convert.ToDouble(value",
-        "ShortlistBuilder.cs: Convert.ToDouble(value",
+                "ShortlistBuilder.cs: Convert.ToDouble(value",
+                "SignFlip.cs: (double)atLeast",
                 "Statistic.cs: (decimal)statistic",
                 "Statistic.cs: (double)price",
                 "Statistic.cs: (double)ratio",

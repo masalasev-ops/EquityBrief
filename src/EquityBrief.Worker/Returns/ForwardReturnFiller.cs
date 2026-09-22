@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Prices;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
@@ -25,6 +26,7 @@ public sealed class ForwardReturnFiller : IComponent
         Stores:
         [
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
@@ -61,17 +63,43 @@ public sealed class ForwardReturnFiller : IComponent
         LIMIT 1;
     ";
 
+    // The closes the trailing volatility is measured over, newest first and one more than the
+    // window, since a window of sessions of change is read over one more session of closes.
+    const string ClosesTo = @"
+        SELECT close
+        FROM bar
+        WHERE ticker = $ticker AND session_date <= $session_date
+        ORDER BY session_date DESC
+        LIMIT $sessions;
+    ";
+
+    // The name's prints on file, which decide whether the session a setup resolved on was one it
+    // reported on. The calendar holds a year, which is why the answer is stored beside the outcome
+    // rather than asked for when a record is read years later.
+    const string PrintsFor = @"
+        SELECT event_date, timing
+        FROM calendar
+        WHERE ticker = $ticker AND kind = $kind
+        ORDER BY event_date;
+    ";
+
     const string Upsert = @"
         INSERT INTO forward_return (
-            ticker, session_date, horizon, outcome, resolved_on, return_pct, base_rate, break_even)
+            ticker, session_date, horizon, outcome, resolved_on, return_pct, base_rate, break_even,
+            null_win, null_win_at_sensitivity, planned_risk, on_earnings)
         VALUES (
-            $ticker, $session_date, $horizon, $outcome, $resolved_on, $return_pct, $base_rate, $break_even)
+            $ticker, $session_date, $horizon, $outcome, $resolved_on, $return_pct, $base_rate, $break_even,
+            $null_win, $null_win_at_sensitivity, $planned_risk, $on_earnings)
         ON CONFLICT (ticker, session_date, horizon) DO UPDATE SET
             outcome = excluded.outcome,
             resolved_on = excluded.resolved_on,
             return_pct = excluded.return_pct,
             base_rate = excluded.base_rate,
-            break_even = excluded.break_even;
+            break_even = excluded.break_even,
+            null_win = excluded.null_win,
+            null_win_at_sensitivity = excluded.null_win_at_sensitivity,
+            planned_risk = excluded.planned_risk,
+            on_earnings = excluded.on_earnings;
     ";
 
     // The base rate is written across every row of a horizon once it is known,
@@ -196,9 +224,18 @@ public sealed class ForwardReturnFiller : IComponent
                         int.Parse(horizon, CultureInfo.InvariantCulture), after, origin?.Close ?? 0m),
                 };
 
+                // The bar a setup with no edge would have cleared, computed on the night the setup
+                // resolves rather than when a record is read: it is simulated under the name's
+                // trailing volatility and read against the calendar, and both are dropped a year
+                // back while a record is read over four years of nights.
+                // see: A setup's null win probability is calibrated from its own plan, and its planned break-even is shown beside it
+                var calibrated = horizon == ForwardReturnSeries.Setup
+                    ? await CalibratedAsync(connection, listing, outcome, origin, stop, target, after, cancellation)
+                    : Calibration.None;
+
                 if (!listing.Outcomes.ContainsKey(horizon) || outcome.Outcome is not null)
                 {
-                    await WriteAsync(connection, transaction, listing.Ticker, listing.SessionDate, outcome, cancellation);
+                    await WriteAsync(connection, transaction, listing.Ticker, listing.SessionDate, outcome, calibrated, cancellation);
                     written++;
                 }
 
@@ -275,12 +312,174 @@ public sealed class ForwardReturnFiller : IComponent
         return (Read("stop"), Read("firstTradedTarget"), Read("entryHigh"));
     }
 
+    // What the calibration came to for one setup: the bar at the pinned round trip and at the
+    // sensitivity beside it, what the plan put at risk from the fill, and whether the session it
+    // resolved on was one the name reported on.
+    sealed record Calibration(double? Null, double? Sensitivity, double? Risk, bool? OnEarnings)
+    {
+        public static Calibration None { get; } = new(null, null, null, null);
+    }
+
+    // The calibrated bar for a resolved setup, from the fill it was scored from.
+    //
+    // A setup nobody entered and one still open have no bar, for the reason they have no return:
+    // the bar is what a plan with no edge would have done from the price this one was filled at,
+    // and an unfilled plan was never in the market.
+    static async Task<Calibration> CalibratedAsync(
+        SqliteConnection connection,
+        Listing listing,
+        ForwardReturn outcome,
+        (decimal Close, decimal? RawClose)? origin,
+        decimal? stop,
+        decimal? target,
+        IReadOnlyList<ReturnBar> after,
+        CancellationToken cancellation)
+    {
+        if (outcome.Outcome is not (ForwardReturnSeries.Win or ForwardReturnSeries.Loss)
+            || outcome.EnteredAt is not { } fill || fill <= 0
+            || outcome.SessionsLeft is not { } left || left <= 0
+            || stop is not { } storedStop
+            || target is not { } storedTarget
+            || origin is not { } bar)
+        {
+            return Calibration.None;
+        }
+
+        // The plan keeps the scale the series had on the listing night, as the scoring reads it.
+        // see: An outcome once decided is never rewritten, and a setup still in play is scored with its plan scaled by its listing session's adjustment factor
+        var restated = bar.RawClose is { } raw && raw > 0 ? bar.Close / raw : 1m;
+        var floor = storedStop * restated;
+        var ceiling = storedTarget * restated;
+        var session = DateOnly.ParseExact(listing.SessionDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        var risk = floor < fill ? Statistic.FromRatio((fill - floor) / fill) * 100 : (double?)null;
+        var reported = OnEarnings(await PrintsAsync(connection, listing.Ticker, cancellation), after, outcome.ResolvedOn);
+
+        var volatility = NullWin.Volatility(Changes(await ClosesToAsync(connection, listing.Ticker, listing.SessionDate, cancellation)));
+
+        if (volatility is not { } scatter || floor >= fill || ceiling <= fill)
+        {
+            return new Calibration(null, null, risk, reported);
+        }
+
+        var seed = NullWin.SeedFor(listing.Ticker, session.DayNumber);
+        var below = Statistic.FromRatio(floor / fill);
+        var above = Statistic.FromRatio(ceiling / fill);
+
+        return new Calibration(
+            NullWin.For(below, above, scatter, left, NullWin.CostBasisPoints, seed),
+            NullWin.For(below, above, scatter, left, NullWin.SensitivityBasisPoints, seed),
+            risk,
+            reported);
+    }
+
+    // A session's change over the one before it, as the volatility reads them.
+    static IReadOnlyList<double> Changes(IReadOnlyList<decimal> closes)
+    {
+        var changes = new List<double>(Math.Max(0, closes.Count - 1));
+
+        for (var at = 1; at < closes.Count; at++)
+        {
+            changes.Add(closes[at - 1] <= 0 ? 0 : Statistic.FromRatio(closes[at] / closes[at - 1]));
+        }
+
+        return changes;
+    }
+
+    // Whether the session a setup resolved on was one the name reported on.
+    //
+    // A report before the open moves that day's session and one after the close moves the next,
+    // and a timing the provider left unstated is read as the print's own day, which is the reading
+    // that assumes least and is the one the ladder's earnings rule takes.
+    // see: The second book is keyed to a dated event, and an earnings print is the only kind on file
+    static bool? OnEarnings(
+        IReadOnlyList<(DateOnly Date, string Timing)> prints,
+        IReadOnlyList<ReturnBar> after,
+        DateOnly? resolvedOn)
+    {
+        if (resolvedOn is not { } on)
+        {
+            return null;
+        }
+
+        foreach (var (date, timing) in prints)
+        {
+            var landed = timing == AfterTheClose
+                ? after.FirstOrDefault(session => session.SessionDate > date).SessionDate
+                : after.FirstOrDefault(session => session.SessionDate >= date).SessionDate;
+
+            if (landed != default && landed == on)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public const string AfterTheClose = "after";
+
+    public const string EarningsKind = "earnings";
+
+    static async Task<IReadOnlyList<(DateOnly Date, string Timing)>> PrintsAsync(
+        SqliteConnection connection,
+        string ticker,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PrintsFor;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$kind", EarningsKind);
+
+        var prints = new List<(DateOnly, string)>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            prints.Add((
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.IsDBNull(1) ? string.Empty : reader.GetString(1)));
+        }
+
+        return prints;
+    }
+
+    static async Task<IReadOnlyList<decimal>> ClosesToAsync(
+        SqliteConnection connection,
+        string ticker,
+        string sessionDate,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ClosesTo;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$session_date", sessionDate);
+        command.Parameters.AddWithValue("$sessions", NullWin.VolatilityWindow + 1);
+
+        var closes = new List<decimal>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            closes.Add(Money.FromStorage(reader.GetString(0)));
+        }
+
+        closes.Reverse();
+
+        return closes;
+    }
+
     async Task WriteAsync(
         SqliteConnection connection,
         System.Data.Common.DbTransaction transaction,
         string ticker,
         string sessionDate,
         ForwardReturn outcome,
+        Calibration calibrated,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -303,6 +502,17 @@ public sealed class ForwardReturnFiller : IComponent
         // against.
         // see: A condition is judged against the break-even its own plan demands
         command.Parameters.AddWithValue("$break_even", (object?)outcome.BreakEven ?? DBNull.Value);
+
+        // The calibrated bar beside the planned one, what the plan put at risk from the fill, and
+        // whether the name reported on the session it resolved on. The setup horizon's alone: the
+        // two session horizons ask what the market did and have no plan to simulate.
+        // see: The calibrated null carries a round trip of ten basis points, and thirty is shown as a sensitivity
+        command.Parameters.AddWithValue("$null_win", (object?)calibrated.Null ?? DBNull.Value);
+        command.Parameters.AddWithValue("$null_win_at_sensitivity", (object?)calibrated.Sensitivity ?? DBNull.Value);
+        command.Parameters.AddWithValue("$planned_risk", (object?)calibrated.Risk ?? DBNull.Value);
+        command.Parameters.AddWithValue(
+            "$on_earnings",
+            calibrated.OnEarnings is { } reported ? reported ? 1 : 0 : DBNull.Value);
 
         // The base rate is written by the pass below rather than here, because
         // it is not known until every listing has been read.
