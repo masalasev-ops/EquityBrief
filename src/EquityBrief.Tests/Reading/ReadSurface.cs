@@ -2596,6 +2596,31 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public async Task ANightsDurationIsTheRunThatWroteItsListLastWhenThatRunCarriesTheEarlierInstants()
+    {
+        // A night run by hand after midnight UTC and then run again for its session. The
+        // second run is on the replay clock, which stamps its stages from 21:10Z on the
+        // session, so the run that wrote the list the store holds carries the earlier
+        // instants. The header draws that run's span, as the fired count beside it is that
+        // run's list.
+        using var store = await FixtureExpectations.WithReturns();
+
+        Insert(store, RunRow("night-by-hand", "fetch", "2026-09-04T02:44:30Z", "2026-09-04T02:48:00Z"));
+        Insert(store, RunRow("night-by-hand", "listings", "2026-09-04T02:50:06Z", "2026-09-04T02:50:07Z"));
+        Insert(store, RunRow("night-by-hand", "close", "2026-09-04T02:50:07Z", "2026-09-04T02:50:34Z"));
+        Insert(store, RunRow("night-again", "fetch", "2026-09-03T21:10:00Z", "2026-09-03T21:14:00Z"));
+        Insert(store, RunRow("night-again", "listings", "2026-09-03T21:15:38Z", "2026-09-03T21:15:39Z"));
+        Insert(store, RunRow("night-again", "close", "2026-09-03T21:15:39Z", "2026-09-03T21:15:52Z"));
+
+        var api = Api(store);
+
+        Assert.Equal(
+            ["night-again", "night-by-hand"],
+            [.. (await api.RunLogAsync(new DateOnly(2026, 9, 3))).Select(row => row.RunId).Distinct().Order(StringComparer.Ordinal)]);
+        Assert.Equal("00:05:52", await api.NightDurationAsync(new DateOnly(2026, 9, 3)));
+    }
+
+    [Fact]
     public async Task AReasonsRecordCountsEverySetupThatFiredItAndShowsNoRateBelowTheMinimum()
     {
         // Section 15.10's reason record, in the state this build is in for its

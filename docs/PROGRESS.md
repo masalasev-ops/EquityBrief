@@ -19368,3 +19368,58 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because this corrects what a claim already placed asserts rather than
             adding any. Both gates ran over the tree carrying this entry, and the operator's store
             under `data/` was not touched by either.
+
+### 5.6 - correction: a night's duration is the run that wrote its list last, where the run with the newest start was read as that run and a night run again for its session drew the other run's span   2026-09-22
+Corrects:   the run page's operational header and tonight's header state how long the night took,
+            over the run whose list the store holds, less the overnight queue's row. The run was
+            chosen as the one whose listings row carries the newest start. A night run again for a
+            named session runs on the replay clock and stamps its stages from 21:10 UTC on that
+            session, earlier than a scheduled night at 23:30 UTC or a night run by hand after
+            midnight UTC, so the run whose list the store holds was passed over and the header drew
+            the other run's span beside this run's fired count.
+Found:      on 2026-09-22, by the phase 8 sign-off review over 358fc8a, and reproduced by this
+            correction over a copy of the operator's store before any change: the page for the
+            session of 2026-09-18 drew "432 of 503 name(s) fired", the list of
+            `night-20260919T045233Z-for-2026-09-18`, written second, beside "night took 00:06:03",
+            the span of `night-20260919T024430Z`, which ran by hand from 02:44 UTC and fired 431.
+            The run log holds the replay's listings row at rowid 4156 and the by-hand run's at 3226.
+            The operator ruled on 2026-09-22 that it is labelled 5.6, the checkpoint that built the
+            duration, where the order it read was put there by a correction filed under 5.7.
+Repaired:   `ReadApi.NightDurationAsync` takes the run that wrote the night's listings row last, by
+            the order the rows were written, the night decided by the clock over each row's start
+            as the run log's own read decides it. That is the order `NewestRun`, `QueueRows` and
+            the newest pass for a name already read by, for the same reason. The queue row stays
+            out of the span.
+Swept:      every read in `ReadApi` and `RunScreen` that orders the run log by its instants. The
+            pass a page started is chosen by the newest start at or after the press, and a pass is
+            not a night, so no replay stamps it. The run page's stage table orders a night's rows by
+            start, which draws two runs of one session interleaved; the review left that judgement
+            as it stands, and it is carried in its handoff. `NoYearAsync` reads the backfill rows by
+            the newest start, and was put to the operator as a finding and then withdrawn by this
+            correction before any change: the name page reads it only for a name holding no bar, so
+            a run that stored the name's year hides the line whichever row is newest, and two runs
+            of one session that stored nothing write the same row since the 1.2 correction that
+            counts a session once.
+Stored:     nothing is rewritten. This is a read, so the operator's page for the session of
+            2026-09-18 draws the span of the run whose list it holds from the merge.
+Guarded:    `read-surface`, one test added,
+            `ANightsDurationIsTheRunThatWroteItsListLastWhenThatRunCarriesTheEarlierInstants`: a
+            night run by hand from 02:44 UTC on the day after its session, then run again for its
+            session with stages stamped from 21:10 UTC on it, written second. Both runs are the
+            night's on the run log, and the duration is the second run's, 00:05:52.
+Expected:   derived, as the 5.7 correction that chose one run met it: the run is stated by the
+            header's rule, the run whose list the store holds, and asserted over a constructed
+            store. No expectation file changes, because the committed fixture is one night and
+            holds no night run again.
+Tests:      1168, from 1167. One added to `read-surface`. No migration. No file this correction
+            edits is a source either evaluator version or the ladder rules' code version pins, so
+            no pin moves.
+Mutated:    the rule, stated before the sweep: reintroduce the read the review found, the run
+            chosen by the newest start.
+            Predicted:
+            MS the listings rows read newest start first: the new test red, at the duration, which
+            reads 00:06:04, and every other test green, the three duration tests already in
+            `read-surface` among them.
+            Results: FILL
+Held:       FILL
+Verified:   FILL
