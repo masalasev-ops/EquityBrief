@@ -19472,6 +19472,19 @@ Mutated:    the rule, stated before the sweep: read a name's last asked session 
             `ASpentNamesWeekIsCountedFromTheSessionItWasLastAskedForWhenThatNightStartedAfterMidnightUtc`
             red, each at the week night of 2026-08-24, which asks for nothing, and every other test
             green.
-            Results: FILL
-Held:       FILL
-Verified:   FILL
+            Results: each mutation over the whole suite in a scratch worktree at e1a23a1, never a
+            filter, and reverted between runs. That commit's entry did not yet say its Windows run,
+            so `two-platform`'s record test was red there before any mutation, and each result below
+            is that one and the mutation's own. MU: red, the new test, at the first retry session
+            run again, which held 2 retries where the night held 1, 1167 of 1169 green. MW: red,
+            the new test and the week test after midnight UTC, each at the week night of
+            2026-08-24, which asked for AAPL 0 times, 1166 of 1169 green.
+Held:       the prediction, exactly, for both.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1169 of 1169 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this asserts what a claim already placed states rather than
+            adding any. Both gates ran over the tree carrying this entry, and the operator's store
+            under `data/` was not touched by either.
