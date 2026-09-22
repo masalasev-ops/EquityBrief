@@ -211,26 +211,16 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     // night's members rather than today's.
     var universe = await read.UniverseAsync(index, night);
 
-    // The strengths are the bands of the night walked, which on a page opened
-    // with no night is the newest night the listings hold and not the newest
-    // bands the store holds: a night can store bands and stop before it lists.
-    var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
-
-    foreach (var member in universe)
-    {
-        var found = await read.LevelsAsync(member.Ticker, night);
-
-        strengths[member.Ticker] = found.Count == 0 ? 0 : found.Max(band => band.Strength);
-    }
-
     // The neighbours on the list, in the order the list itself is drawn in. The
     // walk is about position, so it takes the same ordering with the same inputs
-    // rather than a cheaper one that could order differently.
+    // rather than a cheaper one that could order differently. Those inputs are the
+    // night walked's own listing rows, which on a page opened with no night is the
+    // newest night the listings hold and not the newest plans the store holds: a
+    // night can store plans and stop before it lists.
     var ordered = night is { } evening
         ? TonightScreen.Rows(
             evening,
             listings,
-            strengths,
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
             await read.ClosesToTheNightAsync(evening))
         : [];
@@ -521,21 +511,13 @@ app.MapGet("/screens/tonight/{night?}", async (
     // that night stored even after it has left.
     var universe = await read.UniverseAsync(index, dated);
 
-    // The band strength the ordering breaks ties on, read from the bands the
-    // night shown stored rather than worked out here, so an earlier night is
-    // ordered by its own bands and not by the newest. The close each row shows
-    // comes from the night's own bar, beside the session before it, because a
-    // close from one session and a change computed from another is one row
-    // saying two things.
-    var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
-
-    foreach (var row in universe)
-    {
-        var bands = await read.LevelsAsync(row.Ticker, dated);
-
-        strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
-    }
-
+    // The plan's reward to risk the ordering breaks ties on is read off the
+    // night shown's own listing rows, which kept the plan as it stood that night,
+    // so an earlier night is ordered by its own plans and not by the newest. The
+    // close each row shows comes from the night's own bar, beside the session
+    // before it, because a close from one session and a change computed from
+    // another is one row saying two things.
+    //
     // The three the row states beside the name, the close and the reasons. The
     // distance mark takes the universe screen's own cell, so tonight's list and
     // the universe table draw one shape from one set of numbers; the day change
@@ -547,7 +529,6 @@ app.MapGet("/screens/tonight/{night?}", async (
     var rows = TonightScreen.Rows(
         dated,
         listings,
-        strengths,
         cells,
         await read.ClosesToTheNightAsync(dated),
         await read.SuspectSeriesAsync(),
@@ -755,7 +736,8 @@ app.MapGet("/screens/run/{night?}", async (
             RunScreen.Harness(PhaseReport(builder, checkout)),
             RunScreen.Shadow(await read.RegisteredCandidatesAsync(), clock.UtcNow),
             RunScreen.Priced(await read.PaidCallSpendsAsync()),
-            TonightScreen.WrittenBeforeTheCorrection(await read.ListingsAsync(dated))),
+            TonightScreen.WrittenBeforeTheCorrection(await read.ListingsAsync(dated)),
+            RunScreen.Orders(everyListing, dated)),
         "text/html; charset=utf-8");
 });
 

@@ -953,6 +953,21 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.15 Queue", "Which lane would write one"),
     ];
 
+    // Phase 10's rows, each drawn by the checkpoint that added it, so none reads as out of scope:
+    // 10.1's reward to risk on tonight's list, the run page's measure of the list's order as the
+    // six parts its row states, and the blocks section 17 pins.
+    static readonly string[] PhaseTenRows =
+    [
+        CheckReach.Key("15.7 Tonight", "The list, the reward to risk or the plan's reason for none"),
+        CheckReach.Key("15.10 Run", "Tonight's order, the three orders of tonight's list over the twenty each would draw"),
+        CheckReach.Key("15.10 Run", "Tonight's order, the old order named as the benchmark"),
+        CheckReach.Key("15.10 Run", "Tonight's order, the setups each order drew"),
+        CheckReach.Key("15.10 Run", "Tonight's order, the setups whose whole window has closed"),
+        CheckReach.Key("15.10 Run", "Tonight's order, the blocks holding one against the floor"),
+        CheckReach.Key("15.10 Run", "Tonight's order, no comparison drawn before every order reaches it"),
+        CheckReach.Key(Scope.LimitsTable, "Blocks a record is judged over"),
+    ];
+
     // Rows the document gained after the prediction, each one claim.
     static readonly string[] AddedAfterThePrediction =
     [
@@ -974,6 +989,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.CatalogueTable, "Request drain"),
         CheckReach.Key(Scope.MatrixTable, "Request drain"),
         .. PhaseNineRows,
+        .. PhaseTenRows,
     ];
 
 

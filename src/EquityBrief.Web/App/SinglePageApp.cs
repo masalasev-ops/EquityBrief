@@ -1248,7 +1248,7 @@ public sealed class SinglePageApp : IComponent
         return $"<p class=\"written-before-correction\" data-sessions=\"{Escaped(dates)}\">The listings for {Escaped(dates)} were written before a correction: {WrittenBeforeTheCorrectionText}.</p>";
     }
 
-    // The run page, section 15.10's six regions, in the order that section
+    // The run page, section 15.10's seven regions, in the order that section
     // states them.
     //
     // Two of the six are absent and say so. The shadow candidates need the
@@ -1276,7 +1276,8 @@ public sealed class SinglePageApp : IComponent
         HarnessCounts? harness,
         ShadowRegion shadow,
         PricedCalls? priced = null,
-        IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null)
+        IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null,
+        OrderComparison? orders = null)
     {
         var region = new StringBuilder();
 
@@ -1311,6 +1312,17 @@ public sealed class SinglePageApp : IComponent
             title: "Registered variants, measured but not listed",
             lede: "The correction divisor is shown because testing many variants makes one look good by chance.",
             region: "shadow"));
+
+        if (orders is { } comparison)
+        {
+            region.Append(Cards.Computed(
+                "Tonight's order",
+                marks.TonightsOrder(comparison),
+                title: "The order the list is drawn in, against the one it replaced",
+                lede: "Nothing is compared until every order has enough whole windows behind it.",
+                stamp: Cards.Night(night),
+                region: "orders"));
+        }
 
         region.Append(Cards.Computed(
             "Stale and failed",

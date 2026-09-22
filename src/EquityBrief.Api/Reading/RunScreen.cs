@@ -3,6 +3,7 @@ using System.Text.Json;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Shortlist;
+using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Api.Reading;
@@ -197,6 +198,64 @@ public static class RunScreen
             ShadowColumn.StandingAt(register, at).Count,
             CandidateFamily.Divisor(register, at),
             CandidateFamily.Maximum);
+    }
+
+    // The three orders of tonight's list over the nights whose listings record what each order
+    // reads, up to the night shown: on each night the first rows each order would have drawn, the
+    // setups among them, how many have had their whole outcome window by the night shown, and the
+    // blocks those fall in, counted from the first night that recorded it.
+    //
+    // A drawn row whose plan computes no reward to risk has no stop or no traded target, so it is
+    // no setup and adds nothing, which is part of what the orders differ in: the old order draws
+    // such a row wherever its band strength puts it. The benchmark comes first because the other
+    // two are read against it.
+    // see: The order tonight's list is drawn in is compared against the order it replaces, declared before any record is read
+    // see: A listing records the band strength the old order read, and the three orders are compared over the nights that recorded it
+    public static OrderComparison Orders(IReadOnlyList<ListingRow> listings, DateOnly night)
+    {
+        var recorded = listings
+            .Where(listing => listing.BandStrength is not null && listing.SessionDate <= night)
+            .GroupBy(listing => listing.SessionDate)
+            .OrderBy(group => group.Key)
+            .Select(group => (Night: group.Key, Fired: group.Where(listing => listing.FiredCount > 0).Select(TonightScreen.Ranked).ToArray()))
+            .ToArray();
+
+        var first = recorded.Length == 0 ? (DateOnly?)null : recorded[0].Night;
+
+        OrderMeasured Measured(TonightScreen.Order order, string key)
+        {
+            var (setups, closed) = (0, 0);
+            var blocks = new HashSet<int>();
+
+            foreach (var (on, fired) in recorded)
+            {
+                var drawn = TonightScreen.Ordered(fired, order)
+                    .Take(SinglePageApp.TonightDrawn)
+                    .Count(row => row.RewardToRisk is not null);
+
+                setups += drawn;
+
+                if (drawn > 0 && Blocks.Closed(on, night))
+                {
+                    closed += drawn;
+                    blocks.Add(Blocks.Of(first!.Value, on));
+                }
+            }
+
+            return new OrderMeasured(key, TonightScreen.Named(order), order == TonightScreen.Order.FiredThenBandStrength, setups, closed, blocks.Count);
+        }
+
+        return new OrderComparison(
+            [
+                Measured(TonightScreen.Order.FiredThenBandStrength, "fired-then-band-strength"),
+                Measured(TonightScreen.Order.FiredThenRewardToRisk, "fired-then-reward-to-risk"),
+                Measured(TonightScreen.Order.RewardToRiskAlone, "reward-to-risk-alone"),
+            ],
+            first,
+            recorded.Length,
+            SinglePageApp.TonightDrawn,
+            Blocks.Sessions,
+            Blocks.Floor);
     }
 
     public static IReadOnlyList<ReasonTrackRow> Tracks(IReadOnlyList<ReasonRecord> records) =>

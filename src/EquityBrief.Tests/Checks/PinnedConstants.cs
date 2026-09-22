@@ -13,6 +13,7 @@ using EquityBrief.Core.Swings;
 using EquityBrief.Core.Volume;
 using EquityBrief.Data;
 using EquityBrief.Tests.Harness;
+using EquityBrief.Web.App;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Research;
 using EquityBrief.Worker.Rules;
@@ -74,6 +75,7 @@ public class PinnedConstants
         const string Admissible = "Source admissibility";
         const string Significance = "Significance threshold";
         const string Versions = "Rule versions scored at once";
+        const string BlocksRow = "Blocks a record is judged over";
 
         return
         [
@@ -102,7 +104,7 @@ public class PinnedConstants
             new("Tranches, exits", "3", LadderSeries.MostTranches, "LadderSeries.MostTranches"),
             new("Tranches, exits", "5", LadderSeries.MostExits, "LadderSeries.MostExits"),
             new("Earnings horizon", "20", ShortlistSeries.EarningsHorizonSessions, "ShortlistSeries.EarningsHorizonSessions"),
-            new("List display", "20", TonightScreen.Drawn, "TonightScreen.Drawn"),
+            new("List display", "20", SinglePageApp.TonightDrawn, "SinglePageApp.TonightDrawn"),
             new(QueueRow, "1", OvernightQueue.DefaultHours, "OvernightQueue.DefaultHours"),
             new(QueueRow, "6.10", null, Checkpoint, () => Landed("6.10")),
             new(QueueRow, "503", null, Measured, () => Recorded("503")),
@@ -131,6 +133,8 @@ public class PinnedConstants
             new(Significance, "0.05", (decimal)ReasonVerdict.Significance, "ReasonVerdict.Significance"),
             new(Significance, "6", ReasonVerdict.LiveFamily, "ReasonVerdict.LiveFamily"),
             new(Significance, "8", CandidateFamily.Maximum, "CandidateFamily.Maximum"),
+            new(BlocksRow, "63", Blocks.Sessions, "Blocks.Sessions"),
+            new(BlocksRow, "8", Blocks.Floor, "Blocks.Floor"),
             new(Versions, "2", RuleVersions.MostOfTheMergeDistance, "RuleVersions.MostOfTheMergeDistance"),
             new(Versions, "4", RuleVersions.MostPerRule, "RuleVersions.MostPerRule"),
             new(Versions, "3", LadderRules.All.Count - 1, "the ladder rules other than the merge distance"),

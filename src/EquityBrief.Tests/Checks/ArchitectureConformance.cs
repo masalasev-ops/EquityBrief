@@ -1322,7 +1322,8 @@ public partial class ArchitectureConformance
         // 48 at the one that drew the two cases as two labelled halves, and 49 at the one that
         // drew the risks one part to a risk. 55 at 9.0, which added what a row on tonight's list
         // says about research and what it can ask for, and the queue screen's four regions.
-        Assert.Equal(56, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 57 at 10.1, which added the run page's region measuring the order tonight's list is drawn in.
+        Assert.Equal(57, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1360,7 +1361,9 @@ public partial class ArchitectureConformance
         // 131 at the one that drew the two cases as two labelled halves, and 132 at the one that
         // drew the risks one part to a risk. 138 at 9.0, which added two rows to tonight's list
         // and the queue screen's four, and 139 at 9.4, which states which lane would write one.
-        Assert.Equal(139, inDocument.Length);
+        // 146 at 10.1: tonight's list row gains the reward to risk it draws, and the run page's
+        // measure of the list's order arrives as the six parts its row enumerates.
+        Assert.Equal(146, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1403,7 +1406,7 @@ public partial class ArchitectureConformance
 
         // An exact count rather than a floor, so a decomposition added without being argued
         // for fails here; the argument for each is its checkpoint's entry.
-        Assert.Equal(135, checkedElements);
+        Assert.Equal(142, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

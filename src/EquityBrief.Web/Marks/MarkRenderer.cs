@@ -198,7 +198,13 @@ public sealed record ListingCell(
     // holding none. The key under each figure is not one of them, so most of the index
     // is null here even though the overnight queue writes that key for every name.
     // see: A researched name is one holding an accepted section besides the key under each figure
-    DateOnly? ResearchedOn = null);
+    DateOnly? ResearchedOn = null,
+    // The reward to risk the night's plan computes from its first tranche, which breaks a tie in
+    // the fired count, and where it computes none the plan's own words for why. Exactly one of
+    // the two is set on a row the list draws.
+    // see: Tonight's list breaks a tie in fired count by the plan's reward to risk, and a row with none is drawn after every row with one and says why
+    decimal? RewardToRisk = null,
+    string? NoRewardToRisk = null);
 
 // A name whose stored series may not reflect a dividend or split, as a page states it:
 // when its refetch was last asked for and the reason it failed, both as the store holds
@@ -303,6 +309,15 @@ public sealed record BaseRateLine(string Window, double? Rate);
 // candidate is doing before deciding whether to keep it.
 // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
 public sealed record ShadowRegion(int Registered, int Divisor, int Maximum);
+
+// One order of tonight's list as the run page measures it: its name and whether it is the benchmark,
+// the setups among the rows it would have drawn, how many of those have had their whole outcome
+// window, and how many blocks hold at least one of those.
+public sealed record OrderMeasured(string Key, string Name, bool Benchmark, int Setups, int Closed, int Blocks);
+
+// The three orders over the nights that recorded what each reads, from the first of them, with the
+// row count each is measured over, the block length and the floor below which nothing is compared.
+public sealed record OrderComparison(IReadOnlyList<OrderMeasured> Orders, DateOnly? From, int Nights, int Drawn, int BlockSessions, int Floor);
 
 // The four verdict counts of the last phase report.
 //
@@ -1865,12 +1880,14 @@ public sealed class MarkRenderer : IComponent
         return strip.ToString();
     }
 
+    // What a row with no reward to risk says where it carries no reason of its own.
+    public const string NoRewardToRiskStated = "the plan states no reward to risk";
+
     // Tonight's list, section 15.7's third region.
     //
-    // One row per name that fired, ordered by how many fired then by band
-    // strength, at most twenty drawn. The true count is in the header rather
-    // than here, because a page that shows twenty every night cannot tell you
-    // how busy the night was.
+    // One row per name that fired, in the order the rows arrive in, at most
+    // twenty drawn. The true count is in the header rather than here, because a
+    // page that shows twenty every night cannot tell you how busy the night was.
     // see: The page shows twenty and states the true count
     public string TonightList(
         IReadOnlyList<ListingCell> rows,
@@ -1900,7 +1917,7 @@ public sealed class MarkRenderer : IComponent
         var byReason = records?.ToDictionary(record => record.Reason, StringComparer.Ordinal);
 
         list.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table\" data-rows=\"{shown.Length}\">");
-        list.Append("<thead><tr><th>Name</th><th class=\"r\">Close</th><th class=\"r\">Day</th><th>Trend</th><th class=\"c\">Distance to levels</th>");
+        list.Append("<thead><tr><th>Name</th><th class=\"r\">Close</th><th class=\"r\">Day</th><th>Trend</th><th class=\"c\">Distance to levels</th><th class=\"r\">Reward to risk</th>");
 
         foreach (var column in columns)
         {
@@ -1982,6 +1999,14 @@ public sealed class MarkRenderer : IComponent
             // a shape means one thing on both screens.
             list.Append(Invariant, $"<td class=\"c\">{(row.Distance is { } cell ? DistanceRow(cell) : "<span class=\"degraded\" data-distance=\"none\">no bands stored for this name</span>")}</td>");
 
+            // The figure that breaks a tie in the fired count, and where the plan computes none the
+            // plan's own words for why, so a row drawn after its neighbours says what put it there.
+            // It is a fact about the chart and not a probability of anything.
+            // see: Tonight's list breaks a tie in fired count by the plan's reward to risk, and a row with none is drawn after every row with one and says why
+            list.Append(row.RewardToRisk is { } ratio
+                ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">{Figures.Ratio(ratio)}</td>")
+                : $"<td class=\"reward-to-risk\"><span class=\"degraded\" data-reward-to-risk=\"none\">{Escaped(row.NoRewardToRisk ?? NoRewardToRiskStated)}</span></td>");
+
             list.Append(ReasonsForRow(row, columns, byReason));
             list.Append("</tr>");
         }
@@ -1993,7 +2018,7 @@ public sealed class MarkRenderer : IComponent
         // see: A reason's record is displayed, beside the reason and never beside the name
         if (byReason is not null)
         {
-            list.Append("<tfoot><tr><td colspan=\"5\" class=\"rec-lab\">Each reason's record across every name it has fired for. ");
+            list.Append("<tfoot><tr><td colspan=\"6\" class=\"rec-lab\">Each reason's record across every name it has fired for. ");
             list.Append("Solid: the share that reached target before stop, of how many resolved, against the break-even they needed. ");
             list.Append("Dashed: not enough setups have finished to say anything yet, shown as how many have finished against the number needed.</td>");
 
@@ -3041,6 +3066,53 @@ public sealed class MarkRenderer : IComponent
 
         region.Append("<p data-withheld=\"true\">each candidate's own record is withheld until it is promoted, and no evaluation of a name is shown here or anywhere else</p>");
 
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // The order tonight's list is drawn in, measured against the order it replaced.
+    //
+    // Each order's counts over the rows it would have drawn, the old order named as the benchmark,
+    // and no comparison until every order holds the floor of blocks: a comparison drawn before then
+    // is a reading taken on too little to mean anything, and one read nightly and acted on when it
+    // looks good is the choice made on the figure the rule exists to keep out of it.
+    // see: The order tonight's list is drawn in is compared against the order it replaces, declared before any record is read
+    // see: A listing records the band strength the old order read, and the three orders are compared over the nights that recorded it
+    public string TonightsOrder(OrderComparison comparison)
+    {
+        var region = new StringBuilder();
+        var fewest = comparison.Orders.Count == 0 ? 0 : comparison.Orders.Min(order => order.Blocks);
+        var due = comparison.Orders.Count > 0 && fewest >= comparison.Floor;
+
+        region.Append(Invariant, $"<section class=\"tonights-order\" data-from=\"{(comparison.From is { } from ? from.ToString("yyyy-MM-dd", Invariant) : "none")}\" ");
+        region.Append(Invariant, $"data-nights=\"{comparison.Nights}\" data-drawn=\"{comparison.Drawn}\" data-block-sessions=\"{comparison.BlockSessions}\" data-floor=\"{comparison.Floor}\" data-compared=\"{(due ? "due" : "false")}\">");
+
+        if (comparison.From is not { } first)
+        {
+            region.Append("<p data-orders=\"none\">no night's listings record the band strength the old order reads yet, so no order is measured</p></section>");
+
+            return region.ToString();
+        }
+
+        region.Append(Invariant, $"<p>Measured over the {comparison.Nights} night(s) from {first:yyyy-MM-dd} whose listings record what each order reads, the first {comparison.Drawn} rows each order would have drawn on each of them.</p>");
+        region.Append("<div class=\"tbl-wrap\"><table class=\"orders\"><thead><tr><th>Order</th><th class=\"r\">Setups drawn</th><th class=\"r\">Whole window closed</th>");
+        region.Append(Invariant, $"<th class=\"r\">Blocks of {comparison.BlockSessions} sessions holding one</th></tr></thead><tbody>");
+
+        foreach (var order in comparison.Orders)
+        {
+            region.Append(Invariant, $"<tr data-order=\"{Escaped(order.Key)}\" data-benchmark=\"{(order.Benchmark ? "true" : "false")}\" data-setups=\"{order.Setups}\" data-closed=\"{order.Closed}\" data-blocks=\"{order.Blocks}\">");
+            region.Append(Invariant, $"<td>{Escaped(order.Name)}{(order.Benchmark ? " <b>(the benchmark)</b>" : string.Empty)}</td>");
+            region.Append(Invariant, $"<td class=\"r num\">{order.Setups}</td><td class=\"r num\">{order.Closed}</td><td class=\"r num\">{order.Blocks} of {comparison.Floor}</td></tr>");
+        }
+
+        region.Append("</tbody></table></div>");
+
+        region.Append(due
+            ? Formatted($"<p data-compared=\"due\">every order holds at least {comparison.Floor} blocks with a setup whose whole window has closed, so the comparison against the benchmark is due; switching needs it to reject over both challengers at 0.05</p>")
+            : Formatted($"<p data-compared=\"false\">no comparison is drawn: it needs every order to hold {comparison.Floor} blocks of {comparison.BlockSessions} sessions with a setup whose whole window has closed, and the fewest any order holds is {fewest}</p>"));
+
+        region.Append("<p data-measure=\"true\">each order is measured by the wins among those setups over what the calibrated null says a setup with no edge wins, block by block, the same excess a candidate is judged on</p>");
         region.Append("</section>");
 
         return region.ToString();

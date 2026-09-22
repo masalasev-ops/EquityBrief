@@ -274,6 +274,7 @@ Grain: one row per ticker per night, **for every index member and not only the l
 | `fired_count` | INTEGER | how many of the six reasons fired on the row, counted from `reasons` |
 | `plan_at_listing` | TEXT | JSON: the entry zone, stop and first traded target as they stood that night |
 | `shadow_reasons` | TEXT | JSON: `candidates`, each registered candidate the night evaluated with whether it fired and the values that made it so, and `skipped`, each registered candidate the night could not evaluate with the reason. Written for every member on every night exactly as `reasons` is, and drawn on no screen (see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown). A row written before 8.4 carries an empty `candidates` and a `note` naming the checkpoint the register was then due at, in place of `skipped` |
+| `band_strength` | INTEGER | the highest strength of any band the night stored for the name on the row's session, and 0 where it stored none, which a stale or gapped member's session never holds; null on a row written before 10.1. What the order tonight's list is compared against reads, kept here because the bands are dropped a year back and the listing is kept (see: A listing records the band strength the old order read, and the three orders are compared over the nights that recorded it) |
 
 Primary key: `ticker`, `session_date`.
 
