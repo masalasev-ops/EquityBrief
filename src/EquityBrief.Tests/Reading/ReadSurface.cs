@@ -27,7 +27,9 @@ using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
+using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Rules;
+using EquityBrief.Worker.Shortlist;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
 using Microsoft.AspNetCore.Hosting;
@@ -2284,7 +2286,7 @@ public partial class ReadSurface
     static string RunRow(string runId, string stage, string started, string ended, string outcome = "ok") =>
         "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, " +
         $"model_calls, network_requests, spend, detail) VALUES ('{runId}', '{stage}', '{started}', " +
-        $"'{ended}', '{outcome}', 3, 0, 1, '0', 'constructed');";
+        $"'{ended}', '{outcome.Replace("'", "''", StringComparison.Ordinal)}', 3, 0, 1, '0', 'constructed');";
 
     // A command a person runs by hand writes to the run log between nights. The page draws
     // it as its own: never a stage of the night that failed, never in the night's stage
@@ -2619,6 +2621,78 @@ public partial class ReadSurface
             [.. (await api.RunLogAsync(new DateOnly(2026, 9, 3))).Select(row => row.RunId).Distinct().Order(StringComparer.Ordinal)]);
         Assert.Equal("00:05:52", await api.NightDurationAsync(new DateOnly(2026, 9, 3)));
     }
+
+    [Fact]
+    public async Task ANightsDurationIsNotARunAgainWhoseListingsStepStoppedAndLeftTheEarlierRunsList()
+    {
+        // A night that wrote its list and was then run again for its session, the second run's
+        // listings step failing. Its list rolled back, so the store holds the first run's, and
+        // the listings row the second run holds is the stop the night recorded under the stage.
+        using var store = await FixtureExpectations.WithReturns();
+
+        Insert(store, RunRow("night-scheduled", "fetch", "2026-09-03T23:30:07Z", "2026-09-03T23:34:00Z"));
+        Insert(store, RunRow("night-scheduled", "listings", "2026-09-03T23:37:12Z", "2026-09-03T23:37:13Z"));
+        Insert(store, RunRow("night-scheduled", "close", "2026-09-03T23:37:13Z", "2026-09-03T23:37:40Z"));
+        Insert(store, RunRow("night-again", "fetch", "2026-09-03T21:10:00Z", "2026-09-03T21:14:00Z"));
+        Insert(store, StopRow("night-again", "listings", "2026-09-03T21:15:38Z", "2026-09-03T21:15:40Z", NightClose.Failed));
+
+        Assert.Equal("00:07:33", await Api(store).NightDurationAsync(new DateOnly(2026, 9, 3)));
+    }
+
+    [Fact]
+    public async Task ANightsDurationIsARunWhoseListCommittedWithACandidateFaultedInShadowAndNotAStopBeforeTheStep()
+    {
+        // The stage's own row reads failed in words of its own where a registered candidate went
+        // unevaluated, and its list committed all the same, so that run is the one whose list
+        // the store holds. A run after it stopped before the step on the allowance wrote a row
+        // under the stage and wrote no list.
+        using var store = await FixtureExpectations.WithReturns();
+
+        Insert(store, RunRow("night-scheduled", "fetch", "2026-09-03T23:30:07Z", "2026-09-03T23:34:00Z"));
+        Insert(store, RunRow("night-scheduled", "listings", "2026-09-03T23:37:12Z", "2026-09-03T23:37:13Z"));
+        Insert(store, RunRow("night-scheduled", "close", "2026-09-03T23:37:13Z", "2026-09-03T23:37:40Z"));
+        Insert(store, RunRow("night-again", "fetch", "2026-09-03T21:10:00Z", "2026-09-03T21:14:00Z"));
+        Insert(store, RunRow("night-again", "listings", "2026-09-03T21:15:38Z", "2026-09-03T21:15:40Z", ShortlistBuilder.Failed));
+        Insert(store, RunRow("night-again", "close", "2026-09-03T21:15:40Z", "2026-09-03T21:15:52Z"));
+
+        var api = Api(store);
+
+        Assert.Equal("00:05:52", await api.NightDurationAsync(new DateOnly(2026, 9, 3)));
+
+        Insert(store, StopRow("night-allowance", "listings", "2026-09-03T21:20:00Z", "2026-09-03T21:20:00Z", NightClose.Stopped));
+
+        Assert.Equal("00:05:52", await api.NightDurationAsync(new DateOnly(2026, 9, 3)));
+    }
+
+    [Fact]
+    public async Task ANightWhoseOnlyListingsRowsAreStopsDrawsTheLastRunToReachTheStage()
+    {
+        // No run wrote a list for the night, so no fired count is drawn beside the duration, and
+        // the span is the last run that reached the stage rather than none.
+        using var store = await FixtureExpectations.WithReturns();
+
+        Insert(store, RunRow("night-first", "fetch", "2026-09-03T23:30:00Z", "2026-09-03T23:34:00Z"));
+        Insert(store, StopRow("night-first", "listings", "2026-09-03T23:34:00Z", "2026-09-03T23:34:05Z", NightClose.Failed));
+        Insert(store, RunRow("night-again", "fetch", "2026-09-03T21:10:00Z", "2026-09-03T21:12:00Z"));
+        Insert(store, StopRow("night-again", "listings", "2026-09-03T21:12:00Z", "2026-09-03T21:12:30Z", NightClose.Stopped));
+
+        Assert.Equal("00:02:30", await Api(store).NightDurationAsync(new DateOnly(2026, 9, 3)));
+    }
+
+    // The outcomes the listings stage writes on its own row, which the duration reads as the
+    // stage having written its list. A stop the night records under the stage writes none of them.
+    [Fact]
+    public void TheReadSurfaceNamesTheOutcomesTheListingsStageWritesAndNoStopWritesEither()
+    {
+        Assert.Equal([ShortlistBuilder.Ok, ShortlistBuilder.Failed], ReadApi.ListingsStageOutcomes);
+        Assert.Empty(ReadApi.ListingsStageOutcomes.Intersect([NightClose.Failed, NightClose.Stopped, NightClose.Refused, NightClose.NoSession]));
+    }
+
+    // A row as the night's stop writes it: no rows written and the stop's own sentence.
+    static string StopRow(string runId, string stage, string started, string ended, string outcome) =>
+        "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, " +
+        $"model_calls, network_requests, spend, detail) VALUES ('{runId}', '{stage}', '{started}', " +
+        $"'{ended}', '{outcome}', 0, 0, 0, '0', 'step ''{stage}'' stopped');";
 
     // A read of the run log that takes its newest row by the instant the row carries, as SQL
     // ordering on the start or as the rows ordered on it.

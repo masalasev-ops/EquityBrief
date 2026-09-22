@@ -19604,3 +19604,81 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             against a floor of 34, 37 of 37 roster checks carried and all 37 run. Both gates ran
             over the tree carrying this entry, and the operator's store under `data/` was not
             touched by either.
+
+### 5.6 - correction: a night's duration is the last run whose listings row the stage wrote itself, where a stop the night records under the stage was read as that run and a night run again whose listings step failed drew its span beside the earlier run's list   2026-09-22
+Corrects:   the 5.6 correction of the same day, which took the duration's run as the one that
+            wrote the night's listings row last, by the order the rows were written. A step that
+            fails, passes the deadline or is stopped before it starts records a stop under the
+            stage names it would have written, and the listings stage's list is one transaction
+            that rolls back. So a night run again for its session whose listings step failed held
+            the last listings row while the store held the earlier run's list, and the header drew
+            the failed run's span beside the earlier run's fired count.
+Found:      on 2026-09-22, by the fourth phase 8 sign-off review over 40f5a77, and reproduced by
+            this correction before any change: a night run at 23:30 UTC and run again from 21:10
+            UTC on its session, the second run's listings step failing, read 00:05:40 where the run
+            whose list the store holds gives 00:07:33. With the read of 358fc8a that case passes
+            and the first 5.6 correction's own test fails, so neither read held both.
+Repaired:   `ReadApi.NightDurationAsync` takes the last run whose listings row the stage wrote
+            itself, by the order the rows were written, and the last run to reach the stage only
+            where no run wrote a list for the night. The stage's own row is told from a stop by its
+            outcome: the stage writes `ok`, or `ok, with a registered candidate's evaluator missing
+            or moved` where a candidate went unevaluated in shadow and its list committed all the
+            same, and a stop writes `failed`, `stopped`, `refused` or `no session`. The review's
+            handoff read the shadow fault as recording `failed`, and on that reading the outcome
+            could not be the rule; the stage writes a word of its own there, stated so a reader of
+            the run log can tell the two apart, and that is what makes it one. The two words are
+            stated on the read surface, which holds no reference to the worker, as
+            `ReadApi.ListingsStageOutcomes`. The night stays decided by the clock as `RunLogAsync`
+            decides it, and the queue row stays out of the span.
+Bounded:    the stage writes its own row just after its list commits, so a deadline passing
+            between the two leaves a committed list under a stop, and the read takes the run
+            before it. Writing the row inside the list's transaction closes that gap and was
+            written and reverted: `ShortlistBuilder.cs` is one of the evaluation sources every
+            registered candidate's evaluator version pins, so the edit moves every evaluator's pin
+            and every candidate standing in the operator's register would fault in shadow each
+            night until registered again. The gap is stated at the read instead.
+Swept:      every read in `EquityBrief.Api` and `RunScreen` that reads a run-log stage row.
+            `NewestRun`, the run page's default night, reads any stage row but the read surface's
+            and a night with no session: it answers which run the log holds last, and a stop is a
+            run that ran, drawn in the stale and failed region; it holds. `QueueRows` and
+            `RunScreen.Queue` read a stop under the queue's stage as the queue failing with the
+            stop's sentence, which is what the row says; it holds. `BackfillRows` reads only a
+            detail opening a JSON object, and a stop writes a sentence; it holds.
+            `NewestPassForName`, `PassRowsForName` and `NameScreen.Progress` read a pass's rows,
+            and a pass is not a nightly step, so no nightly stop is written under its stages; they
+            hold. `SpentBetween` and `PaidCallSpends` read spend, and a stop spends nothing; they
+            hold. `RunLogInWindow` and `RunScreen.Stages` draw every row as the stage it is, and
+            `RunScreen.Failed` reads the outcome; they hold. The duration was the one read taking a
+            stage row as proof the stage wrote something.
+Stored:     nothing is rewritten. This is a read, and the operator's run log holds no listings row
+            with an outcome other than `ok`, so no stored page draws the defect today.
+Guarded:    `read-surface`, four tests added.
+            `ANightsDurationIsNotARunAgainWhoseListingsStepStoppedAndLeftTheEarlierRunsList`: the
+            review's case, 00:07:33.
+            `ANightsDurationIsARunWhoseListCommittedWithACandidateFaultedInShadowAndNotAStopBeforeTheStep`:
+            a run again whose list committed with a candidate faulted in shadow, written second and
+            stamped from 21:10 UTC, is the night's, 00:05:52, and stays so after a third run stopped
+            before the step on the allowance writes a stop under the stage.
+            `ANightWhoseOnlyListingsRowsAreStopsDrawsTheLastRunToReachTheStage`: two runs each
+            stopped at the stage, the span the second's, 00:02:30.
+            `TheReadSurfaceNamesTheOutcomesTheListingsStageWritesAndNoStopWritesEither`: the two
+            words are `ShortlistBuilder.Ok` and `ShortlistBuilder.Failed`, and none of
+            `NightClose`'s four stop outcomes is either. The first 5.6 correction's case, 00:05:52,
+            stays asserted by its own test.
+Expected:   derived: the run is stated by the header's rule, the run whose list the store holds,
+            and the outcomes read off the worker's own constants, asserted over constructed stores.
+            No expectation file changes, because the committed fixture is one night and holds no
+            night run again.
+Tests:      1174, from 1170. Four added to `read-surface`. No migration. No file this correction
+            edits is a source either evaluator version or the ladder rules' code version pins, so
+            no pin moves.
+Mutated:    two rules, stated before the sweep. The first, as the handoff set it: take the run from
+            the last listings row whatever wrote it, the first 5.6 correction's read. The second:
+            read a list committed with a candidate faulted in shadow as not the stage's own.
+            Predicted:
+            MR the listings rows ordered by the write order alone: the review's case red at 00:05:40,
+            and the shadow case red at its second read, after the stop before the step, at
+            00:00:00, and every other test green.
+            MO only `ok` read as the stage's own: the shadow case red at its first read, 00:07:33,
+            and every other test green, the agreement test among them, since the stated words do
+            not move.
