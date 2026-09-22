@@ -19840,3 +19840,110 @@ Carried:    as the handoff states and not phase failures. The earlier-night fixt
             ran before it.
 Signed:     phase 8, 8.0 through 8.7, with the corrections through PR 183. Phases 0 to 9 are signed,
             and 10.0 planning may begin.
+
+### 10.0 planning - tonight's list as a selection worth buying, the candidates judged at fixed looks, and the trend rule versioned   2026-09-22
+Not a checkpoint entry. It lands 10.0 and builds no checkpoint of phase 10.
+Asked:      after phase 8's sign-off of 2026-09-22 said 10.0 planning may begin, the operator ruled
+            R1 to R8 and two follow-ups, and returned three rounds of research amendments, 1 to 30,
+            on the plan. In their words, briefly:
+            R1 "A condition is judged by whether its setups reach target before stop more often than
+            their own break-even requires ... An unresolved setup is never a win."
+            R2 "keep reasons fired first; replace only the band-strength tiebreak with reward to
+            risk ... Ranking the whole list by reward to risk is NOT ruled live."
+            R3 "At most twenty rows are drawn, stated once, in the selection section, with no end
+            condition."
+            R4 "a close below both the 50-day and the 200-day average is a downtrend, whatever the
+            swings say ... It changes ladder shape, so it lands as a rule version, not a direct
+            edit." Follow-up: "register both populations as separate versions of the trend rule and
+            let the replay decide which one the guard covers."
+            R5 "'at entry zone' is replaced, as a registered candidate, by 'arrived and narrow'. The
+            live reason stays unchanged beside it until the candidate is promoted."
+            R6 "trend confirmation is one-sided, and lands as a rule version of the trend rule, not
+            as a candidate and not live."
+            R7 "unusual volume relative to the night, registered as a candidate. The live reason and
+            `UnusualVolumeMultiple` are not changed."
+            R8 "every changed or new condition is registered and shadow-scored, and reaches the page
+            only by promotion on its record."
+            Crossed a level: "the candidate requires the close to sit at least 0.25 of the name's
+            typical daily move beyond the edge it crossed."
+            Amendments 1 to 10 grounded power, the resampling unit, one registration instant, the
+            order comparison, the R4 prior, the R5 and R7 support, realized loss, what research does
+            not settle and thresholds chosen on counts. 11 to 22 replaced the permutation with a block
+            sign-flip test, ruled L = 63 and q >= 8, added a design effect table, looks at fixed
+            points, closed windows, a futility guideline, the calibrated null (ruled), same-session
+            losses, costs, Holm with the lifetime count shown (ruled), the ordering comparison against
+            its benchmark, and two corrections to the text. 23 to 30 reconciled the older lines, fixed
+            the graph across looks, restated the looks' reference figures, stated power at the looks
+            that exist, pinned everything at registration, forbade settling a parameter from its own
+            outcomes, put the trend versions through the same machinery, and asked for a named
+            decision per design choice. Each lands in the decision it supports.
+Measured:   read immutable from a copy of `data/equitybrief.db` last written 2026-09-21 20:13 local,
+            nine nights 2026-09-09 to 09-21, 501 to 507 members a night. Earnings soon and breakout on
+            volume figures read from 09-16, when the 5.4 correction's rows begin; every other figure
+            reads from 09-09.
+            R4, range names closing below both averages, per night: 97, 108, 95, 103, 114, 134, 123,
+            129, 120; on 09-18, 94 with the 50-day at or above the 200-day (56 with zones) and 35 with
+            it below (30 with zones). R5, arrived and narrow: 14, 9, 2, 2, 8, 5, 3, 6, 3, an average of
+            5.8 and 4.25 from 09-16, above the operator's floor of 3. R6: 210 of 3,523 pairs changed
+            on 09-09 to 09-18, 6.0%, returning the next night 35 times on 25 names and within two
+            nights 51 times on 35. R7: the night's median ratio 0.87, 0.89, 0.81, 0.92, 0.94, 0.96,
+            0.94, 2.00, 0.95; the ruled form fires 8, 4, 8, 5, 8, 17, 8, 18, 5 against the live
+            reason's 8, 4, 8, 4, 8, 17, 8, 252, 5 by the stored rows. Crossed a level at 0.25 of a
+            move: 38 to 89 a night, and 87, 38, 54 on 09-16 to 09-18, where the 2026-09-20 figure of 20
+            to 48 is reproduced at 0.5: 46, 18, 21. Setups: 109 wins, 246 scored losses and 8
+            same-session losses listed 09-09 to 09-18, 30.7% scored against a median break-even of
+            39.1% over 355.
+            Power, re-derived exactly by this session: a single read at 250 independent setups at a
+            35% break-even and one-sided 0.05 over three needs 9.45 points for 80% power and 6.81 for
+            50%, with 23.8% power at 4.6 points and 10.2% at 2.9. The method reproduces the operator's
+            look figures for fractions 0.25, 0.5 and 1.0 exactly, and gives for the ruled 0.5, 0.75
+            and 1.0 crossing shares of 42.0%, 39.6% and 38.4%, size 1.52% and power 79.6%.
+Found:      two things the operator's figures did not show. The first look cannot promote: at a
+            fraction of 0.5 the O'Brien-Fleming-type function releases 0.00071, below the sign-flip
+            floor of 1/256 that 8 blocks allow, so the look at 8 blocks can only retire and the
+            earliest promotion is at 12 blocks, 756 sessions. And at the looks that exist power is
+            high rather than low, because blocks hold many setups: simulated with the edge steady
+            across blocks, arrived and narrow detects a 4.6-point excess 98% of the time at design
+            effect 1 and 65% at 3, the others 92% to 100%. Both are stated in sections 13.6 and 13.7
+            and in the decisions, the rulings kept as ruled. "Trend state changed" fired on both the
+            flip and the return for every next-night flip-back, 35 of 35 through 09-18, recorded for
+            the reason-tightening work and not changed here.
+Planned:    six checkpoints: 10.0 this pass; 10.1 the tiebreak and a second fixture night; 10.2 a
+            candidate judged, and retired or promoted; 10.3 the three candidates; 10.4 the trend rule
+            versioned; 10.5 the phase report.
+Written:    `DECISIONS.md` gains eighteen decisions under How the picks improve, one per design
+            choice code will cite, each carrying what it rests on. `BUILD_PLAN.md` gains phase 10 and
+            five carried-obligation rows: a checkpoint row due at 10.1, carried from the 5.4 and 5.8
+            corrections of 2026-09-21, and four operating rows, each cited back by the checkpoint that
+            builds its surface.
+Refused:    three things a planning pass could have written and this one does not. The ordering
+            decision is superseded at 10.1 with its code, as 9.0 did for the queue. Section 17's
+            rows for the block length, the block floor, the looks, the cost and the cap of 18 land
+            with their constants, because `pinned-constants` fails a figure no constant holds. And
+            the operating row "A candidate's shadow record computed, and a promotion written
+            against it" stays operating until 10.2 discharges it, because its citations sit in
+            phase 8's text and in a decision, outside any phase 10 checkpoint.
+Questions:  two for the operator about the live family, which phase 10 does not change: whether its
+            verdict should take the block sign-flip test, and whether it should count a setup entered
+            and stopped in one session. Both stand in section 22's open questions.
+Thresholds: every threshold this plan picked was chosen on per-night counts, with no forward return
+            and no setup outcome read, which is what keeps three an accurate count of what was tried.
+Tests:      TO BE FILLED IN FROM THE RUN.
+Verified:   `tools/ci.ps1` green, FIGURES FILLED IN FROM THE RUN.
+
+### 10.0 ruling - the trend guard's population, both versions   2026-09-22
+Not a checkpoint entry. It lands nothing.
+Corrects:   R4 as issued quoted "the 2026-09-18 count given to the operator was 30 names below both
+            averages classed as range". That figure describes version B, below both averages with
+            the 50-day below the 200-day: 35 names that night, 30 carrying buying zones, 21 to 35 a
+            night across the nine stored nights. The rule as written, version A, reaches 129 names
+            on 2026-09-18, 86 with zones, 97 to 134 a night. The operator ruled on 2026-09-22 that both
+            are registered as separate versions of the trend rule and the replay decides which the
+            guard covers.
+Windows:    the ruling's point 4 said versions A, B and C use three of the trend rule's four windows
+            and leave one. Each rule's cap counts its live window, so the live window with A, B and
+            C fills all four. Adding the trend rule raises the register-wide cap from fourteen to
+            eighteen, the sum of the caps, and the fullest register projects the night at 703
+            seconds against 900, from 688.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, as the planning entry above
+            records.
