@@ -19737,3 +19737,17 @@ Mutated:    the rule, stated before the run: write the stage's own row after the
             naming both evaluators, since any edit to the stage moves their pin; and every other
             test green. The prediction as first written left the pin test out and was corrected
             before the run.
+            Results: over the whole suite in a scratch worktree at 42291fb, never a filter, and
+            reverted. That commit's entry did not yet say its Windows run, so `two-platform`'s
+            record test was red there before any mutation, and the result below is that one and
+            the mutation's own. MC: red, the new test at the listing count, which read 4 where the
+            rule gives 0, and the pin test naming both evaluators, 1172 of 1175 green.
+Held:       the prediction as corrected before the run, exactly.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1175 of 1175 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this corrects what a claim already placed asserts rather than
+            adding any. Both gates ran over the tree carrying this entry, and the operator's store
+            under `data/` was not touched by either.
