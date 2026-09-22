@@ -19300,3 +19300,71 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because this asserts what a claim already placed states rather than
             adding any. Both gates ran over the tree carrying this entry, and the operator's store
             under `data/` was not touched by either.
+
+### 6.0 - correction: a suspect name's retries are counted by the nights it was asked on, and a night run again for its session is that night, where each run spent a retry of its own   2026-09-22
+Corrects:   a name whose refetch after a corporate action fails is asked for again on the five
+            nights after the one that marked it, then weekly, and its `series_state.retries` counts
+            the nights it has been asked for again (see: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds).
+            The check wrote one retry more than the row held on every run whose refetch failed, and
+            nothing asked whether the run's session was already counted. A night run again by hand
+            for its own session therefore spent another retry, so the nightly asks ended one
+            session early for each night run again. A spent name's week night run again did not
+            ask at all, because its row's instant had moved to that session, so the run named it
+            spent where the night it repeats had asked for it.
+Found:      on 2026-09-21, by the 1.2 correction, which read it in `CorporateActionChecker` and put
+            it to the operator as its own. Measured on 2026-09-22 over a constructed store in a
+            scratch worktree, reverted: a name marked on the session of 2026-08-10, with the session
+            of 2026-08-11 run twice, held 2 retries after it and was asked for on the sessions of
+            2026-08-11 to 2026-08-14 alone, four where the rule gives five, the session of
+            2026-08-17 not asked. The operator ruled on 2026-09-22 that it is corrected before the
+            phase 8 sign-off prompt is issued.
+Repaired:   `CorporateActionChecker` reads a name whose row was last asked for on tonight's own
+            session as already asked tonight. Such a name is due, so a night run again asks as the
+            night it repeats did, in the nightly retries and in the weekly ones, and a failure
+            writes the count the row held rather than one more. A night an action lands on still
+            sets the count to none. `NightSession` refuses a named session older than the newest
+            stored, so a session before the one a row was last asked for cannot be run and the
+            rule needs no case for it. Nothing else reads the count as a number of runs: the read
+            surface draws the row as stored.
+Stored:     nothing was written under the defect: the operator's store holds no suspect name, and
+            has held none on any night a session was run again.
+Guarded:    `corporate-actions`, two tests extended in place.
+            `ANameWhoseRetriesAreSpentIsNotAskedForAndTheRunPageNamesItOnEveryNightItStaysSuspect`
+            runs each of the five retry sessions again for its session, and asserts each asks for
+            the name once, leaves it suspect and holds the count at that night's.
+            `ANameWhoseRetriesAreSpentIsAskedForAgainOnTheFirstSessionAWeekOnFromTheOneItWasLastAskedFor`
+            runs each session of its weeks again, and asserts a week night asks again with the
+            count unmoved and a night that did not ask still does not.
+Expected:   derived, as the 6.0 ruling that built the count met it: the schedule is stated in the
+            decision and in SCHEMA's `retries` and asserted over a constructed store. No expectation
+            file changes, because the committed fixture is one night and holds no night run again.
+Tests:      1167, unchanged. None added; two extended in `corporate-actions`. No migration. No file
+            this correction edits is a source either evaluator version or the ladder rules' code
+            version pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: undo the de-duplication at each point it is read.
+            Predicted:
+            MA the decision without the session already asked: both extended tests red, the retries
+            test at the fifth session run again and the weekly test at the first week night run
+            again, each asking for no name, and every other test green.
+            MB the count one more on every failed run: both extended tests red, the retries test at
+            the first session run again's count and the weekly test at the first week night run
+            again's count, and every other test green.
+            Results: each mutation over the whole suite in a scratch worktree at db20600, never a
+            filter, and reverted. That commit's entry did not yet say its Windows run, so
+            `two-platform`'s record test was red there before any mutation, and each result below
+            is that one and the mutation's own. MA: red, both extended tests, the retries test at
+            the fifth session run again, which retried no name, and the weekly test at the session
+            of 2026-08-24 run again, which made no request where the night it repeats made one,
+            1164 of 1167 green. MB: red, both extended tests, the retries test at the first session
+            run again, which held 2 retries where the night held 1, and the weekly test at the
+            session of 2026-08-24 run again, which held 7 where the night held 6, 1164 of 1167
+            green.
+Held:       the prediction, exactly, for both.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1167 of 1167 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this corrects what a claim already placed asserts rather than
+            adding any. Both gates ran over the tree carrying this entry, and the operator's store
+            under `data/` was not touched by either.

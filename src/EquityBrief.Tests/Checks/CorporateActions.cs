@@ -563,6 +563,17 @@ public class CorporateActions
 
             Assert.Contains("actions: partial.", retryRegion, StringComparison.Ordinal);
             Assert.Contains("suspect: AAPL", retryRegion, StringComparison.Ordinal);
+
+            // The same session run again is the same night: asked for as that night asked
+            // it, and counted once, so the retries end on the fifth session and not before.
+            var again = await new CorporateActionChecker(new NoActionFeed(), Refusing(), FixedClock.At(NightOn(sessions[night]), SessionZones.UnitedStates), store.DatabaseFile)
+                .RunAsync(Index, $"night-{night}-again");
+
+            Assert.Equal(["AAPL"], again.Retried ?? []);
+            Assert.Equal(1, again.RefetchRequests);
+            Assert.Equal(["AAPL"], again.Suspect);
+            Assert.Empty(again.Spent ?? []);
+            Assert.Equal(("suspect", night), (CountOf(store, "AAPL").State, CountOf(store, "AAPL").Retries));
         }
 
         var lastAsked = CountOf(store, "AAPL").CheckedAt;
@@ -753,6 +764,14 @@ public class CorporateActions
             Assert.Equal(asked, (outcome.Retried ?? []).Contains("AAPL"));
             Assert.Equal(!asked, (outcome.Spent ?? []).Any(spent => spent.Ticker == "AAPL"));
             Assert.Equal("partial", StageOf(store, RunIdOf(session)).Outcome);
+
+            // A night its week came round on, run again for its session, asks as that night
+            // did and adds nothing to the count; a night that did not ask still does not.
+            var again = await new CorporateActionChecker(new NoActionFeed(), Refusing(), FixedClock.At(NightOn(session), SessionZones.UnitedStates), store.DatabaseFile)
+                .RunAsync(Index, RunIdOf(session) + "-again");
+
+            Assert.Equal(asked ? 1 : 0, again.RefetchRequests);
+            Assert.Equal(("suspect", retries), (CountOf(store, "AAPL").State, CountOf(store, "AAPL").Retries));
         }
 
         // The week after Tuesday 2026-09-08 comes round on Tuesday 2026-09-15, and a refetch
