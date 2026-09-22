@@ -28,6 +28,17 @@ public static class Blocks
     public static bool Closed(DateOnly listed, DateOnly asOf) =>
         SessionsAfter(listed, asOf) >= ForwardReturnSeries.SetupSessionCap;
 
+    // Whether every session a block holds has had its whole outcome window by a night.
+    //
+    // A look reads whole blocks and not the closed setups inside an unfinished one, which is
+    // stricter than the cut-off the decision states and is what keeps a block's sum from moving
+    // after the look that read it: a sum that grew between two looks would make the earlier look's
+    // arrangement a different one, and the boundary the earlier look was read against was found
+    // over the arrangement it had.
+    // see: A look counts only the setups whose whole outcome window has closed
+    public static bool Complete(DateOnly first, int block, DateOnly asOf) =>
+        Position(first, asOf) - ((Sessions * (block + 1)) - 1) >= ForwardReturnSeries.SetupSessionCap;
+
     // The sessions from the first to a session, the first being 0.
     static int Position(DateOnly first, DateOnly session) =>
         session <= first ? 0 : ExchangeClosures.SessionsBetween(first, session).Count + (ExchangeClosures.IsSession(session) ? 1 : 0);

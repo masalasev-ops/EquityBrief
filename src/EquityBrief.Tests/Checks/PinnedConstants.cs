@@ -76,6 +76,9 @@ public class PinnedConstants
         const string Significance = "Significance threshold";
         const string Versions = "Rule versions scored at once";
         const string BlocksRow = "Blocks a record is judged over";
+        const string LooksRow = "Looks a candidate's verdict is read at";
+        const string CalibrationRow = "The calibrated bar";
+        const string PowerRow = "Power stated at a look";
 
         return
         [
@@ -135,6 +138,16 @@ public class PinnedConstants
             new(Significance, "8", CandidateFamily.Maximum, "CandidateFamily.Maximum"),
             new(BlocksRow, "63", Blocks.Sessions, "Blocks.Sessions"),
             new(BlocksRow, "8", Blocks.Floor, "Blocks.Floor"),
+            new(LooksRow, "8", Looks.At[0], "Looks.At[0]"),
+            new(LooksRow, "12", Looks.At[1], "Looks.At[1]"),
+            new(LooksRow, "16", Looks.At[2], "Looks.At[2]"),
+            new(LooksRow, "8", Blocks.Floor, "Blocks.Floor, which the first look is read at"),
+            new(CalibrationRow, "4000", NullWin.Paths, "NullWin.Paths"),
+            new(CalibrationRow, "63", NullWin.VolatilityWindow, "NullWin.VolatilityWindow"),
+            new(CalibrationRow, "20260922", NullWin.Seed, "NullWin.Seed"),
+            new(CalibrationRow, "10", (decimal)NullWin.CostBasisPoints, "NullWin.CostBasisPoints"),
+            new(CalibrationRow, "30", (decimal)NullWin.SensitivityBasisPoints, "NullWin.SensitivityBasisPoints"),
+            new(PowerRow, "80", (decimal)Looks.PowerStatedAt * 100, "Looks.PowerStatedAt as a percentage"),
             new(Versions, "2", RuleVersions.MostOfTheMergeDistance, "RuleVersions.MostOfTheMergeDistance"),
             new(Versions, "4", RuleVersions.MostPerRule, "RuleVersions.MostPerRule"),
             new(Versions, "3", LadderRules.All.Count - 1, "the ladder rules other than the merge distance"),

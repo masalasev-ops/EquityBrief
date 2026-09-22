@@ -652,7 +652,27 @@ public static class SchemaMigrations
         new Migration(29, "add membership.name", AddMembershipName),
         new Migration(30, "create research_request", CreateResearchRequest),
         new Migration(31, "add listing.band_strength", AddListingBandStrength),
+        new Migration(32, "add forward_return's calibrated bar and what the trade came to", AddCalibratedBar),
     ];
+
+    // The bar a setup with no edge would have cleared, at the round trip the calibration carries
+    // and at the sensitivity shown beside it, what the plan put at risk from the close it was
+    // entered at, and whether the session it resolved on was one the name reported on.
+    //
+    // On the row rather than computed when a record is read, because the bar is simulated under the
+    // name's trailing volatility and the calendar dates a print for a year, and both are dropped
+    // behind a record that is read over four years of nights.
+    //
+    // Nullable, and a row decided before this carries none: a setup whose bar nothing computed is
+    // one no record counts, rather than one counted against the bar its plan stated.
+    // see: A setup's null win probability is calibrated from its own plan, and its planned break-even is shown beside it
+    // see: The calibrated null carries a round trip of ten basis points, and thirty is shown as a sensitivity
+    const string AddCalibratedBar = @"
+        ALTER TABLE forward_return ADD COLUMN null_win REAL;
+        ALTER TABLE forward_return ADD COLUMN null_win_at_sensitivity REAL;
+        ALTER TABLE forward_return ADD COLUMN planned_risk REAL;
+        ALTER TABLE forward_return ADD COLUMN on_earnings INTEGER;
+    ";
 
     // The highest strength of the name's bands on the listing's night, which the order tonight's
     // list is compared against reads. On the listing row because the listing is kept and the

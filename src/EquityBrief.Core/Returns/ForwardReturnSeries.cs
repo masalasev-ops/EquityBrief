@@ -19,12 +19,20 @@ public readonly record struct ReturnBar(DateOnly SessionDate, decimal Close);
 // the setup was entered at and a setup with no known entry close has neither.
 // see: An unresolved setup is never a win
 // see: A stored break-even is measured from the close the setup was entered at, as a percentage beside the figures it is compared with
+// `EnteredAt` and `SessionsLeft` are the fill the setup was scored from and the sessions the cap
+// left after it, which is what a bar simulated from the plan is simulated over. They are carried
+// rather than stored: the fill of a setup entered and stopped on one session is the worst price
+// its zone offered, since the store does not say where in the zone it sat, and a figure that stood
+// in for the entry close would be read as one.
+// see: A candidate counts a setup entered and stopped in one session as a loss
 public sealed record ForwardReturn(
     string Horizon,
     string? Outcome,
     DateOnly? ResolvedOn,
     double? ReturnPct,
-    double? BreakEven = null);
+    double? BreakEven = null,
+    decimal? EnteredAt = null,
+    int? SessionsLeft = null);
 
 // What happened five and twenty-one sessions after a listing, and whether a
 // setup reached its target before its stop.
@@ -167,8 +175,13 @@ public static class ForwardReturnSeries
             ? listed
             : null;
 
-        foreach (var bar in after.Take(SetupSessionCap))
+        // Where in the cap the fill sat, the listing's own close counting as the session before the
+        // first of them, so the sessions left after a fill are the cap less the sessions up to it.
+        var filledAt = entry is null ? -1 : 0;
+
+        for (var session = 0; session < Math.Min(after.Count, SetupSessionCap); session++)
         {
+            var bar = after[session];
             // The stop is tested first, because a session that closed through
             // both is a session the position was stopped out of before it could
             // reach anything. A rule that took the target first would score a
@@ -185,9 +198,17 @@ public static class ForwardReturnSeries
                 // and not a second one: it is the bar the entry close set, and an
                 // entry close nobody knows sets none. Stored setups take this shape,
                 // so it is a population to state rather than a case to wave at.
+                // The fill a bar is carried for either shape: the close it was
+                // entered at where that is known, and the top of the zone, the
+                // worst price the plan offered to buy at, where the entry and the
+                // stop fell on one session.
                 return entry is { } at
-                    ? new ForwardReturn(Setup, Loss, bar.SessionDate, ChangeFromEntry(at, bar.Close), BreakEven(at, floor, ceiling))
-                    : new ForwardReturn(Setup, Loss, bar.SessionDate, null, null);
+                    ? new ForwardReturn(
+                        Setup, Loss, bar.SessionDate, ChangeFromEntry(at, bar.Close), BreakEven(at, floor, ceiling),
+                        at, SetupSessionCap - filledAt)
+                    : new ForwardReturn(
+                        Setup, Loss, bar.SessionDate, null, null,
+                        highestEntry, SetupSessionCap - (session + 1));
             }
 
             if (entry is null)
@@ -202,6 +223,7 @@ public static class ForwardReturnSeries
                 if (bar.Close <= highestEntry)
                 {
                     entry = bar.Close;
+                    filledAt = session + 1;
                 }
 
                 continue;
@@ -214,7 +236,9 @@ public static class ForwardReturnSeries
                     Win,
                     bar.SessionDate,
                     ChangeFromEntry(entry.Value, bar.Close),
-                    BreakEven(entry.Value, floor, ceiling));
+                    BreakEven(entry.Value, floor, ceiling),
+                    entry.Value,
+                    SetupSessionCap - filledAt);
             }
         }
 

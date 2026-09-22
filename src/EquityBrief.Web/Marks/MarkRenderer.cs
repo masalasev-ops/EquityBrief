@@ -2,6 +2,7 @@ using System.Globalization;
 using EquityBrief.Core.Spending;
 using System.Text;
 using System.Text.RegularExpressions;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Shortlist;
@@ -318,6 +319,31 @@ public sealed record OrderMeasured(string Key, string Name, bool Benchmark, int 
 // The three orders over the nights that recorded what each reads, from the first of them, with the
 // row count each is measured over, the block length and the floor below which nothing is compared.
 public sealed record OrderComparison(IReadOnlyList<OrderMeasured> Orders, DateOnly? From, int Nights, int Drawn, int BlockSessions, int Floor);
+
+// One registered candidate as the record region draws it: what it was registered with, whether it
+// still stands, the level the graph gives it and the step that level stands at, and its record.
+public sealed record CandidateRecordRow(
+    string Candidate,
+    string Proposed,
+    bool Standing,
+    bool Crossed,
+    double Level,
+    int Step,
+    Measured Record);
+
+// The candidates' records, with the lifetime count beside them, the looks a verdict is read at,
+// the block length and floor, and the round trip the bars carry.
+public sealed record CandidateRegion(
+    IReadOnlyList<CandidateRecordRow> Candidates,
+    int Registered,
+    int Standing,
+    int Maximum,
+    double Significance,
+    int BlockSessions,
+    int Floor,
+    IReadOnlyList<int> LooksAt,
+    double Cost,
+    double Sensitivity);
 
 // The four verdict counts of the last phase report.
 //
@@ -3117,6 +3143,120 @@ public sealed class MarkRenderer : IComponent
 
         return region.ToString();
     }
+
+    // What each registered candidate's record has come to, and what its next look waits for.
+    //
+    // A record and never a name: the counts are over setups and the sessions they were listed on,
+    // and a candidate's evaluation of a name reaches no screen until the candidate is promoted.
+    // The running figure is drawn as monitoring and the verdict field beside it changes only at a
+    // look, which is the whole of the arrangement: a figure read every night and acted on when it
+    // looks good is the choice the looks exist to keep out of the decision.
+    // see: The nightly running figure is monitoring and never the verdict
+    // see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow
+    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    public string CandidateRecords(CandidateRegion region)
+    {
+        var drawn = new StringBuilder();
+        var looks = string.Join(", ", region.LooksAt.Select(look => look.ToString(Invariant)));
+
+        drawn.Append(Invariant, $"<section class=\"candidate-records\" data-registered=\"{region.Registered}\" data-standing=\"{region.Standing}\" ");
+        drawn.Append(Invariant, $"data-looks=\"{looks}\" data-floor=\"{region.Floor}\" data-block-sessions=\"{region.BlockSessions}\" ");
+        drawn.Append(Invariant, $"data-cost=\"{region.Cost:0.#}\" data-sensitivity=\"{region.Sensitivity:0.#}\">");
+
+        if (region.Candidates.Count == 0)
+        {
+            drawn.Append("<p data-records=\"none\">no candidate condition has been registered, so there is no record to read</p></section>");
+
+            return drawn.ToString();
+        }
+
+        drawn.Append(Invariant, $"<p data-lifetime=\"{region.Registered}\">{region.Registered} candidate condition(s) have ever been registered, of at most {region.Maximum}. ");
+        drawn.Append(Invariant, $"A verdict is read at {looks} non-empty blocks of {region.BlockSessions} sessions and at no other time, ");
+        drawn.Append(Invariant, $"over the setups whose whole outcome window has closed, against a bar simulated from each setup's own plan at a round trip of {region.Cost:0.#} basis points, with {region.Sensitivity:0.#} shown beside it.</p>");
+
+        foreach (var candidate in region.Candidates)
+        {
+            var record = candidate.Record;
+
+            drawn.Append(Invariant, $"<article class=\"candidate\" data-candidate=\"{Escaped(candidate.Candidate)}\" data-standing=\"{(candidate.Standing ? "true" : "false")}\" ");
+            drawn.Append(Invariant, $"data-level=\"{candidate.Level:0.######}\" data-step=\"{candidate.Step}\" data-blocks=\"{record.Blocks}\" data-floor=\"{record.Floor}\" ");
+            drawn.Append(Invariant, $"data-setups=\"{record.Setups}\" data-withheld=\"{Escaped(record.Withheld)}\" data-verdict=\"{Escaped(record.Verdict)}\">");
+            drawn.Append(Invariant, $"<h4>{Escaped(candidate.Candidate)}{(candidate.Standing ? string.Empty : " <b>(retired)</b>")}</h4>");
+
+            // The verdict field: what the last look read, how many looks are left, and what the
+            // next one waits for. It is the field a nightly reading never moves.
+            drawn.Append(Invariant, $"<p data-field=\"verdict\">{Escaped(record.Verdict)}. ");
+            drawn.Append(Invariant, $"Step {candidate.Step} of the graph, at a level of {candidate.Level:0.#####} of the {region.Significance:0.##} the family is tested at. ");
+            drawn.Append(record.NextLookAt is { } next
+                ? Formatted($"{record.LooksRemaining} look(s) remain, the next at {next} non-empty blocks, and {record.Blocks} of {record.Floor} stand.</p>")
+                : Formatted($"No look remains, and {record.Blocks} block(s) stand.</p>"));
+
+            if (record.Withheld != CandidateRecord.Shown)
+            {
+                drawn.Append(Invariant, $"<p class=\"degraded\" data-withheld=\"{Escaped(record.Withheld)}\">no verdict is read below {record.Floor} non-empty blocks, and {record.Blocks} stand</p>");
+            }
+
+            drawn.Append(Invariant, $"<p data-monitoring=\"true\" data-share=\"{Figure(record.Share)}\" data-null=\"{Figure(record.NullShare)}\" ");
+            drawn.Append(Invariant, $"data-excess=\"{Figure(record.Excess)}\" data-p=\"{Figure(record.PValue)}\" data-poisson-binomial=\"{Figure(record.PoissonBinomial)}\">");
+            drawn.Append(record.Share is { } share && record.NullShare is { } bar
+                ? Formatted($"Monitoring, not the verdict: {record.Setups} setup(s) over {record.Blocks} whole block(s), winning {share:0.0}% against the {bar:0.0}% a setup with no edge wins")
+                : Formatted($"Monitoring, not the verdict: no setup has had its whole outcome window inside a whole block yet"));
+            drawn.Append(record.PValue is { } running ? Formatted($", sign-flip {running:0.0000}") : string.Empty);
+            drawn.Append(record.PoissonBinomial is { } beside ? Formatted($", and {beside:0.0000} on the Poisson binomial, which assumes the setups are independent and decides nothing") : string.Empty);
+            drawn.Append(Invariant, $". {record.NotYetInABlock} closed setup(s) sit in a block that is not whole yet.</p>");
+
+            if (record.Looks.Count > 0)
+            {
+                drawn.Append("<div class=\"tbl-wrap\"><table class=\"looks\"><thead><tr><th>Look</th><th class=\"r\">Setups</th><th class=\"r\">Won</th>");
+                drawn.Append("<th class=\"r\">The bar</th><th class=\"r\">Sign-flip</th><th class=\"r\">Level spent</th><th class=\"r\">Smallest excess it could detect</th><th>Read</th></tr></thead><tbody>");
+
+                foreach (var look in record.Looks)
+                {
+                    drawn.Append(Invariant, $"<tr data-look=\"{look.Blocks}\" data-setups=\"{look.Setups}\" data-share=\"{look.Share:0.0}\" data-null=\"{look.NullShare:0.0}\" ");
+                    drawn.Append(Invariant, $"data-p=\"{look.PValue:0.0000}\" data-spends=\"{look.Spends:0.######}\" data-crossed=\"{(look.Crossed ? "true" : "false")}\" ");
+                    drawn.Append(Invariant, $"data-futile=\"{(look.Futile ? "true" : "false")}\" data-smallest-excess=\"{Figure(look.SmallestExcess)}\">");
+                    drawn.Append(Invariant, $"<td>{look.Blocks} blocks</td><td class=\"r num\">{look.Setups}</td><td class=\"r num\">{look.Share:0.0}%</td>");
+                    drawn.Append(Invariant, $"<td class=\"r num\">{look.NullShare:0.0}%</td><td class=\"r num\">{look.PValue:0.0000}</td><td class=\"r num\">{look.Spends:0.#####}</td>");
+                    drawn.Append(look.SmallestExcess is { } smallest
+                        ? Formatted($"<td class=\"r num\">{smallest:0.0} points</td>")
+                        : "<td class=\"r\"><span class=\"degraded\">none stated</span></td>");
+                    drawn.Append(look.Crossed
+                        ? "<td>crossed its boundary</td>"
+                        : look.Futile ? "<td>below its own bar, which the futility guideline reads</td>" : "<td>did not cross</td>");
+                    drawn.Append("</tr>");
+                }
+
+                drawn.Append("</tbody></table></div>");
+                drawn.Append("<p data-approximation=\"true\">the smallest excess a look could detect is a normal approximation over the setups its blocks hold, widened by the design effect, where every other figure here is counted or enumerated whole</p>");
+            }
+
+            drawn.Append(Invariant, $"<p data-reported=\"true\" data-design-effect=\"{Figure(record.DesignEffect)}\" data-realized-loss=\"{Figure(record.RealizedLoss)}\" ");
+            drawn.Append(Invariant, $"data-realized-loss-high=\"{Figure(record.RealizedLossHigh)}\" data-realized-break-even=\"{Figure(record.RealizedBreakEven)}\" ");
+            drawn.Append(Invariant, $"data-planned-break-even=\"{Figure(record.PlannedBreakEven)}\" data-same-session=\"{record.SameSession}\" data-earnings=\"{record.EarningsStopOuts}\">");
+            drawn.Append("Reported and tested nowhere: ");
+            drawn.Append(record.DesignEffect is { } effect
+                ? Formatted($"a design effect of {effect:0.00}, noisy near the floor of blocks; ")
+                : "no design effect yet; ");
+            drawn.Append(record.RealizedLoss is { } lost && record.RealizedLossHigh is { } worst
+                ? Formatted($"a loss costing {lost:0.00} times the planned risk on average and {worst:0.00} at the ninetieth of them; ")
+                : "no realized loss yet; ");
+            drawn.Append(record.RealizedBreakEven is { } realized && record.PlannedBreakEven is { } planned
+                ? Formatted($"a realized break-even of {realized:0.0}% against the {planned:0.0}% the plans stated; ")
+                : "no realized break-even yet; ");
+            drawn.Append(Invariant, $"{record.SameSession} setup(s) entered and stopped on one session, counted as losses against the bar the worst fill in the zone sets; ");
+            drawn.Append(Invariant, $"and {record.EarningsStopOuts} stopped out on a session the name reported on.</p>");
+
+            drawn.Append(Invariant, $"<p data-proposed=\"{Escaped(candidate.Proposed)}\">registered with {Escaped(candidate.Proposed)}, which is what it is being judged at: a changed number is a new registration with a window of its own and never a change to this one</p>");
+            drawn.Append("</article>");
+        }
+
+        drawn.Append("<p data-withheld=\"true\">no evaluation of a name is drawn here or anywhere else, and no record is drawn beside a ticker</p>");
+        drawn.Append("</section>");
+
+        return drawn.ToString();
+    }
+
+    static string Figure(double? value) => value is { } figure ? figure.ToString("0.######", Invariant) : "none";
 
     // The harness, section 15.10's last region: the verdict counts from the last
     // phase report, each separately.

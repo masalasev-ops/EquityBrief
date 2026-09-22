@@ -1323,7 +1323,8 @@ public partial class ArchitectureConformance
         // drew the risks one part to a risk. 55 at 9.0, which added what a row on tonight's list
         // says about research and what it can ask for, and the queue screen's four regions.
         // 57 at 10.1, which added the run page's region measuring the order tonight's list is drawn in.
-        Assert.Equal(57, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 58 at 10.2, which added the run page's region holding each registered candidate's record.
+        Assert.Equal(58, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1363,7 +1364,9 @@ public partial class ArchitectureConformance
         // and the queue screen's four, and 139 at 9.4, which states which lane would write one.
         // 146 at 10.1: tonight's list row gains the reward to risk it draws, and the run page's
         // measure of the list's order arrives as the six parts its row enumerates.
-        Assert.Equal(146, inDocument.Length);
+        // 156 at 10.2, the run page's candidates' record region arriving as the ten parts its row
+        // enumerates, each a thing a reader sees or a thing the region refuses to draw.
+        Assert.Equal(156, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1406,7 +1409,9 @@ public partial class ArchitectureConformance
 
         // An exact count rather than a floor, so a decomposition added without being argued
         // for fails here; the argument for each is its checkpoint's entry.
-        Assert.Equal(142, checkedElements);
+        // 152 from 142 at 10.2, the run page's candidates' record region read as the ten parts
+        // its row enumerates.
+        Assert.Equal(152, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

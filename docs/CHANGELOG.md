@@ -25,6 +25,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-22 - ARCHITECTURE.html - section 13.3's shadow before live guardrail says where a candidate's record is drawn
+Authorised by: The nightly running figure is monitoring and never the verdict
+Was:
+> <tr><td><b>Shadow before live</b></td><td>no condition appears on the list until it has a shadow record meeting the minimum. Shadow conditions are scored and stored nightly and shown nowhere</td><td>adopting an idea on the strength of the idea</td></tr>
+Now:
+> <tr><td><b>Shadow before live</b></td><td>no condition appears on the list until its record has crossed the boundary of a look, and no evaluation of a name is shown anywhere. A candidate's own record is drawn on the run page, beside the candidate and never beside a name, with the nightly figure labelled as monitoring and the verdict field changed only by a look (see: The nightly running figure is monitoring and never the verdict)</td><td>adopting an idea on the strength of the idea, and reading a running figure as a verdict</td></tr>
+Why: the operator ruled on 2026-09-22 that the running figure may show on the run page, labelled as monitoring, and 10.2 builds the record it is part of. The guardrail said the shadow was shown nowhere, which the ruling changes for the record and leaves standing for the evaluation of a name; what the row now states is which of the two is drawn and where.
+
+### 2026-09-22 - ARCHITECTURE.html - section 13.6's looks paragraph states how a boundary is found
+Authorised by: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow
+Was:
+> with the level spent across them by an O'Brien-Fleming-type function and the boundaries derived by simulation on the sign-flip null over stored listings (see: A candidate's verdict is read only at looks fixed when it is registered)
+Now:
+> with the level spent across them by an O'Brien-Fleming-type function and each look's boundary found on the sign-flip null by enumerating every arrangement of the signs of the blocks it holds, which at sixteen blocks is exact and assumes nothing about what the setups inside a block did to each other (see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow)
+Why: a look holds at most sixteen blocks, so every arrangement is enumerable and an estimate of them would be a worse answer to the same question; and a simulation of independent setups would assume the independence within a block that the blocks exist because the setups do not have.
+
+### 2026-09-22 - ARCHITECTURE.html - section 13.6's pinning paragraph names what a boundary carries
+Authorised by: Nothing a candidate or a version is registered with changes while it runs, and a proposed number is settled only by a new registration
+Was:
+> Nothing a candidate or version is registered with changes while it runs: the calibration, the cost, the spending function, the looks, the graph and the boundary simulation's method, draws and seed are fixed before the registration command runs, and settling a proposed number is a new registration (see: Nothing a candidate or a version is registered with changes while it runs, and settling a proposed number is a new registration).
+Now:
+> Nothing a candidate or version is registered with changes while it runs: the calibration's paths and seed, the cost, the spending function, the looks, the graph and the method each look's boundary is found by are fixed before the registration command runs, and settling a proposed number is a new registration (see: Nothing a candidate or a version is registered with changes while it runs, and a proposed number is settled only by a new registration).
+Why: a look's boundary is enumerated rather than simulated, so it has no draw count and no seed; what carries both is the calibration, and the sentence now names what each of the two has.
+
+### 2026-09-22 - BUILD_PLAN.md - phase 10's citations follow the two decisions that were superseded
+Authorised by: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow
+Was:
+> (see: A candidate's verdict is read only at looks fixed when it is registered)
+Now:
+> (see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow)
+Why: the decision the phase intro and the candidates' obligation row cite was superseded at 10.2, and a citation to a superseded decision is what `no-superseded-citation` refuses. The obligation row citing the pinning decision was repointed the same way.
+
 ### 2026-09-22 - ARCHITECTURE.html - section 11.1 orders tonight's list by the plan's reward to risk after the fired count
 Authorised by: Tonight's list breaks a tie in fired count by the plan's reward to risk, and a row with none is drawn after every row with one and says why
 Was:

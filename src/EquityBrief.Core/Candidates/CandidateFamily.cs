@@ -31,6 +31,13 @@ public static class CandidateFamily
 
     public const string Retired = "retired";
 
+    // The words a retirement's evidence opens with where what retired the candidate was its own
+    // record crossing, which is what the runbook's promotion procedure writes. A candidate leaves
+    // the family either way, and the two are opposite: one was shown and one was not, and only the
+    // first passes its level to the candidates still standing.
+    // see: Holm's level passes between the candidates by a graph fixed when they are registered, and every verdict shows the lifetime count
+    public const string PromotedBy = "promoted";
+
     // The divisor: the candidates standing registered before the window opened.
     //
     // Before, on both halves, and that is the whole point of the figure rather

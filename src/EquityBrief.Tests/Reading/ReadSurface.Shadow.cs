@@ -165,8 +165,10 @@ public partial class ReadSurface
         using var client = host.CreateClient();
 
         // Every route the app serves, so the claim is about the screens and not
-        // about the one page the region happens to sit on.
-        foreach (var route in new[] { "/screens/run/2026-09-08", "/screens/tonight", "/screens/universe" })
+        // about the one page the region happens to sit on. From 10.2 the run page names a
+        // registered candidate in its record region, which is the candidate's own record and
+        // never an evaluation of a name, so that page is read apart below.
+        foreach (var route in new[] { "/screens/tonight", "/screens/universe" })
         {
             var body = await client.GetStringAsync(route);
 
@@ -194,6 +196,21 @@ public partial class ReadSurface
 
         Assert.Contains("class=\"shadow-candidates\"", run, StringComparison.Ordinal);
         Assert.Contains("data-shadow=\"1\"", run, StringComparison.Ordinal);
+        Assert.DoesNotContain("shadow_reasons", run, StringComparison.Ordinal);
+
+        // The candidate is named on the run page in its own record and nowhere else on it, and
+        // no name is paired with a shadow evaluation there either: the column the night writes
+        // for every member reaches no screen, which is the claim this test carries.
+        var record = run[run.IndexOf("class=\"candidate-records\"", StringComparison.Ordinal)..];
+
+        Assert.Contains("momentum index at one hundred", record[..record.IndexOf("</section>", StringComparison.Ordinal)], StringComparison.Ordinal);
+
+        foreach (var ticker in names)
+        {
+            Assert.DoesNotContain($"{ticker}\" data-shadow", run, StringComparison.Ordinal);
+            Assert.DoesNotContain($"{ticker}</td><td>momentum", run, StringComparison.Ordinal);
+        }
+
         Assert.Contains("withheld until it is promoted", run, StringComparison.Ordinal);
     }
 }

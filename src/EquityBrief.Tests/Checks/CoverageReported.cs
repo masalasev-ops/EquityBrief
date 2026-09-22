@@ -63,6 +63,7 @@ public class CoverageReported
         ["register-append-only"] = "RegisterAppendOnly",
         ["rule-versions-scored"] = "RuleVersionsScored",
         ["research-marked"] = "ResearchMarked",
+        ["candidate-verdicts"] = "CandidateVerdicts",
     };
 
     internal static IReadOnlyList<RosterRow> Roster()
