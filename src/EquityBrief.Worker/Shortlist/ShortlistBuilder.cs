@@ -172,14 +172,23 @@ public sealed class ShortlistBuilder : IComponent
     // Every session the name holds, for the gap check alone.
     const string SessionsFor = "SELECT session_date FROM bar WHERE ticker = $ticker ORDER BY session_date;";
 
+    // The highest strength of the bands the night stored for the name on the row's own session,
+    // and nothing where it stored none, which a stale or gapped member's session never holds.
+    const string StrengthOn = @"
+        SELECT MAX(strength)
+        FROM level
+        WHERE ticker = $ticker AND as_of = $session_date;
+    ";
+
     const string Upsert = @"
-        INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons)
-        VALUES ($ticker, $session_date, $reasons, $fired_count, $plan_at_listing, $shadow_reasons)
+        INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons, band_strength)
+        VALUES ($ticker, $session_date, $reasons, $fired_count, $plan_at_listing, $shadow_reasons, $band_strength)
         ON CONFLICT (ticker, session_date) DO UPDATE SET
             reasons = excluded.reasons,
             fired_count = excluded.fired_count,
             plan_at_listing = excluded.plan_at_listing,
-            shadow_reasons = excluded.shadow_reasons;
+            shadow_reasons = excluded.shadow_reasons,
+            band_strength = excluded.band_strength;
     ";
 
     const string AppendRun = @"
@@ -365,6 +374,12 @@ public sealed class ShortlistBuilder : IComponent
             }
 
             command.Parameters.AddWithValue("$shadow_reasons", Serialised(shadow));
+
+            // What the order before the plan's reward to risk broke a tie on, kept with the row
+            // because the bands it is read from are dropped a year back and the comparison of the
+            // two orders reads years of nights.
+            // see: A listing records the band strength the old order read, and the three orders are compared over the nights that recorded it
+            command.Parameters.AddWithValue("$band_strength", await StrengthOnAsync(connection, ticker, session, cancellation));
 
             await command.ExecuteNonQueryAsync(cancellation);
 
@@ -562,6 +577,19 @@ public sealed class ShortlistBuilder : IComponent
         "the stored series has a gap at " + gap.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     const string NoBarStored = "no bar is stored for the name";
+
+    // A name with no band on the session is written 0, the strength of no band, so a row that
+    // recorded the figure is never read as one written before the column existed.
+    static async Task<long> StrengthOnAsync(SqliteConnection connection, string ticker, DateOnly session, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = StrengthOn;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$session_date", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteScalarAsync(cancellation) is long strength ? strength : 0;
+    }
 
     // The calendar's next dated event on or after a session, where it holds one.
     static async Task<DateOnly?> NextEventAsync(SqliteConnection connection, string ticker, DateOnly session, CancellationToken cancellation)

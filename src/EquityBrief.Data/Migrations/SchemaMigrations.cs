@@ -651,7 +651,20 @@ public static class SchemaMigrations
         new Migration(28, "add rule_version.evidence", AddRuleVersionEvidence),
         new Migration(29, "add membership.name", AddMembershipName),
         new Migration(30, "create research_request", CreateResearchRequest),
+        new Migration(31, "add listing.band_strength", AddListingBandStrength),
     ];
+
+    // The highest strength of the name's bands on the listing's night, which the order tonight's
+    // list is compared against reads. On the listing row because the listing is kept and the
+    // bands are dropped a year back, and a comparison needing two years of nights would lose its
+    // benchmark to the retention rule before it could be read.
+    //
+    // Nullable, and every row written before it reads as a row that recorded none, which is what
+    // it is: the comparison counts the nights that recorded it and no other.
+    // see: A listing records the band strength the old order read, and the three orders are compared over the nights that recorded it
+    const string AddListingBandStrength = @"
+        ALTER TABLE listing ADD COLUMN band_strength INTEGER;
+    ";
 
     // The evidence a window was closed on, written by the close that ends or replaces it.
     // see: A rule version change closes the window with the evidence that produced it and opens its replacement in the same write

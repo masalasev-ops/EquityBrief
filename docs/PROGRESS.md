@@ -20006,3 +20006,115 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             the rules this pass adds are prose paragraphs, and the two tables it adds are placed as
             records. Both gates ran over the tree carrying both 10.0 entries and the ruling, and the
             operator's store under `data/` was not touched by either; the measurements read a copy.
+
+### 10.1 - tonight's list breaks a tie in fired count by the plan's reward to risk, a row with none says why, and the run page measures the order against the one it replaced   2026-09-22
+Built:      tonight's list orders by how many reasons fired, then by the reward to risk the night's
+            own plan computes from its first tranche, highest first, then by ticker, and a row whose
+            plan computes none is drawn after every row with one in its fired-count group, stating
+            why in the plan's own words. Each row draws the ratio, or the reason, in a column of its
+            own. The ratio is read off the plan the listing kept that night and worked by the
+            ladder's own arithmetic, rounded as the ladder stores it, so the tonight route, the name
+            page's walk and the tests read the plan of the night shown, and neither route reads a
+            band set or a plan row per member any longer.
+Recorded:   each listing the night writes records the highest strength of the name's bands on its
+            own session, 0 where the night stored none, in a new column, `band_strength`, migration
+            31. Bars, bands and plans are dropped a year back and the listing is kept, and the
+            comparison below needs about two years of nights, so an order recomputed from the bands
+            would lose its benchmark before it could be read. A row written before this records
+            nothing, and the comparison reads only the nights that recorded it.
+Measured:   the run page gains a region, between the shadow candidates and the stale and failed,
+            measuring three orders over the twenty each would draw on every night whose listings
+            recorded the strength: the old order, fired count then band strength, as the benchmark;
+            the ruled order; and the ratio alone. Each states its setups drawn, those whose whole
+            window has closed, and the blocks of 63 sessions holding one against the floor of 8, and
+            no comparison is drawn before every order reaches the floor. A drawn row with no reward
+            to risk has no stop or no traded target, so it is no setup, which is part of what the
+            orders differ in. The block length and the floor are constants in Core from here with
+            section 17's row, where 10.0 had placed them at 10.2, and 10.2's done condition no longer
+            names them.
+Superseded: the ordering decision, moved to Previously decided with its reasoning, by the tiebreak
+            decision, and a second decision records why the listing carries the strength, which
+            nights the comparison reads and what it measures. Section 11.1's order and comparison
+            paragraphs, section 15.7's list row and note, section 15.14 and section 17's list display
+            are rewritten, with the prior text in `CHANGELOG.md`, and the build plan's phase 10
+            section with them. `TonightScreen.Drawn`, a second constant holding the twenty that
+            nothing drew with while `pinned-constants` pinned it, is gone, and section 17's row is
+            pinned to the constant the page draws with.
+Fixture:    a second night. The fixture's session before its own, 2026-09-03, is replayed from the
+            committed year of bars with the last session held back, and the fixture's night then
+            arrives as one session's bulk file built from the same committed bars, with no overnight
+            queue and no model call on either night, so no recording is keyed on a prompt the
+            earlier night would write. The listings expectation works both nights by hand, each
+            fired reason read off the close and the zone or edge its values name and each ratio
+            worked from the zone's middle, the stop and the first traded target: MSFT then KEYS on
+            2026-09-03, and KEYS, AAPL, MSFT and NFLX on 2026-09-04, MSFT last in its group for want
+            of a traded exit. KEYS is drawn at 1.7057 on the earlier night and 2.1304 on the later,
+            its stop having moved, and its page for the earlier night walks that night's list.
+            Discharges An earlier night's order on tonight's list asserted from the fixture.
+Moved:      the two registered evaluators' versions, `momentum-histogram-turn` from 7252c1432864 to
+            aec68278d650 and `momentum-index-reading` from 53fbca81a57c to 8ec1ef1f7515, because the
+            listings builder is one of the sources their evaluation runs through. No candidate
+            stands registered on the operator's store, so no window moved.
+Amended:    this checkpoint amends its own done condition. It now names the band strength every
+            listing records, section 17's block length and floor with their constants, and the
+            region's counts agreeing with constructed nights worked by hand, because a done
+            condition naming none of them would be narrower than what the checkpoint changes.
+Store:      measured over a copy of the operator's store, never `data/` itself: every fired listing
+            on it has its own night's plan and bands, and of the 1,463 fired rows on the four nights
+            2026-09-16 to 09-21, 593 have no reward to risk, each with one of the plan's three
+            reasons. None of its rows records the band strength, since all were written before this,
+            so the region there states that no night is measured yet.
+Tests:      1183, from 1179. Four added: both fixture nights read against the expectation, a
+            session's block and a whole window counted at their edges, the region's counts over
+            constructed nights either side of the floor, and the run route drawing the region.
+            Three rewritten for the plan the listing kept: the ordering test, the earlier night's
+            order and the walk when newer plans are stored, each once about band strength.
+Claims:     392, from 384. Tonight's list row gains the reward to risk it draws, the run page's new
+            region arrives as the six parts its row states, and section 17 gains the blocks row, each
+            passing where it is drawn.
+Mutated:    the rule, stated before the sweep: break the property a reader sees change, that within
+            a fired count the higher reward to risk is drawn first, and then the two properties the
+            region's trigger is read off, a window closing at its sixty-third session and a listing
+            recording its strength. Not mutated: the reason a row with none states, which the tests
+            read literally; and the rule that a row with none sorts last in its group, whose own
+            clause in the order is equivalent under a descending sort, which places an absent ratio
+            last already, so it is kept as the rule stated and read over the fixture and constructed
+            rows rather than mutated.
+            Predicted:
+            M1 the tiebreak ascending rather than descending: red in the ordering test, the two-night
+            fixture test, the earlier night test and both walk tests, and the region test green,
+            since its ruled order draws twenty setups either way.
+            M2 a window closing only after its sixty-third session: red in the block test and the
+            region test, at the night the eighth block closes.
+            M3 the listings builder writing no strength: red in the run route test, whose region
+            then measures no night, and in the table count, whose run page then draws one fewer.
+            Results: three runs of the whole suite, never a filter, in a detached worktree at
+            15cf019, each mutation reverted with `git checkout` and the file read back equal to the
+            committed text before the next, and the tree read clean after. The baseline is 1183 of
+            1183. M1 turned 5 red, the five predicted, and the region test stayed green. M2 turned
+            2 red, the two predicted. M3 turned 3 red, the two predicted and the evaluator pin
+            test, which reads the listings builder as one of the registered evaluators' pinned
+            sources and so goes red on any edit to that file. That red was seen coming before the
+            sweep and is not written in the prediction above, so it is recorded as one more red
+            than predicted rather than as a prediction held. No mutation survived.
+Rehearsed:  over a copy of the operator's store, migrated from schema 30 to 31, with the night of
+            2026-09-21's listings written again by this checkpoint's builder: 503 rows and 357
+            fired, as the night itself wrote. Nine screens fetched, each 200: tonight, and tonight
+            for 2026-09-18 and 09-16, the run page and its 2026-09-18, AAPL's page and its
+            2026-09-18, the universe and the queue. Tonight's twenty on 2026-09-21: C, the one name
+            firing four reasons, then the three-reason group by ratio from OXY at 2.99 to SCHW at
+            0.65, then ACN, META and WBD, whose plans trade no exit, then the two-reason group from
+            PGR at 5.74. The run page's region measured the one night that recorded the strength:
+            13 setups among the old order's twenty, 17 among the ruled order's and 20 among the
+            ratio alone's, none closed, 0 of 8 blocks each, and no comparison drawn. It ran as a
+            scratch test in the sweep's worktree, removed before the sweep.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1183 of 1183 tests
+            ran with none failed, migrations 0 to 31 with one added and none pending, schema version
+            31, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 392
+            claims, 392 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 399 placements and verdicts
+            reconciled against a floor of 34, 38 of 38 roster checks carried and all 38 run, 1183 of
+            1183 tests. Both gates ran over 15cf019 with this entry in place, and the operator's store
+            under `data/` was not touched by either; the measurements and the rehearsal read copies.
+Carried:    The three orders of tonight's list compared, operating: its region now exists and is the
+            surface its trigger is read on, at 0 of 8 blocks on every store until a recorded night's
+            window closes.

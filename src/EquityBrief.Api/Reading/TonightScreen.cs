@@ -1,8 +1,10 @@
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Spending;
 using System.Text.Json;
+using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Shortlist;
+using EquityBrief.Data;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Api.Reading;
@@ -17,28 +19,116 @@ namespace EquityBrief.Api.Reading;
 // see: The page shows twenty and states the true count
 public static class TonightScreen
 {
-    // Section 17's list display. The strongest twenty are drawn and the true
-    // fired count is always stated, because a page that shows twenty every night
-    // cannot tell you how busy the night was.
-    public const int Drawn = 20;
+    // The three orders tonight's list is measured in. The first is the one the list is drawn in;
+    // the second is the order it replaced, which the other two are measured against; the third
+    // is the plan's reward to risk with the fired count left out.
+    // see: The order tonight's list is drawn in is compared against the order it replaces, declared before any record is read
+    public enum Order
+    {
+        FiredThenRewardToRisk,
+        FiredThenBandStrength,
+        RewardToRiskAlone,
+    }
 
-    // The order section 15.7 states: how many reasons fired, then band strength
-    // as the tiebreaker.
+    // Each order, as the run page names it.
+    public static string Named(Order order) => order switch
+    {
+        Order.FiredThenRewardToRisk => "how many reasons fired, then the plan's reward to risk",
+        Order.FiredThenBandStrength => "how many reasons fired, then band strength",
+        _ => "the plan's reward to risk alone",
+    };
+
+    // Rows in one of the three orders. A row with no reward to risk sorts after every row with
+    // one where the ratio decides, and the ticker in code-point order settles what is left, so
+    // the order is total and two reads of one night cannot disagree.
+    // see: Tonight's list breaks a tie in fired count by the plan's reward to risk, and a row with none is drawn after every row with one and says why
+    public static IReadOnlyList<ListingCell> Ordered(IEnumerable<ListingCell> rows, Order order) => order switch
+    {
+        Order.FiredThenRewardToRisk =>
+        [
+            .. rows
+                .OrderByDescending(row => row.FiredCount)
+                .ThenBy(row => row.RewardToRisk is null)
+                .ThenByDescending(row => row.RewardToRisk)
+                .ThenBy(row => row.Ticker, StringComparer.Ordinal),
+        ],
+        Order.FiredThenBandStrength =>
+        [
+            .. rows
+                .OrderByDescending(row => row.FiredCount)
+                .ThenByDescending(row => row.Strength)
+                .ThenBy(row => row.Ticker, StringComparer.Ordinal),
+        ],
+        _ =>
+        [
+            .. rows
+                .OrderBy(row => row.RewardToRisk is null)
+                .ThenByDescending(row => row.RewardToRisk)
+                .ThenBy(row => row.Ticker, StringComparer.Ordinal),
+        ],
+    };
+
+    // The reward to risk the night's plan computes from its first tranche, read off the plan the
+    // listing kept that night, or the plan's own words for why it computes none.
     //
-    // The strength score is the obligation this checkpoint discharges. The phase
-    // 3 sign-off measured it over four names: touches are 72 to 79 per cent of
-    // the members of each name's strongest band, anchor counts are bunched at 4
-    // to 15 while touch counts run 0 to 41, and MSFT's top two bands carry the
-    // same 4 anchors with the ranking decided by 15 touches against 9. So the
-    // score is dominated by touches, and a tiebreaker dominated by touches is a
-    // tiebreaker about how often a price has come back to a level, which is what
-    // the ordering is for. It is read from the stored band rather than recomputed
-    // here.
-    // owes: The strength score read against four names
+    // The listing keeps the first tranche and the first traded exit, which are all the ratio from
+    // the first tranche reads, so it is worked by the ladder's own arithmetic rather than by a
+    // second statement of it. Rounded as the ladder stores it, so the figure the list draws is the
+    // figure the night's plan holds. Read off the listing rather than the ladder because the
+    // listing is kept and the ladder is dropped a year back, and an order that could not be read
+    // for an old night is one the comparison could not measure.
+    // see: Tonight's list breaks a tie in fired count by the plan's reward to risk, and a row with none is drawn after every row with one and says why
+    // see: Code owns every number
+    public static (decimal? RewardToRisk, string? Why) FirstTranche(string planAtListing)
+    {
+        using var document = JsonDocument.Parse(planAtListing);
+        var root = document.RootElement;
+
+        // A plan that is not an object carries no tranche, which is what the arithmetic says of it.
+        decimal? Price(string name) =>
+            root.ValueKind == JsonValueKind.Object && root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
+                ? Money.FromStorage(value.GetString()!)
+                : null;
+
+        var (low, high, stop, target) = (Price("entryLow"), Price("entryHigh"), Price("stop"), Price("firstTradedTarget"));
+
+        var plan = new Ladder(
+            low is { } entryLow && high is { } entryHigh ? [new Tranche(entryLow, entryHigh, TrancheCondition.ReachesTheZone, stop)] : [],
+            target is { } exit ? [new Exit(exit, exit, Traded: true, Trailing: false, Fraction: string.Empty, Reason: null)] : [],
+            null,
+            null,
+            []);
+
+        var arithmetic = LadderSeries.ArithmeticFor(plan);
+
+        return arithmetic.FirstRewardToRisk is { } ratio
+            ? (Math.Round(ratio, PriceForm.Places, MidpointRounding.AwayFromZero), null)
+            : (null, arithmetic.Absent ?? MarkRenderer.NoRewardToRiskStated);
+    }
+
+    // A listing row as the three orders read it: its fired count, the band strength it recorded
+    // and its plan's reward to risk, and nothing a screen draws beside them.
+    public static ListingCell Ranked(ListingRow listing)
+    {
+        var (rewardToRisk, why) = FirstTranche(listing.PlanAtListing);
+
+        return new ListingCell(
+            listing.Ticker,
+            listing.SessionDate,
+            listing.FiredCount,
+            listing.BandStrength ?? 0,
+            null,
+            [],
+            RewardToRisk: rewardToRisk,
+            NoRewardToRisk: why);
+    }
+
+    // The order section 15.7 states: how many reasons fired, then the plan's reward to risk, then
+    // the ticker. Every figure is read off the night's own listing rows, which carry the plan and
+    // the band strength as that night had them.
     public static IReadOnlyList<ListingCell> Rows(
         DateOnly night,
         IReadOnlyList<ListingRow> listings,
-        IReadOnlyDictionary<string, int> strengthByTicker,
         IReadOnlyDictionary<string, UniverseCell> cellByTicker,
         IReadOnlyList<CloseRow> closesToTheNight,
         IReadOnlyList<SuspectSeriesRow>? suspects = null,
@@ -67,19 +157,15 @@ public static class TonightScreen
                 group => (IReadOnlyList<CloseRow>)[.. group.OrderByDescending(row => row.SessionDate)],
                 StringComparer.Ordinal);
 
-        return
-        [
-            .. listings
+        return Ordered(
+            listings
                 .Where(listing => listing.FiredCount > 0)
-                .Select(listing => Cell(listing, night, strengthByTicker, cellByTicker, sessions) with
+                .Select(listing => Cell(listing, night, cellByTicker, sessions) with
                 {
                     Suspect = NameScreen.Suspect(suspectByTicker.GetValueOrDefault(listing.Ticker)),
                     ResearchedOn = researchedByTicker.TryGetValue(listing.Ticker, out var written) ? written : null,
-                })
-                .OrderByDescending(cell => cell.FiredCount)
-                .ThenByDescending(cell => cell.Strength)
-                .ThenBy(cell => cell.Ticker, StringComparer.Ordinal),
-        ];
+                }),
+            Order.FiredThenRewardToRisk);
     }
 
     // The day's change, as a signed percentage of the session before.
@@ -142,7 +228,6 @@ public static class TonightScreen
     static ListingCell Cell(
         ListingRow listing,
         DateOnly night,
-        IReadOnlyDictionary<string, int> strengthByTicker,
         IReadOnlyDictionary<string, UniverseCell> cellByTicker,
         IReadOnlyDictionary<string, IReadOnlyList<CloseRow>> sessionsByTicker)
     {
@@ -161,12 +246,13 @@ public static class TonightScreen
 
         var cell = cellByTicker.GetValueOrDefault(listing.Ticker);
         var sessions = sessionsByTicker.GetValueOrDefault(listing.Ticker);
+        var (rewardToRisk, why) = FirstTranche(listing.PlanAtListing);
 
         return new ListingCell(
             listing.Ticker,
             listing.SessionDate,
             listing.FiredCount,
-            strengthByTicker.TryGetValue(listing.Ticker, out var strength) ? strength : 0,
+            listing.BandStrength ?? 0,
             CloseOn(night, sessions),
             [.. fired.Select(reason => reason.Name)],
             fired,
@@ -176,7 +262,9 @@ public static class TonightScreen
             // every other screen already follows.
             DayChange(night, sessions),
             cell?.TrendState,
-            cell);
+            cell,
+            RewardToRisk: rewardToRisk,
+            NoRewardToRisk: why);
     }
 
     // The true fired count over the whole index, which is the headline. It is

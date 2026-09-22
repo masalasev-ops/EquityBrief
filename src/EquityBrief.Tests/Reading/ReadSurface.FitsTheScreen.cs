@@ -209,8 +209,9 @@ public partial class ReadSurface
         }
 
         // The population the loop above ran over, so a screen that stops drawing its tables is
-        // not a screen on which every table is boxed: 26 over the five surfaces.
-        Assert.Equal(26, tables);
+        // not a screen on which every table is boxed: 27 over the five surfaces, the run page's
+        // measure of tonight's order the latest.
+        Assert.Equal(27, tables);
 
         // What makes the box a box. Without this the wrapper is a div and every table pushes
         // the page as it did before.

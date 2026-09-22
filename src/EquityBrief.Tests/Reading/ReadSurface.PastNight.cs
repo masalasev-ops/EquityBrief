@@ -8,51 +8,57 @@ using Microsoft.Data.Sqlite;
 namespace EquityBrief.Tests.Reading;
 
 // read-surface: an earlier night on tonight's list is drawn from what that night stored, through
-// the route that serves it, over a store holding two nights whose bands disagree.
+// the route that serves it, over a store holding two nights whose plans and bands disagree.
 public partial class ReadSurface
 {
     [Fact]
-    public async Task AnEarlierNightIsOrderedByTheBandsThatNightStored()
+    public async Task AnEarlierNightIsOrderedByThePlansThatNightStored()
     {
         using var store = await FixtureExpectations.WithListings();
 
         var (earlier, newest) = await TwoNights(store);
         var (first, last) = BandedNames(store, newest);
 
-        // The two names fire the same reasons on both nights, so band strength is what orders
-        // them. On the earlier night the name that sorts last by ticker is the stronger, and on
-        // the newest night the weaker, so the right order is the reverse of the ticker order and
-        // neither the newest bands nor the ticker tiebreak can produce it.
+        // The two names fire the same reasons on both nights, so the plan's reward to risk is what
+        // orders them. On the earlier night the name that sorts last by ticker has the higher, and
+        // on the newest night the lower, so the right order is the reverse of the ticker order and
+        // neither the newest plans nor the ticker tiebreak can produce it. The bands say the
+        // opposite of the plans on both nights, so an order read off them is told apart as well.
         FireAlike(store, earlier, first, last);
         FireAlike(store, newest, first, last);
 
-        SetStrength(store, earlier, first, 1);
-        SetStrength(store, earlier, last, 9);
-        SetStrength(store, newest, first, 9);
-        SetStrength(store, newest, last, 1);
+        SetPlan(store, earlier, first, "120");
+        SetPlan(store, earlier, last, "130");
+        SetPlan(store, newest, first, "130");
+        SetPlan(store, newest, last, "120");
+
+        SetStrength(store, earlier, first, 9);
+        SetStrength(store, earlier, last, 1);
+        SetStrength(store, newest, first, 1);
+        SetStrength(store, newest, last, 9);
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
         var then = await client.GetStringAsync($"/screens/tonight/{Stamp(earlier)}");
 
-        Assert.Contains("data-strength=\"9\"", RowOf(then, last), StringComparison.Ordinal);
-        Assert.Contains("data-strength=\"1\"", RowOf(then, first), StringComparison.Ordinal);
+        Assert.Contains("data-reward-to-risk=\"2.5\"", RowOf(then, last), StringComparison.Ordinal);
+        Assert.Contains("data-reward-to-risk=\"1.5\"", RowOf(then, first), StringComparison.Ordinal);
         Assert.True(
             RowAt(then, last) < RowAt(then, first),
-            $"{Stamp(earlier)} drew {first} before {last}, where that night's bands put {last} first.");
+            $"{Stamp(earlier)} drew {first} before {last}, where that night's plans put {last} first.");
 
-        // The counter-reading over the same store: the newest night, whose bands say the
+        // The counter-reading over the same store: the newest night, whose plans say the
         // opposite, draws the opposite order, so the two nights can be told apart.
         var now = await client.GetStringAsync($"/screens/tonight/{Stamp(newest)}");
 
         Assert.True(
             RowAt(now, first) < RowAt(now, last),
-            $"{Stamp(newest)} drew {last} before {first}, where that night's bands put {first} first.");
+            $"{Stamp(newest)} drew {last} before {first}, where that night's plans put {first} first.");
     }
 
     [Fact]
-    public async Task ANamePagesWalkFollowsTheListOfTheNightItWalksWhenNewerBandsAreStored()
+    public async Task ANamePagesWalkFollowsTheListOfTheNightItWalksWhenNewerPlansAreStored()
     {
         using var store = await FixtureExpectations.WithListings();
 
@@ -61,28 +67,35 @@ public partial class ReadSurface
         var after = listed.AddDays(1);
         var (first, last) = BandedNames(store, listed);
 
-        // Every name listed that night fires alike, so band strength alone orders the list. The
-        // night listed puts the first name by ticker at the top and the last at the bottom, and a
-        // band set stored after it, by a night that stopped before it listed, says the reverse.
+        // Every name listed that night fires alike, so the plan's reward to risk alone orders the
+        // list. The night listed puts the first name by ticker at the top and the last at the
+        // bottom, and a plan and band set stored after it, by a night that stopped before it
+        // listed, says the reverse.
         var on = Stamp(listed);
         var fired = Strings(store, $"SELECT CAST(MAX(fired_count) AS TEXT) FROM listing WHERE session_date = '{on}';").Single();
 
         store.Execute(
             "UPDATE listing SET " +
             $"reasons = (SELECT reasons FROM listing WHERE session_date = '{on}' ORDER BY fired_count DESC, ticker LIMIT 1), " +
-            $"fired_count = {fired} WHERE session_date = '{on}';");
+            $"fired_count = {fired}, plan_at_listing = '{PlanWith("125")}' WHERE session_date = '{on}';");
 
+        SetPlan(store, listed, first, "135");
+        SetPlan(store, listed, last, "115");
+
+        Insert(
+            store,
+            "INSERT INTO ladder (ticker, as_of, trend_state, plan) " +
+            $"SELECT ticker, '{Stamp(after)}', trend_state, plan FROM ladder WHERE as_of = '{on}';");
         Insert(
             store,
             "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) " +
             $"SELECT ticker, '{Stamp(after)}', low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members " +
             $"FROM level WHERE as_of = '{on}';");
 
-        store.Execute($"UPDATE level SET strength = 5 WHERE as_of IN ('{on}', '{Stamp(after)}');");
-        SetStrength(store, listed, first, 9);
-        SetStrength(store, listed, last, 1);
+        store.Execute($"UPDATE ladder SET plan = json_set(plan, '$.arithmetic.firstRewardToRisk', '9.0000') WHERE ticker = '{last}' AND as_of = '{Stamp(after)}';");
+        store.Execute($"UPDATE ladder SET plan = json_set(plan, '$.arithmetic.firstRewardToRisk', '0.1000') WHERE ticker = '{first}' AND as_of = '{Stamp(after)}';");
         SetStrength(store, after, first, 1);
-        SetStrength(store, after, last, 9);
+        SetStrength(store, after, last, 99);
 
         Assert.Equal(listed, (await api.NewestNightAsync())!.Value);
 
@@ -122,17 +135,17 @@ public partial class ReadSurface
         var on = Stamp(listed);
         var (first, _) = BandedNames(store, listed);
 
-        // Every name listed that night fires alike, so band strength alone orders the list, and
-        // the strongest leaves the index the session after: a member on the night walked and not
-        // on the session the page is opened on, which the host's own clock places later still.
+        // Every name listed that night fires alike, so the plan's reward to risk alone orders the
+        // list, and the name with the highest leaves the index the session after: a member on the
+        // night walked and not on the session the page is opened on, which the host's own clock
+        // places later still.
         var fired = Strings(store, $"SELECT CAST(MAX(fired_count) AS TEXT) FROM listing WHERE session_date = '{on}';").Single();
 
         store.Execute(
             "UPDATE listing SET " +
             $"reasons = (SELECT reasons FROM listing WHERE session_date = '{on}' ORDER BY fired_count DESC, ticker LIMIT 1), " +
-            $"fired_count = {fired} WHERE session_date = '{on}';");
-        store.Execute($"UPDATE level SET strength = 5 WHERE as_of = '{on}';");
-        SetStrength(store, listed, first, 9);
+            $"fired_count = {fired}, plan_at_listing = '{PlanWith("125")}' WHERE session_date = '{on}';");
+        SetPlan(store, listed, first, "135");
         store.Execute($"UPDATE membership SET \"left\" = '{Stamp(listed.AddDays(1))}' WHERE ticker = '{first}';");
 
         using var host = new Host(store.Root);
@@ -339,6 +352,14 @@ public partial class ReadSurface
 
     static void SetStrength(TemporaryStore store, DateOnly night, string ticker, int strength) =>
         store.Execute($"UPDATE level SET strength = {strength} WHERE ticker = '{ticker}' AND as_of = '{Stamp(night)}';");
+
+    // A plan the listing kept whose first tranche is entered at the middle of 100 to 110, 105, with
+    // a stop at 95, so a target at 120 is a reward to risk of 1.5 and one at 130 of 2.5.
+    static string PlanWith(string target) =>
+        $"{{\"entryLow\":\"100\",\"entryHigh\":\"110\",\"stop\":\"95\",\"firstTradedTarget\":\"{target}\",\"invalidation\":\"90\"}}";
+
+    static void SetPlan(TemporaryStore store, DateOnly night, string ticker, string target) =>
+        store.Execute($"UPDATE listing SET plan_at_listing = '{PlanWith(target)}' WHERE ticker = '{ticker}' AND session_date = '{Stamp(night)}';");
 
     // Where a name's row opens on the list, which is the order the list draws it in.
     static int RowAt(string list, string ticker)

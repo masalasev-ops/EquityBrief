@@ -131,12 +131,17 @@ public sealed record MoveExtremes(string Ticker, DateOnly Ended, int Sessions, d
 // `Reasons` and `PlanAtListing` arrive as the JSON the builder wrote, because
 // the read surface hands back stored values unchanged and parsing one into a
 // shape would be deriving.
+//
+// `BandStrength` is null on a row written before the listing recorded it, which is a row the
+// comparison of tonight's orders does not read.
+// see: A listing records the band strength the old order read, and the three orders are compared over the nights that recorded it
 public sealed record ListingRow(
     string Ticker,
     DateOnly SessionDate,
     string Reasons,
     int FiredCount,
-    string PlanAtListing);
+    string PlanAtListing,
+    int? BandStrength = null);
 
 // One stage of one run, as the run log holds it.
 //
@@ -718,7 +723,7 @@ public sealed class ReadApi : IComponent
     // header states the true fired count over the whole index and the twenty
     // drawn rows cannot tell you it.
     const string ListingsForNight = @"
-        SELECT ticker, session_date, reasons, fired_count, plan_at_listing
+        SELECT ticker, session_date, reasons, fired_count, plan_at_listing, band_strength
         FROM listing
         WHERE session_date = $session_date
         ORDER BY ticker;
@@ -734,7 +739,7 @@ public sealed class ReadApi : IComponent
     // reloads: the reasons are JSON on the row, so a count per reason cannot be
     // asked of the store.
     const string EveryListing = @"
-        SELECT ticker, session_date, reasons, fired_count, plan_at_listing
+        SELECT ticker, session_date, reasons, fired_count, plan_at_listing, band_strength
         FROM listing
         ORDER BY session_date, ticker;
     ";
@@ -742,7 +747,7 @@ public sealed class ReadApi : IComponent
     // A name's own listing history, which is what the universe screen's two
     // right-hand columns count and what the listing strip draws.
     const string ListingsForName = @"
-        SELECT ticker, session_date, reasons, fired_count, plan_at_listing
+        SELECT ticker, session_date, reasons, fired_count, plan_at_listing, band_strength
         FROM listing
         WHERE ticker = $ticker AND session_date <= $on
         ORDER BY session_date DESC
@@ -1500,7 +1505,8 @@ public sealed class ReadApi : IComponent
                 DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.GetString(2),
                 reader.GetInt32(3),
-                reader.GetString(4)));
+                reader.GetString(4),
+                reader.IsDBNull(5) ? null : reader.GetInt32(5)));
         }
 
         return rows;

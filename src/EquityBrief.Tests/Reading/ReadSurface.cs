@@ -155,7 +155,15 @@ public partial class ReadSurface
             CheckReach.Key("15.7 Tonight", "Night header, names that fired"),
             CheckReach.Key("15.7 Tonight", "Night header, run duration"),
             CheckReach.Key("15.7 Tonight", "The list, one row per name that fired"),
-            CheckReach.Key("15.7 Tonight", "The list, ordered by how many fired then by band strength"),
+            CheckReach.Key("15.7 Tonight", "The list, ordered by how many fired then by the plan's reward to risk"),
+            CheckReach.Key("15.7 Tonight", "The list, the reward to risk or the plan's reason for none"),
+            CheckReach.Key(Scope.LimitsTable, "Blocks a record is judged over"),
+            CheckReach.Key("15.10 Run", "Tonight's order, the three orders of tonight's list over the twenty each would draw"),
+            CheckReach.Key("15.10 Run", "Tonight's order, the old order named as the benchmark"),
+            CheckReach.Key("15.10 Run", "Tonight's order, the setups each order drew"),
+            CheckReach.Key("15.10 Run", "Tonight's order, the setups whose whole window has closed"),
+            CheckReach.Key("15.10 Run", "Tonight's order, the blocks holding one against the floor"),
+            CheckReach.Key("15.10 Run", "Tonight's order, no comparison drawn before every order reaches it"),
             CheckReach.Key("15.7 Tonight", "The list, at most twenty drawn"),
             CheckReach.Key("15.7 Tonight", "The list, name"),
             CheckReach.Key("15.7 Tonight", "The list, close"),
@@ -1601,59 +1609,102 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task TheListOrdersOnHowManyFiredThenOnBandStrength()
+    public async Task TheListOrdersOnHowManyFiredThenOnThePlansRewardToRisk()
     {
-        // Section 15.7's order, and the strength score is the tiebreaker the
-        // phase 3 sign-off measured: touches are 72 to 79 per cent of the
-        // members of each name's strongest band, so the score is dominated by
-        // touches and a tiebreaker dominated by touches is one about how often a
-        // price has come back to a level.
-        // owes: The strength score read against four names
+        // Section 15.7's order, read back off the page the route draws against what the store
+        // holds, in both directions: every fired listing is drawn with the ratio its night's own
+        // ladder row stored, or with the reason that plan gives for none, and the rows stand in
+        // the order the stored fired counts and those ratios give by the rule as stated, worked
+        // here and not by the projection.
+        // see: Tonight's list breaks a tie in fired count by the plan's reward to risk, and a row with none is drawn after every row with one and says why
         using var store = await FixtureExpectations.WithListings();
 
         var api = Api(store);
         var night = (await api.NewestNightAsync())!.Value;
         var listings = await api.ListingsAsync(night);
 
-        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
 
-        foreach (var listing in listings)
+        var page = await client.GetStringAsync($"/screens/tonight/{Stamp(night)}");
+        var stored = new List<(string Ticker, int Fired, decimal? Ratio)>();
+
+        foreach (var listing in listings.Where(listing => listing.FiredCount > 0))
         {
-            var bands = await api.LevelsAsync(listing.Ticker, night);
+            var arithmetic = JsonDocument.Parse((await api.LadderAsync(listing.Ticker, night))!.Plan).RootElement.GetProperty("arithmetic");
+            var ratio = arithmetic.GetProperty("firstRewardToRisk") is { ValueKind: JsonValueKind.String } figure
+                ? decimal.Parse(figure.GetString()!, CultureInfo.InvariantCulture)
+                : (decimal?)null;
+            var row = RowOf(page, listing.Ticker);
+            var drawn = Regex.Match(row, "data-reward-to-risk=\"([^\"]+)\"").Groups[1].Value;
 
-            strengths[listing.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
+            if (ratio is { } held)
+            {
+                Assert.Equal(held, decimal.Parse(drawn, CultureInfo.InvariantCulture));
+            }
+            else
+            {
+                Assert.Equal("none", drawn);
+                Assert.Contains(arithmetic.GetProperty("absent").GetString()!, row, StringComparison.Ordinal);
+            }
+
+            stored.Add((listing.Ticker, listing.FiredCount, ratio));
         }
 
-        var rows = TonightScreen.Rows(
-            night,
-            listings,
-            strengths,
-            new Dictionary<string, UniverseCell>(StringComparer.Ordinal),
-            []);
-
-        // Only the names that fired are drawn, which is what separates the list
-        // from the universe screen.
-        Assert.Equal(listings.Count(listing => listing.FiredCount > 0), rows.Count);
-        Assert.All(rows, row => Assert.True(row.FiredCount > 0));
+        // The fixture's night holds a row with no reward to risk among rows with one, so the rule's
+        // last-in-its-group half is read over the store as well as over the constructed rows below.
+        Assert.Contains(stored, row => row.Ratio is null);
+        Assert.Contains(stored, row => row.Ratio is not null);
 
         Assert.Equal(
-            [.. rows.OrderByDescending(row => row.FiredCount).ThenByDescending(row => row.Strength).ThenBy(row => row.Ticker, StringComparer.Ordinal)],
-            rows);
+            [.. stored
+                .OrderByDescending(row => row.Fired)
+                .ThenBy(row => row.Ratio is null)
+                .ThenByDescending(row => row.Ratio)
+                .ThenBy(row => row.Ticker, StringComparer.Ordinal)
+                .Select(row => row.Ticker)
+                .Take(SinglePageApp.TonightDrawn)],
+            Regex.Matches(page, "<tr data-ticker=\"([^\"]+)\" data-fired-count=").Select(match => match.Groups[1].Value).ToArray());
 
-        // The tiebreaker is asserted where it decides, over constructed rows
-        // whose fired counts are equal, because four names of real bars are not
-        // guaranteed to tie.
+        // The tiebreak where it decides, over constructed rows, because four names of real bars
+        // are not guaranteed to tie: within a fired count the higher ratio first, a row with none
+        // after every row with one however strong its bands, equal ratios by ticker, and a lower
+        // fired count after all of them whatever its ratio.
+        static string Plan(string target, string stop = "95") =>
+            $"{{\"entryLow\":\"100\",\"entryHigh\":\"110\",\"stop\":\"{stop}\",\"firstTradedTarget\":\"{target}\"}}";
+
         var tied = TonightScreen.Rows(
             night,
             [
-                new ListingRow("AAAA", night, Fired(1), 1, "{}"),
-                new ListingRow("BBBB", night, Fired(1), 1, "{}"),
+                new ListingRow("AAAA", night, Fired(2), 2, Plan("120"), BandStrength: 9),
+                new ListingRow("BBBB", night, Fired(2), 2, Plan("130"), BandStrength: 1),
+                new ListingRow("CCCC", night, Fired(2), 2, "{\"entryLow\":\"100\",\"entryHigh\":\"110\",\"stop\":\"95\",\"firstTradedTarget\":null}", BandStrength: 99),
+                new ListingRow("DDDD", night, Fired(2), 2, Plan("130"), BandStrength: 5),
+                new ListingRow("EEEE", night, Fired(1), 1, Plan("200"), BandStrength: 99),
             ],
-            new Dictionary<string, int>(StringComparer.Ordinal) { ["AAAA"] = 3, ["BBBB"] = 9 },
             new Dictionary<string, UniverseCell>(StringComparer.Ordinal),
             []);
 
-        Assert.Equal(["BBBB", "AAAA"], [.. tied.Select(row => row.Ticker)]);
+        Assert.Equal(["BBBB", "DDDD", "AAAA", "CCCC", "EEEE"], [.. tied.Select(row => row.Ticker)]);
+
+        // Worked by hand: an entry at the zone's middle, 105, risks 10 to a stop at 95, so a target
+        // at 130 rewards 25 and one at 120 rewards 15.
+        Assert.Equal(2.5m, tied.Single(row => row.Ticker == "BBBB").RewardToRisk);
+        Assert.Equal(1.5m, tied.Single(row => row.Ticker == "AAAA").RewardToRisk);
+
+        // The row with none says why in the plan's own words, and is drawn saying it.
+        var none = tied.Single(row => row.Ticker == "CCCC");
+
+        Assert.Null(none.RewardToRisk);
+        Assert.Equal("no exit is traded, so there is no reward to measure", none.NoRewardToRisk);
+        Assert.Contains(
+            "data-reward-to-risk=\"none\">no exit is traded, so there is no reward to measure</span>",
+            new MarkRenderer().TonightList(tied, SinglePageApp.TonightDrawn),
+            StringComparison.Ordinal);
+
+        // The other two reasons a plan gives, each read off the arithmetic the ladder states.
+        Assert.Equal("no tranche is placed, so there is nothing to size", TonightScreen.FirstTranche("{\"entryLow\":null,\"entryHigh\":null,\"stop\":null,\"firstTradedTarget\":null}").Why);
+        Assert.Equal("the first tranche has no stop, so there is no risk to measure", TonightScreen.FirstTranche(Plan("130", "null").Replace("\"null\"", "null", StringComparison.Ordinal)).Why);
     }
 
     static string Fired(int count) =>
@@ -3110,19 +3161,10 @@ public partial class ReadSurface
         var listings = await api.ListingsAsync(night);
         var universe = await api.UniverseAsync("GSPC");
 
-        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
-
-        foreach (var row in universe)
-        {
-            var bands = await api.LevelsAsync(row.Ticker, night);
-
-            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
-        }
 
         var rows = TonightScreen.Rows(
             night,
             listings,
-            strengths,
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
             await api.ClosesToTheNightAsync(night));
 
@@ -3220,21 +3262,12 @@ public partial class ReadSurface
         var night = (await api.NewestNightAsync())!.Value;
         var listings = await api.ListingsAsync(night);
         var universe = await api.UniverseAsync("GSPC");
-        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
-
-        foreach (var row in universe)
-        {
-            var bands = await api.LevelsAsync(row.Ticker, night);
-
-            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
-        }
 
         var researched = await api.ResearchedAsync();
 
         var rows = TonightScreen.Rows(
             night,
             listings,
-            strengths,
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
             await api.ClosesToTheNightAsync(night),
             null,
@@ -3287,19 +3320,10 @@ public partial class ReadSurface
         var night = (await api.NewestNightAsync())!.Value;
         var listings = await api.ListingsAsync(night);
         var universe = await api.UniverseAsync("GSPC");
-        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
-
-        foreach (var row in universe)
-        {
-            var bands = await api.LevelsAsync(row.Ticker, night);
-
-            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
-        }
 
         var rows = TonightScreen.Rows(
             night,
             listings,
-            strengths,
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
             await api.ClosesToTheNightAsync(night));
 
@@ -3891,7 +3915,7 @@ public partial class ReadSurface
     [Fact]
     public async Task TheRunPageDrawsEveryRegionSectionFifteenTenNamesAndStatesTheTwoThatAreAbsent()
     {
-        // The six regions in the order that section states them. The shadow
+        // The seven regions in the order that section states them. The shadow
         // region was stated as absent until 8.4 built it, because an empty
         // region reads as a night that produced nothing; it is now drawn, and
         // what it states over a store with no registration is that nothing is
@@ -3919,15 +3943,16 @@ public partial class ReadSurface
             RunScreen.FellBack(await api.FellBackAsync(night)),
             RunScreen.Queue(await api.QueueRowsAsync(), night, _ => true),
             RunScreen.Harness(null),
-            RunScreen.Shadow(await api.RegisteredCandidatesAsync(), Utc("2026-09-08T22:00:00Z")));
+            RunScreen.Shadow(await api.RegisteredCandidatesAsync(), Utc("2026-09-08T22:00:00Z")),
+            orders: RunScreen.Orders(listings, night));
 
-        foreach (var region in new[] { "operational", "reason-records", "shadow-candidates", "stale-and-failed", "overnight-queue", "harness" })
+        foreach (var region in new[] { "operational", "reason-records", "shadow-candidates", "tonights-order", "stale-and-failed", "overnight-queue", "harness" })
         {
             Assert.Contains($"class=\"{region}\"", page, StringComparison.Ordinal);
         }
 
         // In that order, so the evidence page reads as section 15.10 states it.
-        var at = new[] { "operational", "reason-records", "shadow-candidates", "stale-and-failed", "overnight-queue", "harness" }
+        var at = new[] { "operational", "reason-records", "shadow-candidates", "tonights-order", "stale-and-failed", "overnight-queue", "harness" }
             .Select(region => page.IndexOf($"class=\"{region}\"", StringComparison.Ordinal))
             .ToArray();
 
@@ -3965,19 +3990,10 @@ public partial class ReadSurface
         var universe = await api.UniverseAsync(Index, night);
         var closes = await api.ClosesToTheNightAsync(night);
 
-        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
-
-        foreach (var row in universe)
-        {
-            var bands = await api.LevelsAsync(row.Ticker, night);
-
-            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
-        }
 
         var rows = TonightScreen.Rows(
             night,
             listings,
-            strengths,
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
             closes);
 
@@ -4112,19 +4128,10 @@ public partial class ReadSurface
         var listings = await api.ListingsAsync(night);
         var universe = await api.UniverseAsync(Index, night);
 
-        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
-
-        foreach (var row in universe)
-        {
-            var bands = await api.LevelsAsync(row.Ticker, night);
-
-            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
-        }
 
         var rows = TonightScreen.Rows(
             night,
             listings,
-            strengths,
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
             await api.ClosesToTheNightAsync(night));
 
@@ -4524,19 +4531,10 @@ public partial class ReadSurface
         Assert.NotEmpty(listings);
 
         var universe = await api.UniverseAsync(Index, earlier);
-        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
-
-        foreach (var row in universe)
-        {
-            var bands = await api.LevelsAsync(row.Ticker, earlier);
-
-            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
-        }
 
         var rows = TonightScreen.Rows(
             earlier,
             listings,
-            strengths,
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
             await api.ClosesToTheNightAsync(earlier));
 
@@ -4615,19 +4613,10 @@ public partial class ReadSurface
         Assert.NotEqual(night, held[^1].SessionDate);
 
         var universe = await api.UniverseAsync(Index, night);
-        var strengths = new Dictionary<string, int>(StringComparer.Ordinal);
-
-        foreach (var row in universe)
-        {
-            var bands = await api.LevelsAsync(row.Ticker, night);
-
-            strengths[row.Ticker] = bands.Count == 0 ? 0 : bands.Max(band => band.Strength);
-        }
 
         var rows = TonightScreen.Rows(
             night,
             listings,
-            strengths,
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
             await api.ClosesToTheNightAsync(night));
 

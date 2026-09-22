@@ -1074,7 +1074,6 @@ public class CorporateActions
         var rows = TonightScreen.Rows(
             night,
             [listing],
-            new Dictionary<string, int>(StringComparer.Ordinal),
             new Dictionary<string, UniverseCell>(StringComparer.Ordinal),
             [],
             suspects);

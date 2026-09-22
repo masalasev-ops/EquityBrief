@@ -44,5 +44,70 @@
   "NFLX": { "nextDatedEvent": "2026-10-20", "sessions": "31", "fired": false },
   "KEYS": { "nextDatedEvent": "not on file", "sessions": "not on file", "fired": false },
   "MSFT": { "nextDatedEvent": "not on file", "sessions": "not on file", "fired": false }
+ },
+ "twoNights": {
+  "derivation": "derived",
+  "derivedFrom": "the rule in section 11.1, worked by hand over the two nights the replay stores. The fixture's session before its own, 2026-09-03, is replayed from the committed year of bars with the last session held back, and the fixture's night then arrives as one session's bulk file built from the same committed bars, with no overnight queue and no model call on either night. Each fired reason is read by hand off the close, the previous close and the zone or edge its values name; each reward to risk is worked by hand from the entry zone, the stop and the first traded target the listing kept, entered at the zone's middle and rounded to four places as the ladder stores it; and each order is derived by hand: fired count first, then the ratio highest first with a row that has none after every row with one in its group, then the ticker. The prices are the replay's own, stated as it stores them, and the reasons, the ratios and the orders are what is derived from them",
+  "nights": {
+   "2026-09-03": {
+    "rows": {
+     "MSFT": {
+      "fired": ["at entry zone", "crossed a level"],
+      "reading": "the close 510.12 is inside the zone 507.9797 to 517.78, and it rose from 496.82 through the edge at 507.9797",
+      "entryLow": "507.9797", "entryHigh": "517.78", "stop": "492.1166", "firstTradedTarget": null,
+      "rewardToRisk": "none", "why": "no exit is traded, so there is no reward to measure"
+     },
+     "KEYS": {
+      "fired": ["at entry zone"],
+      "reading": "the close 322.62 is inside the zone 300.87 to 332.78, and its trend label has no night before it to have changed from",
+      "entryLow": "300.87", "entryHigh": "332.78", "stop": "287.7549", "firstTradedTarget": "366.41",
+      "worked": "the entry is (300.87 + 332.78) / 2 = 316.825, the risk 316.825 - 287.7549 = 29.0701, the reward 366.41 - 316.825 = 49.585, and 49.585 / 29.0701 = 1.70570",
+      "rewardToRisk": "1.7057"
+     },
+     "AAPL": {
+      "fired": [],
+      "reading": "none of the six fired: the close 328.21 sits above its nearest zone, whose top is 320.28, it crossed no edge between 324.96 and 328.21, its volume of 37,225,800 is under its fifty-day average of 54,515,128, and its next print is 39 sessions away"
+     },
+     "NFLX": {
+      "fired": [],
+      "reading": "none of the six fired: the close 82.67 sits above its nearest zone, whose top is 82.455, it crossed no edge between 82.73 and 82.67, its volume of 24,006,400 is under its fifty-day average of 39,440,273.24, and its next print is 32 sessions away"
+     }
+    },
+    "order": ["MSFT", "KEYS"]
+   },
+   "2026-09-04": {
+    "rows": {
+     "KEYS": {
+      "fired": ["at entry zone", "trend state changed"],
+      "reading": "the close 327.21 is inside the zone 300.87 to 332.78, and the trend label moved from range on 2026-09-03 to uptrend",
+      "entryLow": "300.87", "entryHigh": "332.78", "stop": "293.55", "firstTradedTarget": "366.41",
+      "worked": "the entry is 316.825, the risk 316.825 - 293.55 = 23.275, the reward 49.585, and 49.585 / 23.275 = 2.13040",
+      "rewardToRisk": "2.1304"
+     },
+     "AAPL": {
+      "fired": ["at entry zone", "crossed a level"],
+      "reading": "the close 319.97 is inside the zone 299.7415 to 320.28, and it fell from 328.21 through the edge at 320.28",
+      "entryLow": "299.7415", "entryHigh": "320.28", "stop": "283.439", "firstTradedTarget": "334.7013",
+      "worked": "the entry is (299.7415 + 320.28) / 2 = 310.01075, the risk 310.01075 - 283.439 = 26.57175, the reward 334.7013 - 310.01075 = 24.69055, and 24.69055 / 26.57175 = 0.92920",
+      "rewardToRisk": "0.9292"
+     },
+     "MSFT": {
+      "fired": ["at entry zone", "crossed a level"],
+      "reading": "the close 499.7 is inside the zone 492.1166 to 501.9168, and it fell from 510.12 through the edge at 501.9168",
+      "entryLow": "492.1166", "entryHigh": "501.9168", "stop": "485.1401", "firstTradedTarget": null,
+      "rewardToRisk": "none", "why": "no exit is traded, so there is no reward to measure"
+     },
+     "NFLX": {
+      "fired": ["crossed a level"],
+      "reading": "the close fell from 82.67 to 78.25 through six edges, the nearest at 78.3545, and 78.25 sits above the zone 75.4402 to 75.8178, so it is not at the entry zone",
+      "entryLow": "75.4402", "entryHigh": "75.8178", "stop": "72.951", "firstTradedTarget": "81.16",
+      "worked": "the entry is (75.4402 + 75.8178) / 2 = 75.629, the risk 75.629 - 72.951 = 2.678, the reward 81.16 - 75.629 = 5.531, and 5.531 / 2.678 = 2.06535",
+      "rewardToRisk": "2.0653"
+     }
+    },
+    "order": ["KEYS", "AAPL", "MSFT", "NFLX"]
+   }
+  },
+  "theEarlierNightsOwnPlan": "KEYS is drawn on 2026-09-03 at 1.7057 and on 2026-09-04 at 2.1304, its first tranche's stop having moved from 287.7549 to 293.55, so the earlier night's row carries its own night's ratio and not the newer one"
  }
 }

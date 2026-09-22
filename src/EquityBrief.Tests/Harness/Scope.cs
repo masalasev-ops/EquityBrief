@@ -143,9 +143,13 @@ internal static class Scope
             Verdict.Pass,
             "one row per fired name, counted off the markup",
             ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "The list, ordered by how many fired then by band strength")] = new Scoped(
+        [CheckReach.Key("15.7 Tonight", "The list, ordered by how many fired then by the plan's reward to risk")] = new Scoped(
             Verdict.Pass,
-            "the order is asserted over rows whose fired counts are equal, so the tiebreaker is the thing read",
+            "the order is read back off the route's markup against the stored fired counts and each night's stored plan in both directions, over both fixture nights, and over constructed rows whose fired counts are equal, so the tiebreak is the thing read and a row with no reward to risk is drawn after every row with one in its group",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, the reward to risk or the plan's reason for none")] = new Scoped(
+            Verdict.Pass,
+            "each drawn row carries the ratio its night's plan stored, read back against the ladder row, or the plan's own reason for none, over the fixture and over constructed plans for each of the reasons a plan gives",
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "The list, at most twenty drawn")] = new Scoped(
             Verdict.Pass,
@@ -518,6 +522,11 @@ internal static class Scope
         [CheckReach.Key(LimitsTable, "Significance threshold")] = new Scoped(
             Verdict.Pass,
             "the exact one-sided tail matches four cases worked by hand, including one where no two break-evens agree so a binomial at any single value differs, the binomial at the mean is asserted to bound it at counts at or above the mean plus one and to be strictly larger over a spread, and the threshold, the level it was divided from as the record carries it, and the divisor are read off the run page beside every verdict, with the exact p drawn to five places and below them as the bound it lies under",
+            ByReadSurface),
+        // 10.1, the blocks the ordering region counts in, which 10.2's test reads as well.
+        [CheckReach.Key(LimitsTable, "Blocks a record is judged over")] = new Scoped(
+            Verdict.Pass,
+            "a session's block is counted in exchange sessions from the record's first, read at the last session of one block and the first of the next, a setup's window has closed at the sixty-third session traded after its listing and not the session before, and the region draws no comparison below the floor and says it is due at it, over constructed nights worked by hand",
             ByReadSurface),
         // 8.4, the shadow candidates region, read as the three claims its row
         // states. The half none of them says out loud is asserted with them: no
@@ -1162,6 +1171,30 @@ internal static class Scope
             Verdict.Pass,
             "with the local model not answering, the queue's row says it could not run and why, names the pass that found out with its one call, leaves every name, writes no section, and the night it ran at the end of still exits clean",
             ByExpectations),
+        [CheckReach.Key("15.10 Run", "Tonight's order, the three orders of tonight's list over the twenty each would draw")] = new Scoped(
+            Verdict.Pass,
+            "the region is drawn by the run route, and each order's twenty are the first rows the projection's own ordering gives on each recorded night, read off the region against constructed nights of more than twenty fired rows where the three orders draw different rows",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Tonight's order, the old order named as the benchmark")] = new Scoped(
+            Verdict.Pass,
+            "the order the list had before phase 10 is the row marked the benchmark, and it is drawn first, read off the region's markup",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Tonight's order, the setups each order drew")] = new Scoped(
+            Verdict.Pass,
+            "each order's count of drawn rows whose plan computes a reward to risk is read off the region against a count worked by hand over constructed nights, a drawn row with none counting for nothing",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Tonight's order, the setups whose whole window has closed")] = new Scoped(
+            Verdict.Pass,
+            "each order's closed-window setups are read off the region against counts worked by hand over constructed nights either side of the sixty-third session after a listing",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Tonight's order, the blocks holding one against the floor")] = new Scoped(
+            Verdict.Pass,
+            "each order's blocks are read off the region against counts worked by hand over constructed nights either side of a block edge, with the floor drawn beside them, and a night that recorded no band strength is left out",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Tonight's order, no comparison drawn before every order reaches it")] = new Scoped(
+            Verdict.Pass,
+            "the region states that no comparison is drawn while any order holds fewer blocks than the floor and says the comparison is due once every order reaches it, over constructed nights either side of the floor",
+            ByReadSurface),
         [CheckReach.Key("15.10 Run", "Overnight queue")] = new Scoped(
             Verdict.Pass,
             "the run page's route draws whether the queue ran on the night, with the queued passes completed and left read off the queue's own row, where section 15.10 puts the region, and names every traded session since it last ran on which it did not",
@@ -1881,7 +1914,9 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Night header, run duration")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "Night header, the harness verdict")] = "5.8",
         [CheckReach.Key("15.7 Tonight", "The list, one row per name that fired")] = "5.4",
-        [CheckReach.Key("15.7 Tonight", "The list, ordered by how many fired then by band strength")] = "5.4",
+        // 10.1 changed the tiebreak to the plan's reward to risk and drew it on the row.
+        [CheckReach.Key("15.7 Tonight", "The list, ordered by how many fired then by the plan's reward to risk")] = "10.1",
+        [CheckReach.Key("15.7 Tonight", "The list, the reward to risk or the plan's reason for none")] = "10.1",
         [CheckReach.Key("15.7 Tonight", "The list, at most twenty drawn")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "The list, name")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "The list, close")] = "5.4",
@@ -2051,6 +2086,12 @@ internal static class Scope
         // with no entry would inherit nothing, which is what contradiction D was.
         [CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility")] = "6.3",
         [CheckReach.Key("15.10 Run", "Overnight queue")] = "6.10",
+        [CheckReach.Key("15.10 Run", "Tonight's order, the three orders of tonight's list over the twenty each would draw")] = "10.1",
+        [CheckReach.Key("15.10 Run", "Tonight's order, the old order named as the benchmark")] = "10.1",
+        [CheckReach.Key("15.10 Run", "Tonight's order, the setups each order drew")] = "10.1",
+        [CheckReach.Key("15.10 Run", "Tonight's order, the setups whose whole window has closed")] = "10.1",
+        [CheckReach.Key("15.10 Run", "Tonight's order, the blocks holding one against the floor")] = "10.1",
+        [CheckReach.Key("15.10 Run", "Tonight's order, no comparison drawn before every order reaches it")] = "10.1",
 
     };
 
@@ -2094,7 +2135,7 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Night header")] =
             ["names in the index", "names that fired", "reports carrying fresh prose against reused", "spend", "run duration", "the harness verdict"],
         [CheckReach.Key("15.7 Tonight", "The list")] =
-            ["one row per name that fired", "ordered by how many fired then by band strength", "at most twenty drawn", "name", "close", "day change", "trend state in a word", "the distance row mark", "the reasons", "beside the name a line saying so where its prices may not reflect a dividend or split"],
+            ["one row per name that fired", "ordered by how many fired then by the plan's reward to risk", "at most twenty drawn", "name", "close", "day change", "trend state in a word", "the distance row mark", "the reward to risk or the plan's reason for none", "the reasons", "beside the name a line saying so where its prices may not reflect a dividend or split"],
         [CheckReach.Key("15.7 Tonight", "Selected name")] =
             ["the plan column", "the level summary", "whichever row is selected"],
         [CheckReach.Key("15.8 Universe", "Sector strip")] =
@@ -2139,6 +2180,15 @@ internal static class Scope
         // from their own fields: one is how many stand registered and the other
         // is what a threshold is divided by, and the day those stop being the
         // same number the page shows both.
+        [CheckReach.Key("15.10 Run", "Tonight's order")] =
+        [
+            "the three orders of tonight's list over the twenty each would draw",
+            "the old order named as the benchmark",
+            "the setups each order drew",
+            "the setups whose whole window has closed",
+            "the blocks holding one against the floor",
+            "no comparison drawn before every order reaches it",
+        ],
         [CheckReach.Key("15.10 Run", "Shadow candidates")] =
         [
             "how many candidate conditions are registered",
