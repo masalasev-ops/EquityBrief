@@ -19488,3 +19488,44 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because this asserts what a claim already placed states rather than
             adding any. Both gates ran over the tree carrying this entry, and the operator's store
             under `data/` was not touched by either.
+
+### 1.2 - correction: the sixth night asked and the weekly night, each run again for its session, are asserted to ask as that night did, where only the first night was run again and counting its own session left every test green   2026-09-22
+Corrects:   the backfill asks a member holding no bar on the five nights after the first that asked,
+            then weekly, and a night run again for its session asks as that night did, deciding
+            from the sessions before its own (see: A name the backfill stored nothing for is asked for again on the five nights after and weekly after that, and its page and the run page say so until one stores its year).
+            No test could tell that from a decision that counts the night's own session too: that
+            read left 1167 of 1167 green, because the one night run again was the first, where
+            counting its own session moves the count from none to one and leaves it inside the
+            nightly asks. The code is right; the assertion was missing.
+Found:      on 2026-09-22, by the phase 8 sign-off review over 358fc8a, as mutant A175, and
+            reproduced by this correction in a scratch worktree at 358fc8a before any change,
+            1167 of 1167 green. On a night run again that is the sixth night asked, or a week
+            night, the mutant asks for nothing where the rule asks.
+Repaired:   no shipped source changes. `nightly-run`,
+            `AMemberTheProviderServesNoYearIsAskedOnTheRefetchScheduleAndItsPageAndTheRunPageSaySo`,
+            extended in place: the sixth night asked, the session of 2026-09-13, and the week night,
+            the session of 2026-09-20, are each run again for their own session. Each run again
+            asks for the name once, and the night's row and the row run again each name it as
+            asked on 6 nights with the next ask on 2026-09-20, and on 7 with the next on
+            2026-09-27. Every figure after them is the one the schedule gives with no night run
+            again, the requests night by night and the page's "7 night(s)" among them, and the
+            stage's partial rows count 18 where they counted 16, one for each night run again.
+Expected:   derived, as the 1.2 correction that counted a session once met it: the schedule is
+            stated in the decision and section 17 and asserted over a constructed member. No
+            expectation file changes, because the committed fixture is one night and holds no
+            night run again.
+Tests:      1169, unchanged. None added; one extended in `nightly-run`. No migration. No file this
+            correction edits is a source either evaluator version or the ladder rules' code version
+            pins, so no pin moves.
+Mutated:    the rule, stated before the sweep: count the night's own session among the sessions it
+            decides and counts from, at each point the backfill reads them.
+            Predicted:
+            MA the decision over the sessions up to and including the night's own: the extended
+            test red, at the sixth night asked run again, which asks for the name 0 times, and
+            every other test green.
+            MB the row's count over the sessions without removing one counted twice: the extended
+            test red, at the first night run again's row, which names the name as asked on 2
+            nights, and every other test green.
+            Results: FILL
+Held:       FILL
+Verified:   FILL
