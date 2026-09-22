@@ -19349,6 +19349,22 @@ Mutated:    the rule, stated before the sweep: undo the de-duplication at each p
             MB the count one more on every failed run: both extended tests red, the retries test at
             the first session run again's count and the weekly test at the first week night run
             again's count, and every other test green.
-            Results: FILL
-Held:       FILL
-Verified:   FILL
+            Results: each mutation over the whole suite in a scratch worktree at db20600, never a
+            filter, and reverted. That commit's entry did not yet say its Windows run, so
+            `two-platform`'s record test was red there before any mutation, and each result below
+            is that one and the mutation's own. MA: red, both extended tests, the retries test at
+            the fifth session run again, which retried no name, and the weekly test at the session
+            of 2026-08-24 run again, which made no request where the night it repeats made one,
+            1164 of 1167 green. MB: red, both extended tests, the retries test at the first session
+            run again, which held 2 retries where the night held 1, and the weekly test at the
+            session of 2026-08-24 run again, which held 7 where the night held 6, 1164 of 1167
+            green.
+Held:       the prediction, exactly, for both.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1167 of 1167 tests
+            ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384
+            PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, 37 of 37 roster checks carried and all 37 run. The claim count
+            does not move, because this corrects what a claim already placed asserts rather than
+            adding any. Both gates ran over the tree carrying this entry, and the operator's store
+            under `data/` was not touched by either.
