@@ -4,6 +4,7 @@ using EquityBrief.Api.Passes;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Rules;
 using EquityBrief.Core.Spending;
 using EquityBrief.Core.Time;
 using EquityBrief.Web.App;
@@ -718,6 +719,7 @@ app.MapGet("/screens/run/{night?}", async (
     var returns = await read.ForwardReturnsAsync();
     var stages = RunScreen.Stages(await read.RunLogAsync(dated));
     var records = RunScreen.Records(everyListing, RunScreen.Resolved(returns));
+    var flips = await read.LabelReturnsAsync();
 
     return Results.Content(
         page.RunRegion(
@@ -743,7 +745,15 @@ app.MapGet("/screens/run/{night?}", async (
                 await read.CandidateNightsAsync(),
                 await read.CandidateSetupsAsync(),
                 dated,
-                clock.UtcNow)),
+                clock.UtcNow),
+            RunScreen.TrendVersions(
+                await read.OpenVersionsAsync(LadderRules.TrendRule),
+                await read.VersionLabelsAsync(LadderRules.TrendRule, dated),
+                await read.LiveLabelsAsync(dated),
+                await read.VersionSetupsAsync(LadderRules.TrendRule),
+                flips.Returns,
+                flips.Nights,
+                dated)),
         "text/html; charset=utf-8");
 });
 

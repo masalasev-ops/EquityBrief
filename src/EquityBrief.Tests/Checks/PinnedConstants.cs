@@ -158,8 +158,8 @@ public class PinnedConstants
             new(PowerRow, "1.43", null, Measured, () => Recorded("1.43")),
             new(Versions, "2", RuleVersions.MostOfTheMergeDistance, "RuleVersions.MostOfTheMergeDistance"),
             new(Versions, "4", RuleVersions.MostPerRule, "RuleVersions.MostPerRule"),
-            new(Versions, "3", LadderRules.All.Count - 1, "the ladder rules other than the merge distance"),
-            new(Versions, "14", RuleVersions.MostAtOnce, "RuleVersions.MostAtOnce"),
+            new(Versions, "4", LadderRules.All.Count - 1, "the ladder rules other than the merge distance"),
+            new(Versions, "18", RuleVersions.MostAtOnce, "RuleVersions.MostAtOnce"),
         ];
     }
 

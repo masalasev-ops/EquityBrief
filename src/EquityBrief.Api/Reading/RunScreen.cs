@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Returns;
+using EquityBrief.Core.Rules;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
@@ -328,6 +329,84 @@ public static class RunScreen
             NullWin.CostBasisPoints,
             NullWin.SensitivityBasisPoints);
     }
+
+    // The trend rule's open versions, what each labelled the night, and the flip-backs the stored
+    // labels show.
+    //
+    // A version of this rule only ever takes a setup away, because the label it writes is the one
+    // that carries no tranche at all, so its own setups are the live rule's less the ones its
+    // label removes and every outcome is one the store already holds. That is what lets a
+    // difference be read here at all, and it is why the reader hands the live setups over with a
+    // flag rather than a second set of outcomes nothing computed.
+    // owes: The trend confirmation's nights settled from flip-backs
+    // see: A trend version is judged by the candidates' test on its difference from the live rule
+    public static TrendVersionRegion TrendVersions(
+        IReadOnlyList<OpenVersionRow> open,
+        IReadOnlyList<VersionLabelRow> labels,
+        IReadOnlyList<VersionLabelRow> live,
+        IReadOnlyList<VersionSetupRow> setups,
+        LabelReturns returns,
+        int nights,
+        DateOnly night)
+    {
+        var byVersion = setups
+            .GroupBy(row => row.Version, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+
+        var measured = new List<VersionMeasured>();
+
+        var rows = open
+            .Where(row => !string.Equals(row.Version, RuleVersions.Live, StringComparison.Ordinal))
+            .Select(row =>
+            {
+                var mine = byVersion.GetValueOrDefault(row.Version, []);
+
+                var record = mine.Length == 0
+                    ? null
+                    : VersionRecord.For(
+                        row.Version,
+                        [.. mine.Select(Setup)],
+                        [.. mine.Where(setup => !setup.Removed).Select(Setup)],
+                        mine.Min(setup => setup.SessionDate),
+                        night,
+                        ReasonVerdict.Significance);
+
+                if (record is not null)
+                {
+                    measured.Add(record);
+                }
+
+                return new TrendVersionRow(
+                    row.Version,
+                    row.Parameters,
+                    row.OpenedOn,
+                    [
+                        .. labels
+                            .Where(label => string.Equals(label.Version, row.Version, StringComparison.Ordinal))
+                            .Select(label => new LabelCount(label.Label, label.Names)),
+                    ],
+                    labels
+                        .Where(label => string.Equals(label.Version, row.Version, StringComparison.Ordinal))
+                        .Sum(label => label.Moved),
+                    record);
+            })
+            .ToArray();
+
+        return new TrendVersionRegion(
+            rows,
+            [.. live.Select(label => new LabelCount(label.Label, label.Names))],
+            returns,
+            night,
+            nights,
+            RuleVersions.MostAtOnce,
+            open.Count,
+            VersionRecord.MarginInPoints,
+            RealityCheck.Over(measured));
+    }
+
+    static CandidateSetup Setup(VersionSetupRow row) =>
+        new(row.SessionDate, row.Outcome ?? string.Empty, row.Null, row.NullAtSensitivity,
+            row.BreakEven, row.ReturnPct, row.PlannedRisk, row.OnEarnings);
 
     // The three orders of tonight's list over the nights whose listings record what each order
     // reads, up to the night shown: on each night the first rows each order would have drawn, the

@@ -22,16 +22,19 @@ public sealed record RuleVersionRow(
     string? ReplacedBy,
     string? Evidence = null);
 
-// The four ladder rules that carry named versions.
+// The five ladder rules that carry named versions.
 //
-// Four rather than every constant the builder holds, and the four are the ones a
+// Five rather than every constant the builder holds, and the five are the ones a
 // plan's shape actually turns on: where two bands become one zone, where the stop
-// sits, whether a tranche too close to an exit is skipped, and whether a zone's
-// edges come from its non-average anchors alone. The last arrives from 8.0's
-// trace, which found a moving average widening 35 of 223 fired zones and three of
-// them no longer holding the close if the average were dropped, and registered
-// the alternative here rather than deciding it by taste.
+// sits, whether a tranche too close to an exit is skipped, whether a zone's
+// edges come from its non-average anchors alone, and which label the ladder is
+// built under. The fourth arrives from 8.0's trace, which found a moving average
+// widening 35 of 223 fired zones and three of them no longer holding the close if
+// the average were dropped, and registered the alternative here rather than
+// deciding it by taste. The fifth is the trend rule, which selects the ladder's
+// whole shape, since a downtrend carries no tranches at all.
 // see: A moving average may widen a band that a tranche sits on, and may never anchor one
+// see: The trend rule is a fifth ladder rule a version replays, and none of its three versions is live
 public static class LadderRules
 {
     public const string MergeDistance = "merge distance";
@@ -42,12 +45,15 @@ public static class LadderRules
 
     public const string ZoneEdgesFromNonAverageAnchors = "zone edges from non-average anchors only";
 
+    public const string TrendRule = "the trend rule";
+
     public static IReadOnlyList<string> All { get; } =
     [
         MergeDistance,
         StopPlacement,
         NearExitSkip,
         ZoneEdgesFromNonAverageAnchors,
+        TrendRule,
     ];
 
     // Which rules a version of this rule makes the night replay.
@@ -73,29 +79,29 @@ public static class LadderRules
 // seconds and its ladder stage 5 at 504 names. A merge distance version therefore
 // costs 148 seconds and every other version 5. The caps are two windows of the
 // merge distance and four of each other rule, each rule's live window among them,
-// so the fullest register they admit replays one merge distance version and nine
-// others, 193 seconds, which puts the night at 688 against a deadline of 900. A
-// projection is not a measurement, and the row that settles it reads the scorer's
-// own nights.
+// so the fullest register they admit replays one merge distance version and
+// twelve others, 208 seconds, which puts the night at 703 against a deadline of
+// 900. A projection is not a measurement, and the row that settles it reads the
+// scorer's own nights.
 // owes: The rule version bound set from nights the version scorer ran
 // see: A ladder rule's version is measured beside that rule's live window, and both count against the bound
 public static class RuleVersions
 {
     // At most two windows of the merge distance, four of each other rule, and
-    // fourteen at once, every window counted, live ones included.
+    // eighteen at once, every window counted, live ones included.
     //
     // The merge distance has its own cap because it is the one rule whose
     // version replays the level stage, at 148 seconds against 5: four of it
     // would add three level replays and take the night past its deadline on its
     // own. The other caps stop one rule taking the whole budget and leaving the
-    // others unversioned. Fourteen is the sum of the four caps, so no register
+    // others unversioned. Eighteen is the sum of the five caps, so no register
     // the caps admit exceeds it, and it stays a cap of its own for a register
     // written by anything other than the verb.
     public const int MostOfTheMergeDistance = 2;
 
     public const int MostPerRule = 4;
 
-    public const int MostAtOnce = 14;
+    public const int MostAtOnce = 18;
 
     // The live version of each rule is what the night already computes, so it
     // costs no replay. It is still a window, and it counts against the caps: a

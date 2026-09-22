@@ -1278,7 +1278,8 @@ public sealed class SinglePageApp : IComponent
         PricedCalls? priced = null,
         IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null,
         OrderComparison? orders = null,
-        CandidateRegion? candidates = null)
+        CandidateRegion? candidates = null,
+        TrendVersionRegion? versions = null)
     {
         var region = new StringBuilder();
 
@@ -1323,6 +1324,17 @@ public sealed class SinglePageApp : IComponent
                 lede: "The running figure is monitoring; only a look changes a verdict, and no name is named.",
                 stamp: Cards.Night(night),
                 region: "candidates"));
+        }
+
+        if (versions is { } trend)
+        {
+            region.Append(Cards.Computed(
+                "The trend rule's versions",
+                marks.TrendVersions(trend),
+                title: "What each open version would have labelled, and what it would have taken away",
+                lede: "A version changes the rule and no list: nothing here is drawn beside a name.",
+                stamp: Cards.Night(night),
+                region: "trend-versions"));
         }
 
         if (orders is { } comparison)

@@ -738,12 +738,17 @@ public class NightlyCost
         Assert.Equal(0, full.Code);
 
         // The windows each night had open, and the versions among them the scorer
-        // replays: one beside its live window, and the fullest register's ten
-        // beside four, one of them the merge distance's, as the step's row says.
+        // replays: one beside its live window, and the fullest register's thirteen
+        // beside five, one of them the merge distance's, as the step's row says.
+        var replayed = Core.Rules.RuleVersions.MostAtOnce - Core.Rules.LadderRules.All.Count;
+
         Assert.Equal((2, 1), (one.Open, one.Replayed));
-        Assert.Equal((Core.Rules.RuleVersions.MostAtOnce, 10), (full.Open, full.Replayed));
+        Assert.Equal((Core.Rules.RuleVersions.MostAtOnce, replayed), (full.Open, full.Replayed));
         Assert.Contains("1 replayed with 0 of the merge distance", one.Detail, StringComparison.Ordinal);
-        Assert.Contains("10 replayed with 1 of the merge distance", full.Detail, StringComparison.Ordinal);
+        Assert.Contains(
+            FormattableString.Invariant($"{replayed} replayed with 1 of the merge distance"),
+            full.Detail,
+            StringComparison.Ordinal);
 
         // The arithmetic grew with the versions: the step wrote a score per
         // version per name the night listed, over the same names both nights.
@@ -783,7 +788,7 @@ public class NightlyCost
             for (var at = 1; at <= versions; at++)
             {
                 var parameters = Worker.Rules.RuleVersionScorer.LiveParameters(rule)
-                    .ToDictionary(pair => pair.Key, pair => pair.Key == "nearExitInTypicalDays" || pair.Key == "typicalMoveMultiple" ? pair.Value + at : 1 - pair.Value, StringComparer.Ordinal);
+                    .ToDictionary(pair => pair.Key, pair => pair.Key is "nearExitInTypicalDays" or "typicalMoveMultiple" or Core.Ladders.TrendSeries.NightsTheNewLabelHolds ? pair.Value + at : 1 - pair.Value, StringComparer.Ordinal);
 
                 Assert.Null(await scorer.OpenAsync(rule, FormattableString.Invariant($"v{at}"), parameters, FormattableString.Invariant($"open-{rule}-{at}")));
             }

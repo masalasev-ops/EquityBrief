@@ -168,7 +168,7 @@ public class RuleVersionsScored
 
         Assert.Equal(RuleVersions.MostAtOnce, lopsided.Length);
         Assert.Contains(
-            "most at once of 14",
+            FormattableString.Invariant($"most at once of {RuleVersions.MostAtOnce}"),
             RuleVersions.Refusal(lopsided, LadderRules.MergeDistance, "m1", Opened.AddDays(1))!,
             StringComparison.Ordinal);
         Assert.Null(RuleVersions.Refusal(lopsided[..^1], LadderRules.MergeDistance, "m1", Opened.AddDays(1)));
@@ -365,7 +365,7 @@ public class RuleVersionsScored
 
         var listed = await Run(Opened.AddMinutes(2), "--list");
 
-        Assert.Contains("2 open window(s) of the 14", listed.Said, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"2 open window(s) of the {RuleVersions.MostAtOnce}"), listed.Said, StringComparison.Ordinal);
         Assert.Contains("'the near-exit skip' 2 of 4", listed.Said, StringComparison.Ordinal);
         Assert.Contains("'the near-exit skip' 'three typical days' {\"nearExitInTypicalDays\": 3}", listed.Said, StringComparison.Ordinal);
 
@@ -1333,7 +1333,7 @@ public class RuleVersionsScored
         var byVersion = expected.GetProperty("plans").GetProperty("byVersion");
         var versions = byVersion.EnumerateObject().Select(one => one.Name).ToArray();
 
-        Assert.Equal(4, versions.Length);
+        Assert.Equal(LadderRules.All.Count, versions.Length);
         Assert.Equal(
             [expected.GetProperty("sample").GetString()!],
             Query(store, "SELECT DISTINCT sample FROM version_score;"));
@@ -1350,14 +1350,23 @@ public class RuleVersionsScored
                 Assert.Equal((version, ticker, Worked(byVersion.GetProperty(version), ticker)), (version, ticker, Stated(row)));
             }
 
-            // Each version moves some name off the ladder expectation's live plan.
+            // Whether a version moves a name off the ladder expectation's live plan, in both
+            // directions: a version the expectation says moves one and does not is a version
+            // measuring nothing, and one it says moves none while it moves one is a rule that
+            // changed. A version sits in the second class for a reason of its own: the trend
+            // rule's arms read each name against its own averages, and four names of committed
+            // bars need not sit on either side of them.
             var ladder = Expected("ladder");
 
-            Assert.Contains(FixtureExpectation.Names, ticker =>
+            bool Moved(string ticker) =>
                 Worked(byVersion.GetProperty(version), ticker) != Written(
                     ladder.GetProperty("tranches").GetProperty("byName").GetProperty(ticker).EnumerateArray().Select(one => one.GetString()!),
                     ladder.GetProperty("exits").GetProperty("byName").GetProperty(ticker).EnumerateArray().Select(one => string.Join("|", one.GetString()!.Split('|').Where((_, index) => index is 0 or 2))),
-                    ladder.GetProperty("invalidation").GetProperty("byName").GetProperty(ticker).GetString()));
+                    ladder.GetProperty("invalidation").GetProperty("byName").GetProperty(ticker).GetString());
+
+            Assert.Equal(
+                (version, expected.GetProperty("movesAName").GetProperty(version).GetBoolean()),
+                (version, FixtureExpectation.Names.Any(Moved)));
 
             Assert.False(string.IsNullOrWhiteSpace(expected.GetProperty("workedAgainstTheLiveRule").GetProperty(version).GetString()));
         }

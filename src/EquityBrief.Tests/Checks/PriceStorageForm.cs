@@ -306,7 +306,10 @@ public class PriceStorageForm
         // in the price world and crosses nothing. `Convert.ToDouble(value)` in
         // the shortlist builder reads the fifty-session volume average, a
         // statistic stored as the double it is, back as a double; it was in the
-        // shipped source when the reader was written and in no stated set.
+        // shipped source when the reader was written and in no stated set. The
+        // scorer reads the same way twice: the typical move and, from 10.4, each
+        // of the two averages a trend version reads, every one of them a
+        // statistic stored as the double it is.
         Assert.Equal(
             [
                 "CandidateRecord.cs: (double)inside.Length",
@@ -328,12 +331,16 @@ public class PriceStorageForm
                 "MarkRenderer.cs: (double)track.Total",
                 "NullWin.cs: (double)wins",
                 "RuleVersionScorer.cs: Convert.ToDouble(value",
+                "RuleVersionScorer.cs: Convert.ToDouble(value",
                 "ShortlistBuilder.cs: Convert.ToDouble(value",
                 "SignFlip.cs: (double)atLeast",
                 "Statistic.cs: (decimal)statistic",
                 "Statistic.cs: (double)price",
                 "Statistic.cs: (double)ratio",
                 "TrendClassifier.cs: (double)value",
+                "VersionRecord.cs: (double)atLeast",
+                "VersionRecord.cs: (double?)null",
+                "VersionRecord.cs: (double?)null",
                 "VolumeProfileSeries.cs: (double)shares[band]",
             ],
             casts);

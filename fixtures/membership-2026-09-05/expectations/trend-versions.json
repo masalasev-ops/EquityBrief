@@ -1,0 +1,303 @@
+{
+ "stage": "trend-versions",
+ "derivation": "derived",
+ "derivedFrom": "the trend rule's three versions worked by hand over the committed bars and over constructed input, rather than read back from a run. A version starts from the label the night stored and can only move it to downtrend: the averages arm reads a close below both the 50-day and the 200-day average, under the wider version whatever the order of the two averages and under the narrower only where the 50-day is below the 200-day, and the hold arm keeps a name in downtrend until the label that replaced it has stood for the nights the version asks for, the night being scored among them. A downtrend carries no tranche at all, so a version of this rule takes setups away and never adds one, and its own setups are the live rule's less the ones its label removes. The averages over the committed bars are the mean of the last 50 and the last 200 adjusted closes at or before each session, computed here from the bar files rather than read from the store.",
+ "tables": [
+  "ladder",
+  "version_score",
+  "rule_version"
+ ],
+ "constructed": true,
+ "versions": [
+  {
+   "version": "below both averages",
+   "parameters": {
+    "downtrendFromAverages": 1,
+    "nightsTheNewLabelHolds": 1
+   },
+   "reads": "a close below both the 50-day and the 200-day average is a downtrend, whatever the swings say"
+  },
+  {
+   "version": "below both under a cross",
+   "parameters": {
+    "downtrendFromAverages": 2,
+    "nightsTheNewLabelHolds": 1
+   },
+   "reads": "the same reading, only where the 50-day average is below the 200-day"
+  },
+  {
+   "version": "the new label holds two nights",
+   "parameters": {
+    "downtrendFromAverages": 0,
+    "nightsTheNewLabelHolds": 2
+   },
+   "reads": "entering a downtrend removes buying zones at once, and leaving it restores them only once the new label has held two nights, the night being scored among them"
+  }
+ ],
+ "labels": [
+  {
+   "ticker": "PPPP",
+   "case": "a range name closing below both averages, the 50-day above the 200-day",
+   "stored": "range",
+   "close": 90.0,
+   "shortAverage": 95.0,
+   "longAverage": 92.0,
+   "nightsBefore": [
+    "range",
+    "range"
+   ],
+   "belowBothAverages": "downtrend",
+   "belowBothUnderACross": "range",
+   "theNewLabelHoldsTwoNights": "range"
+  },
+  {
+   "ticker": "QQQQ",
+   "case": "a range name closing below both averages with the 50-day below the 200-day, which both averages versions reach",
+   "stored": "range",
+   "close": 90.0,
+   "shortAverage": 95.0,
+   "longAverage": 99.0,
+   "nightsBefore": [
+    "range",
+    "range"
+   ],
+   "belowBothAverages": "downtrend",
+   "belowBothUnderACross": "downtrend",
+   "theNewLabelHoldsTwoNights": "range"
+  },
+  {
+   "ticker": "RRRR",
+   "case": "below the 50-day and above the 200-day, which is not below both",
+   "stored": "range",
+   "close": 94.0,
+   "shortAverage": 95.0,
+   "longAverage": 92.0,
+   "nightsBefore": [
+    "range",
+    "range"
+   ],
+   "belowBothAverages": "range",
+   "belowBothUnderACross": "range",
+   "theNewLabelHoldsTwoNights": "range"
+  },
+  {
+   "ticker": "SSSS",
+   "case": "an uptrend name, which no version reaches: an uptrend has its close above the short average by the live rule's own reading",
+   "stored": "uptrend",
+   "close": 110.0,
+   "shortAverage": 95.0,
+   "longAverage": 92.0,
+   "nightsBefore": [
+    "uptrend",
+    "uptrend"
+   ],
+   "belowBothAverages": "uptrend",
+   "belowBothUnderACross": "uptrend",
+   "theNewLabelHoldsTwoNights": "uptrend"
+  },
+  {
+   "ticker": "TTTT",
+   "case": "the label left a downtrend last night, so the new one has held one night and the hold keeps the name down",
+   "stored": "range",
+   "close": 110.0,
+   "shortAverage": 95.0,
+   "longAverage": 92.0,
+   "nightsBefore": [
+    "downtrend",
+    "downtrend"
+   ],
+   "belowBothAverages": "range",
+   "belowBothUnderACross": "range",
+   "theNewLabelHoldsTwoNights": "downtrend"
+  },
+  {
+   "ticker": "UUUU",
+   "case": "the label left a downtrend the night before last, so the new one has held two nights and the zones come back",
+   "stored": "range",
+   "close": 110.0,
+   "shortAverage": 95.0,
+   "longAverage": 92.0,
+   "nightsBefore": [
+    "range",
+    "downtrend"
+   ],
+   "belowBothAverages": "range",
+   "belowBothUnderACross": "range",
+   "theNewLabelHoldsTwoNights": "range"
+  },
+  {
+   "ticker": "VVVV",
+   "case": "entering applies at once, so a name the night labelled downtrend is one under every version whatever the nights before said",
+   "stored": "downtrend",
+   "close": 90.0,
+   "shortAverage": 95.0,
+   "longAverage": 99.0,
+   "nightsBefore": [
+    "range",
+    "range"
+   ],
+   "belowBothAverages": "downtrend",
+   "belowBothUnderACross": "downtrend",
+   "theNewLabelHoldsTwoNights": "downtrend"
+  },
+  {
+   "ticker": "WWWW",
+   "case": "a name with no long average has no reading to be below, so the averages arm stands aside",
+   "stored": "not_classified",
+   "close": 90.0,
+   "shortAverage": 95.0,
+   "longAverage": null,
+   "nightsBefore": [
+    "not_classified",
+    "not_classified"
+   ],
+   "belowBothAverages": "not_classified",
+   "belowBothUnderACross": "not_classified",
+   "theNewLabelHoldsTwoNights": "not_classified"
+  }
+ ],
+ "overTheFixtureNights": {
+  "derivedFrom": "each name's close and its two averages on the fixture's two nights, the averages being the mean of the last 50 and the last 200 adjusted closes at or before the session, computed from the committed bar files. No name of the four closes below both of its averages on either night, so neither averages version moves a label there, and the hold moves none because no name of the four is in a downtrend on the night before. That is the derivation, and it is why the cases each version turns on are constructed above: four names of real bars do not sit on them.",
+  "nights": [
+   {
+    "session": "2026-09-03",
+    "names": [
+     {
+      "ticker": "AAPL",
+      "close": 328.21,
+      "shortAverage": 314.0866,
+      "longAverage": 283.1728,
+      "belowBoth": false
+     },
+     {
+      "ticker": "KEYS",
+      "close": 322.62,
+      "shortAverage": 326.7748,
+      "longAverage": 287.7549,
+      "belowBoth": false
+     },
+     {
+      "ticker": "MSFT",
+      "close": 510.12,
+      "shortAverage": 440.6114,
+      "longAverage": 429.3912,
+      "belowBoth": false
+     },
+     {
+      "ticker": "NFLX",
+      "close": 82.67,
+      "shortAverage": 75.2932,
+      "longAverage": 87.0437,
+      "belowBoth": false
+     }
+    ]
+   },
+   {
+    "session": "2026-09-04",
+    "names": [
+     {
+      "ticker": "AAPL",
+      "close": 319.97,
+      "shortAverage": 314.9878,
+      "longAverage": 283.439,
+      "belowBoth": false
+     },
+     {
+      "ticker": "KEYS",
+      "close": 327.21,
+      "shortAverage": 326.1178,
+      "longAverage": 288.5134,
+      "belowBoth": false
+     },
+     {
+      "ticker": "MSFT",
+      "close": 499.7,
+      "shortAverage": 443.5621,
+      "longAverage": 429.3729,
+      "belowBoth": false
+     },
+     {
+      "ticker": "NFLX",
+      "close": 78.25,
+      "shortAverage": 75.4402,
+      "longAverage": 86.8835,
+      "belowBoth": false
+     }
+    ]
+   }
+  ],
+  "movedByAnyVersion": 0,
+  "plansUnchanged": true
+ },
+ "populationsByCause": {
+  "derivedFrom": "the causes a version's label can come from, counted over the name-nights below and over the fixture's own night. Below both averages with the 50-day above the 200-day is the population the wider version adds and the narrower does not; below both with the 50-day under the 200-day is the one they share; left a downtrend within the nights the hold reads is the population the hold keeps down. Each is counted over the name-night's own figures whatever label the night stored, so a name the night already called a downtrend counts under the cause its averages put it in. Over the fixture's four names each is nought, which is why no version moves a plan there.",
+  "onTheFixtureNight": {
+   "belowBothWithTheShortAverageAbove": 0,
+   "belowBothWithTheShortAverageBelow": 0,
+   "leftADowntrendWithinTheHold": 0
+  },
+  "overTheConstructedNightNights": {
+   "belowBothWithTheShortAverageAbove": 1,
+   "belowBothWithTheShortAverageBelow": 2,
+   "leftADowntrendWithinTheHold": 1
+  }
+ },
+ "pairedDifference": {
+  "case": "a version that takes one losing setup away from each of eight blocks, every setup judged against a bar of 0.3",
+  "blocks": 8,
+  "liveSetupsPerBlock": 2,
+  "removedPerBlock": 1,
+  "removedOutcome": "loss",
+  "nullWin": 0.3,
+  "differencePerBlock": 0.3,
+  "derivedFrom": "a block's excess is its wins less the bars those setups were judged against, so a block holding one win and one loss against bars of 0.3 comes to 1 - 0.6 = 0.4 for the live rule and 1 - 0.3 = 0.7 for the version that kept only the win. The difference is 0.3 in every block, and it is neither side's own figure, which is what a difference from the live rule means. Eight equal blocks have no scatter, so the statistic is infinite in the direction of their mean and only the arrangement with no sign flipped reaches it, which is one in 2^8.",
+  "pValue": 0.00390625,
+  "verdict": "a difference from the live rule at the level its look spends"
+ },
+ "realityCheck": {
+  "case": "two versions of one rule read against the live rule as the benchmark, over the same eight blocks",
+  "challengers": [
+   {
+    "version": "below both averages",
+    "differences": [
+     2,
+     -1,
+     3,
+     1,
+     -2,
+     4,
+     1,
+     2
+    ],
+    "ownPValue": 0.08203125
+   },
+   {
+    "version": "below both under a cross",
+    "differences": [
+     1,
+     2,
+     -3,
+     2,
+     3,
+     -1,
+     2,
+     1
+    ],
+    "ownPValue": 0.15625
+   }
+  ],
+  "best": "below both averages",
+  "statistic": 1.7838,
+  "pValue": 0.12109375,
+  "derivedFrom": "the statistic is the studentized mean of each version's block differences, and the largest of the two is the one the check is about. One sign vector is applied to both at once, all 256 of them enumerated, and the share of vectors whose larger statistic reaches the observed larger one is the p-value. It is above the best version's own 0.08203125, which is the penalty for having picked the best of two, and that is the figure a choice between them is read at."
+ },
+ "theCapAtOnce": {
+  "mostAtOnce": 18,
+  "derivedFrom": "two windows of the merge distance and four of each of the other four rules, each rule's live window among them, which is 2 + 4 + 4 + 4 + 4. The fullest register the caps admit replays one merge distance version and twelve others, and at the stage durations the night of 2026-09-14 measured, 148 seconds for a merge distance version and 5 for every other, that is 148 + 60 = 208 seconds on a night of 495, which is 703 against a deadline of 900.",
+  "replayedMergeDistance": 1,
+  "replayedOthers": 12,
+  "addedSeconds": 208,
+  "nightSeconds": 703,
+  "deadlineSeconds": 900
+ }
+}

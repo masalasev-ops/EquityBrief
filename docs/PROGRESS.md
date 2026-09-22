@@ -20423,3 +20423,149 @@ Carried:    The candidates' proposed numbers read at their looks, operating: two
             numbers are still proposed and the third is settled, and none is read until a registered
             candidate reaches its first look. A candidate's power re-read at each look, operating:
             the figures above are what the region will re-read, on the same calibrated null.
+
+### 10.4 - the trend rule as the fifth ladder rule, its three versions, and a version judged on its difference from the live rule   2026-09-22
+Built:      the trend rule as a rule a version can replay, which it was not before: the classifier
+            ran one way and the only way to change it was to change it. It now carries two numbers
+            a version holds. The first says what a close below both the fifty-day and the
+            two-hundred-day average does to the label: nothing, which is the rule the night runs,
+            or a downtrend whatever the swings say, or a downtrend only where the fifty-day sits
+            below the two-hundred-day. The second says how many nights a label that replaced a
+            downtrend must hold before the buying zones come back, the night being scored among
+            them, which the night runs at one.
+Versioned:  three versions, none of them live, each opened by name at the numbers the code carries
+            rather than at numbers typed at the prompt, for the reason the three candidates are
+            registered from code. Below both averages, below both under a cross, and the new label
+            holds two nights. Each is opened on its own: a version's scores count from the night
+            after its own window opened, and a version's level is divided across nothing, which is
+            what the candidates' one instant exists for and this does not need.
+Replayed:   the label a version applies is computed from the label the night stored rather than by
+            classifying the name again, and the two arms only ever reach a downtrend. So the live
+            values reproduce every stored label exactly, which is the property the replay rests on,
+            and the version's plan for a name it moves is the empty plan a downtrend carries.
+Removes:    a version of this rule takes setups away and never adds one. That follows from the
+            arms: the only label either writes is the one that carries no tranche at all. It is
+            what lets a version's record be read off the store today, since its setups are the live
+            rule's less the ones its label removes and every outcome is one the store already
+            holds, and it is asserted rather than assumed, in both directions, over every
+            constructed name-night.
+Judged:     a version's difference from the live rule, block by block, at the looks and the floor a
+            candidate is judged at. A block counts where either side listed a setup in it and the
+            block has had its whole outcome window, so a version that emptied a block still has a
+            block there: emptying it is the difference being measured, and dropping it would read
+            the change as no change.
+Compared:   the best of several versions read against the live rule as the benchmark, over one sign
+            vector applied to every version at once rather than one each, because the versions are
+            measured over the same blocks of the same nights and flipping them apart would break
+            the dependence that makes the best of them large. The figure a choice is read at is
+            that one and never the best version's own. Where both averages versions cross, the
+            narrower is kept unless the wider is ahead by five points of win share, which was fixed
+            before anything was scored and is settled by no reading.
+Region:     the run page gains the trend rule's versions: what each open version labelled the
+            night's names, how many names it moves off the night's own label, and how often a
+            stored label went away and came back over the nights the store holds, which is the
+            reading the hold's two nights is settled from and is a count of labels rather than of
+            outcomes. No name is drawn in it, here or anywhere else.
+Capped:     the windows open at once become 18, being two of the merge distance and four of each of
+            the other four rules, each rule's live window among them. The arithmetic is the same
+            night's stage durations: the fullest register the caps admit replays one merge distance
+            version and twelve others, 208 seconds on a night of 495, which is 703 against a
+            deadline of 900. Section 17, the build plan's two restatements and the schema's own
+            count of the rules move with it.
+Corrected:  the bound's decision states the fullest register's arithmetic in its body, and that
+            arithmetic is over the caps rather than part of what the decision settles, so the two
+            figures it carries are brought to the fifth rule and the sentence says which ruling set
+            the caps and that the sum is arithmetic over them. Nothing the decision decides is
+            changed, and the caps per rule stand as the operator ruled them on 2026-09-15.
+Checked:    `trend-versions` joins the roster, asserting what each version labels, that a version
+            only ever removes, that the live values replay every plan the fixture stored, the
+            paired difference and its p-value, the Reality Check standing above the best version's
+            own figure, the margin at and either side of itself, the three versions the code
+            offers, the cap and its projected night, and what the region states.
+Fixture:    a new expectation. Eight constructed name-nights work the two arms at their edges: a
+            close below both averages with the fifty-day above the two-hundred-day, which only the
+            wider version reaches; the same with the fifty-day below, which both reach; a close
+            below one average alone, which neither reaches; an uptrend, which neither reaches
+            because its close is above the short average by the live rule's own reading; a label
+            that left a downtrend last night and one that left it the night before; a name the
+            night labelled downtrend, which every version leaves down because entering applies at
+            once; and a name with no long average, which has no reading to be below. Beside them,
+            each fixture name's close and its two averages on both committed nights, computed from
+            the committed bars rather than read back from a run, showing that no name of the four
+            closes below both of its averages, which is why no version moves a plan there and why
+            the cases each version turns on are constructed.
+Tests:      1216, from 1206. Ten added, all in the new check. Eight constructed name-nights worked
+            by hand against each of the three versions, the populations each cause puts a name in,
+            the property that a version only ever takes a setup away, the live values replaying
+            every plan the fixture's night stored with no version moving one, the paired difference
+            and the p-value eight equal blocks give, the check over the best of several standing
+            above that version's own figure, the margin at and either side of itself, the three
+            versions the code offers each refused at its rule's live values, the cap and the night
+            it projects, and what the region states.
+Claims:     406, unchanged. This checkpoint adds no claim: the rules it builds were written into
+            section 10.1 and section 13.6 by the planning pass and placed at 10.4, and what lands
+            here is the code that answers them.
+Mutated:    the rule, stated before the sweep: break the property each new piece turns on, one from
+            each, each a property a reader of the record would see change. Not mutated: the
+            versions' own names and numbers, which are asserted against the expectation in both
+            directions and have no arithmetic to bend; and the cap, whose figure is held by the
+            census against section 17 and by the projection against the night's own durations.
+            Predicted:
+            M1 the averages arm reading a close below the short average alone: red in the labels
+            test, where the name below its fifty-day and above its two-hundred-day would be
+            labelled a downtrend by both averages versions.
+            M2 the hold reading one night more than the version asks for: red in the labels test,
+            where the name that left a downtrend the night before last would be held down.
+            M3 the paired difference read as the version's own blocks rather than as the difference
+            from the live rule's: red in the paired difference test, where the version that kept
+            one won setup a block would read its own excess and not the change.
+            M4 the Reality Check reading one version's statistic rather than the largest of
+            them: red in the comparison test, where the figure would fall to what the last
+            version alone reaches and the penalty for having picked the best of two would go.
+            Results: four runs of the whole suite, never a filter, in a detached worktree at
+            d5afc01, each mutation reverted with `git checkout` and the file read back equal to the
+            committed text before the next, and the tree read clean after. The baseline is 1216 of
+            1216. M1 and M2 each turned 2 red, the labels test predicted for them and the ladder
+            rules' pin, which any edit to a source the pin reads moves. M3 turned 1 red and M4
+            turned 1, each the test predicted for it, the two sitting in a file no pin reads. All
+            four predictions held, each in the test named for it. The sweep ran twice, once at the
+            commit before the rehearsal's finding and once over the tree being merged, and both
+            times all four went red in the same tests; what is recorded here is the second.
+Rehearsed:  over a copy of the operator's store in the session scratchpad, never `data/` itself,
+            migrated from schema 30 to 32 with nothing else written to it, and it stopped where the
+            night would: the store holds the merge distance's live window and a version beside it,
+            and the zone edges rule's, all four opened under the code version this checkpoint
+            moves, so the scorer refused to score anything and named both rules. That is the rule
+            working as written, and the remedy is the operator's, so it was rehearsed too: the two
+            versions closed, then the two live windows, then the live windows opened again, then
+            the trend rule's own live window and its three versions, each through the verb a person
+            runs, and a name the code does not carry refused with the three it does. The night of
+            2026-09-21 was then scored under them: 6 windows, 3 replayed, 1,506 scores over 502
+            names in seven tenths of a second, with nothing left out. The live rule labelled 96
+            downtrend, 340 range, 64 uptrend and 3 it could not classify. Below both averages
+            labelled 216 downtrend, moving 120 names; below both under a cross 123, moving 27; and
+            the new label holds two nights moved none, no name having left a downtrend the night
+            before. Of the 1,506 setups read for a difference, 147 would be taken away. Over the 11
+            nights the store holds, a label changed on 242 of 4,026 night-to-night pairs, came back
+            the next night 36 times and within two nights 53, which reproduces the planning
+            session's 36 and 53 on one night fewer. Six screens fetched, each 200, the run page and
+            its 2026-09-21 both carrying the versions region at 866,304 characters. It found one
+            defect, and this entry is where it is recorded: a comment stated that the averages
+            arm could only turn a range into a downtrend, and the arm reached a name the night
+            could not classify. Such a name carries no tranche either, so the property the
+            difference rests on is unchanged and the sentence stating the rule was wrong; it is
+            corrected, and the ladder rules' code version moves with the words because the file it
+            sits in is one the pin reads. It ran as a scratch test in the sweep's worktree, removed
+            after, and the worktree read clean.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1216 of 1216
+            tests ran with none failed, migrations 0 to 32 with none added and none pending,
+            schema version 32, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1`
+            green at 406 claims, 406 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 413 placements and
+            verdicts reconciled against a floor of 34, 41 of 41 roster checks carried and all 41
+            run, 1216 of 1216 tests. Both gates ran over d5afc01 with this entry in place, and the
+            operator's store under `data/` was not touched by either; the rehearsal read a copy.
+Carried:    The trend confirmation's nights settled from flip-backs, operating: the region this
+            builds is the surface that reading is taken on, and it states the flip-backs from the
+            night this lands. The rule version bound set from nights the version scorer ran,
+            operating: the cap moves to 18 as a projection and the row that settles it still reads
+            the scorer's own nights.
