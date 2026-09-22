@@ -20276,11 +20276,11 @@ Handed:     the night's stage computes what the three read beside the indicator 
             where tonight's volume ranks inside the name's own fifty-day window are written on every
             verdict and read by no condition.
 Median:     taken once before the loop, over the members that traded on the night's own session and
-            hold a fifty-day average above nought, and carried on every verdict so a night can be
-            replayed. Before the loop rather than inside it, because a median taken as the loop went
-            would give the names at the top of the alphabet a different night from the ones at the
-            bottom. It is one statement against the store: the stage takes a clock and a store file,
-            holds no feed and declares none.
+            hold a fifty-day average above nought, and written on every verdict of the condition
+            that reads it, so a night can be replayed. Before the loop rather than inside it,
+            because a median taken as the loop went would give the names at the top of the alphabet
+            a different night from the ones at the bottom. It is one statement against the store:
+            the stage takes a clock and a store file, holds no feed and declares none.
 Registered: one command, `register --the-three`, writing the three rows at one instant and none of
             them if any is refused, with the rule and the test of each written in code rather than
             typed at the prompt. At one instant because a candidate's level is divided across the
@@ -20353,7 +20353,15 @@ Moved:      every evaluator's version, the two registered ones among them, becau
             condition would have fired on. No candidate stands registered on the operator's store,
             so no window moved. It is also why the registration command is run once the phase's code
             is in and not before.
-Tests:      FILLED IN FROM THE RUN, from 1198.
+Tests:      1206, from 1198. Eight added, all in the new check. Fifteen constructed name-nights
+            worked by hand at the edges each condition turns on, four crossings read against whole
+            bands with the distance taken from the edge the close went through, a night missing a
+            value a condition reads refused by the key's name rather than read as a nought that did
+            not fire, the figures each verdict records beside the ones it is not tested on, a
+            volume rank taken inside the name's own window with ties sharing the better rank, the
+            three conditions the code offers registered at the numbers the spec pins, the night
+            evaluating all three over every member from the store alone with one median reaching
+            every verdict, and the command writing three rows or none of them.
 Claims:     406, from 405. Section 17 gains the row naming the numbers the three are registered at.
 Mutated:    the rule, stated before the sweep: break the property each condition turns on, one from
             each of the three, each a property a reader of the record would see change. Not mutated:
@@ -20376,10 +20384,41 @@ Mutated:    the rule, stated before the sweep: break the property each condition
             crossings test, where a rise that finished inside the band would count as having gone
             through it, and in the night test over the fixture, where MSFT and NFLX finish a
             different distance past a different edge.
-            Results: FILLED IN AFTER THE SWEEP.
-Rehearsed:  FILLED IN AFTER THE REHEARSAL.
-Verified:   `tools/ci.ps1` green end to end, FILLED IN FROM THE RUN. `tools/verify-phase.ps1` green, FILLED IN
-            FROM THE RUN.
+            Results: three runs of the whole suite, never a filter, in a detached worktree at
+            2cd336a, each mutation reverted with `git checkout` and the file read back equal to the
+            committed text before the next, and the tree read clean after. The baseline is 1206 of
+            1206. M1 turned 2 red and M2 turned 2 red, in each case the predicted condition test
+            and the pin. M3 turned 3 red, both the tests predicted for it and the pin. All three
+            predictions held, each in the test named for it. The pin is the companion of any of the
+            three rather than a fourth property found: it reads an evaluator's registered version
+            against a hash over every source its evaluation runs through, so editing an evaluator
+            or the reading it runs on moves that hash by construction. It is worth the line all the
+            same, because it is the check that stops a moved rule being scored under the register's
+            name, and each of these three mutations is a moved rule.
+Rehearsed:  over a copy of the operator's store in the session scratchpad, never `data/` itself,
+            migrated from schema 30 to 32 with the two migrations applied and nothing else written
+            to it. The three were registered on the copy by the command's own code, at one instant
+            as 1, 2 and 3 in a family of three of eight, and the night of 2026-09-21 was re-run
+            over them: 503 members, 503 rows, 1,506 shadow evaluations, with 0 model calls and 0
+            network requests on the stage's own run row. Arrived and narrow fired on 3 names,
+            volume against the night on 5 and crossed by a margin on 23, and the first two are the
+            figures the re-derived counts state for that night, reached here by the shipped code
+            instead of by a measurement. One member whose readings the night could not compute was
+            skipped on all three, each naming the key it could not read, and the median reached
+            every verdict as one value, 0.9501, which is the night's median the counts state to two
+            places. The stage took 1.1 seconds, which is a figure about the scratchpad's disk and
+            not the operator's. Nine screens fetched, each 200: tonight, tonight for 2026-09-21,
+            the run page and its 2026-09-21 at 870,523 characters in two thirds of a second, AAPL's
+            page and its 2026-09-21, the universe, the queue and the researched list. It ran as a
+            scratch test in the sweep's worktree once the sweep was done, removed after, and the
+            worktree read clean.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1206 of 1206 tests
+            ran with none failed, migrations 0 to 32 with none added and none pending, schema
+            version 32, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green
+            at 406 claims, 406 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 413 placements and
+            verdicts reconciled against a floor of 34, 40 of 40 roster checks carried and all 40
+            run, 1206 of 1206 tests. Both gates ran over 2cd336a with this entry in place, and the
+            operator's store under `data/` was not touched by either; the rehearsal read a copy.
 Carried:    The candidates' proposed numbers read at their looks, operating: two of the three
             numbers are still proposed and the third is settled, and none is read until a registered
             candidate reaches its first look. A candidate's power re-read at each look, operating:
