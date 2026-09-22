@@ -19751,3 +19751,92 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             does not move, because this corrects what a claim already placed asserts rather than
             adding any. Both gates ran over the tree carrying this entry, and the operator's store
             under `data/` was not touched by either.
+
+### Phase 8 sign-off                                                         2026-09-22
+Signed by a session that has committed no code to this repository. Its only commit is this
+            entry, which is a document, so the fresh session rule permits it. This is the fifth
+            review of phase 8. The reviews of 2026-09-16, 2026-09-21, and the third and fourth of
+            2026-09-22 did not sign. The fourth, over 40f5a77, found the night's duration reading a
+            run whose listings step failed, corrected by PRs 182 and 183. This review read
+            40f5a77..de5e0e2, 9 files, and found no defect.
+Verified:   by re-running both gates on `main` at de5e0e2 before this entry, and again over the tree
+            carrying it. `tools/ci.ps1` green end to end, 0 warnings, 0 errors, 1175 of 1175 tests
+            passing inside it, migrations 0 to 30 applied against `data-ci/` and then none pending
+            at schema version 30, exit 0. `tools/verify-phase.ps1` green at 29 tables, 384 claims,
+            384 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 391 placements and verdicts reconciled
+            against a floor of 34, fixture PRESENT with 1 captured over 6 constituents and 4 names,
+            37 checks on the roster and 37 carried, 37 ran and passed and none failed or did not
+            run, the suite 1175 of 1175 with none failed and none unrun. Windows PowerShell on the
+            operator's Windows machine: `tools/ci.ps1` green.
+Matrix:     jobs enumerated rather than run conclusions read. PRs 182 and 183 each carry a
+            pull_request run and a push run of 2 jobs, `macos` and `case-sensitivity`, 8 jobs, all
+            success. The push runs of their merges, 1cf03cd and de5e0e2, carry 2 jobs each, 4 jobs,
+            all success. `.github/workflows/ci.yml` carries zero `if:` and zero `continue-on-error:`
+            keys.
+Plan:       all eight checkpoints, 8.0 through 8.7, are in `BUILD_PLAN.md` and recorded above, over
+            243 entry headings before this one. No open pull request. The carried obligations table
+            holds 81 rows: 72 discharged, 9 operating and 0 open. All 34 expectation files state
+            `derivation: derived`.
+Store:      the operator store under `data/` was not touched by either gate or by this review. It
+            was copied once, and every read and the rehearsal ran against the copy.
+            `data/equitybrief.db` read last written 2026-09-22 00:13 UTC. Its run log holds 14
+            listings rows, all `ok`, `candidate_register` holds 0 rows, and its newest listing
+            session is 2026-09-21.
+Rehearsed:  the night of 2026-09-21 on the copy in the session scratchpad, on the SSD, from `main`
+            at de5e0e2: green in 63 seconds, 355 fired, 16 network requests, 330 weighted calls, 4
+            open versions replayed. The run's listings row reads `ok` over 503 rows and 503 listing
+            rows are stored for the session. The API served over the copy answered 200 on
+            `/screens/tonight`, `/screens/tonight/2026-09-18`, `/screens/run/2026-09-21`,
+            `/screens/universe`, `/screens/name/NVDA` and `/exports/name/NVDA`. Tonight's header
+            draws "the night took 00:00:58" beside 355 fired, the span of the rehearsal run, which
+            wrote the list last; 2026-09-18 draws 00:05:51 beside 432, the span of the replay that
+            wrote its list, read off the run log at 21:10:00.02 to 21:15:52. The shell at
+            `#/tonight`, `#/run/2026-09-21`, `#/universe` and `#/name/NVDA` was captured with
+            headless Edge and each image read. The API was stopped afterwards.
+Swept:      over the whole suite each time and never a filter, in a detached worktree at de5e0e2
+            under the session scratchpad, reverted between runs and removed after. The rule, stated
+            before the sweep: each mutation the handoff names, with predictions written before the
+            first run.
+            a. `ReadApi.ListingsStageOutcomes`' second word set to `failed`: red, 1171 of 1175. The
+            agreement test; the review's case at 00:05:40 where 00:07:33; the shadow case at
+            00:07:33 where 00:05:52; and the stops-only case at 00:04:05 where 00:02:30, which the
+            prediction left out: the first run's `failed` stop then ranks above the second run's
+            `stopped`.
+            b. the fallback removed, the query keeping only the stage's outcomes: red, 1174 of
+            1175, `ANightWhoseOnlyListingsRowsAreStopsDrawsTheLastRunToReachTheStage` at no
+            duration where 00:02:30. As predicted.
+            c. the session in `LastListingsRunAsync` read off the UTC date of the row's start:
+            red, 1174 of 1175,
+            `TheNightsDurationIsTheArithmeticsAndAQueueAtItsLimitIsNotAStageThatFailed` at no
+            duration where 00:03:00, its listings row at 01:11 UTC on the day after its session.
+            The prediction also named `ANightsRunLogIsTheNightsAndTheClockDecidesWhichNightARowIsOn`,
+            which stays green: its row after midnight UTC is a close row, and the listings row its
+            duration reads is the fixture's own, on its session's UTC date. The rule is asserted by
+            the first.
+            d. `CommitAsync` moved back before the stage's own row, the row written outside the
+            transaction, both evaluator versions raised to the mutated file's pin,
+            momentum-histogram-turn ae5dc11919b8 and momentum-index-reading a46cc1c02d28: red, 1174
+            of 1175, the new `listings-coverage` test alone at 4 listing rows where 0. As
+            predicted.
+Judged:     the outcome as the discriminator holds. Only the night calls `ShortlistBuilder`, which
+            writes `ok` or its shadow fault word and nothing else, and every stop the night writes
+            goes through `NightClose.RecordStopAsync` with one of the four stop words and writes
+            nothing on conflict, so a stop never replaces the stage's row. `rows_written` could not
+            serve, since a stop writes 0. A deadline at the commit rolls back the row with the
+            list. The fallback, the last run to reach the stage where no run wrote a list, draws a
+            span with no fired count beside it, and a night whose every attempt stopped still reads
+            how long it ran rather than nothing. The listings row's `ended_at` is now read before
+            the commit: the header's span ends at the close row, the run page draws the stage's own
+            time, and no reader orders or joins on that instant. PR 182's sweep verdicts stand. PR
+            183 corrected its mutation's prediction before the run, in a commit of its own, and
+            says so; the rule and the mutation did not move, which is what done condition 9 binds.
+Carried:    as the handoff states and not phase failures. The earlier-night fixture expectation, to
+            10.0 planning. Tonight's list fires for 65 to 86 percent of the index; the tighter
+            setting is to be registered and shadow-scored. The moves correction and risks with a
+            severity, waiting on a re-recording of the fixture's model answers. The run page
+            interleaves two runs of one session with no run column. `read-surface`'s allowed read
+            `BackfillRows` states a narrower reason than the real one. The night of 2026-09-22 is
+            the first live night on PR 183's writer and the new evaluator versions, and this review
+            ran before it.
+Signed:     phase 8, 8.0 through 8.7, with the corrections through PR 183. Phases 0 to 9 are signed,
+            and 10.0 planning may begin.
