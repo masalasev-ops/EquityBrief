@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using EquityBrief.Api.Passes;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
@@ -7,7 +8,8 @@ using EquityBrief.Web.Marks;
 namespace EquityBrief.Tests.Reading;
 
 // read-surface, 9.1: the control on a row of tonight's list that asks for a report, set
-// apart from the label beside it saying the name holds none.
+// apart from the label beside it saying the name holds none; and 9.3: that control and the
+// queue's control taking a report out, each drawn by the rule written for it.
 //
 // The suite has no browser, so the rule that lays the control out is found the way a
 // browser finds it: every rule the stylesheet states is matched against the control and
@@ -132,6 +134,161 @@ public partial class ReadSurface
         return winner.Value == "0"
             ? 0
             : double.Parse(Regex.Match(winner.Value, @"^(-?\d+(?:\.\d+)?)px$").Groups[1].Value, CultureInfo.InvariantCulture);
+    }
+
+    // Every declaration the cascade gives an element, by property: the most specific matching
+    // rule's, the later of two equally specific. A property is keyed as a rule writes it, so a
+    // shorthand and its longhand are read as two properties; the rules over the two controls
+    // write each property one way.
+    static IReadOnlyDictionary<string, (string Selector, string Value)> Applied(string css, Element element, IReadOnlyList<Element> holders)
+    {
+        var applied = new Dictionary<string, (int Specificity, string Selector, string Value)>(StringComparer.Ordinal);
+
+        foreach (var (selectors, body) in RulesAtTheTop(css))
+        {
+            foreach (var selector in selectors.Split(','))
+            {
+                var (matches, specificity) = Selects(selector, element, holders);
+
+                if (!matches)
+                {
+                    continue;
+                }
+
+                foreach (var declaration in body.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    var colon = declaration.IndexOf(':', StringComparison.Ordinal);
+
+                    if (colon > 0 && (!applied.TryGetValue(declaration[..colon].Trim(), out var held) || specificity >= held.Specificity))
+                    {
+                        applied[declaration[..colon].Trim()] = (specificity, selector.Trim(), declaration[(colon + 1)..].Trim());
+                    }
+                }
+            }
+        }
+
+        return applied.ToDictionary(pair => pair.Key, pair => (pair.Value.Selector, pair.Value.Value), StringComparer.Ordinal);
+    }
+
+    // The properties a rule written for a button states, over the rules that match the one
+    // given: every rule whose own element, the last part of its selector, is a button.
+    static IReadOnlySet<string> StatedForButtons(string css, Element button, IReadOnlyList<Element> holders) =>
+        RulesAtTheTop(css)
+            .SelectMany(rule => rule.Selector.Split(',').Select(selector => (Selector: selector.Trim(), rule.Body)))
+            .Where(rule => Regex.Split(rule.Selector, @"\s*>\s*|\s+")[^1].StartsWith("button", StringComparison.Ordinal)
+                && Selects(rule.Selector, button, holders).Matches)
+            .SelectMany(rule => rule.Body.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Where(declaration => declaration.IndexOf(':', StringComparison.Ordinal) > 0)
+            .Select(declaration => declaration[..declaration.IndexOf(':', StringComparison.Ordinal)].Trim())
+            .ToHashSet(StringComparer.Ordinal);
+
+    static readonly HashSet<string> VoidElements = new(StringComparer.Ordinal)
+    {
+        "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr",
+    };
+
+    // The elements open at a point in the markup, outermost first, nested the way a parser
+    // nests them: an opening tag holds what follows until its closing tag, and a void element
+    // or one closing itself holds nothing.
+    static IReadOnlyList<Element> HoldersAt(string markup, int at)
+    {
+        var open = new List<(string Tag, string Opening)>();
+
+        foreach (Match tag in Regex.Matches(markup[..at], "<(?<close>/?)(?<name>[a-z][a-z0-9]*)[^>]*>"))
+        {
+            var name = tag.Groups["name"].Value;
+
+            if (tag.Groups["close"].Length > 0)
+            {
+                var last = open.FindLastIndex(held => held.Tag == name);
+
+                if (last >= 0)
+                {
+                    open.RemoveRange(last, open.Count - last);
+                }
+            }
+            else if (!tag.Value.EndsWith("/>", StringComparison.Ordinal) && !VoidElements.Contains(name))
+            {
+                open.Add((name, tag.Value));
+            }
+        }
+
+        return [.. open.Select(held => Opening(held.Opening))];
+    }
+
+    [Fact]
+    public void TheControlsAskingForAReportAndTakingOneOutAreDrawnByTheirOwnRules()
+    {
+        // Each of the two small controls has a rule of its own, and the page draws it by that
+        // rule only where the rule outranks every rule written for buttons and states every
+        // property one of them states. A property the small rule leaves out is drawn at the
+        // other rule's value, and a rule it merely equals, stated after it, wins every property
+        // the two share. Read off the markup each screen draws: the button, and every element
+        // holding it in the fragment its route returns.
+        var night = new DateOnly(2026, 9, 18);
+        var list = new MarkRenderer().TonightList(
+            [new ListingCell("ZZZZ", night, 1, 0, 10m, [ShortlistSeries.AtEntryZone])],
+            SinglePageApp.TonightDrawn,
+            []);
+        var queue = new SinglePageApp().QueueRegion([Queued("ZZZZ", "2026-09-20T10:00:00Z", ResearchRequests.Outstanding)]);
+
+        foreach (var (screen, markup, control) in new[] { ("tonight's list", list, "ask"), ("the queue", queue, "withdraw-control") })
+        {
+            var form = Regex.Match(markup, $"<form class=\"(?:[^\"]* )?{Regex.Escape(control)}(?: [^\"]*)?\"[^>]*>");
+
+            Assert.True(form.Success, $"{screen} draws no control whose class is {control}");
+
+            var button = Regex.Match(markup[form.Index..], "<button[^>]*>");
+
+            Assert.True(button.Success, $"the control on {screen} carries no button");
+
+            var element = Opening(button.Value);
+            var holders = HoldersAt(markup, form.Index + button.Index);
+
+            Assert.Contains(holders, holder => holder.Tag == "form" && holder.Classes.Contains(control));
+
+            var applied = Applied(Stylesheet.Css, element, holders);
+            var stated = StatedForButtons(Stylesheet.Css, element, holders);
+
+            // A rule for every posted form's button reaches both controls, so the population
+            // this reads is never only the control's own rule.
+            Assert.True(stated.Count >= 5, $"the rules written for buttons state {stated.Count} properties over the control on {screen}, expected at least 5");
+
+            var taken = stated
+                .Where(property => !Regex.IsMatch(applied[property].Selector, $@"\.{Regex.Escape(control)}(?![\w-])"))
+                .Order(StringComparer.Ordinal)
+                .Select(property => $"{property}:{applied[property].Value} from {applied[property].Selector}")
+                .ToArray();
+
+            Assert.True(taken.Length == 0, $"the button on {screen} is drawn by a rule written for other buttons: {string.Join("; ", taken)}");
+        }
+
+        // The reader is shown to give each property to the rule that wins that property: the
+        // later of two equal rules wins what they share, a more specific rule wins what it
+        // states and leaves the rest to the other, and a state the resting page is not in
+        // applies nothing.
+        var posted = Opening("<form class=\"ask\" method=\"post\">");
+        var pressed = Opening("<button type=\"submit\">");
+
+        var equal = Applied("form.ask button{padding:2px}form[method='post'] button{padding:0 16px;min-height:44px}", pressed, [posted]);
+
+        Assert.Equal(("form[method='post'] button", "0 16px"), equal["padding"]);
+        Assert.Equal(("form[method='post'] button", "44px"), equal["min-height"]);
+
+        var outranked = Applied("form.ask[method='post'] button{padding:2px}form[method='post'] button{padding:0 16px;min-height:44px}", pressed, [posted]);
+
+        Assert.Equal(("form.ask[method='post'] button", "2px"), outranked["padding"]);
+        Assert.Equal(("form[method='post'] button", "44px"), outranked["min-height"]);
+        Assert.False(Applied("form[method='post'] button:disabled{opacity:.6}", pressed, [posted]).ContainsKey("opacity"));
+
+        // And a rule that is not written for a button states nothing the controls must restate.
+        Assert.Equal("padding", Assert.Single(StatedForButtons("*{box-sizing:border-box}form.ask{margin:0}form button{padding:0}", pressed, [posted])));
+
+        // The holders are the elements still open where the button opens, and none that closed
+        // before it or holds nothing.
+        const string nested = "<div class=\"a\"><p>x</p><span class=\"b\"><input type=\"hidden\"><img src=\"q\"/><button>";
+
+        Assert.Equal(["div", "span"], [.. HoldersAt(nested, nested.LastIndexOf("<button", StringComparison.Ordinal)).Select(held => held.Tag)]);
     }
 
     [Fact]

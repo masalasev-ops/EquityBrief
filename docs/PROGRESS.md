@@ -21605,3 +21605,93 @@ Signed:     phase 10, 10.0 through 10.5, with the corrections through PR 197. Ph
             wait, once, after this sign-off: `register --the-three`, which registers at the
             moved evaluator versions, and `version --trend-version` for each of the three trend
             versions once the trend rule's live window is opened.
+### 9.3 - correction: the controls asking for a report and taking one out were drawn as every posted form's button, because the rule written for them never applied   2026-09-23
+Corrects:   9.3 (7f2617a), which wrote one rule for two small controls, the button on a row of
+            tonight's list asking for a report and the queue's button taking one out:
+            `form.ask button,.withdraw-control button`, at 11.5 pixel type, 2 by 8 pixels of
+            padding and the surface's fill. The rule every posted form's button takes,
+            `form[method='post'] button`, written at the 5.8 correction of 2026-09-19 (eb03933),
+            stands after it in the stylesheet, equal in specificity to the first selector and
+            above the second, so it won every property the two state, and it states a minimum
+            height of 44 pixels the small rule says nothing about. Both controls were drawn 44
+            pixels tall in the accent's fill with 14 pixel type from the day they were built.
+Why it is   the control sits in the name cell of every row whose name holds no report, so each
+worse:      such row carried a button taller than its own ticker, which pushed the company's name
+            onto a line of its own and made the row taller than the rest. The rule meant to keep
+            the control out of the way was the one rule over it that never applied.
+Found:      by the operator on 2026-09-23, reading tonight's list on the live screens: the control
+            asking for a report was far too big.
+Repaired:   the small rule's selectors are `form.ask[method='post'] button` and
+            `form.withdraw-control[method='post'] button`, which outrank the posted form's rule
+            wherever both match, and the rule states `min-height:0`, so no property of that rule
+            reaches either control. A comment above the rule says so. The name page's own research
+            control carries neither class and keeps the large button it was drawn with.
+This        that the label is 9.3, the checkpoint that wrote the rule that never applied, and not
+session     5.8, whose rule is right for every other posted form.
+decided:    That the assertion is over every property a rule written for buttons states, and not
+            over the two found wrong: a property the small rule leaves out is drawn at the other
+            rule's value, which is how the minimum height reached both controls. A rule written for
+            no button, `*{box-sizing:border-box}` among them, is outside it.
+            That the button is read in the fragment each route returns, which the shell places
+            inside its own column, so a rule keyed on the shell's own elements is not seen here.
+            No rule written for a button is keyed on one.
+Guarded:    `read-surface`, one test added,
+            `TheControlsAskingForAReportAndTakingOneOutAreDrawnByTheirOwnRules`, over tonight's
+            list and the queue as each is drawn, reading the button and every element holding it.
+            Its population is every property a rule written for buttons states over each control,
+            eight for each today, against a floor of 5 stated in advance. The reader is shown:
+            - to give a property the later of two equal rules states to that rule;
+            - to give a property a more specific rule states to that rule, and one it leaves out
+              to the other;
+            - to apply nothing from a state the resting page is not in;
+            - to leave a rule written for no button out of the population;
+            - to nest the holders a parser nests, a closed, a void and a self-closing element
+              holding nothing.
+            The roster's `read-surface` row names the two controls: the one asking standing off the
+            label beside it, which the 9.1 correction asserted and the row did not name, and every
+            property of each control's button reaching it from the control's own rule.
+Expected:   derived, and no expectation file moves: the test reads the stylesheet and the markup
+            the renderer draws, and no stage's output changes.
+Tests:      1240, from 1239. One added to `read-surface`, none removed. Migrations 0 to 33 with
+            none added and none pending, schema version 33.
+Claims:     407, from 407, all passing, 414 placements and verdicts reconciled against a floor of
+            34. No claim added: the architecture does not state how the two controls are drawn,
+            and no table or figure changes.
+Mutated:    the rule, stated before the run: put each half of the fault back, and break the reader
+            in the one way that would read the fault as a repair.
+            Predicted:
+            M1 the asking control's selector back to `form.ask button`. Red in
+            `TheControlsAskingForAReportAndTakingOneOutAreDrawnByTheirOwnRules` and nowhere else,
+            on tonight's list, naming the posted form's rule for all eight properties.
+            M2 the queue's selector back to `.withdraw-control button`. Red in the same test and
+            nowhere else, on the queue, the list's control being drawn right.
+            M3 `min-height:0` taken out of the rule. Red in the same test and nowhere else, on
+            tonight's list, naming the minimum height alone.
+            M4 the reader giving a property to the first of two equal rules rather than the later.
+            Red in the same test and nowhere else, at its first proof over constructed rules; the
+            shipped controls outrank the posted form's rule and read the same either way.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            d0c061a, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1240 of 1240. M1 turned 1 red and 1239 green:
+            `TheControlsAskingForAReportAndTakingOneOutAreDrawnByTheirOwnRules`, on tonight's list,
+            naming the posted form's rule for all eight properties. M2 turned 1 red and 1239 green:
+            the same test, on the queue, naming the same rule for the same eight. M3 turned 1 red
+            and 1239 green: the same test, on tonight's list, naming `min-height:44px` alone. M4
+            turned 1 red and 1239 green: the same test, at its first proof, which read the padding
+            of two equal rules as the first rule's.
+Held:       the prediction in all four runs, in the test each named, in its number and in the
+            screen and the properties each failure named. The shipped controls read the same under
+            M4, as predicted, because each control's rule outranks the posted form's rule and no
+            tie decides a property either states.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1240 of 1240
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 407 claims, 407 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 414 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1240 of 1240 tests.
+            Both gates ran over the tree carrying this entry, d0c061a, and the operator's store
+            under `data/` was not touched by either.
+Carried:    nothing. No pinned source moves: the stylesheet and the read surface's tests are in no
+            rule version's pin and no evaluator's. The same reading's other two points, the
+            universe's count and tonight's list drawn unnumbered, land as a 5.8 correction after
+            this one.
