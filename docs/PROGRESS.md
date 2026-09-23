@@ -22049,3 +22049,87 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             under `data/` was not touched by either.
 Carried:    the operator's ruling on the hard rule's carve-outs, owed before 11.4, and the document
             pass at 11.0, owed before 11.1.
+### 11.0 ruling - the night's one request is named among the hard rule's carve-outs   2026-09-23
+Not a checkpoint entry. It lands nothing. It records the operator's answer to the one question
+            the phase 11 plan left for them, owed before 11.4.
+Asked:      whether the hard rule's carve-outs name the night's request, one paid pass a night set
+            off by the nightly job that does not grow with the index, which the plan's planning
+            entry carried as not settled.
+Ruled:      on 2026-09-23, in their words, "Yes the nightly run will generate paid research for top
+            1 name". The carve-outs name it as a third, beside the new member's backfill and the
+            corporate action refetch. 11.4 writes it into the hard rule with the code that makes the
+            request, because a rule naming a carve-out nothing makes would describe a mechanism
+            nothing has built, and the plan's paragraph on the night's request states the ruling
+            now, its prior text in `CHANGELOG.md`.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green over the tree carrying
+            this entry and the document pass after it, whose figures are the figures of both runs.
+Carried:    nothing. The hard rule's text is 11.4's, and 11.4's done condition already names it.
+### 11.0 document pass - the four report parts written into the architecture, each placed at the checkpoint that draws it, and the pair after 11.9 predicted   2026-09-23
+Not a checkpoint entry. It lands 11.0 and no checkpoint, because a document pass builds none of
+            the phase it belongs to. No behaviour changes and no store is touched.
+Why:        the phase 11 plan left the architecture's rows for the four report parts to a document
+            pass before 11.1, so the claims they add are placed before anything is built to reach
+            them and the pair the phase ends at is predicted before the first of them moves.
+Written:    section 4's table names the four in the report sections they sit in, each move beside
+            its group's median and the peers table in section 2, the earnings reaction record
+            beside the earnings-trade setups in section 4 and the dividend in section 6, each with
+            what produces it and the decision it rests on. Section 15.9 gains four rows, Each move
+            beside its group, Peers, Earnings reactions and Dividend, each with a key saying how to
+            read it, and a note beneath the table says the four sit in the sections they belong to,
+            reach no reason, gate, plan or candidate, and are drawn by the exported report from the
+            same code path. Section 15.12's first two steps say where each renders from.
+            `BUILD_PLAN.md` states the pair the phase is predicted to end at, and the operator's
+            ruling above. Every spec line changed has its prior text in `CHANGELOG.md`.
+Placed:     the four rows, each out of scope until the checkpoint that draws it: Each move beside
+            its group at 11.5, Peers at 11.6, Earnings reactions at 11.7 and Dividend at 11.8. The
+            screens map carries each, the prediction reads them as phase 11's rows with none drawn
+            yet, and section 15's row and subject counts move from 58 and 158 to 62 and 162.
+Predicted:  413 claims and 409 PASS after this pass, with 4 out of scope; 421 and 421 after 11.9,
+            within 419 to 425, each end with its cause, as `BUILD_PLAN.md` states.
+Expected:   derived, and a derivation rather than a file: no stage's output over the fixture moves,
+            because no behaviour changes. What is added is read off the document by the checks that
+            already run over it.
+Tests:      1244, unchanged. None added: the rows join populations existing checks read.
+            Migrations 0 to 33 with none added and none pending, schema version 33.
+Claims:     413, from 409, with 409 PASS and 4 out of scope, each at the checkpoint that
+            draws it, and 416 placements and verdicts reconciled against a floor of 34, as
+            predicted.
+Mutated:    the rule, stated before the run: break the property this pass carries into shipped
+            source, which is that each of the four rows is placed at the checkpoint that draws it
+            and read as out of scope until that one lands, and that the prediction counts them.
+            Predicted:
+            M1 the Peers row's due point taken out of the screens map, the document left alone: red
+            in `EveryScreenRowHasItsOwnDuePointAndNoneIsWrittenForARowThatIsGone` naming the row as
+            one with no due point, and in every test that builds the phase report, which stops on a
+            claim with no entry rather than leaving it unexamined.
+            M2 the Dividend row's due point moved to 11.0, which the record shows as landed: red in
+            `EveryOutOfScopeClaimNamesADuePointThePlanHasAndProgressDoesNot` naming 11.0, and green
+            everywhere else, since the claim is still out of scope and still counted as one.
+            M3 the Earnings reactions row taken out of the prediction's phase 11 rows, the map and
+            the document left alone: red in `ThePairEightZeroPredictedIsCheckedAgainstTheActual`,
+            which then expects one claim fewer and one fewer out of scope than the document makes,
+            and green everywhere else.
+            Results: three runs of the whole suite in a detached worktree at d808a4b, never a
+            filter, each mutation reverted with `git reset --hard` and the tree read clean after
+            each. The baseline is 1244 of 1244. M1 turned 1 red,
+            `EveryScreenRowHasItsOwnDuePointAndNoneIsWrittenForARowThatIsGone`, 1243 green. M2
+            turned 1 red, `EveryOutOfScopeClaimNamesADuePointThePlanHasAndProgressDoesNot`, 1243
+            green. M3 turned 1 red, `ThePairEightZeroPredictedIsCheckedAgainstTheActual`, 1243
+            green.
+Held:       M2 and M3 exactly as written before the run. M1 named more than happened: the
+            test holding the map and the document together turned red and no test building the
+            phase report did, because a subject the screens map does not carry is asked of the
+            plan's text next, and that text names the peers at 11.6, so the claim resolved to a
+            checkpoint that has not landed and stayed out of scope. The reconciliation is the
+            check the map exists for and it caught the omission; the fallback is the resolver as
+            it was written, so the prediction was wrong and not the harness.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1244 of 1244
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 413 claims, 409 PASS, 0 FAIL, 4 out of
+            scope, 0 unexamined, 416 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1244 of 1244 tests.
+            Both gates ran over the tree carrying this entry, d808a4b, and the operator's store
+            under `data/` was not touched by either.
+Carried:    nothing new. The checkpoints 11.1 to 11.9 are the plan's, and the phase 11 sign-off is
+            a fresh session's.

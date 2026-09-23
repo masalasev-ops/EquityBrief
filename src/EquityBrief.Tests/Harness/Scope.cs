@@ -2132,6 +2132,12 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "The risks as parts")] = "5.8",
         [CheckReach.Key("15.9 Name", "Contents")] = "5.8",
         [CheckReach.Key("15.9 Name", "Sections left out")] = "6.5",
+        // The four parts phase 11's document pass wrote before any of them is drawn, each
+        // owed at the checkpoint that builds it and out of scope until that one lands.
+        [CheckReach.Key("15.9 Name", "Each move beside its group")] = "11.5",
+        [CheckReach.Key("15.9 Name", "Peers")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Earnings reactions")] = "11.7",
+        [CheckReach.Key("15.9 Name", "Dividend")] = "11.8",
         // Decomposed at 6.5, each into the part the judge's verdict draws and the
         // parts the research runner draws. The line saying research is missing or
         // naming the trigger that fired is a reading of the stores this checkpoint
