@@ -21752,8 +21752,10 @@ Guarded:    `read-surface`, two tests added:
             both properties.
 Expected:   derived, and no expectation file moves: the tests read the markup the renderer draws
             over constructed rows, and no stage's output changes.
-Tests:      FILLED IN AFTER THE RUN. Two added, none removed.
-Claims:     FILLED IN AFTER THE RUN. Two added, the list row's two new parts.
+Tests:      1242, from 1240. Two added to `read-surface`, none removed. Migrations 0 to 33 with
+            none added and none pending, schema version 33.
+Claims:     409, from 407, all passing, 416 placements and verdicts reconciled against a floor of
+            34. Two added, the list row's two new parts.
 Mutated:    the rule, stated before the run: put each of the three faults back, and move the one
             figure numbering the rows moves as well.
             Predicted:
@@ -21770,10 +21772,25 @@ Mutated:    the rule, stated before the run: put each of the three faults back, 
             else.
             Not mutated: the line's words for each night and where it names the universe page,
             asserted beside M3's position in the same loop.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            e2088f6, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1242 of 1242. M1 turned 1 red and 1241 green:
+            `TheUniversesPagingStatesItsCountApartFromItsPage`, whose words differed, with the older
+            paging test green. M2 turned 1 red and 1241 green:
+            `TheListNumbersItsRowsInItsOrderUnderALineStatingHowManyAreDrawnOfHowManyFired`, whose
+            places began at nought. M3 turned 1 red and 1241 green: the same test, the night of
+            forty stating its count below the rows, with the older test reading the undrawn count
+            green. M4 turned 1 red and 1241 green: the same test, the footer spanning 6 columns
+            against the 7 before the first reason.
+Held:       the prediction in all four runs, in the test each named and in its number, and the two
+            older tests it said would stay green did.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1242 of 1242
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 409 claims, 409 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 416 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1242 of 1242 tests.
+            Both gates ran over the tree carrying this entry, e2088f6, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing. No pinned source moves: the renderer, the shell, the stylesheet and the
             harness are in no rule version's pin and no evaluator's.
