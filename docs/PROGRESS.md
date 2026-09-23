@@ -20870,9 +20870,11 @@ Expected:   derived, and a derivation rather than a file: no stage's output over
             because no behaviour changes. What is added is read off the document by the checks that
             already run over it, and the merge distance's restatement count in `pinned-constants`
             moves with the sentence that restates it.
-Tests:      1218, unchanged. No test added and none needed: the subsection joins a population an
+Tests:      1222, unchanged. No test added and none needed: the subsection joins a population an
             existing check reads, and the figure joins a placement an existing check reconciles. No
-            migration, and no pin moves.
+            migration, and no pin moves. The count is 1222 rather than the 1218 this pass was first
+            run at, because the 10.5 correction above landed first and added four, and this pass was
+            rebased onto it and run again over the tree that is merged.
 Claims:     406, unchanged. The figure is placed as making no claims, so what moves is the table
             count, from 35 to 36.
 Mutated:    the rule, stated before the run: break the property this pass carries into shipped
@@ -20891,19 +20893,20 @@ Mutated:    the rule, stated before the run: break the property this pass carrie
             their attribute and finds them whatever the list says, and the list is what makes a
             paragraph that lost its attribute a failure rather than a paragraph nobody reads. M1 is
             the case the list exists for, and M2 alone cannot reach it.
-            Results: two runs of the whole suite in a detached worktree at c1061dc, never a filter,
+            Results: two runs of the whole suite in a detached worktree at 5f589dc, never a filter,
             each mutation reverted with `git checkout` and the tree read clean after both. The
-            baseline is 1218 of 1218. M1 turned exactly 1 red, which is
-            `EveryParagraphOfAPhaseTenSubsectionIsARule` naming 10.2, 1217 green. M2 turned none,
-            1218 green.
+            baseline is 1222 of 1222. M1 turned exactly 1 red, which is
+            `EveryParagraphOfAPhaseTenSubsectionIsARule` naming 10.2, 1221 green. M2 turned none,
+            1222 green. Both were run once before the rebase and once after it, over the tree that
+            is merged, and gave the same answer both times.
 Held:       both predictions, exactly as written before the run, including the one that said a
             mutation would survive and why.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1218 of 1218
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1222 of 1222
             tests ran with none failed, migrations 0 to 32 with none added and none pending, schema
             version 32, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green
             at 36 tables, 406 claims, 406 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 413 placements
             and verdicts reconciled against a floor of 34, 41 of 41 roster checks carried and all 41
-            run, 1218 of 1218 tests. Both gates ran over the tree carrying this entry, and the
+            run, 1222 of 1222 tests. Both gates ran over the tree carrying this entry, and the
             operator's store under `data/` was not touched by either.
 Carried:    nothing new, and the standing of levels is a question rather than an obligation: no
             checkpoint answers it and the candidates' own records are what will. The phase 10
