@@ -21137,8 +21137,10 @@ Guarded:    `research-marked`, two tests added.
 Expected:   derived, and no expectation file moves. What is added is read off the architecture
             itself, over populations the test states in advance, and no stage's output over the
             fixture changes because nothing the night runs is touched.
-Tests:      FILLED IN AFTER THE RUN. No migration, and no pin moves.
-Claims:     FILLED IN AFTER THE RUN. No claim is added or removed.
+Tests:      1232, from 1230. Two added to `research-marked`, the reconciliation and the permanent
+            proof under its reader. No migration, schema version 33 unchanged, and no pin moves.
+Claims:     407, all passing, unchanged. No claim is added or removed, and the 414 placements and
+            verdicts reconcile against a floor of 34 as before.
 Mutated:    the rule, stated before the run: run the mutation the 10.0 entry recorded as
             surviving, because the property this correction adds is exactly that it no longer
             does. A different mutation would show a different property and leave the recorded
@@ -21153,10 +21155,22 @@ Mutated:    the rule, stated before the run: run the mutation the 10.0 entry rec
             them sound, `EveryPhaseTenRuleSaysWhatItRestsOn` reads paragraphs by their attribute
             and never the list, and the two link assertions read the whole document. That is the
             same mutation the 10.0 entry ran, and it turned nothing red then.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite in a detached worktree at d5eb0a8, never a
+            filter, the mutation reverted with `git checkout` and the tree read clean after. The
+            baseline is 1232 of 1232. M1 took `13.7 What the judging can and cannot show` out of
+            the list with the document untouched and turned exactly 1 red, 1231 green, which is
+            `TheSubsectionListIsWhatTheDocumentSaysItIsInBothDirections` and no other test. That
+            is the mutation the 10.0 pass ran and recorded as surviving, run again against the
+            same document and answered.
+Held:       the prediction exactly, in the one test it named and in its number, and the three
+            assertions it said would stay green did.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1232 of 1232
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 407 claims, 407 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 414 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1232 of 1232 tests.
+            Both gates ran over the tree carrying this entry, and the operator's store under
+            `data/` was not touched by either.
 Carried:    nothing new. The phase 10 sign-off stays owed to a fresh session, which is not this
             one.
