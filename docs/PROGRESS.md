@@ -22008,6 +22008,9 @@ Found:      four things, read off main at 7c7f136 rather than off a run, which t
               them there would move all five versions and stop the three candidates registered that
               day from being evaluated. Asked, the operator ruled that the move annotator writes
               them, in a table of its own.
+            - One citation in the operator's text, of the key under each figure being written for
+              each night's facts file, names a decision since superseded by the one that dates the
+              key by the night whose figures it explains. The plan cites the current one.
 Refused:    four things this pass could have written and does not. The decision a press supersedes,
             which 11.1 supersedes with the code that changes it. `SCHEMA.md`'s new columns, tables
             and writers, and the catalogue and matrix cells, which land with the code they describe,
@@ -22031,13 +22034,18 @@ Measured:   what the plan's figures rest on, over the operator's store on 2026-0
             New York until 2026-11-01 and an hour earlier after it. Only the theme research runner
             refuses to start at peak today. The four fixture fundamentals payloads, AAPL, KEYS, MSFT
             and NFLX, each carry a SplitsDividends part for 11.8 to parse.
-Claims:     FILLED IN AFTER THE RUN. A planning pass that writes no section of the architecture
-            adds none.
-Tests:      FILLED IN AFTER THE RUN. A planning pass adds none.
+Claims:     409, from 409, all passing, 416 placements and verdicts reconciled against a
+            floor of 34. A planning pass that writes no section of the architecture adds none.
+Tests:      1244, unchanged. A planning pass adds none.
 Mutated:    nothing. This pass writes no shipped source and no assertion, so there is nothing of its
             own to break.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1244 of 1244
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 409 claims, 409 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 416 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1244 of 1244 tests.
+            Both gates ran over the tree carrying this entry, eb6b27c, and the operator's store
+            under `data/` was not touched by either.
 Carried:    the operator's ruling on the hard rule's carve-outs, owed before 11.4, and the document
             pass at 11.0, owed before 11.1.
