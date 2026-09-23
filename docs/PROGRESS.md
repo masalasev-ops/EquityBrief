@@ -22481,18 +22481,29 @@ Guarded:    `read-surface`, one test added,
             it red. The roster's `read-surface` row names it.
 Expected:   derived, and no expectation file moves: the test reads the markup the page draws and
             the paragraph the document holds, and no stage's output changes.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. No claim added: the key is not a row of a table, and the
-            paragraph is not a table.
+Tests:      1275, from 1274. One added to `read-surface`, none removed. Migrations 0 to 34
+            with none added and none pending, schema version 34.
+Claims:     417, from 417, with 413 PASS and 4 out of scope, and 420 placements and verdicts
+            reconciled against a floor of 34. No claim added: the key is not a row of a table,
+            and the paragraph is not a table.
 Mutated:    the rule, stated before the run: put the fault back, in each of the two places it was.
             Predicted:
             M1 the page's key naming the list and the name page alone, as it did: red in
             `TheQueuePageAndItsParagraphNameEveryAskerTheStoreAdmits` and nowhere else.
             M2 the paragraph naming the two alone, as it did: red in the same test and nowhere
             else.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            d7a3dd0, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1275 of 1275. M1 turned 1 red and 1274 green:
+            `TheQueuePageAndItsParagraphNameEveryAskerTheStoreAdmits`. M2 turned 1 red and 1274
+            green: the same test.
+Held:       both predictions, in the test each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1275 of 1275
+            tests ran with none failed, migrations 0 to 34 with none added and none pending,
+            schema version 34, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 417 claims, 413 PASS, 0 FAIL, 4 out of
+            scope, 0 unexamined, 420 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1275 of 1275 tests.
+            Both gates ran over the tree carrying this entry, d7a3dd0, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing.
