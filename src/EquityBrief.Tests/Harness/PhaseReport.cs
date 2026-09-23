@@ -234,6 +234,8 @@ internal static class PhaseReport
             Check: "architecture-conformance"),
         ["Figure 8.1"] = new Placement(
             "the builders drawn in the order they run, whose stages figures 9.1 and 10.1 claim box by box and whose row for every member section 14's own steps carry; a picture of claims placed elsewhere and none of its own"),
+        ["Figure 10.2"] = new Placement(
+            "one band drawn on a price axis with the close inside it and the midpoint the arithmetic is carried at, whose every price is the worked example's and whose every rule section 9 and section 10 state in their own prose; a picture of claims placed elsewhere and none of its own"),
         ["Figure 12.2"] = new Placement(
             "a research pass drawn from the documents it fetched to the record it stores, whose lanes the section's own table claims and whose gate the admissibility rows carry; a picture of claims placed elsewhere and none of its own"),
         ["Figure 13.1"] = new Placement(

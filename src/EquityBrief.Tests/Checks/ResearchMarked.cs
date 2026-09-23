@@ -22,6 +22,7 @@ public class ResearchMarked
     internal static readonly string[] Subsections =
     [
         "10.1 The trend rule's versions",
+        "10.2 Why the entry is a zone, and what the midpoint is for",
         "11.1 How tonight's list is chosen",
         "13.6 How a candidate is judged",
         "13.7 What the judging can and cannot show",

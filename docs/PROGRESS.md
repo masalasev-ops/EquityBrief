@@ -20809,3 +20809,105 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    five sweeps whose results are not in the record and will not be, named above and named
             in the check. The phase 10 sign-off stays owed to a fresh session, and the handoff that
             was issued over the eight is to be re-issued against this entry rather than reused.
+### 10.0 document pass - the entry process worked end to end, the midpoint's use and its bias, and the evidence for staging   2026-09-23
+Not a checkpoint entry. It lands 10.0 and no checkpoint, because a document pass builds none of
+            the phase it belongs to. No behaviour changes and no store is touched.
+Why:        read end to end, sections 9, 10 and 11 left the entry looking like taking the middle of
+            a band and calling it the entry. The operator read the document and took the method for
+            a guess, and the document rather than the method was what was wrong. Three things the
+            system does were not in it: what the midpoint is for, what it is never used for, and
+            what published evidence there is for staging a purchase across tranches.
+Checked:    the code first, against every claim the new text makes, before any of it was written.
+            The merge distance is half a typical move and a band's edges are its lowest and highest
+            member; a tranche is a support band whose low edge is below the close and which
+            something other than a moving average anchors, nearest first and at most three, keeping
+            its whole width; the stop is the low edge of the band beneath; risk is taken at the
+            first tranche's midpoint and the target is the first traded exit, which on the worked
+            example gives 65 against 137 and a break-even of about 32%; a setup is scored from the
+            close of the session it was listed on, admitted only inside the plan's own range, and
+            its stored break-even is measured from that close. The code was right in every case and
+            needed no change. `ForwardReturnSeries` has said in its own comment since the entry rule
+            landed that the plan's break-even and the stored one are different numbers about
+            different entries, and the document had not said it anywhere.
+Built:      one new subsection, 10.2, appended at the next free number so no heading moved, which
+            walks the chain from sixty sessions of bars to the at-entry-zone test on the worked
+            example's own numbers, says what the midpoint is and why it is the only price in a band
+            that is not a choice, says that no record is ever scored from it, gives the evidence for
+            staging with its scope stated, and names the direction of the bias the midpoint carries.
+            One figure, 10.2, a price axis in the drawn figures' own style, showing the four kinds of
+            candidate merging into one band, the close inside it, the midpoint labelled as the
+            arithmetic's price and not a measured fill, the stop, the listed exit and the first
+            traded one.
+Corrected:  three sentences, each a clean edit with its prior text in `CHANGELOG.md`. 8.1 measured
+            the skipped exit from "the entry" where the code measures it from the blended entry of
+            the first two tranches, which on the worked example is a different price and a different
+            answer. 8.1 named the first tranche's zone as the one the entry-zone test reads, where
+            the condition reads any tranche zone. And 13.1 stated the worked example's 32% and then
+            asked whether setups beat "the setups' own break-even", which is one figure doing the
+            work of two; it now says what the record is scored against, and a new paragraph says
+            what the midpoint is and is not.
+Read:       four sources, each fetched by this session and marked in section 23 by how much of it
+            was actually read rather than by what was expected of it. Brennan, Li and Torous (2005)
+            read in full, 36 pages: staging dominates buying outright for an investor already
+            holding the market portfolio who adds one stock, for execution periods to 48 months, by
+            5% to 134% at 36 months, narrowing to about 3% to 6% on an optimally levered value
+            weighted portfolio and disappearing or reversing on an equal weighted one, with only
+            mixed support for buying a diversified portfolio because a rebalanced half in cash beats
+            both. Park and Irwin (2007) abstract only, and the abstract carries the figures the rule
+            rests on: 95 modern studies, 56 positive, 20 negative, 19 mixed, most carrying data
+            snooping, rules selected after the fact and weak treatment of risk and costs.
+            Constantinides (1979) secondary, the publisher serving nothing past the opening
+            paragraph. Linnainmaa (2010) secondary, the publisher serving nothing at all. The two
+            marked secondary are marked so rather than dressed as read, and each rule resting on one
+            says only what a secondary reading supports.
+Rules:      every paragraph of the new subsection carries one mark and the subsection joins
+            `research-marked`'s population, so a rule cannot be stated there without its evidence
+            and cannot leave the population by losing its attribute. One open question is added, the
+            standing of levels, because none of the nine standing fitted and a Not settled by
+            research mark that links nothing is refused. It is the premise the bands, the tranches
+            and the six reasons all rest on, and the corpus did not say it was open.
+Expected:   derived, and a derivation rather than a file: no stage's output over the fixture moves,
+            because no behaviour changes. What is added is read off the document by the checks that
+            already run over it, and the merge distance's restatement count in `pinned-constants`
+            moves with the sentence that restates it.
+Tests:      1222, unchanged. No test added and none needed: the subsection joins a population an
+            existing check reads, and the figure joins a placement an existing check reconciles. No
+            migration, and no pin moves. The count is 1222 rather than the 1218 this pass was first
+            run at, because the 10.5 correction above landed first and added four, and this pass was
+            rebased onto it and run again over the tree that is merged.
+Claims:     406, unchanged. The figure is placed as making no claims, so what moves is the table
+            count, from 35 to 36.
+Mutated:    the rule, stated before the run: break the property this pass carries into shipped
+            source, which is that a subsection phase 10 adds is read by `research-marked` and a rule
+            in it cannot leave that population by losing its attribute. Not mutated: the figure's
+            placement, because the reconciliation that refuses an unplaced figure was mutated at the
+            5.0 correction this pass sits on top of, and refusing a second time proves nothing new.
+            Predicted:
+            M1 the attribute taken off the subsection's last paragraph, the one carrying the bias:
+            red in `EveryParagraphOfAPhaseTenSubsectionIsARule` naming 10.2, and green everywhere
+            else, because the links that paragraph carries are still in the document for the
+            citation test to find and the rules floor is still met without it.
+            M2 the subsection taken out of `ResearchMarked.Subsections` with the document left
+            alone: green, every test. It is stated in advance as a mutation expected to survive,
+            because the two assertions guard different things: the rules test reads paragraphs by
+            their attribute and finds them whatever the list says, and the list is what makes a
+            paragraph that lost its attribute a failure rather than a paragraph nobody reads. M1 is
+            the case the list exists for, and M2 alone cannot reach it.
+            Results: two runs of the whole suite in a detached worktree at 5f589dc, never a filter,
+            each mutation reverted with `git checkout` and the tree read clean after both. The
+            baseline is 1222 of 1222. M1 turned exactly 1 red, which is
+            `EveryParagraphOfAPhaseTenSubsectionIsARule` naming 10.2, 1221 green. M2 turned none,
+            1222 green. Both were run once before the rebase and once after it, over the tree that
+            is merged, and gave the same answer both times.
+Held:       both predictions, exactly as written before the run, including the one that said a
+            mutation would survive and why.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1222 of 1222
+            tests ran with none failed, migrations 0 to 32 with none added and none pending, schema
+            version 32, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green
+            at 36 tables, 406 claims, 406 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 413 placements
+            and verdicts reconciled against a floor of 34, 41 of 41 roster checks carried and all 41
+            run, 1222 of 1222 tests. Both gates ran over the tree carrying this entry, and the
+            operator's store under `data/` was not touched by either.
+Carried:    nothing new, and the standing of levels is a question rather than an obligation: no
+            checkpoint answers it and the candidates' own records are what will. The phase 10
+            sign-off stays owed to a fresh session.

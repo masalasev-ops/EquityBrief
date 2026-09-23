@@ -6357,3 +6357,32 @@ Was:
 Now: the same row, carrying the three assertions the check gains: that no two entries record the same sweep result, that no entry states a sweep baseline its own run disagrees with, and that a result left unwritten stands only in the newest entry or in the ones the check names.
 
 Why: the roster is what says which properties run, so a check that grows three assertions while its row does not is three properties nobody wrote down. They exist because an entry's result can name another tree's run and still read, from inside that entry, exactly like its own, which is what a fill aimed at one entry and matching every entry leaves behind.
+### 2026-09-23 - ARCHITECTURE.html - the worked example's skipped exit, measured from the price the code measures it from
+Corrects: 8.1's sentence on the band at 996, which named the entry as what the skip is measured from.
+
+Was:
+> Exits scale out from 1057 upward, and the band at 996 is listed but not traded because it is closer than two typical days' moves to the entry.
+
+Now: the same sentence, with the skip measured from the blended entry, which is the mean of the first two tranche zones' midpoints, and a clause saying that is the price the position is carried at once the plan has staged what it can.
+
+Why: "the entry" reads as the first tranche's own price, and the code measures the skip from the blended entry of the first two, which is what section 17's row already names. On the worked example the two give different answers, so a reader checking 996 against the first tranche's midpoint at 920 would find the band 76 points away against a bar of about 112 and conclude the document and the plan disagree. They do not; the sentence was naming the wrong price.
+
+### 2026-09-23 - ARCHITECTURE.html - the entry-zone test reads a tranche zone, not the first
+Corrects: 8.1's sentence on the at entry zone reason, which named the first tranche's zone as the one tested.
+
+Was:
+> With the close at 933, the price is inside the first tranche zone, so the reason named at entry zone fires.
+
+Now: the same sentence, saying the close is inside a tranche zone and that here it is the first.
+
+Why: the condition tests the close against every tranche zone the plan carries and fires on the first that holds it, inclusive at both edges. On the worked example that is the first tranche, so the sentence was right about this name and wrong about the rule, which is the kind of sentence a later reader generalises from.
+
+### 2026-09-23 - ARCHITECTURE.html - the bar a record is judged against, which is not the plan's own
+Corrects: 13.1, which stated the worked example's break-even of about 32% and then asked whether setups beat "the setups' own break-even", leaving one figure doing the work of two.
+
+Was:
+> So the question asked of every condition is: across all the setups it produced, did the target come before the stop more often than the setups' own break-even required.
+
+Now: the same question, asked against the mean of the break-evens stored with the setups, preceded by a new paragraph saying that the 920 is the entry zone's midpoint, that it is where the plan's figures are computed and never where a record is scored, that a setup is scored from the close of the session it was listed on and admitted only inside the plan's own range, and that the two break-evens are different numbers about different entries.
+
+Why: the section put a planned figure and a measured one in consecutive sentences with nothing between them, and a reader ends it believing the record is scored against 32%. It is not: `break_even` is stored per setup from the close that setup was entered at, and the bar a condition's record is judged against is the mean of those. The code has said so in its own comment since the entry rule landed, and the document had not. This is the sentence that made the method read as taking the middle of a band and calling it the entry.
