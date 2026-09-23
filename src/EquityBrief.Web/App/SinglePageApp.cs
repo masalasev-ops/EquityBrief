@@ -1172,7 +1172,7 @@ public sealed class SinglePageApp : IComponent
                 "Each reason has its own column, always in the same place, so a night that is all one thing shows as one dark stripe running down one column. The one-word heads are short for at entry zone, crossed a level, breakout on volume, trend state changed, unusual volume and earnings soon; point at a head for its full name, and at a reason for the values that made it true and its record. The distance picture fixes the close at its centre line: the green block to its left is the nearest support and the orange block to its right the nearest resistance, one tick per typical day, so a block touching the centre is a name at an edge. The last line of each column is that reason's record across every name it has fired for, and a dashed one is not yet measured. Select a row to draw its plan just below the list; report opens the name's full page.",
                 "Every name here has reached a price its own chart made significant, and the reason says what kind of arrival it was. The distance picture counts in days of the stock's own ordinary movement, so a block one tick from the centre is a distance the price often covers in a single session."),
             title: "Names that fired tonight",
-            lede: "Each one has reached a price its own chart made significant. Most reasons first, then the strongest band; twenty drawn.",
+            lede: "Each one has reached a price its own chart made significant. Most reasons first, then the strongest band.",
             stamp: Cards.Night(night),
             region: "list"));
 

@@ -179,6 +179,8 @@ public partial class ReadSurface
             CheckReach.Key("15.10 Run", "Tonight's order, the blocks holding one against the floor"),
             CheckReach.Key("15.10 Run", "Tonight's order, no comparison drawn before every order reaches it"),
             CheckReach.Key("15.7 Tonight", "The list, at most twenty drawn"),
+            CheckReach.Key("15.7 Tonight", "The list, each numbered by its place in that order"),
+            CheckReach.Key("15.7 Tonight", "The list, a line above them stating how many are drawn of how many fired"),
             CheckReach.Key("15.7 Tonight", "The list, name"),
             CheckReach.Key("15.7 Tonight", "The list, close"),
             CheckReach.Key("15.7 Tonight", "The list, the reasons"),

@@ -191,6 +191,9 @@ span[data-last-asked-at]::before{content:none}
 .list-table td.c-nm .co{display:block;font-size:12.5px;line-height:1.25;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .list-table a.open{font-size:11px;color:var(--soft);margin-left:4px}
 .list-table td.trend-state{font-size:12.5px;color:var(--ink-2)}
+.list-table th.place,.list-table td.place{width:1%;padding-right:12px;text-align:right;color:var(--soft);white-space:nowrap}
+.list-table td.place{font-size:12.5px}
+.list-count{margin:0 0 10px;font-size:13.5px;color:var(--ink-2)}
 /* a reason on tonight's list: the word, and a panel saying what the night measured it over.
    It is shown while the reason is under the pointer and goes as the pointer leaves, and it is
    shown to a keyboard on focus, which is `focus-visible` rather than `focus` so that a click
@@ -218,7 +221,7 @@ span[data-last-asked-at]::before{content:none}
 .why-it-is-here .reason::first-letter{text-transform:uppercase}
 .why-it-is-here .values{display:block;font-size:12.5px;color:var(--soft);margin-top:2px}
 .why-it-is-here .reason .reason-name{font-weight:700}
-.more,.oneline{margin:14px 0 0;font-size:13.5px;color:var(--ink-2);max-width:70ch}
+.oneline{margin:14px 0 0;font-size:13.5px;color:var(--ink-2);max-width:70ch}
 .watch-list .watched{display:inline-block;margin:4px 8px 0 0}
 .selwrap{display:grid;grid-template-columns:minmax(0,390px) minmax(0,1fr);gap:24px;align-items:start}
 .sel-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}

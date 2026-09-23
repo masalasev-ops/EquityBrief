@@ -21695,3 +21695,102 @@ Carried:    nothing. No pinned source moves: the stylesheet and the read surface
             rule version's pin and no evaluator's. The same reading's other two points, the
             universe's count and tonight's list drawn unnumbered, land as a 5.8 correction after
             this one.
+### 5.8 - correction: tonight's list numbered no row and said how many it drew only beneath them, and the universe's paging wrote its page count and its name count as one figure   2026-09-23
+Corrects:   5.8, the checkpoint that states the screens' parts, in three places. The universe's
+            paging, written at 5.8 (7a4ef2e), said "page 1 of 11, 503 name(s)": the page count and
+            the name count stood either side of a comma, which reads as one number, eleven
+            thousand five hundred and three. Tonight's list, drawn to the approved design at the
+            5.8 correction of 2026-09-19 (eb03933), numbered no row, and its card's lede said
+            "twenty drawn" whatever the list drew. The one line stating how many it drew, which
+            5.4 (cf3b792) wrote, stood beneath the twentieth row and only on a night more than
+            twenty fired.
+Why it is   a reader of the universe page was told the index holds eleven thousand names, and a
+worse:      reader of tonight's list could not say how many rows it showed or which of them they
+            were on without counting, on the one screen that exists to be read in order.
+Found:      by the operator on 2026-09-23, reading the live screens: the universe seemed to hold
+            11,503 names, the list should be numbered, and there was no telling how many names it
+            showed.
+Repaired:   - The paging states the count first, beside its own word, and the page after it:
+              "503 names, page 1 of 11", and "1 name" for one.
+            - Each row of tonight's list opens with its place in the order the rows are drawn in,
+              counted from one, under a head of its own.
+            - A line above the rows states how many are drawn of how many fired: "Showing 20 of
+              the 358 names that fired", with the link to the universe page the line beneath the
+              rows carried, or "Showing all 7 names that fired", or "Showing the one name that
+              fired". The line beneath the rows is gone, its words moved above them, and the lede
+              no longer says twenty.
+            - The footer's label spans the seven columns before the first reason, so each
+              reason's record still stands under its own column.
+            - Section 15.7's list row names the two new parts, and the note beneath its table says
+              why, citing the decision behind the count (see: The page shows twenty and states the
+              true count).
+This        that the label is 5.8, as the operator's earlier corrections to the screens were: the
+session     paging was written at 5.8 and the list's table and lede at a 5.8 correction, and the
+decided:    line beneath the rows, which 5.4 wrote, moves above them with its words.
+            That the count stands above the rows in the list's own markup rather than in the
+            card's lede, so the renderer holding both counts states them and one fragment carries
+            what a test reads.
+            That the count is written without a thousands separator, which the paging's matcher
+            would refuse as it refuses the old line. The index holds about 500 names.
+Guarded:    `read-surface`, two tests added:
+            - `TheListNumbersItsRowsInItsOrderUnderALineStatingHowManyAreDrawnOfHowManyFired`, over
+              constructed nights of 40, 20, 7 and 1 fired names and one of none. The line stands
+              above the table and says what each night's counts make it say, naming the universe
+              page only where the rows leave a name out. Each drawn row opens with its place, 1 to
+              the drawn count in the order drawn, the cell's figure being its attribute's. The
+              place has the first head, and the footer's label spans every head before the first
+              reason's. A night of none draws no line and says none fired.
+            - `TheUniversesPagingStatesItsCountApartFromItsPage`, over 503, 1, 0, 7 and 1000 rows,
+              first, last and middle pages among them: the count, then the page, each beside its
+              word, and no figure following another across a comma or a space alone, with the
+              matcher shown to find the old line and to pass the new.
+            The architecture's list row gains two parts, each with a verdict of its own and a due
+            point at 5.8. `EveryDecomposedElementIsNamedByTheRowItDecomposes` counts 154 elements,
+            from 152, `EveryScreenRowHasItsOwnDuePointAndNoneIsWrittenForARowThatIsGone` counts 158
+            screen parts, from 156, and `ThePairEightZeroPredictedIsCheckedAgainstTheActual` names
+            both among the claims added after the prediction. The roster's `read-surface` row names
+            both properties.
+Expected:   derived, and no expectation file moves: the tests read the markup the renderer draws
+            over constructed rows, and no stage's output changes.
+Tests:      1242, from 1240. Two added to `read-surface`, none removed. Migrations 0 to 33 with
+            none added and none pending, schema version 33.
+Claims:     409, from 407, all passing, 416 placements and verdicts reconciled against a floor of
+            34. Two added, the list row's two new parts.
+Mutated:    the rule, stated before the run: put each of the three faults back, and move the one
+            figure numbering the rows moves as well.
+            Predicted:
+            M1 the paging's words back to "page {at} of {pages}, {rows} name(s)". Red in
+            `TheUniversesPagingStatesItsCountApartFromItsPage` and nowhere else; the older paging
+            test reads "page 2 of" and stays green.
+            M2 each row's place counted from nought. Red in
+            `TheListNumbersItsRowsInItsOrderUnderALineStatingHowManyAreDrawnOfHowManyFired` and
+            nowhere else.
+            M3 the line stating the counts drawn beneath the table rather than above it. Red in
+            the same test and nowhere else; the older test reading the undrawn count over a night
+            of forty reads it wherever it stands.
+            M4 the footer's label spanning six columns again. Red in the same test and nowhere
+            else.
+            Not mutated: the line's words for each night and where it names the universe page,
+            asserted beside M3's position in the same loop.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            e2088f6, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1242 of 1242. M1 turned 1 red and 1241 green:
+            `TheUniversesPagingStatesItsCountApartFromItsPage`, whose words differed, with the older
+            paging test green. M2 turned 1 red and 1241 green:
+            `TheListNumbersItsRowsInItsOrderUnderALineStatingHowManyAreDrawnOfHowManyFired`, whose
+            places began at nought. M3 turned 1 red and 1241 green: the same test, the night of
+            forty stating its count below the rows, with the older test reading the undrawn count
+            green. M4 turned 1 red and 1241 green: the same test, the footer spanning 6 columns
+            against the 7 before the first reason.
+Held:       the prediction in all four runs, in the test each named and in its number, and the two
+            older tests it said would stay green did.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1242 of 1242
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 409 claims, 409 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 416 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1242 of 1242 tests.
+            Both gates ran over the tree carrying this entry, e2088f6, and the operator's store
+            under `data/` was not touched by either.
+Carried:    nothing. No pinned source moves: the renderer, the shell, the stylesheet and the
+            harness are in no rule version's pin and no evaluator's.

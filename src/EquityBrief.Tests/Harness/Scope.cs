@@ -158,6 +158,14 @@ internal static class Scope
             Verdict.Pass,
             "twenty at most are drawn and the undrawn count is stated beside them",
             ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, each numbered by its place in that order")] = new Scoped(
+            Verdict.Pass,
+            "each drawn row opens with its place in the order the rows are drawn in, counted from one, over nights of forty, twenty, seven and one, with the footer's label spanning every column before the first reason",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, a line above them stating how many are drawn of how many fired")] = new Scoped(
+            Verdict.Pass,
+            "the line stands above the rows and states the drawn count against the fired count, naming the universe page where the rows leave a name out, over nights of forty, twenty, seven and one",
+            ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "The list, name")] = new Scoped(
             Verdict.Pass,
             "the name cell carries the ticker the row is about",
@@ -1982,6 +1990,9 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "The list, ordered by how many fired then by the plan's reward to risk")] = "10.1",
         [CheckReach.Key("15.7 Tonight", "The list, the reward to risk or the plan's reason for none")] = "10.1",
         [CheckReach.Key("15.7 Tonight", "The list, at most twenty drawn")] = "5.4",
+        // Two parts a 5.8 correction adds, at the checkpoint that states the screens' parts.
+        [CheckReach.Key("15.7 Tonight", "The list, each numbered by its place in that order")] = "5.8",
+        [CheckReach.Key("15.7 Tonight", "The list, a line above them stating how many are drawn of how many fired")] = "5.8",
         [CheckReach.Key("15.7 Tonight", "The list, name")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "The list, close")] = "5.4",
         [CheckReach.Key("15.7 Tonight", "The list, day change")] = "5.8",
@@ -2209,7 +2220,7 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Night header")] =
             ["names in the index", "names that fired", "reports carrying fresh prose against reused", "spend", "run duration", "the harness verdict"],
         [CheckReach.Key("15.7 Tonight", "The list")] =
-            ["one row per name that fired", "ordered by how many fired then by the plan's reward to risk", "at most twenty drawn", "name", "close", "day change", "trend state in a word", "the distance row mark", "the reward to risk or the plan's reason for none", "the reasons", "beside the name a line saying so where its prices may not reflect a dividend or split"],
+            ["one row per name that fired", "ordered by how many fired then by the plan's reward to risk", "at most twenty drawn", "each numbered by its place in that order", "a line above them stating how many are drawn of how many fired", "name", "close", "day change", "trend state in a word", "the distance row mark", "the reward to risk or the plan's reason for none", "the reasons", "beside the name a line saying so where its prices may not reflect a dividend or split"],
         [CheckReach.Key("15.7 Tonight", "Selected name")] =
             ["the plan column", "the level summary", "whichever row is selected"],
         [CheckReach.Key("15.8 Universe", "Sector strip")] =

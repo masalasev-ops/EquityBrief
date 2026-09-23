@@ -6489,3 +6489,25 @@ Was:
 Now: the same row, adding that the two small controls are drawn by the rules written for them, found the way a browser finds them from every rule the stylesheet states: the one asking stands off the label beside it, and every property a rule written for buttons states reaches each control's button from the control's own rule, read over the button and every element holding it in the markup each screen draws, with the reader shown to give each property to the rule that wins it.
 
 Why: the rule written for the two controls was beaten from the day it was written by the rule every posted form's button takes, stated after it at the same specificity, so both were drawn 44 pixels tall in the accent's fill. The one test reading the cascade read the asking control's margin and no property of its button.
+
+### 2026-09-23 - ARCHITECTURE.html - tonight's list numbers its rows and says above them how many it draws
+Corrects: section 15.7's list row, which named no place on a row and no statement of how many rows are drawn, and the note beneath its table, which said nothing of either.
+
+Was:
+> <tr><td>The list</td><td>one row per name that fired, ordered by how many fired then by the plan's reward to risk, at most twenty drawn. Each row:
+
+> and a row with none is drawn after every row with one and says why). Selecting a row draws its plan
+
+Now: the row reads "at most twenty drawn, each numbered by its place in that order, and a line above them stating how many are drawn of how many fired", and the note says each row carries its place in that order, counted from one, and a line above the rows says how many are drawn of how many fired, so the list says how long it is before a row of it is read (see: The page shows twenty and states the true count).
+
+Why: the operator could not tell how many names the list showed. The page stated the count once, beneath the twentieth row and only on a night more than twenty fired, and the card's lede said twenty whatever the list drew.
+
+### 2026-09-23 - .claude/rules/checks.md - read-surface names the list's numbered rows and its count, and the paging's count apart from its page
+Corrects: the `read-surface` row, which named neither.
+
+Was:
+> with the reader shown to give each property to the rule that wins it |
+
+Now: the same row, adding that tonight's list numbers its rows in the order they are drawn, from one, under a line above them stating how many it draws of how many fired, the footer's label spanning every column before the first reason, and that the universe's paging states its count beside its own word and its page after it, no figure following another across a comma or a space alone.
+
+Why: the paging's words read as one number, eleven thousand five hundred and three, and nothing read them, and the list drew no place on a row and nothing asserted one.

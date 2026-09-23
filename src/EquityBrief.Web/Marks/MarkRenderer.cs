@@ -1951,8 +1951,11 @@ public sealed class MarkRenderer : IComponent
     // Tonight's list, section 15.7's third region.
     //
     // One row per name that fired, in the order the rows arrive in, at most
-    // twenty drawn. The true count is in the header rather than here, because a
-    // page that shows twenty every night cannot tell you how busy the night was.
+    // twenty drawn, each numbered by its place in that order. The true count is
+    // the header's headline, because a page that shows twenty every night cannot
+    // tell you how busy the night was, and the line above the rows states it again
+    // beside how many are drawn, because a list that does not say how long it is
+    // cannot tell a reader which of its rows they are on.
     // see: The page shows twenty and states the true count
     public string TonightList(
         IReadOnlyList<ListingCell> rows,
@@ -1981,8 +1984,18 @@ public sealed class MarkRenderer : IComponent
 
         var byReason = records?.ToDictionary(record => record.Reason, StringComparer.Ordinal);
 
+        // How many rows the list draws of how many fired, above the rows it counts, and where
+        // the rows leave a name out, where every name is.
+        list.Append(Invariant, $"<p class=\"list-count\" data-drawn=\"{shown.Length}\" data-undrawn=\"{rows.Count - shown.Length}\">");
+        list.Append(rows.Count > shown.Length
+            ? Formatted($"Showing {shown.Length} of the {rows.Count} names that fired. <a href=\"#/universe\">See every name on the universe page</a>")
+            : rows.Count == 1
+                ? "Showing the one name that fired."
+                : Formatted($"Showing all {rows.Count} names that fired."));
+        list.Append("</p>");
+
         list.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table\" data-rows=\"{shown.Length}\">");
-        list.Append("<thead><tr><th>Name</th><th class=\"r\">Close</th><th class=\"r\">Day</th><th>Trend</th><th class=\"c\">Distance to levels</th><th class=\"r\">Reward to risk</th>");
+        list.Append("<thead><tr><th class=\"place\">#</th><th>Name</th><th class=\"r\">Close</th><th class=\"r\">Day</th><th>Trend</th><th class=\"c\">Distance to levels</th><th class=\"r\">Reward to risk</th>");
 
         foreach (var column in columns)
         {
@@ -1991,10 +2004,13 @@ public sealed class MarkRenderer : IComponent
 
         list.Append("</tr></thead><tbody>");
 
-        foreach (var row in shown)
+        foreach (var (row, place) in shown.Select((row, at) => (row, at + 1)))
         {
             list.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-fired-count=\"{row.FiredCount}\" data-strength=\"{row.Strength}\" ");
             list.Append(Invariant, $"data-day-change=\"{Change(row.DayChangePct)}\" data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\">");
+
+            // The row's place in the order the rows are drawn in, counted from one.
+            list.Append(Invariant, $"<td class=\"place\" data-place=\"{place}\">{place}</td>");
 
             // The name, and the name is the link that selects this row. Section
             // 15.7's selected-name region is for whichever row is selected, and
@@ -2083,7 +2099,7 @@ public sealed class MarkRenderer : IComponent
         // see: A reason's record is displayed, beside the reason and never beside the name
         if (byReason is not null)
         {
-            list.Append("<tfoot><tr><td colspan=\"6\" class=\"rec-lab\">Each reason's record across every name it has fired for. ");
+            list.Append("<tfoot><tr><td colspan=\"7\" class=\"rec-lab\">Each reason's record across every name it has fired for. ");
             list.Append("Solid: the share that reached target before stop, of how many resolved, against the break-even they needed. ");
             list.Append("Dashed: not enough setups have finished to say anything yet, shown as how many have finished against the number needed.</td>");
 
@@ -2107,14 +2123,6 @@ public sealed class MarkRenderer : IComponent
         }
 
         list.Append("</table></div>");
-
-        // What the drawn rows leave out, stated rather than left to arithmetic
-        // a reader would have to do.
-        if (rows.Count > shown.Length)
-        {
-            list.Append(Invariant, $"<p class=\"more\" data-undrawn=\"{rows.Count - shown.Length}\">{rows.Count} name(s) fired and {shown.Length} are drawn. <a href=\"#/universe\">See every name on the universe page</a></p>");
-        }
-
         list.Append("</section>");
 
         return list.ToString();
@@ -3898,7 +3906,9 @@ public sealed class MarkRenderer : IComponent
     //
     // It states which page of how many over how many rows. A nav that drew only
     // arrows says nothing about where a reader is or how much is left, which on
-    // five hundred rows is the only question paging raises.
+    // five hundred rows is the only question paging raises. The count comes first,
+    // beside its own word, and the page after it, so no figure follows another
+    // across a comma, which a reader takes for one number with its thousands set off.
     public string UniversePaging(int rows, int page, int pageSize, string? trend, string? sector)
     {
         var pages = Math.Max(1, (rows + pageSize - 1) / pageSize);
@@ -3916,7 +3926,7 @@ public sealed class MarkRenderer : IComponent
             ? Link(at - 1, "previous", "prev")
             : "<span class=\"page degraded\" data-page=\"none\" rel=\"prev\">previous</span>");
 
-        nav.Append(Invariant, $"<span class=\"page-of\">page {at} of {pages}, {rows} name(s)</span>");
+        nav.Append(Invariant, $"<span class=\"page-of\">{rows} {(rows == 1 ? "name" : "names")}, page {at} of {pages}</span>");
 
         nav.Append(at < pages
             ? Link(at + 1, "next", "next")
