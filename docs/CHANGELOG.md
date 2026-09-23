@@ -6555,3 +6555,11 @@ Was:
 Now: the same row, adding that every link the document draws reads in each of its palettes, every colour a rule for links states at a contrast of at least 4.5 to 1 against every ground the document sets text on, the machine's own dark palette among them, with the reader shown to find no colour where no rule is for links and the contrast shown to be WCAG's own.
 
 Why: the links 10.0 added were drawn in the browser's own colours, which the dark palette holds at under 2 to 1, and no check read a link's colour.
+
+### 2026-09-23 - BUILD_PLAN.md - the night's request paragraph states the operator's ruling on the hard rule's carve-outs
+Authorised by: The night asks for a report on the first name of its list
+Was:
+> It is still one paid pass a night set off by the nightly job, so whether the hard rule's carve-outs name it, as one name a night that does not grow with the index, is the operator's to rule on before 11.4 builds it.
+Now:
+> It is still one paid pass a night set off by the nightly job, and the operator ruled on 2026-09-23, in their words "Yes the nightly run will generate paid research for top 1 name", that the hard rule's carve-outs name it, a third beside the new member's backfill and the corporate action refetch, as one name a night that does not grow with the index. 11.4 writes it into the hard rule with the code that makes the request.
+Why: the plan left the question to the operator before 11.4, and they answered it on the evening the plan merged. The hard rule itself is edited at 11.4, with the code, so that it never names a carve-out nothing makes.

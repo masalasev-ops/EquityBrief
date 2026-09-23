@@ -22049,3 +22049,18 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             under `data/` was not touched by either.
 Carried:    the operator's ruling on the hard rule's carve-outs, owed before 11.4, and the document
             pass at 11.0, owed before 11.1.
+### 11.0 ruling - the night's one request is named among the hard rule's carve-outs   2026-09-23
+Not a checkpoint entry. It lands nothing. It records the operator's answer to the one question
+            the phase 11 plan left for them, owed before 11.4.
+Asked:      whether the hard rule's carve-outs name the night's request, one paid pass a night set
+            off by the nightly job that does not grow with the index, which the plan's planning
+            entry carried as not settled.
+Ruled:      on 2026-09-23, in their words, "Yes the nightly run will generate paid research for top
+            1 name". The carve-outs name it as a third, beside the new member's backfill and the
+            corporate action refetch. 11.4 writes it into the hard rule with the code that makes the
+            request, because a rule naming a carve-out nothing makes would describe a mechanism
+            nothing has built, and the plan's paragraph on the night's request states the ruling
+            now, its prior text in `CHANGELOG.md`.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green over the tree carrying
+            this entry and the document pass after it, whose figures are the figures of both runs.
+Carried:    nothing. The hard rule's text is 11.4's, and 11.4's done condition already names it.
