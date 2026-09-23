@@ -22170,8 +22170,13 @@ Expected:   derived by hand, the peak windows' edges from the prices the configu
             03:59:59 waits until 04:00, at 06:00:00, 09:59:59 or 06:30 on a Friday until 10:00. A
             drain started at 00:40 whose first pass takes half an hour reaches 01:10 and waits until
             04:00 before its second. No stage's output over the fixture moves.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. None added: the rows this checkpoint rewrites were claims already.
+Tests:      1261, from 1244: five facts and one theory of eleven cases added under
+            `read-surface`, 9.2's press test renamed for the drain it now asserts, and its scan
+            that no shipped file starts a process replaced by the one that exactly one does.
+            Migrations 0 to 33 with none added and none pending, schema version 33.
+Claims:     413, unchanged, with 409 PASS and 4 out of scope, and 416 placements and verdicts
+            reconciled against a floor of 34. None added: the rows this checkpoint rewrites were
+            claims already.
 Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that a
             press writing a request starts one drain, that the drain starts from a copy and never
             from the build, that a drain waits out a peak window, and that one with nothing
@@ -22194,9 +22199,29 @@ Mutated:    the rule, stated before the run: break each property this checkpoint
             M4 the drain's check for an empty queue removed, so it waits before it looks: red in
             `ADrainWithNothingOutstandingEndsWithoutWaitingEvenInsideAPeakWindow`, green everywhere
             else, since a drain that has run its last pass off-peak finds nothing to claim and ends.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: whole-suite runs in a detached worktree at 85ffa45, never a filter, each
+            mutation reverted with `git reset --hard` and the tree read clean after each. The
+            baseline is 1261 of 1261. M1 turned 2 red, the two it named, 1259 green. M2 turned 1
+            red, `TheDrainIsStartedFromACopyOfTheWorkersBuildAndNeverFromTheBuildItself`, 1260
+            green. M3 as first written, the condition replaced by `false`, did not compile,
+            since the build refuses unreachable code, and a second form adding a test that the
+            wait was null did not compile either, since the build then refused the wait's call as
+            a dereference of a possibly null reference; neither ran a test. It was run a third
+            time as the peak check joined to a year before 1900, which the build cannot see
+            through and no instant here meets: 5 red of the theory's cases, the five inside a window, and `ADrainThatReachesAPeakWindowBetweenPassesWaitsThereBeforeTheNext`, 1255 green. M4 turned 1 red,
+            `ADrainWithNothingOutstandingEndsWithoutWaitingEvenInsideAPeakWindow`, 1260 green.
+Held:       M1, M2 and M4 exactly as written before the run. M3 held in what it named and
+            miscounted it: the theory holds five cases inside a window and not six, so its
+            prediction named one case more than the theory has, and the five it has all turned
+            red with the test of a window reached between passes. The two forms that did not
+            compile are recorded because a sweep reading only its red counts would have read
+            each as a mutation that turned everything green.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1261 of 1261
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 413 claims, 409 PASS, 0 FAIL, 4 out of
+            scope, 0 unexamined, 416 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1261 of 1261 tests.
+            Both gates ran over the tree carrying this entry, 85ffa45, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing new. 11.2 states on the queue page when each request will be written.
