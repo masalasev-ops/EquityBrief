@@ -19,6 +19,11 @@ public class ResearchMarked
     internal const string NotSettled = "<b>Not settled by research:</b>";
 
     // The subsections every paragraph of which is a phase 10 rule.
+    //
+    // Hand-kept and reconciled against the document in both directions below, because a list
+    // nothing reconciles can narrow its own scope: a subsection taken out of it with the document
+    // untouched left every test green, so a rule could stop being read with nothing failing. The
+    // 10.0 pass predicted that mutation would survive and it did.
     internal static readonly string[] Subsections =
     [
         "10.1 The trend rule's versions",
@@ -27,6 +32,10 @@ public class ResearchMarked
         "13.6 How a candidate is judged",
         "13.7 What the judging can and cannot show",
     ];
+
+    // One subsection of the architecture, with the paragraphs it holds and how many of them are
+    // marked as a phase 10 rule.
+    internal sealed record Marked(string Heading, int Rules, int Paragraphs);
 
     internal sealed record Finding(string Rule, string Fault);
 
@@ -40,7 +49,36 @@ public class ResearchMarked
 
         Assert.True(start >= 0, $"The architecture has no subsection '{heading}'.");
 
-        var end = Regex.Match(architecture[(start + 4)..], "<h[23]>").Index + start + 4;
+        return [.. ParagraphsFrom(architecture, start)];
+    }
+
+    // Every subsection the document holds, with its paragraph counts. Read from the document
+    // rather than from a list, because the list is what this is reconciled against.
+    internal static IReadOnlyList<Marked> Subsected(string architecture)
+    {
+        var read = new List<Marked>();
+
+        foreach (Match heading in Regex.Matches(architecture, @"<h3>(.*?)</h3>", RegexOptions.Singleline))
+        {
+            var paragraphs = ParagraphsFrom(architecture, heading.Index);
+
+            read.Add(new Marked(
+                heading.Groups[1].Value,
+                paragraphs.Count(paragraph => paragraph.StartsWith(@"<p data-phase=""10"">", StringComparison.Ordinal)),
+                paragraphs.Count));
+        }
+
+        return read;
+    }
+
+    // The paragraphs from a heading to the next heading of either level, or to the end of the
+    // document where it is the last one. The end is read off a match that returns zero when it
+    // finds nothing, so the last subsection in the document would otherwise read as empty.
+    static IReadOnlyList<string> ParagraphsFrom(string architecture, int start)
+    {
+        var after = start + 4;
+        var next = Regex.Match(architecture[after..], "<h[23]>");
+        var end = next.Success ? next.Index + after : architecture.Length;
 
         return [.. Regex.Matches(architecture[start..end], @"<p[ >].*?</p>", RegexOptions.Singleline).Select(match => match.Value)];
     }
@@ -142,6 +180,58 @@ public class ResearchMarked
             Assert.True(paragraphs.Count >= 1, $"'{heading}' holds no paragraph.");
             Assert.All(paragraphs, paragraph => Assert.StartsWith(@"<p data-phase=""10"">", paragraph, StringComparison.Ordinal));
         }
+    }
+
+    [Fact]
+    public void TheSubsectionListIsWhatTheDocumentSaysItIsInBothDirections()
+    {
+        var architecture = File.ReadAllText(Repository.Architecture);
+        var subsected = Subsected(architecture);
+
+        // Stated in advance. The count of subsections is context and carries a floor far below
+        // what the document holds; the two counts below carry the property and are stated exactly,
+        // because a reconciliation that found no fully marked subsection would pass an empty list.
+        Assert.True(subsected.Count >= 30, $"Read {subsected.Count} subsections, expected at least 30.");
+
+        var whole = subsected.Where(one => one.Paragraphs > 0 && one.Rules == one.Paragraphs).ToArray();
+        var partly = subsected.Where(one => one.Rules > 0 && one.Rules < one.Paragraphs).ToArray();
+
+        Assert.Equal(5, whole.Length);
+        Assert.True(partly.Length == 1, $"Read {partly.Length} partly marked subsection(s), expected exactly 1.");
+
+        // Both directions in one equality: a subsection every paragraph of which is a rule is in
+        // the list, and every entry in the list is such a subsection. A heading taken out of the
+        // list with the document untouched fails here, which is the mutation the 10.0 entry
+        // recorded as surviving.
+        Assert.Equal(
+            Subsections.OrderBy(heading => heading, StringComparer.Ordinal),
+            whole.Select(one => one.Heading).OrderBy(heading => heading, StringComparer.Ordinal));
+
+        // The one subsection that carries rules and is not all rules, named with its counts rather
+        // than left out by an absence. A section that stopped being partly marked, either by
+        // marking the rest or by losing the mark, changes the population this list is read over.
+        var run = Assert.Single(partly);
+
+        Assert.Equal(("15.10 Run", 1, 5), (run.Heading, run.Rules, run.Paragraphs));
+        Assert.DoesNotContain(run.Heading, Subsections);
+    }
+
+    [Fact]
+    public void TheReaderReadsASubsectionToTheNextHeadingAndTheLastOneToTheEnd()
+    {
+        // The permanent proof under the reader above, which is where its two cases are: a
+        // subsection ends at the next heading of either level, and the last subsection in a
+        // document has no heading after it and runs to the end.
+        const string document =
+            "<h2>1 A</h2><p>outside</p>" +
+            "<h3>1.1 B</h3><p data-phase=\"10\">one</p><p>two</p>" +
+            "<h3>1.2 C</h3><p data-phase=\"10\">one</p>" +
+            "<h2>2 D</h2><p>after</p>" +
+            "<h3>2.1 E</h3><p data-phase=\"10\">one</p><p data-phase=\"10\">two</p>";
+
+        Assert.Equal(
+            [("1.1 B", 1, 2), ("1.2 C", 1, 1), ("2.1 E", 2, 2)],
+            Subsected(document).Select(one => (one.Heading, one.Rules, one.Paragraphs)));
     }
 
     [Fact]
