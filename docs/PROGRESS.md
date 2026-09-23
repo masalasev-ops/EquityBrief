@@ -20713,9 +20713,9 @@ Guarded:    `architecture-conformance`, one test added,
 Expected:   derived, and a derivation rather than a file: no stage's output over the fixture moves,
             so no expectation file changes. What moves is the population a placement check reports
             over, and it is read off the document itself rather than off the reader's own output.
-Tests:      FILLED IN FROM THE RUN, from 1217. One added to `architecture-conformance`. No
-            migration. The ladder rules' code version pins none of the files edited, so it does not
-            move, and no evaluator's sources are touched, so no candidate's version moves either.
+Tests:      1218, from 1217. One added to `architecture-conformance`. No migration. The ladder
+            rules' code version pins none of the files edited, so it does not move, and no
+            evaluator's sources are touched, so no candidate's version moves either.
 Mutated:    the rule, stated before the run: break the property this correction adds, which is that
             the reader's population is every figure the document draws rather than the figures of
             one form. Not mutated: the placements themselves, because a placement that named the
@@ -20727,7 +20727,26 @@ Mutated:    the rule, stated before the run: break the property this correction 
             rule gives 8; red in the new test at the drawn-figure count, which would read 0 where
             the rule gives 4; and red in the placement reconciliation, which would find the four
             drawn figures expected and not found. Three tests, and every other test green.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, FILLED IN FROM THE RUN. `tools/verify-phase.ps1`
-            green, FILLED IN FROM THE RUN.
+            Results: one run of the whole suite in a detached worktree at 39245a2, never a filter,
+            the mutation reverted with `git checkout` and the tree read clean after. The baseline
+            is 1218 of 1218. M1 turned 19 red, 1199 green. All three named are among them:
+            `EveryFigureInTheDocumentIsPlaced` at the figure floor, reading 4 where the rule gives
+            8; the new test at the drawn-figure count, reading 0 where the rule gives 4; and the
+            placement reconciliation finding the four drawn figures expected and not found.
+Held:       the direction, not the count. The prediction named three tests and nineteen went red,
+            because the reconciliation's refusal is thrown where the report is built rather than
+            returned to the one test that reads it, so every other test that builds a report fell
+            with it. The prediction is recorded as it was written before the run rather than
+            rewritten after it, and what it got wrong is the blast radius of a guard that throws:
+            a prediction naming tests has to ask what else calls the thing that refuses.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1218 of 1218
+            tests ran with none failed, migrations 0 to 32 with none added and none pending,
+            schema version 32, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1`
+            green at 35 tables, 406 claims, 406 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 413
+            placements and verdicts reconciled against a floor of 34, 41 of 41 roster checks
+            carried and all 41 run, 1218 of 1218 tests. The claim count does not move and the
+            reconciled count does not either: the drawn figures are placed as making no claims and
+            name no check, so what moves is the table count, by the four of them. Both gates ran
+            over the tree carrying this entry, and the operator's store under `data/` was not
+            touched by either.
 Carried:    nothing new. The phase 10 sign-off stays owed to a fresh session.
