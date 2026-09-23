@@ -21174,3 +21174,146 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             `data/` was not touched by either.
 Carried:    nothing new. The phase 10 sign-off stays owed to a fresh session, which is not this
             one.
+
+### 10.4 - correction: the window key carried a zero byte that took its file out of banned-prose, and the freeze's cap, its skip of a frozen block and its origin's in sample filter were asserted by nothing   2026-09-23
+Corrects:   the 10.4 correction of 2026-09-23 (a1f4006, PR 194). Four faults, none of them a wrong
+            figure on any surface today.
+            A. The window key in `RunScreen.TrendVersions` joined the version's name and the
+            instant with a literal zero byte, at byte 20078 of `RunScreen.cs`, line 412. The key
+            itself worked. But `banned-prose` left out of its scan every tracked file carrying a
+            zero byte, with a comment saying such files were counted separately, and nothing
+            counted them. Of the 500 files git tracks this was the only one carrying a zero byte,
+            and none did before a1f4006, so from that commit a shipped source file of 39,523 bytes
+            was outside every assertion the check makes while each of them passed. grep prints
+            "Binary file matches" for it and no line, and ripgrep stops at the byte, so a search of
+            the source never shows the line that carries the key. The skip is 0.7's (bac8ff5) and
+            was latent until a1f4006 gave it a file to skip.
+            B. `RuleVersionScorer.FreezeAsync` writes no block past the last look, by two guards on
+            the count of blocks a window holds. No test built a window past 16 blocks, so both
+            guards could be deleted with 1231 of 1232 tests green, the one red being the code
+            version pin that any edit to the scorer turns red. The reader does not cap:
+            `VersionRecord.For` caps the differences a verdict reads at 16 and sums the drawn block
+            count, both setup counts and the excess over every frozen row, so a seventeenth block
+            written would be drawn as 17 blocks and would move the running figure.
+            C. `FreezeAsync` skips a block the window already holds. With the skip removed the
+            write still keeps the frozen row, so no sum moves, but every block whose rows the store
+            still holds is counted again: the run log's "block(s) frozen" overstates, and a block
+            completing near the last look can be pushed past the cap for as long as those rows
+            remain. The one test that re-ran a night over frozen blocks deleted their rows first,
+            which is the one state in which the skip has nothing to skip.
+            D. The origin query leaves out an in sample score, so a backfill over nights before a
+            window opened cannot put block 0 behind the window. Nothing asserted it: the one in
+            sample row any test planted sat on block 0's own session.
+            E. SCHEMA said `version_block` was bounded by construction at 16 blocks for each of at
+            most 18 open windows, 288 rows. A closed window keeps its blocks and nothing removes
+            them, so the table holds 16 rows at most for every window ever opened, and the
+            fixture's `rowsAtTheCap` asserted the product of two constants rather than anything
+            the table does.
+Why it is   a check that narrows its own scope keeps passing, and this one narrowed without any
+worse:      line of it changing: the file left the scan because another file gained a byte. B, C
+            and D are properties the scorer states in its own comments and the correction named B
+            and D as the next sweep's to find, and a stated property nothing asserts is one a later
+            edit removes with the suite green.
+Found:      by the second phase 10 sign-off review of 2026-09-23, over 9df9392, which did not sign.
+            The session that ran it lands this correction and so cannot sign phase 10. B and D
+            survived a mutation there (M1, M3) and C survived one removing the skip alone (M7b); A
+            was shown with an em dash put in a comment of `RunScreen.cs`, which the whole suite
+            passed at 1232 of 1232 with the zero byte in place and turned
+            `NoFileCarriesAnEmDash` red with it replaced by a space.
+Repaired:   A. The key is a record of the two, `RunScreen.Window(string Version, DateTimeOffset
+            OpenedAt)`, compared as a value, so no separator is written at all. `banned-prose`
+            scans every tracked file but the captures whatever its bytes, and
+            `NoFileThisRepositoryWritesCarriesAZeroByte` refuses a zero byte in any of them, with
+            the reader shown over a planted file carrying one and a clean one.
+            B, C, D. Nothing in the scorer changes; each is asserted.
+            E. SCHEMA's sentence states the bound the table has: at most 16 blocks a window, at most
+            288 rows over the windows open at once, 16 rows at most for each window ever opened and
+            no bound over the open windows. The fixture's `rowsAtTheCap` becomes `rowsPerWindow`
+            at 16 and `rowsTheOpenWindowsHold` at 288, and its `derivedFrom` says the same.
+This        that A's key is a value rather than a string with another separator. Any printable
+session     separator would have worked, because the instant is a fixed-width suffix; a value key
+decided:    leaves no separator to choose.
+            That a window past 16 blocks is reached by frozen rows written directly. The closure
+            table's calendar runs to 2027-12-31, which holds ten whole blocks from the first
+            session these tests count from, so no store of nights can reach the cap. The cap reads
+            how many blocks a window holds and never which, so block 0 is frozen as a night
+            freezes it, fourteen copies of it are numbered 3 to 16, and blocks 1 and 2 are planted
+            whole: the night freezes 1 and stops at 2.
+            That a closed window's blocks stay. The table has no deleter by design; what was wrong
+            was the sentence, so the sentence is what changes.
+The pin     does not move. `RunScreen.cs`, the two test files, the fixture, SCHEMA, the rules
+holds:      file and CHANGELOG are none of them in `CodeVersionSources`, so the ladder rules' code
+            version stays f685dfe69d41 and no open window drifts.
+Guarded:    `banned-prose`, one test added: `NoFileThisRepositoryWritesCarriesAZeroByte`.
+            `trend-versions`, four added in `TrendVersions.Frozen.cs` and one renamed.
+            `NoBlockPastTheLastLookIsFrozenWhateverCompletesAfterIt`: a night reaching the last
+            look freezes up to it and stops, a later night over a whole block past it writes
+            nothing, and the record and the drawn region read 16 blocks, 32 live setups and 16 of
+            the version's.
+            `ANightOverBlocksAlreadyFrozenFreezesOnlyTheBlockThatHasJustCompleted`: 8 frozen, then
+            the ninth alone on the night it completes while the store still holds rows of blocks
+            already frozen, the 8 rows byte for byte as they were and the step's run log row ending
+            ", 1 block(s) frozen".
+            `AnInSampleScoreBeforeTheFirstScoredSessionIsNotTheOrigin`: an in sample score one
+            block before the window's scores, and the origin and the block numbers counted from
+            the first scored session.
+            `AClosedWindowKeepsItsBlocksSoTheTableGrowsWithEveryWindowEverOpened`: 8 blocks
+            under a window, the window closed and opened again under its name, 8 more, both sets
+            standing, and SCHEMA's paragraph naming the bound for each window ever opened.
+            `ABlockCompletesInsideTheRetentionWindowAndAWindowHoldsAtMostTheLastLooksBlocks`, from
+            `...AndTheTableItIsFrozenIntoIsBounded`, reads the two new expectation figures.
+Expected:   derived: `rowsPerWindow` at 16 and `rowsTheOpenWindowsHold` at 288 in
+            `trend-versions.json`, each worked from the last look and the windows the bound admits
+            at once rather than frozen from a run. No stage's output over the fixture moves.
+Tests:      1237, from 1232. Five added, `NoFileThisRepositoryWritesCarriesAZeroByte` in
+            `BannedProse.cs` and four in `TrendVersions.Frozen.cs`, one renamed and none removed.
+            Migrations 0 to 33 with none added and none pending, schema version 33. The ladder
+            rules' code version stays f685dfe69d41.
+Claims:     407, from 407, all passing, 414 placements and verdicts reconciled against a floor of
+            34. No claim added: no table or figure of the architecture moves.
+Mutated:    the rule, stated before the run: every mutation the second review found surviving is
+            run again over this tree, and one more puts A back. Each is a property this correction
+            asserts, and a surviving one would be this correction's own finding.
+            Predicted, every run of the scorer's mutations also turning
+            `TheLadderRulesCodeVersionIsThePinOfEverySourceTheLiveRulesAndTheirReplayRunThrough`
+            red, as any edit to a pinned source does:
+            M1 both of the cap's guards deleted. Red in
+            `NoBlockPastTheLastLookIsFrozenWhateverCompletesAfterIt` and nowhere else.
+            M3 the in sample filter taken off the origin query. Red in
+            `AnInSampleScoreBeforeTheFirstScoredSessionIsNotTheOrigin` and nowhere else.
+            M7b the skip of a held block deleted, the write's conflict clause left as it is. Red in
+            `ANightOverBlocksAlreadyFrozenFreezesOnlyTheBlockThatHasJustCompleted` and nowhere
+            else; the cap test holds, because the rows of its held blocks are gone by the night
+            it re-reads them.
+            M8 a zero byte written into a comment of `RunScreen.cs`. Red in
+            `NoFileThisRepositoryWritesCarriesAZeroByte` and nowhere else, and not the pin test,
+            since `RunScreen.cs` is not a pinned source.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            9ea47db, never a filter, each reverted with `git checkout` and the tree read clean
+            after. The baseline is 1237 of 1237. M1 turned 2 red and 1235 green:
+            `NoBlockPastTheLastLookIsFrozenWhateverCompletesAfterIt` and the code version pin. M3
+            turned 2 red and 1235 green: `AnInSampleScoreBeforeTheFirstScoredSessionIsNotTheOrigin`
+            and the pin. M7b turned 2 red and 1235 green:
+            `ANightOverBlocksAlreadyFrozenFreezesOnlyTheBlockThatHasJustCompleted` and the pin,
+            with `NoBlockPastTheLastLookIsFrozenWhateverCompletesAfterIt` green. M8 turned 1 red
+            and 1236 green: `NoFileThisRepositoryWritesCarriesAZeroByte`, and not the pin. M8's
+            byte sat inside the file's first 8,000 bytes, and git's diff counted no line for the
+            change, because git reads a file as binary by a zero byte in that span. The byte
+            a1f4006 wrote sat at 20078, past it, which is why that diff read as text with the byte
+            drawn as a space and nothing in review showed it.
+Held:       the prediction in all four runs, in the tests it named and in their number: each of
+            the three mutations the review found surviving is now red in the one test this
+            correction added for it and nowhere but the pin, and the zero byte is red in the one
+            test that refuses it. Nothing the prediction said would stay green went red.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1237 of 1237
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 407 claims, 407 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 414 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1237 of 1237 tests.
+            Both gates ran over the tree carrying this entry, and the operator's store under
+            `data/` was not touched by either.
+Carried:    nothing new. The fourth finding of the same review, that `component-access` never
+            reads a component's own queries against its declaration and that the ladder builder
+            has read `membership` undeclared since 4.1, lands as 4.1's own correction after this
+            one. The phase 10 sign-off stays owed to a fresh session, which is not this one.

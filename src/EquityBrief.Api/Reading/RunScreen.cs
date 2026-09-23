@@ -358,8 +358,8 @@ public static class RunScreen
         DateOnly night)
     {
         var byWindow = blocks
-            .GroupBy(row => Window(row.Version, row.OpenedAt), StringComparer.Ordinal)
-            .ToDictionary(group => group.Key, group => group.Select(row => row.Block).ToArray(), StringComparer.Ordinal);
+            .GroupBy(row => new Window(row.Version, row.OpenedAt))
+            .ToDictionary(group => group.Key, group => group.Select(row => row.Block).ToArray());
 
         var measured = new List<VersionMeasured>();
 
@@ -367,7 +367,7 @@ public static class RunScreen
             .Where(row => !string.Equals(row.Version, RuleVersions.Live, StringComparison.Ordinal))
             .Select(row =>
             {
-                var window = Window(row.Version, row.OpenedAt);
+                var window = new Window(row.Version, row.OpenedAt);
                 var mine = byWindow.GetValueOrDefault(window, []);
 
                 var record = mine.Length == 0
@@ -380,7 +380,7 @@ public static class RunScreen
                 }
 
                 var drawn = labels
-                    .Where(label => string.Equals(Window(label.Version, label.OpenedAt), window, StringComparison.Ordinal))
+                    .Where(label => new Window(label.Version, label.OpenedAt) == window)
                     .ToArray();
 
                 return new TrendVersionRow(
@@ -408,8 +408,7 @@ public static class RunScreen
     // One window's key, being the whole of the version's name and the whole of the instant its
     // window opened at. The name alone is the opening of the key and not the key, and a matcher
     // keyed on it answers about every window sharing it.
-    static string Window(string version, DateTimeOffset openedAt) =>
-        version + " " + RuleVersions.Stored(openedAt);
+    readonly record struct Window(string Version, DateTimeOffset OpenedAt);
 
     // The three orders of tonight's list over the nights whose listings record what each order
     // reads, up to the night shown: on each night the first rows each order would have drawn, the

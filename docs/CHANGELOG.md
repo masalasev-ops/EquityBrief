@@ -6426,3 +6426,33 @@ Was:
 Now: the same question, asked against the mean of the break-evens stored with the setups, preceded by a new paragraph saying that the 920 is the entry zone's midpoint, that it is where the plan's figures are computed and never where a record is scored, that a setup is scored from the close of the session it was listed on and admitted only inside the plan's own range, and that the two break-evens are different numbers about different entries.
 
 Why: the section put a planned figure and a measured one in consecutive sentences with nothing between them, and a reader ends it believing the record is scored against 32%. It is not: `break_even` is stored per setup from the close that setup was entered at, and the bar a condition's record is judged against is the mean of those. The code has said so in its own comment since the entry rule landed, and the document had not. This is the sentence that made the method read as taking the middle of a band and calling it the entry.
+
+### 2026-09-23 - SCHEMA.md - version_block has a bound for each window ever opened and none over the windows open at once
+Corrects: the closing sentence of the paragraph saying `version_block` has no updater and no deleter, which stated a bound the table does not have.
+
+Was:
+> Its growth is bounded by construction rather than by a window: at most 16 blocks, the last look never being extended, for each of at most 18 open windows, which is 288 rows.
+
+Now: a window holds at most 16 blocks, so the windows open at once hold at most 288 rows between them; a closed window keeps its blocks and the runbook's remedy for a moved pin closes every open window and opens its replacement, so the table holds at most 16 rows for each window ever opened and has no bound over the windows open at once.
+
+Why: nothing removes a closed window's blocks, which is the paragraph's own point, so the rows a table of this kind holds grow with every window ever opened and not with the windows open now. The 288 is what the open windows can hold at once. The growth is small, 16 rows a window, and the sentence was a limit stated where there is none.
+
+### 2026-09-23 - .claude/rules/checks.md - banned-prose scans a file whatever its bytes and refuses a zero byte
+Corrects: the `banned-prose` row, which did not say that a tracked file carrying a zero byte was left out of the scan.
+
+Was:
+> No text file the repository tracks contains the banned string or any form of it, and none contains an em dash, excluding the captured provider responses a manifest names, which are the provider's bytes and not prose this repository writes. The line in CLAUDE.md's Prose convention that names the string is the single exemption within what is scanned, matched on the sentence that states the rule.
+
+Now: the same row, adding that every other tracked file is scanned whatever its bytes and that none carries a zero byte, with the reader shown to find one in a planted file and to pass a clean one.
+
+Why: the scan skipped any file carrying a zero byte and said in a comment that such files were counted separately, and nothing counted them. A source file carrying one was therefore out of every assertion the check makes while each of them went on passing, and grep and ripgrep read that file as binary and print none of its lines.
+
+### 2026-09-23 - .claude/rules/checks.md - trend-versions names the cap, the frozen-block skip, the origin and the bound it asserts
+Corrects: the `trend-versions` row, which named a row cap worked from constants and none of the behaviour that keeps it.
+
+Was:
+> and a block completes inside the retention window with the margin and the row cap worked from the code's own constants. An in sample score changes no frozen sum,
+
+Now: the same row, with the most blocks a window holds in place of the row cap, and four assertions added: no block past the last look is frozen and the record reads the last look's blocks in every figure it draws; a night over blocks already frozen freezes only the block that has just completed and says so on its run log row; a closed window keeps its blocks, which is the bound SCHEMA states; and an in sample score is never a window's origin.
+
+Why: the cap, the skip of a block already frozen and the in sample filter on the origin were each stated in the scorer's own comments and asserted by nothing, so each could be removed with the whole suite still green.

@@ -29,8 +29,9 @@ public class BannedProse
 
     // Every text file git tracks, which is every file in the repository that is
     // not gitignored, less the captured provider responses. A file carrying a
-    // zero byte is not prose and is counted separately rather than read as
-    // though it were.
+    // zero byte is scanned like any other and refused by the test below, rather
+    // than left out: leaving it out would take a whole file out of every
+    // assertion here while each of them went on passing.
     //
     // The captures are excluded because they are not prose this repository
     // writes. A rule about how this corpus is written cannot govern bytes a
@@ -47,8 +48,10 @@ public class BannedProse
     static IReadOnlyList<string> Scanned() =>
         Repository.TrackedFiles()
             .Where(file => !IsCapture(file))
-            .Where(file => !File.ReadAllBytes(file).Contains((byte)0))
             .ToArray();
+
+    static bool CarriesAZeroByte(string file) =>
+        File.ReadAllBytes(file).Contains((byte)0);
 
     // A captured provider response: a .json file inside a fixture folder that
     // some manifest names as an input.
@@ -138,6 +141,35 @@ public class BannedProse
     public void NoFileCarriesAnEmDash()
     {
         Assert.Empty(Occurrences(EmDash, exemptTheRule: false));
+    }
+
+    // A zero byte in a file this repository writes. grep and ripgrep read a file carrying one as
+    // binary and print none of its lines, so every line of it is missing from a search of the
+    // source, and no file written here has a use for one: a character a string needs is written
+    // as an escape.
+    [Fact]
+    public void NoFileThisRepositoryWritesCarriesAZeroByte()
+    {
+        var scanned = Scanned();
+
+        Assert.True(scanned.Count >= 80, $"Scanned {scanned.Count} tracked text files, expected at least 80.");
+
+        Assert.Empty(scanned
+            .Where(CarriesAZeroByte)
+            .Select(file => Path.GetRelativePath(Repository.Root, file)));
+
+        // The reader, over planted files outside the repository, so the assertion above is not
+        // passing over a reader that finds nothing.
+        using var elsewhere = new TemporaryDirectory();
+
+        var withOne = Path.Combine(elsewhere.Path, "planted-zero.txt");
+        var without = Path.Combine(elsewhere.Path, "planted-clean.txt");
+
+        File.WriteAllText(withOne, "a key" + (char)0 + "joined" + (char)10);
+        File.WriteAllText(without, "a key joined" + (char)10);
+
+        Assert.True(CarriesAZeroByte(withOne));
+        Assert.False(CarriesAZeroByte(without));
     }
 
     [Fact]
