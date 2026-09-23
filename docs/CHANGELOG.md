@@ -6563,3 +6563,23 @@ Was:
 Now:
 > It is still one paid pass a night set off by the nightly job, and the operator ruled on 2026-09-23, in their words "Yes the nightly run will generate paid research for top 1 name", that the hard rule's carve-outs name it, a third beside the new member's backfill and the corporate action refetch, as one name a night that does not grow with the index. 11.4 writes it into the hard rule with the code that makes the request.
 Why: the plan left the question to the operator before 11.4, and they answered it on the evening the plan merged. The hard rule itself is edited at 11.4, with the code, so that it never names a carve-out nothing makes.
+
+### 2026-09-23 - ARCHITECTURE.html - section 4's table names the four report parts phase 11 adds, in the sections they sit in
+Authorised by: A large move is shown beside its group's median move over the same sessions
+Was:
+>   <tr><td>2. How it got here</td><td>A twelve-month price picture, and a table of the biggest moves with what caused each one</td><td>Dates, closes and percentage moves computed from bars; the cause column filled by the model from news of that date</td><td>the table is free, the cause column is paid</td><td>the moves nightly, the causes with the research record</td></tr>
+
+>   <tr><td>4. Entries and exits</td><td>The plan figure, the tranche table with conditions and stops, the exit table with actions, the earnings-trade setups, the sizing arithmetic</td><td>Computed by the ladder builder; the non-price exit triggers come from the research record</td><td>free, except the non-price triggers</td><td>nightly</td></tr>
+
+>   <tr><td>6. The numbers</td><td>Five reported quarters and one guided quarter, revenue, margin, earnings, guide against actual, balance sheet, valuation on each earnings basis</td><td>Computed from provider fundamentals and filings, each carrying the filing date it came from (see: Fundamentals are stored with the filing date they came from); the guided quarter from the earnings release exhibit</td><td>free after the fetch</td><td>quarterly</td></tr>
+Now: section 2's row adds each move beside its group's median move over the same sessions and a peers table of the name's group by price alone, both computed by the move annotator from the bars and the membership, its tables free and its medians and peers nightly; section 4's row adds the earnings reaction record beside the earnings-trade setups, computed by the move annotator from the nightly calendar and the stored bars; and section 6's row adds the dividend the provider files, from the provider's own part on the newest filing alone. Each cites the decision it rests on.
+Why: the phase 11 plan left the architecture's rows for the four parts to a document pass at 11.0, so the claims they add are placed before anything is built to reach them. The other three decisions the rows rest on are Peers are shown by price alone, in section 2 beside the move table; Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan; and The numbers section shows the dividend the provider files, on the newest filing alone.
+
+### 2026-09-23 - ARCHITECTURE.html - section 15.12 says where the four report parts render from
+Authorised by: The numbers section shows the dividend the provider files, on the newest filing alone
+Was:
+>   <li>The computed sections render immediately from the nightly store.</li>
+
+>   <li>The numbers section renders from the filings the store holds. Opening a name fetches nothing:
+Now: the first step adds that each move's group median, the peers and the earnings reactions render among the computed sections, and the second that the dividend renders from the newest filing alone.
+Why: the order a name opens in is where a reader learns which parts cost a fetch, and none of the four does: three are the night's and the fourth rests on a filing the store already holds.

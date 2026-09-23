@@ -22064,3 +22064,52 @@ Ruled:      on 2026-09-23, in their words, "Yes the nightly run will generate pa
 Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green over the tree carrying
             this entry and the document pass after it, whose figures are the figures of both runs.
 Carried:    nothing. The hard rule's text is 11.4's, and 11.4's done condition already names it.
+### 11.0 document pass - the four report parts written into the architecture, each placed at the checkpoint that draws it, and the pair after 11.9 predicted   2026-09-23
+Not a checkpoint entry. It lands 11.0 and no checkpoint, because a document pass builds none of
+            the phase it belongs to. No behaviour changes and no store is touched.
+Why:        the phase 11 plan left the architecture's rows for the four report parts to a document
+            pass before 11.1, so the claims they add are placed before anything is built to reach
+            them and the pair the phase ends at is predicted before the first of them moves.
+Written:    section 4's table names the four in the report sections they sit in, each move beside
+            its group's median and the peers table in section 2, the earnings reaction record
+            beside the earnings-trade setups in section 4 and the dividend in section 6, each with
+            what produces it and the decision it rests on. Section 15.9 gains four rows, Each move
+            beside its group, Peers, Earnings reactions and Dividend, each with a key saying how to
+            read it, and a note beneath the table says the four sit in the sections they belong to,
+            reach no reason, gate, plan or candidate, and are drawn by the exported report from the
+            same code path. Section 15.12's first two steps say where each renders from.
+            `BUILD_PLAN.md` states the pair the phase is predicted to end at, and the operator's
+            ruling above. Every spec line changed has its prior text in `CHANGELOG.md`.
+Placed:     the four rows, each out of scope until the checkpoint that draws it: Each move beside
+            its group at 11.5, Peers at 11.6, Earnings reactions at 11.7 and Dividend at 11.8. The
+            screens map carries each, the prediction reads them as phase 11's rows with none drawn
+            yet, and section 15's row and subject counts move from 58 and 158 to 62 and 162.
+Predicted:  413 claims and 409 PASS after this pass, with 4 out of scope; 421 and 421 after 11.9,
+            within 419 to 425, each end with its cause, as `BUILD_PLAN.md` states.
+Expected:   derived, and a derivation rather than a file: no stage's output over the fixture moves,
+            because no behaviour changes. What is added is read off the document by the checks that
+            already run over it.
+Tests:      FILLED IN AFTER THE RUN. None added: the rows join populations existing checks read.
+Claims:     FILLED IN AFTER THE RUN.
+Mutated:    the rule, stated before the run: break the property this pass carries into shipped
+            source, which is that each of the four rows is placed at the checkpoint that draws it
+            and read as out of scope until that one lands, and that the prediction counts them.
+            Predicted:
+            M1 the Peers row's due point taken out of the screens map, the document left alone: red
+            in `EveryScreenRowHasItsOwnDuePointAndNoneIsWrittenForARowThatIsGone` naming the row as
+            one with no due point, and in every test that builds the phase report, which stops on a
+            claim with no entry rather than leaving it unexamined.
+            M2 the Dividend row's due point moved to 11.0, which the record shows as landed: red in
+            `EveryOutOfScopeClaimNamesADuePointThePlanHasAndProgressDoesNot` naming 11.0, and green
+            everywhere else, since the claim is still out of scope and still counted as one.
+            M3 the Earnings reactions row taken out of the prediction's phase 11 rows, the map and
+            the document left alone: red in `ThePairEightZeroPredictedIsCheckedAgainstTheActual`,
+            which then expects one claim fewer and one fewer out of scope than the document makes,
+            and green everywhere else.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing new. The checkpoints 11.1 to 11.9 are the plan's, and the phase 11 sign-off is
+            a fresh session's.

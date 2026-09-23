@@ -993,6 +993,20 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.StoresTable, "Version blocks"),
     ];
 
+    // Phase 11's rows, written by the document pass at 11.0 before any of them is drawn, each
+    // placed at the checkpoint that builds it and read as out of scope until that one lands.
+    static readonly string[] PhaseElevenRows =
+    [
+        CheckReach.Key("15.9 Name", "Each move beside its group"),
+        CheckReach.Key("15.9 Name", "Peers"),
+        CheckReach.Key("15.9 Name", "Earnings reactions"),
+        CheckReach.Key("15.9 Name", "Dividend"),
+    ];
+
+    // The ones a phase 11 checkpoint has since drawn. A row moves here in the commit that
+    // builds it, for the reason the phase 9 list above says.
+    static readonly string[] PhaseElevenDrawn = [];
+
     // Rows the document gained after the prediction, each one claim.
     static readonly string[] AddedAfterThePrediction =
     [
@@ -1021,6 +1035,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.MatrixTable, "Request drain"),
         .. PhaseNineRows,
         .. PhaseTenRows,
+        .. PhaseElevenRows,
     ];
 
 
@@ -1050,10 +1065,15 @@ public partial class ArchitectureConformance
 
         // Out of scope was zero while phase 8 was the last phase. Phase 9's rows are
         // placed at checkpoints the record does not carry, so each reads as out of scope
-        // and none of them passes, which is what the pass figure is short by.
-        var outOfScope = PredictedOutOfScope + PhaseNineRows.Length - PhaseNineDrawn.Length;
+        // and none of them passes, which is what the pass figure is short by. Phase 11's
+        // are the same, from the document pass that wrote them to the checkpoint that
+        // draws each.
+        var outOfScope = PredictedOutOfScope
+            + PhaseNineRows.Length - PhaseNineDrawn.Length
+            + PhaseElevenRows.Length - PhaseElevenDrawn.Length;
 
         Assert.All(PhaseNineDrawn, key => Assert.Contains(PhaseNineRows, row => row == key));
+        Assert.All(PhaseElevenDrawn, key => Assert.Contains(PhaseElevenRows, row => row == key));
 
         Assert.Equal(
             (expected, outOfScope, 0, expected - outOfScope),
