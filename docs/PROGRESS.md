@@ -21446,3 +21446,162 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             `data/` was not touched by either.
 Carried:    nothing new. The remedy for the moved pin is the operator's, before the merge and
             after it. The phase 10 sign-off stays owed to a fresh session, which is not this one.
+### Phase 10 sign-off                                                        2026-09-23
+Signed by a session that has committed no code to this repository. Its only commit is this
+            entry, which is a document, so the fresh session rule permits it. This is the third
+            review of phase 10. The two reviews of 2026-09-23 before it did not sign. The first,
+            over 472e082, found three faults in 10.4's version reader and a hand-kept list in
+            `research-marked`, corrected by PRs 194 and 195. The second, over 9df9392, found a
+            zero byte that took `RunScreen.cs` out of `banned-prose`, three freeze rules
+            asserted by nothing, a bound SCHEMA stated wrongly and the ladder builder's
+            undeclared read of `membership`, corrected by PRs 196 and 197, which that session
+            landed and so could not sign. This review read 9df9392..0c8f975, 18 files, and
+            found no defect.
+Verified:   by re-running both gates on `main` at 0c8f975 before this entry, and again over the
+            tree carrying it. `tools/ci.ps1` green end to end, 0 warnings, 0 errors, 1239 of 1239
+            tests passing inside it, migrations 0 to 33 applied against `data-ci/` and then none
+            pending at schema version 33, exit 0. `tools/verify-phase.ps1` green at 36 tables,
+            407 claims, 407 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 414 placements and
+            verdicts reconciled against a floor of 34, fixture PRESENT with 1 captured over 6
+            constituents and 4 names, 41 checks on the roster and 41 carried, 41 ran and passed
+            and none failed or did not run, the suite 1239 of 1239 with none failed and none
+            unrun. Windows PowerShell on the operator's Windows machine: `tools/ci.ps1` green.
+Matrix:     jobs enumerated rather than run conclusions read. The push runs of the 13 merges
+            since 84f323a, 9e5b647 through 0c8f975, carry 2 jobs each, `macos` and
+            `case-sensitivity`, 26 jobs, all success. PRs 196 and 197 each carry a pull_request
+            run of the same 2 jobs, 4 jobs, all success. `.github/workflows/ci.yml` carries zero
+            `if:` and zero `continue-on-error:` keys.
+Plan:       all six checkpoints, 10.0 through 10.5, are in `BUILD_PLAN.md` and recorded above,
+            with the 10.0 document pass and the corrections of PRs 191, 192, 194, 195, 196 and
+            197, over 259 entry headings before this one. No open pull request. The carried
+            obligations table holds 86 rows: 74 discharged, 12 operating and 0 open, four of
+            the operating rows opened at 10.0. All 36 expectation files state
+            `derivation: derived`. `DECISIONS.md` holds 264 decision names, none twice.
+Store:      the operator store under `data/` was not touched by either gate or by this review.
+            It was read immutable and copied once, and everything this review wrote went to the
+            copy. `data/equitybrief.db` was last written at 14:44:20 UTC on 2026-09-23, the
+            remedy for PR 197's moved pin, and is at user_version 33 with its newest bar on
+            2026-09-22. `version --list`, which writes nothing, names four open windows, every
+            one opened at 9c5b1776d336, the checkout's code version, and no live window the
+            build no longer hashes to. `version_score` holds 3,014 rows, 1,006 in sample and
+            2,008 scored; `version_block` 0; `candidate_register` 0; `rule_version` 20, 16 closed.
+Rehearsed:  on the copy in the session scratchpad, on the SSD, from `main` at 0c8f975. The night
+            of 2026-09-22 stopped at `news-pulse` twice, started at 15:04 and 15:08 UTC, each
+            "The operation was canceled" after 2 requests, in 157 and 153 seconds, under a
+            policy of three attempts at 30 seconds each per request. The live store's run log
+            holds no failed news step. The third run, started at 15:24, was green in 66
+            seconds: 2,248 articles over 3 pages, the rule versions step scoring 1,004 over 503
+            names under the four reopened windows with 1 left out, 358 on the list, 9 network
+            requests, 327 weighted calls, and the queue 2 of 2 passes. The feed now lists P
+            where the live night listed P_old, so the replay recorded P_old leaving on
+            2026-09-22 and P a member, and ran green over that shape. The session then holds 504
+            ladder rows, the live run's row for P_old beside the replay's 503, which the
+            replay's close row and the versions region count; a live night writes its own
+            session once and does not reach this. The trend rule's live window and its three
+            versions were then opened on the copy by the runbook's commands, and 2026-09-22 and
+            2026-09-21 backfilled, 1,506 and 2,510 scores. Over the 3,012 trend version scores
+            of the two nights no version adds a setup: 0 name-nights where a version's plan
+            carries a tranche and the live plan none. Below both averages moves 123 and 120
+            names off the live label, below both under a cross 25 and 27, the new label holds
+            two nights 3 and 0, every score in sample. The API served over the copy answered 200
+            on 17 routes: `/`, `/screens/tonight` with no night, 2026-09-22 and 2026-09-18,
+            `/screens/run` with no night, 2026-09-22 and 2026-09-21, `/screens/universe`,
+            `/screens/find`, `/screens/researched`, `/screens/queue`, `/screens/name/NVDA` with
+            no date and 2026-09-21, `/screens/name/P`, `/marks/level-chart/NVDA`,
+            `/exports/name/NVDA` and `/passes/NVDA` with a `since`; without one that route
+            answers 400 with the line it writes for a pass nobody named. The shell at `#/`,
+            `#/night/2026-09-18`, `#/run/2026-09-22`, `#/universe`, `#/name/NVDA`,
+            `#/researched` and `#/queue` was captured with headless Edge. The run page runs past
+            the capture's height, its table drawing 2,117 rows, 2,047 of them the queue's
+            per-name calls, so its phase 10 regions were captured again from the same fragment
+            under the shell's stylesheet. Each image was read. The versions region draws the
+            three windows and names no ticker, and with nothing registered the candidate regions
+            say so. The API was stopped afterwards.
+Swept:      over the whole suite each time and never a filter, in a detached worktree at 0c8f975
+            under the session scratchpad, reset between runs and removed after, its baseline
+            1239 of 1239. The rule, stated before the sweep: each mutation targets a boundary or
+            a scope of the verification PRs 196 and 197 added that no recorded sweep reached.
+            PR 196's M1 deleted both of the cap's guards and never moved the boundary, and PR
+            197's two put the fault back and blinded the reader, and none of them shrank the
+            population the new check reads. Each prediction was written before its run.
+            S1 both of the cap's guards admitting one block more: red, 1237 of 1239,
+            `NoBlockPastTheLastLookIsFrozenWhateverCompletesAfterIt` and the ladder rules' pin.
+            As predicted.
+            S2 both admitting one block fewer: red, 1237 of 1239, the same two. As predicted.
+            S3a an undeclared read of `bar` added to `NewsPulseCounter.cs`: red, 1238 of 1239,
+            `EveryTableAComponentsOwnQueriesReadIsOneItDeclaresItReads` alone. As predicted.
+            S3b the same read, with the file renamed so that no file carries the component's
+            name: red, 1236 of 1239, where the prediction said all green. The new check stayed
+            green as predicted, reading 31 files against its floor of 20, and the rename was
+            caught by `EveryDeclaredWriteMatchesSchemaOwnershipAndTheCodeBehindIt`,
+            `EveryWriteInTheCodeIsDeclaredInSchema` and
+            `EveryMembershipReadIsOneOfTheTwoFormsOverTheSession`, which find the component's
+            writes and its membership read by its file.
+            S3c the same over `TrendClassifier.cs`, the one component holding a query that
+            writes nothing, reads no membership and sits in no pin: red, 1238 of 1239,
+            `EveryCastBetweenTheTwoWorldsInTheShippedSourceIsAStatedSite`, whose stated sites
+            name the file. The prediction was first written as all green and corrected before
+            the run, when that literal was found, and the corrected prediction held. The new
+            check stayed green.
+Judged:     PR 197's reader hides no read today. Every FROM or JOIN of a store table in a
+            component's own file that it does not count is a DELETE FROM that component's own
+            table, 12 in 9 files, found by a looser scan of the same files with no statement
+            filter. No shipped FROM list names a table after a function, the only one shipped
+            being `json_each`; no UPDATE reads through a FROM; and no table name is
+            interpolated or joined from a constant. A query of the shipped kind it would miss is
+            `FROM listing l, json_each(...) c, facts f`, its stated limit, an UPDATE with a FROM,
+            or a SELECT whose FROM is joined from a constant written in another statement, and
+            none is shipped. The reads made in other files are declared by their callers:
+            `StoredSwings` by the level builder, the ladder builder, the trend classifier and
+            the scorer; `RequestDrain` reads what its own catalogue row states; and
+            `NightSession` is read by the worker's program and by no component. The gap is the
+            population: a component with no file of its name is skipped without being counted,
+            against a floor of 20 of 32 files, so the check alone does not hold its roster row
+            for every component. S3b and S3c show that no component holding a query escapes
+            every check on a rename today. It is carried, since it fails no done condition and
+            breaks no check.
+            PR 196's window key compares like with like: the three readers parse the opening
+            instant through `RuleVersions.At`, to the second. The cap test's construction, 14
+            copies of a frozen row numbered 3 to 16, fails with the cap one block off in either
+            direction, and deleting only the guard before the loop is equivalent, since the
+            loop's own guard stops at the same count. `banned-prose` refusing a zero byte in
+            every tracked file but the captures, with no named set, is right as it stands: no
+            binary file is tracked, and the first one fails in its own pull request, where an
+            exemption can be named with its reason, rather than leaving the check through a
+            filter nothing counts, which is how `RunScreen.cs` left it. A frozen row has two
+            guards, each asserted: the skip of a held block, by PR 196's test, and the conflict
+            clause, by `writer-ownership`, since SCHEMA declares no updater and no deleter for
+            `version_block` and the statement reader reads an upsert's update and every REPLACE
+            form as writes. That is enough: the clause is reached only where the skip has
+            already failed, and the skip's own test goes red then.
+            The pin moving on a declaration line is the 2026-09-16 decision working as ruled,
+            whole files with the cost stated. The same decision leaves the trend classifier
+            unpinned as a writer of the rows both sides read, and since 10.4 the label it hands
+            the ladder builder is the live side of the trend rule's own windows, so an edit to
+            which averages it reads would move that rule without stopping a night. Neither is a
+            defect, and whether 10.4 changed the classifier's standing under the decision is
+            the operator's to rule.
+            10.2's arithmetic, spot-checked: three sign-flip p-values and the six levels the
+            spending function releases at 8, 12 and 16 blocks for 0.05 and a third of it, from
+            the shipped code and again from an enumeration over Python's own normal
+            distribution, agree, the levels to 1e-9. Eight blocks all one way, p = 1/256, cross
+            at the first look at 0.05, against 0.0056, and not in a family of three, against
+            0.00071.
+Carried:    as the handoff states and not phase failures. The 12 operating obligations, four
+            opened by 10.0, each on its numeric trigger. Nothing registered and no window
+            measuring the trend rule on the operator's store, so every record region says so.
+            The moves correction and risks with a severity, waiting on a re-recording of the
+            fixture's model answers. P_old's backfill partial, unserved for 3 nights, which is
+            the carve-out's retry schedule shown on the run page. The five mutation sweeps of
+            phases 5, 6 and 9 never written into the record, and commit 5959171's subject. New
+            from this review and not phase failures either: `component-access`'s read
+            direction skips a component with no file of its name without counting it; a night
+            replayed after the feed changed a name counts the live run's ladder row beside its
+            own; and the news provider timed out on a replay twice this afternoon, which on a
+            live night would stop it at `news-pulse`, before the rule versions, the close and
+            the queue.
+Signed:     phase 10, 10.0 through 10.5, with the corrections through PR 197. Phases 0 to 10
+            are signed, and the build plan holds no phase after 10. The operator's two commands
+            wait, once, after this sign-off: `register --the-three`, which registers at the
+            moved evaluator versions, and `version --trend-version` for each of the three trend
+            versions once the trend rule's live window is opened.
