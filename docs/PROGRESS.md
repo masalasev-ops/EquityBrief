@@ -21905,9 +21905,10 @@ Guarded:    `research-marked`, one test added, `EveryLinkTheDocumentDrawsReadsIn
             The roster's `research-marked` row names it.
 Expected:   derived, and no expectation file moves: the test reads the document and no stage's
             output changes.
-Tests:      FILLED IN AFTER THE RUN. One added, none removed.
-Claims:     FILLED IN AFTER THE RUN. No claim added: the stylesheet is neither a table nor a
-            figure.
+Tests:      1244, from 1243. One added to `research-marked`, none removed. Migrations 0 to
+            33 with none added and none pending, schema version 33.
+Claims:     409, from 409, all passing, 416 placements and verdicts reconciled against a
+            floor of 34. No claim added: the stylesheet is neither a table nor a figure.
 Mutated:    the rule, stated before the run: put the fault back, bring it back in one palette
             alone, and break the reader in the one way that would pass a colour it should refuse.
             Predicted:
@@ -21920,9 +21921,25 @@ Mutated:    the rule, stated before the run: put the fault back, bring it back i
             M4 the reader's luminance taken without linearising a channel. Red in the same test
             and nowhere else, at the shipped palettes: read that way, the light colour falls under
             3 to 1 on the light grounds.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            6b2aaf9, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1244 of 1244. M1 turned 1 red and 1243 green:
+            `EveryLinkTheDocumentDrawsReadsInBothItsPalettes`, which read no colour for a link. M2
+            turned 1 red and 1243 green: the same test, naming the machine's dark palette alone, at
+            1.54 to 1.88 to 1. M3 turned 1 red and 1243 green: the same test, naming the light
+            palette alone, at 1.00 to 1.10 to 1. M4 turned 1 red and 1243 green: the same test, the
+            light colour at 2.71 to 2.83 to 1 on the light grounds, and the dark colour in both dark
+            palettes at 3.55 to 4.15 to 1 on the panels, the boxes and the flags.
+Held:       the prediction in all four runs, in the test each named and in its number. M4's failure
+            named more than the prediction stated: read without linearising, the dark colour also
+            fell under the floor on three of the four dark grounds, which the prediction, worked on
+            the dark paper alone, did not say. The paper itself held at 5.15 to 1, as worked.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1244 of 1244
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 409 claims, 409 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 416 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1244 of 1244 tests.
+            Both gates ran over the tree carrying this entry, 6b2aaf9, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing. No pinned source moves.
