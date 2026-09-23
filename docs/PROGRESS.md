@@ -21652,9 +21652,11 @@ Guarded:    `read-surface`, one test added,
             property of each control's button reaching it from the control's own rule.
 Expected:   derived, and no expectation file moves: the test reads the stylesheet and the markup
             the renderer draws, and no stage's output changes.
-Tests:      FILLED IN AFTER THE RUN. One added, none removed.
-Claims:     FILLED IN AFTER THE RUN. No claim added: the architecture does not state how the two
-            controls are drawn, and no table or figure changes.
+Tests:      1240, from 1239. One added to `read-surface`, none removed. Migrations 0 to 33 with
+            none added and none pending, schema version 33.
+Claims:     407, from 407, all passing, 414 placements and verdicts reconciled against a floor of
+            34. No claim added: the architecture does not state how the two controls are drawn,
+            and no table or figure changes.
 Mutated:    the rule, stated before the run: put each half of the fault back, and break the reader
             in the one way that would read the fault as a repair.
             Predicted:
@@ -21668,11 +21670,27 @@ Mutated:    the rule, stated before the run: put each half of the fault back, an
             M4 the reader giving a property to the first of two equal rules rather than the later.
             Red in the same test and nowhere else, at its first proof over constructed rules; the
             shipped controls outrank the posted form's rule and read the same either way.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            d0c061a, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1240 of 1240. M1 turned 1 red and 1239 green:
+            `TheControlsAskingForAReportAndTakingOneOutAreDrawnByTheirOwnRules`, on tonight's list,
+            naming the posted form's rule for all eight properties. M2 turned 1 red and 1239 green:
+            the same test, on the queue, naming the same rule for the same eight. M3 turned 1 red
+            and 1239 green: the same test, on tonight's list, naming `min-height:44px` alone. M4
+            turned 1 red and 1239 green: the same test, at its first proof, which read the padding
+            of two equal rules as the first rule's.
+Held:       the prediction in all four runs, in the test each named, in its number and in the
+            screen and the properties each failure named. The shipped controls read the same under
+            M4, as predicted, because each control's rule outranks the posted form's rule and no
+            tie decides a property either states.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1240 of 1240
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 407 claims, 407 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 414 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1240 of 1240 tests.
+            Both gates ran over the tree carrying this entry, d0c061a, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing. No pinned source moves: the stylesheet and the read surface's tests are in no
             rule version's pin and no evaluator's. The same reading's other two points, the
             universe's count and tonight's list drawn unnumbered, land as a 5.8 correction after
