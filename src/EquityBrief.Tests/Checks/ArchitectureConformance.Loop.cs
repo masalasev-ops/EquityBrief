@@ -1008,6 +1008,10 @@ public partial class ArchitectureConformance
 
         // 11.3, tonight's row and the selected name stating the report's state, drawn here.
         CheckReach.Key("15.7 Tonight", "The report's state"),
+
+        // 11.4, section 14's step writing the night's own request and section 17's count of one.
+        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, one request marked as asked by the night unless that name has one outstanding or being written, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list)."),
+        CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
     ];
 
     // The ones a phase 11 checkpoint has since drawn. A row moves here in the commit that
@@ -1016,6 +1020,8 @@ public partial class ArchitectureConformance
     [
         CheckReach.Key("15.15 Queue", "When each will be written"),
         CheckReach.Key("15.7 Tonight", "The report's state"),
+        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, one request marked as asked by the night unless that name has one outstanding or being written, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list)."),
+        CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
     ];
 
     // Rows the document gained after the prediction, each one claim.

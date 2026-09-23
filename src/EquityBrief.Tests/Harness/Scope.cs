@@ -1197,7 +1197,16 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for every name in the index whose research is missing or stale, the names on tonight's list first in order of reasons fired (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures), until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about).")] = new Scoped(
             Verdict.Pass,
-            "the night runs the queue as its last step, after the close has recorded the arithmetic's counts, on its own output and on the run log's own order, and states the queue's local model calls apart from the arithmetic's none",
+            "the night runs the queue after the close has recorded the arithmetic's counts and before its own request, on its own output and on the run log's own order, and states the queue's local model calls apart from the arithmetic's none",
+            ByNight),
+        // 11.4, the night's own request, after the queue.
+        [CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, one request marked as asked by the night unless that name has one outstanding or being written, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list).")] = new Scoped(
+            Verdict.Pass,
+            "over the fixture's night with a launcher the test holds, the night asks for the first name its list draws and no other, worked out by the test's own arithmetic off the listing rows, marked as asked by the night, starts one drain, and runs last with no model call and no request on its own row; a name with a request waiting gets none and the row says so, and a night run again for an earlier session asks for none",
+            ByNight),
+        [CheckReach.Key(LimitsTable, "Reports the night asks for")] = new Scoped(
+            Verdict.Pass,
+            "the night asks for one name, the constant the row states, over the fixture's night, and the launcher it was handed is asked to start one drain",
             ByNight),
         [CheckReach.Key(LimitsTable, "Overnight queue")] = new Scoped(
             Verdict.Pass,
@@ -1340,11 +1349,11 @@ internal static class Scope
         // takes, and what it settles under.
         [CheckReach.Key(CatalogueTable, "Request drain")] = new Scoped(
             Verdict.Pass,
-            "SCHEMA gives it the update on the request store, its own source carries the claim and the settle, and the verbs the row names are ones the worker dispatches, names in its help and the runbook shows",
+            "SCHEMA gives it the update on the request store and the insert of the night's own request, its own source carries the claim, the settle and that insert, and the verbs the row names are ones the worker dispatches, names in its help and the runbook shows",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Request drain")] = new Scoped(
             Verdict.Pass,
-            "the row reads and writes the request store and appends to the run log through the pass it runs, and every other cell is blank: the drain writes no research, which is the claim the blanks carry",
+            "the row reads and writes the request store, reads the listings for the night's own request, and appends to the run log through the pass it runs, and every other cell is blank: the drain writes no research, which is the claim the blanks carry",
             ByAccess),
         [CheckReach.Key(FixtureTable, "research record")] = new Scoped(
             Verdict.Pass,
@@ -2614,6 +2623,7 @@ internal static class Scope
         ["Tranche eligibility"] = "4.4",
         ["Earnings horizon"] = "4.7",
         ["Nightly row coverage"] = "5.4",
+        ["Reports the night asks for"] = "11.4",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)
@@ -2646,6 +2656,7 @@ internal static class Scope
         ["Annotate the largest moves"] = "5.2",
         ["Evaluate the list reasons"] = "5.4",
         ["Run the overnight queue"] = "6.10",
+        ["Ask for a report on the first name"] = "11.4",
         ["Write the facts file"] = "5.3",
 
         ["Fill forward returns"] = "5.5",

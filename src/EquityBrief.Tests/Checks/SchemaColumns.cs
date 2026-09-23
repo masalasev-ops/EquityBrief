@@ -1,4 +1,5 @@
 using EquityBrief.Core.Providers;
+using EquityBrief.Data.Migrations;
 using EquityBrief.Tests.Harness;
 using Microsoft.Data.Sqlite;
 
@@ -446,5 +447,60 @@ public class SchemaColumns
 
         using var store = new TemporaryStore().Migrated();
         Assert.Throws<InvalidOperationException>(() => StoreSchema.Built(store, "not_a_table"));
+    }
+
+    // 11.4, the request table's check on who asked, rebuilt to admit the night.
+    [Fact]
+    public void TheRequestTableAdmitsTheNightAsWhoAskedAndKeepsEveryRowItHeldThroughItsRebuild()
+    {
+        using var store = new TemporaryStore();
+
+        // Built to the schema before the night could ask, holding one request of each screen.
+        new MigrationRunner([.. SchemaMigrations.All.Where(migration => migration.Version < 34)]).Apply(store.DatabaseFile);
+
+        store.Execute(
+            "INSERT INTO research_request (ticker, asked_at, asked_from, lane, state) VALUES "
+            + "('KEYS', '2026-09-20T12:00:00Z', 'list', 'paid', 'outstanding'),"
+            + "('AAPL', '2026-09-20T12:00:01Z', 'name', 'paid', 'written');");
+
+        Assert.Throws<SqliteException>(() => store.Execute(
+            "INSERT INTO research_request (ticker, asked_at, asked_from, lane, state) VALUES ('MSFT', '2026-09-20T12:00:02Z', 'night', 'paid', 'outstanding');"));
+
+        MigrationRunner.Standard().Apply(store.DatabaseFile);
+
+        // Every row it held, whole, and the night admitted where nothing else new is.
+        Assert.Equal(
+            [["AAPL", "name", "written"], ["KEYS", "list", "outstanding"]],
+            RequestRows(store, "SELECT ticker, asked_from, state FROM research_request ORDER BY ticker;"));
+
+        store.Execute(
+            "INSERT INTO research_request (ticker, asked_at, asked_from, lane, state) VALUES ('MSFT', '2026-09-20T12:00:02Z', 'night', 'paid', 'outstanding');");
+
+        Assert.Throws<SqliteException>(() => store.Execute(
+            "INSERT INTO research_request (ticker, asked_at, asked_from, lane, state) VALUES ('NFLX', '2026-09-20T12:00:03Z', 'elsewhere', 'paid', 'outstanding');"));
+
+        // And the index refusing a second outstanding request for a name stands over the rebuilt table.
+        Assert.Throws<SqliteException>(() => store.Execute(
+            "INSERT INTO research_request (ticker, asked_at, asked_from, lane, state) VALUES ('KEYS', '2026-09-20T12:00:04Z', 'night', 'paid', 'outstanding');"));
+    }
+
+    // The request table's rows, as a test reads them back.
+    static IReadOnlyList<string[]> RequestRows(TemporaryStore store, string sql)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+
+        var rows = new List<string[]>();
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            rows.Add([.. Enumerable.Range(0, reader.FieldCount).Select(at => reader.GetString(at))]);
+        }
+
+        return rows;
     }
 }

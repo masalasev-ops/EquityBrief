@@ -78,6 +78,152 @@ public static class RequestDrain
                 ? "the pass left no run at all, so it stopped before it could write one"
                 : $"the pass came to {outcome}, and its own run says why");
 
+    // ---- the night's own request ----
+    //
+    // After the night has run, it asks for a report on the first name drawn on its list, marked as
+    // asked by the night, and starts the drain as a press does. The night writes this one row and
+    // starts one process; the pass is the drain's own run, with its calls on its own rows.
+    // see: The night asks for a report on the first name of its list
+
+    // How many names the night asks for, counted from the top of its list: the first alone, on the
+    // operator's ruling of 2026-09-23, "just the top 1st name for now".
+    public const int NightAsksFor = 1;
+
+    // What a request the night wrote is marked as asked from, beside the two screens a press
+    // comes from.
+    public const string FromNight = "night";
+
+    // Every name that fired on the night, with what the order it is drawn in reads off the row.
+    const string FiredOnTheNight = @"
+        SELECT ticker, fired_count, plan_at_listing FROM listing
+        WHERE session_date = $night AND fired_count > 0;
+    ";
+
+    // A request for the name nobody has settled, being one outstanding or being written.
+    const string Waiting = @"
+        SELECT state FROM research_request
+        WHERE ticker = $ticker AND state IN ('outstanding', 'writing')
+        LIMIT 1;
+    ";
+
+    const string AskFromTheNight = @"
+        INSERT INTO research_request (ticker, asked_at, asked_from, lane, state)
+        VALUES ($ticker, $asked_at, $asked_from, 'paid', 'outstanding');
+    ";
+
+    // The night's own stage on the run log, which the night's step writes under.
+    public const string NightStage = "report";
+
+    const string AppendNightRow = @"
+        INSERT INTO run_log (
+            run_id, stage, started_at, ended_at, outcome,
+            rows_written, model_calls, network_requests, spend, detail)
+        VALUES (
+            $run_id, $stage, $started_at, $ended_at, 'ok',
+            $rows_written, 0, 0, '0', $detail);
+    ";
+
+    // The night's own row for its request, written once the drain has been asked to start so it
+    // says what was asked for and what the drain came to. It calls no model and makes no request:
+    // the pass is the drain's own run, with its calls and requests on its own rows.
+    public static async Task RecordTheNightAsync(
+        string databaseFile,
+        string runId,
+        DateTimeOffset startedAt,
+        DateTimeOffset endedAt,
+        int asked,
+        string detail,
+        CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+
+        await connection.OpenAsync(cancellation);
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = AppendNightRow;
+        command.Parameters.AddWithValue("$run_id", runId);
+        command.Parameters.AddWithValue("$stage", NightStage);
+        command.Parameters.AddWithValue("$started_at", Stamped(startedAt));
+        command.Parameters.AddWithValue("$ended_at", Stamped(endedAt));
+        command.Parameters.AddWithValue("$rows_written", asked);
+        command.Parameters.AddWithValue("$detail", detail);
+
+        await command.ExecuteNonQueryAsync(cancellation);
+    }
+
+    // What the night's ask came to: the names it asked for, and the line the night's own run log
+    // row carries, which says why where it asked for none.
+    public sealed record NightAsk(IReadOnlyList<string> Asked, string Line);
+
+    public static async Task<NightAsk> AskForTheNightAsync(
+        string databaseFile,
+        DateOnly night,
+        IClock clock,
+        CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+
+        await connection.OpenAsync(cancellation);
+
+        var fired = new List<(string Ticker, int Fired, decimal? RewardToRisk)>();
+
+        await using (var reading = connection.CreateCommand())
+        {
+            reading.CommandText = FiredOnTheNight;
+            reading.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            await using var reader = await reading.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                fired.Add((reader.GetString(0), reader.GetInt32(1), DrawnOrder.FirstTranche(reader.GetString(2)).RewardToRisk));
+            }
+        }
+
+        var first = DrawnOrder.Ordered(fired, row => row.Fired, row => row.RewardToRisk, row => row.Ticker)
+            .Take(NightAsksFor)
+            .Select(row => row.Ticker)
+            .ToArray();
+
+        if (first.Length == 0)
+        {
+            return new NightAsk([], FormattableString.Invariant($"no name fired on {night:yyyy-MM-dd}, so no report was asked for"));
+        }
+
+        var asked = new List<string>();
+        var said = new List<string>();
+
+        foreach (var ticker in first)
+        {
+            await using var waiting = connection.CreateCommand();
+
+            waiting.CommandText = Waiting;
+            waiting.Parameters.AddWithValue("$ticker", ticker);
+
+            if (await waiting.ExecuteScalarAsync(cancellation) is string state)
+            {
+                said.Add($"{ticker} is first on the list and has a request {state} already, so none was added");
+
+                continue;
+            }
+
+            await using var asking = connection.CreateCommand();
+
+            asking.CommandText = AskFromTheNight;
+            asking.Parameters.AddWithValue("$ticker", ticker);
+            asking.Parameters.AddWithValue("$asked_at", Stamped(clock.UtcNow));
+            asking.Parameters.AddWithValue("$asked_from", FromNight);
+
+            await asking.ExecuteNonQueryAsync(cancellation);
+
+            asked.Add(ticker);
+            said.Add($"{ticker} is first on the list, and a report on it was asked for");
+        }
+
+        return new NightAsk(asked, string.Join("; ", said));
+    }
+
     const string Outstanding = @"
         SELECT COUNT(*) FROM research_request WHERE state = 'outstanding';
     ";

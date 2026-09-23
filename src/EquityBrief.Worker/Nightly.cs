@@ -1,6 +1,7 @@
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Data.Migrations;
 using EquityBrief.Worker.Bars;
@@ -62,7 +63,9 @@ public static class Nightly
         string? runId = null,
         IBulkPriceFeed? bulk = null,
         TimeSpan? deadline = null,
-        NightQueue? queue = null)
+        NightQueue? queue = null,
+        IDrainLauncher? launcher = null,
+        bool askForTheFirstName = true)
     {
         if (!Directory.Exists(fixtureFolder))
         {
@@ -85,7 +88,9 @@ public static class Nightly
             output,
             error,
             runId,
-            deadline);
+            deadline,
+            launcher,
+            askForTheFirstName);
     }
 
     public static async Task<int> RunAsync(
@@ -97,7 +102,9 @@ public static class Nightly
         TextWriter output,
         TextWriter error,
         string? runId = null,
-        TimeSpan? deadline = null)
+        TimeSpan? deadline = null,
+        IDrainLauncher? launcher = null,
+        bool askForTheFirstName = true)
     {
         // The night's deadline, and the thing that can cancel it.
         //
@@ -374,6 +381,39 @@ public static class Nightly
                     $"{outcome.Left.Count} left for the next night, {outcome.ModelCalls} local model call(s), " +
                     $"{outcome.Outcome}, {outcome.Awake}";
             }, [OvernightQueue.Stage]),
+            // Section 14's step 19, after the overnight queue, which writes the first name's key
+            // before any other name's, so a pass started earlier would meet the queue on that
+            // name. The night asks for a report on the first name drawn on its list and starts
+            // the drain as a press does: it writes one row and starts one process, and the pass
+            // is the drain's own run, its calls and requests on its own rows, at the off-peak
+            // rate. It is handed no token from the night's deadline, which bounds the arithmetic
+            // and may have passed while the queue ran. A night run again for an earlier session
+            // asks for nothing, since its list is not tonight's.
+            // see: The night asks for a report on the first name of its list
+            new("report", async () =>
+            {
+                var started = clock.UtcNow;
+                var asked = 0;
+                string said;
+
+                if (!askForTheFirstName)
+                {
+                    said = "no report was asked for, since this night was run again for an earlier session";
+                }
+                else
+                {
+                    var ask = await RequestDrain.AskForTheNightAsync(store.DatabaseFile, clock.SessionDateAt(clock.UtcNow), clock);
+
+                    asked = ask.Asked.Count;
+                    said = asked == 0
+                        ? ask.Line
+                        : ask.Line + ". " + (launcher?.Start().Line ?? "No drain was started, since this night was handed nothing to start one with.");
+                }
+
+                await RequestDrain.RecordTheNightAsync(store.DatabaseFile, runId, started, clock.UtcNow, asked, said);
+
+                return said;
+            }),
         ];
 
         output.WriteLine($"nightly: {runId}, store {store.DatabaseFile}");

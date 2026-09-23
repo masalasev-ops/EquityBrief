@@ -247,6 +247,12 @@ public class FixtureReplay
 
         await Themer(store, night, cap, new ClaimChecker(night, store.DatabaseFile)).RunAsync(RecordedTheme, "replay-theme");
 
+        // The night's own request, from 11.4, which the night makes after its overnight queue
+        // and this replay makes last: the replay the other checks read does not make it, since
+        // a request written there would sit in every store a press is read over, and the table
+        // is populated here so `night-request.json` has a replay that writes what it names.
+        await RequestDrain.AskForTheNightAsync(store.DatabaseFile, new DateOnly(2026, 9, 8), night);
+
         return store;
     }
 
