@@ -22403,9 +22403,17 @@ Expected:   `night-request.json`, derived: the night asks for the first name its
             its first traded exit, rather than through the order the page draws; marked as asked by
             the night, under the paid lane, outstanding; a count of one. The replay of the whole
             fixture writes it, so the table the expectation names is one a replay populates.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. Two added, section 14's step and section 17's count, passing
-            here, as predicted.
+Tests:      1274, from 1270: five added, one of them in place of the test that had the queue
+            last, being four under `nightly-run`, the night asking for its first name and
+            starting the drain it was handed, a name with a request waiting getting none, a night
+            run again for an earlier session asking for none, and the queue running after the
+            arithmetic has closed with the night's request after it, and one under
+            `schema-columns`, the request table admitting the night and keeping every row it held
+            through its rebuild. Migrations 0 to 34, one added and none pending, schema version
+            34.
+Claims:     417, from 415, with 413 PASS and 4 out of scope, and 420 placements and verdicts
+            reconciled against a floor of 34. Two added, section 14's step and section 17's
+            count, passing here, as predicted.
 Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that
             the night asks for the first name its list draws and no other, that a name with a
             request waiting gets none, that the night's check on who asked admits the night, and
@@ -22423,9 +22431,31 @@ Mutated:    the rule, stated before the run: break each property this checkpoint
             would meet on a store migrated without it.
             M4 a night run again for an earlier session asking as tonight's does: red in
             `ANightRunAgainForAnEarlierSessionAsksForNoReport`, green everywhere else.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: whole-suite runs in a detached worktree at f88d58e, never a filter, each
+            mutation reverted with `git reset --hard` and the tree read clean after each. The
+            baseline is 1274 of 1274. M1 turned 2 red, the two it named, 1272 green. M2 turned 2
+            red, the one it named and `EachStepDoesWhatSectionFourteenSaysItDoes`, 1272 green.
+            The second is a miss in the prediction: that test runs one session's night twice over
+            one store, so the second night meets the first night's request still queued, and
+            without the check the index refusing a second outstanding request for a name stops
+            the step, and the second night exits 1 where the test reads 0.
+            M3 turned 49 red, 1225 green: the one it named and 48 that run a night asking for
+            its first name or read the replay that makes the night's request, the reason it gave
+            holding for each. Its wording, every test that runs a whole night or replays the whole
+            fixture, was wider than what went red: a night that asks for nothing, a test reading
+            only steps before the request, such as `TheStepsRunInTheOrderSectionFourteenStatesThem`,
+            and the replay the other checks read, which makes no request, stayed green. M4 turned 1
+            red, the one it named, 1273 green.
+Held:       M1 and M4 exactly as written before the run. M2 went red where it named and in one
+            test more, which the prediction missed, and M3's wording was wider than what went red,
+            both as the results above state. Both misses are in the predictions: every test that
+            went red is one the mutation reaches, and none of them is a fault in the code.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1274 of 1274
+            tests ran with none failed, migrations 0 to 34 with one added and none pending,
+            schema version 34, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 417 claims, 413 PASS, 0 FAIL, 4 out of
+            scope, 0 unexamined, 420 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1274 of 1274 tests.
+            Both gates ran over the tree carrying this entry, f88d58e, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing new. 11.5 puts each large move beside its group's median.
