@@ -270,7 +270,7 @@ public class PinnedConstants
                 In((Architecture, 1), (Plan, 1))),
             new("the merge distance, in typical moves", (decimal)RuleVersionScorer.LiveParameters(LadderRules.MergeDistance)["typicalMoveMultiple"],
                 [@"closer\s+than\s+{N}\s+a\s+typical\s+day's\s+move", @"{N}\s+a\s+typical\s+day's\s+move\s+is\s+the\s+merge\s+distance", @"merge\s+distance\s+{N}\s+a\s+typical\s+day's\s+move", @"merged\s+into\s+bands\s+within\s+{N}\s+a\s+typical", @"anchors\s+sit\s+more\s+than\s+{N}\s+a\s+typical", @"narrower\s+than\s+{N}\s+a\s+typical"],
-                In((Architecture, 3), (Plan, 2), (Decisions, 1))),
+                In((Architecture, 4), (Plan, 2), (Decisions, 1))),
         ];
     }
 
