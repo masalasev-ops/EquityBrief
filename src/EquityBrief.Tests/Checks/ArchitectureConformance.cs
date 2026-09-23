@@ -1407,7 +1407,9 @@ public partial class ArchitectureConformance
         // measure of the list's order arrives as the six parts its row enumerates.
         // 156 at 10.2, the run page's candidates' record region arriving as the ten parts its row
         // enumerates, each a thing a reader sees or a thing the region refuses to draw.
-        Assert.Equal(156, inDocument.Length);
+        // 158 at the 5.8 correction that numbered tonight's list, its row gaining the rows'
+        // places and the line counting them.
+        Assert.Equal(158, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1451,8 +1453,9 @@ public partial class ArchitectureConformance
         // An exact count rather than a floor, so a decomposition added without being argued
         // for fails here; the argument for each is its checkpoint's entry.
         // 152 from 142 at 10.2, the run page's candidates' record region read as the ten parts
-        // its row enumerates.
-        Assert.Equal(152, checkedElements);
+        // its row enumerates. 154 at the 5.8 correction that numbers tonight's list, the list
+        // read as its two new parts, the rows' places and the line counting them.
+        Assert.Equal(154, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

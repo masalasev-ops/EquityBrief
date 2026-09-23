@@ -1009,6 +1009,11 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "The case for and the case against"),
         CheckReach.Key("15.9 Name", "The risks as parts"),
 
+        // The 5.8 correction that numbered tonight's list, whose row gains two parts: the rows'
+        // places and the line counting them.
+        CheckReach.Key("15.7 Tonight", "The list, each numbered by its place in that order"),
+        CheckReach.Key("15.7 Tonight", "The list, a line above them stating how many are drawn of how many fired"),
+
         // 9.2, the worker's half of the request store, which is a component of its own
         // rather than the runner's: the pass writes the research and this moves the
         // request beside it.
