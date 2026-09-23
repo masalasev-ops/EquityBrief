@@ -20680,3 +20680,54 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             either: the checkout it sits in was left on main and unpulled for the night's run.
 Carried:    the four rows above, all four still open, and the phase 10 sign-off, which is owed to a
             fresh session because this one committed the code.
+
+### 5.0 - correction: every figure the document draws is read and placed, where the reader took one of the two forms for the whole population and the figures drawn in the other were read by nothing   2026-09-23
+Corrects:   5.0, which added the figure reader after the phase 4 sign-off found figure 10.1's rows
+            reached by nothing while the trailing stop rule the code ran drifted from the corpus
+            for a phase. The reader matched the box form alone and its own comment stated that
+            every figure in the document is a div. The document has drawn figures as well, carried
+            since the corpus was delivered, and each of them sat outside the population the
+            placement check reports from. `EveryFigureInTheDocumentIsPlaced` says every figure in
+            the document is placed and reached half of them, and the roster row says the same.
+            That is the shrinking-population defect one level in: the reader written to state its
+            own population stated it in a form that left a whole form of figure out.
+Found:      on 2026-09-23, by this session, while checking whether a figure a later pass adds
+            would be covered. Read off the document and the reader together: the document opens a
+            figure in either of two forms, and the reader's pattern matched one of them.
+Repaired:   `ArchitectureFigures.In` reads both forms, from one pattern that is at once what the
+            loop reads and what the population is counted from, so the two cannot drift apart. A
+            drawn figure names itself in its caption and carries no box, so it is read with none,
+            which is what lets a placement say so, and one that names itself nowhere is refused
+            rather than read under a name of the reader's own. The drawn figures are placed in
+            `PhaseReport.FiguresPlaced`, each with the reason that what it draws is claimed through
+            the prose and the tables around it, so drawing it again would count one claim twice.
+            That is figure 5.1's reason and not a new one.
+Guarded:    `architecture-conformance`, one test added,
+            `EveryFormAFigureIsDrawnInIsReadAndTheDocumentDrawsInBoth`: over a constructed document
+            holding one of each, both are read with their ids, the box figure with its box and the
+            drawn one with none; a drawn figure naming itself nowhere is refused; and the document
+            is read for at least four of each form, so neither arm of the reader is code a floor
+            would never exercise. The figure floor moves from 4 to 8, which is what a form dropping
+            out of the reader falls through, and the placement reconciliation refuses a drawn
+            figure the document no longer has exactly as it refuses a box figure.
+Expected:   derived, and a derivation rather than a file: no stage's output over the fixture moves,
+            so no expectation file changes. What moves is the population a placement check reports
+            over, and it is read off the document itself rather than off the reader's own output.
+Tests:      FILLED IN FROM THE RUN, from 1217. One added to `architecture-conformance`. No
+            migration. The ladder rules' code version pins none of the files edited, so it does not
+            move, and no evaluator's sources are touched, so no candidate's version moves either.
+Mutated:    the rule, stated before the run: break the property this correction adds, which is that
+            the reader's population is every figure the document draws rather than the figures of
+            one form. Not mutated: the placements themselves, because a placement that named the
+            wrong reason is a reading no scan makes and the reconciliation already refuses one that
+            names a figure the document lacks.
+            Predicted:
+            M1 the opening pattern matching the box form alone, the reader as it stood: red in
+            `EveryFigureInTheDocumentIsPlaced` at the figure floor, which would read 4 where the
+            rule gives 8; red in the new test at the drawn-figure count, which would read 0 where
+            the rule gives 4; and red in the placement reconciliation, which would find the four
+            drawn figures expected and not found. Three tests, and every other test green.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, FILLED IN FROM THE RUN. `tools/verify-phase.ps1`
+            green, FILLED IN FROM THE RUN.
+Carried:    nothing new. The phase 10 sign-off stays owed to a fresh session.

@@ -319,26 +319,67 @@ public partial class ArchitectureConformance
         // The other half of the check above, and the half that was missing.
         //
         // `EveryTableInTheDocumentIsPlaced` asserted that every table the reader
-        // returned was placed, and the reader matches table elements. Every
-        // figure in this document is a div, so four figures and fifty-nine boxes
-        // were unread and the completeness check could not say so: its
-        // population was defined by the thing it was checking. The phase 4
-        // sign-off found one consequence, figure 10.1's rows reached by nothing
-        // while the trailing stop rule the code ran drifted from the corpus for
-        // a phase.
+        // returned was placed, and the reader matches table elements, so nothing
+        // read a figure at all: the population was defined by the thing it was
+        // checking. The phase 4 sign-off found one consequence, figure 10.1's
+        // rows reached by nothing while the trailing stop rule the code ran
+        // drifted from the corpus for a phase.
+        //
+        // The document draws a figure in either of two forms and this reads both,
+        // because a reader that took one form for the whole population would
+        // leave the other form out of the count that reports it missing, which is
+        // the same defect one level in.
         var figures = ArchitectureFigures.In(File.ReadAllText(Repository.Architecture));
 
-        // Scope, stated in advance, with a floor far enough below the count that
-        // ordinary growth never moves it. The boxes carry the property and the
-        // figures are the context, so the floor sits on the boxes.
+        // Scope, stated in advance: every figure the document draws, box figures
+        // and drawn ones together, and the boxes the box figures carry. The boxes
+        // carry the property and the figures are the context, so the floor sits
+        // on the boxes; the figure floor is what a form dropping out of the
+        // reader would fall through.
         var boxes = figures.Sum(figure => figure.Boxes.Count);
 
-        Assert.True(figures.Count >= 4, $"Read {figures.Count} figures, expected at least 4.");
+        Assert.True(figures.Count >= 8, $"Read {figures.Count} figures, expected at least 8.");
         Assert.True(boxes >= 50, $"Read {boxes} figure boxes, expected at least 50.");
 
         var placed = Report().Tables.Select(entry => entry.Heading).ToArray();
 
         Assert.DoesNotContain(figures, figure => !placed.Contains(figure.Id, StringComparer.Ordinal));
+    }
+
+    [Fact]
+    public void EveryFormAFigureIsDrawnInIsReadAndTheDocumentDrawsInBoth()
+    {
+        // The floor in the check above counts figures and cannot say which form
+        // they took, so a reader that dropped one form would pass on the other
+        // form's growth. This is the statement that floor rests on: both forms
+        // are read, and the document draws in both, so neither arm is code the
+        // floor would never exercise.
+        var constructed = ArchitectureFigures.In(
+            "<div class=\"fig\"><div class=\"title\">Figure 1.1. A box figure.</div>" +
+            "<div class=\"row\"><div class=\"box compute\"><b>A step</b>what it does</div></div></div>" +
+            "<figure class=\"fig svgfig\"><svg viewBox=\"0 0 10 10\"><title>A drawing</title></svg>" +
+            "<figcaption>Figure 2.1. A drawn figure.</figcaption></figure>");
+
+        Assert.Equal(["Figure 1.1", "Figure 2.1"], constructed.Select(figure => figure.Id).ToArray());
+        Assert.Equal(["A step"], constructed[0].Boxes.Select(box => box.Name).ToArray());
+        Assert.Empty(constructed[1].Boxes);
+
+        // A drawn figure that names itself nowhere is refused rather than read
+        // under a name of the reader's own, because the name is what a placement
+        // is keyed on.
+        Assert.Throws<InvalidOperationException>(() => ArchitectureFigures.In(
+            "<figure class=\"fig svgfig\"><figcaption>A drawing of something.</figcaption></figure>"));
+
+        // The populations of each form in the document, stated in advance.
+        var figures = ArchitectureFigures.In(File.ReadAllText(Repository.Architecture));
+
+        Assert.True(
+            figures.Count(figure => figure.Boxes.Count > 0) >= 4,
+            $"Read {figures.Count(figure => figure.Boxes.Count > 0)} box figure(s), expected at least 4.");
+
+        Assert.True(
+            figures.Count(figure => figure.Boxes.Count == 0) >= 4,
+            $"Read {figures.Count(figure => figure.Boxes.Count == 0)} drawn figure(s), expected at least 4.");
     }
 
     [Fact]

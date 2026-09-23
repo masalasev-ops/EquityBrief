@@ -15,59 +15,57 @@ internal sealed record ArchitectureFigure(string Id, string Title, IReadOnlyList
 
 // Reads ARCHITECTURE.html's figures and the boxes each one draws.
 //
-// This exists because architecture-conformance could not have found what it was
-// missing. `ArchitectureTables.In` matches table elements, every figure in the
-// document is a div, and `EveryTableInTheDocumentIsPlaced` asserted that every
-// table the reader returned was placed. Its completeness was defined by the
-// thing it was checking, so four figures and fifty-nine boxes were unread and
-// nothing could say so.
+// A completeness check states the population it is complete over in a form the
+// population cannot change. A reader whose population is its own output cannot
+// report what it failed to read, so the opening pattern below names the
+// population and the loop reads it, and the two cannot drift apart.
 //
-// That is the shrinking-population defect in its purest form, and this is the
-// third place it has appeared: once in a floor set to what a run produced, once
-// in a reader whose population was its own output, and here in a placement check
-// over the same. The rule the corpus takes from it is that a completeness check
-// states the population it is complete over, in a form the population cannot
-// change.
-//
-// So the population here is the document's own count of `class="fig"` openings,
-// asserted against the number of figures parsed, rather than the parse being
-// asked how many figures there were.
+// The document draws a figure in one of two forms and both are figures: a box
+// figure, whose rows of boxes state rules a placement can send to a check, and a
+// drawn figure, which carries one picture and names itself in its caption. A
+// drawn figure has no box to read, and reading it for none is what lets a
+// placement say so; a reader that matched the box form alone would leave the
+// drawn ones out of the population that reports them missing.
 internal static class ArchitectureFigures
 {
+    // The two forms a figure opens in. One pattern, because it is both what the
+    // loop reads and what the population is counted from.
+    const string Openings = @"<div class=""fig"">|<figure class=""fig svgfig"">";
+
     internal static IReadOnlyList<ArchitectureFigure> In(string document)
     {
         var figures = new List<ArchitectureFigure>();
 
-        foreach (Match opening in Regex.Matches(document, "<div class=\"fig\">"))
+        foreach (Match opening in Regex.Matches(document, Openings))
         {
-            var body = document[opening.Index..Close(document, opening.Index)];
-            var title = Text(Regex.Match(body, "<div class=\"title\">(.*?)</div>", RegexOptions.Singleline).Groups[1].Value);
+            var drawn = opening.Value.StartsWith("<figure", StringComparison.Ordinal);
 
-            var id = Regex.Match(title, @"^Figure\s+(\d+\.\d+)");
+            var body = drawn
+                ? document[opening.Index..CloseDrawn(document, opening.Index)]
+                : document[opening.Index..Close(document, opening.Index)];
 
-            if (!id.Success)
-            {
-                throw new InvalidOperationException(
-                    $"A figure's title does not open by naming it: '{title}'. The id is what a " +
-                    "placement is keyed on, so a figure without one cannot be placed.");
-            }
+            var title = Text(drawn
+                ? Regex.Match(body, "<figcaption>(.*?)</figcaption>", RegexOptions.Singleline).Groups[1].Value
+                : Regex.Match(body, "<div class=\"title\">(.*?)</div>", RegexOptions.Singleline).Groups[1].Value);
 
             figures.Add(new ArchitectureFigure(
-                $"Figure {id.Groups[1].Value}",
+                Id(title),
                 title,
-                [.. Regex
-                    .Matches(body, "<div class=\"box([^\"]*)\"><b>(.*?)</b>(.*?)</div>", RegexOptions.Singleline)
-                    .Select(box => new FigureBox(
-                        Text(box.Groups[2].Value),
-                        Text(box.Groups[3].Value),
-                        Text(box.Groups[1].Value)))]));
+                drawn
+                    ? []
+                    : [.. Regex
+                        .Matches(body, "<div class=\"box([^\"]*)\"><b>(.*?)</b>(.*?)</div>", RegexOptions.Singleline)
+                        .Select(box => new FigureBox(
+                            Text(box.Groups[2].Value),
+                            Text(box.Groups[3].Value),
+                            Text(box.Groups[1].Value)))]));
         }
 
         // The population, stated against the document rather than against this
         // reader's own output. A parse that silently stopped early would
         // otherwise report a smaller document, which is the defect the class
         // comment describes.
-        var openings = Regex.Matches(document, "<div class=\"fig\">").Count;
+        var openings = Regex.Matches(document, Openings).Count;
 
         if (figures.Count != openings)
         {
@@ -84,6 +82,38 @@ internal static class ArchitectureFigures
         }
 
         return figures;
+    }
+
+    // A figure's id, taken from the words its title opens with. The id is what a
+    // placement is keyed on, so a figure that does not name itself cannot be
+    // placed and is refused rather than read under a name of the reader's own.
+    static string Id(string title)
+    {
+        var id = Regex.Match(title, @"^Figure\s+(\d+\.\d+)");
+
+        if (!id.Success)
+        {
+            throw new InvalidOperationException(
+                $"A figure's title does not open by naming it: '{title}'. The id is what a " +
+                "placement is keyed on, so a figure without one cannot be placed.");
+        }
+
+        return $"Figure {id.Groups[1].Value}";
+    }
+
+    // The end of the drawn figure that starts at `opening`. A figure element
+    // holds no figure of its own, so the first close is its own.
+    static int CloseDrawn(string document, int opening)
+    {
+        var close = document.IndexOf("</figure>", opening, StringComparison.Ordinal);
+
+        if (close < 0)
+        {
+            throw new InvalidOperationException(
+                $"A figure opening at character {opening} is never closed, so its caption cannot be read.");
+        }
+
+        return close + "</figure>".Length;
     }
 
     // The end of the div that starts at `opening`, found by counting rather than
