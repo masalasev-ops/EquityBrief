@@ -6479,3 +6479,13 @@ Was:
 Now: the same row, adding that every table the queries in a component's own source read is one it declares it reads, read only where a statement selects and never the table a delete takes rows from, with the reader shown to find each form, to leave a comment, a sentence and a function alone, and to stop a FROM list at a function, which is its stated limit.
 
 Why: the source was read for writes and never for reads, so a read the code makes and every document leaves out was a direction nothing reached, and one such read had stood since 4.1.
+
+### 2026-09-23 - .claude/rules/checks.md - read-surface names the two small controls and the rules that draw them
+Corrects: the `read-surface` row, which named no assertion over the control on tonight's list asking for a report or the queue's control taking one out.
+
+Was:
+> a row's record read inside its reason and the column's inside the footer's, counted apart because one is the other's prefix |
+
+Now: the same row, adding that the two small controls are drawn by the rules written for them, found the way a browser finds them from every rule the stylesheet states: the one asking stands off the label beside it, and every property a rule written for buttons states reaches each control's button from the control's own rule, read over the button and every element holding it in the markup each screen draws, with the reader shown to give each property to the rule that wins it.
+
+Why: the rule written for the two controls was beaten from the day it was written by the rule every posted form's button takes, stated after it at the same specificity, so both were drawn 44 pixels tall in the accent's fill. The one test reading the cascade read the asking control's margin and no property of its button.

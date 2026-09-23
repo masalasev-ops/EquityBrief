@@ -91,7 +91,8 @@ code{font-size:.92em}
 .queue-part{margin-block:22px}
 .queue-table td,.queue-table th{padding:6px 10px;text-align:left;white-space:nowrap}
 form.ask[method='post']{display:inline-block;margin:0 0 0 8px}
-form.ask button,.withdraw-control button{font:600 11.5px var(--sans);color:var(--soft);background:var(--surface);border:1px solid var(--hair-2);border-radius:5px;padding:2px 8px;cursor:pointer}
+/* The two small controls outrank the rule every posted form's button takes, and state every property that rule states, so neither is drawn at that button's size. */
+form.ask[method='post'] button,form.withdraw-control[method='post'] button{font:600 11.5px var(--sans);color:var(--soft);background:var(--surface);border:1px solid var(--hair-2);border-radius:5px;padding:2px 8px;min-height:0;cursor:pointer}
 .theme{font:600 12.5px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair-2);border-radius:6px;padding:0 12px;min-height:36px;cursor:pointer}
 .m-search{margin:0}
 .m-search input{font:14px var(--sans);color:var(--ink);background:var(--surface);border:1px solid var(--hair-2);border-radius:6px;padding:0 10px;min-height:36px;width:220px}
