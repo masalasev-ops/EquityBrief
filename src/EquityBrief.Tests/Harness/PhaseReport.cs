@@ -213,6 +213,13 @@ internal static class PhaseReport
     // would count one claim twice. Its placement is reconciled against those two
     // tables instead, which is a stronger statement than a reason: a box added
     // to the diagram and to no table fails.
+    //
+    // A drawn figure carries a picture rather than rows of boxes, so it has no
+    // box a claim could be read off. What it draws is stated in the prose around
+    // it and claimed through the tables and box figures that prose is placed by,
+    // and drawing it again would count one claim twice. Each is placed with the
+    // reason that says so, and a drawn figure added to the document and to no
+    // placement stops the harness like any other.
     static readonly string[] FigureClaimSources =
     [
         "Figure 9.1",
@@ -225,6 +232,14 @@ internal static class PhaseReport
         ["Figure 5.1"] = new Placement(
             "the system diagram, whose boxes are the components and stores sections 7 and 16 claim name for name and the outside sources they read; asserted against both tables rather than claimed twice",
             Check: "architecture-conformance"),
+        ["Figure 8.1"] = new Placement(
+            "the builders drawn in the order they run, whose stages figures 9.1 and 10.1 claim box by box and whose row for every member section 14's own steps carry; a picture of claims placed elsewhere and none of its own"),
+        ["Figure 12.2"] = new Placement(
+            "a research pass drawn from the documents it fetched to the record it stores, whose lanes the section's own table claims and whose gate the admissibility rows carry; a picture of claims placed elsewhere and none of its own"),
+        ["Figure 13.1"] = new Placement(
+            "a listing drawn from the night it fires to the figure it contributes, whose scoring rule section 13's guardrails carry row by row; a picture of claims placed elsewhere and none of its own"),
+        ["Figure 13.2"] = new Placement(
+            "the gate a candidate passes drawn end to end, whose steps section 13's subsections state and the register and verdict rows carry; a picture of claims placed elsewhere and none of its own"),
     };
 
     // The placements' own notes, read by the same guard that reads the scope
