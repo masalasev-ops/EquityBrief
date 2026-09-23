@@ -21265,8 +21265,12 @@ Guarded:    `banned-prose`, one test added: `NoFileThisRepositoryWritesCarriesAZ
 Expected:   derived: `rowsPerWindow` at 16 and `rowsTheOpenWindowsHold` at 288 in
             `trend-versions.json`, each worked from the last look and the windows the bound admits
             at once rather than frozen from a run. No stage's output over the fixture moves.
-Tests:      FILLED IN AFTER THE RUN. Five added, one renamed, none removed.
-Claims:     FILLED IN AFTER THE RUN. No claim added: no table or figure of the architecture moves.
+Tests:      1237, from 1232. Five added, `NoFileThisRepositoryWritesCarriesAZeroByte` in
+            `BannedProse.cs` and four in `TrendVersions.Frozen.cs`, one renamed and none removed.
+            Migrations 0 to 33 with none added and none pending, schema version 33. The ladder
+            rules' code version stays f685dfe69d41.
+Claims:     407, from 407, all passing, 414 placements and verdicts reconciled against a floor of
+            34. No claim added: no table or figure of the architecture moves.
 Mutated:    the rule, stated before the run: every mutation the second review found surviving is
             run again over this tree, and one more puts A back. Each is a property this correction
             asserts, and a surviving one would be this correction's own finding.
@@ -21284,11 +21288,31 @@ Mutated:    the rule, stated before the run: every mutation the second review fo
             M8 a zero byte written into a comment of `RunScreen.cs`. Red in
             `NoFileThisRepositoryWritesCarriesAZeroByte` and nowhere else, and not the pin test,
             since `RunScreen.cs` is not a pinned source.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            9ea47db, never a filter, each reverted with `git checkout` and the tree read clean
+            after. The baseline is 1237 of 1237. M1 turned 2 red and 1235 green:
+            `NoBlockPastTheLastLookIsFrozenWhateverCompletesAfterIt` and the code version pin. M3
+            turned 2 red and 1235 green: `AnInSampleScoreBeforeTheFirstScoredSessionIsNotTheOrigin`
+            and the pin. M7b turned 2 red and 1235 green:
+            `ANightOverBlocksAlreadyFrozenFreezesOnlyTheBlockThatHasJustCompleted` and the pin,
+            with `NoBlockPastTheLastLookIsFrozenWhateverCompletesAfterIt` green. M8 turned 1 red
+            and 1236 green: `NoFileThisRepositoryWritesCarriesAZeroByte`, and not the pin. M8's
+            byte sat inside the file's first 8,000 bytes, and git's diff counted no line for the
+            change, because git reads a file as binary by a zero byte in that span. The byte
+            a1f4006 wrote sat at 20078, past it, which is why that diff read as text with the byte
+            drawn as a space and nothing in review showed it.
+Held:       the prediction in all four runs, in the tests it named and in their number: each of
+            the three mutations the review found surviving is now red in the one test this
+            correction added for it and nowhere but the pin, and the zero byte is red in the one
+            test that refuses it. Nothing the prediction said would stay green went red.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1237 of 1237
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 407 claims, 407 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 414 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1237 of 1237 tests.
+            Both gates ran over the tree carrying this entry, and the operator's store under
+            `data/` was not touched by either.
 Carried:    nothing new. The fourth finding of the same review, that `component-access` never
             reads a component's own queries against its declaration and that the ladder builder
             has read `membership` undeclared since 4.1, lands as 4.1's own correction after this
