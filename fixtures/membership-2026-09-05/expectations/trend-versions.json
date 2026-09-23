@@ -299,5 +299,17 @@
   "addedSeconds": 208,
   "nightSeconds": 703,
   "deadlineSeconds": 900
+ },
+ "frozenBlocks": {
+  "case": "the arithmetic that lets a block be frozen when it completes and lets the table it is frozen into be bounded",
+  "sessionsPerBlock": 63,
+  "setupWindowSessions": 63,
+  "oldestSessionABlockNeeds": 125,
+  "sessionsInAStoredYear": 252,
+  "marginSessions": 127,
+  "looksMaximum": 16,
+  "windowsAtOnce": 18,
+  "rowsAtTheCap": 288,
+  "derivedFrom": "a block holds the setups of 63 consecutive sessions, so its last session is 62 after its first, and the block completes once the whole outcome window of that last session has closed, which is 63 sessions after it. The oldest session the block needs is therefore 62 + 63 = 125 behind the night it is frozen on. A stored year is about 252 exchange sessions, which is what the retention keeps, so there are 252 - 125 = 127 sessions of margin between the night a block can be frozen and the night its earliest rows are dropped. The table cannot grow past the last look times the windows the bound admits at once, 16 x 18 = 288 rows, because the last look is never extended and a block past it is read by nothing."
  }
 }

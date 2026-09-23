@@ -336,22 +336,30 @@ public static class RunScreen
     // A version of this rule only ever takes a setup away, because the label it writes is the one
     // that carries no tranche at all, so its own setups are the live rule's less the ones its
     // label removes and every outcome is one the store already holds. That is what lets a
-    // difference be read here at all, and it is why the reader hands the live setups over with a
-    // flag rather than a second set of outcomes nothing computed.
+    // difference be measured at all, and the measuring happens on the night a block completes:
+    // what arrives here is the frozen block, because the scores and labels behind it are dropped
+    // a year back and a record is read over about four years of nights.
+    //
+    // Every row here is keyed on the window and never on the version's name. A window is closed
+    // and opened again under the same name when a pinned source moves, so one name can carry rows
+    // of two windows, and a session scored under both would otherwise be counted twice in the
+    // labels and fed twice into the blocks.
     // owes: The trend confirmation's nights settled from flip-backs
     // see: A trend version is judged by the candidates' test on its difference from the live rule
+    // see: A version's record is read from the blocks frozen as each completed
+    // see: A version's record belongs to the window its scores were written under and never to the version's name
     public static TrendVersionRegion TrendVersions(
         IReadOnlyList<OpenVersionRow> open,
         IReadOnlyList<VersionLabelRow> labels,
-        IReadOnlyList<VersionLabelRow> live,
-        IReadOnlyList<VersionSetupRow> setups,
+        IReadOnlyList<LiveLabelRow> live,
+        IReadOnlyList<VersionBlockRow> blocks,
         LabelReturns returns,
         int nights,
         DateOnly night)
     {
-        var byVersion = setups
-            .GroupBy(row => row.Version, StringComparer.Ordinal)
-            .ToDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+        var byWindow = blocks
+            .GroupBy(row => Window(row.Version, row.OpenedAt), StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Select(row => row.Block).ToArray(), StringComparer.Ordinal);
 
         var measured = new List<VersionMeasured>();
 
@@ -359,35 +367,28 @@ public static class RunScreen
             .Where(row => !string.Equals(row.Version, RuleVersions.Live, StringComparison.Ordinal))
             .Select(row =>
             {
-                var mine = byVersion.GetValueOrDefault(row.Version, []);
+                var window = Window(row.Version, row.OpenedAt);
+                var mine = byWindow.GetValueOrDefault(window, []);
 
                 var record = mine.Length == 0
                     ? null
-                    : VersionRecord.For(
-                        row.Version,
-                        [.. mine.Select(Setup)],
-                        [.. mine.Where(setup => !setup.Removed).Select(Setup)],
-                        mine.Min(setup => setup.SessionDate),
-                        night,
-                        ReasonVerdict.Significance);
+                    : VersionRecord.For(row.Version, row.OpenedAt, mine, ReasonVerdict.Significance);
 
                 if (record is not null)
                 {
                     measured.Add(record);
                 }
 
+                var drawn = labels
+                    .Where(label => string.Equals(Window(label.Version, label.OpenedAt), window, StringComparison.Ordinal))
+                    .ToArray();
+
                 return new TrendVersionRow(
                     row.Version,
                     row.Parameters,
-                    row.OpenedOn,
-                    [
-                        .. labels
-                            .Where(label => string.Equals(label.Version, row.Version, StringComparison.Ordinal))
-                            .Select(label => new LabelCount(label.Label, label.Names)),
-                    ],
-                    labels
-                        .Where(label => string.Equals(label.Version, row.Version, StringComparison.Ordinal))
-                        .Sum(label => label.Moved),
+                    row.OpenedAt,
+                    [.. drawn.Select(label => new LabelCount(label.Label, label.Names))],
+                    drawn.Sum(label => label.Moved),
                     record);
             })
             .ToArray();
@@ -404,9 +405,11 @@ public static class RunScreen
             RealityCheck.Over(measured));
     }
 
-    static CandidateSetup Setup(VersionSetupRow row) =>
-        new(row.SessionDate, row.Outcome ?? string.Empty, row.Null, row.NullAtSensitivity,
-            row.BreakEven, row.ReturnPct, row.PlannedRisk, row.OnEarnings);
+    // One window's key, being the whole of the version's name and the whole of the instant its
+    // window opened at. The name alone is the opening of the key and not the key, and a matcher
+    // keyed on it answers about every window sharing it.
+    static string Window(string version, DateTimeOffset openedAt) =>
+        version + " " + RuleVersions.Stored(openedAt);
 
     // The three orders of tonight's list over the nights whose listings record what each order
     // reads, up to the night shown: on each night the first rows each order would have drawn, the

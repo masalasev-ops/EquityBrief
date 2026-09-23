@@ -43,6 +43,7 @@ public enum Store
     CandidateRegister,
     RuleVersion,
     VersionScore,
+    VersionBlock,
     SeriesState,
     ResearchRequest,
     RunLog,

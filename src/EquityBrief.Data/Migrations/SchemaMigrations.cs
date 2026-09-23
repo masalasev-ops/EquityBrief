@@ -653,7 +653,46 @@ public static class SchemaMigrations
         new Migration(30, "create research_request", CreateResearchRequest),
         new Migration(31, "add listing.band_strength", AddListingBandStrength),
         new Migration(32, "add forward_return's calibrated bar and what the trade came to", AddCalibratedBar),
+        new Migration(33, "create version_block", CreateVersionBlock),
     ];
+
+    // One completed block of one version's record, frozen when the block completed.
+    //
+    // The record is read at 8 blocks, 504 sessions, and again at 16, 1,008, while the scores
+    // and the labels a block is computed from are kept one year. A record recomputed when it
+    // is read could hold 3 whole blocks at most against a floor of 8, so a verdict would be
+    // withheld for as long as the window stayed open. This table is what the retention does
+    // not reach, and it has no deleter for that reason rather than by omission.
+    //
+    // The two excesses and the two counts are what a difference, a setup count and an excess
+    // in points are read from; the two pairs of sums are what a design effect and a smallest
+    // excess are read from. `origin` is the session block 0 is counted from, written with the
+    // first block and never recomputed, because retention moving the earliest scored session
+    // forward would re-cut the blocks under a record already being read.
+    //
+    // `opened_at` is in the key because a version closed and opened again under one name is
+    // two windows, and scores belong to a window rather than to a name.
+    // see: A version's record is read from the blocks frozen as each completed
+    // see: A version's record belongs to the window its scores were written under and never to the version's name
+    const string CreateVersionBlock = @"
+        CREATE TABLE version_block (
+            rule                 TEXT NOT NULL,
+            version              TEXT NOT NULL,
+            opened_at            TEXT NOT NULL,
+            block                INTEGER NOT NULL,
+            origin               TEXT NOT NULL,
+            version_excess       REAL NOT NULL,
+            version_setups       INTEGER NOT NULL,
+            live_excess          REAL NOT NULL,
+            live_setups          INTEGER NOT NULL,
+            version_null_sum     REAL NOT NULL,
+            version_null_spread  REAL NOT NULL,
+            live_null_sum        REAL NOT NULL,
+            live_null_spread     REAL NOT NULL,
+            frozen_at            TEXT NOT NULL,
+            PRIMARY KEY (rule, version, opened_at, block)
+        ) STRICT;
+    ";
 
     // The bar a setup with no edge would have cleared, at the round trip the calibration carries
     // and at the sensitivity shown beside it, what the plan put at risk from the close it was

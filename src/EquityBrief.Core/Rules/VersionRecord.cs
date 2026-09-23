@@ -3,10 +3,41 @@ using EquityBrief.Core.Returns;
 
 namespace EquityBrief.Core.Rules;
 
+// One completed block of one version's record, as the store freezes it: the two
+// sides' excesses and setup counts over that block, and the two aggregates a
+// design effect and a smallest excess are computed from.
+//
+// Frozen rather than recomputed, for the reason `forward_return` already carries
+// a setup's calibrated bar on its row. The scores and the labels a block is
+// computed from are dropped one year back from the newest stored session, and a
+// record is read at 8 blocks and again at 16, which is about four years of
+// nights. A record recomputed when it is read could therefore never hold more
+// than three whole blocks against a floor of eight, so its verdict would be
+// withheld for as long as the window stayed open. The per-night detail goes on
+// being dropped; what survives the retention is one row per block.
+// see: A version's record is read from the blocks frozen as each completed
+public readonly record struct VersionBlock(
+    int Block,
+    double VersionExcess,
+    int VersionSetups,
+    double LiveExcess,
+    int LiveSetups,
+    double VersionNullSum,
+    double VersionNullSpread,
+    double LiveNullSum,
+    double LiveNullSpread);
+
 // What one version's difference from the live rule has come to, read at the same
 // looks a candidate's record is read at.
+//
+// The window's instant stands beside the name because a version closed and
+// opened again under the same name is two windows and two records, and a record
+// keyed on the name alone would merge two measurements taken either side of a
+// change.
+// see: A version's record belongs to the window its scores were written under and never to the version's name
 public sealed record VersionMeasured(
     string Version,
+    DateTimeOffset OpenedAt,
     int Blocks,
     int Floor,
     int LiveSetups,
@@ -56,52 +87,67 @@ public static class VersionRecord
     // see: Nothing a candidate or a version is registered with changes while it runs, and a proposed number is settled only by a new registration
     public const double MarginInPoints = 5;
 
-    // A version's difference from the live rule, one number per block.
+    // A version's difference from the live rule, one number per frozen block, in
+    // block order.
     //
-    // A block counts where either side listed a setup in it and the block has
-    // had its whole outcome window, so a version that removed every setup in a
-    // block still has a block there: removing them is the difference being
-    // measured, and dropping the block would read the change as no change.
-    public static IReadOnlyList<double> Differences(
+    // A block is frozen where the live rule listed a setup in it, so a version
+    // that removed every setup in a block still has a block there: removing them
+    // is the difference being measured, and dropping the block would read the
+    // change as no change.
+    public static IReadOnlyList<double> Differences(IReadOnlyList<VersionBlock> blocks) =>
+    [
+        .. blocks
+            .OrderBy(block => block.Block)
+            .Select(block => block.VersionExcess - block.LiveExcess),
+    ];
+
+    // What one block freezes to, over the setups it holds on each side.
+    //
+    // Both sides are summed from one set of stored outcomes, which is what a rule
+    // whose versions only remove setups allows: the version's setups are the live
+    // rule's less the ones its label takes away.
+    // see: A version's record is read from the blocks frozen as each completed
+    public static VersionBlock Freeze(
+        int block,
         IReadOnlyList<CandidateSetup> live,
-        IReadOnlyList<CandidateSetup> version,
-        DateOnly opened,
-        DateOnly night)
-    {
-        var mine = ByBlock(version, opened, night);
-        var theirs = ByBlock(live, opened, night);
+        IReadOnlyList<CandidateSetup> version) =>
+        new(
+            block,
+            CandidateRecord.Excess(version),
+            version.Count,
+            CandidateRecord.Excess(live),
+            live.Count,
+            NullSum(version),
+            NullSpread(version),
+            NullSum(live),
+            NullSpread(live));
 
-        return
-        [
-            .. mine.Keys
-                .Concat(theirs.Keys)
-                .Distinct()
-                .OrderBy(block => block)
-                .Select(block => mine.GetValueOrDefault(block) - theirs.GetValueOrDefault(block)),
-        ];
-    }
+    // The setups a record counts: the ones the store decided and computed a bar
+    // for. A setup whose bar nothing computed is one no record counts, rather
+    // than one counted against the bar its plan stated.
+    public static IReadOnlyList<CandidateSetup> Counted(IReadOnlyList<CandidateSetup> setups) =>
+    [
+        .. setups.Where(setup =>
+            setup.Outcome is ForwardReturnSeries.Win or ForwardReturnSeries.Loss && setup.Null is not null),
+    ];
 
-    static IReadOnlyDictionary<int, double> ByBlock(
-        IReadOnlyList<CandidateSetup> setups,
-        DateOnly opened,
-        DateOnly night) =>
-        setups
-            .Where(setup => setup.Outcome is ForwardReturnSeries.Win or ForwardReturnSeries.Loss && setup.Null is not null)
-            .Where(setup => Blocks.Complete(opened, Blocks.Of(opened, setup.Session), night))
-            .GroupBy(setup => Blocks.Of(opened, setup.Session))
-            .ToDictionary(group => group.Key, group => CandidateRecord.Excess([.. group]));
+    static double NullSum(IReadOnlyList<CandidateSetup> setups) =>
+        setups.Sum(setup => setup.Null!.Value);
+
+    // The scatter independent setups would give, which is the denominator of a
+    // design effect. Frozen beside the excess because it is a sum over the same
+    // setups and those rows are dropped at a year.
+    static double NullSpread(IReadOnlyList<CandidateSetup> setups) =>
+        setups.Sum(setup => setup.Null!.Value * (1 - setup.Null!.Value));
 
     public static VersionMeasured For(
         string version,
-        IReadOnlyList<CandidateSetup> live,
-        IReadOnlyList<CandidateSetup> versionSetups,
-        DateOnly opened,
-        DateOnly night,
+        DateTimeOffset opened,
+        IReadOnlyList<VersionBlock> blocks,
         double level)
     {
-        var differences = Differences(live, versionSetups, opened, night);
-        var counted = Counted(versionSetups, opened, night);
-        var against = Counted(live, opened, night);
+        var ordered = blocks.OrderBy(block => block.Block).ToArray();
+        var differences = Differences(ordered);
 
         // The look the blocks reach, and no further: a difference read over more
         // blocks than the last look holds is a look nobody opened the window at.
@@ -115,13 +161,18 @@ public static class VersionRecord
         var pValue = taken >= Blocks.Floor ? SignFlip.PValue([.. read.Take(taken)]) : (double?)null;
         var crossed = taken >= Blocks.Floor ? Looks.CrossedAt([.. read.Take(taken)], level) : null;
 
+        var counted = ordered.Sum(block => block.VersionSetups);
+        var against = ordered.Sum(block => block.LiveSetups);
+
         return new VersionMeasured(
             version,
+            opened,
             differences.Count,
             Blocks.Floor,
-            against.Length,
-            counted.Length,
-            ExcessInPoints(counted) - ExcessInPoints(against),
+            against,
+            counted,
+            ExcessInPoints(ordered.Sum(block => block.VersionExcess), counted)
+                - ExcessInPoints(ordered.Sum(block => block.LiveExcess), against),
             statistic,
             pValue,
             crossed,
@@ -131,15 +182,8 @@ public static class VersionRecord
 
     // A version's excess over the bars its own plans were judged against, in
     // points of win share, which is what the margin between two versions is in.
-    public static double? ExcessInPoints(IReadOnlyList<CandidateSetup> counted) =>
-        counted.Count == 0 ? null : CandidateRecord.Excess(counted) / counted.Count * 100;
-
-    static CandidateSetup[] Counted(IReadOnlyList<CandidateSetup> setups, DateOnly opened, DateOnly night) =>
-    [
-        .. setups
-            .Where(setup => setup.Outcome is ForwardReturnSeries.Win or ForwardReturnSeries.Loss && setup.Null is not null)
-            .Where(setup => Blocks.Complete(opened, Blocks.Of(opened, setup.Session), night)),
-    ];
+    public static double? ExcessInPoints(double excess, int setups) =>
+        setups == 0 ? null : excess / setups * 100;
 
     // Which of two versions of one rule is kept where both crossed: the narrower
     // one, unless the wider is ahead of it by the margin. Null where neither
@@ -172,13 +216,16 @@ public static class VersionRecord
 // see: A trend version is judged by the candidates' test on its difference from the live rule
 public static class RealityCheck
 {
-    public sealed record Checked(string Best, double Statistic, double PValue, int Challengers);
+    // The best is named by its window as well as by its name, because two windows
+    // of one name are two challengers.
+    // see: A version's record belongs to the window its scores were written under and never to the version's name
+    public sealed record Checked(string Best, DateTimeOffset BestOpenedAt, double Statistic, double PValue, int Challengers);
 
     public static Checked? Over(IReadOnlyList<VersionMeasured> challengers)
     {
         var read = challengers
             .Where(version => version.Differences.Count >= Blocks.Floor)
-            .Select(version => (version.Version, Blocks: (IReadOnlyList<double>)[.. version.Differences.Take(Looks.Maximum)]))
+            .Select(version => (version.Version, version.OpenedAt, Blocks: (IReadOnlyList<double>)[.. version.Differences.Take(Looks.Maximum)]))
             .ToArray();
 
         if (read.Length == 0 || read.Select(version => version.Blocks.Count).Distinct().Count() != 1)
@@ -189,7 +236,7 @@ public static class RealityCheck
         var q = read[0].Blocks.Count;
         var statistics = read.Select(version => SignFlip.Statistic(version.Blocks)).ToArray();
         var observed = statistics.Max();
-        var best = read[Array.IndexOf(statistics, observed)].Version;
+        var best = read[Array.IndexOf(statistics, observed)];
         var flipped = new double[q];
         var atLeast = 0;
 
@@ -213,6 +260,6 @@ public static class RealityCheck
             }
         }
 
-        return new Checked(best, observed, (double)atLeast / (1 << q), read.Length);
+        return new Checked(best.Version, best.OpenedAt, observed, (double)atLeast / (1 << q), read.Length);
     }
 }

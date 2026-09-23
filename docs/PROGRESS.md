@@ -20911,3 +20911,162 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    nothing new, and the standing of levels is a question rather than an obligation: no
             checkpoint answers it and the candidates' own records are what will. The phase 10
             sign-off stays owed to a fresh session.
+
+### 10.4 - correction: a version's record could never reach its floor, counted an in sample score and read two windows of one name as one   2026-09-23
+Corrects:   10.4, which added the first and only read of `version_score`. `git log -S "FROM
+            version_score" -- src/EquityBrief.Api/Reading/ReadApi.cs` returns d20b5ad and nothing
+            else, so the three faults are 10.4's and not 8.6's, which built the writer they ignore.
+            Three faults, one repair, one migration.
+            A. `VersionSetups` read `version_score` joined to `ladder`. Both are dropped one year
+            back from the newest stored session, by `RuleVersionScorer.DropOlderThan` and by
+            `LadderBuilder`, each at `AddYears(-BarFetcher.RetentionYears)` with RetentionYears = 1.
+            A record is read at 8 blocks of 63 sessions and again at 12 and 16, which is 1,008
+            sessions and about four years. Counting completeness as `Blocks.Complete` does, exactly
+            3 whole blocks can ever exist against a floor of 8, so `VersionMeasured.Verdict` was
+            permanently `BelowTheFloor`, `RealityCheck.Over` always returned null, and the region
+            drew "nothing is compared until every open version holds the same 8 whole blocks"
+            forever. Carried inside A: `VersionRecord.For` took its block origin from
+            `mine.Min(setup => setup.SessionDate)`, the earliest session still present, so retention
+            moved the origin forward and re-cut the blocks under a record already being read.
+            B. `sample` was written and never read. SCHEMA calls it "the column that keeps a
+            backfill from becoming evidence" and nothing outside the writer and the tests filtered
+            on it, so a backfill could become evidence, which is the one thing it exists to stop.
+            C. Both readers keyed on (rule, version) alone. `version_score`'s primary key includes
+            `opened_at`, and the runbook's remedy for a moved pin is to close a window and open it
+            again under the same name, which the operator ran on 2026-09-20 and again on
+            2026-09-23. A session scored under both windows was returned twice: counted twice in
+            `VersionLabels`'s COUNT(*), fed twice into the record's blocks, and the origin taken
+            from the older window. `OpenVersionRow` parsed `opened_at` down to `[..10]`, a
+            DateOnly, so the region could not key a score to a window even had it wanted to, and
+            two windows of one name opened on one day still collided on the date.
+            Also found and repaired here, because the read this correction adds could not be
+            declared without it: the read and write matrix left the read API's cells under rule
+            versions and version scores blank, which 10.4 contradicted the moment it drew the
+            versions region. `component-access` reconciles a read from the declaration to the cell
+            and never from the code to the declaration, so an undeclared read is the one direction
+            it cannot see.
+Why it is  a verdict that is withheld reads exactly like a verdict that has not arrived yet. The
+worse:      page said to be patient and the arithmetic said never, and nothing on either surface
+            could tell the two apart. B and C are the same shape from the other side: each makes
+            the record's population something other than what the operator would say it is, a
+            backfill counted as evidence and one name's two measurements added together, and both
+            are silent.
+Found:      by the phase 10 sign-off review of 2026-09-23, over 472e082, which found all four and
+            committed nothing. The fourth is the 10.0 pass's and lands as its own correction after
+            this one.
+Why nothing `APairedDifferenceIsTheVersionsBlockLessTheLiveRulesAndItsPValueIsTheOneWorkedByHand`
+caught A:   built 8 blocks of `CandidateSetup` in memory and never went through a store. That is
+            the unreachable boundary class in `.claude/rules/writing-tests.md`: the test was well
+            formed and the world was not shaped that way. Every other assertion over a version's
+            record was over the same constructed setups, so the whole property was asserted over a
+            population the store could not hand it.
+Repaired:   the one number per block a record reads, the version's excess and the live rule's over
+            that block, is computed on the night the block completes and written to `version_block`,
+            which no retention reaches, and the per-night detail goes on being dropped at a year
+            (see: A version's record is read from the blocks frozen as each completed). The reader
+            drops the `version_score` and `ladder` joins entirely. The block origin is written with
+            the window's first block and never recomputed. The freeze runs before the drop, in the
+            same transaction, and skips a block already held; the write keeps the row it conflicts
+            with rather than replacing it, so the two guards fail apart. Nothing past the last look
+            is frozen, so the table is bounded at 16 blocks times the 18 windows the cap admits,
+            which is 288 rows. Migration 33, the next free number.
+            The freeze counts no `in_sample` score, which is where B is applied, and the labels
+            region goes on drawing every score with a comment saying why: on the night a window
+            opens every score under it is in sample, and filtering the labels would blank the
+            region on the one night it is first read.
+            Every reader keys on the rule, the version and the whole instant its window opened (see:
+            A version's record belongs to the window its scores were written under and never to the
+            version's name). `OpenVersionRow`, `VersionLabelRow` and the drawn `data-opened` carry
+            the instant rather than the date it falls on, and the Reality Check names the window as
+            well as the name, because two challengers sharing a name cannot be told apart by one.
+This        that the writer is 8.6's scorer rather than a component of its own. The freeze is one
+session     read of three tables and one write of at most 288 rows; a component of its own would
+decided:    have cost a stage, a run log stage name, a catalogue row and a matrix row for work the
+            scorer already has the transaction for. The scorer's store access widens by a read of
+            the forward returns and a read and an insert of the blocks, and by nothing else: the
+            `sample` flag it writes is untouched.
+            And that the aggregate matrix column is the right shape for the new store. No component
+            touches the scores without the blocks or the blocks without the scores, so the column
+            is renamed "Version scores and blocks" and maps to both, as the six computed tables and
+            the two research stores already do, rather than a seventeenth column of blanks.
+Costs:      this repair is 288 rows and 27 KB, measured off the operator's own store at 399.5 bytes
+            a `version_score` row and 1,386.8 a `ladder` row and projected to 18 windows, 502 names
+            and 1,008 sessions. Freezing one row per setup would have been 7.6M rows and 349 MB;
+            raising the retention to four years would have been 9.6M rows and 4.0 GB, against a
+            store of 221 MB on a spinning disk. That is why this one was chosen.
+The pin     `RuleVersionScorer.cs` and `RuleVersions.cs` are both in `CodeVersionSources`, so the
+moves:      ladder rules' code version moves with this correction, from 2e00ecf50c97 to
+            f685dfe69d41. Every open live window the operator's store holds was opened at the old
+            hash, so the first night after this merges stops at the rule versions step naming the
+            rule, which is the designed refusal and not a fault. The remedy is the runbook's: close
+            every open window with its evidence and open them again. It is the third time in four
+            days that a phase 10 change has forced it.
+Guarded:    `trend-versions`, eight tests added in `TrendVersions.Frozen.cs` and one rewritten.
+            `AVersionsRecordReachesItsFloorOverAStoreTheRetentionHasAlreadyEmptied`: 8 whole blocks
+            frozen from a store, the retention then taking the rows 6 of them were computed from,
+            and the record read back through `ReadApi` and `RunScreen` with the verdict the
+            expectation works by hand and the region drawing it. This is the assertion whose
+            absence let A through.
+            `EveryFieldOfARecordIsDerivableFromTheFrozenBlocksAlone`: all twelve fields of
+            `VersionMeasured`, each against a figure derived from the frozen columns read as text,
+            so the derivation shares no code with what it is asserted against.
+            `ABlocksSumsAndItsOriginDoNotMoveWhenRetentionTakesWhatTheyWereComputedFrom`: the rows
+            byte for byte after everything behind them is deleted, and a ninth block then counted
+            from the stored origin, with the other direction asserted so the block number is not
+            one the arithmetic would have reached either way.
+            `AnInSampleScoreChangesNoFrozenSum`: two stores identical but for one backfilled
+            name-night inside block 0, frozen to the same rows.
+            `TheLabelsRegionDrawsEveryScoreOnTheNightAWindowOpens`: the region draws both scores
+            and the count it moves on a night where every score is in sample and no record exists.
+            `OneNameWithTwoWindowsCountsASharedSessionOnceUnderEach` and
+            `TwoWindowsOfOneNameAreTwoRecordsAndNeverOne`: four label rows of one name each rather
+            than two of two, two rows drawn with their own instants, and 8 blocks against 1 rather
+            than 9 merged, with the benchmark naming the window.
+            `ABlockCompletesInsideTheRetentionWindowAndTheTableItIsFrozenIntoIsBounded`: the
+            margin and the row cap worked from `Blocks.Sessions`,
+            `ForwardReturnSeries.SetupSessionCap`, `Looks.Maximum` and `RuleVersions.MostAtOnce`
+            against the expectation's own figures.
+            `APairedDifferenceIsTheVersionsBlockLessTheLiveRulesAndItsPValueIsTheOneWorkedByHand`
+            now goes through `VersionRecord.Freeze` rather than asserting the record over setups
+            the store cannot produce.
+Expected:   derived, and added to the fixture: `frozenBlocks` in `trend-versions.json` states the
+            block length, the setup window, the oldest session a block needs at 125, a stored year
+            at about 252 sessions, the margin at 127, the last look at 16, the windows at once at
+            18 and the rows at the cap at 288, each worked from the definitions rather than frozen
+            from a run, and the test derives every one of them from the code's own constants. No
+            stage's output over the fixture moves: no block completes over the nights the fixture
+            holds, so `version_block` stays empty there and the expectation names no new table.
+Tests:      FILLED IN AFTER THE RUN. Migration 33 added. The ladder rules' code version moves.
+Claims:     FILLED IN AFTER THE RUN. One claim added, section 16's `Version blocks` row, placed to
+            `trend-versions` and counted in `PhaseTenRows`.
+Mutated:    the rule, stated before the run: break the property A, B and C share, which is that the
+            record's population is what the store can actually hand it, rather than any one
+            predicate this correction adds. A mutation removing a predicate would show the
+            predicate; this one puts the old reader's population back and shows the record being
+            refused, which is the fault as a reader met it.
+            Not mutated, and these are what the next sweep has to find: the window key, which is
+            that one name carrying two windows is counted once under each and never merged; the in
+            sample filter on the freeze; the block origin being stored rather than recomputed; and
+            the cap that writes no block past the last look.
+            Predicted:
+            M1 the freeze moved to after the retention drop instead of before it, so a block is
+            summed from what the retention left rather than from what the night held, which is the
+            population the old reader had. Red in
+            `AVersionsRecordReachesItsFloorOverAStoreTheRetentionHasAlreadyEmptied`,
+            `EveryFieldOfARecordIsDerivableFromTheFrozenBlocksAlone`,
+            `ABlocksSumsAndItsOriginDoNotMoveWhenRetentionTakesWhatTheyWereComputedFrom` and
+            `TwoWindowsOfOneNameAreTwoRecordsAndNeverOne`, which are the four that build 8 blocks
+            over sessions the retention reaches. Green everywhere else, including
+            `AnInSampleScoreChangesNoFrozenSum`, whose two stores lose the same blocks and so still
+            agree, and `TheLabelsRegionDrawsEveryScoreOnTheNightAWindowOpens`, which freezes
+            nothing.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing new. `register --the-three` and `version --trend-version` are left unrun for
+            the operator, because opening a window and letting that night run scores the night's
+            own session in sample, which is fault B's ordinary case, and because the pin has moved
+            and every open window has to be closed and opened again first. The phase 10 sign-off
+            stays owed to a fresh session, which is not this one.

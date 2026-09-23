@@ -6,6 +6,7 @@ using System.Text.Json;
 using EquityBrief.Core.Spending;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Research;
+using EquityBrief.Core.Rules;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Web.Marks;
@@ -248,25 +249,25 @@ public sealed record CandidateSetupRow(
 public sealed record CandidateNightRow(DateOnly SessionDate, string Candidate);
 
 // One open window of a ladder rule, as the versions region reads it.
-public sealed record OpenVersionRow(string Version, string Parameters, DateOnly OpenedOn);
+//
+// The instant and not the date it falls on. A window is closed and opened again under the same
+// name when a pinned source moves, so two windows of one name can open on one day, and a region
+// keyed on the date could not tell a score of one from a score of the other.
+// see: A version's record belongs to the window its scores were written under and never to the version's name
+public sealed record OpenVersionRow(string Version, string Parameters, DateTimeOffset OpenedAt);
 
-// One label a version gave the night's names, how many carried it, and how many of those are not
-// the label the night itself stored.
-public sealed record VersionLabelRow(string Version, string Label, int Names, int Moved);
+// One label a version gave the night's names under one window, how many carried it, and how many
+// of those are not the label the night itself stored.
+public sealed record VersionLabelRow(string Version, DateTimeOffset OpenedAt, string Label, int Names, int Moved);
 
-// One setup of the live rule on a night a version was scored over, and whether that version's
-// label takes it away. No name is carried and no surface could draw one from it.
-public sealed record VersionSetupRow(
-    string Version,
-    DateOnly SessionDate,
-    string? Outcome,
-    double? Null,
-    double? NullAtSensitivity,
-    double? BreakEven,
-    double? ReturnPct,
-    double? PlannedRisk,
-    bool OnEarnings,
-    bool Removed);
+// One label the night's own rule gave, and how many names carried it. It belongs to no window,
+// which is why it is not a version's row with the window left blank.
+public sealed record LiveLabelRow(string Label, int Names);
+
+// One completed block of one window's record, as the scorer froze it. No name is carried and no
+// surface could draw one from it.
+// see: A version's record is read from the blocks frozen as each completed
+public sealed record VersionBlockRow(string Version, DateTimeOffset OpenedAt, VersionBlock Block);
 
 // One of a name's biggest moves, as the store holds it.
 //
@@ -369,6 +370,9 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.ThemeSection, Touch.Read),
             new StoreTouch(Store.SourceDocument, Touch.Read),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
+            new StoreTouch(Store.RuleVersion, Touch.Read),
+            new StoreTouch(Store.VersionScore, Touch.Read),
+            new StoreTouch(Store.VersionBlock, Touch.Read),
             new StoreTouch(Store.SeriesState, Touch.Read),
             new StoreTouch(Store.ResearchRequest, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
@@ -1032,14 +1036,23 @@ public sealed class ReadApi : IComponent
 
     // What each version labelled the night's names, beside the label the night stored for the same
     // name, so the count of names a version moves is read here rather than computed on a page.
+    //
+    // Grouped by the window and not by the version's name, because a name closed and opened again
+    // carries rows of both windows and a session scored under each would otherwise be counted twice.
+    //
+    // Every score, whatever its sample flag. This is a description of tonight rather than evidence:
+    // on the night a window opens every score under it is in sample, and a region filtered on the
+    // flag would draw nothing on the one night it is first read. The record is where the flag
+    // decides, and it is applied there.
+    // see: A version's record belongs to the window its scores were written under and never to the version's name
     const string VersionLabels = @"
-        SELECT v.version, json_extract(v.plan, '$.trend'), COUNT(*),
+        SELECT v.version, v.opened_at, json_extract(v.plan, '$.trend'), COUNT(*),
                SUM(CASE WHEN json_extract(v.plan, '$.trend') <> d.trend_state THEN 1 ELSE 0 END)
         FROM version_score v
         JOIN ladder d ON d.ticker = v.ticker AND d.as_of = v.session_date
         WHERE v.rule = $rule AND v.session_date = $session
-        GROUP BY v.version, json_extract(v.plan, '$.trend')
-        ORDER BY v.version, json_extract(v.plan, '$.trend');
+        GROUP BY v.version, v.opened_at, json_extract(v.plan, '$.trend')
+        ORDER BY v.version, v.opened_at, json_extract(v.plan, '$.trend');
     ";
 
     const string LiveLabels = @"
@@ -1070,19 +1083,21 @@ public sealed class ReadApi : IComponent
         FROM labelled;
     ";
 
-    // The setups the live rule listed on the nights a version was scored over, with the flag that
-    // says the version's label takes each away. No ticker is selected and none could be: what a
-    // version's record is over is a count of setups and the sessions they were listed on.
-    const string VersionSetups = @"
-        SELECT v.version, f.session_date, f.outcome, f.null_win, f.null_win_at_sensitivity,
-               f.break_even, f.return_pct, f.planned_risk, f.on_earnings,
-               CASE WHEN json_extract(v.plan, '$.trend') = $downtrend AND d.trend_state <> $downtrend THEN 1 ELSE 0 END
-        FROM version_score v
-        JOIN ladder d ON d.ticker = v.ticker AND d.as_of = v.session_date
-        JOIN forward_return f
-            ON f.ticker = v.ticker AND f.session_date = v.session_date AND f.horizon = $horizon
-        WHERE v.rule = $rule
-        ORDER BY 1, 2;
+    // The blocks of every window of a rule, as the scorer froze each when it completed.
+    //
+    // No join to `version_score` and none to `ladder`. Both are dropped one year back from the
+    // newest stored session while a record is read at 8 blocks and again at 16, about four years
+    // of nights, so a record computed from them could never hold more than three whole blocks
+    // against a floor of eight and its verdict would be withheld for as long as the window stayed
+    // open. What the reader reads is the frozen row, which the retention does not reach.
+    // see: A version's record is read from the blocks frozen as each completed
+    const string VersionBlocks = @"
+        SELECT version, opened_at, block,
+               version_excess, version_setups, live_excess, live_setups,
+               version_null_sum, version_null_spread, live_null_sum, live_null_spread
+        FROM version_block
+        WHERE rule = $rule
+        ORDER BY version, opened_at, block;
     ";
 
     // The current members whose stored series does not end on the newest session
@@ -2479,7 +2494,7 @@ public sealed class ReadApi : IComponent
             rows.Add(new OpenVersionRow(
                 reader.GetString(0),
                 reader.GetString(1),
-                DateOnly.ParseExact(reader.GetString(2)[..10], "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+                RuleVersions.At(reader.GetString(2))));
         }
 
         return rows;
@@ -2502,23 +2517,24 @@ public sealed class ReadApi : IComponent
 
         while (await reader.ReadAsync())
         {
-            if (reader.IsDBNull(1))
+            if (reader.IsDBNull(2))
             {
                 continue;
             }
 
             rows.Add(new VersionLabelRow(
                 reader.GetString(0),
-                reader.GetString(1),
-                reader.GetInt32(2),
-                reader.GetInt32(3)));
+                RuleVersions.At(reader.GetString(1)),
+                reader.GetString(2),
+                reader.GetInt32(3),
+                reader.GetInt32(4)));
         }
 
         return rows;
     }
 
     // What the night's own rule labelled the same names.
-    public async Task<IReadOnlyList<VersionLabelRow>> LiveLabelsAsync(DateOnly night)
+    public async Task<IReadOnlyList<LiveLabelRow>> LiveLabelsAsync(DateOnly night)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
@@ -2526,13 +2542,13 @@ public sealed class ReadApi : IComponent
         command.CommandText = LiveLabels;
         command.Parameters.AddWithValue("$session", On(night));
 
-        var rows = new List<VersionLabelRow>();
+        var rows = new List<LiveLabelRow>();
 
         await using var reader = await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
         {
-            rows.Add(new VersionLabelRow(string.Empty, reader.GetString(0), reader.GetInt32(1), 0));
+            rows.Add(new LiveLabelRow(reader.GetString(0), reader.GetInt32(1)));
         }
 
         return rows;
@@ -2564,39 +2580,39 @@ public sealed class ReadApi : IComponent
             : (new LabelReturns(0, 0, 0, 0), nights);
     }
 
-    // Every setup the live rule listed on a night a version was scored over, with whether that
-    // version's label takes it away. A version of the trend rule only ever takes a setup away,
-    // since the label it changes is changed to the one that carries no tranche at all, so the
-    // version's own setups are these rows less the ones it removes and the outcomes are the ones
-    // already stored.
+    // Every block of every window of a rule, as the scorer froze each when it completed. A version
+    // of the trend rule only ever takes a setup away, since the label it changes is changed to the
+    // one that carries no tranche at all, so a block's two sides were summed from one set of
+    // stored outcomes on the night that block completed.
     // see: A trend version is judged by the candidates' test on its difference from the live rule
-    public async Task<IReadOnlyList<VersionSetupRow>> VersionSetupsAsync(string rule)
+    // see: A version's record is read from the blocks frozen as each completed
+    public async Task<IReadOnlyList<VersionBlockRow>> VersionBlocksAsync(string rule)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = VersionSetups;
+        command.CommandText = VersionBlocks;
         command.Parameters.AddWithValue("$rule", rule);
-        command.Parameters.AddWithValue("$horizon", EquityBrief.Core.Returns.ForwardReturnSeries.Setup);
-        command.Parameters.AddWithValue("$downtrend", EquityBrief.Core.Ladders.TrendState.Downtrend);
 
-        var rows = new List<VersionSetupRow>();
+        var rows = new List<VersionBlockRow>();
 
         await using var reader = await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
         {
-            rows.Add(new VersionSetupRow(
+            rows.Add(new VersionBlockRow(
                 reader.GetString(0),
-                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                reader.IsDBNull(2) ? null : reader.GetString(2),
-                reader.IsDBNull(3) ? null : reader.GetDouble(3),
-                reader.IsDBNull(4) ? null : reader.GetDouble(4),
-                reader.IsDBNull(5) ? null : reader.GetDouble(5),
-                reader.IsDBNull(6) ? null : reader.GetDouble(6),
-                reader.IsDBNull(7) ? null : reader.GetDouble(7),
-                !reader.IsDBNull(8) && reader.GetInt64(8) == 1,
-                reader.GetInt64(9) == 1));
+                RuleVersions.At(reader.GetString(1)),
+                new VersionBlock(
+                    reader.GetInt32(2),
+                    reader.GetDouble(3),
+                    reader.GetInt32(4),
+                    reader.GetDouble(5),
+                    reader.GetInt32(6),
+                    reader.GetDouble(7),
+                    reader.GetDouble(8),
+                    reader.GetDouble(9),
+                    reader.GetDouble(10))));
         }
 
         return rows;

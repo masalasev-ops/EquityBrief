@@ -356,7 +356,7 @@ public sealed record CandidateRegion(
 public sealed record TrendVersionRow(
     string Version,
     string Parameters,
-    DateOnly OpenedOn,
+    DateTimeOffset OpenedAt,
     IReadOnlyList<LabelCount> Labels,
     int Moved,
     VersionMeasured? Record);
@@ -3227,10 +3227,14 @@ public sealed class MarkRenderer : IComponent
 
         foreach (var version in region.Versions)
         {
+            // The instant and not the date it falls on, here and in the prose, because a window
+            // closed and opened again under one name can open twice on one day and the two are
+            // two records.
+            // see: A version's record belongs to the window its scores were written under and never to the version's name
             drawn.Append(Invariant, $"<article class=\"trend-version\" data-version=\"{Escaped(version.Version)}\" data-parameters=\"{Escaped(version.Parameters)}\" ");
-            drawn.Append(Invariant, $"data-opened=\"{version.OpenedOn:yyyy-MM-dd}\" data-moved=\"{version.Moved}\">");
+            drawn.Append(Invariant, $"data-opened=\"{Opened(version.OpenedAt)}\" data-moved=\"{version.Moved}\">");
             drawn.Append(Invariant, $"<h4>{Escaped(version.Version)}</h4>");
-            drawn.Append(Invariant, $"<p data-labels=\"version\">Opened {version.OpenedOn:yyyy-MM-dd} at {Escaped(version.Parameters)}. It labelled ");
+            drawn.Append(Invariant, $"<p data-labels=\"version\">Opened {Opened(version.OpenedAt)} at {Escaped(version.Parameters)}. It labelled ");
             drawn.Append(Labels(version.Labels));
             drawn.Append(Invariant, $", which moves {version.Moved} name(s) off the live rule's label.</p>");
 
@@ -3248,8 +3252,9 @@ public sealed class MarkRenderer : IComponent
 
         if (region.Best is { } best)
         {
-            drawn.Append(Invariant, $"<p data-reality-check=\"true\" data-best=\"{Escaped(best.Best)}\" data-p=\"{best.PValue:0.#####}\" data-challengers=\"{best.Challengers}\">");
-            drawn.Append(Invariant, $"Of {best.Challengers} version(s) read against the live rule as the benchmark, the largest difference is '{Escaped(best.Best)}', ");
+            drawn.Append(Invariant, $"<p data-reality-check=\"true\" data-best=\"{Escaped(best.Best)}\" data-best-opened=\"{Opened(best.BestOpenedAt)}\" ");
+            drawn.Append(Invariant, $"data-p=\"{best.PValue:0.#####}\" data-challengers=\"{best.Challengers}\">");
+            drawn.Append(Invariant, $"Of {best.Challengers} version(s) read against the live rule as the benchmark, the largest difference is '{Escaped(best.Best)}' opened {Opened(best.BestOpenedAt)}, ");
             drawn.Append(Invariant, $"at {best.PValue:0.#####} over every sign vector its blocks allow, which is the figure the best of several is read at ");
             drawn.Append(Invariant, $"and never its own. Two that both cross keep the narrower, unless the wider is ahead by {region.Margin:0.#} point(s).</p>");
         }
@@ -3263,6 +3268,9 @@ public sealed class MarkRenderer : IComponent
 
         return drawn.ToString();
     }
+
+    // A window's instant as every surface draws it, which is the form the store holds it in.
+    static string Opened(DateTimeOffset at) => RuleVersions.Stored(at);
 
     static string Labels(IReadOnlyList<LabelCount> labels) =>
         labels.Count == 0

@@ -25,6 +25,38 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-23 - ARCHITECTURE.html - the read and write matrix carries the blocks a version's record is frozen into
+Corrects: a version's record was read from `version_score` joined to `ladder`, both of which are dropped one year back, while the record is read at 8 blocks and again at 16, about four years of nights, so it could never hold more than 3 whole blocks against a floor of 8 and its verdict was withheld for as long as the window stayed open. Found at the phase 10 review of 2026-09-23.
+Was:
+> <th>Rule<br>versions</th><th>Version<br>scores</th>
+Now:
+> <th>Rule<br>versions</th><th>Version scores<br>and blocks</th>
+Why: the blocks a record is frozen into are a store of their own, and no component touches one of the two without the other, so they share a column as the six computed tables and the two research stores already do.
+
+### 2026-09-23 - ARCHITECTURE.html - the rule version scorer reads the forward returns and writes the blocks
+Corrects: the same defect. The scorer is where a block completes, so it is the component that can freeze one, and the outcomes it sums are the filler's.
+Was:
+> <td>bar store, indicators, swings, levels, ladders, rule versions</td><td>rule versions, version scores</td>
+Now:
+> <td>bar store, indicators, swings, levels, ladders, forward returns, rule versions, version scores, version blocks</td><td>rule versions, version scores, version blocks</td>
+Why: the freeze reads the scores it wrote, the labels the night stored and the outcomes the filler wrote, and writes one row per block; its matrix row fills the forward returns cell and the version cell with it.
+
+### 2026-09-23 - ARCHITECTURE.html - the read API's version cells are filled and the key says why they were blank
+Corrects: 10.4 built the run page's versions region and left the matrix saying the read API touches neither rule versions nor version scores. `component-access` reconciles a read from the declaration to the cell and not from the code to the declaration, so a read the code makes and nothing declares is the one direction it cannot see. Found at the phase 10 review of 2026-09-23.
+Was:
+> The read API's two cells under rule versions and version scores are blank for the reason its register cell was blank at 8.3: what the run page states about the scorer is the duration of its own step, which it reads off the run log like every other stage, and a counterfactual plan reaches no screen at all.
+Now:
+> The read API's two cells under rule versions and version scores were blank for the reason its register cell was blank at 8.3, and 10.4 built the run page's versions region, which draws each open window, what each version labelled tonight's names and the record of its difference from the live rule, so the two cells filled with it. The cells stayed blank through 10.4 and the 10.4 correction filled them: a read the matrix says a component does not make is the one direction `component-access` cannot see, since a read is reconciled from the declaration to the cell and not from the code to the declaration. What reaches a screen there is a count of names and a record over blocks, never a counterfactual plan and never a name.
+Why: the cells were a claim the code had already contradicted, and the key is where the reason a cell is blank is written, so the reason it stopped being blank belongs there too.
+
+### 2026-09-23 - .claude/rules/checks.md - the trend-versions roster row carries the frozen blocks and the window key
+Corrects: the row said a version is judged on the difference between its blocks and the live rule's and said nothing about where those blocks come from, so the record being read over setups the store cannot produce was a property nobody reading the roster would have missed.
+Was:
+> before anything was scored. The three versions are the ones the code offers
+Now:
+> before anything was scored. A block is frozen when it completes and read from then on: a record reaches its floor over a store whose scores and labels the retention has already taken, every field the record exposes is derived from the frozen rows alone and field by field, a block's sums and its window's origin do not move once what they were computed from is gone, a later block is counted from the stored origin and not from the earliest session the store still holds, and a block completes inside the retention window with the margin and the row cap worked from the code's own constants. An in sample score changes no frozen sum, while the labels region draws every score, which is every one of them on the night a window opens. A window is the whole of the version's name and the instant it opened: one name carrying two windows counts a session they share once under each, draws two rows, holds two records rather than one over their blocks together, and names the window as well as the name where the best of several is read. The three versions are the ones the code offers
+Why: the roster is where a check states what it asserts, and three of the four properties the correction adds are the ones the next sweep has to find.
+
 ### 2026-09-22 - .claude/rules/checks.md - the obligations roster row carries the report entry property
 Authorised by: A deferral names what produces the evidence, not a phase
 Was:

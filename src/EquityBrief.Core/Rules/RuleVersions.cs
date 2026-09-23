@@ -70,6 +70,16 @@ public static class LadderRules
     // re-merges the anchors, and the zone edges leave out the averages and the touches.
     public static bool ReadsMembers(string rule) =>
         ReplaysLevels(rule) || string.Equals(rule, ZoneEdgesFromNonAverageAnchors, StringComparison.Ordinal);
+
+    // Which rules a version of can only take a setup away. The trend rule selects the
+    // ladder's whole shape and the label a version writes is the one that carries no
+    // tranche, so a version's setups are the live rule's less the ones its label removes
+    // and every outcome is one the store already holds. That is what lets a difference be
+    // measured from stored outcomes at all, and a version of any other rule produces plans
+    // whose outcomes nothing computed.
+    // see: A trend version is judged by the candidates' test on its difference from the live rule
+    public static bool OnlyRemovesSetups(string rule) =>
+        string.Equals(rule, TrendRule, StringComparison.Ordinal);
 }
 
 // The bound, the windows and the drift check.
@@ -117,6 +127,21 @@ public static class RuleVersions
     public const string InSample = "in_sample";
 
     public const string Scored = "scored";
+
+    // The form a window's instant is stored in. One statement of it, because a
+    // score is keyed to the window by that instant and a reader spelling it a
+    // second way would key a score to a window that does not exist.
+    public const string Instant = "yyyy-MM-ddTHH:mm:ssZ";
+
+    public static DateTimeOffset At(string stored) =>
+        DateTimeOffset.ParseExact(
+            stored,
+            Instant,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+
+    public static string Stored(DateTimeOffset at) =>
+        at.ToUniversalTime().ToString(Instant, CultureInfo.InvariantCulture);
 
     // A score counts only for a session after the New York date its window opened on.
     // see: A version's score counts only for a session after the New York date its window opened on

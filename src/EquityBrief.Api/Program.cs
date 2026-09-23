@@ -750,7 +750,7 @@ app.MapGet("/screens/run/{night?}", async (
                 await read.OpenVersionsAsync(LadderRules.TrendRule),
                 await read.VersionLabelsAsync(LadderRules.TrendRule, dated),
                 await read.LiveLabelsAsync(dated),
-                await read.VersionSetupsAsync(LadderRules.TrendRule),
+                await read.VersionBlocksAsync(LadderRules.TrendRule),
                 flips.Returns,
                 flips.Nights,
                 dated)),
