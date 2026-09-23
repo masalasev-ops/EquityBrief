@@ -37,6 +37,19 @@ builder.Configuration.Sources.Insert(0, new JsonConfigurationSource
 // against, so the store and the report are the checkout's wherever the surface was started.
 var checkout = Checkout.Of(AppContext.BaseDirectory);
 
+// The worker's own settings in the checkout, beneath everything the surface reads, so the
+// queue page states the peak windows the drain waits out from the one file that states them
+// rather than from a second copy of them.
+if (checkout is not null && Directory.Exists(Path.Combine(checkout, "src", "EquityBrief.Worker")))
+{
+    builder.Configuration.Sources.Insert(0, new JsonConfigurationSource
+    {
+        FileProvider = new PhysicalFileProvider(Path.Combine(checkout, "src", "EquityBrief.Worker")),
+        Path = "appsettings.json",
+        Optional = true,
+    });
+}
+
 builder.Services.AddSingleton<IClock>(SystemClock.ForUnitedStatesSessions());
 builder.Services.AddSingleton(_ =>
     StoreLocation.Within(checkout, builder.Configuration[StoreLocation.DataRootKey]));
@@ -415,6 +428,22 @@ app.MapPost(SinglePageApp.WithdrawRoute + "{ticker}", async (string ticker, Http
         statusCode: taken.Written ? StatusCodes.Status200OK : StatusCodes.Status409Conflict);
 });
 
+// The peak windows the queue page states, or none where the prices cannot be read, which
+// the page says rather than refusing to draw the queue.
+static EquityBrief.Core.Providers.ResearchPricing? QueuePricing(IConfiguration configuration)
+{
+    try
+    {
+        return EquityBrief.Core.Providers.ResearchPricing.From(
+            key => configuration[key],
+            key => configuration.GetSection(key).GetChildren().Select(child => child.Value));
+    }
+    catch (InvalidOperationException)
+    {
+        return null;
+    }
+}
+
 // Which lane would write a report, read off configuration at the press rather than
 // chosen per request, so a queue drained a day later writes under the lane the press
 // meant. The local lane is drawn and refused until the two lanes' reports have been
@@ -682,12 +711,27 @@ app.MapGet("/screens/researched", async (ReadApi read, SinglePageApp page) =>
         "text/html; charset=utf-8"));
 
 // The queue, section 15.15, read here and composed by the app. It reads the request
-// store and writes nothing: the presses that write it are the two routes above.
-app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page) =>
-    Results.Content(
+// store and writes nothing: the presses that write it are the two routes above. When each
+// request will be written is worked out from the queue, the passes that ran to their end,
+// the peak windows the worker's prices state and the instant the page is drawn at, and
+// stated in New York's time with UTC beside it.
+// see: The queue page states when each request will be written
+app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page, IClock clock) =>
+{
+    var rows = await read.QueueAsync();
+    var estimate = QueueTimes.Estimate(await read.FinishedPassesAsync());
+    var now = clock.UtcNow;
+    var times = QueueTimes.For(
+        rows,
+        await read.PassStartsAsync(rows.Where(row => row.State == ResearchRequests.Writing)),
+        estimate,
+        QueuePricing(builder.Configuration),
+        now);
+
+    return Results.Content(
         page.QueueRegion(
         [
-            .. (await read.QueueAsync()).Select(row => new QueuedCell(
+            .. rows.Select((row, at) => new QueuedCell(
                 row.Ticker,
                 row.AskedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
                 row.AskedFrom,
@@ -695,9 +739,16 @@ app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page) =>
                 row.State,
                 row.SettledAt?.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
                 row.RunId,
-                row.Reason)),
-        ]),
-        "text/html; charset=utf-8"));
+                row.Reason,
+                new QueuedTime(
+                    times[at].Basis.ToString(),
+                    times[at].Starts?.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+                    times[at].Ends?.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+                    QueueTimes.Words(times[at], row, clock.SessionZone)))),
+        ],
+        new QueueEstimate(estimate.Count, estimate.Median is { } median ? QueueTimes.Minutes(median) : null)),
+        "text/html; charset=utf-8");
+});
 
 // The run page, section 15.10, read here and composed by the app.
 //

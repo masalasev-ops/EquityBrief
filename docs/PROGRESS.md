@@ -22225,3 +22225,71 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 85ffa45, and the operator's store
             under `data/` was not touched by either.
 Carried:    nothing new. 11.2 states on the queue page when each request will be written.
+### 11.2 - the queue page states when each request will be written, in New York's time with UTC beside it, and drains run one at a time   2026-09-23
+Built:      every request on the queue page carries when its pass will start or started and when it
+            is expected to end or ended, with what that rests on and both instants on the cell. A
+            request with nothing ahead of it starts now, or when the peak window it was asked in
+            ends; one behind others starts when they end, moved past a peak window it falls in, on
+            the median of the passes the store holds that ran to their end, which the page states
+            once above the rows with how many it is over; a store holding none says it cannot
+            estimate and gives no time behind the first request. A request being written states
+            when its pass started, read off the run its pass writes, and when it is expected to end,
+            never before the page is drawn; a settled one states when it settled. Each instant is
+            stated in New York's time with the offset that applies on its date and in UTC beside it,
+            read through the clock's own zone. The times are worked out in one place on the read
+            side, as the distances in typical days are. Drains run one at a time over a store: a
+            drain holds a file under the data root open for as long as it runs, and one started
+            while another holds it waits for it to end, so the order the page states is the order
+            passes run in.
+Prices:     read by one reader in the core, which the worker's research lane and the read surface
+            both call, and the read surface reads the worker's own settings file in the checkout
+            beneath its own, so the peak windows the page states are the ones the drain waits out
+            and no second copy of them exists.
+Written:    section 15.15 gains the row When each will be written, placed at 11.2 and drawn here,
+            and its note says drains run one at a time. The plan's 11.2 says so too, and
+            `RUNBOOK.md` names the lock. The `read-surface` roster row names what it now asserts.
+            Every spec line changed has its prior text in `CHANGELOG.md`.
+Measured:   over the operator's store, opened read-only on 2026-09-23: two passes ran to their
+            end, NVDA from 03:05:12 to 03:31:29 UTC on 2026-09-19 and DGX from 19:09:00 to 19:12:58
+            UTC on 2026-09-23, 26 minutes 17 seconds and 3 minutes 58 seconds, so the page states
+            a pass as 15 minutes, the median of 2. A third, NVDA from 15:52 on 2026-09-18, wrote no
+            row for its last stage and is not among them, which is why the plan's three passes are
+            two here.
+Expected:   derived by hand over constructed queues at instants chosen on both sides of the
+            windows: at noon on a Monday a request alone starts at once and ends fifteen minutes
+            later; at 02:30 it starts at 04:00; at 00:40 behind a pass started at 00:35, the pass
+            ends at 00:50, the first request runs to 01:05 and the second, falling in the window,
+            starts at 04:00; a pass started an hour ago is expected to end now; four in the morning
+            UTC is midnight in New York on 2026-10-26 and eleven at night on 2026-11-01.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. One added, the queue page's row, passing here, as predicted.
+Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that a
+            request inside a peak window starts when it ends, that a request behind others starts
+            when they end, that the estimate is the median of the passes that ran to their end, and
+            that one drain waits for another.
+            Predicted:
+            M1 the peak window ignored where a request starts: red in
+            `ARequestWithNothingAheadOfItStartsNowOffPeakAndAtTheWindowsEndInsideOne`,
+            `ARequestBehindOthersStartsWhenTheyEndMovedPastAPeakWindowItFallsIn`,
+            `AnInstantIsStatedInNewYorksTimeWithItsOffsetOnBothSidesOfTheChangeAndUtcBesideIt` and
+            `TheQueuePageStatesWhenEachRequestWillBeWrittenReadBackAgainstTheStore`, green
+            everywhere else.
+            M2 a request's start taken as now whatever is ahead of it: red in
+            `ARequestBehindOthersStartsWhenTheyEndMovedPastAPeakWindowItFallsIn` and
+            `TheQueuePageStatesWhenEachRequestWillBeWrittenReadBackAgainstTheStore`, green
+            everywhere else.
+            M3 the estimate taken as the longest pass rather than the median: red in
+            `TheMedianIsTakenOverThePassesThatRanToTheirEndAndSaysHowManyAndNoneSaysItCannotEstimate`,
+            `ARequestWithNothingAheadOfItStartsNowOffPeakAndAtTheWindowsEndInsideOne`,
+            `ARequestBehindOthersStartsWhenTheyEndMovedPastAPeakWindowItFallsIn` and
+            `TheQueuePageStatesWhenEachRequestWillBeWrittenReadBackAgainstTheStore`, green
+            everywhere else.
+            M4 the drain's file opened shared, so a second drain takes it at once: red in
+            `ADrainStartedWhileAnotherHoldsTheQueueWaitsForItToEnd`, green everywhere else.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing new. 11.3 states the report's place in the queue on tonight's rows and the
+            selected name, from the same reading.

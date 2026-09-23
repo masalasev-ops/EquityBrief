@@ -28,7 +28,17 @@ public sealed record QueuedCell(
     string State,
     string? SettledAt,
     string? RunId,
-    string? Reason);
+    string? Reason,
+    QueuedTime? Time = null);
+
+// When one request's pass will start or started and will end or ended, as the read surface
+// worked it out: what it rests on, the two instants in UTC as the store spells an instant,
+// and the words the page states them in.
+public sealed record QueuedTime(string Basis, string? Starts, string? Ends, string Words);
+
+// What the queue page's times rest on: how many passes that ran to their end the store
+// holds, and their median in whole minutes where it holds any.
+public sealed record QueueEstimate(int Passes, string? Minutes);
 
 // The shell the browser loads once, and the routes it answers.
 //
@@ -998,7 +1008,7 @@ public sealed class SinglePageApp : IComponent
     // here starts a pass: the press that wrote a request started the worker's drain, and a
     // drain that could not be started leaves a request outstanding rather than losing it.
     // see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
-    public string QueueRegion(IReadOnlyList<QueuedCell> rows)
+    public string QueueRegion(IReadOnlyList<QueuedCell> rows, QueueEstimate? estimate = null)
     {
         var outstanding = rows.Where(row => row.State == Outstanding).ToArray();
         var writing = rows.Where(row => row.State == Writing).ToArray();
@@ -1016,6 +1026,14 @@ public sealed class SinglePageApp : IComponent
         // whether to ask for one, and what the choice they cannot make waits on.
         body.Append(Invariant($"<p class=\"lane-waits\" data-waits=\"local\">Report generation is set to the paid lane, and {LaneWaitsOn}.</p>"));
 
+        // What every time on the page rests on, stated once above them.
+        if (estimate is not null)
+        {
+            body.Append(estimate.Minutes is { } minutes
+                ? Invariant($"<p class=\"queue-estimate\" data-passes=\"{estimate.Passes}\" data-median-minutes=\"{minutes}\">Times are New York's with the offset named and UTC beside them. A pass is expected to take {minutes} minutes, the median of the {estimate.Passes} {(estimate.Passes == 1 ? "pass" : "passes")} the store holds that ran to their end, and a pass asked at peak waits for the off-peak rate.</p>")
+                : Invariant($"<p class=\"queue-estimate\" data-passes=\"0\">Times are New York's with the offset named and UTC beside them. The store holds no pass that ran to its end, so it cannot estimate how long one takes, and no request behind another is given a time.</p>"));
+        }
+
         body.Append(Invariant($"<div class=\"queue-part\" data-region=\"outstanding\" data-rows=\"{outstanding.Length}\">"));
         body.Append("<h3>Outstanding</h3>");
 
@@ -1026,11 +1044,12 @@ public sealed class SinglePageApp : IComponent
         else
         {
             body.Append("<p class=\"lede\">Oldest first, which is the order the worker takes them in.</p>");
-            body.Append("<div class=\"tbl-wrap\"><table class=\"queue-table\"><thead><tr><th>Name</th><th>Asked</th><th>From</th><th>Lane</th><th>Take it out</th></tr></thead><tbody>");
+            body.Append("<div class=\"tbl-wrap\"><table class=\"queue-table\"><thead><tr><th>Name</th><th>Asked</th><th>From</th><th>Lane</th><th>When</th><th>Take it out</th></tr></thead><tbody>");
 
             foreach (var row in outstanding)
             {
                 body.Append(Row(row));
+                body.Append(When(row));
                 // The control the operator asked for: a report that has not been generated
                 // is one nobody has started, so it is drawn on an outstanding request and
                 // on no other. The press names the request by its instant.
@@ -1053,11 +1072,12 @@ public sealed class SinglePageApp : IComponent
         }
         else
         {
-            body.Append("<div class=\"tbl-wrap\"><table class=\"queue-table\"><thead><tr><th>Name</th><th>Asked</th><th>From</th><th>Lane</th><th>Under</th></tr></thead><tbody>");
+            body.Append("<div class=\"tbl-wrap\"><table class=\"queue-table\"><thead><tr><th>Name</th><th>Asked</th><th>From</th><th>Lane</th><th>When</th><th>Under</th></tr></thead><tbody>");
 
             foreach (var row in writing)
             {
                 body.Append(Row(row));
+                body.Append(When(row));
                 body.Append(Invariant($"<td>{Escaped(row.RunId ?? "the pass it is running under is not on the run log yet")}</td></tr>"));
             }
 
@@ -1076,11 +1096,12 @@ public sealed class SinglePageApp : IComponent
         else
         {
             body.Append("<p class=\"lede\">Newest first. Nothing is removed: what was asked for and what came of it are both kept.</p>");
-            body.Append("<div class=\"tbl-wrap\"><table class=\"queue-table\"><thead><tr><th>Name</th><th>Asked</th><th>From</th><th>Lane</th><th>Came to</th><th>Why</th></tr></thead><tbody>");
+            body.Append("<div class=\"tbl-wrap\"><table class=\"queue-table\"><thead><tr><th>Name</th><th>Asked</th><th>From</th><th>Lane</th><th>When</th><th>Came to</th><th>Why</th></tr></thead><tbody>");
 
             foreach (var row in settled)
             {
                 body.Append(Row(row));
+                body.Append(When(row));
                 body.Append(Invariant($"<td class=\"q-state\">{Escaped(row.State)}</td>"));
                 body.Append(Invariant($"<td>{Escaped(row.Reason ?? string.Empty)}</td></tr>"));
             }
@@ -1110,6 +1131,15 @@ public sealed class SinglePageApp : IComponent
                 region: "queue")
             + "</section>";
     }
+
+    // When a request's pass will start or started and will end or ended, with what that rests
+    // on and both instants on the cell, so a reader of the markup reads the instants the words
+    // state. A request drawn with no time says so rather than leaving the cell empty.
+    // see: The queue page states when each request will be written
+    static string When(QueuedCell row) =>
+        row.Time is { } time
+            ? Invariant($"<td class=\"q-when\" data-basis=\"{Escaped(time.Basis)}\" data-starts=\"{Escaped(time.Starts ?? string.Empty)}\" data-ends=\"{Escaped(time.Ends ?? string.Empty)}\">{Escaped(time.Words)}</td>")
+            : "<td class=\"q-when\" data-basis=\"none\">no time is stated</td>";
 
     // The four cells every region shares, so a request reads the same way whichever
     // region it is in.

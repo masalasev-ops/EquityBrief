@@ -2822,6 +2822,65 @@ public sealed class ReadApi : IComponent
                 : $"nothing was taken out: {ticker}'s request is {state}, and only one nobody has started can be withdrawn.");
     }
 
+    // The passes that ran to their end, each from the instant its run is named for to the end
+    // of its last stage, which is the population the queue page's estimate is the median of.
+    // A pass the runner stopped before its last stage wrote no row here and is not one of them.
+    const string FinishedPasses = @"
+        SELECT run_id, ended_at FROM run_log
+        WHERE stage = 'research' AND outcome = 'ok' AND run_id LIKE 'research-%' AND ended_at IS NOT NULL;
+    ";
+
+    // The newest row of a name's passes that started at or after a request was asked for,
+    // read by the order rows were written, whose run names the instant that pass started.
+    const string PassSince = @"
+        SELECT run_id FROM run_log
+        WHERE run_id LIKE $like AND started_at >= $asked_at
+        ORDER BY rowid DESC LIMIT 1;
+    ";
+
+    public async Task<IReadOnlyList<TimeSpan>> FinishedPassesAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FinishedPasses;
+
+        var passes = new List<TimeSpan>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            if (PassRun.StartedAt(reader.GetString(0)) is { } started)
+            {
+                passes.Add(RequestedAt(reader.GetString(1)) - started);
+            }
+        }
+
+        return passes;
+    }
+
+    // When each request being written started its pass, where its pass has written a row.
+    public async Task<IReadOnlyDictionary<RequestRow, DateTimeOffset?>> PassStartsAsync(IEnumerable<RequestRow> writing)
+    {
+        await using var connection = Open();
+
+        var starts = new Dictionary<RequestRow, DateTimeOffset?>();
+
+        foreach (var row in writing)
+        {
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = PassSince;
+            command.Parameters.AddWithValue("$like", PassRun.Like(row.Ticker));
+            command.Parameters.AddWithValue("$asked_at", row.AskedAt.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+
+            starts[row] = await command.ExecuteScalarAsync() is string run ? PassRun.StartedAt(run) : null;
+        }
+
+        return starts;
+    }
+
     public async Task<IReadOnlyList<RequestRow>> QueueAsync()
     {
         await using var connection = Open();
