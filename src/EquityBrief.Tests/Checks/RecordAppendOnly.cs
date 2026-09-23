@@ -263,4 +263,228 @@ public class RecordAppendOnly
             "1.1 - the membership loader 2026-09-08",
             HeadingsIn("###   1.1 - the membership loader\t\t2026-09-08  \n")[0]);
     }
+
+    // What an entry writes where its sweep's result goes before the sweep has
+    // run. An entry is written before the run that verifies it, so the record
+    // carries this for as long as it takes to run, and an entry that keeps it
+    // afterwards has a prediction nothing answered.
+    internal const string Placeholder = "Results: FILLED IN AFTER THE SWEEP.";
+
+    // The entries whose sweep results were never written into them, named with
+    // their reason so the window is visible rather than the placeholders sitting
+    // silently outside a guard.
+    //
+    // Each was left unfilled when it was written. The three of phase 9 below
+    // have their real results in dated corrections of their own; the rest were
+    // never run into the record at all. All eight then had the placeholder
+    // overwritten by a fill aimed at one entry that matched every entry, and
+    // were restored by the correction that names them.
+    internal static readonly string[] Unrecorded =
+    [
+        "5.8 - correction: the risks are drawn one part to a risk with what would confirm it beneath it, rather than as one run of prose 2026-09-20",
+        "5.8 - correction: a reason on tonight's list opens on the values the night measured it over, rather than holding them in an attribute a click never reaches 2026-09-20",
+        "5.8 - correction: a reason's values are drawn under the pointer and go as it leaves, rather than needing a click to open and another to put away 2026-09-20",
+        "6.5 - correction: a name holding nothing but the key under each figure is missing its research rather than standing as written 2026-09-20",
+        "9.1 - each row on tonight's list says whether the name holds research, and the link is drawn with the words of whatever it opens 2026-09-20",
+        "9.2 - the request store, both surfaces writing an ask, and the worker draining it oldest first 2026-09-20",
+        "9.3 - the queue screen, and taking a report out of it 2026-09-20",
+        "9.4 - the report generation lane, stated and half refused 2026-09-20",
+    ];
+
+    // One entry, from its heading to the next. The heading is collapsed the way
+    // HeadingsIn collapses it, so an entry is named the same by both readers.
+    internal static IReadOnlyList<(string Heading, string Body)> Entries(string record) =>
+        [.. Regex
+            .Matches(record, @"^### (?<heading>[^\r\n]*)(?<body>(?:(?!^### )[\s\S])*)", RegexOptions.Multiline)
+            .Select(match => (
+                Regex.Replace(match.Groups["heading"].Value, @"\s+", " ").Trim(),
+                match.Groups["body"].Value))];
+
+    // A `Results:` label and the indented lines under it, collapsed to one line
+    // so an entry reflowed to a different width reads as the same result.
+    static readonly Regex ResultBlock = new(
+        @"^[ ]*Results:(?<text>[^\r\n]*(?:\r?\n[ ]{12,}[^\r\n]*)*)",
+        RegexOptions.Multiline);
+
+    internal static string? ResultIn(string body)
+    {
+        var block = ResultBlock.Match(body);
+
+        return block.Success
+            ? Regex.Replace("Results:" + block.Groups["text"].Value, @"\s+", " ").Trim()
+            : null;
+    }
+
+    // Two sweeps run over two trees and are written up by whoever ran them, so
+    // two entries cannot carry the same result. An identical pair is not a
+    // coincidence: it is the signature of a fill aimed at one entry that matched
+    // every entry carrying the same placeholder, and it is invisible from inside
+    // either entry, because a result naming another tree's run still reads as a
+    // result. Nothing read the record for it, so a phase's sweep could report a
+    // later phase's numbers and pass every gate.
+    [Fact]
+    public void NoTwoEntriesRecordTheSameSweepResult()
+    {
+        var recorded = Entries(Corpus.Read(Record))
+            .Select(entry => (entry.Heading, Result: ResultIn(entry.Body)))
+            .Where(entry => entry.Result is not null && entry.Result != Placeholder)
+            .ToArray();
+
+        // Scope, stated in advance: the entries that record a sweep's result.
+        // It is the population the property is over, and it only grows.
+        Assert.True(
+            recorded.Length >= 90,
+            $"Read {recorded.Length} recorded sweep result(s), expected at least 90.");
+
+        var shared = recorded
+            .GroupBy(entry => entry.Result, StringComparer.Ordinal)
+            .Where(group => group.Count() > 1)
+            .Select(group =>
+                $"{group.Count()} entries record one result word for word, among them " +
+                $"\"{group.First().Heading}\" and \"{group.Last().Heading}\"")
+            .ToArray();
+
+        Assert.True(
+            shared.Length == 0,
+            string.Join("\n", shared) + "\nA sweep is run over one tree and written up once, so two " +
+            "entries sharing a result means one of them was filled by an edit meant for the other.");
+    }
+
+    // The same fault read from the other side. An entry states the baseline its
+    // sweep ran against, and its own Verified line states the run that produced
+    // its figures; both are about that entry's tree, so they are one number.
+    [Fact]
+    public void NoEntryStatesASweepBaselineThatDisagreesWithItsOwnRun()
+    {
+        var read = new List<string>();
+        var wrong = new List<string>();
+
+        foreach (var (heading, body) in Entries(Corpus.Read(Record)))
+        {
+            var baseline = Regex.Match(body, @"[Tt]he baseline is (?<count>\d+) of \k<count>\b");
+
+            if (!baseline.Success)
+            {
+                continue;
+            }
+
+            var own = Regex.Matches(body, @"(?<count>\d+) of \k<count> tests\b")
+                .Select(match => match.Groups["count"].Value)
+                .ToArray();
+
+            if (own.Length == 0)
+            {
+                continue;
+            }
+
+            read.Add(heading);
+
+            if (!own.Contains(baseline.Groups["count"].Value, StringComparer.Ordinal))
+            {
+                wrong.Add(
+                    $"\"{heading}\" states a sweep baseline of {baseline.Groups["count"].Value} " +
+                    $"over a run of {string.Join(" and ", own)} tests");
+            }
+        }
+
+        // Scope, stated in advance. It is small because this is the form recent
+        // entries write a baseline in, and it is the context rather than the
+        // property, which is that none of them disagrees.
+        Assert.True(read.Count >= 3, $"Read {read.Count} entr(ies) stating a sweep baseline, expected at least 3.");
+
+        Assert.True(
+            wrong.Count == 0,
+            string.Join("\n", wrong) + "\nA sweep's baseline is the tree it ran over, which is the " +
+            "tree the entry's own run measured.");
+    }
+
+    // An entry is written before the run that verifies it, so the newest entry
+    // may stand with its result unwritten while that run happens. Every other
+    // one carrying a placeholder is a prediction nothing answered, and the eight
+    // this repository has are named above rather than tolerated by a count.
+    [Fact]
+    public void AnUnfilledSweepResultStandsOnlyInTheNewestEntryOrTheOnesNamedHere()
+    {
+        var entries = Entries(Corpus.Read(Record));
+
+        Assert.True(entries.Count >= 50, $"Read {entries.Count} entries, expected at least 50.");
+
+        var newest = entries[^1].Heading;
+
+        var unfilled = entries
+            .Where(entry => ResultIn(entry.Body) == Placeholder)
+            .Select(entry => entry.Heading)
+            .ToArray();
+
+        var unexpected = unfilled
+            .Where(heading => heading != newest && !Unrecorded.Contains(heading, StringComparer.Ordinal))
+            .ToArray();
+
+        Assert.True(
+            unexpected.Length == 0,
+            $"{unexpected.Length} entr(ies) carry an unwritten sweep result and are neither the newest " +
+            $"nor named in this check: {string.Join("; ", unexpected.Select(heading => $"\"{heading}\""))}. " +
+            "Write the sweep's result into the entry rather than widening this exemption.");
+
+        // The other direction. An exemption for an entry that no longer carries
+        // one is an exemption nothing reads, so filling one means removing it
+        // from the list in the same commit.
+        var filled = Unrecorded
+            .Where(heading => !unfilled.Contains(heading, StringComparer.Ordinal))
+            .ToArray();
+
+        Assert.True(
+            filled.Length == 0,
+            $"{filled.Length} entr(ies) named here as unwritten now carry a result: " +
+            $"{string.Join("; ", filled.Select(heading => $"\"{heading}\""))}. Remove each from the list.");
+    }
+
+    // The readers, shown to find each fault and to leave a sound record alone.
+    // Without this a reader that matched nothing would pass all three assertions
+    // over any record at all.
+    [Fact]
+    public void TheReadersFindASharedResultAnUnfilledOneAndAMismatchedBaseline()
+    {
+        const string Sound =
+            "### 1.1 - a checkpoint   2026-09-08\n" +
+            "Mutated:    a rule.\n" +
+            "            Results: M1 red in the test predicted for it. The baseline is 10 of 10.\n" +
+            "Verified:   `tools/ci.ps1` green, 10 of 10 tests ran.\n" +
+            "\n" +
+            "### 1.2 - another checkpoint   2026-09-09\n" +
+            "Mutated:    another rule.\n" +
+            "            Results: M1 red in the one test that reads the column.\n" +
+            "Verified:   `tools/ci.ps1` green, 11 of 11 tests ran.\n";
+
+        var sound = Entries(Sound);
+
+        Assert.Equal(2, sound.Count);
+        Assert.Equal("1.1 - a checkpoint 2026-09-08", sound[0].Heading);
+
+        // The block is read whole and collapsed, so a wrapped result is one string.
+        Assert.Equal(
+            "Results: M1 red in the test predicted for it. The baseline is 10 of 10.",
+            ResultIn(sound[0].Body));
+
+        Assert.Null(ResultIn("Built:      something with no sweep at all.\n"));
+
+        // A placeholder is told from a result.
+        Assert.Equal(Placeholder, ResultIn("Mutated:    a rule.\n            " + Placeholder + "\n"));
+
+        // Two entries sharing a result, which is what a fill matching every
+        // entry leaves behind.
+        var shared = Entries(Sound.Replace(
+            "Results: M1 red in the one test that reads the column.",
+            "Results: M1 red in the test predicted for it. The baseline is 10 of 10."));
+
+        Assert.Equal(ResultIn(shared[0].Body), ResultIn(shared[1].Body));
+
+        // And a baseline that names another tree's run.
+        var mismatched = Entries(Sound.Replace("The baseline is 10 of 10.", "The baseline is 99 of 99."))[0];
+
+        Assert.Matches(@"[Tt]he baseline is (?<count>\d+) of \k<count>\b", mismatched.Body);
+        Assert.DoesNotContain(
+            "99",
+            Regex.Matches(mismatched.Body, @"(?<count>\d+) of \k<count> tests\b").Select(match => match.Groups["count"].Value));
+    }
 }

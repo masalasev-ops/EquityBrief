@@ -6347,3 +6347,13 @@ Was:
 Now: the same two paragraphs, followed by what the second provider puts on the row, why its parts sit on the newest filing alone, and the three reasons `source` distinguishes.
 
 Why: the note said `source` names which of three each part came from, and from 6.2 there are three reasons a part can be empty rather than three sources: the provider files it for nobody, the archive served none, and the archive was not read. A column that could not tell the third from the first would report a company with no segments after a failed fetch, which is the same class of fault as a blank cell reading as a zero. The `facts` part is new to the note because it is new to the row.
+
+### 2026-09-23 - .claude/rules/checks.md - record-append-only reads what an entry records, not only its heading
+Corrects: the roster row, which described the check as reading entry headings and decision names and nothing else.
+
+Was:
+> Every decision name ever present in `DECISIONS.md` is still present, current or under "Previously decided", read the same way, because a superseded decision that is deleted rather than moved is invisible to `no-superseded-citation` |
+
+Now: the same row, carrying the three assertions the check gains: that no two entries record the same sweep result, that no entry states a sweep baseline its own run disagrees with, and that a result left unwritten stands only in the newest entry or in the ones the check names.
+
+Why: the roster is what says which properties run, so a check that grows three assertions while its row does not is three properties nobody wrote down. They exist because an entry's result can name another tree's run and still read, from inside that entry, exactly like its own, which is what a fill aimed at one entry and matching every entry leaves behind.

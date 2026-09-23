@@ -17655,10 +17655,7 @@ Mutated:    the rule, stated before the sweep: break each of the four properties
             M4 prose the writer already broke into paragraphs not recognised as the parts it states:
             the risks test red where it counts the parts against the stored paragraphs; nothing
             else.
-            Results: one run of the whole suite, never a filter, in a detached worktree at
-            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
-            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
-            1 red, the test predicted for it, and nothing else: the prediction held.
+            Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1137 of 1137 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
@@ -17744,10 +17741,7 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             green while answering about a population it could not tell apart. The two are now
             counted apart, each read inside the element that holds it. This is the prefix shape the
             writing rules name, arriving a fifth time.
-            Results: one run of the whole suite, never a filter, in a detached worktree at
-            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
-            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
-            1 red, the test predicted for it, and nothing else: the prediction held.
+            Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1138 of 1138 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
@@ -17824,10 +17818,7 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             assertion it was not aimed at has shown nothing about the one it was. The attribute is
             now put on the panel itself, which no other assertion reads, and M2 was shown red by
             hand on the intended assertion before the sweep was run again.
-            Results: one run of the whole suite, never a filter, in a detached worktree at
-            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
-            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
-            1 red, the test predicted for it, and nothing else: the prediction held.
+            Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1138 of 1138 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
@@ -17895,10 +17886,7 @@ Mutated:    the rule, stated before the sweep: break each of the two properties 
             M2 the key dropped from the judgement rather than from the record test alone: the
             beside-research test red where it reads the stale sections, and nothing else, the
             key-alone test still missing because the filter leaves it nothing either way.
-            Results: one run of the whole suite, never a filter, in a detached worktree at
-            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
-            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
-            1 red, the test predicted for it, and nothing else: the prediction held.
+            Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1140 of 1140 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
@@ -18062,10 +18050,7 @@ Mutated:    the rule, stated before the sweep: break each of the two properties 
             first still following the store.
             M2 the header's prose counted over every accepted section again: the header test red
             where it reads its own counts, and nothing else, the rows test reading no header.
-            Results: one run of the whole suite, never a filter, in a detached worktree at
-            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
-            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
-            1 red, the test predicted for it, and nothing else: the prediction held.
+            Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1141 of 1141 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 381 claims,
@@ -18116,10 +18101,7 @@ Mutated:    the rule, stated before the sweep: break each of the two properties 
             M2 the settle rule reading any outcome as written: the settle test red on every outcome
             but the one the runner writes for a pass that ran to its end, and nothing else, the route
             tests reaching no drain.
-            Results: one run of the whole suite, never a filter, in a detached worktree at
-            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
-            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
-            1 red, the test predicted for it, and nothing else: the prediction held.
+            Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1143 of 1143 tests
             ran with none failed, migrations 0 to 30 with one added and none pending, exit 0, against
             `data-ci` and never `data`. `tools/verify-phase.ps1` green at 383 claims, 379 PASS, 0
@@ -18157,10 +18139,7 @@ Mutated:    the rule, stated before the sweep: break the property the screen res
             M3 every request drawn as outstanding whatever its state: the region test red where it
             reads each request against the region it landed in, and the control test red where it
             reads the control onto a claimed request.
-            Results: one run of the whole suite, never a filter, in a detached worktree at
-            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
-            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
-            1 red, the test predicted for it, and nothing else: the prediction held.
+            Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1146 of 1146 tests
             ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 383 claims, 383
@@ -18189,10 +18168,7 @@ Mutated:    the rule, stated before the sweep: break the property the lane rests
             Predicted:
             M4 the local choice drawn as a button: the lane test red where it reads that the head
             carries no control, and nothing else, the screen's own test reading the waits line only.
-            Results: one run of the whole suite, never a filter, in a detached worktree at
-            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
-            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
-            1 red, the test predicted for it, and nothing else: the prediction held.
+            Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1148 of 1148 tests
             ran with none failed, migrations 0 to 30 with one added and none pending, exit 0, against
             `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384 PASS, 0
@@ -20750,3 +20726,86 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             over the tree carrying this entry, and the operator's store under `data/` was not
             touched by either.
 Carried:    nothing new. The phase 10 sign-off stays owed to a fresh session.
+
+### 10.5 - correction: eight entries carried a sweep result that was not theirs, where filling one entry's placeholder filled every entry that shared it   2026-09-23
+Corrects:   10.5, whose own entry was written before its verifying run and filled from it, as the
+            done condition requires. The fill replaced the string it was looking for everywhere in
+            the record rather than once. Nine lines matched. One was 10.5's own and the other eight
+            belonged to entries written between 2026-09-20 and that night, which from then on each
+            read: one run of the whole suite in a detached worktree at da6eb4b, a baseline of 1217
+            of 1217, and M1 red. That is 10.5's sweep and it is false in all eight. Their own runs
+            were 1137, 1138, 1138, 1140, 1141, 1143, 1146 and 1148 tests, at commits weeks earlier,
+            and several of them predicted M1 and M2, or up to M4, where the text pasted over them
+            reports M1 alone.
+Why it is  the record is what a sign-off reads, and an unwritten result reads as owed while a
+worse:      result naming another tree's run reads as discharged. The eight went from saying
+            nothing to saying something untrue, and nothing in the suite could tell: every
+            assertion over the record read headings, and a result is in a body.
+Found:      on 2026-09-23, by this session, checking whether the eight unfilled results the phase
+            10 sign-off handoff named were still unfilled. They were not, and what replaced them
+            was wrong. The handoff was issued over this and is withdrawn by this entry; the
+            sign-off is not to be run against a record making a false statement.
+Also found: commit 5959171 of 2026-09-20 carries the subject "9.1 ... correction: the sweep's
+            results, two mutations each red exactly where predicted", and the line its diff adds is
+            `Results: FILLED IN AFTER THE SWEEP.` The commit that says it recorded 9.1's results
+            recorded the placeholder. 9.1's sweep results are not in the record and this entry does
+            not invent them.
+Repaired:   the eight restored to the placeholder they actually held, which is what the record said
+            before the fill and is true where the pasted text was not. 10.5's own result is left
+            exactly as written, because it is the one the fill was for. Nothing is struck through
+            and no entry is rewritten to say something new: the restoration puts back the text the
+            fill took, and this entry is where the record says what happened.
+Standing:   of the eight, 9.2, 9.3 and 9.4 have their real sweep results in three dated corrections
+            of their own, written on 2026-09-20, which stand untouched, so those three are recorded
+            in the record even though their own entries are not. The three 5.8 corrections, the 6.5
+            correction and 9.1 have no record of their sweep anywhere. Those five sweeps were run
+            and their results were never written down, and re-running them now over today's tree
+            would answer a different question from the one their entries asked, so this entry says
+            they are unrecorded rather than manufacturing them.
+Guarded:    `record-append-only`, three tests added and one reader proof.
+            `NoTwoEntriesRecordTheSameSweepResult`: a sweep is run over one tree and written up
+            once, so two entries cannot carry the same result word for word, and an identical pair
+            is the signature of a fill aimed at one entry that matched every entry. Over 98
+            distinct results in 105 entries today, and it is the assertion that would have caught
+            this the moment it happened.
+            `NoEntryStatesASweepBaselineThatDisagreesWithItsOwnRun`: the same fault from the other
+            side, an entry's stated baseline against the run its own record measured.
+            `AnUnfilledSweepResultStandsOnlyInTheNewestEntryOrTheOnesNamedHere`: the newest entry
+            may stand unwritten while the run that verifies it happens, which is what done
+            condition 8 requires; every other one is named in the check with its reason, both
+            directions, so filling one means removing it from the list in the same commit and an
+            exemption cannot outlive what it exempts.
+Expected:   derived, and a derivation rather than a file: no stage's output over the fixture moves,
+            because nothing the night runs is touched. What is added is read off the record itself,
+            over a population the record states.
+Tests:      1222, from 1218. Four added to `record-append-only`, three assertions and the reader
+            proof under them. No migration, and no pin moves.
+Mutated:    the rule, stated before the run: put the defect back, because the property these
+            assertions add is that the record refuses exactly the state the fill left it in, and a
+            mutation that breaks the reader instead would show the reader failing rather than the
+            record being refused. Not mutated: the heading and decision high-water marks this check
+            already carried, which this correction does not touch.
+            Predicted:
+            M1 10.5's result pasted over one of the eight restored placeholders, which is the fill
+            happening once instead of eight times: red in all three tests added, and in no other.
+            `NoTwoEntriesRecordTheSameSweepResult` because two entries then carry one result;
+            `NoEntryStatesASweepBaselineThatDisagreesWithItsOwnRun` because that entry's own run is
+            not 1217; and `AnUnfilledSweepResultStandsOnlyInTheNewestEntryOrTheOnesNamedHere`
+            because an entry named here as unwritten now carries a result, which is the direction
+            that stops an exemption outliving what it exempts.
+            Results: one run of the whole suite in a detached worktree at fb97ae0, never a filter,
+            the mutation reverted with `git checkout` and the tree read clean after. The baseline
+            is 1222 of 1222. M1 turned exactly 3 red, which are the three assertions this
+            correction adds and no others, 1219 green: the two entries sharing one result, the
+            baseline of 1217 over a run of 1137, and an entry named as unwritten carrying a result.
+Held:       the prediction exactly, in the tests it named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1222 of 1222
+            tests ran with none failed, migrations 0 to 32 with none added and none pending, schema
+            version 32, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green
+            at 35 tables, 406 claims, 406 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 413
+            placements and verdicts reconciled against a floor of 34, 41 of 41 roster checks
+            carried and all 41 run, 1222 of 1222 tests. Both gates ran over the tree carrying this
+            entry, and the operator's store under `data/` was not touched by either.
+Carried:    five sweeps whose results are not in the record and will not be, named above and named
+            in the check. The phase 10 sign-off stays owed to a fresh session, and the handoff that
+            was issued over the eight is to be re-issued against this entry rather than reused.
