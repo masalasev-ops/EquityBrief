@@ -21374,6 +21374,19 @@ moves:      adds to its declaration moves the ladder rules' code version from f6
             'a quarter of a typical move', and the zone edges' live window and 'non-average
             anchors only'. The remedy is the operator's to run, and this correction leaves the
             store alone.
+            The same line moves the five candidate evaluators' versions, because `LadderBuilder.cs`
+            is one of the 14 sources `CandidateEvaluator.EvaluationSources` pins every evaluation
+            to: arrived-and-narrow from a4fa2c723fe9 to 2bb1c01b42c7, crossed-by-a-margin from
+            179d86c01fe7 to f0d6794422ee, momentum-histogram-turn from 1a5184d0f06c to
+            84024f54a408, momentum-index-reading from 4f3ef9589c03 to d753a70f8752, and
+            volume-against-the-night from 79709950b3a6 to 31af691bcfc2. The register on the
+            operator's store holds no row, so no standing candidate is skipped for a moved version,
+            and `register --the-three`, which waits for the operator, registers the three at the
+            new ones. The first run of `tools/ci.ps1` over this correction's first commit went red
+            in `EveryEvaluatorsVersionIsThePinOfTheSourcesItsEvaluationRunsThrough` for exactly
+            this, having been preceded by a filtered run that did not include the register's
+            tests; the versions are raised to the pins in a second commit, and the gates recorded
+            below ran over it.
 Guarded:    `component-access`, two tests added: `EveryTableAComponentsOwnQueriesReadIsOneItDeclaresItReads`
             and `TheReadReaderFindsEachFormAQueryReadsInAndLeavesTheRestAlone`, the second over
             constructed source:
@@ -21394,9 +21407,10 @@ Mutated:    the rule, stated before the run: put the fault back, and break the r
             M1 the membership read taken out of `LadderBuilder`'s declaration. Red in
             `EveryTableAComponentsOwnQueriesReadIsOneItDeclaresItReads`, which finds the query
             again, in `EveryDeclarationMatchesItsMatrixRowCellByCellIncludingTheBlanks`, whose
-            membership cell now says R, and in
-            `TheLadderRulesCodeVersionIsThePinOfEverySourceTheLiveRulesAndTheirReplayRunThrough`,
-            because `LadderBuilder.cs` is pinned. Green in
+            membership cell now says R, and in both pins over `LadderBuilder.cs`:
+            `TheLadderRulesCodeVersionIsThePinOfEverySourceTheLiveRulesAndTheirReplayRunThrough`
+            and `EveryEvaluatorsVersionIsThePinOfTheSourcesItsEvaluationRunsThrough`. Four red in
+            all. Green in
             `EveryDeclaringTypeHasACatalogueRowAndDeclaresWhatItLists`, which reads a declared read
             against its cell and never a cell against the declaration.
             M2 the reader reads JOIN and no longer FROM. Red in

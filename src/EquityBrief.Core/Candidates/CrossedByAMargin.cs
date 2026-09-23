@@ -27,7 +27,7 @@ public sealed class CrossedByAMargin : CandidateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "179d86c01fe7";
+    public override string Version => "f0d6794422ee";
 
     public override IReadOnlyList<string> Reads => [NightValues.Crossings, IndicatorSeries.Atr14];
 
