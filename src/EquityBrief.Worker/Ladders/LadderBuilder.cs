@@ -46,6 +46,7 @@ public sealed class LadderBuilder : IComponent
     public static ComponentAccess Access => new(
         Stores:
         [
+            new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.Swing, Touch.Read),
