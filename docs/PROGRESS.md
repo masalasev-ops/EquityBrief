@@ -21835,9 +21835,10 @@ Guarded:    `read-surface`, one test added and one widened:
             The roster's `read-surface` row names the region's link and its control.
 Expected:   derived, and no expectation file moves: the tests read the markup the page draws over
             constructed rows, and no stage's output changes.
-Tests:      FILLED IN AFTER THE RUN. One added, none removed.
-Claims:     FILLED IN AFTER THE RUN. No claim added: the ask row's claim widens in place, and the
-            note is not a table.
+Tests:      1243, from 1242. One added to `read-surface` and one widened, none removed.
+            Migrations 0 to 33 with none added and none pending, schema version 33.
+Claims:     409, from 409, all passing, 416 placements and verdicts reconciled against a floor of
+            34. No claim added: the ask row's claim widens in place, and the note is not a table.
 Mutated:    the rule, stated before the run: put the fault back, and take away each half of what
             the region says in its place.
             Predicted:
@@ -21850,10 +21851,22 @@ Mutated:    the rule, stated before the run: put the fault back, and take away e
             control in the selected name's card, and nowhere else.
             M4 every selected name read as holding none. Red in the same test, at the name holding
             research, and nowhere else.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            78a568d, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1243 of 1243. M1 turned 1 red and 1242 green:
+            `TheSelectedNameCallsWhatItOpensAReportOnlyWhereOneIsWritten`. M2 turned 1 red and
+            1242 green: the same test. M3 turned 2 red and 1241 green: the same test, and
+            `TheControlsAskingForAReportAndTakingOneOutAreDrawnByTheirOwnRules`, which found no
+            asking control in the selected name's card. M4 turned 1 red and 1242 green: the same
+            test, at the name holding research, whose dated link was not drawn.
+Held:       the prediction in all four runs, in the tests each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1243 of 1243
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 409 claims, 409 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 416 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1243 of 1243 tests.
+            Both gates ran over the tree carrying this entry, 78a568d, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing. No pinned source moves. The operator's ruling that the list's first name gets
             its report after the run is a capability of its own, planned apart.
