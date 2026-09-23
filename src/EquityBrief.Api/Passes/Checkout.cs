@@ -3,9 +3,9 @@ namespace EquityBrief.Api.Passes;
 // The checkout this build sits in, which a relative data root and the phase report are
 // read against.
 //
-// It was a member of the class that started a pass as a process, and outlived it: nothing
-// starts a process any more, and where the surface is running is still what a relative
-// data root is resolved from.
+// It was a member of the class that started a pass as a process, and outlived it. Where the
+// surface is running is what a relative data root is resolved from, and what the worker's
+// build a press starts the drain from is found beside.
 // see: The whole system is a checkout and one database file
 public static class Checkout
 {

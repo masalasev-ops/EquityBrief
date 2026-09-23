@@ -20,7 +20,7 @@ public sealed record RequestRow(
 // statement of its own: a file holding a write is read as the writer of it, and
 // a second writer of this table beside the one SCHEMA declares is the thing that
 // would be wrong.
-// see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
 public static class ResearchRequests
 {
     public const string Outstanding = "outstanding";

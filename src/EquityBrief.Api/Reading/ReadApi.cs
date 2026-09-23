@@ -2693,7 +2693,7 @@ public sealed class ReadApi : IComponent
     // rather than behind a writer of their own because the owner of a table is
     // the component whose source carries the statements, and splitting the two
     // leaves SCHEMA naming one thing and the code doing another.
-    // see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+    // see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
 
     // A request is written only where the name holds none outstanding. The index
     // refuses the second, and the refusal is read back as the line the page
@@ -2764,7 +2764,7 @@ public sealed class ReadApi : IComponent
                 $"{ticker} was asked for earlier in this same second and that request is {earlier}, so nothing was added: press again and a new request is written.");
         }
 
-        return new RequestWritten(true, $"{ticker} is in the queue, and the worker writes it when it next drains.");
+        return new RequestWritten(true, $"{ticker} is in the queue.");
     }
 
     // SQLite's extended code for a primary key refusing a row, as against a unique index.

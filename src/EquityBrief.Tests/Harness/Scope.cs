@@ -289,7 +289,7 @@ internal static class Scope
         // write one.
         [CheckReach.Key("15.7 Tonight", "Ask for a report")] = new Scoped(
             Verdict.Pass,
-            "a row whose name holds no research carries a control that writes one request and starts no process, read off the row's own markup, and a row holding research carries none; the selected name's region carries the same control beside a line saying no report is written where the name holds none, and a link to its report, dated, where it holds one",
+            "a row whose name holds no research carries a control that writes one request and starts one drain, read off the row's own markup and the route it posts to, and a row holding research carries none; the selected name's region carries the same control beside a line saying no report is written where the name holds none, and a link to its report, dated, where it holds one",
             ByReadSurface),
         [CheckReach.Key("15.15 Queue", "Outstanding")] = new Scoped(
             Verdict.Pass,

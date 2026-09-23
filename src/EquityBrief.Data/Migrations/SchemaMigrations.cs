@@ -738,7 +738,7 @@ public static class SchemaMigrations
     // At most one outstanding request per name, which is what a second press is refused
     // against. SQLite states that as a partial index rather than a table constraint, because
     // the uniqueness holds for one value of `state` and not across the column.
-    // see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+    // see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
     const string CreateResearchRequest = @"
         CREATE TABLE research_request (
             ticker       TEXT NOT NULL,

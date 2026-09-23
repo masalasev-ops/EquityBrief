@@ -199,11 +199,11 @@ static async Task<int> FundamentalsFetch(string[] args)
 // one pass.
 //
 // A verb of its own for the reason the fundamentals fetch has one: the night's per-name
-// request count is zero and its model call count is zero, and a pass is both. The name
-// page's control starts this verb for the name it is on, and the operator can run it by
-// hand for the same result.
+// request count is zero and its model call count is zero, and a pass is both. The queue's
+// drain runs this verb for each request it takes, and the operator can run it by hand for
+// the same result.
 // see: Everything expensive happens when a name is opened
-// see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
 static async Task<int> ResearchPass(string[] args)
 {
     var configuration = Configuration();
@@ -310,15 +310,43 @@ static async Task<int> ResearchPass(string[] args)
 
 // The queue, worked through oldest first. Each request is the research verb over that
 // name, so one code path writes a pass whether a person asked for it at a shell or a
-// press on a screen put it here.
-// see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+// press on a screen put it here. A press starts this verb from a copy of the worker's
+// build, and a person runs it by hand; either way it waits for the off-peak rate before
+// a pass, reading the windows from the prices configuration states.
+// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
 static async Task<int> Drain()
 {
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
     var clock = SystemClock.ForUnitedStatesSessions();
+    ResearchPricing pricing;
 
-    var (taken, written) = await RequestDrain.DrainAsync(store.DatabaseFile, clock, ResearchPass);
+    try
+    {
+        pricing = ResearchLane.Settings(configuration).Pricing;
+    }
+    catch (InvalidOperationException refusal)
+    {
+        Console.Error.WriteLine("drain: " + refusal.Message);
+
+        return 1;
+    }
+
+    var (taken, written) = await RequestDrain.DrainAsync(
+        store.DatabaseFile,
+        clock,
+        ResearchPass,
+        pricing,
+        until =>
+        {
+            Console.WriteLine(
+                "drain: a peak window is open, so the next pass waits until "
+                + until.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+
+            var wait = until - clock.UtcNow;
+
+            return wait > TimeSpan.Zero ? Task.Delay(wait) : Task.CompletedTask;
+        });
 
     Console.WriteLine(FormattableString.Invariant(
         $"drain: {taken} request(s) taken, {written} written and {taken - written} refused"));

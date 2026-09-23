@@ -22133,3 +22133,95 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             under `data/` was not touched by either.
 Carried:    nothing new. The checkpoints 11.1 to 11.9 are the plan's, and the phase 11 sign-off is
             a fresh session's.
+### 11.1 - a press starts the worker's drain from a copy of its build, and every pass waits for the off-peak rate   2026-09-23
+Built:      a press that writes a request asks a launcher to start the worker's `drain` verb as a
+            process of its own and returns, and a press that wrote nothing starts nothing. The
+            launcher copies the worker's build output under the data root into a folder named for
+            that build, starts the drain from the copy with the checkout as its working directory and
+            the surface's data root in the environment, and says what came of it on the press's own
+            line after the line saying the name is queued. Every press over one build starts from
+            one copy, a build made again is copied again, and a copy nothing has been started from
+            for a week is removed at the next press. A surface running from any build but its own,
+            as the suite hosts it, finds no worker beside it and starts nothing. The drain waits,
+            its requests still outstanding, for the pricing's first off-peak instant where it starts
+            inside a peak window or reaches one between passes, and ends at once where nothing is
+            outstanding.
+Superseded: the decision the queue rested on, which now stands under "Previously decided" with its
+            reasoning and a line saying what of it stands, and every one of its seventeen citations,
+            in eleven files, repointed to the one that replaces it (see: A press writes a request and
+            starts the worker's drain as a process of its own, and every pass waits for the off-peak
+            hours). 9.2's assertion that a press starts no process is replaced by the one that it
+            starts one drain, and its scan that no shipped file starts a process by one that exactly
+            one does, the launcher, at one call.
+Written:    section 15.15's note, section 15.7's ask row and the read API's and the request drain's
+            catalogue rows say what a press does; `RUNBOOK.md`'s section on what the control does and
+            on draining the queue say it too, with the peak windows in UTC and in New York's time,
+            where a press's drain runs from, and how to stop one. The page's words beside the control,
+            the queue screen's lede and its line when nothing is being written say the worker starts
+            on a request at once and writes it at the off-peak rate. The `read-surface` roster row
+            names what it now asserts. Every spec line changed has its prior text in `CHANGELOG.md`.
+Why:        the operator's rulings of 2026-09-23, "I want the queue to be processed as soon as i
+            queue them", choosing the page starting it on the press, and "off peak hours it is for
+            everything".
+Expected:   derived by hand, the peak windows' edges from the prices the configuration states, 01:00
+            to 04:00 and 06:00 to 10:00 UTC on weekdays, rather than read back through the pricing's
+            own reading: a drain started at 00:59:59, 04:00:00, 05:59:59 or 10:00:00 on a Monday, at
+            02:00 on a Saturday or at 07:00 on a Sunday begins at once, and one started at 01:00:00 or
+            03:59:59 waits until 04:00, at 06:00:00, 09:59:59 or 06:30 on a Friday until 10:00. A
+            drain started at 00:40 whose first pass takes half an hour reaches 01:10 and waits until
+            04:00 before its second. No stage's output over the fixture moves.
+Tests:      1261, from 1244: five facts and one theory of eleven cases added under
+            `read-surface`, 9.2's press test renamed for the drain it now asserts, and its scan
+            that no shipped file starts a process replaced by the one that exactly one does.
+            Migrations 0 to 33 with none added and none pending, schema version 33.
+Claims:     413, unchanged, with 409 PASS and 4 out of scope, and 416 placements and verdicts
+            reconciled against a floor of 34. None added: the rows this checkpoint rewrites were
+            claims already.
+Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that a
+            press writing a request starts one drain, that the drain starts from a copy and never
+            from the build, that a drain waits out a peak window, and that one with nothing
+            outstanding ends without waiting. Not mutated: that a second drain claims nothing the
+            first holds, which rests on the claim's one statement 9.2 wrote, since widening that
+            statement to a request another drain holds makes the claim loop another test drains to
+            its end never end, and a sweep that hangs shows nothing.
+            Predicted:
+            M1 the press's call to the launcher removed, so no press starts a drain: red in
+            `APressOverEitherRouteWritesOneRequestAndAsksOneLauncherToStartOneDrain` and
+            `TheControlsRouteWritesOneRequestStartsOneDrainAndWritesNoResearch`, green everywhere
+            else.
+            M2 the launcher handed the build to start from rather than its copy: red in
+            `TheDrainIsStartedFromACopyOfTheWorkersBuildAndNeverFromTheBuildItself`, green
+            everywhere else.
+            M3 the drain's peak check removed: red in the six cases of
+            `ADrainStartedInsideAPeakWindowWaitsForItsEndAndOneStartedOutsideBeginsAtOnce` inside a
+            window and in `ADrainThatReachesAPeakWindowBetweenPassesWaitsThereBeforeTheNext`, green
+            everywhere else, the other five cases among them.
+            M4 the drain's check for an empty queue removed, so it waits before it looks: red in
+            `ADrainWithNothingOutstandingEndsWithoutWaitingEvenInsideAPeakWindow`, green everywhere
+            else, since a drain that has run its last pass off-peak finds nothing to claim and ends.
+            Results: whole-suite runs in a detached worktree at 85ffa45, never a filter, each
+            mutation reverted with `git reset --hard` and the tree read clean after each. The
+            baseline is 1261 of 1261. M1 turned 2 red, the two it named, 1259 green. M2 turned 1
+            red, `TheDrainIsStartedFromACopyOfTheWorkersBuildAndNeverFromTheBuildItself`, 1260
+            green. M3 as first written, the condition replaced by `false`, did not compile,
+            since the build refuses unreachable code, and a second form adding a test that the
+            wait was null did not compile either, since the build then refused the wait's call as
+            a dereference of a possibly null reference; neither ran a test. It was run a third
+            time as the peak check joined to a year before 1900, which the build cannot see
+            through and no instant here meets: 5 red of the theory's cases, the five inside a window, and `ADrainThatReachesAPeakWindowBetweenPassesWaitsThereBeforeTheNext`, 1255 green. M4 turned 1 red,
+            `ADrainWithNothingOutstandingEndsWithoutWaitingEvenInsideAPeakWindow`, 1260 green.
+Held:       M1, M2 and M4 exactly as written before the run. M3 held in what it named and
+            miscounted it: the theory holds five cases inside a window and not six, so its
+            prediction named one case more than the theory has, and the five it has all turned
+            red with the test of a window reached between passes. The two forms that did not
+            compile are recorded because a sweep reading only its red counts would have read
+            each as a mutation that turned everything green.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1261 of 1261
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 413 claims, 409 PASS, 0 FAIL, 4 out of
+            scope, 0 unexamined, 416 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1261 of 1261 tests.
+            Both gates ran over the tree carrying this entry, 85ffa45, and the operator's store
+            under `data/` was not touched by either.
+Carried:    nothing new. 11.2 states on the queue page when each request will be written.

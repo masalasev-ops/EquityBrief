@@ -782,6 +782,11 @@ public partial class ReadSurface
     {
         public IClock? Clock { get; init; }
 
+        // What a press starts, held by the test so a route is hosted without a drain reaching
+        // a model. A host given none starts nothing either, since the surface the suite hosts
+        // runs from the suite's own build and finds no worker beside it.
+        public IDrainLauncher? Launcher { get; init; }
+
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseSetting(StoreLocation.DataRootKey, root);
@@ -794,6 +799,11 @@ public partial class ReadSurface
             if (Clock is { } clock)
             {
                 builder.ConfigureTestServices(services => services.AddSingleton(clock));
+            }
+
+            if (Launcher is { } launcher)
+            {
+                builder.ConfigureTestServices(services => services.AddSingleton(launcher));
             }
         }
     }
@@ -814,11 +824,13 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task TheControlsRouteWritesOneRequestAndStartsNoProcess()
+    public async Task TheControlsRouteWritesOneRequestStartsOneDrainAndWritesNoResearch()
     {
         using var store = await FixtureReplay.ReplayedAsync();
 
-        using var host = new PassHost(store.Root);
+        var launcher = new RecordingLauncher();
+
+        using var host = new PassHost(store.Root) { Launcher = launcher };
         using var client = host.CreateClient();
 
         // The host is up before anything is counted, since starting it writes its own row.
@@ -857,8 +869,9 @@ public partial class ReadSurface
         Assert.Single(Rows(store, "SELECT ticker FROM research_request;"));
 
         // The surface wrote no research across all of it: a request is an ask, and what it
-        // leads to is the worker's.
+        // leads to is the worker's, whose drain the one press that wrote a request started.
         Assert.Equal(before, Held());
+        Assert.Equal(1, launcher.Started);
     }
 
     [Fact]
@@ -901,27 +914,6 @@ public partial class ReadSurface
         Assert.Equal(HttpStatusCode.Conflict, held.StatusCode);
         Assert.Contains("is writing", await held.Content.ReadAsStringAsync(), StringComparison.Ordinal);
         Assert.Equal([["KEYS", "writing"]], Rows(store, "SELECT ticker, state FROM research_request;"));
-    }
-
-    [Fact]
-    public void NothingInTheShippedSourceStartsAProcessForAPass()
-    {
-        // The surface started the worker's verb as a process of its own until 9.2. A press
-        // writes a request now, so no shipped file starts a process at all, and this reads
-        // the source rather than the behaviour because what it asserts is an absence.
-        var started = Directory
-            .EnumerateFiles(Path.Combine(Repository.Root, "src"), "*.cs", SearchOption.AllDirectories)
-            .Where(file => !file.Contains(Path.Combine("src", "EquityBrief.Tests"), StringComparison.Ordinal))
-            .Where(file => Regex.IsMatch(File.ReadAllText(file), @"Process\.Start|ProcessStartInfo"))
-            .ToArray();
-
-        Assert.Empty(started);
-
-        // And the page's own script sends the header both routes require.
-        var shell = new SinglePageApp().Shell("EquityBrief");
-
-        Assert.Contains($"'{SinglePageApp.PassHeader}': '{SinglePageApp.PassHeaderValue}'", shell, StringComparison.Ordinal);
-        Assert.Contains("research-control", shell, StringComparison.Ordinal);
     }
 
     // ---- tonight's header ----

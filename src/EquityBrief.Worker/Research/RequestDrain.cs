@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
@@ -17,7 +18,7 @@ public sealed record TakenRequest(string Ticker, string AskedAt, string Lane, Da
 // The read surface writes the ask and this writes what the ask came to, so the table has
 // two writers and no operation has two. Nothing here writes research: the pass does that,
 // and this moves the request beside it.
-// see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
 public static class RequestDrain
 {
     const string Instant = "yyyy-MM-ddTHH:mm:ssZ";
@@ -88,10 +89,15 @@ public static class RequestDrain
     // Each request is claimed at the clock's own instant, which is the lower bound on the
     // run its pass may settle under: a claim dated earlier would read an older pass of the
     // same name as this request's.
+    //
+    // The wait is handed in with the prices, so a test chooses the instant a wait ends at
+    // and the loop that decides whether to wait is the one the worker runs.
     public static async Task<(int Taken, int Written)> DrainAsync(
         string databaseFile,
         IClock clock,
         Func<string[], Task> pass,
+        ResearchPricing pricing,
+        Func<DateTimeOffset, Task> waitUntil,
         CancellationToken cancellation = default)
     {
         var taken = 0;
@@ -102,6 +108,27 @@ public static class RequestDrain
             await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
 
             await connection.OpenAsync(cancellation);
+
+            if (await OutstandingAsync(connection, cancellation) == 0)
+            {
+                break;
+            }
+
+            // Every pass is paid at the off-peak rate. A drain started inside a peak window,
+            // or reaching one between passes, waits for the pricing's first off-peak instant
+            // before it claims, so the request it will take stays outstanding while it waits
+            // and the queue screen reads it as waiting rather than as being written. A drain
+            // with nothing outstanding has ended above, and waits for nothing.
+            // see: Queued work runs off-peak, and every schedule is written in UTC
+            var now = clock.UtcNow;
+
+            if (pricing.IsPeak(now))
+            {
+                await connection.CloseAsync();
+                await waitUntil(pricing.OffPeakFrom(now));
+
+                continue;
+            }
 
             var request = await ClaimAsync(connection, clock.UtcNow, cancellation);
 
