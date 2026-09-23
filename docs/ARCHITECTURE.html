@@ -8,18 +8,18 @@
   :root{
     --paper:#F3F4F1; --panel:#FBFBF8; --ink:#14202B; --muted:#4B5563; --faint:#9CA3AF; --rule:#D9DCD4;
     --src:#B3541E; --store:#3B5A8A; --compute:#2A7F62; --research:#7A4E8C; --serve:#1F8A8A; --check:#A32D2D;
-    --boxbg:#FFFFFF; --chipink:#FFFFFF; --flagbg:#FFF6E5;
+    --boxbg:#FFFFFF; --chipink:#FFFFFF; --flagbg:#FFF6E5; --link:#1F5A96;
   }
   html[data-theme="dark"]{
     --paper:#131920; --panel:#1B222A; --ink:#E3E7E4; --muted:#9AA4AE; --faint:#6C7681; --rule:#2E3740;
     --src:#E08A4C; --store:#84A6DA; --compute:#5FC49B; --research:#BB92D2; --serve:#54C2C2; --check:#E4776F;
-    --boxbg:#222A33; --chipink:#131920; --flagbg:#2A2318;
+    --boxbg:#222A33; --chipink:#131920; --flagbg:#2A2318; --link:#8DB6F2;
   }
   @media (prefers-color-scheme: dark){
     html:not([data-theme="light"]){
       --paper:#131920; --panel:#1B222A; --ink:#E3E7E4; --muted:#9AA4AE; --faint:#6C7681; --rule:#2E3740;
       --src:#E08A4C; --store:#84A6DA; --compute:#5FC49B; --research:#BB92D2; --serve:#54C2C2; --check:#E4776F;
-      --boxbg:#222A33; --chipink:#131920; --flagbg:#2A2318;
+      --boxbg:#222A33; --chipink:#131920; --flagbg:#2A2318; --link:#8DB6F2;
     }
   }
   #themeToggle{
@@ -33,6 +33,9 @@
   *{box-sizing:border-box}
   html{background:var(--paper)}
   body{margin:0;color:var(--ink);font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.56}
+  /* A link, followed or not, takes its palette's own colour, since the browser's blue and
+     purple fall under 2 to 1 on the dark paper. */
+  a,a:visited{color:var(--link)}
   main{max-width:1140px;margin:0 auto;padding:40px 28px 90px}
   h1,h2,h3,h4{font-family:Cambria,Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-0.01em;margin:0}
   h1{font-size:37px;line-height:1.08}

@@ -21870,3 +21870,59 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             under `data/` was not touched by either.
 Carried:    nothing. No pinned source moves. The operator's ruling that the list's first name gets
             its report after the run is a capability of its own, planned apart.
+### 10.0 - correction: the architecture's links were drawn in the browser's own blue, under 2 to 1 on its dark paper   2026-09-23
+Corrects:   10.0 (9c7a2b2), which cited the research each phase 10 rule rests on as links, the
+            first links the architecture drew, 119 of them now, and gave the document's stylesheet
+            no colour for a link. A browser draws an uncoloured link in its own blue, and in its
+            purple once followed. The document's dark palette, delivered at 0.0 with no link to
+            colour, holds those at 1.54 to 1.88 to 1 and 1.32 to 1.61 to 1 against its four
+            grounds, where text needs 4.5.
+Why it is   every phase 10 rule names what it rests on through one of these links, and in the
+worse:      dark palette they were the one thing on the page a reader could not read.
+Found:      by the operator on 2026-09-23, reading the architecture in dark mode: the links were
+            almost invisible.
+Repaired:   each of the document's three palettes declares a link colour, #1F5A96 in the light one
+            and #8DB6F2 in the toggle's dark one and in the machine's, and one rule draws every
+            link in it, followed or not. Against the page, the panels, a figure's boxes and a
+            flag, the light colour reads at 6.42 to 7.09 to 1 and the dark at 6.98 to 8.51 to 1.
+This        that the label is 10.0, which added the links, and not 0.0, whose dark palette had no
+session     link to colour.
+decided:    That the check is `research-marked`'s, the check that owns these links and already
+            asserts each one resolves, rather than a check of its own.
+            That the floor is WCAG's 4.5 to 1 for text, over the four grounds the document sets
+            text on, in each of the three palettes, read from the stylesheet's own tokens.
+            That a followed link keeps the colour. The document's links are citations, read again
+            as often as the rule citing them, and a second colour for a followed one would be a
+            second colour to hold to the floor for nothing a reader needs.
+Guarded:    `research-marked`, one test added, `EveryLinkTheDocumentDrawsReadsInBothItsPalettes`:
+            every colour a rule for links states, in each palette, against each ground, at 4.5 to
+            1 or more. Its population is the document's 119 links, against a floor of 100 stated
+            in advance, and its colours read in 3 palettes against 4 grounds. The reader is shown:
+            - to find no colour where no rule is for links, and each rule that is, a comment's
+              among none of them;
+            - to compute WCAG's own contrast, at black on white, at a colour on itself and at the
+              grey that just passes.
+            The roster's `research-marked` row names it.
+Expected:   derived, and no expectation file moves: the test reads the document and no stage's
+            output changes.
+Tests:      FILLED IN AFTER THE RUN. One added, none removed.
+Claims:     FILLED IN AFTER THE RUN. No claim added: the stylesheet is neither a table nor a
+            figure.
+Mutated:    the rule, stated before the run: put the fault back, bring it back in one palette
+            alone, and break the reader in the one way that would pass a colour it should refuse.
+            Predicted:
+            M1 the rule colouring links taken out. Red in
+            `EveryLinkTheDocumentDrawsReadsInBothItsPalettes` and nowhere else.
+            M2 the machine's dark palette's link colour set to the browser's blue, the toggle's
+            kept. Red in the same test, naming the machine's dark palette alone, and nowhere else.
+            M3 the light palette's link colour set to the light paper's own. Red in the same test,
+            naming the light palette alone, and nowhere else.
+            M4 the reader's luminance taken without linearising a channel. Red in the same test
+            and nowhere else, at the shipped palettes: read that way, the light colour falls under
+            3 to 1 on the light grounds.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing. No pinned source moves.
