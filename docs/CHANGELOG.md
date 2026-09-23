@@ -25,6 +25,14 @@ An entry names one or the other and never neither. A change that alters what the
 
 ## Entries
 
+### 2026-09-23 - .claude/rules/checks.md - the research-marked roster row carries the reconciliation of its own subsection list
+Corrects: `ResearchMarked.Subsections` was a hand-kept list of five headings and nothing reconciled it against the document, so a subsection taken out of it with the document untouched left every test green and a rule could stop being read with nothing failing. The 10.0 pass predicted that mutation would survive and it did. Found by the phase 10 sign-off review of 2026-09-23.
+Was:
+> every source row is cited and every open question linked, and every link resolves, in both directions; the reader is shown to find each fault and to pass a well-formed rule |
+Now:
+> every source row is cited and every open question linked, and every link resolves, in both directions; the list of those subsections is what the document says it is, a subsection every paragraph of which is marked being in the list and every entry in the list being such a subsection, with the one subsection that carries rules and is not all rules named with its counts rather than left out by an absence, so a heading taken out of the list with the document untouched fails; and the readers are shown to find each fault, to pass a well-formed rule, and to end a subsection at the next heading of either level while reading the last one to the end of the document |
+Why: the roster is where a check states what it asserts, and a list that can narrow its own scope is the shape `.claude/rules/checks.md` already calls the one that matters most and is easiest to lose.
+
 ### 2026-09-23 - ARCHITECTURE.html - the read and write matrix carries the blocks a version's record is frozen into
 Corrects: a version's record was read from `version_score` joined to `ladder`, both of which are dropped one year back, while the record is read at 8 blocks and again at 16, about four years of nights, so it could never hold more than 3 whole blocks against a floor of 8 and its verdict was withheld for as long as the window stayed open. Found at the phase 10 review of 2026-09-23.
 Was:

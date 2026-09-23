@@ -21094,3 +21094,83 @@ Carried:    nothing new. `register --the-three` and `version --trend-version` ar
             own session in sample, which is fault B's ordinary case, and because the pin has moved
             and every open window has to be closed and opened again first. The phase 10 sign-off
             stays owed to a fresh session, which is not this one.
+
+### 10.0 - correction: research-marked could narrow its own scope, because its list of subsections was reconciled against nothing   2026-09-23
+Corrects:   the 10.0 document pass, which added `research-marked` with
+            `ResearchMarked.Subsections`, a hand-kept list of five headings. The check reads a
+            rule as a paragraph carrying `data-phase="10"` and reads that list to assert that
+            every paragraph of those subsections carries it, which is what stops a rule leaving
+            the population by losing the attribute. Nothing reconciled the list against the
+            document, so taking a heading out of it with the document untouched left every test
+            green.
+Why it is  the list is the whole of what makes a paragraph that lost its mark a failure rather
+worse:      than a paragraph nobody reads. A check that silently narrows its own scope keeps
+            passing, which is the shape `.claude/rules/checks.md` calls the one that matters most
+            and is easiest to lose, and this is an instance of it inside the file that names it.
+Found:      by the phase 10 sign-off review of 2026-09-23, over 472e082, which found this and the
+            three faults of the 10.4 correction and committed nothing. The 10.0 pass's own entry
+            predicted this mutation would survive and recorded that it did, with the reasoning
+            that the two assertions guard different things. That reasoning was right and it was
+            not the end of it: what it left unsaid is that nothing at all guarded the list.
+Repaired:   the list is reconciled against the document in both directions. A subsection every
+            paragraph of which is marked is in the list, and every entry in the list is such a
+            subsection, asserted as one equality over the two sorted sets so neither direction can
+            be satisfied alone.
+            The one subsection that carries rules and is not all rules is named with its counts
+            rather than left out by an absence: 15.10 Run, 1 marked paragraph of 5. A section that
+            stopped being partly marked, by marking the rest or by losing the mark, changes the
+            population the list is read over, and an exclusion nothing states is an exclusion
+            nothing notices.
+            Repaired inside the reader on the way: `SubsectionParagraphs` took the end of a
+            subsection from `Regex.Match(...).Index`, which is 0 when the match fails, so the last
+            subsection in the document would have read as holding no paragraph at all. It now runs
+            to the end of the document where there is no heading after it, and the permanent proof
+            under it exercises both cases.
+Guarded:    `research-marked`, two tests added.
+            `TheSubsectionListIsWhatTheDocumentSaysItIsInBothDirections`: 37 subsections read
+            today against a floor of 30, exactly 5 of them every paragraph marked and exactly 1
+            partly marked, the 5 equal to the list as a set, and 15.10 Run named at 1 of 5 and
+            asserted absent from the list.
+            `TheReaderReadsASubsectionToTheNextHeadingAndTheLastOneToTheEnd`: the reader over a
+            constructed document whose last subsection has no heading after it, which is the case
+            the old end-of-span arithmetic got wrong.
+Expected:   derived, and no expectation file moves. What is added is read off the architecture
+            itself, over populations the test states in advance, and no stage's output over the
+            fixture changes because nothing the night runs is touched.
+Tests:      1232, from 1230. Two added to `research-marked`, the reconciliation and the permanent
+            proof under its reader. No migration, schema version 33 unchanged, and no pin moves.
+Claims:     407, all passing, unchanged. No claim is added or removed, and the 414 placements and
+            verdicts reconcile against a floor of 34 as before.
+Mutated:    the rule, stated before the run: run the mutation the 10.0 entry recorded as
+            surviving, because the property this correction adds is exactly that it no longer
+            does. A different mutation would show a different property and leave the recorded
+            survivor unanswered.
+            Not mutated, and this is what the next sweep has to find: the partly marked subsection
+            being named with its counts, and the reader's own end-of-document case, which its
+            permanent proof carries rather than a sweep.
+            Predicted:
+            M1 one heading taken out of `ResearchMarked.Subsections` with the document untouched.
+            Red in `TheSubsectionListIsWhatTheDocumentSaysItIsInBothDirections` and in nothing
+            else: `EveryParagraphOfAPhaseTenSubsectionIsARule` reads the remaining four and finds
+            them sound, `EveryPhaseTenRuleSaysWhatItRestsOn` reads paragraphs by their attribute
+            and never the list, and the two link assertions read the whole document. That is the
+            same mutation the 10.0 entry ran, and it turned nothing red then.
+            Results: one run of the whole suite in a detached worktree at d5eb0a8, never a
+            filter, the mutation reverted with `git checkout` and the tree read clean after. The
+            baseline is 1232 of 1232. M1 took `13.7 What the judging can and cannot show` out of
+            the list with the document untouched and turned exactly 1 red, 1231 green, which is
+            `TheSubsectionListIsWhatTheDocumentSaysItIsInBothDirections` and no other test. That
+            is the mutation the 10.0 pass ran and recorded as surviving, run again against the
+            same document and answered.
+Held:       the prediction exactly, in the one test it named and in its number, and the three
+            assertions it said would stay green did.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1232 of 1232
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 407 claims, 407 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 414 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1232 of 1232 tests.
+            Both gates ran over the tree carrying this entry, and the operator's store under
+            `data/` was not touched by either.
+Carried:    nothing new. The phase 10 sign-off stays owed to a fresh session, which is not this
+            one.
