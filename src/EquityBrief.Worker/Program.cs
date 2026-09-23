@@ -488,7 +488,17 @@ static async Task<int> NightlyRun(string[] args)
         return await RefusedAsync(store, runId, clock, refusal.Message);
     }
 
-    return await Nightly.RunAsync(store, feeds, queue, index, clock, Console.Out, Console.Error, runId);
+    // The night's own request starts the worker's drain as a press does, from a copy of the build
+    // this night runs from, in the checkout it runs in. A night run again for a session the
+    // operator named asks for no report, since its list is not tonight's.
+    // see: The night asks for a report on the first name of its list
+    var launcher = new WorkerDrainLauncher(
+        Directory.GetCurrentDirectory(),
+        AppContext.BaseDirectory,
+        store.DataRoot,
+        SystemClock.ForUnitedStatesSessions());
+
+    return await Nightly.RunAsync(store, feeds, queue, index, clock, Console.Out, Console.Error, runId, launcher: launcher, askForTheFirstName: named is null);
 }
 
 // A night refused before its first step, on stderr and on the run log.

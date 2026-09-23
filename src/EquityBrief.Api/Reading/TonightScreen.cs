@@ -44,14 +44,7 @@ public static class TonightScreen
     // see: Tonight's list breaks a tie in fired count by the plan's reward to risk, and a row with none is drawn after every row with one and says why
     public static IReadOnlyList<ListingCell> Ordered(IEnumerable<ListingCell> rows, Order order) => order switch
     {
-        Order.FiredThenRewardToRisk =>
-        [
-            .. rows
-                .OrderByDescending(row => row.FiredCount)
-                .ThenBy(row => row.RewardToRisk is null)
-                .ThenByDescending(row => row.RewardToRisk)
-                .ThenBy(row => row.Ticker, StringComparer.Ordinal),
-        ],
+        Order.FiredThenRewardToRisk => DrawnOrder.Ordered(rows, row => row.FiredCount, row => row.RewardToRisk, row => row.Ticker),
         Order.FiredThenBandStrength =>
         [
             .. rows
@@ -81,29 +74,9 @@ public static class TonightScreen
     // see: Code owns every number
     public static (decimal? RewardToRisk, string? Why) FirstTranche(string planAtListing)
     {
-        using var document = JsonDocument.Parse(planAtListing);
-        var root = document.RootElement;
+        var (ratio, absent) = DrawnOrder.FirstTranche(planAtListing);
 
-        // A plan that is not an object carries no tranche, which is what the arithmetic says of it.
-        decimal? Price(string name) =>
-            root.ValueKind == JsonValueKind.Object && root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
-                ? Money.FromStorage(value.GetString()!)
-                : null;
-
-        var (low, high, stop, target) = (Price("entryLow"), Price("entryHigh"), Price("stop"), Price("firstTradedTarget"));
-
-        var plan = new Ladder(
-            low is { } entryLow && high is { } entryHigh ? [new Tranche(entryLow, entryHigh, TrancheCondition.ReachesTheZone, stop)] : [],
-            target is { } exit ? [new Exit(exit, exit, Traded: true, Trailing: false, Fraction: string.Empty, Reason: null)] : [],
-            null,
-            null,
-            []);
-
-        var arithmetic = LadderSeries.ArithmeticFor(plan);
-
-        return arithmetic.FirstRewardToRisk is { } ratio
-            ? (Math.Round(ratio, PriceForm.Places, MidpointRounding.AwayFromZero), null)
-            : (null, arithmetic.Absent ?? MarkRenderer.NoRewardToRiskStated);
+        return ratio is { } found ? (found, null) : (null, absent ?? MarkRenderer.NoRewardToRiskStated);
     }
 
     // A listing row as the three orders read it: its fired count, the band strength it recorded

@@ -22368,3 +22368,64 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, aefa226, and the operator's store
             under `data/` was not touched by either.
 Carried:    nothing new. 11.4 has the night ask for a report on its first name.
+### 11.4 - the night asks for a report on the first name its list draws, after its overnight queue, and starts the drain as a press does   2026-09-23
+Built:      after the overnight queue the night asks for a report on the first name drawn on its
+            list, one request marked as asked by the night under the paid lane, and starts the
+            drain it was handed from a copy of the build it runs from, as a press does. A name with
+            a request outstanding or being written gets none and the night's own row says so, a
+            night on which nothing fired asks for nothing and says so, and a night run again for an
+            earlier session asks for no report, since its list is not tonight's. The step writes one
+            row and starts one process, records no model call and no request on its own row, and is
+            handed no token from the night's deadline, which bounds the arithmetic and may have
+            passed while the queue ran. It comes after the queue because the queue writes the first
+            name's key before any other name's, so a pass started earlier would meet it on that
+            name. The order the list is drawn in, and the reward to risk it breaks a tie by, move
+            into the data project, where the read surface and the worker both reach them, so the
+            page and the night cannot come to disagree about which name is first. Migration 34
+            rebuilds the request table so its check on who asked admits the night, keeping every
+            row it held and the index refusing a second outstanding request for a name.
+Hard rule:  `CLAUDE.md` names the night's one request as the third carve-out, on the operator's
+            ruling of 2026-09-23 recorded at 11.0, with its prior text in `CHANGELOG.md`.
+Written:    section 14 gains the step and its note says the request calls no model and makes no
+            request; the request drain's catalogue row runs once a night after the queue and reads
+            the listings, and its matrix row reads them too; section 17's model call row no longer
+            calls the queue the night's last step, its per-name row names the night's request among
+            the carve-outs, and a row counts the names the night asks for at 1, pinned to
+            `RequestDrain.NightAsksFor`; the queue screen's outstanding row names who asked.
+            `SCHEMA.md` splits the request store's insert between ReadApi for a press and
+            RequestDrain for the night's request, and `asked_from` admits `night`. `RUNBOOK.md` no
+            longer calls the queue the night's last step. The `nightly-run`, `nightly-cost` and
+            `schema-columns` roster rows name what they now assert. Every spec line changed has its
+            prior text in `CHANGELOG.md`.
+Expected:   `night-request.json`, derived: the night asks for the first name its list draws and
+            no other, which the test works out with its own arithmetic off the listing rows the
+            night wrote, the plan's reward to risk from the zone's midpoint against its stop and
+            its first traded exit, rather than through the order the page draws; marked as asked by
+            the night, under the paid lane, outstanding; a count of one. The replay of the whole
+            fixture writes it, so the table the expectation names is one a replay populates.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. Two added, section 14's step and section 17's count, passing
+            here, as predicted.
+Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that
+            the night asks for the first name its list draws and no other, that a name with a
+            request waiting gets none, that the night's check on who asked admits the night, and
+            that a night run again for an earlier session asks for nothing.
+            Predicted:
+            M1 the night asks for the last name its list draws rather than the first: red in
+            `AfterTheQueueTheNightAsksForAReportOnTheFirstNameItsListDrawsAndStartsTheDrainItWasHanded`
+            and `ANameWithARequestWaitingGetsNoneAndTheNightsRowSaysSo`, green everywhere else.
+            M2 the check for a request waiting removed: red in
+            `ANameWithARequestWaitingGetsNoneAndTheNightsRowSaysSo`, green everywhere else.
+            M3 the migration's check left as it was, admitting a list or a name alone: red in
+            `TheRequestTableAdmitsTheNightAsWhoAskedAndKeepsEveryRowItHeldThroughItsRebuild` and in
+            every test that runs a whole night or replays the whole fixture, since each asks for
+            its first name last and the store refuses the request, which is the failure a night
+            would meet on a store migrated without it.
+            M4 a night run again for an earlier session asking as tonight's does: red in
+            `ANightRunAgainForAnEarlierSessionAsksForNoReport`, green everywhere else.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing new. 11.5 puts each large move beside its group's median.

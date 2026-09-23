@@ -160,6 +160,7 @@ public class PinnedConstants
             new(Versions, "4", RuleVersions.MostPerRule, "RuleVersions.MostPerRule"),
             new(Versions, "4", LadderRules.All.Count - 1, "the ladder rules other than the merge distance"),
             new(Versions, "18", RuleVersions.MostAtOnce, "RuleVersions.MostAtOnce"),
+            new("Reports the night asks for", "1", RequestDrain.NightAsksFor, "RequestDrain.NightAsksFor"),
         ];
     }
 

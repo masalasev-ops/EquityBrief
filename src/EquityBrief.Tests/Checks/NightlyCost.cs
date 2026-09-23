@@ -1063,14 +1063,15 @@ public class NightlyCost
 
         var limits = Corpus.Read("docs/ARCHITECTURE.html");
 
-        // Two carve-outs now, and both are asserted. The refetch is the second
+        // Three carve-outs now. The night's own request is the third and is asserted under
+        // `nightly-run`, which reads its own row's calls and requests. The refetch is the second
         // and was found at 1.6: it makes one request per name whose adjusted
         // prices an action moved, and from the 6.0 ruling a suspect name's
         // retries on the nights after, so it is bounded by the actions of the day
         // and of the retry nights before it rather than by the universe. It is
         // carved rather than the rule loosened, because a night that refetched
         // every name would satisfy a loosened rule.
-        Assert.Contains("the backfill and the corporate action refetch carved out of it", limits, StringComparison.Ordinal);
+        Assert.Contains("the backfill, the corporate action refetch and the night's own request carved out of it", limits, StringComparison.Ordinal);
         Assert.Contains($"bounded by the actions of the day and of the {CorporateActionChecker.RetryNights} nights before it, and by one request every {CorporateActionChecker.WeeklyRetryDays} days for each name whose retries are spent, rather than by the universe", limits, StringComparison.Ordinal);
         Assert.Contains($"A name it stored nothing for is asked for again on each of the {Backfill.RetryNights} nights after the first and then every {Backfill.WeeklyRetryDays} days until one stores its year or the name leaves the index", limits, StringComparison.Ordinal);
     }

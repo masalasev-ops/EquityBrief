@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Research;
 using EquityBrief.Core.Spending;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
@@ -30,7 +31,7 @@ namespace EquityBrief.Tests.Checks;
 // Only four of the nine steps exist and the rest are absent rather than
 // stubbed, so this asserts the order of what runs rather than the length of the
 // list. A step that printed "skipped" would be a step a reader counts as run.
-public class NightlyRun
+public partial class NightlyRun
 {
     internal static CheckReach Reach => new(
         "nightly-run",
@@ -72,7 +73,7 @@ public class NightlyRun
             // leaves the night's writes a turn.
             CheckReach.Key(Scope.LimitsTable, "Waiting on another writer"),
 
-            // 6.10, the overnight queue, run last and after the close.
+            // 6.10, the overnight queue, run after the close.
             CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for every name in the index whose research is missing or stale, the names on tonight's list first in order of reasons fired (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures), until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about)."),
 
             // 5.7. The row states a figure the night is bounded by and the
@@ -81,6 +82,10 @@ public class NightlyRun
             // is a property of the running system and is carried as an
             // operating obligation, read on the operational header.
             CheckReach.Key(Scope.LimitsTable, "Nightly wall clock, at index size"),
+
+            // 11.4, the night's own request after the queue, and the count of one it asks for.
+            CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, one request marked as asked by the night unless that name has one outstanding or being written, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list)."),
+            CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
             CheckReach.Key(Scope.FailureTable, "Bulk price feed unavailable, run log"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with a session other than the one asked for"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with none of the index in it"),
@@ -108,7 +113,8 @@ public class NightlyRun
         string? runId = null,
         IBulkPriceFeed? bulk = null,
         TimeSpan? deadline = null,
-        IClock? clock = null)
+        IClock? clock = null,
+        IDrainLauncher? launcher = null)
     {
         var output = new StringWriter();
         var error = new StringWriter();
@@ -122,7 +128,8 @@ public class NightlyRun
             error,
             runId,
             bulk,
-            deadline);
+            deadline,
+            launcher: launcher);
 
         return (code, output.ToString(), error.ToString());
     }
@@ -1177,15 +1184,16 @@ public class NightlyRun
     }
 
     [Fact]
-    public async Task TheOvernightQueueRunsLastAfterTheArithmeticHasClosed()
+    public async Task TheOvernightQueueRunsAfterTheArithmeticHasClosedAndTheNightsRequestAfterIt()
     {
-        // Section 14's last step, read off the document, and the night running it last: after
-        // the close has recorded the arithmetic's counts, on the night's own output and on the
-        // run log's own order.
+        // Section 14's order at the end of the night, read off the document, and the night
+        // running it: the close records the arithmetic's counts, the queue runs after it, and the
+        // night's own request comes last, on the night's own output and on the run log's order.
         var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
 
-        Assert.StartsWith("Close the arithmetic", steps[^2], StringComparison.Ordinal);
-        Assert.StartsWith("Run the overnight queue", steps[^1], StringComparison.Ordinal);
+        Assert.StartsWith("Close the arithmetic", steps[^3], StringComparison.Ordinal);
+        Assert.StartsWith("Run the overnight queue", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for a report on the first name", steps[^1], StringComparison.Ordinal);
 
         using var store = new TemporaryStore();
 
@@ -1197,11 +1205,13 @@ public class NightlyRun
         var queue = output.IndexOf("  queue:", StringComparison.Ordinal);
 
         Assert.True(close >= 0 && queue > close, $"The queue did not run after the close: {output}");
+        Assert.True(output.IndexOf("  report:", StringComparison.Ordinal) > queue, $"The night's request did not run after the queue: {output}");
 
         var stages = RunLog(store, "night-with-queue").Select(row => row.Stage).ToArray();
 
-        Assert.Equal(OvernightQueue.Stage, stages[^1]);
-        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^2]);
+        Assert.Equal("report", stages[^1]);
+        Assert.Equal(OvernightQueue.Stage, stages[^2]);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^3]);
 
         // The night's last line states the queue's local calls apart from the arithmetic's,
         // read off the queue's own row.
@@ -1339,7 +1349,8 @@ public class NightlyRun
         var close = steps.ToList().FindIndex(step => step.StartsWith("Close the arithmetic", StringComparison.Ordinal)) + 1;
         var queue = steps.ToList().FindIndex(step => step.StartsWith("Run the overnight queue", StringComparison.Ordinal)) + 1;
 
-        Assert.Equal(steps.Count, queue);
+        Assert.Equal(steps.Count - 1, queue);
+        Assert.StartsWith("Ask for a report on the first name", steps[^1], StringComparison.Ordinal);
 
         // Section 14's note, the section with its list removed.
         var from = architecture.IndexOf("<h2>14.", StringComparison.Ordinal);

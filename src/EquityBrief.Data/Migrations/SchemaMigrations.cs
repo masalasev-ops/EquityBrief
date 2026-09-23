@@ -654,6 +654,7 @@ public static class SchemaMigrations
         new Migration(31, "add listing.band_strength", AddListingBandStrength),
         new Migration(32, "add forward_return's calibrated bar and what the trade came to", AddCalibratedBar),
         new Migration(33, "create version_block", CreateVersionBlock),
+        new Migration(34, "research_request.asked_from admits the night", RequestAskedByTheNight),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -751,6 +752,35 @@ public static class SchemaMigrations
             reason       TEXT,
             PRIMARY KEY (ticker, asked_at)
         ) STRICT;
+
+        CREATE UNIQUE INDEX research_request_one_outstanding_per_name
+        ON research_request (ticker) WHERE state = 'outstanding';
+    ";
+
+    // The night's own request, marked as asked by the night beside the two screens a press
+    // comes from. A rebuild rather than an alter, because SQLite cannot change a check a table
+    // was created with: every row is copied across whole, and the index refusing a second
+    // outstanding request for a name is built again over them.
+    // see: The night asks for a report on the first name of its list
+    const string RequestAskedByTheNight = @"
+        CREATE TABLE research_request_rebuilt (
+            ticker       TEXT NOT NULL,
+            asked_at     TEXT NOT NULL,
+            asked_from   TEXT NOT NULL CHECK (asked_from IN ('list', 'name', 'night')),
+            lane         TEXT NOT NULL CHECK (lane IN ('local', 'paid')),
+            state        TEXT NOT NULL CHECK (state IN ('outstanding', 'writing', 'written', 'refused', 'withdrawn')),
+            settled_at   TEXT,
+            run_id       TEXT,
+            reason       TEXT,
+            PRIMARY KEY (ticker, asked_at)
+        ) STRICT;
+
+        INSERT INTO research_request_rebuilt (ticker, asked_at, asked_from, lane, state, settled_at, run_id, reason)
+        SELECT ticker, asked_at, asked_from, lane, state, settled_at, run_id, reason FROM research_request;
+
+        DROP TABLE research_request;
+
+        ALTER TABLE research_request_rebuilt RENAME TO research_request;
 
         CREATE UNIQUE INDEX research_request_one_outstanding_per_name
         ON research_request (ticker) WHERE state = 'outstanding';

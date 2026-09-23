@@ -1,0 +1,14 @@
+{
+ "stage": "night-request",
+ "derivation": "derived",
+ "derivedFrom": "section 14's step asking for a report on the first name drawn on tonight's list, section 17's row counting the names the night asks for, and the decision that the night asks for a report on the first name of its list, not a run. The night asks for the first name its list draws and no other: the list draws the names that fired by how many reasons fired, then by the plan's reward to risk from its first tranche, the zone's midpoint against its stop and its first traded exit, with a plan holding none after every one holding one, then by the ticker, and the test works that order out with its own arithmetic off the listing rows the night wrote rather than reading it back through the order the page draws. The request is marked as asked by the night, under the paid lane every request carries until the local one is offered, and outstanding until the drain claims it. A name already holding a request outstanding or being written gets none, and the night's own row says so. On the fixture's night of 2026-09-08 three names fired one reason each, AAPL, KEYS and MSFT, as the overnight queue's expectation states, so the plan's reward to risk decides which is first; the stage replay the other checks read computes that night's list from a store the whole night does not share, and its night is the same session.",
+ "tables": [
+  "research_request"
+ ],
+ "night": "2026-09-08",
+ "replayNight": "2026-09-08",
+ "count": 1,
+ "askedFrom": "night",
+ "lane": "paid",
+ "state": "outstanding"
+}
