@@ -21398,9 +21398,13 @@ Guarded:    `component-access`, two tests added: `EveryTableAComponentsOwnQuerie
 Expected:   derived, and no expectation file moves. The two tests read the shipped source and
             constructed text, and no stage's output over the fixture changes: the builder's rows
             are the same rows, and only what it declares is new.
-Tests:      FILLED IN AFTER THE RUN. Two added, none removed.
-Claims:     FILLED IN AFTER THE RUN. No claim added: the matrix and the catalogue gain a cell and
-            a term, and no table or figure is added.
+Tests:      1239, from 1237. Two added to `component-access`, none removed. Migrations 0 to 33
+            with none added and none pending, schema version 33. The ladder rules' code version
+            moves from f685dfe69d41 to 9c5b1776d336 and the five evaluator versions move as
+            stated above.
+Claims:     407, from 407, all passing, 414 placements and verdicts reconciled against a floor of
+            34. No claim added: the matrix and the catalogue gain a cell and a term, and no table
+            or figure is added.
 Mutated:    the rule, stated before the run: put the fault back, and break the reader in the one way
             that would hide it.
             Predicted:
@@ -21418,10 +21422,27 @@ Mutated:    the rule, stated before the run: put the fault back, and break the r
             every table a FROM names, and in
             `EveryTableAComponentsOwnQueriesReadIsOneItDeclaresItReads` by its floor, since most of
             the 205 reads are a FROM. Not the pin: the reader is in the suite.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            dfe5ff9, never a filter, each reverted with `git checkout` and the tree read clean
+            after. The baseline is 1239 of 1239. M1 turned 4 red and 1235 green:
+            `EveryTableAComponentsOwnQueriesReadIsOneItDeclaresItReads`,
+            `EveryDeclarationMatchesItsMatrixRowCellByCellIncludingTheBlanks` and the two pins over
+            `LadderBuilder.cs`, with `EveryDeclaringTypeHasACatalogueRowAndDeclaresWhatItLists`
+            green. M2 turned 2 red and 1237 green:
+            `TheReadReaderFindsEachFormAQueryReadsInAndLeavesTheRestAlone` and
+            `EveryTableAComponentsOwnQueriesReadIsOneItDeclaresItReads`, which found 6 reads of a
+            table against its floor of 100.
+Held:       the prediction in both runs, in the tests it named and in their number, and the test it
+            said would stay green did. The reader's floor is what catches a reader gone blind to
+            the commonest form, rather than the absence of a fault, which a blind reader reports
+            too.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1239 of 1239
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 407 claims, 407 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 414 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1239 of 1239 tests.
+            Both gates ran over the tree carrying this entry, and the operator's store under
+            `data/` was not touched by either.
 Carried:    nothing new. The remedy for the moved pin is the operator's, before the merge and
             after it. The phase 10 sign-off stays owed to a fresh session, which is not this one.
