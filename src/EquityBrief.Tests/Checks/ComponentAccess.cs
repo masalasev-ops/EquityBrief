@@ -389,6 +389,96 @@ public class ComponentAccess
         Assert.True(checkedWrites >= 2, $"Checked {checkedWrites} declared writes, expected at least 2.");
     }
 
+    // The direction a declaration cannot give by itself: what a component's own queries read,
+    // held to what it declares it reads. A read the code makes and the declaration leaves out
+    // passes every assertion above, because each of them starts from the declaration, and the
+    // catalogue row and the matrix row are then written from the same declaration.
+    //
+    // The population is the queries in the file named after the component. A read made through
+    // a helper in another file is outside it.
+    [Fact]
+    public void EveryTableAComponentsOwnQueriesReadIsOneItDeclaresItReads()
+    {
+        var components = ShippedComponents.All();
+        var sources = Repository.SourceFiles();
+        var tables = Enum.GetValues<DataStore>()
+            .ToDictionary(ComponentVocabulary.TableName, store => store, StringComparer.OrdinalIgnoreCase);
+
+        var faults = new List<string>();
+        var files = 0;
+        var reads = 0;
+
+        foreach (var component in components)
+        {
+            var file = sources.FirstOrDefault(path =>
+                Path.GetFileNameWithoutExtension(path) == component.Name);
+
+            if (file is null)
+            {
+                continue;
+            }
+
+            files++;
+
+            foreach (var read in SourceStatements.ReadsIn(File.ReadAllText(file)))
+            {
+                if (!tables.TryGetValue(read.Table, out var store))
+                {
+                    continue;
+                }
+
+                reads++;
+
+                if (!component.Access.On(store).HasFlag(Touch.Read))
+                {
+                    faults.Add($"{component.Name} reads {read.Table} and declares no read of it, in: {read.Statement}");
+                }
+            }
+        }
+
+        Assert.True(faults.Count == 0, string.Join("\n", faults));
+
+        // Two scopes, stated in advance. The files read are context; the reads found are the
+        // population carrying the property, and a reader that found none would pass above.
+        Assert.True(files >= 20, $"Read the queries of {files} component file(s), expected at least 20.");
+        Assert.True(reads >= 100, $"Found {reads} read(s) of a table in them, expected at least 100.");
+    }
+
+    [Fact]
+    public void TheReadReaderFindsEachFormAQueryReadsInAndLeavesTheRestAlone()
+    {
+        // Permanent, over constructed source, so the assertion above is not passing over a reader
+        // that finds nothing or finds prose.
+        const string Constructed = """
+            const string A = @"SELECT a FROM bar b JOIN ladder d ON d.ticker = b.ticker LEFT JOIN level l ON 1;";
+            const string B = @"SELECT x FROM listing l, facts f, json_each(l.reasons) c WHERE 1;";
+            const string C = @"DELETE FROM swing WHERE ticker IN (SELECT ticker FROM membership);";
+            const string D = @"INSERT INTO move (ticker) SELECT ticker FROM indicator;";
+            const string E = @"WITH ranked AS (SELECT * FROM calendar) SELECT * FROM ranked;";
+            // SELECT nothing FROM run_log
+            const string F = "the figure came from news_pulse, as stored";
+            const string G = @"DELETE FROM volume_profile WHERE as_of < $oldest;";
+            """;
+
+        // Found: a FROM and every JOIN with their aliases, a FROM's comma list, a subquery inside
+        // a delete and a select feeding an insert. The common table expression's own name is
+        // returned too, and is not a table, which is why the caller keeps only the tables.
+        Assert.Equal(
+            ["bar", "calendar", "facts", "indicator", "ladder", "level", "listing", "membership", "ranked"],
+            SourceStatements.ReadsIn(Constructed).Select(read => read.Table).Distinct().Order(StringComparer.Ordinal));
+
+        // Left alone: the table a delete takes rows from, a function in a FROM list, a comment,
+        // and a sentence in a string that selects nothing.
+        Assert.DoesNotContain(SourceStatements.ReadsIn(Constructed), read =>
+            read.Table is "swing" or "volume_profile" or "json_each" or "run_log" or "news_pulse" or "move");
+
+        // The reader's stated limit: a table listed after a function in one FROM list is not
+        // read, because the list is read up to the first entry that is not a table.
+        Assert.DoesNotContain(
+            SourceStatements.ReadsIn(@"const string H = @""SELECT x FROM listing l, json_each(l.reasons) c, facts f;"";"),
+            read => read.Table == "facts");
+    }
+
     [Fact]
     public void EveryComponentThatWritesAppendsToTheRunLogAndNoneThatWritesNothingDoes()
     {

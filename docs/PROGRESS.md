@@ -21317,3 +21317,97 @@ Carried:    nothing new. The fourth finding of the same review, that `component-
             reads a component's own queries against its declaration and that the ladder builder
             has read `membership` undeclared since 4.1, lands as 4.1's own correction after this
             one. The phase 10 sign-off stays owed to a fresh session, which is not this one.
+### 4.1 - correction: the ladder builder read the membership undeclared, because component-access never read a component's own queries   2026-09-23
+Corrects:   4.1 (8bd9cb3), which gave `LadderBuilder` the query `CurrentMembers`, `SELECT ticker FROM
+            membership`, reshaped at 5.7 (97dc78d) to read the join and leave dates and never
+            declared. The class's `ComponentAccess`, its catalogue row and its matrix row all left
+            the membership out and agreed with one another, and `component-access` reconciles
+            those three against one another, against SCHEMA's ownership and against the write
+            statements in the class's own source. Nothing read the queries in that source, so the
+            read the builder makes on every night, which is how it writes a row for every member,
+            was a direction no assertion reached. The 10.4 correction's entry and the matrix key
+            both named that gap as a property of the check, and nothing carried it.
+Why it is   section 16 says a blank matrix cell is a claim as much as a filled one, and this
+worse:      blank was a claim nothing held to the code. Three documents written from one
+            declaration agree by construction, so their agreement said nothing about the code, and
+            the check read it as a component that does not read the table.
+Found:      by the second phase 10 sign-off review of 2026-09-23, over 9df9392, which read each
+            component's own SQL against its declaration and found this read and no other. It is
+            outside phase 10, and the operator ruled it fixed now, with a check.
+Repaired:   `LadderBuilder` declares a read of `Store.Membership`; its catalogue row's Reads cell
+            opens with the membership and the row says the members it writes a row for are the ones
+            the membership holds on that session (see: A ladder row is written for every index
+            member every night); its matrix row's membership cell is R; and the matrix key says the
+            gap is asserted now rather than naming it as the check's.
+            `component-access` gains the direction.
+            `SourceStatements.ReadsIn` reads every FROM and every JOIN in a component's own source,
+            with the comments stripped first:
+            - a FROM's comma list is read whole;
+            - a statement is read only where it selects, so a sentence in a string saying where a
+              figure came from is not read as a query;
+            - the table a delete takes rows from is left out, being a write the reader above
+              already reads;
+            - a name an open bracket follows is a function and is not read.
+            `EveryTableAComponentsOwnQueriesReadIsOneItDeclaresItReads` holds every table so read to
+            what the component declares it reads. The population is 32 component files and 205
+            reads of a table, against floors of 20 and 100 stated in advance. Before this repair it
+            found one fault, the ladder builder's, and after it none.
+This        that the label is 4.1, the checkpoint that built the read, and that the check's new
+session     direction lands in the same correction, as the check that refuses the defect's
+decided:    recurrence, which is the operator's standing rule for a defect found in the corpus.
+            That the reader has one stated limit rather than a parser: a table listed after a
+            function in one FROM list is not read, because the list is read to its first entry
+            that is not a table. The permanent proof asserts the limit, and no shipped query has
+            that shape: a search for a table-valued function followed by a comma and a name over
+            the shipped source returns nothing.
+            That a declared read whose query sits in a helper in another file is not looked for
+            here. The direction added is from the code to the declaration, which is the one no
+            check had.
+The pin     moves. `LadderBuilder.cs` is in `CodeVersionSources`, so the one line this correction
+moves:      adds to its declaration moves the ladder rules' code version from f685dfe69d41 to
+            9c5b1776d336, though nothing a rule computes changes. Every open window on the
+            operator's store was opened at the old hash, so the first night after this merges would
+            stop at the rule versions step naming the rule. The remedy is the runbook's: before the
+            merge, close every open window with its evidence, the versions before their live
+            windows, and open them again after it, before midnight New York so the coming session
+            counts. The store holds four open windows today, the merge distance's live window and
+            'a quarter of a typical move', and the zone edges' live window and 'non-average
+            anchors only'. The remedy is the operator's to run, and this correction leaves the
+            store alone.
+Guarded:    `component-access`, two tests added: `EveryTableAComponentsOwnQueriesReadIsOneItDeclaresItReads`
+            and `TheReadReaderFindsEachFormAQueryReadsInAndLeavesTheRestAlone`, the second over
+            constructed source:
+            - found: a FROM and three JOINs with their aliases, a FROM's comma list, a subquery
+              inside a delete, a select feeding an insert, and a common table expression's own
+              name, which the caller drops as no table;
+            - left alone: a delete's own table, a function, a comment and a sentence;
+            - the limit: a table after a function in one FROM list is not read.
+Expected:   derived, and no expectation file moves. The two tests read the shipped source and
+            constructed text, and no stage's output over the fixture changes: the builder's rows
+            are the same rows, and only what it declares is new.
+Tests:      FILLED IN AFTER THE RUN. Two added, none removed.
+Claims:     FILLED IN AFTER THE RUN. No claim added: the matrix and the catalogue gain a cell and
+            a term, and no table or figure is added.
+Mutated:    the rule, stated before the run: put the fault back, and break the reader in the one way
+            that would hide it.
+            Predicted:
+            M1 the membership read taken out of `LadderBuilder`'s declaration. Red in
+            `EveryTableAComponentsOwnQueriesReadIsOneItDeclaresItReads`, which finds the query
+            again, in `EveryDeclarationMatchesItsMatrixRowCellByCellIncludingTheBlanks`, whose
+            membership cell now says R, and in
+            `TheLadderRulesCodeVersionIsThePinOfEverySourceTheLiveRulesAndTheirReplayRunThrough`,
+            because `LadderBuilder.cs` is pinned. Green in
+            `EveryDeclaringTypeHasACatalogueRowAndDeclaresWhatItLists`, which reads a declared read
+            against its cell and never a cell against the declaration.
+            M2 the reader reads JOIN and no longer FROM. Red in
+            `TheReadReaderFindsEachFormAQueryReadsInAndLeavesTheRestAlone`, whose found set loses
+            every table a FROM names, and in
+            `EveryTableAComponentsOwnQueriesReadIsOneItDeclaresItReads` by its floor, since most of
+            the 205 reads are a FROM. Not the pin: the reader is in the suite.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing new. The remedy for the moved pin is the operator's, before the merge and
+            after it. The phase 10 sign-off stays owed to a fresh session, which is not this one.

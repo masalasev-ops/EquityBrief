@@ -7,6 +7,9 @@ namespace EquityBrief.Tests.Checks;
 // was read from, so a failure can print the thing a person has to go and look at.
 internal sealed record SourceWrite(string Operation, string Table, string Statement);
 
+// One table a query reads, and the statement it was read from.
+internal sealed record SourceRead(string Table, string Statement);
+
 // Reads the writes out of source and out of migration SQL.
 //
 // Two things this must not do, both of which the first version did.
@@ -59,6 +62,51 @@ internal static class SourceStatements
     static readonly Regex UpsertUpdate = new(@"\bon\s+conflict\b[^;]*?\bdo\s+update\s+set\b", Options);
 
     const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled;
+
+    // A table as a query names it, and never a function: a name an open bracket follows is
+    // called rather than read, which is what `json_each` and the pragma functions are.
+    const string ReadName = @"(?:[""`\[]?[A-Za-z_][A-Za-z0-9_]*[""`\]]?\.)?[""`\[]?(?<table>[A-Za-z_][A-Za-z0-9_]*)(?![A-Za-z0-9_])[""`\]]?(?!\s*\()";
+
+    // The name a query gives a table for the rest of it, which is never a keyword that ends
+    // the table's place in the query.
+    const string Alias = @"(?:\s+(?:as\s+)?(?!(?:where|on|using|join|inner|left|right|full|outer|cross|natural|group|order|limit|union|except|intersect|window|having)\b)[A-Za-z_][A-Za-z0-9_]*)?";
+
+    // Every FROM and every JOIN, a FROM's comma list read whole, and never the table a DELETE
+    // takes rows from, which is a write and is read as one above.
+    static readonly Regex Reads = new(
+        @"(?<!\bdelete\s+)\b(?:from|join)\s+" + ReadName + Alias + @"(?:\s*,\s*" + ReadName + Alias + ")*",
+        Options);
+
+    static readonly Regex Selects = new(@"\bselect\b", Options);
+
+    // The tables the queries in a source read. A statement is read for them only where it
+    // selects, because a FROM in prose, an error message saying where a figure came from, has
+    // the shape of a query and is not one. A name that is not a table, a common table
+    // expression or a word, is the caller's to leave out, since the caller holds the tables.
+    internal static IReadOnlyList<SourceRead> ReadsIn(string source)
+    {
+        var code = WithoutComments(source);
+        var reads = new List<SourceRead>();
+
+        foreach (var statement in code.Split(';'))
+        {
+            if (!Selects.IsMatch(statement))
+            {
+                continue;
+            }
+
+            var trimmed = Regex.Replace(statement, @"\s+", " ").Trim();
+
+            foreach (Match match in Reads.Matches(statement))
+            {
+                reads.AddRange(match.Groups["table"].Captures.Select(capture => new SourceRead(capture.Value, trimmed)));
+            }
+        }
+
+        return reads
+            .DistinctBy(read => (read.Table.ToLowerInvariant(), read.Statement))
+            .ToArray();
+    }
 
     internal static IReadOnlyList<SourceWrite> In(string source)
     {

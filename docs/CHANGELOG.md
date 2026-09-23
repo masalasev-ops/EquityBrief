@@ -6456,3 +6456,26 @@ Was:
 Now: the same row, with the most blocks a window holds in place of the row cap, and four assertions added: no block past the last look is frozen and the record reads the last look's blocks in every figure it draws; a night over blocks already frozen freezes only the block that has just completed and says so on its run log row; a closed window keeps its blocks, which is the bound SCHEMA states; and an in sample score is never a window's origin.
 
 Why: the cap, the skip of a block already frozen and the in sample filter on the origin were each stated in the scorer's own comments and asserted by nothing, so each could be removed with the whole suite still green.
+### 2026-09-23 - ARCHITECTURE.html - the ladder builder reads the membership, and component-access reads a component's own queries
+Corrects: the ladder builder's catalogue row and its matrix row, which left out the membership it has read since 4.1, and the matrix key's sentence saying a read the code makes and the declaration leaves out is the one direction `component-access` cannot see.
+
+Was:
+> <td>levels, indicators, swings, calendar, bar store</td><td>ladders</td><td>writes a row for every index member every night carrying the trend state,
+
+> <tr><td>Ladder builder</td><td></td><td><span class="r">R</span></td>
+
+> The cells stayed blank through 10.4 and the 10.4 correction filled them: a read the matrix says a component does not make is the one direction `component-access` cannot see, since a read is reconciled from the declaration to the cell and not from the code to the declaration.
+
+Now: the Reads cell opens with the membership and the row says the members it writes a row for are the ones the membership holds on that session, citing the decision the builder's code cites; the matrix row's membership cell is R; and the key says that a read the code makes and the declaration leaves out passes every reconciliation that starts from the declaration, that the ladder builder's read stood that way from 4.1 to its correction, and that `component-access` now reads each component's own queries and holds every table they read to what it declares.
+
+Why: `LadderBuilder.CurrentMembers` selects from `membership` on every night, which is how it writes a row for every member, and its declaration, its catalogue row and its matrix row all left it out and agreed with each other. The check reconciled the three against one another and never against the code, so three documents that agreed were read as a component that did not read the table. The key's sentence stated that gap as a property of the check; the check now has the direction, so the sentence would be false.
+
+### 2026-09-23 - .claude/rules/checks.md - component-access holds a component's own queries to its declared reads
+Corrects: the `component-access` row, which named the statements in a component's own source as a reconciliation in both directions while only its writes were read.
+
+Was:
+> SCHEMA's ownership, and the statements in its own source, in both directions; and every worker verb
+
+Now: the same row, adding that every table the queries in a component's own source read is one it declares it reads, read only where a statement selects and never the table a delete takes rows from, with the reader shown to find each form, to leave a comment, a sentence and a function alone, and to stop a FROM list at a function, which is its stated limit.
+
+Why: the source was read for writes and never for reads, so a read the code makes and every document leaves out was a direction nothing reached, and one such read had stood since 4.1.
