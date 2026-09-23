@@ -21943,3 +21943,101 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 6b2aaf9, and the operator's store
             under `data/` was not touched by either.
 Carried:    nothing. No pinned source moves.
+### 11.0 ruling - the two report additions an SNPS report asked for, the reaction record built at 11.7 and the analyst action table not built   2026-09-23
+Not a checkpoint entry. It lands nothing. It records two additions to a name's report that an SNPS
+            report asked for, which the operator says were owed and entered nowhere until now.
+Owed:       an earnings reaction record, each print with its estimate, its actual and how the stock
+            moved on it; and an analyst action table, each firm's dated change of rating.
+Ruled:      on 2026-09-23 the operator ruled the reaction record built, as 11.7 of phase 11, and the
+            analyst action table not built, because the provider files consensus ratings and no
+            dated firm actions, so the table would have nothing to be read from.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green over the tree carrying
+            this entry and the planning entry after it, whose figures are the figures of both runs.
+Carried:    nothing. A provider filing dated firm actions would be a ruling of its own.
+### 11.0 planning - a report written when it is asked for, in the off-peak hours, with the queue page saying when and the night asking for its first name, and four report parts the store can already hold   2026-09-23
+Not a checkpoint entry. It plans phase 11 and builds none of it: no press starts a pass, no page
+            states when a report will be written, the night asks for nothing and no report gains a
+            part.
+Asked:      on 2026-09-23, reading the live screens after phase 10's sign-off, the operator ruled,
+            in their words:
+            R1 "a selected name should have a report pre-generated after the run", and asked how
+            many, "Just the top 1st name for now".
+            R2 "I dont want nightly script to do it. I want the queue to be processed as soon as i
+            queue them". Offered a watcher that finds a request, a task that looks every five
+            minutes and the page starting it on the press, they chose the page.
+            R3 "ok off peak hours it is for everything", after the peak windows were given to them
+            in New York's time.
+            R4 "i want the user to know fully when this report will generate on the queue page".
+            R5 four report parts, written first as 10.6 to 10.10 and relabelled by the operator as
+            phase 11's, "Consider everything as from phase 11 stage 11.0 to wherever it takes us":
+            each large move beside its group's median move, a peers table by price alone, the
+            earnings reaction record and the dividend lines, display only, with five decisions,
+            the document edits and the checkpoints as they wrote them, and a report on DUK dated
+            2026-09-18 beside the repository as the picture.
+            R6 asked where the peers table's two readings are written, once the indicator engine
+            was found pinned, they chose the move annotator.
+Planned:    11.1 a press starts the pass from a copy of the worker's build output, waiting out a
+            peak window, with the queue's decision superseded; 11.2 the queue page states when each
+            request will be written; 11.3 tonight's rows and the selected name state the report's
+            place in the queue; 11.4 the night asks for its first name; 11.5 a move beside its
+            group; 11.6 the peers table; 11.7 the earnings reaction record; 11.8 the dividend lines;
+            11.9 the phase report. The operator's 10.6 to 10.9 are 11.5 to 11.8, and their 10.10 is
+            folded into the phase report.
+Written:    `BUILD_PLAN.md`'s phase 11 section; seven decisions that describe no running code, the
+            five the operator gave for the four parts and two for the queue, the page stating when
+            each request will be written and the night asking for its first name; and the ruling
+            before this entry, recording the two additions the SNPS report owed.
+Found:      four things, read off main at 7c7f136 rather than off a run, which the operator asked
+            to be checked first and stated here.
+            - The fixture holds bars for four members, each in an industry of its own: AAPL, MSFT
+              and KEYS in Technology and NFLX in Communication Services. No industry reaches the
+              floor of five, so the fixture reaches the sector fallback, each Technology name's
+              group being the other two and NFLX's nobody, and never the industry path. 11.5's
+              done conditions use constructed input for the industry path, with DUK measured over
+              a copy of the store beside it.
+            - The universe table's rows come from one read, `ReadApi.UniverseAsync`, carrying each
+              member's stored close, trend state, nearest bands, typical move, sector and industry.
+              The peers table reads the same call filtered to the group.
+            - The earnings rule's reading of timing is inline in `LadderSeries.EarningsRuleFor` and
+              is not a function of its own, and making it one would edit a source every rule
+              version and every evaluator pins. The reaction record calls `EarningsRuleFor` one
+              print at a time, which takes the same session by the same code with nothing pinned
+              edited.
+            - The indicator engine, which the operator's text named as the writer of the two new
+              readings, is one of the fourteen sources every evaluator's version pins, so writing
+              them there would move all five versions and stop the three candidates registered that
+              day from being evaluated. Asked, the operator ruled that the move annotator writes
+              them, in a table of its own.
+Refused:    four things this pass could have written and does not. The decision a press supersedes,
+            which 11.1 supersedes with the code that changes it. `SCHEMA.md`'s new columns, tables
+            and writers, and the catalogue and matrix cells, which land with the code they describe,
+            since `writer-ownership` and `component-access` read that code. Section 17's rows, the
+            request count of one, the group floor of 5 and the return window of 60, each landing
+            with its constant. And the architecture's rows for the four parts in sections 4, 15.9
+            and 15.12 and the exporter, with every claim they add placed and the claims and PASS
+            pair after 11.9 predicted, which a document pass at 11.0 writes before 11.1 builds
+            anything: that pass touches the claim harness at every row it adds, and it is kept apart
+            from the plan so each can be read on its own.
+Not settled: whether the hard rule's carve-outs name the night's request, one paid pass a night set
+            off by the nightly job that does not grow with the index, which the operator rules on
+            before 11.4; and whether a drain waiting out a peak window is one process that waits or
+            one started again when the window ends, which 11.1 settles with its launcher.
+Measured:   what the plan's figures rest on, over the operator's store on 2026-09-23, read with the
+            store opened read-only. It held three paid passes: NVDA twice, at $0.0508 over 29
+            minutes and $0.0396 over 26, and DGX at $0.0415 over 4, taken by a drain run by hand at
+            19:09 UTC on the operator's say-so after its request had waited from 19:01, and written
+            at 19:13 with 10 sections written and 1 not. The pricing's peak windows are 01:00 to
+            04:00 and 06:00 to 10:00 UTC on weekdays, which are 21:00 to 24:00 and 02:00 to 06:00 in
+            New York until 2026-11-01 and an hour earlier after it. Only the theme research runner
+            refuses to start at peak today. The four fixture fundamentals payloads, AAPL, KEYS, MSFT
+            and NFLX, each carry a SplitsDividends part for 11.8 to parse.
+Claims:     FILLED IN AFTER THE RUN. A planning pass that writes no section of the architecture
+            adds none.
+Tests:      FILLED IN AFTER THE RUN. A planning pass adds none.
+Mutated:    nothing. This pass writes no shipped source and no assertion, so there is nothing of its
+            own to break.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    the operator's ruling on the hard rule's carve-outs, owed before 11.4, and the document
+            pass at 11.0, owed before 11.1.
