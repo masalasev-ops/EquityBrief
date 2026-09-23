@@ -291,6 +291,10 @@ internal static class Scope
             Verdict.Pass,
             "a row whose name holds no research carries a control that writes one request and starts one drain, read off the row's own markup and the route it posts to, and a row holding research carries none; the selected name's region carries the same control beside a line saying no report is written where the name holds none, and a link to its report, dated, where it holds one",
             ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The report's state")] = new Scoped(
+            Verdict.Pass,
+            "each of the four states is read back off a row's own markup and off the selected name's region against the store in both directions, over a store holding a request in each state: written with its day, being written since its pass's start, queued with the instant it starts, and not written with the control, the control drawn for the last alone",
+            ByReadSurface),
         [CheckReach.Key("15.15 Queue", "Outstanding")] = new Scoped(
             Verdict.Pass,
             "every request nobody has started is drawn in this region and no other, read back off the page against the store in both directions, oldest first",
@@ -2124,6 +2128,7 @@ internal static class Scope
         [CheckReach.Key("15.15 Queue", "Take it out")] = "9.3",
         [CheckReach.Key("15.15 Queue", "Which lane would write one")] = "9.4",
         [CheckReach.Key("15.15 Queue", "When each will be written")] = "11.2",
+        [CheckReach.Key("15.7 Tonight", "The report's state")] = "11.3",
         [CheckReach.Key("15.8 Universe", "Filters")] = "5.1",
 
         [CheckReach.Key("15.9 Name", "Why it is here")] = "5.4",

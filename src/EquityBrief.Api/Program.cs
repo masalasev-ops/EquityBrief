@@ -428,6 +428,24 @@ app.MapPost(SinglePageApp.WithdrawRoute + "{ticker}", async (string ticker, Http
         statusCode: taken.Written ? StatusCodes.Status200OK : StatusCodes.Status409Conflict);
 });
 
+// The queue with each request's time, as the queue page states them and tonight's rows read
+// them, worked out once for both.
+async Task<(IReadOnlyList<RequestRow> Rows, IReadOnlyList<RequestTime> Times, PassEstimate Estimate)> QueueRead(ReadApi read, IClock clock)
+{
+    var rows = await read.QueueAsync();
+    var estimate = QueueTimes.Estimate(await read.FinishedPassesAsync());
+
+    return (
+        rows,
+        QueueTimes.For(
+            rows,
+            await read.PassStartsAsync(rows.Where(row => row.State == ResearchRequests.Writing)),
+            estimate,
+            QueuePricing(builder.Configuration),
+            clock.UtcNow),
+        estimate);
+}
+
 // The peak windows the queue page states, or none where the prices cannot be read, which
 // the page says rather than refusing to draw the queue.
 static EquityBrief.Core.Providers.ResearchPricing? QueuePricing(IConfiguration configuration)
@@ -526,7 +544,8 @@ app.MapGet("/screens/tonight/{night?}", async (
     ReadApi read,
     MarkRenderer marks,
     SinglePageApp page,
-    SpendCaps caps) =>
+    SpendCaps caps,
+    IClock clock) =>
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
 
@@ -571,13 +590,20 @@ app.MapGet("/screens/tonight/{night?}", async (
     var cells = UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
 
     // The names whose stored series is suspect, which a row says beside the name.
-    var rows = TonightScreen.Rows(
+    var listed = TonightScreen.Rows(
         dated,
         listings,
         cells,
         await read.ClosesToTheNightAsync(dated),
         await read.SuspectSeriesAsync(),
         await read.ResearchedAsync());
+
+    // What the queue holds for each listed name, from the times the queue page states, so a
+    // row and the selected name say a report is queued or being written and when.
+    // see: The queue page states when each request will be written
+    var (queued, times, _) = await QueueRead(read, clock);
+    var states = QueueTimes.States(queued, times, clock.SessionZone);
+    IReadOnlyList<EquityBrief.Web.Marks.ListingCell> rows = [.. listed.Select(row => states.TryGetValue(row.Ticker, out var state) ? row with { Queue = state } : row)];
 
     // Whichever row the reader selected, from the hash, and the first row when
     // they have selected none. Section 15.7's region is for whichever row is
@@ -718,15 +744,7 @@ app.MapGet("/screens/researched", async (ReadApi read, SinglePageApp page) =>
 // see: The queue page states when each request will be written
 app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page, IClock clock) =>
 {
-    var rows = await read.QueueAsync();
-    var estimate = QueueTimes.Estimate(await read.FinishedPassesAsync());
-    var now = clock.UtcNow;
-    var times = QueueTimes.For(
-        rows,
-        await read.PassStartsAsync(rows.Where(row => row.State == ResearchRequests.Writing)),
-        estimate,
-        QueuePricing(builder.Configuration),
-        now);
+    var (rows, times, estimate) = await QueueRead(read, clock);
 
     return Results.Content(
         page.QueueRegion(

@@ -22314,3 +22314,44 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             under `data/` was not touched by either.
 Carried:    nothing new. 11.3 states the report's place in the queue on tonight's rows and the
             selected name, from the same reading.
+### 11.3 - tonight's rows and the selected name state what the queue holds for a name: written, being written, queued or not written   2026-09-23
+Built:      every row of tonight's list states the report's state on the link that opens the name,
+            written, writing, queued or unwritten, and a name the queue holds a request for says
+            when beside it: being written since the instant its pass started, or queued with the
+            instant it will start, from the same times the queue page states. The control asking
+            for a report is drawn only for a name that holds none and has none queued. The selected
+            name's region says the same in place of the line saying none is written and the
+            control, with its link naming what it opens as before. The queue and its times are read
+            once, by one helper the queue page and tonight's list both call.
+Written:    section 15.7 gains the row The report's state, placed at 11.3 and drawn here, and its
+            ask row says the control is drawn for a name holding none and having none queued. The
+            `read-surface` roster row names what it now asserts. Every spec line changed has its
+            prior text in `CHANGELOG.md`.
+Expected:   derived by hand over constructed rows in each of the four states, and over the
+            fixture's night, whose list draws KEYS and MSFT, in two arrangements of the store: KEYS
+            being written by a pass started at 21:50 and MSFT holding a written report, then KEYS
+            queued with nothing ahead of it and MSFT holding nothing, the page drawn at 22:00 on
+            2026-09-08, which is 18:00 in New York under daylight time.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. One added, tonight's row stating the report's state, passing
+            here, as predicted.
+Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that a
+            row states the queue's state for its name, that the control is withheld where a request
+            is queued, and that the selected name's region states it.
+            Predicted:
+            M1 the queue's state dropped from the row's state, so a row reads written or unwritten
+            alone: red in `EachStateOfANamesReportIsDrawnOnItsRowAndInTheSelectedRegion` and
+            `EachStateOfANamesReportIsReadBackOffBothSurfacesAgainstTheStoreInBothDirections`,
+            green everywhere else.
+            M2 the control drawn whatever the queue holds: red in
+            `EachStateOfANamesReportIsDrawnOnItsRowAndInTheSelectedRegion`, green everywhere else,
+            since the test over the store reads a row's state and the selected region's control and
+            not a row's own control.
+            M3 the selected region's queue line dropped, so it falls through to what it drew
+            before: red in both tests of this checkpoint, green everywhere else.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing new. 11.4 has the night ask for a report on its first name.

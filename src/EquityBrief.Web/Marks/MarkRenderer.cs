@@ -206,7 +206,21 @@ public sealed record ListingCell(
     // the two is set on a row the list draws.
     // see: Tonight's list breaks a tie in fired count by the plan's reward to risk, and a row with none is drawn after every row with one and says why
     decimal? RewardToRisk = null,
-    string? NoRewardToRisk = null);
+    string? NoRewardToRisk = null,
+    // What the queue holds for the name, where it holds a request nobody has settled: queued
+    // with the instant it will start, or being written since the instant its pass started.
+    // Null for a name the queue holds nothing waiting for.
+    // see: The queue page states when each request will be written
+    QueueState? Queue = null);
+
+// A request the queue holds for a name and has not settled, as a row of tonight's list and the
+// selected name's region state it: `queued` or `writing`, the instant it starts or started as
+// the store spells an instant where one is known, and the words the page states it in.
+public sealed record QueueState(string State, string? At, string Words)
+{
+    public const string Queued = "queued";
+    public const string Writing = "writing";
+}
 
 // A name whose stored series may not reflect a dividend or split, as a page states it:
 // when its refetch was last asked for and the reason it failed, both as the store holds
@@ -2027,7 +2041,7 @@ public sealed class MarkRenderer : IComponent
             var researched = row.ResearchedOn is not null;
 
             list.Append(Invariant, $" <a class=\"open{(researched ? string.Empty : " unwritten")}\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\" ");
-            list.Append(Invariant, $"data-researched=\"{(researched ? "true" : "false")}\"");
+            list.Append(Invariant, $"data-report-state=\"{ReportState(row)}\" data-researched=\"{(researched ? "true" : "false")}\"");
 
             if (row.ResearchedOn is { } on)
             {
@@ -2038,11 +2052,22 @@ public sealed class MarkRenderer : IComponent
                 list.Append(" title=\"open the name, whose researched sections are not written\">not written</a>");
 
                 // Asked for from the row, which is where the operator is when they see the
-                // name holds none. It writes a request and starts the worker's drain, and a row
-                // whose name is already waiting is refused by the store rather than by the page
-                // reading the queue first and racing itself.
+                // name holds none and the queue holds nothing for it. It writes a request and
+                // starts the worker's drain, and a row whose name is already waiting is refused
+                // by the store rather than by the page reading the queue first and racing itself.
                 // see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
-                list.Append(AskForAReport(row.Ticker));
+                if (row.Queue is null)
+                {
+                    list.Append(AskForAReport(row.Ticker));
+                }
+            }
+
+            // What the queue holds for the name, beside the report it holds or in place of the
+            // control asking for one, so a name already queued or being written says when.
+            // see: The queue page states when each request will be written
+            if (row.Queue is { } queued)
+            {
+                list.Append(Invariant, $"<span class=\"report-state\" data-report-state=\"{Escaped(queued.State)}\" data-at=\"{Escaped(queued.At ?? string.Empty)}\">{Escaped(queued.Words)}</span>");
             }
 
             if (row.Distance?.Name is { Length: > 0 } company)
@@ -2124,6 +2149,11 @@ public sealed class MarkRenderer : IComponent
 
         return list.ToString();
     }
+
+    // Which of the four states a name's report is in: being written or queued where the queue
+    // holds a request for it, and otherwise written or not written by whether it holds one.
+    public static string ReportState(ListingCell row) =>
+        row.Queue?.State ?? (row.ResearchedOn is not null ? "written" : "unwritten");
 
     // The control asking for a report on a name holding none, as tonight's list draws it on
     // a row and in the selected name's region, both on the list's page. It writes a request

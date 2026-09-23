@@ -1005,6 +1005,9 @@ public partial class ArchitectureConformance
         // 11.2, the queue page's row stating when each request will be written, which
         // arrives drawn.
         CheckReach.Key("15.15 Queue", "When each will be written"),
+
+        // 11.3, tonight's row and the selected name stating the report's state, drawn here.
+        CheckReach.Key("15.7 Tonight", "The report's state"),
     ];
 
     // The ones a phase 11 checkpoint has since drawn. A row moves here in the commit that
@@ -1012,6 +1015,7 @@ public partial class ArchitectureConformance
     static readonly string[] PhaseElevenDrawn =
     [
         CheckReach.Key("15.15 Queue", "When each will be written"),
+        CheckReach.Key("15.7 Tonight", "The report's state"),
     ];
 
     // Rows the document gained after the prediction, each one claim.
