@@ -4,6 +4,7 @@ using EquityBrief.Api.Passes;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Research;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Spending;
 using EquityBrief.Core.Time;
@@ -51,6 +52,15 @@ builder.Services.AddSingleton(_ => SpendCaps.From(
     builder.Configuration[SpendCaps.MonthKey]));
 builder.Services.AddSingleton<SinglePageApp>();
 builder.Services.AddSingleton<ReportExporter>();
+
+// What a press starts once its request is written: the worker's drain, from a copy of the
+// worker's build beside the surface's own. A surface running from any build but its own,
+// as the suite hosts it, finds no worker beside it and starts nothing.
+builder.Services.AddSingleton<IDrainLauncher>(services => new WorkerDrainLauncher(
+    checkout,
+    WorkerDrainLauncher.WorkerBuildBeside(checkout, AppContext.BaseDirectory),
+    services.GetRequiredService<StoreLocation>().DataRoot,
+    services.GetRequiredService<IClock>()));
 
 var app = builder.Build();
 
@@ -318,15 +328,18 @@ app.MapGet(SinglePageApp.PassRoute + "{ticker}", async (string ticker, string? s
         "text/html; charset=utf-8");
 });
 
-// A press of the name page's control: start the worker's research verb for the name, and
-// return at once with the line the page puts beside the control.
+// A press asking for a report, from a row of tonight's list or a name's own page: write
+// the request, start the worker's drain, and return at once with the line the page puts
+// beside the control.
 //
 // Refused without the page's own header, so another site's page cannot start a pass, and
-// refused for a name the index does not hold, before anything is started. Nothing here
-// writes a store: the pass is the worker's, and its rows are what the page reads next.
-// see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+// refused for a name the index does not hold, before anything is written or started. The
+// request is the one row written here: the pass is the worker's, and its rows are what
+// the page reads next. A press that wrote nothing starts nothing, since what it asked for
+// is already waiting.
+// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
 // see: A pass is started only by a request carrying the name page's own header
-app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read, IClock clock) =>
+app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read, IClock clock, IDrainLauncher launcher) =>
 {
     if (!string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal))
     {
@@ -358,9 +371,11 @@ app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequ
         : ResearchRequests.FromName;
 
     var started = await read.AskAsync(ticker, from, Lane(builder.Configuration));
+    var drain = started.Written ? launcher.Start() : null;
+    var line = drain is null ? started.Line : started.Line + " " + drain.Line;
 
     return Results.Content(
-        $"<p class=\"pass-started\" data-started=\"{(started.Written ? "true" : "false")}\" data-watch-from=\"{watchFrom.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)}\">{System.Net.WebUtility.HtmlEncode(started.Line)}</p>",
+        $"<p class=\"pass-started\" data-started=\"{(started.Written ? "true" : "false")}\" data-drain=\"{(drain?.Started == true ? "true" : "false")}\" data-watch-from=\"{watchFrom.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture)}\">{System.Net.WebUtility.HtmlEncode(line)}</p>",
         "text/html; charset=utf-8",
         statusCode: started.Written ? StatusCodes.Status202Accepted : StatusCodes.Status409Conflict);
 });
@@ -370,7 +385,7 @@ app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequ
 // Refused without the page's own header, as the press that asks for one is, and refused
 // once the worker has claimed the request, because what the operator asked to remove is a
 // report that has not been generated.
-// see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
 // see: A pass is started only by a request carrying the name page's own header
 app.MapPost(SinglePageApp.WithdrawRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read) =>
 {
@@ -405,7 +420,7 @@ app.MapPost(SinglePageApp.WithdrawRoute + "{ticker}", async (string ticker, Http
 // meant. The local lane is drawn and refused until the two lanes' reports have been
 // compared, so a setting naming it is not honoured and the paid lane is what a request
 // carries.
-// see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+// see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
 static string Lane(IConfiguration configuration)
 {
     var asked = configuration["EquityBrief:Research:Lane"];

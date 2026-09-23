@@ -559,6 +559,7 @@ public partial class ReadSurface
         var clock = FixedClock.At(DateTimeOffset.Parse("2026-09-20T12:00:05Z", CultureInfo.InvariantCulture), SessionZones.UnitedStates);
         var passes = new List<string[]>();
 
+        // A Sunday, which names no peak window, so the drain waits for nothing.
         var (taken, written) = await RequestDrain.DrainAsync(
             store.DatabaseFile,
             clock,
@@ -567,7 +568,9 @@ public partial class ReadSurface
                 passes.Add(verb);
 
                 return Task.CompletedTask;
-            });
+            },
+            Providers.ResearchModelFeedTests.Shipped().Pricing,
+            _ => throw new InvalidOperationException("nothing here is at peak, so nothing waits"));
 
         Assert.Equal((1, 0), (taken, written));
 

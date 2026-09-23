@@ -290,7 +290,7 @@ public sealed class SinglePageApp : IComponent
             const box = document.createElement('div');
             box.className = 'confirm key';
             const line = document.createElement('p');
-            line.textContent = 'Put this report in the queue? It is written when the worker next drains it. ' + (cost ? cost.textContent : '');
+            line.textContent = 'Put this report in the queue? The worker starts on it at once and writes it at the off-peak rate. ' + (cost ? cost.textContent : '');
             const go = document.createElement('button');
             go.type = 'button'; go.className = 'btn'; go.textContent = 'Queue it';
             const stop = document.createElement('button');
@@ -995,9 +995,9 @@ public sealed class SinglePageApp : IComponent
     //
     // Three regions over one ordered read, split by state rather than by three reads, so
     // a request that moved between them cannot be drawn twice or missed by both. Nothing
-    // here starts a pass: the worker drains what is listed, and a machine that never runs
-    // leaves a request outstanding rather than losing it.
-    // see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+    // here starts a pass: the press that wrote a request started the worker's drain, and a
+    // drain that could not be started leaves a request outstanding rather than losing it.
+    // see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
     public string QueueRegion(IReadOnlyList<QueuedCell> rows)
     {
         var outstanding = rows.Where(row => row.State == Outstanding).ToArray();
@@ -1049,7 +1049,7 @@ public sealed class SinglePageApp : IComponent
 
         if (writing.Length == 0)
         {
-            body.Append("<p class=\"degraded\" data-writing=\"none\">Nothing is being written. The worker writes what is outstanding when it next drains the queue.</p>");
+            body.Append("<p class=\"degraded\" data-writing=\"none\">Nothing is being written. A press starts the worker on what is outstanding, and a request asked at peak waits for the off-peak rate.</p>");
         }
         else
         {
@@ -1106,7 +1106,7 @@ public sealed class SinglePageApp : IComponent
                 "Queue",
                 body.ToString(),
                 title: "Reports asked for",
-                lede: "A press asks for a report and the worker writes it when it next drains the queue. Nothing on this screen starts a pass.",
+                lede: "A press asks for a report and starts the worker, which writes it at the off-peak rate. Nothing on this screen starts a pass.",
                 region: "queue")
             + "</section>";
     }
