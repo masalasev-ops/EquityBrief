@@ -6533,3 +6533,25 @@ Was:
 Now: the same row, adding that the selected name's region calls what its link opens a report only where the name holds one, with the day it was written, and where it holds none says so beside the control the row carries.
 
 Why: the region's link read "Open the full report" for every name, and nothing read its words against what the name holds.
+
+### 2026-09-23 - ARCHITECTURE.html - links drawn in a colour of each palette's own
+Corrects: the document's stylesheet, which stated no colour for a link, so every link was drawn in the browser's own blue and purple, which the dark palette's grounds hold at under 2 to 1.
+
+Was, the light palette's last line, then the same line in the toggle's dark palette and in the machine's:
+>     --boxbg:#FFFFFF; --chipink:#FFFFFF; --flagbg:#FFF6E5;
+
+>     --boxbg:#222A33; --chipink:#131920; --flagbg:#2A2318;
+
+Now: each of the three palettes declares a link colour, #1F5A96 in the light one and #8DB6F2 in both dark ones, and a rule after the body's draws every link, followed or not, in it. Against the four grounds the document sets text on, the light colour reads at 6.42 to 7.09 to 1 and the dark at 6.98 to 8.51 to 1.
+
+Why: the operator read the document in dark mode on 2026-09-23 and found its links almost invisible. On the four dark grounds the browser's blue reads at 1.54 to 1.88 to 1 and its purple for a followed link at 1.32 to 1.61, where text needs 4.5.
+
+### 2026-09-23 - .claude/rules/checks.md - research-marked holds every link the document draws to reading in each palette
+Corrects: the `research-marked` row, which asserted every link resolves and nothing about whether a reader can see one.
+
+Was:
+> and to end a subsection at the next heading of either level while reading the last one to the end of the document |
+
+Now: the same row, adding that every link the document draws reads in each of its palettes, every colour a rule for links states at a contrast of at least 4.5 to 1 against every ground the document sets text on, the machine's own dark palette among them, with the reader shown to find no colour where no rule is for links and the contrast shown to be WCAG's own.
+
+Why: the links 10.0 added were drawn in the browser's own colours, which the dark palette holds at under 2 to 1, and no check read a link's colour.

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace EquityBrief.Tests.Checks;
@@ -271,5 +272,142 @@ public class ResearchMarked
             $"A rule. {Evidence} none here. {Judgement} the reason is <a href=\"#src-a\">A (2000)</a> and more words follow.",
             sources,
             questions)).Fault, StringComparison.Ordinal);
+    }
+
+    // The grounds the document sets text on: the page, the panels and keys, a figure's boxes
+    // and a flag.
+    static readonly string[] Grounds = ["--paper", "--panel", "--boxbg", "--flagbg"];
+
+    // The document's palettes, each as the custom properties its block declares: the light one
+    // on the root, the dark one the toggle sets, and the dark one the machine's own setting
+    // applies, which is a block of its own and read as one.
+    internal static IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> Palettes(string style)
+    {
+        IReadOnlyDictionary<string, string> Declared(string opening)
+        {
+            var at = style.IndexOf(opening, StringComparison.Ordinal);
+
+            Assert.True(at >= 0, $"the stylesheet declares no block opening {opening}");
+
+            var open = style.IndexOf('{', at);
+
+            return Regex
+                .Matches(style[(open + 1)..style.IndexOf('}', open)], @"(--[\w-]+)\s*:\s*([^;]+);")
+                .ToDictionary(found => found.Groups[1].Value, found => found.Groups[2].Value.Trim(), StringComparer.Ordinal);
+        }
+
+        return new Dictionary<string, IReadOnlyDictionary<string, string>>(StringComparer.Ordinal)
+        {
+            ["light"] = Declared(":root{"),
+            ["dark by the toggle"] = Declared("html[data-theme=\"dark\"]{"),
+            ["dark by the machine"] = Declared("html:not([data-theme=\"light\"]){"),
+        };
+    }
+
+    // Every colour a rule for links states, the rules read with the comments taken out. A rule
+    // is for links where the last part of one of its selectors is a link, visited or not.
+    internal static IReadOnlyList<string> LinkColours(string style) =>
+    [
+        .. Regex
+            .Matches(Regex.Replace(style, @"/\*.*?\*/", string.Empty, RegexOptions.Singleline), @"(?<selectors>[^{}]+)\{(?<body>[^{}]*)\}")
+            .Where(rule => rule.Groups["selectors"].Value
+                .Split(',')
+                .Any(selector => Regex.IsMatch(Regex.Split(selector.Trim(), @"\s+")[^1], @"^a(?![\w-])")))
+            .Select(rule => Regex.Match(rule.Groups["body"].Value, @"(?<![\w-])color\s*:\s*([^;]+)"))
+            .Where(colour => colour.Success)
+            .Select(colour => colour.Groups[1].Value.Trim()),
+    ];
+
+    // The contrast between two colours as WCAG states it: the lighter's relative luminance
+    // over the darker's, each plus 0.05, with each channel linearised first.
+    internal static double Contrast(string one, string other)
+    {
+        static double Luminance(string hex)
+        {
+            var digits = hex.TrimStart('#');
+
+            if (digits.Length == 3)
+            {
+                digits = string.Concat(digits.Select(digit => new string(digit, 2)));
+            }
+
+            double Channel(int at)
+            {
+                var value = int.Parse(digits.Substring(at, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture) / 255.0;
+
+                return value <= 0.04045 ? value / 12.92 : Math.Pow((value + 0.055) / 1.055, 2.4);
+            }
+
+            return (0.2126 * Channel(0)) + (0.7152 * Channel(2)) + (0.0722 * Channel(4));
+        }
+
+        var (lighter, darker) = (Math.Max(Luminance(one), Luminance(other)), Math.Min(Luminance(one), Luminance(other)));
+
+        return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    // A colour as a palette resolves it: a custom property's value, or the colour as written.
+    static string Resolved(string colour, IReadOnlyDictionary<string, string> palette)
+    {
+        var named = Regex.Match(colour, @"^var\(\s*(--[\w-]+)\s*\)$");
+
+        if (!named.Success)
+        {
+            return colour;
+        }
+
+        Assert.True(palette.ContainsKey(named.Groups[1].Value), $"the palette declares no {named.Groups[1].Value}");
+
+        return palette[named.Groups[1].Value];
+    }
+
+    [Fact]
+    public void EveryLinkTheDocumentDrawsReadsInBothItsPalettes()
+    {
+        var architecture = File.ReadAllText(Repository.Architecture);
+        var style = FigureFits.StyleBlock(architecture);
+
+        // Stated in advance: 119 links when this was written, and phase 10's rules keep linking
+        // their sources while they stand.
+        var links = Regex.Matches(architecture, "<a ").Count;
+
+        Assert.True(links >= 100, $"Read {links} links in the document, expected at least 100.");
+
+        // A link no rule colours is drawn in the browser's own blue, which the dark palette's
+        // paper holds at under 2 to 1.
+        var colours = LinkColours(style);
+
+        Assert.NotEmpty(colours);
+
+        var faults = new List<string>();
+
+        foreach (var (palette, declared) in Palettes(style))
+        {
+            foreach (var colour in colours)
+            {
+                foreach (var ground in Grounds)
+                {
+                    Assert.True(declared.ContainsKey(ground), $"the {palette} palette declares no {ground}");
+
+                    var ratio = Contrast(Resolved(colour, declared), declared[ground]);
+
+                    if (ratio < 4.5)
+                    {
+                        faults.Add(FormattableString.Invariant($"{palette}: {colour} on {ground} at {ratio:0.00} to 1"));
+                    }
+                }
+            }
+        }
+
+        Assert.True(faults.Count == 0, "A link reads below 4.5 to 1: " + string.Join("; ", faults));
+
+        // The reader is shown to find no colour where no rule is for links, and each rule that
+        // is; and the contrast to be WCAG's own, at its ends and at the grey that just passes.
+        Assert.Empty(LinkColours("body{color:#000}.box a.x-y{margin:0}"));
+        Assert.Equal(["#111", "var(--link)"], LinkColours("/* a{color:#fff} */a:visited{color:#111}.key a{color:var(--link)}"));
+        Assert.Equal(21.0, Contrast("#000", "#FFFFFF"), 2);
+        Assert.Equal(1.0, Contrast("#131920", "#131920"), 2);
+        Assert.InRange(Contrast("#767676", "#FFFFFF"), 4.5, 4.6);
+        Assert.True(Contrast("#0000EE", "#131920") < 2, "the browser's own blue reads at 2 to 1 or better on the dark paper");
     }
 }
