@@ -17655,7 +17655,10 @@ Mutated:    the rule, stated before the sweep: break each of the four properties
             M4 prose the writer already broke into paragraphs not recognised as the parts it states:
             the risks test red where it counts the parts against the stored paragraphs; nothing
             else.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1137 of 1137 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
@@ -17741,7 +17744,10 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             green while answering about a population it could not tell apart. The two are now
             counted apart, each read inside the element that holds it. This is the prefix shape the
             writing rules name, arriving a fifth time.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1138 of 1138 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
@@ -17818,7 +17824,10 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             assertion it was not aimed at has shown nothing about the one it was. The attribute is
             now put on the panel itself, which no other assertion reads, and M2 was shown red by
             hand on the intended assertion before the sweep was run again.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1138 of 1138 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
@@ -17886,7 +17895,10 @@ Mutated:    the rule, stated before the sweep: break each of the two properties 
             M2 the key dropped from the judgement rather than from the record test alone: the
             beside-research test red where it reads the stale sections, and nothing else, the
             key-alone test still missing because the filter leaves it nothing either way.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1140 of 1140 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
@@ -18050,7 +18062,10 @@ Mutated:    the rule, stated before the sweep: break each of the two properties 
             first still following the store.
             M2 the header's prose counted over every accepted section again: the header test red
             where it reads its own counts, and nothing else, the rows test reading no header.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1141 of 1141 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 381 claims,
@@ -18101,7 +18116,10 @@ Mutated:    the rule, stated before the sweep: break each of the two properties 
             M2 the settle rule reading any outcome as written: the settle test red on every outcome
             but the one the runner writes for a pass that ran to its end, and nothing else, the route
             tests reaching no drain.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1143 of 1143 tests
             ran with none failed, migrations 0 to 30 with one added and none pending, exit 0, against
             `data-ci` and never `data`. `tools/verify-phase.ps1` green at 383 claims, 379 PASS, 0
@@ -18139,7 +18157,10 @@ Mutated:    the rule, stated before the sweep: break the property the screen res
             M3 every request drawn as outstanding whatever its state: the region test red where it
             reads each request against the region it landed in, and the control test red where it
             reads the control onto a claimed request.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1146 of 1146 tests
             ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 383 claims, 383
@@ -18168,7 +18189,10 @@ Mutated:    the rule, stated before the sweep: break the property the lane rests
             Predicted:
             M4 the local choice drawn as a button: the lane test red where it reads that the head
             carries no control, and nothing else, the screen's own test reading the waits line only.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1148 of 1148 tests
             ran with none failed, migrations 0 to 30 with one added and none pending, exit 0, against
             `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384 PASS, 0
@@ -20625,8 +20649,13 @@ Expected:   derived, and a derivation rather than a file: this checkpoint adds n
             this entry, and `tools/verify-phase` covers it from here because
             `obligation-reconciles` runs inside it, which is how the other reconciliations between
             the plan and the record are covered.
-Tests:      FILLED IN FROM THE RUN, from 1216.
-Claims:     FILLED IN FROM THE RUN, from 406.
+Tests:      1217, from 1216. One added, and it is the whole of what this checkpoint builds: every
+            operating row the newest report entry's phase opened, named in that entry, with the
+            count of rows stated in advance so a phase that opened none would refuse rather than
+            pass over the empty set.
+Claims:     406, unchanged. This checkpoint states no new rule in the architecture: what it adds
+            is a reading of the plan against the record, which reaches no claim and is why the
+            check carrying it names no subject.
 Mutated:    the rule, stated before the sweep: break the property the one assertion this checkpoint
             adds turns on, which is that a row is named in its own phase's entry rather than
             anywhere in the record. Not mutated: nothing else, because nothing else was added.
@@ -20634,8 +20663,20 @@ Mutated:    the rule, stated before the sweep: break the property the one assert
             M1 the check reading the oldest report entry rather than the newest: red in the new
             test, where the phase that entry belongs to opened no operating row and the count
             stated in advance would refuse the empty set rather than pass over it.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, FILLED IN FROM THE RUN. `tools/verify-phase.ps1`
-            green, FILLED IN FROM THE RUN.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
+Rehearsed:  nothing, and the reason is stated rather than left out: this checkpoint writes no
+            code a store or a screen runs through, so there is nothing a night over a copy would
+            exercise that 10.4's rehearsal did not. The screens were fetched there, each 200.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1217 of 1217
+            tests ran with none failed, migrations 0 to 32 with none added and none pending,
+            schema version 32, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1`
+            green at 406 claims, 406 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 413 placements and
+            verdicts reconciled against a floor of 34, 41 of 41 roster checks carried and all 41
+            run, 1217 of 1217 tests. Both gates ran over da6eb4b with this entry in place, in a
+            worktree of their own, and the operator's store under `data/` was not touched by
+            either: the checkout it sits in was left on main and unpulled for the night's run.
 Carried:    the four rows above, all four still open, and the phase 10 sign-off, which is owed to a
             fresh session because this one committed the code.
