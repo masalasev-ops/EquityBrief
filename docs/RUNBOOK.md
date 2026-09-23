@@ -318,6 +318,8 @@ Every open, replacement, close and backfill, refused or not, is one row on the r
 
 **Before merging an edit to a pinned source**, close every open window with its evidence and open them again after the merge. The ladder rules' code version is the pin of every file `RuleVersionScorer.CodeVersionSources` lists, so any edit to one of them, a comment included, is a new code version, and the next night with a live window open stops at the rule versions step. `version --list` names each live window the build no longer hashes to before a night stops on it (see: The ladder rules' code version pins every source a live ladder rule or its replay runs through).
 
+**Closing and opening a window again after midnight in New York costs the coming session.** A score counts only for a session after the New York date its window opened on, so a window reopened at, say, twenty past midnight Eastern opens on that day's own date and the night that runs that evening is flagged in sample and counts toward no record. Run the remedy before midnight Eastern where the choice is there, and where it is not, read the first counted session as the one after (see: A version's score counts only for a session after the New York date its window opened on).
+
 ---
 
 ## Moving the installation

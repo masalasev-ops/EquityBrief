@@ -52,6 +52,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `candidate_register` | CandidateRegistrar | none | none |
 | `rule_version` | RuleVersionScorer | RuleVersionScorer | none |
 | `version_score` | RuleVersionScorer | RuleVersionScorer | RuleVersionScorer |
+| `version_block` | RuleVersionScorer | none | none |
 | `series_state` | CorporateActionChecker | CorporateActionChecker | none |
 | `research_request` | ReadApi | ReadApi, RequestDrain | none |
 | `run_log` | every component that writes appends | RunLog | none |
@@ -81,6 +82,8 @@ The `DELETE` lives in each component's own file rather than in a shared helper, 
 **`rule_version` has one updater and no deleter, and the update is the close.** A window is opened by an insert and closed by writing its `closed_at`, `evidence` and, for a replacement, `replaced_by`, which is the one change a version row ever takes: a closed window keeps every other column it was opened with, because the scores written under it are of the rule as it stood then and a row edited afterwards would make them scores of something else. Nothing deletes a version, for the reason nothing deletes a registration.
 
 **`version_score` has a deleter and it is the retention, not a correction.** The scorer drops the scores that fall out of the one-year window on the night they fall out of it, as every computed table's writer does (see: Every computed table's writer is its own deleter). A score inside the window is replaced rather than corrected: a re-run of a night writes that night's set again, inside the transaction that writes it, which is the update this table declares. A backfill writes only the scores not stored yet and keeps the rest (see: A backfill scores only a night the store computed, at that night's own price scale, and never rewrites a score already stored). It is the same shape the two as-of-keyed computed tables have, where a second run for one night after a refetch moved the prices would otherwise leave both sets standing.
+
+**`version_block` has no updater and no deleter, and the absence is the whole point of the table.** The retention does not reach it and nothing else removes a row from it. A block's two excesses and two counts are computed on the night the block completes and written once; a block already held is not recomputed, and the write that reaches one anyway keeps the row it conflicts with rather than replacing it. A sum that moved after the look that read it would make that look's boundary one found over an arrangement the record no longer has, which is the same reason a look reads whole blocks rather than the closed setups inside an unfinished one (see: A version's record is read from the blocks frozen as each completed). Its growth is bounded by construction rather than by a window: at most 16 blocks, the last look never being extended, for each of at most 18 open windows, which is 288 rows.
 
 **`candidate_register` has no updater and no deleter, and that is load bearing.** Pre-registration only works if a registered candidate cannot be changed after results arrive. A retirement is a new dated row naming what it retires, and a name retired may be registered again, standing once by its last row (see: A candidate stands by the last row naming it, and a name retired and registered again stands once). `register-append-only` asserts the absence in both the source and a live attempt, a replace included.
 
@@ -507,6 +510,36 @@ Primary key: `ticker`, `session_date`, `rule`, `version`, `opened_at`.
 **`sample` is the column that keeps a backfill from becoming evidence.** A version added later may be scored over the nights before it, because seeing what it would have done is the point of scoring counterfactually at all. What it may not do is count: a rule written after those nights were seen and then scored on them is measured in sample, and a record holding such a score is a record of having fitted the rule to what already happened. The scorer writes the flag from the date in New York the window's own `opened_at` falls on, read through the clock, against the session being scored, so the classification is arithmetic rather than a caller's claim about itself, and a window opened on a session's own evening, after that night was read, counts from the session after it (see: A version's score counts only for a session after the New York date its window opened on).
 
 One year retained, counted back from the newest stored session as the bars are, whatever night the scorer is scoring, and dropped by the scorer on the night the rows fall out of the window, at the order of the index times the versions open.
+
+### version_block
+Grain: one row per rule, version, window and completed block.
+
+| Column | Type | Notes |
+|---|---|---|
+| `rule` | TEXT | |
+| `version` | TEXT | |
+| `opened_at` | TEXT | the window the block belongs to, as `version_score` keys a score to one |
+| `block` | INTEGER | the block's number, counted in blocks of 63 exchange sessions from `origin` |
+| `origin` | TEXT | the session block 0 is counted from, being the first session this window's score counted for, written with the window's first block and never recomputed |
+| `version_excess` | REAL | the version's excess over this block: its wins less the bars those setups were judged against |
+| `version_setups` | INTEGER | how many setups that excess is over |
+| `live_excess` | REAL | the live rule's excess over the same block |
+| `live_setups` | INTEGER | how many setups that excess is over |
+| `version_null_sum` | REAL | the sum of the bars the version's setups were judged against |
+| `version_null_spread` | REAL | the sum of `p(1 - p)` over those bars, which is the scatter independent setups would give |
+| `live_null_sum` | REAL | the same sum over the live rule's setups |
+| `live_null_spread` | REAL | the same scatter over the live rule's setups |
+| `frozen_at` | TEXT | UTC instant of the write that froze the block; last because SQLite appends |
+
+Primary key: `rule`, `version`, `opened_at`, `block`.
+
+**Nothing here is dropped and nothing here is edited.** `version_score` and `ladder` are kept one year, counted back from the newest stored session, and a version's record is read at 8 blocks and again at 16, which is 1,008 sessions and about four years. A record computed from those two tables when it is read could hold 3 whole blocks at most against a floor of 8, so this table holds the one number per block the record reads and the per-night detail goes on being dropped (see: A version's record is read from the blocks frozen as each completed). The two excesses and the two counts are what a difference, a setup count and an excess in points are read from, and the two pairs of sums are what a design effect and a smallest excess are read from, so every field a record exposes is derivable from these rows alone.
+
+**A block is frozen 63 sessions after its last session, which is 125 behind the night it completes.** The one-year window is about 252 sessions, so the rows a block is computed from are still there on the night it is frozen, with 127 sessions of margin.
+
+**`origin` is on every row of a window and carries one value.** It is a fact about the window rather than about the block, and it is stored because retention moves the earliest scored session forward: an origin read from the store each night would re-cut the blocks under a record already being read, and a look's boundary was found over the arrangement its blocks had. It is written with the window's first block, which completes 125 sessions in, and every later block of that window takes it from the row already held.
+
+**Only a rule whose versions can only take a setup away carries rows here**, which is the trend rule. A version of any other rule produces plans whose outcomes nothing computed, so there is no live side to difference it against, and the table is keyed on the rule so a later one can join it.
 
 ### series_state
 Grain: one row per ticker.

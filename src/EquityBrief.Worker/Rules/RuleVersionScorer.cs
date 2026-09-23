@@ -1,10 +1,12 @@
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Bars;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Levels;
 using EquityBrief.Core.Prices;
+using EquityBrief.Core.Returns;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Swings;
 using EquityBrief.Core.Time;
@@ -25,7 +27,8 @@ public sealed record VersionScoreOutcome(
     int RowsKept = 0,
     int NamesNotComputed = 0,
     int Replayed = 0,
-    int ReplayedMergeDistance = 0);
+    int ReplayedMergeDistance = 0,
+    int BlocksFrozen = 0);
 
 // The rule version scorer. Replays tonight's name-nights under every open version
 // of each ladder rule, from stored bars, and stores the plan each produced.
@@ -52,8 +55,10 @@ public sealed class RuleVersionScorer : IComponent
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.Swing, Touch.Read),
             new StoreTouch(Store.Ladder, Touch.Read),
+            new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.RuleVersion, Touch.Read | Touch.Insert | Touch.Update),
-            new StoreTouch(Store.VersionScore, Touch.Insert | Touch.Update | Touch.Delete),
+            new StoreTouch(Store.VersionScore, Touch.Read | Touch.Insert | Touch.Update | Touch.Delete),
+            new StoreTouch(Store.VersionBlock, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -72,7 +77,7 @@ public sealed class RuleVersionScorer : IComponent
     // see: The ladder rules' code version pins every source a live ladder rule or its replay runs through
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "2e00ecf50c97";
+    public const string CodeVersion = "f685dfe69d41";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
@@ -131,6 +136,63 @@ public sealed class RuleVersionScorer : IComponent
     // see: Every computed table's writer is its own deleter
     const string DropOlderThan = @"
         DELETE FROM version_score WHERE session_date < $oldest;
+    ";
+
+    // The blocks of one window already frozen, with the origin the first of them
+    // fixed. A frozen block is never recomputed: the rows it was computed from are
+    // dropped a year back, and a sum that moved after a look would make that look's
+    // boundary one found over an arrangement the record no longer has.
+    const string FrozenBlocks = @"
+        SELECT block, origin FROM version_block
+        WHERE rule = $rule AND version = $version AND opened_at = $opened_at
+        ORDER BY block;
+    ";
+
+    // The first session a window's score counts for, which is the session its blocks
+    // are counted from. An in sample score is left out here as it is everywhere a
+    // record is read, so a backfill over the nights before the window opened cannot
+    // put block 0 behind the window itself.
+    // see: A version's score counts only for a session after the New York date its window opened on
+    const string FirstScoredSession = @"
+        SELECT MIN(session_date) FROM version_score
+        WHERE rule = $rule AND version = $version AND opened_at = $opened_at AND sample = $sample;
+    ";
+
+    // Every setup the live rule listed on a session one window's score counts for,
+    // with the flag that says that version's label takes it away, and the outcome the
+    // store already holds. No ticker is selected and none is needed: what a block
+    // freezes to is a sum over setups and the sessions they were listed on.
+    //
+    // Keyed on the window's instant and not on the version's name alone, because a
+    // version closed and opened again under one name is two windows, and a session
+    // scored under both would otherwise be counted twice.
+    // see: A version's record belongs to the window its scores were written under and never to the version's name
+    const string ScoredSetups = @"
+        SELECT v.session_date, f.outcome, f.null_win, f.null_win_at_sensitivity,
+               f.break_even, f.return_pct, f.planned_risk, f.on_earnings,
+               CASE WHEN json_extract(v.plan, '$.trend') = $downtrend AND d.trend_state <> $downtrend THEN 1 ELSE 0 END
+        FROM version_score v
+        JOIN ladder d ON d.ticker = v.ticker AND d.as_of = v.session_date
+        JOIN forward_return f
+            ON f.ticker = v.ticker AND f.session_date = v.session_date AND f.horizon = $horizon
+        WHERE v.rule = $rule AND v.version = $version AND v.opened_at = $opened_at AND v.sample = $sample
+        ORDER BY v.session_date;
+    ";
+
+    // A block written once and never again. The conflict keeps the frozen row rather
+    // than replacing it, which is the second guard under the first: the sums are not
+    // recomputed for a block already held, and a write that reached one anyway would
+    // still leave it as it was.
+    const string FreezeBlock = @"
+        INSERT INTO version_block (
+            rule, version, opened_at, block, origin,
+            version_excess, version_setups, live_excess, live_setups,
+            version_null_sum, version_null_spread, live_null_sum, live_null_spread, frozen_at)
+        VALUES (
+            $rule, $version, $opened_at, $block, $origin,
+            $version_excess, $version_setups, $live_excess, $live_setups,
+            $version_null_sum, $version_null_spread, $live_null_sum, $live_null_spread, $frozen_at)
+        ON CONFLICT (rule, version, opened_at, block) DO NOTHING;
     ";
 
     const string NewestSession = "SELECT MAX(session_date) FROM bar;";
@@ -301,7 +363,7 @@ public sealed class RuleVersionScorer : IComponent
                 command.Parameters.AddWithValue("$session_date", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
                 command.Parameters.AddWithValue("$rule", version.Rule);
                 command.Parameters.AddWithValue("$version", version.Version);
-                command.Parameters.AddWithValue("$opened_at", version.OpenedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+                command.Parameters.AddWithValue("$opened_at", RuleVersions.Stored(version.OpenedAt));
                 command.Parameters.AddWithValue("$plan", plan);
                 command.Parameters.AddWithValue("$sample", RuleVersions.SampleOf(session, clock.SessionDateAt(version.OpenedAt)));
 
@@ -312,17 +374,236 @@ public sealed class RuleVersionScorer : IComponent
             }
         }
 
+        // Before the drop, so a block that completes tonight is frozen off the rows
+        // tonight still holds rather than off what the retention leaves behind.
+        var frozen = await FreezeAsync(connection, transaction, replayed, cancellation);
         var dropped = await DroppedAsync(connection, transaction, cancellation);
 
         var detail =
             FormattableString.Invariant($"{open.Length} open version(s), {replayed.Length} replayed with {mergeDistance} of the merge distance, over {names.Count} name(s), ")
             + FormattableString.Invariant($"{written} score(s) written, {kept} already stored and kept, {notComputed} name(s) with no bands or plan of that session, ")
-            + FormattableString.Invariant($"{skipped} name-night(s) skipped for a band set stored without member sources, {dropped} dropped");
+            + FormattableString.Invariant($"{skipped} name-night(s) skipped for a band set stored without member sources, {dropped} dropped, {frozen} block(s) frozen");
 
         await RecordAsync(connection, runId, startedAt, written, detail, cancellation, transaction: transaction);
         await transaction.CommitAsync(cancellation);
 
-        return new VersionScoreOutcome(open.Length, names.Count, written, dropped, skipped, kept, notComputed, replayed.Length, mergeDistance);
+        return new VersionScoreOutcome(open.Length, names.Count, written, dropped, skipped, kept, notComputed, replayed.Length, mergeDistance, frozen);
+    }
+
+    // The blocks that have completed, frozen so a version's record outlives the rows
+    // it was computed from.
+    //
+    // Only a rule whose versions can only take a setup away, because a version of any
+    // other rule produces plans whose outcomes nothing computed, and only an open
+    // window, because a closed one carries the evidence it was closed on in its own
+    // row. A block already held is not recomputed and not rewritten, which is what
+    // keeps a sum from moving after the look that read it, so a backfill that lands a
+    // session inside a frozen block changes nothing.
+    //
+    // The as-of is the newest stored session and not the session being scored, so a
+    // backfill of a past night and a night of its own agree on which blocks are whole.
+    // see: A version's record is read from the blocks frozen as each completed
+    async Task<int> FreezeAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        IReadOnlyList<RuleVersionRow> windows,
+        CancellationToken cancellation)
+    {
+        if (await NewestStoredSessionAsync(connection, transaction, cancellation) is not { } asOf)
+        {
+            return 0;
+        }
+
+        var frozen = 0;
+
+        foreach (var window in windows.Where(row => LadderRules.OnlyRemovesSetups(row.Rule)))
+        {
+            var held = await FrozenBlocksAsync(connection, transaction, window, cancellation);
+
+            if (held.Blocks.Count >= Looks.Maximum)
+            {
+                continue;
+            }
+
+            // The stored origin wherever a block is held, which is what fixes it:
+            // retention moves the earliest scored session forward, and an origin read
+            // again from the store would re-cut the blocks under a record being read.
+            var origin = held.Origin ?? await FirstScoredSessionAsync(connection, transaction, window, cancellation);
+
+            if (origin is not { } first)
+            {
+                continue;
+            }
+
+            var setups = await ScoredSetupsAsync(connection, transaction, window, cancellation);
+            var standing = held.Blocks.Count;
+
+            var whole = setups
+                .GroupBy(setup => Blocks.Of(first, setup.Setup.Session))
+                .Where(block => !held.Blocks.Contains(block.Key))
+                .Where(block => Blocks.Complete(first, block.Key, asOf))
+                .OrderBy(block => block.Key);
+
+            foreach (var block in whole)
+            {
+                // The last look is never extended, so a block past it is read by
+                // nothing and is not written.
+                if (standing >= Looks.Maximum)
+                {
+                    break;
+                }
+
+                var live = VersionRecord.Counted([.. block.Select(row => row.Setup)]);
+                var mine = VersionRecord.Counted([.. block.Where(row => !row.Removed).Select(row => row.Setup)]);
+
+                // A block holding no setup the store decided and computed a bar for is
+                // not one the test is over.
+                if (live.Count == 0)
+                {
+                    continue;
+                }
+
+                await WriteBlockAsync(connection, transaction, window, first, VersionRecord.Freeze(block.Key, live, mine), cancellation);
+
+                standing++;
+                frozen++;
+            }
+        }
+
+        return frozen;
+    }
+
+    async Task<DateOnly?> NewestStoredSessionAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandText = NewestSession;
+
+        return await command.ExecuteScalarAsync(cancellation) is string newest
+            ? DateOnly.ParseExact(newest, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : null;
+    }
+
+    static async Task<(IReadOnlySet<int> Blocks, DateOnly? Origin)> FrozenBlocksAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        RuleVersionRow window,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandText = FrozenBlocks;
+        Window(command, window);
+
+        var blocks = new HashSet<int>();
+        DateOnly? origin = null;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            blocks.Add(reader.GetInt32(0));
+            origin ??= DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        }
+
+        return (blocks, origin);
+    }
+
+    static async Task<DateOnly?> FirstScoredSessionAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        RuleVersionRow window,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandText = FirstScoredSession;
+        Window(command, window);
+        command.Parameters.AddWithValue("$sample", RuleVersions.Scored);
+
+        return await command.ExecuteScalarAsync(cancellation) is string first
+            ? DateOnly.ParseExact(first, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : null;
+    }
+
+    static async Task<IReadOnlyList<(CandidateSetup Setup, bool Removed)>> ScoredSetupsAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        RuleVersionRow window,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandText = ScoredSetups;
+        Window(command, window);
+        command.Parameters.AddWithValue("$sample", RuleVersions.Scored);
+        command.Parameters.AddWithValue("$horizon", ForwardReturnSeries.Setup);
+        command.Parameters.AddWithValue("$downtrend", TrendState.Downtrend);
+
+        var rows = new List<(CandidateSetup, bool)>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            rows.Add((
+                new CandidateSetup(
+                    DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                    reader.IsDBNull(2) ? null : reader.GetDouble(2),
+                    reader.IsDBNull(3) ? null : reader.GetDouble(3),
+                    reader.IsDBNull(4) ? null : reader.GetDouble(4),
+                    reader.IsDBNull(5) ? null : reader.GetDouble(5),
+                    reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                    !reader.IsDBNull(7) && reader.GetInt64(7) == 1),
+                reader.GetInt64(8) == 1));
+        }
+
+        return rows;
+    }
+
+    async Task WriteBlockAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        RuleVersionRow window,
+        DateOnly origin,
+        VersionBlock block,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandText = FreezeBlock;
+        Window(command, window);
+        command.Parameters.AddWithValue("$block", block.Block);
+        command.Parameters.AddWithValue("$origin", origin.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$version_excess", block.VersionExcess);
+        command.Parameters.AddWithValue("$version_setups", block.VersionSetups);
+        command.Parameters.AddWithValue("$live_excess", block.LiveExcess);
+        command.Parameters.AddWithValue("$live_setups", block.LiveSetups);
+        command.Parameters.AddWithValue("$version_null_sum", block.VersionNullSum);
+        command.Parameters.AddWithValue("$version_null_spread", block.VersionNullSpread);
+        command.Parameters.AddWithValue("$live_null_sum", block.LiveNullSum);
+        command.Parameters.AddWithValue("$live_null_spread", block.LiveNullSpread);
+        command.Parameters.AddWithValue("$frozen_at", RuleVersions.Stored(clock.UtcNow));
+
+        await command.ExecuteNonQueryAsync(cancellation);
+    }
+
+    // The three parameters every statement above keys a window by, in one place, so
+    // a reader cannot key one by the version's name and reach two windows.
+    static void Window(SqliteCommand command, RuleVersionRow window)
+    {
+        command.Parameters.AddWithValue("$rule", window.Rule);
+        command.Parameters.AddWithValue("$version", window.Version);
+        command.Parameters.AddWithValue("$opened_at", RuleVersions.Stored(window.OpenedAt));
     }
 
     // Why a past session may not be backfilled, or null: a day the exchange did
@@ -834,12 +1115,7 @@ public sealed class RuleVersionScorer : IComponent
         return rows;
     }
 
-    static DateTimeOffset Instant(string text) =>
-        DateTimeOffset.ParseExact(
-            text,
-            "yyyy-MM-ddTHH:mm:ssZ",
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+    static DateTimeOffset Instant(string text) => RuleVersions.At(text);
 
     static async Task<IReadOnlyList<string>> NamesAsync(SqliteConnection connection, DateOnly session, CancellationToken cancellation)
     {

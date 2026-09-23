@@ -987,6 +987,10 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Looks a candidate's verdict is read at"),
         CheckReach.Key(Scope.LimitsTable, "The calibrated bar"),
         CheckReach.Key(Scope.LimitsTable, "Power stated at a look"),
+
+        // The 10.4 correction, which gave a version's record a store of its own because the two
+        // tables it was read from are dropped a year back.
+        CheckReach.Key(Scope.StoresTable, "Version blocks"),
     ];
 
     // Rows the document gained after the prediction, each one claim.

@@ -21,13 +21,16 @@ namespace EquityBrief.Tests.Checks;
 // and a store in between adds a way for the two to agree by accident. The replay over the
 // fixture is asserted through the store, because what it is about is the scorer reading a
 // night's own figures.
-public sealed class TrendVersions
+public sealed partial class TrendVersions
 {
     internal static CheckReach Reach => new(
         "trend-versions",
         ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
             CheckReach.Key(Scope.LimitsTable, "Rule versions scored at once"),
+
+            // The 10.4 correction, which froze the blocks a record is read from.
+            CheckReach.Key(Scope.StoresTable, "Version blocks"),
         ]);
 
     static readonly DateTimeOffset NightStart = new(2026, 9, 8, 21, 0, 0, TimeSpan.Zero);
@@ -241,28 +244,29 @@ public sealed class TrendVersions
         var expectation = Expected("trend-versions").GetProperty("pairedDifference");
         var blocks = expectation.GetProperty("blocks").GetInt32();
         var bar = expectation.GetProperty("nullWin").GetDouble();
-        var opened = First;
 
-        var live = new List<CandidateSetup>();
-        var version = new List<CandidateSetup>();
+        var frozen = new List<VersionBlock>();
 
         for (var block = 0; block < blocks; block++)
         {
             // One win the version keeps and one loss it takes away, in every block.
             var session = Sessions(block * Blocks.Sessions);
 
-            live.Add(new CandidateSetup(session, ForwardReturnSeries.Win, bar, bar, 0.4, 1, 1, false));
-            live.Add(new CandidateSetup(session, ForwardReturnSeries.Loss, bar, bar, 0.4, -1, 1, false));
-            version.Add(live[^2]);
+            IReadOnlyList<CandidateSetup> live =
+            [
+                new(session, ForwardReturnSeries.Win, bar, bar, 0.4, 1, 1, false),
+                new(session, ForwardReturnSeries.Loss, bar, bar, 0.4, -1, 1, false),
+            ];
+
+            frozen.Add(VersionRecord.Freeze(block, live, [live[0]]));
         }
 
-        var night = Sessions(blocks * Blocks.Sessions + Blocks.Sessions);
-        var differences = VersionRecord.Differences(live, version, opened, night);
+        var differences = VersionRecord.Differences(frozen);
 
         Assert.Equal(blocks, differences.Count);
         Assert.All(differences, difference => Assert.Equal(expectation.GetProperty("differencePerBlock").GetDouble(), difference, 9));
 
-        var record = VersionRecord.For("a version", live, version, opened, night, ReasonVerdict.Significance);
+        var record = VersionRecord.For("a version", NightStart, frozen, ReasonVerdict.Significance);
 
         Assert.Equal(blocks, record.Blocks);
         Assert.Equal(blocks * 2, record.LiveSetups);
@@ -271,7 +275,7 @@ public sealed class TrendVersions
         Assert.Equal(expectation.GetProperty("verdict").GetString(), record.Verdict);
 
         // Below the floor nothing is read at all, whatever the blocks say.
-        var underTheFloor = VersionRecord.For("a version", live.Take(4).ToArray(), version.Take(2).ToArray(), opened, night, ReasonVerdict.Significance);
+        var underTheFloor = VersionRecord.For("a version", NightStart, frozen.Take(2).ToArray(), ReasonVerdict.Significance);
 
         Assert.Equal(VersionRecord.BelowTheFloor, underTheFloor.Verdict);
         Assert.Null(underTheFloor.PValue);
@@ -407,22 +411,24 @@ public sealed class TrendVersions
     {
         var expectation = Expected("trend-versions");
 
+        var opened = new DateTimeOffset(2026, 9, 1, 22, 0, 0, TimeSpan.Zero);
+
         var open = new[]
         {
-            new OpenVersionRow(RuleVersions.Live, "{}", new DateOnly(2026, 9, 1)),
-            new OpenVersionRow(TheTrendVersions.BelowBothAverages, "{\"downtrendFromAverages\": 1}", new DateOnly(2026, 9, 1)),
+            new OpenVersionRow(RuleVersions.Live, "{}", opened),
+            new OpenVersionRow(TheTrendVersions.BelowBothAverages, "{\"downtrendFromAverages\": 1}", opened),
         };
 
         var labels = new[]
         {
-            new VersionLabelRow(TheTrendVersions.BelowBothAverages, TrendState.Downtrend, 12, 7),
-            new VersionLabelRow(TheTrendVersions.BelowBothAverages, TrendState.Range, 88, 0),
+            new VersionLabelRow(TheTrendVersions.BelowBothAverages, opened, TrendState.Downtrend, 12, 7),
+            new VersionLabelRow(TheTrendVersions.BelowBothAverages, opened, TrendState.Range, 88, 0),
         };
 
         var region = RunScreen.TrendVersions(
             open,
             labels,
-            [new VersionLabelRow(string.Empty, TrendState.Downtrend, 5, 0), new VersionLabelRow(string.Empty, TrendState.Range, 95, 0)],
+            [new LiveLabelRow(TrendState.Downtrend, 5), new LiveLabelRow(TrendState.Range, 95)],
             [],
             new LabelReturns(3523, 210, 35, 51),
             10,
@@ -466,10 +472,10 @@ public sealed class TrendVersions
     }
 
     static VersionMeasured Measured(string version, IReadOnlyList<double> differences) =>
-        new(version, differences.Count, Blocks.Floor, 0, 0, null, null, null, null, VersionRecord.NotCrossed, differences);
+        new(version, NightStart, differences.Count, Blocks.Floor, 0, 0, null, null, null, null, VersionRecord.NotCrossed, differences);
 
     static VersionMeasured Crossing(string version, double excess) =>
-        new(version, Blocks.Floor, Blocks.Floor, 16, 8, excess, double.PositiveInfinity, 1d / 256, 0, VersionRecord.Crossed,
+        new(version, NightStart, Blocks.Floor, Blocks.Floor, 16, 8, excess, double.PositiveInfinity, 1d / 256, 0, VersionRecord.Crossed,
             [.. Enumerable.Repeat(0.5, Blocks.Floor)]);
 
     static RuleVersionRow Row(string version, IReadOnlyDictionary<string, double> parameters) =>
