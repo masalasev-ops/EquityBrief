@@ -1113,7 +1113,7 @@ public sealed class SinglePageApp : IComponent
 
         body.Append(Cards.Key(
             "What is listed.",
-            "Every report that has been asked for, from a row on tonight's list or from a name's own page, with what came of it. One name holds one outstanding request at a time, which the store enforces: a second press for a name already waiting adds nothing and says so.",
+            "Every report that has been asked for, from a row on tonight's list, from a name's own page or by the night for the first name its list draws, with what came of it. One name holds one outstanding request at a time, which the store enforces: a second press for a name already waiting adds nothing and says so.",
             "A request nobody has started can be taken out. One the worker has claimed cannot, because what a withdrawal removes is a report that has not been generated, and the refusal says which state refused it."));
 
         return Invariant($"<section class=\"queue\" data-requests=\"{rows.Count}\" data-outstanding=\"{outstanding.Length}\" data-writing=\"{writing.Length}\" data-settled=\"{settled.Length}\">")

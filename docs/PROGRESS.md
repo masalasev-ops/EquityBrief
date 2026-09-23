@@ -22459,3 +22459,51 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, f88d58e, and the operator's store
             under `data/` was not touched by either.
 Carried:    nothing new. 11.5 puts each large move beside its group's median.
+### 11.4 - correction: the queue page and its paragraph in section 15 named a row on tonight's list and a name's own page as where a request comes from, and not the night   2026-09-23
+Corrects:   11.4 (f88d58e), which had the night ask for a report on the first name its list
+            draws, marked as asked by the night, and left the queue page's key saying every
+            report listed was asked for from a row on tonight's list or from a name's own page,
+            and section 15's paragraph on the queue screen saying the same of every request. From
+            the first night that asks, both describe a screen holding a request they say nothing
+            could have written.
+Found:      by the session that built 11.4, reading the queue screen's paragraph against the
+            store's check on who asked while 11.4's sweep ran.
+Repaired:   - The page's key says a report is asked for from a row on tonight's list, from a
+              name's own page or by the night for the first name its list draws.
+            - Section 15's paragraph names the three and cites the decision the night asks under
+              (see: The night asks for a report on the first name of its list).
+            - The empty queue's line, which says what offers a reader the ask, is unchanged, since
+              the night offers a reader nothing.
+Guarded:    `read-surface`, one test added,
+            `TheQueuePageAndItsParagraphNameEveryAskerTheStoreAdmits`, which reads the askers off
+            the request table's check in a migrated store and refuses any the page's key or the
+            paragraph does not name, so an asker the store comes to admit and neither names turns
+            it red. The roster's `read-surface` row names it.
+Expected:   derived, and no expectation file moves: the test reads the markup the page draws and
+            the paragraph the document holds, and no stage's output changes.
+Tests:      1275, from 1274. One added to `read-surface`, none removed. Migrations 0 to 34
+            with none added and none pending, schema version 34.
+Claims:     417, from 417, with 413 PASS and 4 out of scope, and 420 placements and verdicts
+            reconciled against a floor of 34. No claim added: the key is not a row of a table,
+            and the paragraph is not a table.
+Mutated:    the rule, stated before the run: put the fault back, in each of the two places it was.
+            Predicted:
+            M1 the page's key naming the list and the name page alone, as it did: red in
+            `TheQueuePageAndItsParagraphNameEveryAskerTheStoreAdmits` and nowhere else.
+            M2 the paragraph naming the two alone, as it did: red in the same test and nowhere
+            else.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            d7a3dd0, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1275 of 1275. M1 turned 1 red and 1274 green:
+            `TheQueuePageAndItsParagraphNameEveryAskerTheStoreAdmits`. M2 turned 1 red and 1274
+            green: the same test.
+Held:       both predictions, in the test each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1275 of 1275
+            tests ran with none failed, migrations 0 to 34 with none added and none pending,
+            schema version 34, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 417 claims, 413 PASS, 0 FAIL, 4 out of
+            scope, 0 unexamined, 420 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1275 of 1275 tests.
+            Both gates ran over the tree carrying this entry, d7a3dd0, and the operator's store
+            under `data/` was not touched by either.
+Carried:    nothing.
