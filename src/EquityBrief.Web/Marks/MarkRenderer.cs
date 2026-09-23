@@ -2042,10 +2042,7 @@ public sealed class MarkRenderer : IComponent
                 // name is already waiting is refused by the store rather than by the page
                 // reading the queue first and racing itself.
                 // see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
-                list.Append(Invariant, $"<form class=\"research-control ask\" method=\"post\" action=\"/passes/{Uri.EscapeDataString(row.Ticker)}\" ");
-                list.Append(Invariant, $"data-kind=\"ask\" data-asks=\"{Escaped(row.Ticker)}\" data-from=\"list\">");
-                list.Append("<input type=\"hidden\" name=\"from\" value=\"list\">");
-                list.Append("<button type=\"submit\" title=\"put this name in the queue, which the worker drains\">ask for a report</button></form>");
+                list.Append(AskForAReport(row.Ticker));
             }
 
             if (row.Distance?.Name is { Length: > 0 } company)
@@ -2127,6 +2124,16 @@ public sealed class MarkRenderer : IComponent
 
         return list.ToString();
     }
+
+    // The control asking for a report on a name holding none, as tonight's list draws it on
+    // a row and in the selected name's region, both on the list's page. It writes a request
+    // and starts nothing.
+    // see: A request the page writes and the worker drains is what starts a pass, and the read surface writes the ask and never the research
+    public static string AskForAReport(string ticker) =>
+        Formatted($"<form class=\"research-control ask\" method=\"post\" action=\"/passes/{Uri.EscapeDataString(ticker)}\" ")
+        + Formatted($"data-kind=\"ask\" data-asks=\"{Escaped(ticker)}\" data-from=\"list\">")
+        + "<input type=\"hidden\" name=\"from\" value=\"list\">"
+        + "<button type=\"submit\" title=\"put this name in the queue, which the worker drains\">ask for a report</button></form>";
 
     // A reason's column head, one word, with the reason's full name on the head's own
     // title.

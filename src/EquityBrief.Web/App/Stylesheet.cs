@@ -225,6 +225,7 @@ span[data-last-asked-at]::before{content:none}
 .watch-list .watched{display:inline-block;margin:4px 8px 0 0}
 .selwrap{display:grid;grid-template-columns:minmax(0,390px) minmax(0,1fr);gap:24px;align-items:start}
 .sel-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.sel-unwritten{margin:14px 0 0;font-size:13.5px;color:var(--ink-2)}
 #selected{scroll-margin-top:84px}
 
 /* universe */

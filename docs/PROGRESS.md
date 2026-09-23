@@ -21794,3 +21794,79 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             under `data/` was not touched by either.
 Carried:    nothing. No pinned source moves: the renderer, the shell, the stylesheet and the
             harness are in no rule version's pin and no evaluator's.
+### 9.1 - correction: the selected name's region offered the full report for a name holding none   2026-09-23
+Corrects:   9.1 (2a7002b), which made each row of tonight's list say whether its name holds
+            research and draw its link in the words of what it opens, and left the page's other
+            link to a name alone. The selected name's region, drawn at the 5.8 correction of
+            2026-09-19 (eb03933), read "Open the full report for" the name whatever it holds, and
+            on the operator's store one name holds research, so for nearly every name a reader
+            could select the region offered a report that does not exist.
+Why it is   the region is where a reader checks a plan and decides whether the name is worth a
+worse:      report, and it said the report was there to open.
+Found:      by the operator on 2026-09-23, selecting DGX on the live screens: the region offered
+            the full report for DGX and said nothing about DGX holding none.
+Repaired:   - Where the selected name holds research, the link reads "Open the full report for"
+              the name with the day its newest researched section was written.
+            - Where it holds none, a line says "No report is written for" the name "yet", the
+              control the row carries stands beside it, and the link reads "Open" the name's
+              "page".
+            - The row's control and the region's are one helper, `MarkRenderer.AskForAReport`, so
+              the two cannot drift, and the row's markup is unchanged.
+            - Section 15.7's ask row places the control in the region as well, and the note
+              beneath the table says what the region's link opens (see: A researched name is one
+              holding an accepted section besides the key under each figure).
+This        that the label is 9.1, the checkpoint that stated the rule for a link's words and
+session     applied it to one of the page's two links, and not 5.8, whose link was written before
+decided:    the rule existed.
+            That the region offers the ask, and a report is not written for every name selected.
+            The operator ruled on 2026-09-23 that a report is written after the run for the list's
+            first name, which is a capability of its own, planned apart, and any other name is
+            asked for.
+            That an ask sent from the region records the list as where it came from. The store
+            admits the list and the name page and nothing else, and the region is drawn on the
+            list's page.
+Guarded:    `read-surface`, one test added and one widened:
+            - `TheSelectedNameCallsWhatItOpensAReportOnlyWhereOneIsWritten`, over a name holding
+              research and one holding none on one constructed night: for the first, the dated
+              report link and no line or control; for the second, no link called a report, the
+              line, the page link and the row's own control.
+            - `TheControlsAskingForAReportAndTakingOneOutAreDrawnByTheirOwnRules` reads the
+              region's control as a third, so it is drawn at the small rule's size there too.
+            The roster's `read-surface` row names the region's link and its control.
+Expected:   derived, and no expectation file moves: the tests read the markup the page draws over
+            constructed rows, and no stage's output changes.
+Tests:      1243, from 1242. One added to `read-surface` and one widened, none removed.
+            Migrations 0 to 33 with none added and none pending, schema version 33.
+Claims:     409, from 409, all passing, 416 placements and verdicts reconciled against a floor of
+            34. No claim added: the ask row's claim widens in place, and the note is not a table.
+Mutated:    the rule, stated before the run: put the fault back, and take away each half of what
+            the region says in its place.
+            Predicted:
+            M1 the region's link reading "Open the full report for" a name holding none. Red in
+            `TheSelectedNameCallsWhatItOpensAReportOnlyWhereOneIsWritten` and nowhere else.
+            M2 the line saying none is written left out, the control kept. Red in the same test
+            and nowhere else.
+            M3 the control left out of the region, the line kept. Red in the same test and in
+            `TheControlsAskingForAReportAndTakingOneOutAreDrawnByTheirOwnRules`, which finds no
+            control in the selected name's card, and nowhere else.
+            M4 every selected name read as holding none. Red in the same test, at the name holding
+            research, and nowhere else.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            78a568d, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1243 of 1243. M1 turned 1 red and 1242 green:
+            `TheSelectedNameCallsWhatItOpensAReportOnlyWhereOneIsWritten`. M2 turned 1 red and
+            1242 green: the same test. M3 turned 2 red and 1241 green: the same test, and
+            `TheControlsAskingForAReportAndTakingOneOutAreDrawnByTheirOwnRules`, which found no
+            asking control in the selected name's card. M4 turned 1 red and 1242 green: the same
+            test, at the name holding research, whose dated link was not drawn.
+Held:       the prediction in all four runs, in the tests each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1243 of 1243
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 409 claims, 409 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 416 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1243 of 1243 tests.
+            Both gates ran over the tree carrying this entry, 78a568d, and the operator's store
+            under `data/` was not touched by either.
+Carried:    nothing. No pinned source moves. The operator's ruling that the list's first name gets
+            its report after the run is a capability of its own, planned apart.

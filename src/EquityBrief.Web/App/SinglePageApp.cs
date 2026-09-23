@@ -1118,6 +1118,28 @@ public sealed class SinglePageApp : IComponent
         + Invariant($"<td class=\"c-nm\"><a class=\"tk\" href=\"{NameRoute}{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a></td>")
         + Invariant($"<td>{Escaped(row.AskedAt)}</td><td>{Escaped(row.AskedFrom)}</td><td>{Escaped(row.Lane)}</td>");
 
+    // What the selected name's region offers to open, in the words of what it opens: the
+    // report, with the day it was written, where the name holds one, and the name's page
+    // where it holds none, beneath a line saying so and the control asking for one. A link
+    // calling itself a report for a name holding none is the page promising something it
+    // does not have.
+    // see: A researched name is one holding an accepted section besides the key under each figure
+    static string SelectedLinks(string ticker, ListingCell? picked)
+    {
+        var page = NameRoute + Uri.EscapeDataString(ticker);
+
+        if (picked?.ResearchedOn is { } on)
+        {
+            return Invariant($"<div class=\"sel-links\" data-researched=\"true\" data-researched-on=\"{on:yyyy-MM-dd}\"><a class=\"btn-2\" href=\"{page}\">Open the full report for {Escaped(ticker)}, written {on:yyyy-MM-dd}</a></div>");
+        }
+
+        var unwritten = picked is null
+            ? string.Empty
+            : Invariant($"<div class=\"sel-unwritten\" data-researched=\"false\">No report is written for {Escaped(ticker)} yet.{MarkRenderer.AskForAReport(ticker)}</div>");
+
+        return unwritten + Invariant($"<div class=\"sel-links\"><a class=\"btn-2\" href=\"{page}\">Open {Escaped(ticker)}'s page</a></div>");
+    }
+
     // Tonight's list, section 15.7's four regions that the listings store feeds.
     //
     // The header states the true fired count over the whole index, the watch
@@ -1182,12 +1204,13 @@ public sealed class SinglePageApp : IComponent
         // see: Selecting a row draws its plan beneath the list and is no navigation
         if (selectedName.Length > 0 && selectedTicker is { } chosen)
         {
-            var name = rows.Concat(watched).FirstOrDefault(row => row.Ticker == chosen)?.Distance?.Name;
+            var picked = rows.Concat(watched).FirstOrDefault(row => row.Ticker == chosen);
+            var name = picked?.Distance?.Name;
 
             region.Append(Cards.Computed(
                 "Selected name",
                 selectedName
-                    + Invariant($"<div class=\"sel-links\"><a class=\"btn-2\" href=\"{NameRoute}{Uri.EscapeDataString(chosen)}\">Open the full report for {Escaped(chosen)}</a></div>")
+                    + SelectedLinks(chosen, picked)
                     + Cards.Key(
                         "How to read the plan.",
                         "The price now sits in the middle. Orange zones above it are where part of the position is sold, and green blocks below are where it is bought. Each thin rule is a stop, and the heavy rule is where the plan is wrong.",
