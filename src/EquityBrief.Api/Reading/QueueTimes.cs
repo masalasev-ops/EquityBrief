@@ -1,6 +1,7 @@
 using System.Globalization;
 using EquityBrief.Api.Passes;
 using EquityBrief.Core.Providers;
+using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Api.Reading;
 
@@ -157,6 +158,45 @@ public static class QueueTimes
                 + (time.Ends is { } expected ? ", and is expected to end about " + At(expected) : ", and no end is stated because the store holds no pass that ran to its end"),
             _ => row.State + (time.Ends is { } settled ? " " + At(settled) : string.Empty),
         };
+    }
+
+    // What the queue holds for each name with a request nobody has settled, as tonight's rows
+    // and the selected name's region state it, from the same times the queue page states.
+    public static IReadOnlyDictionary<string, QueueState> States(
+        IReadOnlyList<RequestRow> rows,
+        IReadOnlyList<RequestTime> times,
+        TimeZoneInfo zone)
+    {
+        var states = new Dictionary<string, QueueState>(StringComparer.Ordinal);
+
+        for (var at = 0; at < rows.Count; at++)
+        {
+            var (row, time) = (rows[at], times[at]);
+            var instant = time.Starts?.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture);
+
+            if (row.State == ResearchRequests.Writing)
+            {
+                states[row.Ticker] = new QueueState(
+                    QueueState.Writing,
+                    instant,
+                    time.Starts is { } started ? "being written since " + Stated(started, zone) : "being written, and its pass has written no row yet");
+            }
+            else if (row.State == ResearchRequests.Outstanding)
+            {
+                states[row.Ticker] = new QueueState(
+                    QueueState.Queued,
+                    instant,
+                    time.Basis switch
+                    {
+                        TimeBasis.Now => "queued, and starts now",
+                        TimeBasis.PeakEnds => "queued, and starts " + Stated(time.Starts!.Value, zone) + ", when the peak window ends",
+                        TimeBasis.Estimated => "queued, and starts about " + Stated(time.Starts!.Value, zone),
+                        _ => "queued behind " + Ahead(time.Ahead),
+                    });
+            }
+        }
+
+        return states;
     }
 
     static string Ahead(int count) =>

@@ -1158,6 +1158,20 @@ public sealed class SinglePageApp : IComponent
     {
         var page = NameRoute + Uri.EscapeDataString(ticker);
 
+        // What the queue holds for the name, where it holds a request nobody has settled: said
+        // in place of the line saying none is written and the control asking for one, since
+        // what the reader would ask for is already asked.
+        // see: The queue page states when each request will be written
+        if (picked?.Queue is { } queued)
+        {
+            var opens = picked.ResearchedOn is { } written
+                ? Invariant($"Open the full report for {Escaped(ticker)}, written {written:yyyy-MM-dd}")
+                : Invariant($"Open {Escaped(ticker)}'s page");
+
+            return Invariant($"<div class=\"sel-queued\" data-report-state=\"{Escaped(queued.State)}\" data-at=\"{Escaped(queued.At ?? string.Empty)}\">A report for {Escaped(ticker)} is {Escaped(queued.Words)}.</div>")
+                + Invariant($"<div class=\"sel-links\"><a class=\"btn-2\" href=\"{page}\">{opens}</a></div>");
+        }
+
         if (picked?.ResearchedOn is { } on)
         {
             return Invariant($"<div class=\"sel-links\" data-researched=\"true\" data-researched-on=\"{on:yyyy-MM-dd}\"><a class=\"btn-2\" href=\"{page}\">Open the full report for {Escaped(ticker)}, written {on:yyyy-MM-dd}</a></div>");
