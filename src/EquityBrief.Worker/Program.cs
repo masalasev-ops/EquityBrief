@@ -332,6 +332,22 @@ static async Task<int> Drain()
         return 1;
     }
 
+    // One drain at a time over a store, so the order the queue page states is the order the
+    // passes run in: a drain started while another runs waits for it to end, and then takes
+    // whatever it left.
+    var said = false;
+
+    using var held = await DrainLock.AcquireAsync(store.DataRoot, () =>
+    {
+        if (!said)
+        {
+            Console.WriteLine("drain: another drain holds the queue, so this one waits for it to end");
+            said = true;
+        }
+
+        return Task.Delay(TimeSpan.FromSeconds(5));
+    });
+
     var (taken, written) = await RequestDrain.DrainAsync(
         store.DatabaseFile,
         clock,

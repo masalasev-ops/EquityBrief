@@ -1001,11 +1001,18 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "Peers"),
         CheckReach.Key("15.9 Name", "Earnings reactions"),
         CheckReach.Key("15.9 Name", "Dividend"),
+
+        // 11.2, the queue page's row stating when each request will be written, which
+        // arrives drawn.
+        CheckReach.Key("15.15 Queue", "When each will be written"),
     ];
 
     // The ones a phase 11 checkpoint has since drawn. A row moves here in the commit that
     // builds it, for the reason the phase 9 list above says.
-    static readonly string[] PhaseElevenDrawn = [];
+    static readonly string[] PhaseElevenDrawn =
+    [
+        CheckReach.Key("15.15 Queue", "When each will be written"),
+    ];
 
     // Rows the document gained after the prediction, each one claim.
     static readonly string[] AddedAfterThePrediction =

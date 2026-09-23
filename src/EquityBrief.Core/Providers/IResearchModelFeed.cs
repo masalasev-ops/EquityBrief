@@ -141,6 +141,69 @@ public sealed record ResearchPricing
 
     public decimal PeakMultiple { get; }
 
+    // The prices as configuration states them, read through the two ways a caller holds its
+    // configuration: the value at a key, and the values listed under one. Read in one place,
+    // so the worker's passes and the queue page the read surface draws hold the same windows.
+    // None where configuration states no price, which the settings refuse by name. Peak hours
+    // are written as "01-04", a UTC start hour and end hour; days by their English names.
+    public static ResearchPricing? From(Func<string, string?> value, Func<string, IEnumerable<string?>> values)
+    {
+        var hit = value(ResearchModelSettings.CacheHitKey);
+        var miss = value(ResearchModelSettings.CacheMissKey);
+        var output = value(ResearchModelSettings.OutputKey);
+
+        if (string.IsNullOrWhiteSpace(miss) && string.IsNullOrWhiteSpace(output) && string.IsNullOrWhiteSpace(hit))
+        {
+            return null;
+        }
+
+        var hours = values(ResearchModelSettings.PeakHoursKey)
+            .Select(child => Window(child ?? string.Empty))
+            .ToArray();
+
+        var days = values(ResearchModelSettings.PeakDaysKey)
+            .Select(child => Enum.TryParse<DayOfWeek>(child, ignoreCase: true, out var day)
+                ? day
+                : throw new InvalidOperationException($"'{ResearchModelSettings.PeakDaysKey}' names '{child}', which is not a day of the week."))
+            .ToArray();
+
+        var multiple = value(ResearchModelSettings.PeakMultipleKey);
+
+        return new ResearchPricing(
+            Money(hit, ResearchModelSettings.CacheHitKey) ?? 0m,
+            Money(miss, ResearchModelSettings.CacheMissKey) ?? 0m,
+            Money(output, ResearchModelSettings.OutputKey) ?? 0m,
+            hours,
+            days,
+            Money(multiple, ResearchModelSettings.PeakMultipleKey) ?? 1m);
+    }
+
+    static (int From, int To) Window(string value)
+    {
+        var parts = value.Split('-');
+
+        return parts.Length == 2
+            && int.TryParse(parts[0], NumberStyles.None, CultureInfo.InvariantCulture, out var from)
+            && int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var to)
+                ? (from, to)
+                : throw new InvalidOperationException(
+                    $"'{ResearchModelSettings.PeakHoursKey}' holds '{value}', and a peak window is written as a UTC start hour and end hour, as 01-04.");
+    }
+
+    static decimal? Money(string? value, string key)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return decimal.TryParse(value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var amount)
+            ? amount
+            : throw new InvalidOperationException(
+                $"'{key}' is '{value}', which is not an amount written with a decimal point. It is read as written rather than " +
+                "replaced by a default.");
+    }
+
     // Whether an instant falls in a peak window: an hour at or after a window's start
     // and before its end, on a day the pricing names.
     public bool IsPeak(DateTimeOffset instant)

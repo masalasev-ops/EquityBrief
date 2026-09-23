@@ -1366,7 +1366,8 @@ public partial class ArchitectureConformance
         // 57 at 10.1, which added the run page's region measuring the order tonight's list is drawn in.
         // 58 at 10.2, which added the run page's region holding each registered candidate's record.
         // 62 at 11.0's document pass, which added the name screen's four parts phase 11 builds.
-        Assert.Equal(62, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 63 at 11.2, the queue page's row stating when each request will be written.
+        Assert.Equal(63, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1412,7 +1413,8 @@ public partial class ArchitectureConformance
         // places and the line counting them.
         // 162 at 11.0's document pass, the name screen's four parts arriving as a row and a claim
         // each: a move beside its group, the peers, the earnings reactions and the dividend.
-        Assert.Equal(162, inDocument.Length);
+        // 163 at 11.2, the queue page's row stating when each request will be written.
+        Assert.Equal(163, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
