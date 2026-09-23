@@ -17655,7 +17655,10 @@ Mutated:    the rule, stated before the sweep: break each of the four properties
             M4 prose the writer already broke into paragraphs not recognised as the parts it states:
             the risks test red where it counts the parts against the stored paragraphs; nothing
             else.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1137 of 1137 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
@@ -17741,7 +17744,10 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             green while answering about a population it could not tell apart. The two are now
             counted apart, each read inside the element that holds it. This is the prefix shape the
             writing rules name, arriving a fifth time.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1138 of 1138 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
@@ -17818,7 +17824,10 @@ Mutated:    the rule, stated before the sweep: break each of the three propertie
             assertion it was not aimed at has shown nothing about the one it was. The attribute is
             now put on the panel itself, which no other assertion reads, and M2 was shown red by
             hand on the intended assertion before the sweep was run again.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1138 of 1138 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
@@ -17886,7 +17895,10 @@ Mutated:    the rule, stated before the sweep: break each of the two properties 
             M2 the key dropped from the judgement rather than from the record test alone: the
             beside-research test red where it reads the stale sections, and nothing else, the
             key-alone test still missing because the filter leaves it nothing either way.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1140 of 1140 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 375 claims,
@@ -18050,7 +18062,10 @@ Mutated:    the rule, stated before the sweep: break each of the two properties 
             first still following the store.
             M2 the header's prose counted over every accepted section again: the header test red
             where it reads its own counts, and nothing else, the rows test reading no header.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1141 of 1141 tests
             ran with none failed, migrations 0 to 29 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 381 claims,
@@ -18101,7 +18116,10 @@ Mutated:    the rule, stated before the sweep: break each of the two properties 
             M2 the settle rule reading any outcome as written: the settle test red on every outcome
             but the one the runner writes for a pass that ran to its end, and nothing else, the route
             tests reaching no drain.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1143 of 1143 tests
             ran with none failed, migrations 0 to 30 with one added and none pending, exit 0, against
             `data-ci` and never `data`. `tools/verify-phase.ps1` green at 383 claims, 379 PASS, 0
@@ -18139,7 +18157,10 @@ Mutated:    the rule, stated before the sweep: break the property the screen res
             M3 every request drawn as outstanding whatever its state: the region test red where it
             reads each request against the region it landed in, and the control test red where it
             reads the control onto a claimed request.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1146 of 1146 tests
             ran with none failed, migrations 0 to 30 with none added and none pending, exit 0,
             against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 383 claims, 383
@@ -18168,7 +18189,10 @@ Mutated:    the rule, stated before the sweep: break the property the lane rests
             Predicted:
             M4 the local choice drawn as a button: the lane test red where it reads that the head
             carries no control, and nothing else, the screen's own test reading the waits line only.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1148 of 1148 tests
             ran with none failed, migrations 0 to 30 with one added and none pending, exit 0, against
             `data-ci` and never `data`. `tools/verify-phase.ps1` green at 384 claims, 384 PASS, 0
@@ -20569,3 +20593,90 @@ Carried:    The trend confirmation's nights settled from flip-backs, operating: 
             night this lands. The rule version bound set from nights the version scorer ran,
             operating: the cap moves to 18 as a projection and the row that settles it still reads
             the scorer's own nights.
+
+### 10.5 - the phase 10 report   2026-09-22
+Built:      the report over phase 10, and one assertion it needed. `tools/verify-phase` already
+            reaches every claim this phase added, because each of them was placed at the
+            checkpoint that ends it by the planning pass and each of those checkpoints has landed;
+            what the phase report could not say is whether this entry hands over what the phase
+            leaves running. It says it now: every operating row a phase opened is named in that
+            phase's own report entry, read over the newest report entry alone, which is the one
+            the phase in hand writes.
+Rules:      an operating row is the only obligation nothing the build can discharge, because what
+            it waits on is nights. A report that lists the rows it happens to remember is a
+            handover with a hole in it, and the hole cannot be seen from inside the entry: prose
+            about three rows reads exactly like prose about four. The entries written before this
+            checkpoint were written under no such rule and are not reopened by one; from here each
+            phase report is read this way as it lands.
+Owed:       four operating rows, every one of them opened at 10.0, each named here with the
+            trigger that fires it and the surface it is read on.
+            The three orders of tonight's list compared: 8 non-empty blocks of 63 sessions of
+            closed-window setups among the twenty each order draws, read on the run page's
+            ordering region, which 10.1 built. Nothing is compared until every order holds them.
+            A candidate's power re-read at each look: 8 non-empty blocks of a registered
+            candidate's closed-window setups, which is its first look, read on the run page's
+            candidate record region, which 10.2 built.
+            The candidates' proposed numbers read at their looks: the same trigger and the same
+            region. Two of the three numbers are proposed, the zone's width at 1 typical move and
+            the volume multiple at 2, and the crossing margin of 0.5 is settled; a change to any of
+            them is a new registration and not an edit.
+            The trend confirmation's nights settled from flip-backs: 60 stored nights of trend
+            labels after the third version opens, read on the run page's rule versions region,
+            which 8.6 built and 10.4 extended to the trend rule. That reading is a count of labels
+            and never of outcomes, and a changed count is a new version.
+Calendar:   what the nights have to produce before any of it is read, counted in exchange sessions
+            from the first night that evaluates the candidate or scores the version, at 63 sessions
+            to a block and about 252 to a year.
+            A candidate's first look falls at 8 non-empty blocks, 504 sessions, about two years,
+            and it cannot promote: the level that look releases is 0.00071 and the smallest
+            p-value eight blocks can produce is 1 in 256, so it retires or it passes.
+            The second falls at 12 blocks, 756 sessions, about three years, and is the earliest a
+            promotion can happen. The third and last falls at 16 blocks, 1,008 sessions, about four
+            years, and a candidate reaching it without crossing is retired by reaching it.
+            Each look reads only the setups whose whole outcome window has closed, so the evidence
+            a look reads ends up to 63 sessions before the look itself.
+            A trend version is read at the same counts, on the difference between its blocks and
+            the live rule's, from the night after its own window opened. None of the three has been
+            opened on the operator's store, and none of the three candidates has been registered
+            there, so every one of those clocks starts at nought.
+Registered: nothing, and that is the state this phase ends in. The three candidates are registered
+            by one command the operator runs once, and the three trend versions by one command
+            each, all of them after this phase's code is in the checkout. Until then the register
+            holds no row, no window measures the trend rule, and every record region says so rather
+            than drawing an empty record.
+Expected:   derived, and a derivation rather than a file: this checkpoint adds no stage, so there
+            is no stage output to freeze. What it adds is read off `BUILD_PLAN.md`'s own rows and
+            this entry, and `tools/verify-phase` covers it from here because
+            `obligation-reconciles` runs inside it, which is how the other reconciliations between
+            the plan and the record are covered.
+Tests:      1217, from 1216. One added, and it is the whole of what this checkpoint builds: every
+            operating row the newest report entry's phase opened, named in that entry, with the
+            count of rows stated in advance so a phase that opened none would refuse rather than
+            pass over the empty set.
+Claims:     406, unchanged. This checkpoint states no new rule in the architecture: what it adds
+            is a reading of the plan against the record, which reaches no claim and is why the
+            check carrying it names no subject.
+Mutated:    the rule, stated before the sweep: break the property the one assertion this checkpoint
+            adds turns on, which is that a row is named in its own phase's entry rather than
+            anywhere in the record. Not mutated: nothing else, because nothing else was added.
+            Predicted:
+            M1 the check reading the oldest report entry rather than the newest: red in the new
+            test, where the phase that entry belongs to opened no operating row and the count
+            stated in advance would refuse the empty set rather than pass over it.
+            Results: one run of the whole suite, never a filter, in a detached worktree at
+            da6eb4b, the mutation reverted with `git checkout` and the file read back equal to the
+            committed text, and the tree read clean after. The baseline is 1217 of 1217. M1 turned
+            1 red, the test predicted for it, and nothing else: the prediction held.
+Rehearsed:  nothing, and the reason is stated rather than left out: this checkpoint writes no
+            code a store or a screen runs through, so there is nothing a night over a copy would
+            exercise that 10.4's rehearsal did not. The screens were fetched there, each 200.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1217 of 1217
+            tests ran with none failed, migrations 0 to 32 with none added and none pending,
+            schema version 32, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1`
+            green at 406 claims, 406 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 413 placements and
+            verdicts reconciled against a floor of 34, 41 of 41 roster checks carried and all 41
+            run, 1217 of 1217 tests. Both gates ran over da6eb4b with this entry in place, in a
+            worktree of their own, and the operator's store under `data/` was not touched by
+            either: the checkout it sits in was left on main and unpulled for the night's run.
+Carried:    the four rows above, all four still open, and the phase 10 sign-off, which is owed to a
+            fresh session because this one committed the code.
