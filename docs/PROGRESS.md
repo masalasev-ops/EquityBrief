@@ -21036,9 +21036,13 @@ Expected:   derived, and added to the fixture: `frozenBlocks` in `trend-versions
             from a run, and the test derives every one of them from the code's own constants. No
             stage's output over the fixture moves: no block completes over the nights the fixture
             holds, so `version_block` stays empty there and the expectation names no new table.
-Tests:      FILLED IN AFTER THE RUN. Migration 33 added. The ladder rules' code version moves.
-Claims:     FILLED IN AFTER THE RUN. One claim added, section 16's `Version blocks` row, placed to
-            `trend-versions` and counted in `PhaseTenRows`.
+Tests:      1230, from 1222. Eight added in `TrendVersions.Frozen.cs` and one rewritten in
+            `TrendVersions.cs`, which now goes through the frozen blocks rather than over setups
+            the store cannot produce. Migration 33 added, 0 to 33 with none pending and schema
+            version 33. The ladder rules' code version moves from 2e00ecf50c97 to f685dfe69d41.
+Claims:     407, from 406, all passing. The one added is section 16's `Version blocks` row, placed
+            to `trend-versions` and counted in `PhaseTenRows`; 414 placements and verdicts
+            reconciled against a floor of 34, from 413.
 Mutated:    the rule, stated before the run: break the property A, B and C share, which is that the
             record's population is what the store can actually hand it, rather than any one
             predicate this correction adds. A mutation removing a predicate would show the
@@ -21060,11 +21064,31 @@ Mutated:    the rule, stated before the run: break the property A, B and C share
             `AnInSampleScoreChangesNoFrozenSum`, whose two stores lose the same blocks and so still
             agree, and `TheLabelsRegionDrawsEveryScoreOnTheNightAWindowOpens`, which freezes
             nothing.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite in a detached worktree at a1f4006, never a
+            filter, the mutation reverted with `git checkout` and the tree read clean after. The
+            baseline is 1230 of 1230. M1 turned 5 red and 1225 green. Four are the ones predicted:
+            `AVersionsRecordReachesItsFloorOverAStoreTheRetentionHasAlreadyEmptied`,
+            `EveryFieldOfARecordIsDerivableFromTheFrozenBlocksAlone`,
+            `ABlocksSumsAndItsOriginDoNotMoveWhenRetentionTakesWhatTheyWereComputedFrom` and
+            `TwoWindowsOfOneNameAreTwoRecordsAndNeverOne`. The fifth was not predicted and is
+            `TheLadderRulesCodeVersionIsThePinOfEverySourceTheLiveRulesAndTheirReplayRunThrough`:
+            `RuleVersionScorer.cs` is one of the sources the ladder rules' code version pins, so
+            any edit to it at all moves the pin and turns that check red whatever the edit
+            changes. It is a property of mutating this file rather than of the record, and it is
+            written here so the next sweep inside a pinned source expects it rather than reading
+            it as a finding.
+Held:       the prediction in the four tests it named and in their number, and one more it did not
+            name, for the reason above. Nothing the prediction said would stay green went red:
+            `AnInSampleScoreChangesNoFrozenSum` held because both its stores lose the same blocks
+            and so still agree, and `TheLabelsRegionDrawsEveryScoreOnTheNightAWindowOpens` held
+            because it freezes nothing, both exactly as written before the run.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1230 of 1230
+            tests ran with none failed, migrations 0 to 33 with one added and none pending, schema
+            version 33, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green
+            at 36 tables, 407 claims, 407 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 414
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of 41
+            roster checks carried and all 41 run, 1230 of 1230 tests. Both gates ran over the tree
+            carrying this entry, and the operator's store under `data/` was not touched by either.
 Carried:    nothing new. `register --the-three` and `version --trend-version` are left unrun for
             the operator, because opening a window and letting that night run scores the night's
             own session in sample, which is fault B's ordinary case, and because the pin has moved
