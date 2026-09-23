@@ -22332,9 +22332,13 @@ Expected:   derived by hand over constructed rows in each of the four states, an
             being written by a pass started at 21:50 and MSFT holding a written report, then KEYS
             queued with nothing ahead of it and MSFT holding nothing, the page drawn at 22:00 on
             2026-09-08, which is 18:00 in New York under daylight time.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. One added, tonight's row stating the report's state, passing
-            here, as predicted.
+Tests:      1270, from 1268: two added under `read-surface`, the four states drawn on a row
+            and in the selected region over constructed rows, and read back over the fixture's
+            night against the store in both directions. Migrations 0 to 33 with none added and
+            none pending, schema version 33.
+Claims:     415, from 414, with 411 PASS and 4 out of scope, and 418 placements and verdicts
+            reconciled against a floor of 34. One added, tonight's row stating the report's
+            state, passing here, as predicted.
 Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that a
             row states the queue's state for its name, that the control is withheld where a request
             is queued, and that the selected name's region states it.
@@ -22349,9 +22353,18 @@ Mutated:    the rule, stated before the run: break each property this checkpoint
             not a row's own control.
             M3 the selected region's queue line dropped, so it falls through to what it drew
             before: red in both tests of this checkpoint, green everywhere else.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: whole-suite runs in a detached worktree at aefa226, never a filter, each
+            mutation reverted with `git reset --hard` and the tree read clean after each. The
+            baseline is 1270 of 1270. M1 turned 2 red, the two it named, 1268 green. M2 turned 1
+            red, `EachStateOfANamesReportIsDrawnOnItsRowAndInTheSelectedRegion`, 1269 green.
+            M3 turned 2 red, the two it named, 1268 green.
+Held:       all three exactly as written before the run.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1270 of 1270
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 415 claims, 411 PASS, 0 FAIL, 4 out of
+            scope, 0 unexamined, 418 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1270 of 1270 tests.
+            Both gates ran over the tree carrying this entry, aefa226, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing new. 11.4 has the night ask for a report on its first name.
