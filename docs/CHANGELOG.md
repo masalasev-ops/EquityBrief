@@ -6511,3 +6511,25 @@ Was:
 Now: the same row, adding that tonight's list numbers its rows in the order they are drawn, from one, under a line above them stating how many it draws of how many fired, the footer's label spanning every column before the first reason, and that the universe's paging states its count beside its own word and its page after it, no figure following another across a comma or a space alone.
 
 Why: the paging's words read as one number, eleven thousand five hundred and three, and nothing read them, and the list drew no place on a row and nothing asserted one.
+
+### 2026-09-23 - ARCHITECTURE.html - the selected name's link names what it opens, and the ask stands in its region
+Corrects: section 15.7's ask row, which placed the control on a row alone, and the note beneath the table, which said nothing of what the selected name's link opens.
+
+Was:
+> <tr><td>Ask for a report</td><td>a control on a row whose name holds none, which writes a request rather than starting a pass</td></tr>
+
+> brings it into view (see: Selecting a row draws its plan beneath the list and is no navigation). The reason totals
+
+Now: the ask row reads "a control on a row whose name holds none and in the selected name's region beside a line saying none is written, which writes a request rather than starting a pass", and the note says the selected name's link names what it opens, the report with the day it was written where the name holds one and the name's page where it holds none (see: A researched name is one holding an accepted section besides the key under each figure).
+
+Why: the region offered "Open the full report" for every name it drew, and the operator selected DGX, which holds none, and was told nothing about it.
+
+### 2026-09-23 - .claude/rules/checks.md - read-surface names what the selected name's link says and the control beside it
+Corrects: the `read-surface` row, which named nothing about the selected name's region beyond its plan.
+
+Was:
+> no figure following another across a comma or a space alone |
+
+Now: the same row, adding that the selected name's region calls what its link opens a report only where the name holds one, with the day it was written, and where it holds none says so beside the control the row carries.
+
+Why: the region's link read "Open the full report" for every name, and nothing read its words against what the name holds.

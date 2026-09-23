@@ -232,9 +232,16 @@ public partial class ReadSurface
             []);
         var queue = new SinglePageApp().QueueRegion([Queued("ZZZZ", "2026-09-20T10:00:00Z", ResearchRequests.Outstanding)]);
 
-        foreach (var (screen, markup, control) in new[] { ("tonight's list", list, "ask"), ("the queue", queue, "withdraw-control") })
+        // The selected name's region draws the asking control too, read from where its card
+        // opens, since the row above it carries the same control.
+        var page = TonightWith([new ListingCell("ZZZZ", night, 1, 0, 10m, [ShortlistSeries.AtEntryZone])], "ZZZZ");
+        var card = page.IndexOf("data-card=\"selected\"", StringComparison.Ordinal);
+
+        Assert.True(card >= 0, "tonight's page draws no selected name's card");
+
+        foreach (var (screen, markup, control, from) in new[] { ("tonight's list", list, "ask", 0), ("the queue", queue, "withdraw-control", 0), ("the selected name", page, "ask", card) })
         {
-            var form = Regex.Match(markup, $"<form class=\"(?:[^\"]* )?{Regex.Escape(control)}(?: [^\"]*)?\"[^>]*>");
+            var form = new Regex($"<form class=\"(?:[^\"]* )?{Regex.Escape(control)}(?: [^\"]*)?\"[^>]*>").Match(markup, from);
 
             Assert.True(form.Success, $"{screen} draws no control whose class is {control}");
 
@@ -250,7 +257,7 @@ public partial class ReadSurface
             var applied = Applied(Stylesheet.Css, element, holders);
             var stated = StatedForButtons(Stylesheet.Css, element, holders);
 
-            // A rule for every posted form's button reaches both controls, so the population
+            // A rule for every posted form's button reaches every control, so the population
             // this reads is never only the control's own rule.
             Assert.True(stated.Count >= 5, $"the rules written for buttons state {stated.Count} properties over the control on {screen}, expected at least 5");
 
