@@ -22261,8 +22261,14 @@ Expected:   derived by hand over constructed queues at instants chosen on both s
             ends at 00:50, the first request runs to 01:05 and the second, falling in the window,
             starts at 04:00; a pass started an hour ago is expected to end now; four in the morning
             UTC is midnight in New York on 2026-10-26 and eleven at night on 2026-11-01.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. One added, the queue page's row, passing here, as predicted.
+Tests:      1268, from 1261: seven added under `read-surface`, the median and its count, a
+            request alone at noon and at peak, requests behind a pass across a window and behind
+            one past its median, a store holding no finished pass, an instant on both sides of
+            2026-11-01, the queue page read back against the store, and one drain waiting for
+            another. Migrations 0 to 33 with none added and none pending, schema version 33.
+Claims:     414, from 413, with 410 PASS and 4 out of scope, and 417 placements and verdicts
+            reconciled against a floor of 34. One added, the queue page's row, passing here, as
+            predicted.
 Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that a
             request inside a peak window starts when it ends, that a request behind others starts
             when they end, that the estimate is the median of the passes that ran to their end, and
@@ -22286,10 +22292,25 @@ Mutated:    the rule, stated before the run: break each property this checkpoint
             everywhere else.
             M4 the drain's file opened shared, so a second drain takes it at once: red in
             `ADrainStartedWhileAnotherHoldsTheQueueWaitsForItToEnd`, green everywhere else.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: whole-suite runs in a detached worktree at 101ff66, never a filter, each
+            mutation reverted with `git reset --hard` and the tree read clean after each. The
+            baseline is 1268 of 1268. M1 as first written, the start taken as the cursor itself,
+            did not compile, since it left the helper moving a start past a window unused and the
+            build refuses an unused local function; it ran no test. It was run again as that
+            helper returning the instant it was handed, which ignores the window the same way and
+            compiles: 4 red, the four it named, 1264 green. M2 turned 2 red, the two it named,
+            1266 green. M3 turned 4 red, the four it named, 1264 green. M4 turned 1 red,
+            `ADrainStartedWhileAnotherHoldsTheQueueWaitsForItToEnd`, 1267 green.
+Held:       all four as written before the run, M1 in the form that compiles. The form that did
+            not is recorded because a sweep reading only its red counts would have read it as a
+            mutation that turned nothing red.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1268 of 1268
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 414 claims, 410 PASS, 0 FAIL, 4 out of
+            scope, 0 unexamined, 417 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1268 of 1268 tests.
+            Both gates ran over the tree carrying this entry, 101ff66, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing new. 11.3 states the report's place in the queue on tonight's rows and the
             selected name, from the same reading.
