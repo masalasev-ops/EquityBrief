@@ -20778,8 +20778,8 @@ Guarded:    `record-append-only`, three tests added and one reader proof.
 Expected:   derived, and a derivation rather than a file: no stage's output over the fixture moves,
             because nothing the night runs is touched. What is added is read off the record itself,
             over a population the record states.
-Tests:      FILLED IN FROM THE RUN, from 1218. Four added to `record-append-only`. No migration,
-            and no pin moves.
+Tests:      1222, from 1218. Four added to `record-append-only`, three assertions and the reader
+            proof under them. No migration, and no pin moves.
 Mutated:    the rule, stated before the run: put the defect back, because the property these
             assertions add is that the record refuses exactly the state the fill left it in, and a
             mutation that breaks the reader instead would show the reader failing rather than the
@@ -20793,9 +20793,19 @@ Mutated:    the rule, stated before the run: put the defect back, because the pr
             not 1217; and `AnUnfilledSweepResultStandsOnlyInTheNewestEntryOrTheOnesNamedHere`
             because an entry named here as unwritten now carries a result, which is the direction
             that stops an exemption outliving what it exempts.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, FILLED IN FROM THE RUN. `tools/verify-phase.ps1`
-            green, FILLED IN FROM THE RUN.
+            Results: one run of the whole suite in a detached worktree at fb97ae0, never a filter,
+            the mutation reverted with `git checkout` and the tree read clean after. The baseline
+            is 1222 of 1222. M1 turned exactly 3 red, which are the three assertions this
+            correction adds and no others, 1219 green: the two entries sharing one result, the
+            baseline of 1217 over a run of 1137, and an entry named as unwritten carrying a result.
+Held:       the prediction exactly, in the tests it named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1222 of 1222
+            tests ran with none failed, migrations 0 to 32 with none added and none pending, schema
+            version 32, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green
+            at 35 tables, 406 claims, 406 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 413
+            placements and verdicts reconciled against a floor of 34, 41 of 41 roster checks
+            carried and all 41 run, 1222 of 1222 tests. Both gates ran over the tree carrying this
+            entry, and the operator's store under `data/` was not touched by either.
 Carried:    five sweeps whose results are not in the record and will not be, named above and named
             in the check. The phase 10 sign-off stays owed to a fresh session, and the handoff that
             was issued over the eight is to be re-issued against this entry rather than reused.
