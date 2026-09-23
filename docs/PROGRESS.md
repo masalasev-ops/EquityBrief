@@ -22089,8 +22089,11 @@ Predicted:  413 claims and 409 PASS after this pass, with 4 out of scope; 421 an
 Expected:   derived, and a derivation rather than a file: no stage's output over the fixture moves,
             because no behaviour changes. What is added is read off the document by the checks that
             already run over it.
-Tests:      FILLED IN AFTER THE RUN. None added: the rows join populations existing checks read.
-Claims:     FILLED IN AFTER THE RUN.
+Tests:      1244, unchanged. None added: the rows join populations existing checks read.
+            Migrations 0 to 33 with none added and none pending, schema version 33.
+Claims:     413, from 409, with 409 PASS and 4 out of scope, each at the checkpoint that
+            draws it, and 416 placements and verdicts reconciled against a floor of 34, as
+            predicted.
 Mutated:    the rule, stated before the run: break the property this pass carries into shipped
             source, which is that each of the four rows is placed at the checkpoint that draws it
             and read as out of scope until that one lands, and that the prediction counts them.
@@ -22106,10 +22109,27 @@ Mutated:    the rule, stated before the run: break the property this pass carrie
             the document left alone: red in `ThePairEightZeroPredictedIsCheckedAgainstTheActual`,
             which then expects one claim fewer and one fewer out of scope than the document makes,
             and green everywhere else.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: three runs of the whole suite in a detached worktree at d808a4b, never a
+            filter, each mutation reverted with `git reset --hard` and the tree read clean after
+            each. The baseline is 1244 of 1244. M1 turned 1 red,
+            `EveryScreenRowHasItsOwnDuePointAndNoneIsWrittenForARowThatIsGone`, 1243 green. M2
+            turned 1 red, `EveryOutOfScopeClaimNamesADuePointThePlanHasAndProgressDoesNot`, 1243
+            green. M3 turned 1 red, `ThePairEightZeroPredictedIsCheckedAgainstTheActual`, 1243
+            green.
+Held:       M2 and M3 exactly as written before the run. M1 named more than happened: the
+            test holding the map and the document together turned red and no test building the
+            phase report did, because a subject the screens map does not carry is asked of the
+            plan's text next, and that text names the peers at 11.6, so the claim resolved to a
+            checkpoint that has not landed and stayed out of scope. The reconciliation is the
+            check the map exists for and it caught the omission; the fallback is the resolver as
+            it was written, so the prediction was wrong and not the harness.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1244 of 1244
+            tests ran with none failed, migrations 0 to 33 with none added and none pending,
+            schema version 33, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 413 claims, 409 PASS, 0 FAIL, 4 out of
+            scope, 0 unexamined, 416 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1244 of 1244 tests.
+            Both gates ran over the tree carrying this entry, d808a4b, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing new. The checkpoints 11.1 to 11.9 are the plan's, and the phase 11 sign-off is
             a fresh session's.
