@@ -22507,3 +22507,84 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, d7a3dd0, and the operator's store
             under `data/` was not touched by either.
 Carried:    nothing.
+### 11.5 - each large move beside its group's median move over the same sessions, the group read by one rule   2026-09-23
+Built:      the move annotator reads the membership on the night's session and writes, on every
+            move row it owns, the group the move is read against, the group's name, how many other
+            members it holds and how many held a close on both of the move's sessions, and their
+            median move over those sessions, from the close the move was measured from to the close
+            it ended on. The group is one rule declared once, `Groups.Of`: the name's industry where
+            at least five other members share it on the session, its sector otherwise, and never
+            the name itself; a group holding nobody holds nobody, and a member missing either close
+            is left out and counted. The annotator reads every stored bar once so a member's closes
+            are read off its own series. Migration 35 adds the five columns. A name's page draws each
+            move beside its group's median as stored, named as an industry or a sector with how many
+            members it was taken over, and says so where the group holds nobody, where nobody held
+            both closes, or where the move was stored before the median was. The card's key says how
+            to read it.
+Amended:    this checkpoint amends its own done condition, and those of 11.7 and 11.8, in those
+            words. The clause putting the median, the group and the count in the facts file so prose
+            may quote them moves to 11.9, with 11.7's reaction rows and 11.8's dividend beside it.
+            Found while building it: the fixture's model answers are recorded against prompts that
+            carry the facts file, so a figure added to the file refuses every recording at once, 31
+            on the local model and 16 on the paid one, and the paid half cannot be made again
+            without a spend the operator agrees first. 11.9 now carries the three parts' figures
+            into the facts file together with the recordings made again. The escape this authorises
+            is only that: every other clause of the three stands.
+Written:    `SCHEMA.md` declares the move table's five columns and that the annotator reads the
+            membership; the move annotator's catalogue and matrix rows read the membership; section
+            17 gains the group floor of 5, pinned to `Groups.Floor`; section 19.1's moves row names
+            the group each move is read against; section 15.9's row Each move beside its group,
+            placed at 11.5 by the document pass, is drawn here. `BUILD_PLAN.md` carries the
+            amendment above. The `read-surface` and `fixture-expectations` roster rows name what
+            they now assert. Every spec line changed has its prior text in `CHANGELOG.md`.
+Expected:   derived by hand. Over constructed members, an industry of five other members is the
+            group and one of four gives way to the sector, whose every other member is the group, and
+            a name alone in its sector holds nobody; over constructed closes, moves of +10, -5, +2
+            and +4 per cent have a median of 3 over four members with a fifth missing its first
+            close left out and counted, and three have their middle one. The moves expectation gains
+            the fixture's groups, derived from the membership expectation: every one of the four
+            members has an industry of its own, so each group is the sector, AAPL, KEYS and MSFT
+            each beside the other two in Technology and NFLX alone in Communication Services.
+Measured:   over the operator's store as it stood on 2026-09-18, the copy kept beside it as
+            `data/equitybrief-before-nvda-scrub.db`, whose newest session is 2026-09-17. The file
+            was only read: its copy in the scratchpad was migrated from 29 to 35 and the move
+            annotator run over it alone as that session's night, 508 names and 4064 rows, and DUK's
+            rows were read back over an immutable connection. DUK's group is its industry,
+            Utilities - Regulated Electric, whose 22 other members on the session reach the floor,
+            and all 22 held both closes of every move. Its eight moves, each over five sessions,
+            as the session it ended on, its change and the group's median, in per cent:
+            2026-02-13 +6.10 beside +6.92; 2025-12-05 -5.99 beside -5.47; 2026-02-17 +4.99
+            beside +6.12; 2026-03-20 -4.76 beside -5.11; 2026-06-01 -4.60 beside -4.70;
+            2026-03-23 -4.59 beside -5.32; 2025-12-08 -4.58 beside -3.61; 2026-08-05 -4.45 beside
+            -2.73. Three of them, 2026-02-13, 2025-12-08 and 2026-08-05, were worked again by hand
+            off the copy's bars outside the code, each to the same median over the same 22.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. One added, section 17's group floor, and the name screen's row
+            placed at 11.5 now passing, as predicted.
+Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that
+            the group is the industry at the floor and the sector below it, that the name is never in
+            its own group, that the median leaves out a member missing a close, and that the page
+            draws the median the store holds.
+            Predicted:
+            M1 the floor compared as more than five rather than at least five: red in
+            `AnIndustryOfFiveOtherMembersIsTheGroupAndOneOfFourGivesWayToTheSectorAndTheNameIsNeverInIt`,
+            green everywhere else, since no fixture industry reaches either.
+            M2 the name counted in its own group: red in the same test and in
+            `TheFixturesGroupsFallBackToTheSectorEachTechnologyNameBesideTheOtherTwoAndNflxBesideNobody`,
+            green everywhere else, the page's test among them, since the page and the store it is
+            read against move together.
+            M3 a member missing a close left out of the median but not counted as missing: red in
+            `AGroupsMedianMoveIsWorkedByHandOverAnEvenCountAndLeavesOutAMemberMissingAClose`, green
+            everywhere else, since nothing stores or draws the count of members left out apart from
+            the counted.
+            M4 the page drawing the name's own move where its group's median belongs: red in
+            `EachMoveOnANamesPageIsDrawnBesideItsGroupsMedianAsTheStoreHoldsIt`, green everywhere
+            else, the table's own test among them, since it is handed its cells rather than a move
+            row.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    the facts file half of 11.5, 11.7 and 11.8, now 11.9's with the recordings made again,
+            whose paid half waits on the operator's agreed spend.

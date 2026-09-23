@@ -221,5 +221,37 @@
     "rank": 8
    }
   ]
+ },
+ "groups": {
+  "note": "derived by hand from the membership expectation's sectors and industries, not from a run. Each of the four members has an industry of its own, so no industry reaches the floor of five other members and every name's group is its sector: AAPL, KEYS and MSFT are Technology, so each one's group is the other two, and NFLX is Communication Services, alone in it, so its group holds nobody and says so. The name is never in its own group.",
+  "AAPL": {
+   "kind": "sector",
+   "name": "Technology",
+   "members": [
+    "KEYS",
+    "MSFT"
+   ]
+  },
+  "KEYS": {
+   "kind": "sector",
+   "name": "Technology",
+   "members": [
+    "AAPL",
+    "MSFT"
+   ]
+  },
+  "MSFT": {
+   "kind": "sector",
+   "name": "Technology",
+   "members": [
+    "AAPL",
+    "KEYS"
+   ]
+  },
+  "NFLX": {
+   "kind": "sector",
+   "name": "Communication Services",
+   "members": []
+  }
  }
 }

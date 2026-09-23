@@ -147,7 +147,13 @@ public sealed record UniverseCell(
 // One of a name's biggest moves, as the table is given it. `Cause` is the text of
 // the accepted cause section that names this move, and null where no sentence of
 // it does: a researched claim, which arrives with the pass that writes it.
-public sealed record MoveCell(DateOnly SessionDate, int Sessions, double ChangePct, int Rank, string? Cause = null);
+public sealed record MoveCell(DateOnly SessionDate, int Sessions, double ChangePct, int Rank, string? Cause = null, MoveGroup? Group = null);
+
+// The group a move is read against: its industry or its sector, named, how many other members
+// it holds and how many of them held both closes, and their median move over the same
+// sessions, none where no member did.
+// see: A name's group is its industry where at least five other members share it on the session, and its sector otherwise, and every surface that uses it says which and how many
+public sealed record MoveGroup(string Kind, string? Name, int Members, int Counted, double? Median);
 
 // Where the causes in a moves table came from: the date the accepted cause section
 // was written on and the model that wrote it.
@@ -3649,13 +3655,13 @@ public sealed class MarkRenderer : IComponent
         if (cause is null)
         {
             table.Append(Invariant, $"<table class=\"moves-table\" data-rows=\"{moves.Count}\" data-cause-column=\"absent\">");
-            table.Append("<tr><th>Session</th><th>Over</th><th>Change</th></tr>");
+            table.Append("<tr><th>Session</th><th>Over</th><th>Change</th><th>Its group</th></tr>");
         }
         else
         {
             table.Append(Invariant, $"<table class=\"moves-table\" data-rows=\"{moves.Count}\" data-cause-column=\"written\" ");
             table.Append(Invariant, $"data-cause-as-of=\"{cause.AsOf:yyyy-MM-dd}\" data-cause-model=\"{Escaped(cause.Model)}\">");
-            table.Append("<tr><th>Session</th><th>Over</th><th>Change</th><th>Cause</th></tr>");
+            table.Append("<tr><th>Session</th><th>Over</th><th>Change</th><th>Its group</th><th>Cause</th></tr>");
         }
 
         foreach (var move in moves)
@@ -3665,6 +3671,7 @@ public sealed class MarkRenderer : IComponent
             table.Append(Invariant, $"<td>{move.SessionDate:yyyy-MM-dd}</td>");
             table.Append(Invariant, $"<td>{(move.Sessions == 1 ? "one session" : $"{move.Sessions} sessions")}</td>");
             table.Append(Invariant, $"<td>{Number(move.ChangePct)}%</td>");
+            table.Append(GroupCell(move.Group));
 
             if (cause is not null)
             {
@@ -3691,6 +3698,39 @@ public sealed class MarkRenderer : IComponent
         table.Append("</section>");
 
         return table.ToString();
+    }
+
+    // A move's group beside it: the median move of the name's group over the same sessions,
+    // named as an industry or a sector with how many members it was taken over, and a group
+    // that holds nobody, or nobody holding both closes, says so rather than drawing a figure.
+    // The median is the annotator's and is drawn as stored; nothing here works it out.
+    // see: A large move is shown beside its group's median move over the same sessions
+    // see: A screen reads and renders, and computes nothing
+    static string GroupCell(MoveGroup? group)
+    {
+        if (group is null)
+        {
+            return "<td class=\"group-median\" data-group=\"none\">no group median is stored for this move</td>";
+        }
+
+        var named = group.Name is { Length: > 0 } name ? $"the {Escaped(name)} {Escaped(group.Kind)}" : $"a {Escaped(group.Kind)} its membership row does not name";
+        var attributes = Formatted($"data-group-kind=\"{Escaped(group.Kind)}\" data-group-name=\"{Escaped(group.Name ?? string.Empty)}\" data-group-members=\"{group.Members}\" data-group-counted=\"{group.Counted}\"");
+
+        if (group.Members == 0)
+        {
+            return Formatted($"<td class=\"group-median\" {attributes} data-group-median=\"\">{named} holds no other member, so no median is drawn</td>");
+        }
+
+        if (group.Median is not { } median)
+        {
+            return Formatted($"<td class=\"group-median\" {attributes} data-group-median=\"\">none of the {group.Members} other members of {named} held a close on both sessions</td>");
+        }
+
+        var missing = group.Members - group.Counted;
+
+        return Formatted($"<td class=\"group-median\" {attributes} data-group-median=\"{Number(median)}\">{Number(median)}%, the median of {group.Counted} of the {group.Members} other members of {named}")
+            + (missing > 0 ? Formatted($", {missing} holding no close on one of the two sessions") : string.Empty)
+            + "</td>";
     }
 
     // The distance row, section 15.5's mark for a table cell.

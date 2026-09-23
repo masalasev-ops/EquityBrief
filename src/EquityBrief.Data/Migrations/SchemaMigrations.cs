@@ -655,6 +655,7 @@ public static class SchemaMigrations
         new Migration(32, "add forward_return's calibrated bar and what the trade came to", AddCalibratedBar),
         new Migration(33, "create version_block", CreateVersionBlock),
         new Migration(34, "research_request.asked_from admits the night", RequestAskedByTheNight),
+        new Migration(35, "add move's group median", AddMoveGroupMedian),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -755,6 +756,20 @@ public static class SchemaMigrations
 
         CREATE UNIQUE INDEX research_request_one_outstanding_per_name
         ON research_request (ticker) WHERE state = 'outstanding';
+    ";
+
+    // Each move's group, and the group's median move over the same sessions, on the move row
+    // the annotator already owns, so a move and the median it is read against are one row and
+    // cannot drift apart. The kind and the name say which group, industry or sector, the
+    // members how many others it holds and the counted how many held both closes; the median
+    // is null where none did.
+    // see: A large move is shown beside its group's median move over the same sessions
+    const string AddMoveGroupMedian = @"
+        ALTER TABLE move ADD COLUMN group_kind TEXT;
+        ALTER TABLE move ADD COLUMN group_name TEXT;
+        ALTER TABLE move ADD COLUMN group_members INTEGER;
+        ALTER TABLE move ADD COLUMN group_counted INTEGER;
+        ALTER TABLE move ADD COLUMN group_median REAL;
     ";
 
     // The night's own request, marked as asked by the night beside the two screens a press

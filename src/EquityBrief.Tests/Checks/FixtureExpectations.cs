@@ -56,6 +56,9 @@ public partial class FixtureExpectations
         "fixture-expectations",
         ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
+            // 11.5, the floor a name's industry has to reach before it is the name's group.
+            CheckReach.Key(Scope.LimitsTable, "Group floor"),
+
             // 6.5, the staleness judge: section 17's trigger row read off the
             // document, the catalogue's judge over the fixture's own dates, and
             // figure 12.1's three questions.

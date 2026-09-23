@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Ladders;
+using EquityBrief.Core.Moves;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Returns;
@@ -161,6 +162,7 @@ public class PinnedConstants
             new(Versions, "4", LadderRules.All.Count - 1, "the ladder rules other than the merge distance"),
             new(Versions, "18", RuleVersions.MostAtOnce, "RuleVersions.MostAtOnce"),
             new("Reports the night asks for", "1", RequestDrain.NightAsksFor, "RequestDrain.NightAsksFor"),
+            new("Group floor", "5", Groups.Floor, "Groups.Floor"),
         ];
     }
 

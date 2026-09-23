@@ -1251,6 +1251,14 @@ public static class NameScreen
     // names carries no cause, and the table says so in its row. Nothing is worked
     // out beyond that: the text is the stored prose, cut at its own sentences.
     // see: A cause of a move rests only on a document published inside that move
+    // The group a move was read against, as the table draws it, or none on a row written
+    // before the annotator wrote one.
+    // see: A large move is shown beside its group's median move over the same sessions
+    static MoveGroup? GroupOf(MoveRow move) =>
+        move.GroupKind is { } kind
+            ? new MoveGroup(kind, move.GroupName, move.GroupMembers ?? 0, move.GroupCounted ?? 0, move.GroupMedian)
+            : null;
+
     public static (IReadOnlyList<MoveCell> Cells, CauseSource? Source) Causes(
         IReadOnlyList<MoveRow> moves,
         IReadOnlyList<WrittenSectionRow> written)
@@ -1259,7 +1267,7 @@ public static class NameScreen
 
         if (cause is null)
         {
-            return ([.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank))], null);
+            return ([.. moves.Select(move => new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank, Group: GroupOf(move)))], null);
         }
 
         var sentences = ClaimRules.Sentences(cause.Prose)
@@ -1275,7 +1283,7 @@ public static class NameScreen
                 {
                     var naming = sentences.Where(sentence => Names(sentence.Dates, move.SessionDate)).Select(sentence => sentence.Text).ToArray();
 
-                    return new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank, naming.Length == 0 ? null : string.Join(" ", naming));
+                    return new MoveCell(move.SessionDate, move.Sessions, move.ChangePct, move.Rank, naming.Length == 0 ? null : string.Join(" ", naming), GroupOf(move));
                 }),
             ],
             new CauseSource(cause.AsOf, cause.Model));
