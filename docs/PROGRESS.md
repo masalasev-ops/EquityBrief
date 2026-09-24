@@ -23240,9 +23240,12 @@ Written:    `DECISIONS.md` gains the decision the correction rests on (see: The 
 Expected:   derived: the calendar expectation's counts move from 31 returned and 13 not members to
             29 and 11, the two rows listed on another exchange, London and Warsaw, read off the
             capture by hand and named as refused at the parse; the stored rows are unchanged.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. No claim added: both rows the correction rewords are keyed on
-            their first cell, which is unchanged.
+Tests:      1299, from 1298: one added to `fixture-expectations`, none removed, the parser's
+            test and the run page region's test each widened. Migrations 0 to 37 with none added
+            and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: both rows the correction rewords are
+            keyed on their first cell, which is unchanged.
 Mutated:    the rule, stated before the run: break each property this correction adds, being that
             only the index's own exchange is read, that a row the answer no longer carries is
             removed, that an answer storing no member's print removes nothing, that the window
@@ -23261,11 +23264,20 @@ Mutated:    the rule, stated before the run: break each property this correction
             `EachReasonsShareIsDrawnAgainstItsTargetWithEachEventSessionMarkedAndLeftOut` alone.
             M6 the first session the correction runs on moved five days later: red in the same
             test alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            d7129e2, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1299 of 1299. M1 turned 2 red and 1297 green, the two it named.
+            M2, M3 and M4 each turned 1 red and 1298 green, the fetcher's new test. M5 and M6 each
+            turned 1 red and 1298 green, the run page region's test.
+Held:       all six, in the tests each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1299 of 1299
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1299 of 1299 tests.
+            Both gates ran over the tree carrying this entry, d7129e2, and the operator's store
+            under `data/` was not touched by either.
 Carried:    the rows written before this correction, kept as written: their earnings soon fires
             stand in the reason records and on the pages for earlier nights, as the operator chose,
             and the eight-night measurement 11.9 recorded read earnings soon over the old calendar.
