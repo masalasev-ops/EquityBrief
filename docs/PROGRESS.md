@@ -23514,9 +23514,11 @@ Written:    section 4, section 15.9's paragraph, section 6's sentence and the pu
             `DECISIONS.md`, the one it supersedes moved to Previously decided with its reasoning;
             the roster's `read-surface` row, its prior text in `CHANGELOG.md`.
 Expected:   derived: no expectation file moves.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. No claim added: section 4 stays outside the claim scope, and
-            its rows are read by the test rather than as claims.
+Tests:      1302, from 1301: one added to `read-surface`, none removed. Migrations 0 to 37 with
+            none added and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: section 4 stays outside the claim
+            scope, and its rows are read by the test rather than as claims.
 Mutated:    the rule, stated before the run: break each property the test adds, the rows' order,
             every drawn region being a row, every row being drawn, and the stated count, each from
             the side it can be broken on.
@@ -23529,11 +23531,19 @@ Mutated:    the rule, stated before the run: break each property the test adds, 
             test and nowhere else.
             M4 the count section 4 states written as eighteen: red in the same test and nowhere
             else.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            76412e2, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1302 of 1302. M1, M2, M3 and M4 each turned 1 red and 1301
+            green, the test this correction adds.
+Held:       all four, in the test each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1302 of 1302
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1302 of 1302 tests.
+            Both gates ran over the tree carrying this entry, 76412e2, and the operator's store
+            under `data/` was not touched by either.
 Carried:    the peers decision's name, "Peers are shown by price alone, in section 2 beside the
             move table", keeps "section 2" from section 4's old numbering, which the table no longer
             has. Its body stands and the page draws the peers beside the move table as it rules;
