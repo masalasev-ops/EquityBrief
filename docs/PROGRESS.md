@@ -22913,3 +22913,67 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             under `data/` was not touched by either.
 Carried:    the facts file half of 11.5, 11.7 and 11.8, 11.9's with the recordings made again,
             whose paid half waits on the operator's agreed spend.
+### 5.8 - correction: a risk the prose states before the first one it numbers is drawn as its own part, rather than with the second set beneath its confirmation   2026-09-24
+Corrects:   the 5.8 correction of 2026-09-20 (6f8d3bb), which cuts risks run together in one
+            paragraph at each sentence opening on an ordinal and the word risk, and read whatever
+            stood before the first such sentence as an introduction opening the first part. A
+            section numbering its risks from the second states its first risk before any ordinal,
+            so the first two risks were drawn as one part and the second, with what would confirm
+            it, was set beneath the first one's confirmation.
+Found:      by the session building 11.9, whose fixture answer for the risks, recorded again over
+            the widened facts file, is one paragraph of five risks: the first opening "The clearest
+            risk" and numbered by nothing, the next four opening "A second risk" to "A fifth risk".
+Measured:   read-only over the operator's store, every accepted risks section it holds: three, none
+            of this shape. One numbers ten risks from the first and is cut as it was written, and
+            two number none and are drawn as written. So no page on the operator's machine drew the
+            fault, and the fixture's page would have from 11.9.
+Repaired:   the first ordinal the prose states says what stands before it. Where it numbers the
+            first risk, what stands before it is an introduction and opens that part, as before.
+            Where it numbers the second, what stands before it is the first risk, a part of its own
+            with what would confirm it beneath it, and one numbered risk is then enough for two
+            parts, since the prose says where the second starts. Where it numbers any later one,
+            the risks before it are stated without saying where they part, so the section is drawn
+            as it was written.
+Missed:     the rule was fitted to the samples in hand, which numbered from the first or not at all,
+            and the assertion over prose run together opened on an introduction and then "The
+            first risk". Nothing asked what an opening numbered by nothing means when the numbering
+            starts later.
+Guarded:    `read-surface`, one test added,
+            `TheFirstOrdinalRiskSaysWhetherWhatStandsBeforeItIsItsOwnPart`, over three constructed
+            sections read back off the markup: numbered from the second, drawn as three parts with
+            each confirmation beneath its own risk and the parts joining into the prose; one
+            numbered risk after an unnumbered one, drawn as two; and numbered from the third, drawn
+            as written. The roster's `read-surface` row names what the first ordinal decides.
+Expected:   derived: the parts are read against constructed prose, and no expectation file moves.
+Tests:      1294, from 1293. One added to `read-surface`, none removed. Migrations 0 to 37
+            with none added and none pending, schema version 37.
+Claims:     448, from 448, with 448 PASS and 0 out of scope, and 455 placements and verdicts
+            reconciled against a floor of 34. No claim added: section 15.9's row already states one
+            part per risk where the prose says where each part ends.
+Mutated:    the rule, stated before the run: put back each wrong reading of what the first ordinal
+            decides, one for each thing it can mean.
+            Predicted:
+            M1 whatever stands before the first ordinal read as an introduction whatever the ordinal
+            numbers, as it was: red in
+            `TheFirstOrdinalRiskSaysWhetherWhatStandsBeforeItIsItsOwnPart` and nowhere else.
+            M2 whatever stands before the first ordinal made a part of its own where it numbers the
+            first: red in the risks test the correction of 2026-09-20 added, where it counts the
+            parts of prose that introduces its risks, and nowhere else.
+            M3 a first ordinal past the second cut as though it were the second: red in the test
+            this correction adds and nowhere else.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            d87aaeb, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1294 of 1294. M1 turned 1 red and 1293 green:
+            `TheFirstOrdinalRiskSaysWhetherWhatStandsBeforeItIsItsOwnPart`. M2 turned 1 red and
+            1293 green: the risks test the correction of 2026-09-20 added. M3 turned 1 red and 1293
+            green: the test this correction adds.
+Held:       all three, in the test each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1294 of 1294
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 448 claims, 448 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 455 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1294 of 1294 tests.
+            Both gates ran over the tree carrying this entry, d87aaeb, and the operator's store
+            under `data/` was not touched by either.
+Carried:    nothing.
