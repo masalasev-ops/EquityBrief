@@ -23628,3 +23628,26 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             entry, with the figures the 11.9 correction closing this batch records.
 Carried:    nothing.
 
+### 5.8 - correction: the twelve-month picture sits in the box that scales every chart to its column, where it was drawn at its own width past any narrower card   2026-09-24
+Corrects:   5.8, whose twelve-month picture on the name page and in the exported report was drawn
+            at its own 1,462 pixels in a figure the stylesheet's rule that scales a chart to its
+            column does not reach. In any window narrower than about 1,500 pixels it ran past its
+            card, and the newest months, where most of the numbered moves sit, were cut off.
+Found:      by the phase 11 sign-off review on 2026-09-24, at 1,000 and 1,400 pixels.
+Repaired:   the picture sits in the same box every other chart does, so it keeps its own ratio and
+            scales to the column.
+Guarded:    `read-surface`, one test added,
+            `EveryChartTheNamePageDrawsSitsInTheBoxThatScalesItToItsColumn`: every chart the name
+            page and the exported report draw at a size of their own, at least four on each, sits in
+            a box the stylesheet scales pictures in, read off the boxes open where the chart starts,
+            with the reader shown to find a chart outside every box and one inside one.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Mutated:    the rule, stated before the run: take the twelve-month picture out of the box.
+            Predicted:
+            M3 the twelve-month picture drawn outside the box: red in the test this correction adds.
+            Results: in the 11.9 correction closing this batch.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the 11.9 correction closing this batch records.
+Carried:    nothing.
+

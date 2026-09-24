@@ -94,6 +94,73 @@ public partial class ReadSurface
         Assert.Contains("<meta name=\"viewport\" content=\"width=device-width", new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
     }
 
+    // Whether a picture starts inside a box the stylesheet scales pictures to the column in: an
+    // element whose classes hold `fig`, read off the boxes open where the picture starts.
+    static bool InsideAFig(string markup, int at)
+    {
+        var open = new Stack<bool>();
+
+        foreach (Match tag in Regex.Matches(markup[..at], "<(/?)(div|figure|section)\\b([^>]*)>"))
+        {
+            if (tag.Groups[1].Value == "/")
+            {
+                if (open.Count > 0)
+                {
+                    open.Pop();
+                }
+            }
+            else
+            {
+                open.Push(Regex.IsMatch(tag.Groups[3].Value, "class=\"(?:[^\"]* )?fig(?: [^\"]*)?\""));
+            }
+        }
+
+        return open.Any(fig => fig);
+    }
+
+    // Every chart the name page and the exported report draw at a size of their own sits in the box
+    // the stylesheet scales pictures to the column in, so a window narrower than a chart shows all
+    // of it scaled rather than cutting off its newest sessions. The twelve-month picture is one of
+    // them and was drawn outside it.
+    [Fact]
+    public async Task EveryChartTheNamePageDrawsSitsInTheBoxThatScalesItToItsColumn()
+    {
+        // The reader, shown to find a picture outside every box and one inside one.
+        Assert.False(InsideAFig("<figure class=\"twelve-months\"><svg", "<figure class=\"twelve-months\">".Length));
+        Assert.True(InsideAFig("<figure class=\"twelve-months\"><div class=\"fig\"><svg", "<figure class=\"twelve-months\"><div class=\"fig\">".Length));
+        Assert.True(InsideAFig("<div class=\"fig row-fig\"><svg", "<div class=\"fig row-fig\">".Length));
+        Assert.False(InsideAFig("<div class=\"fig\"></div><svg", "<div class=\"fig\"></div>".Length));
+
+        using var store = await FixtureExpectations.WithListings();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var name = FiredNamesOn(store, NightIn(store))[0];
+
+        foreach (var (surface, markup) in new[]
+        {
+            ("the name page", await client.GetStringAsync($"/screens/name/{name}")),
+            ("the exported report", await client.GetStringAsync(EquityBrief.Web.App.ReportExporter.Route + name)),
+        })
+        {
+            var charts = Regex.Matches(markup, "<svg[^>]*>")
+                .Where(tag => Regex.IsMatch(tag.Value, "class=\"(?:level-chart|momentum-panel|volume-profile)\"") && Regex.IsMatch(tag.Value, "\\swidth=\"\\d"))
+                .ToArray();
+
+            // The year's picture, the chart, the profile beside it and the momentum panel.
+            Assert.True(charts.Length >= 4, $"{surface} draws {charts.Length} chart(s), expected at least 4.");
+
+            var loose = charts
+                .Where(chart => !InsideAFig(markup, chart.Index))
+                .Select(chart => Regex.Match(markup[..chart.Index], "<figure class=\"([a-z-]+)\"[^>]*>(?![\\s\\S]*<figure)").Groups[1].Value)
+                .ToArray();
+
+            Assert.True(loose.Length == 0, $"On {surface}, {loose.Length} chart(s) sit in no box the stylesheet scales: {string.Join(", ", loose)}.");
+        }
+
+        Assert.Matches(@"(?m)^\.fig svg\{display:block;max-width:100%;height:auto\}", Stylesheet.Css);
+    }
+
     [Fact]
     public async Task NoPictureAScreenDrawsIsStretchedToFillWhatHoldsItAndNoneIsWrittenOver()
     {

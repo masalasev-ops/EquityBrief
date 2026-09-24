@@ -3757,8 +3757,14 @@ public sealed class MarkRenderer : IComponent
         // It degrades the way every mark does, by saying what it has: a name
         // with fewer sessions than a chart needs gets the sentence stating the
         // count rather than a picture drawn through nothing.
+        //
+        // It sits in the box the stylesheet scales every chart to its column in, so a window
+        // narrower than the picture shows the whole year scaled rather than cutting off its newest
+        // months, where most of the numbered moves are.
         table.Append(Invariant, $"<figure class=\"twelve-months\" data-sessions=\"{year.Count}\">");
+        table.Append("<div class=\"fig\">");
         table.Append(LevelChart(ticker, year, [], [], new ChartFrame(Markers: [.. moves.Select(move => move.SessionDate)])));
+        table.Append("</div>");
         table.Append(Invariant, $"<figcaption>the twelve months to {(year.Count > 0 ? year[^1].SessionDate.ToString("yyyy-MM-dd", Invariant) : "no stored session")}</figcaption>");
         table.Append("</figure>");
 
