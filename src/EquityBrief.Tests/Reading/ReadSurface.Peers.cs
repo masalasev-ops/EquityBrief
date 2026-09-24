@@ -149,4 +149,38 @@ public partial class ReadSurface
         // Three rows on each Technology page and one on NFLX's.
         Assert.Equal(10, read);
     }
+
+    // A name the index does not hold on the night keeps its bars, moves and readings, stored as the
+    // annotator stores them for a name it reads no membership row for: a sector unnamed, holding
+    // nobody. Its page says it is not a member, beside every move and in its peers region, rather
+    // than naming an empty group, and a member's page is unchanged.
+    [Fact]
+    public async Task ANameTheIndexDoesNotHoldOnTheNightSaysSoBesideItsMovesAndInItsPeersRegion()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        store.Execute(
+            "UPDATE membership SET \"left\" = '2026-09-01' WHERE ticker = 'MSFT';"
+            + "UPDATE move SET group_kind = 'sector', group_name = NULL, group_members = 0, group_counted = 0, group_median = NULL WHERE ticker = 'MSFT';"
+            + "UPDATE peer_reading SET group_kind = 'sector', group_name = NULL WHERE ticker = 'MSFT';");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var left = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/MSFT"));
+        var cells = Regex.Matches(left, "<td class=\"group-median\"[^>]*>([^<]*)</td>").Select(cell => cell.Groups[1].Value).ToArray();
+
+        Assert.Contains("data-peers=\"not-a-member\"", left, StringComparison.Ordinal);
+        Assert.Contains("MSFT is not a member of the index on the night, so it has no group and no peers are drawn.", left, StringComparison.Ordinal);
+        Assert.NotEmpty(cells);
+        Assert.All(cells, cell => Assert.Equal("not a member of the index on the night, so no group is read for this move", cell));
+        Assert.DoesNotContain("its membership row does not name", left, StringComparison.Ordinal);
+        Assert.DoesNotContain("holds MSFT alone", left, StringComparison.Ordinal);
+
+        // A member's page draws its group as before.
+        var member = await client.GetStringAsync("/screens/name/AAPL");
+
+        Assert.DoesNotContain("not-a-member", member, StringComparison.Ordinal);
+        Assert.Contains("data-peers=\"group\"", member, StringComparison.Ordinal);
+    }
 }

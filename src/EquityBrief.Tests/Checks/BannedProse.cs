@@ -53,6 +53,36 @@ public class BannedProse
     static bool CarriesAZeroByte(string file) =>
         File.ReadAllBytes(file).Contains((byte)0);
 
+    // The files every manifest declares as an input, read from its inputs, each as a full path.
+    static string[] DeclaredCaptures() =>
+    [
+        .. Directory.GetFiles(Path.Combine(Repository.Root, "fixtures"), "manifest.json", SearchOption.AllDirectories)
+            .SelectMany(manifest =>
+            {
+                using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(manifest));
+
+                return document.RootElement.GetProperty("inputs").EnumerateArray()
+                    .Select(input => Path.GetFullPath(Path.Combine(Path.GetDirectoryName(manifest)!, input.GetProperty("file").GetString()!)))
+                    .ToArray();
+            })
+            .Order(StringComparer.OrdinalIgnoreCase),
+    ];
+
+    // A json file written here rather than captured, which says so in its first key.
+    static bool Constructed(string file)
+    {
+        using var document = System.Text.Json.JsonDocument.Parse(File.ReadAllText(file));
+
+        return document.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object
+            && document.RootElement.EnumerateObject().FirstOrDefault().Name == "constructed";
+    }
+
+    // The one provider payload beside a manifest that no manifest declares: the earnings calendar
+    // committed at 4.8 with no entry. Its window is in its own opening keys and the instant it was
+    // fetched was never recorded, so it is named here with that reason rather than given an entry it
+    // cannot fill. It is scanned, as every file no manifest declares is.
+    static readonly string[] UndeclaredPayloads = ["calendar-2026-09-08.json"];
+
     // A captured provider response: a .json file inside a fixture folder that
     // some manifest names as an input.
     internal static bool IsCapture(string file)
@@ -253,26 +283,35 @@ public class BannedProse
             scanned,
             file => file.EndsWith(Path.Combine(".claude", "rules", "checks.md"), StringComparison.Ordinal));
 
-        // The excluded set is small and named, rather than whatever happened to
-        // be in a folder. Fifty-nine captured inputs at 6.8 across one fixture, from
-        // thirty-four at 6.7, the twenty-five being KEYS's year of news and the
-        // twenty-four model answers the research pass and the lane comparison
-        // recorded: each is a file a manifest entry declares, and the ceiling is
-        // raised by hand when a checkpoint captures more, so an exclusion that grew
-        // without anyone adding a capture is what fails. Sixty-four at 6.9, its four
-        // searches and its theme call, and sixty-seven at 6.10, the three answers the
-        // overnight queue asked for over a whole night. 6.10's queue commit was verified
-        // before its three were tracked and held a red test here the moment they were,
-        // which is the fault 6.8 recorded arriving a second time, and its sweep's
-        // baseline is what showed it. Ninety-four at 6.11: the twenty-four searches a site
-        // the replay's two theme passes make, and the three theme calls over what they kept.
-        // A hundred and two at 11.9, from ninety-eight: the four keys the nightly run's
-        // rebalance asks, which the group the facts file carries tells apart from the other
-        // nights' keys.
+        // The manifests bound the exclusion, rather than a ceiling raised by hand: the json files
+        // it excludes are exactly the json inputs the manifests declare, read from each manifest's
+        // inputs and not through the exclusion's own reader, which finds a file's name anywhere in
+        // the manifest's text. A capture enters the exclusion only by a manifest entry, and a
+        // manifest entry is someone adding a capture, so an exclusion that grew without anyone
+        // adding one fails with no slack. The filings a manifest declares are not json and stay
+        // scanned. The ceiling stood at 110 against 102 captures, and had left 3 at 6.10 and 6
+        // at 6.11.
         var tracked = Repository.TrackedFiles();
-        var excluded = tracked.Count(IsCapture);
+        var excluded = tracked.Where(IsCapture).Select(Path.GetFullPath).Order(StringComparer.OrdinalIgnoreCase).ToArray();
+        var declared = DeclaredCaptures().Where(file => file.EndsWith(".json", StringComparison.OrdinalIgnoreCase)).ToArray();
 
-        Assert.True(excluded is >= 5 and <= 110, $"Excluded {excluded} captured responses, expected between 5 and 110.");
+        Assert.True(excluded.Length >= 5, $"Excluded {excluded.Length} captured responses, expected at least 5.");
+        Assert.Equal(declared, excluded);
+
+        // And every json file beside a manifest is one it declares, one constructed here that says so
+        // in its first key, or the one payload named below with its reason, so a capture added without
+        // a manifest entry fails rather than being read as prose.
+        var beside = Directory.GetFiles(Path.Combine(Repository.Root, "fixtures"), "*.json", SearchOption.AllDirectories)
+            .Where(file => File.Exists(Path.Combine(Path.GetDirectoryName(file)!, "manifest.json")) && Path.GetFileName(file) != "manifest.json")
+            .Select(Path.GetFullPath)
+            .ToArray();
+        var undeclared = beside
+            .Where(file => !declared.Contains(file, StringComparer.OrdinalIgnoreCase) && !Constructed(file))
+            .Select(Path.GetFileName)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(UndeclaredPayloads, undeclared);
 
         // And the count is over the tree as it will be committed. The ceiling failed on a
         // committed tree at 6.8 and again at 6.10, each time because the run verifying the
@@ -283,7 +322,7 @@ public class BannedProse
             .Where(IsCapture)
             .ToArray();
 
-        Assert.True(onDisk.Length >= excluded, $"Found {onDisk.Length} captured responses on disk and {excluded} tracked.");
+        Assert.True(onDisk.Length >= excluded.Length, $"Found {onDisk.Length} captured responses on disk and {excluded.Length} tracked.");
 
         var untracked = Untracked(onDisk, tracked);
 

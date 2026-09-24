@@ -23723,3 +23723,155 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             under `data/` was not touched by either.
 Carried:    the operating rows A paid call answered inside a peak window and The start bound
             reviewed at twenty passes.
+
+### 4.3 ruling - the calendar keeps reading each member's own listing, no date is borrowed from another, and the members whose own listing files no next report date are carried   2026-09-24
+Not a checkpoint entry. It lands nothing.
+Ruled:      by the operator on 2026-09-24, from the phase 11 sign-off review's account of what the
+            4.3 correction costs: the calendar keeps reading only each company's own US listing,
+            and the 24 members whose next report date came only from a listing abroad show not on
+            file until the provider files the date on the US listing. Neither borrowing that date
+            nor measuring first was taken.
+Population: the provider's earnings calendar fetched 2026-09-24 about 16:20 UTC over 2025-09-24 to
+            2026-12-23, and a store copy that ran the 2026-09-23 night with the 4.3 correction, over
+            the 503 members on that session.
+Why:        borrowing needs a rule that the other listing is the same company, and the data
+            supports one for 6 of the 24. NVDA, WMT, BBY, HPQ, CRM and ORCL each have another
+            listing sharing a fiscal period with the US listing at an equal estimate; the other 18
+            have none that can be shown to be theirs, and DE.V, ORCL.V, MRVL.V and COO.V, and the
+            German listings behind GIS, SJM, LEN and HPE, share no fiscal period with it. Where the
+            other listing is the same company the two still disagree on upcoming dates: TSLA 10-21
+            against 10-28, VZ 10-20 against 11-04, and TMO, LUV and LVS 10-21 against 10-28.
+            Nothing fires differently for weeks: the nearest provably same-company date is NVDA's
+            2026-11-17, 39 sessions away, so earnings soon, at 20 sessions, is unaffected until the
+            night of 2026-10-20. What the 24 lose now is the next dated event line and the plan's
+            block around the next report on their pages. 27 other members have no upcoming print on
+            any listing, LOW, ROST, SNPS, WDAY, ULTA and DG among them, and PAYX is among the 24 only
+            because the store held a date the provider no longer files anywhere. Measuring first
+            could not be done from the store: the calendar's upsert restamps observed_at on every
+            row it carries every night, and rows written before 4.3 do not say which listing they
+            came from.
+Carried:    the 24, by name: ADBE, ADSK, AVGO, BBY, COO, CRM, CRWD, DE, DLTR, GIS, HPE, HPQ, INTU,
+            LEN, LULU, MRVL, NVDA, ORCL, PANW, PAYX, SJM, TGT, TJX and WMT; and the six provable
+            same-company dates: NVDA 2026-11-17, WMT 11-19, BBY 11-24, HPQ 11-24, CRM 12-02 and
+            ORCL 12-10. The operating row The next report dates only another listing files reads
+            the six on the name page's next dated event from the night of 2026-10-20, and brings the
+            borrowing rule back as a ruling if one still reads not on file when its date comes
+            inside 20 sessions.
+Recorded:   one provider fault, and no ruling is asked. The US listing is not always right either:
+            WMT.US files two of its four past reports in the year on 2025-12-03 and 2026-03-13,
+            where its Mexican and German listings file 2025-11-20 and 2026-02-19. WMT's own bars
+            side with those listings: volume 3.44 and 1.68 times its 20-session median on 11-20 and
+            02-19, against 1.4 and 0.7 on 12-03 and 03-13, and 11-20 moved 6.46%. So WMT's reaction
+            record draws those two prints on days it did not report. Over 158 past periods where
+            both listings are shown to be one company, the dates disagree on 2: WMT, and GOOG, where
+            the US date is the right one.
+Written:    the operating row in `BUILD_PLAN.md`, cited back at the end of 5.8, the checkpoint that
+            builds the name page's next dated event.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the 11.9 correction closing this batch records.
+
+### 11.5 - correction: a name the index does not hold on the night says so beside each move and in its peers region, where both read the membership row it no longer has as a group of one   2026-09-24
+Corrects:   11.5 (3c9f315), whose group cell beside each move, and 11.6 (e723114), whose peers
+            region, read a name the index does not hold on the night as a member of a group of one.
+            A name that left the index keeps its bars, and the annotator reads its group through a
+            membership row it no longer has: a sector unnamed, holding nobody. TTD's page said "a
+            sector its membership row does not name holds no other member" where its row names
+            Communication Services, and "the table holds TTD alone" with no rows.
+Found:      by the phase 11 sign-off review on 2026-09-24: TTD, BLDR and TAP left the index on
+            2026-09-21 and EQR on 2026-09-18, and all four still hold bars.
+Repaired:   the name page reads whether the index holds the name on its night off the night's own
+            members, which its peers are read from. A name it does not hold says, beside every move,
+            that it was not a member of the index on the night so no group is read for the move,
+            and its peers region says it has no group and draws no peers. A member's page is as it
+            was, a group of one included. A page for an earlier night draws its peers as before.
+Guarded:    `read-surface`, one test added,
+            `ANameTheIndexDoesNotHoldOnTheNightSaysSoBesideItsMovesAndInItsPeersRegion`: MSFT made
+            to leave the index before the fixture's night with its moves and readings stored as the
+            annotator stores them for a name it reads no membership row for; its page says so in
+            every group cell and in its peers region and names no empty group, and AAPL's page
+            draws its group.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Mutated:    the rule, stated before the run: break each side that reads the membership.
+            Predicted:
+            M1 the peers region reading a name the index does not hold as a member: red in the test
+            this correction adds.
+            M2 the moves' group cells reading it as a member: red in the same test.
+            Results: in the 11.9 correction closing this batch, which records every mutation the
+            batch ran.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the 11.9 correction closing this batch records.
+Carried:    nothing.
+
+### 5.8 - correction: the twelve-month picture sits in the box that scales every chart to its column, where it was drawn at its own width past any narrower card   2026-09-24
+Corrects:   5.8, whose twelve-month picture on the name page and in the exported report was drawn
+            at its own 1,462 pixels in a figure the stylesheet's rule that scales a chart to its
+            column does not reach. In any window narrower than about 1,500 pixels it ran past its
+            card, and the newest months, where most of the numbered moves sit, were cut off.
+Found:      by the phase 11 sign-off review on 2026-09-24, at 1,000 and 1,400 pixels.
+Repaired:   the picture sits in the same box every other chart does, so it keeps its own ratio and
+            scales to the column.
+Guarded:    `read-surface`, one test added,
+            `EveryChartTheNamePageDrawsSitsInTheBoxThatScalesItToItsColumn`: every chart the name
+            page and the exported report draw at a size of their own, at least four on each, sits in
+            a box the stylesheet scales pictures in, read off the boxes open where the chart starts,
+            with the reader shown to find a chart outside every box and one inside one.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Mutated:    the rule, stated before the run: take the twelve-month picture out of the box.
+            Predicted:
+            M3 the twelve-month picture drawn outside the box: red in the test this correction adds.
+            Results: in the 11.9 correction closing this batch.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the 11.9 correction closing this batch records.
+Carried:    nothing.
+
+### 11.9 - correction: banned-prose excludes exactly the json inputs the manifests declare, read from their inputs, where a ceiling raised by hand let eight captures through unannounced   2026-09-24
+Corrects:   11.9 (894b3ee), which raised banned-prose's ceiling on captured responses by hand from
+            100 to 110 for 102 captures, so 8 more could arrive unannounced. The slack had been 3 at
+            6.10 and 6 at 6.11, and the ceiling was not the bound its comment described.
+Found:      by the phase 11 sign-off review on 2026-09-24, as one of the operator's calls.
+Ruled:      by the operator on 2026-09-24: the exclusion read from the manifests, exactly, on four
+            conditions: declared is read from each manifest's inputs and never through the
+            exclusion's own reader; the filings a manifest declares stay scanned; the three json
+            files beside the manifest that it does not declare are settled; and the ceiling of 110
+            is removed with the comment rewritten.
+Repaired:   the test reads every manifest's inputs and holds the json files the exclusion takes to
+            exactly the json inputs declared, with a floor of 5. Every json file beside a manifest
+            is declared by it, constructed here and saying so in its first key, or the one payload
+            the test names with its reason: the earnings calendar committed at 4.8 with no entry,
+            whose fetch instant was never recorded. The two constructed files are
+            inadmissible-documents.json and research-prose.json, and all three stay scanned.
+Guarded:    `banned-prose`, in the test that held the ceiling. The roster's row says so.
+Written:    the roster's `banned-prose` row, its prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      1304, from 1302: two added to `read-surface`, 11.5's and 5.8's, and `banned-prose`'s
+            test held to the manifests rather than to a ceiling, none removed. Migrations 0 to 37
+            with none added and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: no table or figure changed.
+Mutated:    the rule, stated before the run: break the exclusion from each side the operator named.
+            Predicted:
+            M4 the exclusion widened to every json file beside a manifest: red in the test that
+            held the ceiling, naming the undeclared files.
+            M5 one input removed from the manifest: red in the same test, naming its file.
+            M6 a file's name added to the manifest's description: red in the same test, the file
+            excluded but not declared.
+            Results: one run for each of this batch's six mutations in a detached worktree at
+            0427bf8, filtered to the 12 tests of 11.5's former-member test, 5.8's chart test and
+            `banned-prose` on the operator's instruction of 2026-09-24 that whole-suite runs took
+            too long, each reverted with `git reset --hard` and the tree read clean after. The whole
+            suite ran green over the same tree in the gates, 1304 of 1304. M1 and M2 each turned 1
+            red and 11 green, 11.5's test; M3 turned 1 red and 11 green, 5.8's test; and M4, M5 and
+            M6 each turned 1 red and 11 green, `banned-prose`'s
+            `TheCaptureExclusionIsTheCapturesAndNothingElse`.
+Held:       all six, in the test each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1304 of 1304
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1304 of 1304 tests.
+            Both gates ran over the tree carrying this entry and the three before it, 0427bf8,
+            and the operator's store under `data/` was not touched by either.
+Carried:    nothing.

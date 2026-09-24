@@ -510,6 +510,8 @@ It is a checkpoint rather than a correction because the work is drawing, and the
 
 ---
 
+The name page's next dated event is where the members whose own listing files no next report date are read (owes: The next report dates only another listing files).
+
 ## Phase 6: research on demand
 
 **Visible output at 6.1.** The numbers section fills from real filings.
@@ -1081,6 +1083,7 @@ Recorded when created, not remembered. Every row is named, and the name is what 
 | **The trend confirmation's nights settled from flip-backs** | 10.0 | operating | 60 stored nights of trend labels after version C opens, read on the run page's rule versions region, which 8.6 builds and 10.4 extends to the trend rule. The 2 nights are settled from how often a label returns within that many nights, which is a count of labels and not of outcomes, and a changed count is a new version (see: The trend rule is a fifth ladder rule a version replays, and none of its three versions is live) |
 | **A paid call answered inside a peak window** | 11.1 | operating | 1 paid call answered inside a peak window, read on the run page's priced calls line, which 11.1 builds. The first such call is a pass that outlasted the longest pass the store held when it started, so the bound is read again against what that pass took, and whether a pass should pause its paid calls at a window comes back as a ruling (see: A pass starts only where the longest pass the store holds would end before a peak window opens) |
 | **The start bound reviewed at twenty passes** | 11.1 | operating | 20 passes that ran to their end, read on the queue page's count of the passes its estimate is taken over, which 11.2 builds. The longest pass as the bound is reviewed against the spread of the twenty: whether one long pass should hold every start back by its length, or a high percentile of them should (see: A pass starts only where the longest pass the store holds would end before a peak window opens) |
+| **The next report dates only another listing files** | 4.3 | operating | 20 sessions or fewer between a night and the next report date the same company's other listing files for NVDA, WMT, BBY, HPQ, CRM or ORCL, first on the night of 2026-10-20 for NVDA's 2026-11-17, read on the name page's next dated event for those six, which 5.8 builds. If any of the six still reads not on file on its own listing on the night its same-company date comes inside 20 sessions, borrowing that date comes back as a ruling, with the same-company test the 4.3 ruling of 2026-09-24 states: a listing that shares a fiscal period with the US listing at an equal estimate |
 
 **Carried out of the phase 1 sign-off.** Two defects found by breaking a passing claim and
 watching the suite stay green. Neither falsifies shipped behaviour, so under the stopping rules
