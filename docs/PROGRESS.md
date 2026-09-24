@@ -23588,3 +23588,42 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, c8bd6c5, and the operator's store
             under `data/` was not touched by either.
 Carried:    nothing.
+
+### 11.4 - correction: a night run for a session named on the command line asks for no report, read through the worker's own entry, where the one test handed the night the flag itself   2026-09-24
+Corrects:   11.4 (1a90173), whose test of a night run again handed the night
+            `askForTheFirstName: false` itself. The worker's entry sets it from whether a session
+            was named, and nothing read that wiring: an entry that always asked left the suite
+            green, and every rehearsal of a named session would then write a request and start a
+            paid pass.
+Found:      by the phase 11 sign-off review on 2026-09-24, which set the entry to ask whatever was
+            named and saw nothing go red.
+Repaired:   no shipped code moves. The test reads the wiring.
+Guarded:    `nightly-run`, one test added, `ANightForASessionNamedOnTheCommandLineAsksForNoReport`:
+            the worker's own entry run as a process over the fixture with `--session 2026-09-08`
+            and both models at a closed port exits 0, says no report was asked for since the night
+            was run again, and writes no request.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Tests:      1303, from 1302: one added to `nightly-run`, none removed. Migrations 0 to 37 with
+            none added and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: no table or figure changed.
+Mutated:    the rule, stated before the run: make the entry ask for a report where a session is
+            named.
+            Predicted:
+            M1 the entry asks for the first name whether or not a session is named: red in the test
+            this correction adds and nowhere else.
+            Results: one run of the whole suite in a detached worktree at 94cf930, never a
+            filter, reverted with `git reset --hard` and the tree read clean after, with no drain
+            left running. The baseline is 1303 of 1303. M1 turned 1 red and 1302 green, the test
+            this correction adds.
+Held:       the one, in the test it named and in its number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1303 of 1303
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1303 of 1303 tests.
+            Both gates ran over the tree carrying this entry, 94cf930, and the operator's store
+            under `data/` was not touched by either.
+Carried:    nothing.
