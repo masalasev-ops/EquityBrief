@@ -22558,9 +22558,14 @@ Measured:   over the operator's store as it stood on 2026-09-18, the copy kept b
             2026-03-23 -4.59 beside -5.32; 2025-12-08 -4.58 beside -3.61; 2026-08-05 -4.45 beside
             -2.73. Three of them, 2026-02-13, 2025-12-08 and 2026-08-05, were worked again by hand
             off the copy's bars outside the code, each to the same median over the same 22.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. One added, section 17's group floor, and the name screen's row
-            placed at 11.5 now passing, as predicted.
+Tests:      1280, from 1275: three added under `fixture-expectations`, the group rule at the
+            floor and one short of it, the median worked by hand, and the fixture's groups read
+            off the moves the replay stored, and two under `read-surface`, the group cell over
+            constructed moves and read back off every fixture name's page against the store.
+            Migrations 0 to 35, one added and none pending, schema version 35.
+Claims:     418, from 417, with 415 PASS and 3 out of scope, and 422 placements and verdicts
+            reconciled against a floor of 34. One added, section 17's group floor, and the name
+            screen's row placed at 11.5 now passing, as predicted.
 Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that
             the group is the industry at the floor and the sector below it, that the name is never in
             its own group, that the median leaves out a member missing a close, and that the page
@@ -22581,10 +22586,22 @@ Mutated:    the rule, stated before the run: break each property this checkpoint
             `EachMoveOnANamesPageIsDrawnBesideItsGroupsMedianAsTheStoreHoldsIt`, green everywhere
             else, the table's own test among them, since it is handed its cells rather than a move
             row.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: whole-suite runs in a detached worktree at 5c4f024, never a filter, each
+            mutation reverted with `git reset --hard` and the tree read clean after each. The
+            baseline is 1280 of 1280. M1 turned 1 red, the one it named, 1279 green. M2 turned 2
+            red, the two it named, 1278 green.
+            M3 turned 1 red, the one it named, 1279 green. M4 turned 1 red, the one it named,
+            1279 green.
+Held:       all four exactly as written before the run, M3 in the contained form written into
+            this entry before any run of it.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1280 of 1280
+            tests ran with none failed, migrations 0 to 35 with one added and none pending,
+            schema version 35, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 418 claims, 415 PASS, 0 FAIL, 3 out of
+            scope, 0 unexamined, 422 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1280 of 1280 tests.
+            Both gates ran over the tree carrying this entry, 5c4f024, in a worktree of the
+            branch while the night ran from the main checkout, and the operator's store under
+            `data/` was not touched by either.
 Carried:    the facts file half of 11.5, 11.7 and 11.8, now 11.9's with the recordings made again,
             whose paid half waits on the operator's agreed spend.
