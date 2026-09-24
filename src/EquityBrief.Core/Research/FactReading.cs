@@ -50,10 +50,14 @@ public static class FactReading
         _ => name,
     };
 
-    // A growth and a margin are stored as fractions, and a reader reads both as a
-    // percentage, which is also what the instructions ask a margin to be written as.
+    // A growth, a margin, a dividend's yield and its payout ratio are stored as fractions, and a
+    // reader reads each as a percentage, which is also what the instructions ask a margin to be
+    // written as and what the numbers section draws the other two as.
     static bool IsAFraction(string name) =>
-        name.Contains("growth", StringComparison.Ordinal) || name.Contains("margin", StringComparison.Ordinal);
+        name.Contains("growth", StringComparison.Ordinal)
+        || name.Contains("margin", StringComparison.Ordinal)
+        || name.Contains("yield", StringComparison.Ordinal)
+        || name.Contains("payout ratio", StringComparison.Ordinal);
 
     static string Value(string name, string value)
     {

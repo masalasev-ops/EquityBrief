@@ -212,8 +212,9 @@ public partial class ReadSurface
         // The population the loop above ran over, so a screen that stops drawing its tables is
         // not a screen on which every table is boxed: 27 over the five surfaces, the run page's
         // measure of tonight's order the latest, 29 from 11.6's peers table on the name page and
-        // in the exported report, and 31 from 11.7's earnings reaction record in both.
-        Assert.Equal(31, tables);
+        // in the exported report, and 31 from 11.7's earnings reaction record in both. 32 from
+        // 11.9's region on the run page stating each reason's share against its target.
+        Assert.Equal(32, tables);
 
         // What makes the box a box. Without this the wrapper is a div and every table pushes
         // the page as it did before.

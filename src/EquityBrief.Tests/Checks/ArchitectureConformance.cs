@@ -1368,7 +1368,8 @@ public partial class ArchitectureConformance
         // 62 at 11.0's document pass, which added the name screen's four parts phase 11 builds.
         // 63 at 11.2, the queue page's row stating when each request will be written.
         // 64 at 11.3, tonight's row stating the report's state.
-        Assert.Equal(64, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 65 at 11.9, the run page's region stating each reason's share of the index against its target.
+        Assert.Equal(65, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1419,8 +1420,9 @@ public partial class ArchitectureConformance
         // 173 at 11.6, the name screen's peers row read as the ten parts it names where it was
         // one claim: its place, its population, its order, that it ranks none, its five
         // columns and its key. 183 at 11.7, the earnings reactions row read as its eleven parts,
-        // and 189 at 11.8, the dividend row read as its seven.
-        Assert.Equal(189, inDocument.Length);
+        // and 189 at 11.8, the dividend row read as its seven. 195 at 11.9, the run page's region
+        // stating each reason's share of the index against its target, read as its six parts.
+        Assert.Equal(195, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1468,7 +1470,8 @@ public partial class ArchitectureConformance
         // read as its two new parts, the rows' places and the line counting them. 164 at 11.6,
         // the name screen's peers row read as its ten parts, and 175 at 11.7, its earnings
         // reactions row read as its eleven, and 182 at 11.8, its dividend row read as its seven.
-        Assert.Equal(182, checkedElements);
+        // 188 at 11.9, the run page's region stating each reason's share against its target read as its six.
+        Assert.Equal(188, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

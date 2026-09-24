@@ -431,6 +431,42 @@ internal static class Scope
             Verdict.Pass,
             "each fixture name's two readings and the bars they rest on are diffed against an expectation worked by hand from the captured bars through the replay's own rules rather than frozen from a run",
             ByExpectations),
+        [CheckReach.Key("15.10 Run", "Reasons against their targets, each reason's share of the index tonight")] = new Scoped(
+            Verdict.Pass,
+            "each reason's fires over the rows that evaluated it under its current rule on the night the page is read for, read back off each row's own markup against a share worked by hand over constructed nights, a row written before the 5.4 corrections counting for neither reason they changed",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Reasons against their targets, its median share over the ordinary nights")] = new Scoped(
+            Verdict.Pass,
+            "each reason's median over the nights it counted on less every event session, read back off each row against a median worked by hand, an even count taking the mean of the middle two",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Reasons against their targets, its target")] = new Scoped(
+            Verdict.Pass,
+            "each reason's row carries the target section 17 states and the constant holds, drawn as a proposal",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Reasons against their targets, the share firing any reason with its median and its target")] = new Scoped(
+            Verdict.Pass,
+            "the rows that fired any reason over the rows that evaluated all six under their current rules, its median over the ordinary nights and its own target, each read back off its row against the test's own union of constructed fires",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Reasons against their targets, the ordinary nights counted against the sixty the calibration waits on")] = new Scoped(
+            Verdict.Pass,
+            "each row states how many ordinary nights its median is over against the sixty the calibration waits on, read back off the row against a count worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Reasons against their targets, every event session marked with the reason that made it one")] = new Scoped(
+            Verdict.Pass,
+            "a night on which a reason usually below a quarter fires for more than a quarter of the index is named with that reason, its share and its median, on its own page and beneath the table on every page, while a reason above a quarter every night marks none",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Reason share target")] = new Scoped(
+            Verdict.Pass,
+            "each reason's row on the run page carries the target the constant holds, and the constant the row states is the one the region reads",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Any-reason share target")] = new Scoped(
+            Verdict.Pass,
+            "the share firing any reason is drawn on the run page against the target the constant holds, and the constant the row states is the one the region reads",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Event session share")] = new Scoped(
+            Verdict.Pass,
+            "a night a usually quiet reason fires for more than the share the constant holds is an event session marked and left out of every median, and a reason above it on every night marks none, over constructed nights",
+            ByReadSurface),
         [CheckReach.Key(LimitsTable, "Group floor")] = new Scoped(
             Verdict.Pass,
             "an industry of five other members is the group and one of four gives way to the sector, over constructed members, and the constant the row states is the one the rule reads",
@@ -2360,6 +2396,12 @@ internal static class Scope
         // with no entry would inherit nothing, which is what contradiction D was.
         [CheckReach.Key("15.10 Run", "Stale and failed, documents refused by admissibility")] = "6.3",
         [CheckReach.Key("15.10 Run", "Overnight queue")] = "6.10",
+        [CheckReach.Key("15.10 Run", "Reasons against their targets, each reason's share of the index tonight")] = "11.9",
+        [CheckReach.Key("15.10 Run", "Reasons against their targets, its median share over the ordinary nights")] = "11.9",
+        [CheckReach.Key("15.10 Run", "Reasons against their targets, its target")] = "11.9",
+        [CheckReach.Key("15.10 Run", "Reasons against their targets, the share firing any reason with its median and its target")] = "11.9",
+        [CheckReach.Key("15.10 Run", "Reasons against their targets, the ordinary nights counted against the sixty the calibration waits on")] = "11.9",
+        [CheckReach.Key("15.10 Run", "Reasons against their targets, every event session marked with the reason that made it one")] = "11.9",
         [CheckReach.Key("15.10 Run", "Tonight's order, the three orders of tonight's list over the twenty each would draw")] = "10.1",
         [CheckReach.Key("15.10 Run", "Tonight's order, the old order named as the benchmark")] = "10.1",
         [CheckReach.Key("15.10 Run", "Tonight's order, the setups each order drew")] = "10.1",
@@ -2452,6 +2494,11 @@ internal static class Scope
             ["what ran", "the instant each stage started and how long it took", "model calls", "network requests", "spend", "what each stage said about itself"],
         [CheckReach.Key("15.10 Run", "Reason records")] =
             ["the resolved count", "the never-entered count", "the share that reached target before stop", "one row per reason with the reason track mark", "the break-even those setups demanded"],
+        // 11.9. The row names each reason's share, its median, its target, the same for any reason,
+        // the ordinary nights against sixty and the event sessions, and a verdict over it whole would
+        // pass with one of them undrawn.
+        [CheckReach.Key("15.10 Run", "Reasons against their targets")] =
+            ["each reason's share of the index tonight", "its median share over the ordinary nights", "its target", "the share firing any reason with its median and its target", "the ordinary nights counted against the sixty the calibration waits on", "every event session marked with the reason that made it one"],
         [CheckReach.Key("15.10 Run", "Harness")] =
             ["passed", "failed", "unexamined"],
 
@@ -2814,6 +2861,9 @@ internal static class Scope
         ["Reports the night asks for"] = "11.4",
         ["Group floor"] = "11.5",
         ["Peer return window"] = "11.6",
+        ["Reason share target"] = "11.9",
+        ["Any-reason share target"] = "11.9",
+        ["Event session share"] = "11.9",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

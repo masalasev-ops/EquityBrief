@@ -465,6 +465,20 @@ public class ObligationReconciles
     // Read over the newest report entry alone, which is the one the phase in hand writes. The
     // entries before it were written under no such rule and are not reopened by one; from here
     // every phase report is read this way as it lands.
+    //
+    // How many rows each phase opened is stated here in advance rather than read, for every phase
+    // whose report is read this way, so a reader finding none where a phase opened some refuses
+    // rather than passing over the empty set. A phase that opened none says so in its report in
+    // those words, and the reader is shown over phase 10's report, which opened four, to find the
+    // rows a phase did open, so a count of none is a reading and not a reader that finds nothing.
+    static readonly Dictionary<string, int> OperatingRowsOpened = new(StringComparer.Ordinal)
+    {
+        ["10"] = 4,
+        ["11"] = 0,
+    };
+
+    internal const string NoOperatingRowOpened = "opened no operating row";
+
     [Fact]
     public void EveryOperatingRowThePhaseOpenedIsNamedInItsOwnReportEntry()
     {
@@ -477,19 +491,36 @@ public class ObligationReconciles
 
         Assert.NotEmpty(reports);
 
+        Obligation[] Opened(string phase) =>
+        [
+            .. All()
+                .Where(row => row.SaysOperating)
+                .Where(row => row.CreatedAt.TrimStart().StartsWith(phase + ".", StringComparison.Ordinal)),
+        ];
+
         var report = reports[^1];
         var phase = report.Groups["phase"].Value;
         var body = Body(progress, report.Index);
+        var opened = Opened(phase);
 
-        var opened = All()
-            .Where(row => row.SaysOperating)
-            .Where(row => row.CreatedAt.TrimStart().StartsWith(phase + ".", StringComparison.Ordinal))
-            .ToArray();
-
-        // A phase that opened none would assert this over nothing, so the count is stated.
-        Assert.True(opened.Length >= 2, $"Phase {phase} opened {opened.Length} operating row(s), expected at least 2.");
+        Assert.True(
+            OperatingRowsOpened.TryGetValue(phase, out var stated),
+            $"Phase {phase}'s report is the newest, and how many operating rows the phase opened is not stated.");
+        Assert.Equal(stated, opened.Length);
 
         Assert.Empty(opened.Where(row => !body.Contains(row.Name, StringComparison.Ordinal)).Select(row => row.Name));
+
+        if (stated == 0)
+        {
+            Assert.Contains(NoOperatingRowOpened, body, StringComparison.Ordinal);
+        }
+
+        // Over phase 10's report, which opened four and names them.
+        var tenth = Assert.Single(reports, match => match.Groups["phase"].Value == "10");
+        var tenOpened = Opened("10");
+
+        Assert.Equal(OperatingRowsOpened["10"], tenOpened.Length);
+        Assert.Empty(tenOpened.Where(row => !Body(progress, tenth.Index).Contains(row.Name, StringComparison.Ordinal)).Select(row => row.Name));
 
         // The reader is shown to find the fault it exists for: a row the entry does not name.
         Assert.DoesNotContain("A row no report entry names", body, StringComparison.Ordinal);

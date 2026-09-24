@@ -26,6 +26,10 @@ public static partial class Figures
     // 0.749753 is 75.0%.
     public static string Percent(decimal fraction) => (fraction * 100).ToString("#,##0.0", Invariant) + "%";
 
+    // A share that is a statistic rather than a stored figure, such as a reason's share of the
+    // index, read as a percentage to one place: 0.0159 is 1.6%.
+    public static string Share(double fraction) => (fraction * 100).ToString("#,##0.0", Invariant) + "%";
+
     // An amount of money in its scale, after the currency's sign, or its code where it has none
     // here: 96221000000 is $96.2B.
     public static string Money(decimal value, string? currency = null) =>

@@ -843,7 +843,8 @@ app.MapGet("/screens/run/{night?}", async (
                 await read.VersionBlocksAsync(LadderRules.TrendRule),
                 flips.Returns,
                 flips.Nights,
-                dated)),
+                dated),
+            RunScreen.Shares(everyListing, dated)),
         "text/html; charset=utf-8");
 });
 

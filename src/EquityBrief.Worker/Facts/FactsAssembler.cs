@@ -45,6 +45,8 @@ public sealed class FactsAssembler : IComponent
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.Ladder, Touch.Read),
             new StoreTouch(Store.Move, Touch.Read),
+            // Each print's reaction, which a written section may quote beside the moves.
+            new StoreTouch(Store.EarningsReaction, Touch.Read),
             // The fundamentals read its catalogue row has announced since the
             // architecture was written, and which nothing could add before 6.1
             // created the table. A name with nothing stored carries none of these
@@ -69,6 +71,7 @@ public sealed class FactsAssembler : IComponent
     public const string FromLevels = "level";
     public const string FromLadder = "ladder";
     public const string FromMoves = "move";
+    public const string FromReactions = "earnings reaction";
     public const string FromCalendar = "calendar";
     public const string FromFundamentals = "fundamental";
     public const string FromMembership = "membership";
@@ -167,11 +170,28 @@ public sealed class FactsAssembler : IComponent
     // one move.
     // owes: The facts file carries the figures a local lane section quotes
     const string MovesFor = @"
-        SELECT session_date, sessions, change_pct, rank
+        SELECT session_date, sessions, change_pct, rank, group_kind, group_name, group_members, group_counted, group_median
         FROM move
         WHERE ticker = $ticker
         ORDER BY rank;
     ";
+
+    // Every print's reaction the annotator stored for the name, newest first, which a section
+    // on the earnings may quote.
+    // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+    const string ReactionsFor = @"
+        SELECT report_date, timing, reaction_session, estimate, actual, surprise_pct, move_pct
+        FROM earnings_reaction
+        WHERE ticker = $ticker
+        ORDER BY report_date DESC;
+    ";
+
+    // How a print's facts are named: by its place counting back from the newest, as a move is
+    // named by its rank, and never by its date. The claim checker reads a number in a fact's
+    // name as a window the file carries, so a date written into a name would admit its year,
+    // its month and its day as windows; the date is a value instead, where a date belongs.
+    public static string ReactionPrefix(int place) =>
+        place == 1 ? "latest earnings reaction" : "earnings reaction " + place.ToString(CultureInfo.InvariantCulture);
 
     // The session a move's change was measured from: the stored session as many
     // sessions before the one it ended on as the move spans, which is the close
@@ -416,6 +436,7 @@ public sealed class FactsAssembler : IComponent
             facts.Add(new Fact("trend state", reader.GetString(0), FromLadder)));
 
         var moves = new List<(string Prefix, string Ended, int Sessions)>();
+        var grouped = false;
 
         await ReadAsync(connection, MovesFor, ticker, cancellation, reader =>
         {
@@ -424,10 +445,38 @@ public sealed class FactsAssembler : IComponent
             // already held, and the others are named for their rank.
             var rank = reader.GetInt32(3);
             var prefix = MovePrefix(rank);
+            var median = !reader.IsDBNull(4);
+
+            // The name's group, once and before its moves, being the one the annotator read
+            // every move against, then each move's median over its own sessions with how many
+            // members it counted, as the annotator stored them. A move stored before the median
+            // was carries none.
+            // see: A large move is shown beside its group's median move over the same sessions
+            if (median && !grouped)
+            {
+                grouped = true;
+
+                if (!reader.IsDBNull(5))
+                {
+                    facts.Add(new Fact("group", reader.GetString(5), FromMoves));
+                }
+
+                facts.Add(new Fact("group kind", reader.GetString(4), FromMoves));
+                facts.Add(new Fact("group members", reader.GetInt32(6).ToString(CultureInfo.InvariantCulture), FromMoves));
+            }
 
             facts.Add(new Fact(prefix + " session", reader.GetString(0), FromMoves));
             facts.Add(new Fact(prefix + " sessions", reader.GetInt32(1).ToString(CultureInfo.InvariantCulture), FromMoves));
             facts.Add(new Fact(prefix + " per cent", reader.GetDouble(2).ToString("0.######", CultureInfo.InvariantCulture), FromMoves));
+
+            if (median)
+            {
+                facts.Add(new Fact(prefix + " group members counted", reader.GetInt32(7).ToString(CultureInfo.InvariantCulture), FromMoves));
+                facts.Add(new Fact(
+                    prefix + " group median per cent",
+                    reader.IsDBNull(8) ? "not available" : reader.GetDouble(8).ToString("0.######", CultureInfo.InvariantCulture),
+                    FromMoves));
+            }
 
             moves.Add((prefix, reader.GetString(0), reader.GetInt32(1)));
         });
@@ -476,6 +525,26 @@ public sealed class FactsAssembler : IComponent
                 next is null or DBNull ? "not on file" : (string)next,
                 FromCalendar));
         }
+
+        // Each print's reaction, newest first, with its timing as the calendar stated it and a
+        // figure the provider did not file saying so rather than standing as a zero.
+        var place = 0;
+
+        await ReadAsync(connection, ReactionsFor, ticker, cancellation, reader =>
+        {
+            var print = ReactionPrefix(++place);
+
+            facts.Add(new Fact(print + " report date", reader.GetString(0), FromReactions));
+            facts.Add(new Fact(print + " timing", reader.GetString(1), FromReactions));
+            facts.Add(new Fact(print + " session", reader.GetString(2), FromReactions));
+            facts.Add(new Fact(print + " estimate", reader.IsDBNull(3) ? "none filed" : reader.GetString(3), FromReactions));
+            facts.Add(new Fact(print + " actual", reader.IsDBNull(4) ? "none filed" : reader.GetString(4), FromReactions));
+            facts.Add(new Fact(
+                print + " surprise per cent",
+                reader.IsDBNull(5) ? "none filed" : reader.GetDouble(5).ToString("0.######", CultureInfo.InvariantCulture),
+                FromReactions));
+            facts.Add(new Fact(print + " move per cent", reader.GetDouble(6).ToString("0.######", CultureInfo.InvariantCulture), FromReactions));
+        });
 
         await ReadAsync(connection, LatestFilingFor, ticker, cancellation, reader =>
             facts.AddRange(Filed(reader.GetString(0), reader.GetString(1))));
@@ -546,6 +615,17 @@ public sealed class FactsAssembler : IComponent
         {
             Add(facts, "trailing price to earnings", Text(valuation, "trailingPe"));
             Add(facts, "forward price to earnings", Text(valuation, "forwardPe"));
+        }
+
+        // The dividend the provider files, on the newest filing's row alone.
+        // see: The numbers section shows the dividend the provider files, on the newest filing alone
+        if (root.TryGetProperty("dividend", out var dividend) && dividend.ValueKind == JsonValueKind.Object)
+        {
+            Add(facts, "dividend forward annual rate", Text(dividend, "forwardAnnualRate"));
+            Add(facts, "dividend forward yield", Text(dividend, "forwardYield"));
+            Add(facts, "dividend payout ratio", Text(dividend, "payoutRatio"));
+            Add(facts, "ex-dividend date", Text(dividend, "exDividendDate"));
+            Add(facts, "dividend pay date", Text(dividend, "payDate"));
         }
 
         facts.AddRange(Segments(root));

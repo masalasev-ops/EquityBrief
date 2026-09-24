@@ -337,6 +337,7 @@ public class PriceStorageForm
                 "Statistic.cs: (decimal)statistic",
                 "Statistic.cs: (double)price",
                 "Statistic.cs: (double)ratio",
+                "TargetShares.cs: (double)count.Fired",
                 "TrendClassifier.cs: (double)value",
                 "VersionRecord.cs: (double)atLeast",
                 "VersionRecord.cs: (double?)null",
