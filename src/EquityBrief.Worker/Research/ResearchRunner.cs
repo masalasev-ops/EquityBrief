@@ -485,8 +485,12 @@ public sealed class ResearchRunner(
 
         var afterFirst = await NewestAsync(connection, ticker, cancellation);
 
+        // Read on the date the section's row carries, which for the key under each figure is the
+        // night of its facts file rather than the day this pass runs.
+        // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
         bool RejectedToday(string section) =>
-            afterFirst.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } refused && refused.AsOf == asOf;
+            afterFirst.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } refused
+            && refused.AsOf == ProseWriter.DatedOn(section, asOf, night);
 
         var retryLocal = local.Where(section => section != summary && RejectedToday(section)).ToArray();
         var retryPaid = paid.Where(section => section != summary && RejectedToday(section)).ToArray();
@@ -596,8 +600,10 @@ public sealed class ResearchRunner(
     // Over the judge's own standings from 6.10, so the overnight queue asks the question
     // this pass asks rather than a second statement of it.
     // The key under each figure explains a night's figures and is dated by that night, so it is
-    // asked for on any day after it, where every other section stands until a trigger fires, and
-    // the writer passes it over where the newest facts file is the one it was written from.
+    // asked for on any day after it, where every other section stands until a trigger fires. The
+    // prose writer passes it over where the newest facts file is the one it was written from; the
+    // paid lane, which writes it where the page asks the paid model for the local lane or the
+    // machine cannot hold it, writes it from that file again, dated by the same night.
     // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
     public static bool Warranted(string section, SectionStanding? newest, StalenessVerdict verdict, DateOnly asOf) =>
         newest switch
@@ -687,11 +693,16 @@ public sealed class ResearchRunner(
             var version = (newest?.Version ?? 0) + 1;
             var retry = refusedIn?.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } refused ? refused.Reason : null;
 
+            // Dated as the prose writer dates it, so the key this lane writes in the day from the
+            // night before is drawn beside that night's figures and not the next night's.
+            // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
+            var dated = ProseWriter.DatedOn(section, asOf, night);
+
             // Nothing admitted: inserted empty, citing what was handed, so the checker
             // leaves it out saying no admissible source was found and no call is paid for.
             if (ClaimRules.IsResearched(section) && admitted.Length == 0)
             {
-                await InsertAsync(connection, ticker, section, version, asOf, cap.Model, string.Empty, [.. given.Select(document => document.Id)], cancellation);
+                await InsertAsync(connection, ticker, section, version, dated, cap.Model, string.Empty, [.. given.Select(document => document.Id)], cancellation);
                 written.Add(new WrittenSection(section, version, cap.Model, retry is not null));
 
                 continue;
@@ -734,7 +745,7 @@ public sealed class ResearchRunner(
                 continue;
             }
 
-            await InsertAsync(connection, ticker, section, version, asOf, cap.Model, answer.Text, request.DocumentIds, cancellation);
+            await InsertAsync(connection, ticker, section, version, dated, cap.Model, answer.Text, request.DocumentIds, cancellation);
             written.Add(new WrittenSection(section, version, cap.Model, retry is not null));
         }
 

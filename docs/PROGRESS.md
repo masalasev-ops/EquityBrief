@@ -23395,3 +23395,64 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, df47d84, and the operator's store
             under `data/` was not touched by either.
 Carried:    nothing.
+
+### 6.10 - correction: the key the paid lane writes is dated by the night of its facts file, where a pass in the day dated it by the day it ran and that night's queue then passed the name over, drawing a key about the night before beside the night's figures   2026-09-24
+Corrects:   6.10's correction (29b9217), which dated the key under each figure by the night of the
+            facts file it was written from in the prose writer and left the paid lane dating it by
+            the day the pass ran. The paid lane writes the key wherever the page asks the paid model
+            for the local lane, which every request under the paid lane does, or where the machine
+            cannot hold it. A pass run in the day writes it from the night before, so its row
+            carried the next session's date. The page drew no key that day, since the key read as
+            explaining figures the page did not draw, and that evening's queue found the name's key
+            already dated for its night and wrote none, so from the next morning the page drew a key
+            about the night before beside that night's figures. And the pass read a refused draft on
+            the day it ran, so a key refused in a pass run after its night was not written again in
+            that pass, in either lane.
+Found:      by the phase 11 sign-off rehearsal on 2026-09-24, over a copy of the operator's store:
+            DGX's page said its key explains the figures of 2026-09-24 while the figures it drew
+            were 2026-09-23's. The operator's store holds the same fault already drawn. DGX's key
+            version 5, written by the paid lane on the afternoon of 2026-09-23 from the 2026-09-22
+            facts file and dated 2026-09-23, reads "The close = 234.76", the close of 2026-09-22;
+            the 2026-09-23 night's queue wrote DGX no key, so the page drew it beside that night's
+            close of 233 until the rewrite of 2026-09-24. Version 6, written by that rewrite from the
+            2026-09-23 file, is dated 2026-09-24.
+Repaired:   the paid lane dates each row it writes as the prose writer does, the key by the night of
+            its facts file and every other section by the day it was written, and the pass reads a
+            section's refusal on the date its row carries, so a refused key is written once more in
+            the pass that refused it. Every other section is dated and retried as before. The rule
+            that warrants a section says in its comment that the paid lane, asked for the key on a
+            day after its night, writes it from that night's file again, where the prose writer
+            passes it over.
+Missed:     6.10's test writes the key through the prose writer alone, and the one test of a paid
+            pass writing the key runs on the fixture's night, where the day the pass runs and the
+            night of its facts file are one date, so a key dated by either read the same.
+Guarded:    `fixture-expectations`, one test added,
+            `TheKeyThePaidLaneWritesIsDatedByTheNightOfItsFactsFileAndItsRetryIsReadOnThatNight`: a
+            pass two days after the fixture's night, asking the paid model for the local lane, with
+            a scripted first draft the checker refuses and a second it accepts, holds two rows for
+            the key, both dated 2026-09-08, the first refused and the second accepted, after two
+            calls.
+Written:    no spec. The decision the code cites dates every key's row by the night of its facts
+            file, whichever lane writes it.
+Expected:   derived: no expectation file moves.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. No claim added: no table or figure changed.
+Mutated:    the rule, stated before the run: put back each place the paid lane read the day the
+            pass ran where the correction reads the key's night, where the key's row is dated and
+            where its refusal is read for the retry.
+            Predicted:
+            M1 the paid lane dates the key by the day the pass ran again: red in the test this
+            correction adds and nowhere else.
+            M2 the pass reads a refusal on the day it ran again: red in the same test and nowhere
+            else.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    DGX's version 6 on the operator's store stands as written, dated 2026-09-24 and
+            explaining the figures of 2026-09-23, since a research row is written by its writers
+            alone. The 2026-09-24 night's queue will find it dated for that night and write DGX no
+            key, so from that night DGX's page draws it beside the 2026-09-24 figures until the
+            2026-09-25 night writes the next one, or until a pass for DGX on 2026-09-25, which asks
+            for the key again under this correction, writes one dated by the 2026-09-24 night.
