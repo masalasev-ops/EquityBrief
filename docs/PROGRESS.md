@@ -23548,3 +23548,50 @@ Carried:    the peers decision's name, "Peers are shown by price alone, in secti
             move table", keeps "section 2" from section 4's old numbering, which the table no longer
             has. Its body stands and the page draws the peers beside the move table as it rules;
             renaming it is a supersession of its own, left to the operator.
+
+### 4.3 ruling - the calendar keeps reading each member's own listing, no date is borrowed from another, and the members whose own listing files no next report date are carried   2026-09-24
+Not a checkpoint entry. It lands nothing.
+Ruled:      by the operator on 2026-09-24, from the phase 11 sign-off review's account of what the
+            4.3 correction costs: the calendar keeps reading only each company's own US listing,
+            and the 24 members whose next report date came only from a listing abroad show not on
+            file until the provider files the date on the US listing. Neither borrowing that date
+            nor measuring first was taken.
+Population: the provider's earnings calendar fetched 2026-09-24 about 16:20 UTC over 2025-09-24 to
+            2026-12-23, and a store copy that ran the 2026-09-23 night with the 4.3 correction, over
+            the 503 members on that session.
+Why:        borrowing needs a rule that the other listing is the same company, and the data
+            supports one for 6 of the 24. NVDA, WMT, BBY, HPQ, CRM and ORCL each have another
+            listing sharing a fiscal period with the US listing at an equal estimate; the other 18
+            have none that can be shown to be theirs, and DE.V, ORCL.V, MRVL.V and COO.V, and the
+            German listings behind GIS, SJM, LEN and HPE, share no fiscal period with it. Where the
+            other listing is the same company the two still disagree on upcoming dates: TSLA 10-21
+            against 10-28, VZ 10-20 against 11-04, and TMO, LUV and LVS 10-21 against 10-28.
+            Nothing fires differently for weeks: the nearest provably same-company date is NVDA's
+            2026-11-17, 39 sessions away, so earnings soon, at 20 sessions, is unaffected until the
+            night of 2026-10-20. What the 24 lose now is the next dated event line and the plan's
+            block around the next report on their pages. 27 other members have no upcoming print on
+            any listing, LOW, ROST, SNPS, WDAY, ULTA and DG among them, and PAYX is among the 24 only
+            because the store held a date the provider no longer files anywhere. Measuring first
+            could not be done from the store: the calendar's upsert restamps observed_at on every
+            row it carries every night, and rows written before 4.3 do not say which listing they
+            came from.
+Carried:    the 24, by name: ADBE, ADSK, AVGO, BBY, COO, CRM, CRWD, DE, DLTR, GIS, HPE, HPQ, INTU,
+            LEN, LULU, MRVL, NVDA, ORCL, PANW, PAYX, SJM, TGT, TJX and WMT; and the six provable
+            same-company dates: NVDA 2026-11-17, WMT 11-19, BBY 11-24, HPQ 11-24, CRM 12-02 and
+            ORCL 12-10. The operating row The next report dates only another listing files reads
+            the six on the name page's next dated event from the night of 2026-10-20, and brings the
+            borrowing rule back as a ruling if one still reads not on file when its date comes
+            inside 20 sessions.
+Recorded:   one provider fault, and no ruling is asked. The US listing is not always right either:
+            WMT.US files two of its four past reports in the year on 2025-12-03 and 2026-03-13,
+            where its Mexican and German listings file 2025-11-20 and 2026-02-19. WMT's own bars
+            side with those listings: volume 3.44 and 1.68 times its 20-session median on 11-20 and
+            02-19, against 1.4 and 0.7 on 12-03 and 03-13, and 11-20 moved 6.46%. So WMT's reaction
+            record draws those two prints on days it did not report. Over 158 past periods where
+            both listings are shown to be one company, the dates disagree on 2: WMT, and GOOG, where
+            the US date is the right one.
+Written:    the operating row in `BUILD_PLAN.md`, cited back at the end of 5.8, the checkpoint that
+            builds the name page's next dated event.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the 11.9 correction closing this batch records.
+

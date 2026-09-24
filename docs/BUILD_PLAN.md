@@ -510,6 +510,8 @@ It is a checkpoint rather than a correction because the work is drawing, and the
 
 ---
 
+The name page's next dated event is where the members whose own listing files no next report date are read (owes: The next report dates only another listing files).
+
 ## Phase 6: research on demand
 
 **Visible output at 6.1.** The numbers section fills from real filings.
@@ -1075,6 +1077,7 @@ Recorded when created, not remembered. Every row is named, and the name is what 
 | **A candidate's power re-read at each look** | 10.0 | operating | 8 non-empty blocks of 63 sessions of a registered candidate's closed-window setups, which is its first look, read on the run page's candidate record region, which 10.2 builds. At each look the smallest excess the look can detect is stated beside the excess observed, on the calibrated null and the level that look spends (see: Power is stated for the looks that exist as well as for a single read) |
 | **The candidates' proposed numbers read at their looks** | 10.0 | operating | 8 non-empty blocks of 63 sessions of a registered candidate's closed-window setups, read on the run page's candidate record region, which 10.2 builds. The zone width of 1 typical move and the volume multiple of 2 are read there, both proposed, and the crossing margin of 0.5 beside them, settled by the operator at 10.3 on the per-night counts and registered rather than proposed; a changed number is a new registration with its own window counted in the lifetime count, never a change to the running one (see: Nothing a candidate or a version is registered with changes while it runs, and a proposed number is settled only by a new registration) |
 | **The trend confirmation's nights settled from flip-backs** | 10.0 | operating | 60 stored nights of trend labels after version C opens, read on the run page's rule versions region, which 8.6 builds and 10.4 extends to the trend rule. The 2 nights are settled from how often a label returns within that many nights, which is a count of labels and not of outcomes, and a changed count is a new version (see: The trend rule is a fifth ladder rule a version replays, and none of its three versions is live) |
+| **The next report dates only another listing files** | 4.3 | operating | 20 sessions or fewer between a night and the next report date the same company's other listing files for NVDA, WMT, BBY, HPQ, CRM or ORCL, first on the night of 2026-10-20 for NVDA's 2026-11-17, read on the name page's next dated event for those six, which 5.8 builds. If any of the six still reads not on file on its own listing on the night its same-company date comes inside 20 sessions, borrowing that date comes back as a ruling, with the same-company test the 4.3 ruling of 2026-09-24 states: a listing that shares a fiscal period with the US listing at an equal estimate |
 
 **Carried out of the phase 1 sign-off.** Two defects found by breaking a passing claim and
 watching the suite stay green. Neither falsifies shipped behaviour, so under the stopping rules
