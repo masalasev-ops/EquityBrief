@@ -464,9 +464,10 @@ public static class NameScreen
 
     // The dividend the provider files, from the newest filing alone: the forward annual rate, the
     // forward yield as the provider states it, the payout ratio, the ex-dividend date and the pay
-    // date, or one line saying the provider files none, with the provider it came from. A row
-    // fetched before the part existed says the part is absent and why, as any other part does.
-    // see: The numbers section shows the dividend the provider files, on the newest filing alone
+    // date, with the provider it came from, and nothing at all for a company paying none. A row
+    // fetched before the part existed says the part is absent and why, as any other part does,
+    // because that absence is the store's and a payer drawn as paying none would be wrong.
+    // see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none
     static string Dividend(string ticker, JsonElement payload, IReadOnlyDictionary<string, string> source)
     {
         if (!payload.TryGetProperty("dividend", out var dividend) || dividend.ValueKind != JsonValueKind.Object)
@@ -476,7 +477,7 @@ public static class NameScreen
 
         var from = source.TryGetValue("dividend", out var provider) && provider.Length > 0 ? provider : "no source recorded";
 
-        // A company paying none files a rate of zero and no dates, which is one line rather than a
+        // A company paying none files a rate of zero and no dates, which draws nothing rather than a
         // row of zeros read as a dividend of nothing.
         var rate = Text(dividend, "forwardAnnualRate");
 
@@ -484,7 +485,7 @@ public static class NameScreen
             && Text(dividend, "exDividendDate") is null
             && Text(dividend, "payDate") is null)
         {
-            return Invariant($"<p class=\"numbers-dividend\" data-dividend=\"none\" data-source=\"{Escaped(from)}\">The provider files no dividend for {Escaped(ticker)}. From {Escaped(from)}.</p>");
+            return string.Empty;
         }
 
         var html = new System.Text.StringBuilder();

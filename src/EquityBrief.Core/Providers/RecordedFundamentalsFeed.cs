@@ -259,7 +259,7 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
 
     // The dividend, from the one object the payload files it in, each value as the provider sends
     // it and none where the object is not filed at all.
-    // see: The numbers section shows the dividend the provider files, on the newest filing alone
+    // see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none
     static DividendFiled? Dividend(JsonElement root) =>
         root.TryGetProperty("SplitsDividends", out var part) && part.ValueKind == JsonValueKind.Object
             ? new DividendFiled(

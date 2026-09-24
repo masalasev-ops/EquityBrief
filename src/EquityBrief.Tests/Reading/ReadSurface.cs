@@ -182,7 +182,7 @@ public partial class ReadSurface
             CheckReach.Key("15.9 Name", "Dividend, the forward yield as the provider states it"),
             CheckReach.Key("15.9 Name", "Dividend, the payout ratio"),
             CheckReach.Key("15.9 Name", "Dividend, the ex-dividend date and the pay date"),
-            CheckReach.Key("15.9 Name", "Dividend, one line saying the provider files none"),
+            CheckReach.Key("15.9 Name", "Dividend, nothing where the provider files none"),
             CheckReach.Key("15.10 Run", "Reasons against their targets, each reason's share of the index tonight"),
             CheckReach.Key("15.10 Run", "Reasons against their targets, its median share over the ordinary nights"),
             CheckReach.Key("15.10 Run", "Reasons against their targets, its target"),

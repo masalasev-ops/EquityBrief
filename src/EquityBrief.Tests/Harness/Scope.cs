@@ -407,9 +407,9 @@ internal static class Scope
             Verdict.Pass,
             "a payer's ex-dividend date and pay date are the provider's as stored, each on its element",
             ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Dividend, one line saying the provider files none")] = new Scoped(
+        [CheckReach.Key("15.9 Name", "Dividend, nothing where the provider files none")] = new Scoped(
             Verdict.Pass,
-            "a non-payer draws one line saying the provider files no dividend for it, naming the provider, and no table",
+            "a non-payer draws no dividend part at all, and a row holding no dividend part says it is absent and why",
             ByReadSurface),
         [CheckReach.Key(StoresTable, "Earnings reactions")] = new Scoped(
             Verdict.Pass,
@@ -2366,7 +2366,7 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Dividend, the forward yield as the provider states it")] = "11.8",
         [CheckReach.Key("15.9 Name", "Dividend, the payout ratio")] = "11.8",
         [CheckReach.Key("15.9 Name", "Dividend, the ex-dividend date and the pay date")] = "11.8",
-        [CheckReach.Key("15.9 Name", "Dividend, one line saying the provider files none")] = "11.8",
+        [CheckReach.Key("15.9 Name", "Dividend, nothing where the provider files none")] = "11.8",
         // Decomposed at 6.5, each into the part the judge's verdict draws and the
         // parts the research runner draws. The line saying research is missing or
         // naming the trigger that fired is a reading of the stores this checkpoint
@@ -2485,7 +2485,7 @@ internal static class Scope
         // 11.8. The row names the part's place, the filing it is read from, the five values and
         // the line a company paying none is drawn as.
         [CheckReach.Key("15.9 Name", "Dividend")] =
-            ["in the numbers section", "from the newest filing alone", "the forward annual rate", "the forward yield as the provider states it", "the payout ratio", "the ex-dividend date and the pay date", "one line saying the provider files none"],
+            ["in the numbers section", "from the newest filing alone", "the forward annual rate", "the forward yield as the provider states it", "the payout ratio", "the ex-dividend date and the pay date", "nothing where the provider files none"],
         [CheckReach.Key("15.9 Name", "Earnings reactions")] =
             ["beside the earnings setups", "one row per print over the calendar's year behind", "each row carrying its report date", "its timing", "the session it moved on", "the estimate", "the actual", "the provider's surprise", "that session's move", "a print with no filed estimate saying none was filed", "a key saying how to read it"],
         [CheckReach.Key("15.9 Name", "How it got here")] =

@@ -205,7 +205,7 @@ public class FundamentalsFeedTests
         // Each capture's dividend object read here with the test's own JSON reading, so a parser
         // reading the wrong key or the wrong date would not agree with it: AAPL and MSFT pay one and
         // KEYS and NFLX file a rate of zero and no dates.
-        // see: The numbers section shows the dividend the provider files, on the newest filing alone
+        // see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none
         foreach (var ticker in new[] { "AAPL", "MSFT", "KEYS", "NFLX" })
         {
             using var captured = System.Text.Json.JsonDocument.Parse(Captured(ticker));

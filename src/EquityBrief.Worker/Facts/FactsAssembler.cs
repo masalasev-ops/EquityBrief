@@ -618,7 +618,7 @@ public sealed class FactsAssembler : IComponent
         }
 
         // The dividend the provider files, on the newest filing's row alone.
-        // see: The numbers section shows the dividend the provider files, on the newest filing alone
+        // see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none
         if (root.TryGetProperty("dividend", out var dividend) && dividend.ValueKind == JsonValueKind.Object)
         {
             Add(facts, "dividend forward annual rate", Text(dividend, "forwardAnnualRate"));
