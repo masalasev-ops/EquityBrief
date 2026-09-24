@@ -23549,6 +23549,46 @@ Carried:    the peers decision's name, "Peers are shown by price alone, in secti
             has. Its body stands and the page draws the peers beside the move table as it rules;
             renaming it is a supersession of its own, left to the operator.
 
+### 4.3 - correction: the first night earnings soon counts over each member's own listing is pinned at its boundary, where the test's nights left 2026-09-24 undecided   2026-09-24
+Corrects:   the 4.3 correction (cab9fa6), whose run page test read nights 2026-09-01, 2026-09-22
+            and 2026-09-28 onward. The first session the calendar read each member's own listing
+            alone for is 2026-09-24, and nothing read that session or the one before it, so the
+            date could move by up to four sessions either way with the suite green.
+Found:      by the phase 11 sign-off review on 2026-09-24, which moved the date to 2026-09-25 and
+            saw nothing go red. Tonight's night of 2026-09-24 is the first one the date decides.
+Repaired:   no shipped code moves. The test adds the boundary.
+Guarded:    `read-surface`, one test added,
+            `EarningsSoonCountsFromTheFirstNightTheCalendarReadEachMembersOwnListing`, which writes
+            the same rows for 2026-09-23 and 2026-09-24 and reads the run page for each: earnings
+            soon counts toward no share on the first and fires for its three on the second, and the
+            share firing any reason with it.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Tests:      1303, from 1302: one added to `read-surface`, none removed. Migrations 0 to 37 with
+            none added and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: no table or figure changed.
+Mutated:    the rule, stated before the run: move the first own-listing session each way by one.
+            Predicted:
+            M1 the first own-listing session moved to 2026-09-25: red in the test this correction
+            adds and nowhere else.
+            M2 the first own-listing session moved to 2026-09-23: red in the same test and nowhere
+            else.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            c8bd6c5, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1303 of 1303. M1 turned 1 red and 1302 green, and M2 turned 1
+            red and 1302 green, each the test this correction adds.
+Held:       both, in the test each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1303 of 1303
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1303 of 1303 tests.
+            Both gates ran over the tree carrying this entry, c8bd6c5, and the operator's store
+            under `data/` was not touched by either.
+Carried:    nothing.
+
 ### 11.4 - correction: a night run for a session named on the command line asks for no report, read through the worker's own entry, where the one test handed the night the flag itself   2026-09-24
 Corrects:   11.4 (1a90173), whose test of a night run again handed the night
             `askForTheFirstName: false` itself. The worker's entry sets it from whether a session
