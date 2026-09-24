@@ -22686,10 +22686,17 @@ Measured:   over the same copy of the operator's store as 11.5,
             -7.60%, range, no support band and 0.4 typical days to resistance. DUK's, EIX's and ED's
             readings were worked again by hand off the copy's bars outside the code, each to the
             same distance and return.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. Twelve more, the Peers row read as its ten parts where it was
-            one, and section 17's window, section 16's store and section 19.1's row, all passing
-            here, as predicted.
+Tests:      1285, from 1280: five added, two under `fixture-expectations`, the readings over
+            constructed bars and the fixture's read off the replay, two under `read-surface`, the
+            table over constructed rows and every fixture name's page against the store, and one
+            under `gap-refusal`, a reading left from an earlier night deleted. Two exact counts
+            move with the decomposed row and two screen populations with the new table, each with
+            its reason beside it. Migrations 0 to 36, one added and none pending, schema version
+            36.
+Claims:     430, from 418, with 428 PASS and 2 out of scope, and 435 placements and verdicts
+            reconciled against a floor of 34. Twelve more, the Peers row read as its ten parts
+            where it was one, and section 17's window, section 16's store and section 19.1's row,
+            all passing here, as predicted.
 Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that
             the return is taken from the close sixty sessions back, that the high is the highest
             high, that the name is in its own table, that the table ranks none, and that a withheld
@@ -22712,9 +22719,25 @@ Mutated:    the rule, stated before the run: break each property this checkpoint
             `AReadingLeftFromAnEarlierNightGoesWhenTheGapStopWithholdsItsNameOrTheNameHoldsNoBars`
             and nowhere else, since on a store no night wrote before the withheld name never gets
             a row.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: whole-suite runs in a detached worktree at 7534c99, never a filter, each
+            mutation reverted with `git reset --hard` and the tree read clean after each. The
+            baseline is 1285 of 1285. M1 turned 1 red, the one it named, 1284 green. M2 turned 2
+            red, the two it named, 1283 green. M3 turned 2 red, 1283 green: the one it named and
+            `NoPictureAScreenDrawsIsStretchedToFillWhatHoldsItAndNoneIsWrittenOver`, which counts
+            the pictures on the name page and found the name's own distance row mark gone with
+            its row.
+            M4 turned 2 red, the two it named, 1283 green. M5 turned 1 red, the one it named, 1284
+            green.
+Held:       M1, M2, M4 and M5 exactly as written before the run. M3 went red where it named and in
+            one test more, which the prediction missed: the screens' count of the pictures they draw
+            reads the peers table's distance row marks, one a row, so a row gone is a picture gone.
+            The miss is in the prediction, not in the code.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1285 of 1285
+            tests ran with none failed, migrations 0 to 36 with one added and none pending,
+            schema version 36, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 430 claims, 428 PASS, 0 FAIL, 2 out of
+            scope, 0 unexamined, 435 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1285 of 1285 tests.
+            Both gates ran over the tree carrying this entry, 7534c99, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing new. 11.7 draws each print's earnings reaction.
