@@ -22872,9 +22872,14 @@ Measured:   the operator's store holds fundamentals only for the names a report 
             every such row was fetched before this checkpoint, so its numbers section says the
             dividend part is absent with no source recorded until the next open fetches the name
             again.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. Six more, the Dividend row read as its seven parts where it was
-            one, all passing here, as predicted, and none left out of scope.
+Tests:      1293, from 1290: three added, the parse over the four captures, the fetch onto the
+            newest filing alone, and under `read-surface` a payer's and a non-payer's lines read
+            back off their pages against the store. Two exact counts move with the decomposed row,
+            each with its reason beside it. Migrations 0 to 37 with none added and none pending,
+            schema version 37.
+Claims:     448, from 442, with 448 PASS and 0 out of scope, and 455 placements and verdicts
+            reconciled against a floor of 34. Six more, the Dividend row read as its seven parts
+            where it was one, all passing here, as predicted, and none left out of scope.
 Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that
             each date is read from its own key, that the part sits on the newest filing alone, that
             a company paying none is one line, that the provider is named, and that the object is
@@ -22890,10 +22895,21 @@ Mutated:    the rule, stated before the run: break each property this checkpoint
             `APayerDrawsItsDividendAsFiledAndANonPayerSaysTheProviderFilesNone` and nowhere else.
             M4 the provider left unnamed on the page: red in the same test and nowhere else.
             M5 the object looked for under another key: red in all three.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: whole-suite runs in a detached worktree at 4b2ecf6, never a filter, each
+            mutation reverted with `git reset --hard` and the tree read clean after each. The
+            baseline is 1293 of 1293.
+            M1 turned 2 red, the two it named, 1291 green. M2 turned 1 red, the one it named, 1292
+            green. M3 turned 1 red, the one it named, 1292 green. M4 turned 1 red, the same test,
+            1292 green. M5 turned 3 red, the three it named, 1290 green.
+Held:       all five exactly as written before the run, in the tests each named and in their
+            number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1293 of 1293
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 448 claims, 448 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 455 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1293 of 1293 tests.
+            Both gates ran over the tree carrying this entry, 4b2ecf6, and the operator's store
+            under `data/` was not touched by either.
 Carried:    the facts file half of 11.5, 11.7 and 11.8, 11.9's with the recordings made again,
             whose paid half waits on the operator's agreed spend.
