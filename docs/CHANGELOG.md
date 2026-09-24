@@ -7006,3 +7006,39 @@ Was:
 > `source` distinguishes three reasons a part can be empty and they are not the same morning: the provider files it for nobody, the archive answered and served none, and the archive was not read. A column that could not tell the third from the first would report a company with no segments after a failed fetch. `segments` holds the report the figures were read from, the scale the table stated, its period columns and its groups in the order the table states them; `revenueTables` holds the filing's other tables of revenue by a grouping, by market, product or region, each in that shape (see: The filing's other tables of revenue by a grouping are kept beside its segment table); `tableGrowth` holds each of those tables' groups' change on the same months a year before, computed from the columns the table states (see: A group's growth in a filing's own tables is computed from the columns the table states); `guidance` holds management's own passage with the exhibit and the date it was filed on, and never a figure struck from it (see: Guidance is stored as management's own prose, and the facts file carries each figure the passage states as the claim checker reads it); `ratings` holds the analysts' mean rating on a scale of one to five, their mean target price and how many rate the name at each of five grades from a strong buy to a strong sell, as the provider files them (see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone); `dividend` holds, on the newest filing's row alone for the reason the ratios do, the forward annual rate a share, the forward yield and the payout ratio as the provider states them, and the ex-dividend and pay dates, as the provider files them and a company paying none filing a rate of zero and no dates (see: The numbers section shows the dividend the provider files, on the newest filing alone); `facts` holds the archive's own filed figures under the concept each was filed against, over the same twelve quarters the filings are stored over, for a named set of concepts rather than every concept the archive holds.
 Now: each citation names **The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none**, which superseded the one it named.
 Why: a citation of a decision moved to Previously decided is refused by `no-superseded-citation`.
+
+### 2026-09-24 - ARCHITECTURE.html - the document is drawn across the width it has
+Corrects: paragraphs were capped at 82 characters, lists at 84 and decisions and notes at 86, inside a column of 1,140 pixels the tables and figures fill, so on a wide screen every paragraph left a strip beside it and the page read as drawn in its left half; and the space between its parts was generous enough that a reader scrolled past more of it than of the text. The operator asked on 2026-09-24 for the whole document to be adjusted.
+Was:
+> body{margin:0;color:var(--ink);font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.56}
+> main{max-width:1140px;margin:0 auto;padding:40px 28px 90px}
+> h2{font-size:25px;margin:54px 0 12px;padding-top:14px;border-top:1px solid var(--rule)}
+> h3{font-size:18.5px;margin:28px 0 8px}
+> h4{font-size:15.5px;margin:20px 0 6px;font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif}
+> p{margin:0 0 12px;max-width:82ch}
+> ul,ol{margin:0 0 12px;padding-left:22px;max-width:84ch}
+> li{margin-bottom:6px}
+> table{border-collapse:collapse;width:100%;margin:10px 0 18px;font-size:13.6px}
+> .decision{margin:0 0 14px;max-width:86ch}
+> .note{font-size:13.5px;color:var(--muted);max-width:86ch}
+> footer{margin-top:60px;padding-top:16px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+Now:
+> body{margin:0;color:var(--ink);font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.5}
+> main{max-width:1320px;margin:0 auto;padding:32px 28px 72px}
+> h2{font-size:25px;margin:40px 0 10px;padding-top:12px;border-top:1px solid var(--rule)}
+> h3{font-size:18.5px;margin:22px 0 6px}
+> h4{font-size:15.5px;margin:16px 0 5px;font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif}
+> p{margin:0 0 10px}
+> ul,ol{margin:0 0 10px;padding-left:22px}
+> li{margin-bottom:4px}
+> table{border-collapse:collapse;width:100%;margin:8px 0 14px;font-size:13.6px}
+> .decision{margin:0 0 12px}
+> .note{font-size:13.5px;color:var(--muted)}
+> footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+Why: the text now spans the column the tables do, the column is 1,320 pixels, and the gaps between headings, paragraphs, lists and tables are tightened; the figures' own measures, which figure-fits reads, are unchanged.
+
+### 2026-09-24 - .claude/rules/checks.md - figure-fits reads the text spanning the column
+Was:
+> | `figure-fits` | every CI run | Every row of a figure in `ARCHITECTURE.html` fits the column the document draws it in, measured from the stylesheet's own numbers rather than from literals kept beside the check, at the narrowest width a row still holds one line. A row whose boxes carry no arrow between them is a set of peers and wraps, so it is bounded by one box and that bound is asserted; a row with arrows reads in one direction, holds one line, and is the shape that can run past the column. The two stylesheet rules the split rests on, the one that wraps a set of peers and the one that stacks every row when narrow, are read rather than assumed, because the exemption is worth no more than the rule behind it. An arrow is bounded by the size it is set at, which is above what it measures, so the bound errs into refusing |
+Now: figure-fits adds that the document's text spans the column its tables and figures draw in, no rule for its paragraphs, lists, decisions or notes capping them narrower and no element carrying a cap of its own.
+Why: a defect reported in a document lands with a check that refuses its recurrence, and the width the text is set at is read off the same stylesheet the figures' widths are.

@@ -276,4 +276,31 @@ public class FigureFits
 
         Assert.True(breakpoint > 0, "The narrow-width rule states no width.");
     }
+
+    [Fact]
+    public void TheDocumentsTextSpansTheColumnItsTablesAndFiguresDrawIn()
+    {
+        // The text is set in the column the tables and figures draw in. A rule capping paragraphs,
+        // lists, decisions or notes narrower than the column leaves a strip beside each of them that
+        // the tables fill, which on a wide screen reads as a page drawn in its left half.
+        var document = Corpus.Read("docs/ARCHITECTURE.html");
+        var (rules, _, _) = Split(StyleBlock(document));
+        var capped = new Regex(@"max-width\s*:\s*(?!none\b)[^;}]+");
+
+        // The reader, shown to find a cap in either unit and to pass one lifted.
+        Assert.Matches(capped, "p{margin:0;max-width:82ch}");
+        Assert.Matches(capped, "ul,ol{max-width:700px}");
+        Assert.DoesNotMatch(capped, ".key p{max-width:none;margin-bottom:7px}");
+
+        foreach (var selector in new[] { "p", "ul,ol", "li", ".decision", ".note" })
+        {
+            var rule = Regex.Match(rules, @"(?m)^\s*" + Regex.Escape(selector) + @"\s*\{([^}]*)\}");
+
+            Assert.True(rule.Success, $"The stylesheet has no rule for `{selector}`.");
+            Assert.DoesNotMatch(capped, rule.Groups[1].Value);
+        }
+
+        // And no element carries a cap of its own.
+        Assert.DoesNotMatch(@"style=""[^""]*max-width", document);
+    }
 }

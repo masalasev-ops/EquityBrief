@@ -23348,3 +23348,40 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 19b6602, and the operator's store
             under `data/` was not touched by either.
 Carried:    nothing.
+### 0.0 - correction: the architecture is drawn across the width it has, its text spanning the column its tables and figures draw in, where paragraphs capped at 82 characters left a strip beside every one   2026-09-24
+Corrects:   0.0 (d220839), the corpus as delivered, whose stylesheet capped the architecture's
+            paragraphs at 82 characters, its lists at 84 and its decisions and notes at 86, inside
+            a column of 1,140 pixels its tables and figures fill, and set generous gaps between its
+            parts. On a wide screen every paragraph left a strip beside it, and the page read as
+            drawn in its left half.
+Found:      by the operator on 2026-09-24, from section 11.1 on their screen, asking for the whole
+            document to be adjusted so there is not so much empty space.
+Repaired:   the text spans the column: no rule caps a paragraph, a list, a decision or a note. The
+            column is 1,320 pixels, from 1,140. The gaps between headings, paragraphs, lists,
+            tables and the footer are tightened, and the line height is 1.5, from 1.56. The
+            figures' own measures, the box's minimum, the gap, the arrows and the width below which
+            every row stacks, are unchanged, so every figure row is measured as it was.
+Missed:     nothing read the width the text is set at. `figure-fits` read the column the figures
+            draw in, and no check asked whether the text used it.
+Guarded:    `figure-fits`, one test added,
+            `TheDocumentsTextSpansTheColumnItsTablesAndFiguresDrawIn`, which reads the
+            stylesheet's rules for paragraphs, lists, list items, decisions and notes and refuses a
+            cap narrower than the column on any of them, and on any element of its own, with the
+            reader shown to find a cap in either unit and to pass one lifted. The roster's row says
+            so.
+Written:    the architecture's stylesheet, its prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. No claim added: the stylesheet is not a table.
+Mutated:    the rule, stated before the run: put back a cap the correction lifts, one in each unit
+            the reader reads.
+            Predicted:
+            M1 the paragraphs capped at 82 characters again: red in
+            `TheDocumentsTextSpansTheColumnItsTablesAndFiguresDrawIn` and nowhere else.
+            M2 the lists capped at 700 pixels: red in the same test and nowhere else.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing.
