@@ -23548,3 +23548,33 @@ Carried:    the peers decision's name, "Peers are shown by price alone, in secti
             move table", keeps "section 2" from section 4's old numbering, which the table no longer
             has. Its body stands and the page draws the peers beside the move table as it rules;
             renaming it is a supersession of its own, left to the operator.
+
+### 4.3 - correction: the first night earnings soon counts over each member's own listing is pinned at its boundary, where the test's nights left 2026-09-24 undecided   2026-09-24
+Corrects:   the 4.3 correction (cab9fa6), whose run page test read nights 2026-09-01, 2026-09-22
+            and 2026-09-28 onward. The first session the calendar read each member's own listing
+            alone for is 2026-09-24, and nothing read that session or the one before it, so the
+            date could move by up to four sessions either way with the suite green.
+Found:      by the phase 11 sign-off review on 2026-09-24, which moved the date to 2026-09-25 and
+            saw nothing go red. Tonight's night of 2026-09-24 is the first one the date decides.
+Repaired:   no shipped code moves. The test adds the boundary.
+Guarded:    `read-surface`, one test added,
+            `EarningsSoonCountsFromTheFirstNightTheCalendarReadEachMembersOwnListing`, which writes
+            the same rows for 2026-09-23 and 2026-09-24 and reads the run page for each: earnings
+            soon counts toward no share on the first and fires for its three on the second, and the
+            share firing any reason with it.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. No claim added: no table or figure changed.
+Mutated:    the rule, stated before the run: move the first own-listing session each way by one.
+            Predicted:
+            M1 the first own-listing session moved to 2026-09-25: red in the test this correction
+            adds and nowhere else.
+            M2 the first own-listing session moved to 2026-09-23: red in the same test and nowhere
+            else.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing.
