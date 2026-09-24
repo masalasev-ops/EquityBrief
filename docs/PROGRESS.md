@@ -22790,10 +22790,17 @@ Measured:   over the same copy of the operator's store as 11.5 and 11.6, migrate
             off the copy's bars. None carries a surprise, because the copy's calendar was stored
             before the calendar kept it; the first night the operator's store runs with 11.7 writes
             every event in the calendar's window again with its surprise.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. Twelve more, the Earnings reactions row read as its eleven
-            parts where it was one, and section 16's store and section 19.1's row, all passing
-            here, as predicted.
+Tests:      1290, from 1285: five added, two under `fixture-expectations`, the reactions over
+            constructed bars and the fixture's read off the replay, two under `read-surface`, the
+            record over constructed rows and every fixture name's page against the store, and one
+            under `component-access`, that no deciding component or pinned source reads or names
+            the record; two gap tests gain the reaction record. Two exact counts move with the
+            decomposed row and one screen population with the new table, each with its reason
+            beside it. Migrations 0 to 37, one added and none pending, schema version 37.
+Claims:     442, from 430, with 441 PASS and 1 out of scope, and 448 placements and verdicts
+            reconciled against a floor of 34. Twelve more, the Earnings reactions row read as its
+            eleven parts where it was one, and section 16's store and section 19.1's row, all
+            passing here, as predicted.
 Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that a
             print's session is the earnings rule's for its own timing, that no surprise stands
             beside no estimate, that the move is taken from the close before the session, that the
@@ -22818,9 +22825,21 @@ Mutated:    the rule, stated before the run: break each property this checkpoint
             M6 a withheld name's reaction left standing: red in
             `AReadingLeftFromAnEarlierNightGoesWhenTheGapStopWithholdsItsNameOrTheNameHoldsNoBars`
             and nowhere else.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: whole-suite runs in a detached worktree at 9d5f56e, never a filter, each
+            mutation reverted with `git reset --hard` and the tree read clean after each. The
+            baseline is 1290 of 1290.
+            M1 turned 1 red, the one it named, 1289 green. M2 turned 1 red, the same test, 1289
+            green. M3 turned 2 red, the two it named, 1288 green. M4 turned 1 red, the one it named,
+            1289 green. M5 turned 1 red, the one it named, 1289 green. M6 turned 1 red, the one it
+            named, 1289 green.
+Held:       all six exactly as written before the run, in the tests each named and in their
+            number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1290 of 1290
+            tests ran with none failed, migrations 0 to 37 with one added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 442 claims, 441 PASS, 0 FAIL, 1 out of
+            scope, 0 unexamined, 448 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1290 of 1290 tests.
+            Both gates ran over the tree carrying this entry, 9d5f56e, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing new. 11.8 draws the dividend lines.
