@@ -151,9 +151,10 @@ public sealed record MoveCell(DateOnly SessionDate, int Sessions, double ChangeP
 
 // The group a move is read against: its industry or its sector, named, how many other members
 // it holds and how many of them held both closes, and their median move over the same
-// sessions, none where no member did.
+// sessions, none where no member did. `NotAMemberOn` is the night the group was read on where the
+// index did not hold the name on it, which the cell names in place of a group.
 // see: A name's group is its industry where at least five other members share it on the session, and its sector otherwise, and every surface that uses it says which and how many
-public sealed record MoveGroup(string Kind, string? Name, int Members, int Counted, double? Median, bool Member = true);
+public sealed record MoveGroup(string Kind, string? Name, int Members, int Counted, double? Median, DateOnly? NotAMemberOn = null);
 
 // A name's peers table as the page is given it: the group the name's moves are read against,
 // none where the store holds no readings for the name, and a row for every member of it and for
@@ -3837,11 +3838,13 @@ public sealed class MarkRenderer : IComponent
             return "<td class=\"group-median\" data-group=\"none\">no group median is stored for this move</td>";
         }
 
-        // A name the index does not hold on the night has no group read for it, so the cell says
-        // that is why rather than reading the membership row it no longer has as a group of one.
-        if (!group.Member)
+        // A name the index did not hold on the night the group was read has no group read for it,
+        // so the cell names that night rather than reading the membership row it no longer had as a
+        // group of one. The moves are the newest night's on a page for any night, so the night named
+        // is the one they were read on and not the page's own.
+        if (group.NotAMemberOn is { } readOn)
         {
-            return "<td class=\"group-median\" data-group=\"not-a-member\">not a member of the index on the night, so no group is read for this move</td>";
+            return FormattableString.Invariant($"<td class=\"group-median\" data-group=\"not-a-member\" data-read-on=\"{readOn:yyyy-MM-dd}\">not a member of the index on {readOn:yyyy-MM-dd}, the night its moves' groups were read, so no group is read for this move</td>");
         }
 
         var named = group.Name is { Length: > 0 } name ? $"the {Escaped(name)} {Escaped(group.Kind)}" : $"a {Escaped(group.Kind)} its membership row does not name";

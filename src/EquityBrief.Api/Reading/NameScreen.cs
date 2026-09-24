@@ -910,7 +910,8 @@ public static class NameScreen
         DateOnly? night = null,
         IReadOnlyList<UniverseRow>? universe = null,
         IReadOnlyList<PeerReadingRow>? peerReadings = null,
-        IReadOnlyList<ReactionRow>? reactions = null)
+        IReadOnlyList<ReactionRow>? reactions = null,
+        DateOnly? notAMemberOn = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -923,11 +924,11 @@ public static class NameScreen
             .LastOrDefault()?.Value;
         var (cells, causes) = Causes(moves, accepted);
 
-        // Each move's group, for a name the index does not hold on tonight's night, says that is why
-        // no group is read for it.
-        if (night is null && universe is not null && !universe.Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)))
+        // Each move's group, for a name the index did not hold on the night the groups were read,
+        // names that night as why no group is read for it.
+        if (notAMemberOn is { } readOn)
         {
-            cells = [.. cells.Select(cell => cell.Group is { } group ? cell with { Group = group with { Member = false } } : cell)];
+            cells = [.. cells.Select(cell => cell.Group is { } group ? cell with { Group = group with { NotAMemberOn = readOn } } : cell)];
         }
         var newest = Pass(pass);
         var notWritten = NotWritten(pass, accepted, leftOut);
@@ -1038,6 +1039,14 @@ public static class NameScreen
             Peers(ticker, universe, peerReadings, night),
             reactions is null ? null : Reactions(reactions));
     }
+
+    // The night a name's moves' groups were read on, where the index did not hold the name on it,
+    // or none. The annotator reads every move's group off the membership on the night it runs and
+    // the move table holds the newest night's rows alone, so whether the name was a member is asked
+    // of that night's index and never of the night a page is drawn for.
+    // see: A large move is shown beside its group's median move over the same sessions
+    public static DateOnly? NotAMemberOn(string ticker, DateOnly? readOn, IReadOnlyList<UniverseRow> membersThen) =>
+        readOn is { } night && !membersThen.Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)) ? night : null;
 
     // A name's earnings reaction record as the page draws it, each print as the annotator stored it.
     // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan

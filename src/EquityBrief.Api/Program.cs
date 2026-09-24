@@ -235,6 +235,11 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     // night's members rather than today's.
     var universe = await read.UniverseAsync(index, night);
 
+    // The newest night, which every move's group was read on whatever night the page is for, and
+    // the index on it, which says whether the name was a member when its groups were read.
+    var groupsReadOn = on is null ? night : await read.NewestNightAsync();
+    var membersThen = groupsReadOn == night ? universe : await read.UniverseAsync(index, groupsReadOn);
+
     // The neighbours on the list, in the order the list itself is drawn in. The
     // walk is about position, so it takes the same ordering with the same inputs
     // rather than a cheaper one that could order differently. Those inputs are the
@@ -316,7 +321,8 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         universe,
         on is null ? await read.PeerReadingsAsync() : [],
         // The name's earnings reaction record as of the page's night.
-        await read.ReactionsAsync(ticker, on));
+        await read.ReactionsAsync(ticker, on),
+        NameScreen.NotAMemberOn(ticker, groupsReadOn, membersThen));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

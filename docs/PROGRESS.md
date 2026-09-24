@@ -23875,3 +23875,119 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry and the three before it, 0427bf8,
             and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
+
+### 11.1 - correction: the count of paid calls answered inside a peak window is read off the run page the surface serves, where the one test built the line itself, and the peak rule's decision states each pass as its run log gives it and which night's report waits   2026-09-24
+Corrects:   11.1's correction (9e3b49e), in two places. Its run page states how many paid calls were
+            answered inside a peak window, the figure the operating row A paid call answered inside
+            a peak window is read off. The route hands the priced line that count through the
+            shipped peak windows, and the one test built the line from `RunScreen.Priced` itself, so
+            the route handing it a nought drew the same line with a nought in it and stayed 1313
+            green. And its decision, A pass starts only where the longest pass the store holds would
+            end before a peak window opens, gave the four passes the store held as 3.4, 3.9, 5.4 and
+            26.2 minutes where their run logs give 3.55, 3.97, 5.43 and 26.28, and read as though
+            the night's own report asked about 00:13 UTC waits until 04:00 UTC, where a pass started
+            then ends about 00:40, before the window opens at 01:00, and starts at once, as RTX's
+            did at 00:13:34 on 2026-09-24.
+Found:      by the phase 11 second sign-off review on 2026-09-24: the count by a mutation of its
+            own, and RTX's pass against its log. The other three figures and the sentence on 00:13
+            were found reading the decision for this correction.
+Ruled:      by the operator on 2026-09-24: the decision's wording corrected in this batch.
+Repaired:   no shipped code changes. The count is read off the run page the surface serves, and the
+            decision's two sentences are corrected in place, since neither changes what it decides.
+Guarded:    `read-surface`, one test added,
+            `TheRunPageTheSurfaceServesCountsThePaidCallsAnsweredInsideAPeakWindow`: three answered
+            paid calls placed by hand on Monday 2026-09-21 against the two windows, at 01:30 inside
+            the first, 06:30 inside the second and noon inside neither, and a call a cap refused at
+            02:00. The run page the surface serves for that night states 3 calls over 3 passes, 2 of
+            them answered inside a peak window. The decision's figures are measurements of the
+            operator's store, which no check reads.
+Written:    `DECISIONS.md`, the decision's two sentences in place: "took 3.4, 3.9, 5.4 and 26.2
+            minutes" now reads "took 3.55, 3.97, 5.43 and 26.28 minutes by their run logs", and the
+            sentence on what the bound costs now says the night's own report starts at once when it
+            is asked about 00:13 UTC and waits until 04:00 UTC when it is asked about 00:40 UTC,
+            where it said the report asked at either waits. No spec.
+Expected:   derived: no expectation file moves.
+Mutated:    the rule, stated before the run: break the route's count from each side.
+            Predicted:
+            M1 the route handing the priced line a nought: red in the test this correction adds.
+            M2 the route counting every answered call, inside a window or not: red in the same test.
+            Results: in the 11.5 correction closing this batch, which records every mutation the
+            batch ran.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the 11.5 correction closing this batch records.
+Carried:    nothing.
+
+### 11.5 - correction: a name's page for any night names the night its moves' groups were read on where the index did not hold the name then, where an earlier night's page read a former member's group as a sector naming nobody   2026-09-24
+Corrects:   the 11.5 correction (74becd5), which marked a name the index does not hold on tonight's
+            page alone. The move table holds the newest night's rows, groups and all, so a page for
+            an earlier night drew the group the newest night read. TTD's page for 2026-09-18, a
+            night TTD was a member, named Communication Services in its masthead and said beside all
+            8 of its moves that "a sector its membership row does not name holds no other member".
+            TTD's page for 2026-09-22 and EQR's for 2026-09-16 did the same.
+Found:      by the phase 11 second sign-off review on 2026-09-24, on a copy of the store after the
+            night of 2026-09-23 was run on it. The live store shows it from the night of 2026-09-24,
+            the first to write the group columns there.
+Ruled:      by the operator on 2026-09-24: every move of a name the index did not hold on the night
+            its groups were read names that night, on a page for any night, tonight's included, and
+            a member's page for an earlier night is as it was.
+Repaired:   the name page asks whether the name was a member of the newest night's index, which
+            every move's group was read on whatever night the page is for. Where it was not, every
+            move says it was "not a member of the index on" that night, "the night its moves' groups
+            were read, so no group is read for this move", with the night whole on the cell.
+            Tonight's page names its own night in the same words. The peers region is as it was:
+            tonight's says the name has no group, and an earlier night's says the readings are kept
+            for the newest night alone. The night named is the newest the listings hold, which is
+            the night the annotator read the groups on unless a night stopped after its moves step
+            and before its list, the step that follows it.
+Guarded:    `read-surface`, one test added,
+            `ANamesPageForAnEarlierNightNamesTheNightItsMovesGroupsWereReadWhereTheIndexDidNotHoldItThen`:
+            MSFT leaves the index on the fixture's night with its moves stored as the annotator
+            stores them for a name it reads no membership row for, KEYS joins on that night, and an
+            evening is written before it. MSFT's page for that evening names its sector in the
+            masthead and says beside every move that it was not a member on the fixture's night,
+            with that night on each cell, and KEYS's and AAPL's pages for it draw their groups. The
+            11.5 correction's own test reads the new words on tonight's page.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Tests:      1315, from 1313: two added to `read-surface`, 11.1's served run page and 11.5's earlier
+            night, and the 11.5 correction's own test reading the new words, none removed.
+            Migrations 0 to 37 with none added and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: no table or figure changed.
+Mutated:    the rule, stated before the run: break which night's index is asked and which night is
+            named, from the side of a name that left and of one that joined.
+            Predicted:
+            M3 the page's own night's index asked in place of the newest night's: red in the test
+            this correction adds, at MSFT's cells and at KEYS's page.
+            M4 the page's own night named in place of the newest: red in the same test, at MSFT's
+            cells.
+            M5 tonight's page alone marked, as before this correction: red in the same test, at
+            MSFT's cells.
+            M6, added under the same rule because a first run of M3 failed at MSFT's cells before
+            the test read KEYS's page: a name missing from either night's index marked: red in the
+            same test, at KEYS's page.
+            Results: one run for each of the six in a detached worktree at bb7cbcc, the tree
+            carrying this entry, filtered to the 32 tests whose names hold PeakWindow,
+            ANameTheIndexDoesNotHold, ANamesPageForAnEarlierNight, GroupsMedian or Peers, on the
+            operator's instruction of 2026-09-24 that whole-suite runs took too long, each reverted
+            with `git reset --hard` and the tree read clean after. The whole suite ran green over
+            the same tree in the gates, 1315 of 1315. M1 and M2 each turned 1 red and 31 green,
+            `TheRunPageTheSurfaceServesCountsThePaidCallsAnsweredInsideAPeakWindow`, reading 0 and 3
+            calls answered at peak where 2 was stated. M3, M4 and M5 each turned 1 red and 31 green,
+            the test this correction adds, at MSFT's cells: M3 and M5 drew the sentence naming a
+            sector holding nobody, and M4 named 2026-09-03, the page's own night, where 2026-09-04
+            was stated. M6 turned 1 red and 31 green, the same test, at KEYS's page, which it marked
+            not a member. A first run of M1 to M5 at 6465367, a commit this branch replaced whose
+            code and tests it carries unchanged, gave the same five results.
+Held:       all six, in the test each named and in their number, within the filtered scope. M3's
+            KEYS half is shown by M6, since M3 fails at MSFT's cells before the test reads KEYS's
+            page.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry and the one before it, with the operator's store under `data/`
+            untouched by either. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1315 of 1315
+            tests ran with none failed, migrations 0 to 37 with none added and none pending, schema
+            version 37, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1`: 36
+            tables, 457 claims, 457 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 464 placements and
+            verdicts reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks
+            carried and all 41 run, 1315 of 1315 tests. Both ran over bb7cbcc.
+Carried:    nothing.

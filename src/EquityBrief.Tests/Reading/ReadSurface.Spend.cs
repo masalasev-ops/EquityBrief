@@ -247,4 +247,37 @@ public partial class ReadSurface
         Assert.Contains("data-at-peak=\"1\"", drawn, StringComparison.Ordinal);
         Assert.Contains("1 of them answered inside a peak window</p>", drawn, StringComparison.Ordinal);
     }
+
+    // The count read off the page the surface serves rather than off a header built here, so the
+    // route handing the line its count through the shipped peak windows is what is asserted: a
+    // route handing it none draws the same line with a nought in it.
+    [Fact]
+    public async Task TheRunPageTheSurfaceServesCountsThePaidCallsAnsweredInsideAPeakWindow()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        // Three answered paid calls on Monday 2026-09-21, placed by hand against the two windows,
+        // 01:00 to 04:00 and 06:00 to 10:00 UTC on a weekday: one at 01:30 inside the first, one at
+        // 06:30 inside the second and one at noon inside neither. A call a cap refused at 02:00
+        // carries no price and is counted nowhere.
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES "
+            + "('research-20260921T012000Z-KEYS', 'research call: The two cases', '2026-09-21T01:20:00Z', '2026-09-21T01:30:00Z', 'ok', 0, 1, 0, '0.0001', '{\"created\":\"2026-09-21T01:30:00Z\"}'),"
+            + "('research-20260921T062000Z-NVDA', 'research call: The two cases', '2026-09-21T06:20:00Z', '2026-09-21T06:30:00Z', 'ok', 0, 1, 0, '0.0001', '{\"created\":\"2026-09-21T06:30:00Z\"}'),"
+            + "('research-20260921T115000Z-AAPL', 'research call: The two cases', '2026-09-21T11:50:00Z', '2026-09-21T12:00:00Z', 'ok', 0, 1, 0, '0.0001', '{\"created\":\"2026-09-21T12:00:00Z\"}'),"
+            + "('research-20260921T020000Z-MSFT', 'research call: The two cases', '2026-09-21T02:00:00Z', '2026-09-21T02:00:00Z', 'paused', 0, 0, 0, '0', '{\"created\":\"2026-09-21T02:00:00Z\"}');");
+        Spend(store, "night", "facts", "2026-09-21T21:10:00Z", "0");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/run/2026-09-21"));
+        var line = Regex.Match(page, "<p class=\"priced-calls\" data-calls=\"(\\d+)\" data-passes=\"(\\d+)\" data-spend=\"([^\"]+)\" data-at-peak=\"(\\d+)\">([^<]*)</p>");
+
+        Assert.True(line.Success, "The served run page draws no priced line.");
+        Assert.Equal("3", line.Groups[1].Value);
+        Assert.Equal("3", line.Groups[2].Value);
+        Assert.Equal("2", line.Groups[4].Value);
+        Assert.EndsWith(", 2 of them answered inside a peak window", line.Groups[5].Value, StringComparison.Ordinal);
+    }
 }
