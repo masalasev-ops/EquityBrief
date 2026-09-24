@@ -169,11 +169,12 @@ public partial class ReadSurface
 
         var left = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/MSFT"));
         var cells = Regex.Matches(left, "<td class=\"group-median\"[^>]*>([^<]*)</td>").Select(cell => cell.Groups[1].Value).ToArray();
+        var night = NightIn(store);
 
         Assert.Contains("data-peers=\"not-a-member\"", left, StringComparison.Ordinal);
         Assert.Contains("MSFT is not a member of the index on the night, so it has no group and no peers are drawn.", left, StringComparison.Ordinal);
         Assert.NotEmpty(cells);
-        Assert.All(cells, cell => Assert.Equal("not a member of the index on the night, so no group is read for this move", cell));
+        Assert.All(cells, cell => Assert.Equal($"not a member of the index on {night}, the night its moves' groups were read, so no group is read for this move", cell));
         Assert.DoesNotContain("its membership row does not name", left, StringComparison.Ordinal);
         Assert.DoesNotContain("holds MSFT alone", left, StringComparison.Ordinal);
 
@@ -182,5 +183,57 @@ public partial class ReadSurface
 
         Assert.DoesNotContain("not-a-member", member, StringComparison.Ordinal);
         Assert.Contains("data-peers=\"group\"", member, StringComparison.Ordinal);
+    }
+
+    // A page for an earlier night draws the moves as the newest night read them, groups and all, so
+    // whether the name was a member is asked of the newest night's index and the night named is
+    // that one. A name that left after the evening a page is for was a member on it, and its moves
+    // still say it was not a member on the night their groups were read; a name that joined after
+    // it was not a member on it, and its moves still draw the group the newest night read.
+    [Fact]
+    public async Task ANamesPageForAnEarlierNightNamesTheNightItsMovesGroupsWereReadWhereTheIndexDidNotHoldItThen()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var night = NightIn(store);
+        var earlier = SessionWithoutAnEvening(store, "MSFT", night);
+        var sector = Text(store, "SELECT sector FROM membership WHERE ticker = 'MSFT' ORDER BY observed_at DESC LIMIT 1;");
+
+        // MSFT leaves the index on the newest night, its moves stored as the annotator stores them
+        // for a name it reads no membership row for; KEYS joins on it. An evening before it is
+        // written so the earlier page has one to draw.
+        const string Reasons = "[{\"name\":\"at entry zone\",\"fired\":true,\"values\":{\"close\":\"1.00\"}}]";
+
+        store.Execute(
+            $"UPDATE membership SET \"left\" = '{night}' WHERE ticker = 'MSFT';"
+            + $"UPDATE membership SET joined = '{night}' WHERE ticker = 'KEYS';"
+            + "UPDATE move SET group_kind = 'sector', group_name = NULL, group_members = 0, group_counted = 0, group_median = NULL WHERE ticker = 'MSFT';"
+            + $"INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons) VALUES ('AAPL', '{earlier}', '{Reasons}', 1, '[]', '[]');");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/MSFT/{earlier}"));
+        var cells = Regex.Matches(page, "<td class=\"group-median\"[^>]*>([^<]*)</td>").Select(cell => cell.Groups[1].Value).ToArray();
+
+        // The page is the earlier evening's, on which the masthead names MSFT's sector.
+        Assert.Contains($"data-night=\"{earlier}\"", page, StringComparison.Ordinal);
+        Assert.Contains($"href=\"#/universe?sector={Uri.EscapeDataString(sector)}\"", page, StringComparison.Ordinal);
+
+        // Beside every move, the night the groups were read on, which is not the page's own.
+        Assert.NotEmpty(cells);
+        Assert.All(cells, cell => Assert.Equal($"not a member of the index on {night}, the night its moves' groups were read, so no group is read for this move", cell));
+        Assert.Equal(cells.Length, Regex.Matches(page, $"data-read-on=\"{night}\"").Count);
+        Assert.DoesNotContain("its membership row does not name", page, StringComparison.Ordinal);
+
+        // KEYS was not a member on the earlier evening and was on the newest night, and its moves
+        // draw the group the newest night read; AAPL, a member on both, draws its group as before.
+        foreach (var ticker in new[] { "KEYS", "AAPL" })
+        {
+            var drawn = await client.GetStringAsync($"/screens/name/{ticker}/{earlier}");
+
+            Assert.DoesNotContain("not-a-member", drawn, StringComparison.Ordinal);
+            Assert.Contains("<td class=\"group-median\" data-group-kind=", drawn, StringComparison.Ordinal);
+        }
     }
 }
