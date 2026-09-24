@@ -303,6 +303,19 @@ public sealed record PeerReadingRow(
     double? ReturnPct,
     int Bars);
 
+// One print's earnings reaction as the annotator stored it: the report date, when in the session,
+// the session it moved on, the estimate and the actual as the provider filed them, null where it
+// filed none, the provider's surprise, null beside no estimate, and the session's move.
+public sealed record ReactionRow(
+    string Ticker,
+    DateOnly ReportDate,
+    string Timing,
+    DateOnly Session,
+    string? Estimate,
+    string? Actual,
+    double? SurprisePct,
+    double MovePct);
+
 // One name's close on one session, as the day change is read from.
 //
 // A close and the session it is the close of, because a day change needs two of
@@ -389,6 +402,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.Ladder, Touch.Read),
             new StoreTouch(Store.Move, Touch.Read),
             new StoreTouch(Store.PeerReading, Touch.Read),
+            new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
@@ -777,6 +791,14 @@ public sealed class ReadApi : IComponent
         SELECT ticker, session_date, group_kind, group_name, year_high, below_high_pct, return_pct, bars
         FROM peer_reading
         ORDER BY ticker;
+    ";
+
+    // A name's earnings reaction record, oldest print first, as of the night the page shows.
+    const string ReactionsForName = @"
+        SELECT ticker, report_date, timing, reaction_session, estimate, actual, surprise_pct, move_pct
+        FROM earnings_reaction
+        WHERE ticker = $ticker AND report_date <= $on
+        ORDER BY report_date;
     ";
 
     // The newest night the listings hold, so the front page resolves to it
@@ -1725,6 +1747,36 @@ public sealed class ReadApi : IComponent
                 reader.IsDBNull(7) ? null : reader.GetInt32(7),
                 reader.IsDBNull(8) ? null : reader.GetInt32(8),
                 reader.IsDBNull(9) ? null : reader.GetDouble(9)));
+        }
+
+        return rows;
+    }
+
+    // A name's earnings reaction record, oldest print first, as of the night the page shows.
+    public async Task<IReadOnlyList<ReactionRow>> ReactionsAsync(string ticker, DateOnly? asOf = null)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ReactionsForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", On(asOf));
+
+        var rows = new List<ReactionRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new ReactionRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                DateOnly.ParseExact(reader.GetString(3), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.IsDBNull(4) ? null : reader.GetString(4),
+                reader.IsDBNull(5) ? null : reader.GetString(5),
+                reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                reader.GetDouble(7)));
         }
 
         return rows;

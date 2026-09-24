@@ -668,6 +668,13 @@ public class GapRefusal
         await new SwingFinder(GapClock(), store.DatabaseFile).RunAsync("gap-swings");
         await new VolumeProfileBuilder(GapClock(), store.DatabaseFile).RunAsync("gap-profile");
         await new LevelBuilder(GapClock(), store.DatabaseFile).RunAsync("gap-levels");
+
+        // A print for every stored name in the middle of its year, so the reaction record has a
+        // row to withhold for the gapped name and to write for every other.
+        store.Execute(
+            "INSERT INTO calendar (ticker, event_date, kind, timing, detail, observed_at) " +
+            "SELECT DISTINCT ticker, '2026-01-14', 'earnings', 'after', '{\"estimate\":\"1\",\"actual\":\"1.1\",\"surprise\":\"10\"}', '2026-09-05T21:10:00Z' FROM bar;");
+
         await new MoveAnnotator(GapClock(), store.DatabaseFile).RunAsync("gap-moves");
 
         // The population, read off the store this test built rather than from a
@@ -698,9 +705,16 @@ public class GapRefusal
             $"('{GappedName}', '2026-01-02', 'sector', 'Technology', '1', 1.0, 1.0, 100), " +
             "('ZZZZ', '2026-01-02', 'sector', 'Energy', '1', 1.0, 1.0, 100);");
 
+        // And a reaction for each, which a table of one row per name and print keeps the same way.
+        store.Execute(
+            "INSERT INTO earnings_reaction (ticker, report_date, timing, reaction_session, estimate, actual, surprise_pct, move_pct) VALUES " +
+            $"('{GappedName}', '2026-01-02', 'after', '2026-01-05', '1', '1', 0.0, 1.0), " +
+            "('ZZZZ', '2026-01-02', 'after', '2026-01-05', '1', '1', 0.0, 1.0);");
+
         await new MoveAnnotator(GapClock(), store.DatabaseFile).RunAsync("gap-moves");
 
         Assert.Equal(0, GapCount(store, $"SELECT COUNT(*) FROM peer_reading WHERE ticker IN ('{GappedName}', 'ZZZZ');"));
+        Assert.Equal(0, GapCount(store, $"SELECT COUNT(*) FROM earnings_reaction WHERE ticker IN ('{GappedName}', 'ZZZZ');"));
 
         // And every other name holding bars keeps the row tonight wrote for it.
         Assert.Equal(
@@ -793,7 +807,7 @@ public class GapRefusal
     public void TheSplitBetweenWithholdingAndWritingIsTheThingAsserted()
     {
         // Two opposite failures, so the split is asserted rather than a loop run
-        // over all eight. A stage computing a figure across the hole and a stage
+        // over all nine. A stage computing a figure across the hole and a stage
         // leaving a member without the row every member gets are both defects,
         // and a test written as one loop catches neither: each table satisfies
         // whichever half the loop happens to assert.
@@ -801,7 +815,7 @@ public class GapRefusal
         var writes = Strings(Expected("gap-stop").GetProperty("writesARowStatingTheReason"));
         var tables = Strings(Expected("gap-stop").GetProperty("tables"));
 
-        Assert.Equal(6, withholds.Count);
+        Assert.Equal(7, withholds.Count);
         Assert.Equal(2, writes.Count);
         Assert.Equal(tables.Count, withholds.Count + writes.Count);
         Assert.Empty(withholds.Intersect(writes, StringComparer.Ordinal));

@@ -22741,3 +22741,86 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 7534c99, and the operator's store
             under `data/` was not touched by either.
 Carried:    nothing new. 11.7 draws each print's earnings reaction.
+### 11.7 - the earnings reaction record, each print over the calendar's year behind beside the earnings setups, read through the earnings rule's own reading of its session   2026-09-23
+Built:      the move annotator reads every print the calendar holds on or before the night's session
+            and writes, into a table of its own, one row per name and print: the report date, the
+            timing, the session the earnings rule takes for it, the estimate and the actual as the
+            provider sent them, the provider's surprise, and that session's move from the stored
+            close before it. The reading is one pure function, `EarningsReactions.Of`, which calls
+            `LadderSeries.EarningsRuleFor` one print at a time for the session, so a print whose
+            timing the provider left unstated is read exactly as the earnings rule reads it and no
+            pinned source is edited: `git diff` names no file a rule version or a candidate
+            evaluator pins. A print whose session the stored bars do not reach, or with no stored
+            close before its session, is left out and counted on the run log rather than read off a
+            session the store does not hold, which is how the retention drops a print with its bars.
+            A print with no filed estimate keeps its actual and carries no surprise, whatever
+            difference the provider sent, so it is never read as having met one. The annotator
+            writes the set again every night and deletes the prints a name no longer holds, and the
+            rows of a name the gap stop withholds or that holds no bars. The calendar now keeps the
+            provider's surprise beside the estimate and the actual in its detail, which the record
+            quotes. Migration 37 creates the table. A name's page draws the record as its own card
+            after the plan's, which closes on the earnings setups, with a key saying how to read it;
+            the page computes nothing.
+Written:    `SCHEMA.md` declares the `earnings_reaction` table, its grain, its key, the move
+            annotator as its writer and its deleter and its retention, and the calendar's detail
+            names the surprise. The move annotator's catalogue row reads the calendar and writes the
+            earnings reactions, and its matrix row reads the calendar. Section 15.9's Earnings
+            reactions row, placed at 11.7 by the document pass, is reworded so its parts are read
+            one by one: its place and population, the seven things each row carries, how a print
+            with no estimate is drawn, and its key, eleven claims where it was one; its citation
+            moves to the note beneath the table, since its own commas would have read as three parts
+            more. Section 16 gains the record's store and section 19.1 the reactions expectation.
+            The gap stop's population gains the table, seven that withhold where there were six. The
+            `fixture-expectations`, `read-surface`, `gap-refusal` and `component-access` roster rows
+            name what they now assert. Every spec line changed has its prior text in `CHANGELOG.md`.
+Expected:   `reactions.json`, derived by hand from the captured calendar and bars through the
+            replay's own rules rather than frozen from a run: the sixteen prints the calendar holds
+            for the four names over the year behind, each after the close with an estimate filed and
+            each reached by its name's bars, AAPL's among them on the year its refetch ends at
+            2026-08-10. Over constructed bars, a print before the open moves its own day, one after
+            the close the next, one with its timing unstated its own day, a print with no estimate
+            keeps its actual and has no surprise, and a print after the close on the last stored
+            session and one before the first stored session are left out and counted.
+Measured:   over the same copy of the operator's store as 11.5 and 11.6, migrated from 36 to 37 in
+            the scratchpad and the move annotator run over it alone as the night of its newest
+            session, 2026-09-17: 508 names, 2430 reactions and 4 prints the bars do not reach. DUK's
+            record is four prints, each reported before the open and moving its own day: 2025-11-07,
+            estimate 1.75, actual 1.81, -0.27; 2026-02-10, 1.49 and 1.5, +1.58; 2026-05-05, 1.8 and
+            1.93, +0.10; 2026-08-04, 1.29 and 1.43, -0.01, the first and last worked again by hand
+            off the copy's bars. None carries a surprise, because the copy's calendar was stored
+            before the calendar kept it; the first night the operator's store runs with 11.7 writes
+            every event in the calendar's window again with its surprise.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. Twelve more, the Earnings reactions row read as its eleven
+            parts where it was one, and section 16's store and section 19.1's row, all passing
+            here, as predicted.
+Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that a
+            print's session is the earnings rule's for its own timing, that no surprise stands
+            beside no estimate, that the move is taken from the close before the session, that the
+            page says none was filed, that no deciding source names the record, and that a withheld
+            name's reaction goes.
+            Predicted:
+            M1 every print read as reported after the close: red in
+            `EachPrintsReactionIsWorkedByHandForEveryTimingAndAPrintTheBarsDoNotReachIsLeftOutAndCounted`
+            and nowhere else, since every fixture print is reported after the close.
+            M2 the provider's surprise kept beside no estimate: red in the same test and nowhere
+            else, since every fixture print carries an estimate.
+            M3 the move taken from the first stored close rather than the one before the session:
+            red in the same test and in
+            `TheFixturesReactionsAreTheOnesWorkedByHandFromTheCapturedCalendarAndBars`, and nowhere
+            else, since the page reads what the store holds.
+            M4 the page drawing a print with no estimate as a surprise not filed: red in
+            `AReactionRecordDrawsEachPrintAsStoredAndAPrintWithNoEstimateAsNoneFiledAndNoSurprise`
+            and nowhere else.
+            M5 a reason's own source naming the record: red in
+            `NoReasonGatePlanOrCandidateEvaluatorReadsTheEarningsReactionRecord` and nowhere else,
+            the source being one no rule version or evaluator pins.
+            M6 a withheld name's reaction left standing: red in
+            `AReadingLeftFromAnEarlierNightGoesWhenTheGapStopWithholdsItsNameOrTheNameHoldsNoBars`
+            and nowhere else.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing new. 11.8 draws the dividend lines.

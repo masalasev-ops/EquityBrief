@@ -1009,7 +1009,18 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "Peers, its trend state"),
         CheckReach.Key("15.9 Name", "Peers, the distance row mark"),
         CheckReach.Key("15.9 Name", "Peers, a key saying how to read it"),
-        CheckReach.Key("15.9 Name", "Earnings reactions"),
+        // 11.7 read the Earnings reactions row as its parts, each a claim of its own.
+        CheckReach.Key("15.9 Name", "Earnings reactions, beside the earnings setups"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, one row per print over the calendar's year behind"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, each row carrying its report date"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, its timing"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, the session it moved on"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, the estimate"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, the actual"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, the provider's surprise"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, that session's move"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, a print with no filed estimate saying none was filed"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, a key saying how to read it"),
         CheckReach.Key("15.9 Name", "Dividend"),
 
         // 11.2, the queue page's row stating when each request will be written, which
@@ -1031,6 +1042,10 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Peer return window"),
         CheckReach.Key(Scope.StoresTable, "Peer readings"),
         CheckReach.Key(Scope.FixtureTable, "peers"),
+
+        // 11.7, the reaction record's own store and its fixture row.
+        CheckReach.Key(Scope.StoresTable, "Earnings reactions"),
+        CheckReach.Key(Scope.FixtureTable, "reactions"),
     ];
 
     // The ones a phase 11 checkpoint has since drawn. A row moves here in the commit that
@@ -1056,6 +1071,19 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Peer return window"),
         CheckReach.Key(Scope.StoresTable, "Peer readings"),
         CheckReach.Key(Scope.FixtureTable, "peers"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, beside the earnings setups"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, one row per print over the calendar's year behind"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, each row carrying its report date"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, its timing"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, the session it moved on"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, the estimate"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, the actual"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, the provider's surprise"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, that session's move"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, a print with no filed estimate saying none was filed"),
+        CheckReach.Key("15.9 Name", "Earnings reactions, a key saying how to read it"),
+        CheckReach.Key(Scope.StoresTable, "Earnings reactions"),
+        CheckReach.Key(Scope.FixtureTable, "reactions"),
     ];
 
     // Rows the document gained after the prediction, each one claim.

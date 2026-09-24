@@ -64,6 +64,10 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.StoresTable, "Peer readings"),
             CheckReach.Key(Scope.FixtureTable, "peers"),
 
+            // 11.7, the reaction record's store and its fixture row.
+            CheckReach.Key(Scope.StoresTable, "Earnings reactions"),
+            CheckReach.Key(Scope.FixtureTable, "reactions"),
+
             // 6.5, the staleness judge: section 17's trigger row read off the
             // document, the catalogue's judge over the fixture's own dates, and
             // figure 12.1's three questions.

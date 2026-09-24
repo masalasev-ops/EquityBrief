@@ -29,7 +29,8 @@ public sealed record CalendarEvent(
     EventTiming Timing,
     DateOnly? PeriodEnd,
     string? Estimate,
-    string? Actual);
+    string? Actual,
+    string? Surprise = null);
 
 // The index's dated events over a window, in one request.
 //

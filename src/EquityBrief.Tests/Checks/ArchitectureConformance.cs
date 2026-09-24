@@ -1418,8 +1418,8 @@ public partial class ArchitectureConformance
         // 164 at 11.3, tonight's row stating the report's state.
         // 173 at 11.6, the name screen's peers row read as the ten parts it names where it was
         // one claim: its place, its population, its order, that it ranks none, its five
-        // columns and its key.
-        Assert.Equal(173, inDocument.Length);
+        // columns and its key. 183 at 11.7, the earnings reactions row read as its eleven parts.
+        Assert.Equal(183, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1465,8 +1465,9 @@ public partial class ArchitectureConformance
         // 152 from 142 at 10.2, the run page's candidates' record region read as the ten parts
         // its row enumerates. 154 at the 5.8 correction that numbers tonight's list, the list
         // read as its two new parts, the rows' places and the line counting them. 164 at 11.6,
-        // the name screen's peers row read as its ten parts.
-        Assert.Equal(164, checkedElements);
+        // the name screen's peers row read as its ten parts, and 175 at 11.7, its earnings
+        // reactions row read as its eleven.
+        Assert.Equal(175, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

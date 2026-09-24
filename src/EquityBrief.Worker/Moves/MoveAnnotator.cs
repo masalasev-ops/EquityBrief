@@ -1,5 +1,7 @@
 using System.Globalization;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Ladders;
+using EquityBrief.Core.Providers;
 using EquityBrief.Core.Moves;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
@@ -8,14 +10,15 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Moves;
 
-public sealed record MoveOutcome(int NamesExamined, int RowsWritten, int RowsDropped, int PeerReadings = 0);
+public sealed record MoveOutcome(int NamesExamined, int RowsWritten, int RowsDropped, int PeerReadings = 0, int Reactions = 0, int Unreached = 0);
 
 // The move annotator. Reads the stored bars for every name the store holds and
 // writes the largest single-day and multi-day moves of the stored year, which
 // become the rows of the how-it-got-here table, each beside its group's median
 // move over the same sessions, read off the membership on the night's session.
 // Over the same bars it writes each name's two readings for the peers table,
-// beside the group its moves are read against.
+// beside the group its moves are read against, and each print's earnings
+// reaction off the calendar.
 //
 // It makes no request and calls no model, for the reason the swing finder does
 // not: everything it needs is already in the store.
@@ -42,8 +45,10 @@ public sealed class MoveAnnotator : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Move, Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.PeerReading, Touch.Insert | Touch.Update | Touch.Delete),
+            new StoreTouch(Store.EarningsReaction, Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -57,11 +62,42 @@ public sealed class MoveAnnotator : IComponent
 
     // Every stored bar at once, because a move's group median reads other names' closes
     // on the move's own sessions, which a read one name at a time cannot reach. The high is
-    // read for the peers table's distance below the year's high.
+    // read for the peers table's distance below the year's high, and the low with it for the
+    // earnings rule, whose bars are the ladder's.
     const string AllBars = @"
-        SELECT ticker, session_date, high, close
+        SELECT ticker, session_date, high, low, close
         FROM bar
         ORDER BY ticker, session_date;
+    ";
+
+    // Every print the calendar holds on or before the night's session, which is its year behind,
+    // with what the provider filed about each.
+    const string PastPrints = @"
+        SELECT ticker, event_date, timing, detail
+        FROM calendar
+        WHERE kind = 'earnings' AND event_date <= $session
+        ORDER BY ticker, event_date;
+    ";
+
+    // A print's reaction, one row per name and print, replaced every night.
+    const string UpsertReaction = @"
+        INSERT INTO earnings_reaction (ticker, report_date, timing, reaction_session, estimate, actual, surprise_pct, move_pct)
+        VALUES ($ticker, $report_date, $timing, $reaction_session, $estimate, $actual, $surprise_pct, $move_pct)
+        ON CONFLICT (ticker, report_date) DO UPDATE SET
+            timing = excluded.timing,
+            reaction_session = excluded.reaction_session,
+            estimate = excluded.estimate,
+            actual = excluded.actual,
+            surprise_pct = excluded.surprise_pct,
+            move_pct = excluded.move_pct;
+    ";
+
+    // The prints this name no longer holds a reaction for tonight: fallen out of the calendar's
+    // year, or out of the bars' reach with them.
+    const string DropFallenOutReactions = @"
+        DELETE FROM earnings_reaction
+        WHERE ticker = $ticker
+          AND report_date NOT IN (SELECT value FROM json_each($kept));
     ";
 
     // A name's two readings, one row per name, replaced every night.
@@ -82,6 +118,10 @@ public sealed class MoveAnnotator : IComponent
     // any more, which a table of one row per name would otherwise keep beside tonight's close.
     const string DropWithheldReadings = @"
         DELETE FROM peer_reading
+        WHERE ticker IN (SELECT value FROM json_each($withheld))
+           OR ticker NOT IN (SELECT DISTINCT ticker FROM bar);
+
+        DELETE FROM earnings_reaction
         WHERE ticker IN (SELECT value FROM json_each($withheld))
            OR ticker NOT IN (SELECT DISTINCT ticker FROM bar);
     ";
@@ -167,8 +207,11 @@ public sealed class MoveAnnotator : IComponent
         var series = await AllBarsAsync(connection, cancellation);
         var closes = series.ToDictionary(pair => pair.Key, pair => pair.Value.ToDictionary(bar => bar.SessionDate, bar => bar.Close), StringComparer.Ordinal);
         var members = await MembersAsync(connection, clock.SessionDateAt(clock.UtcNow), cancellation);
+        var prints = await PastPrintsAsync(connection, clock.SessionDateAt(clock.UtcNow), cancellation);
         var written = 0;
         var readings = 0;
+        var reactions = 0;
+        var unreached = 0;
         var fallenOut = 0;
         var withheld = new List<string>();
         var stop = new SeriesGapStop();
@@ -177,6 +220,7 @@ public sealed class MoveAnnotator : IComponent
         {
             var held = series.TryGetValue(ticker, out var found) ? found : [];
             MoveBar[] bars = [.. held.Select(bar => new MoveBar(bar.SessionDate, bar.Close))];
+            PeerBar[] peerBars = [.. held.Select(bar => new PeerBar(bar.SessionDate, bar.High, bar.Close))];
 
             // A name whose stored series has an interior hole is
             // computed for nothing and named on the run log.
@@ -225,7 +269,7 @@ public sealed class MoveAnnotator : IComponent
             // group its moves are read against, so the table lists the members the medians were
             // taken over.
             // see: Peers are shown by price alone, in section 2 beside the move table
-            if (PeerReadings.Of(held) is { } reading)
+            if (PeerReadings.Of(peerBars) is { } reading)
             {
                 await using var command = connection.CreateCommand();
 
@@ -244,6 +288,46 @@ public sealed class MoveAnnotator : IComponent
 
                 readings++;
             }
+
+            // The name's earnings reaction record, each print's session the one the earnings rule
+            // takes for it and its move off the same bars, and a print the bars do not reach left
+            // out and counted.
+            // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+            var onFile = EarningsReactions.Of(prints.TryGetValue(ticker, out var filed) ? filed : [], held);
+
+            foreach (var reaction in onFile.Reactions)
+            {
+                await using var command = connection.CreateCommand();
+
+                command.Transaction = (SqliteTransaction)transaction;
+                command.CommandText = UpsertReaction;
+                command.Parameters.AddWithValue("$ticker", ticker);
+                command.Parameters.AddWithValue("$report_date", reaction.ReportDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                command.Parameters.AddWithValue("$timing", TimingWord(reaction.Timing));
+                command.Parameters.AddWithValue("$reaction_session", reaction.Session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                command.Parameters.AddWithValue("$estimate", (object?)reaction.Estimate ?? DBNull.Value);
+                command.Parameters.AddWithValue("$actual", (object?)reaction.Actual ?? DBNull.Value);
+                command.Parameters.AddWithValue("$surprise_pct", (object?)reaction.SurprisePct ?? DBNull.Value);
+                command.Parameters.AddWithValue("$move_pct", reaction.MovePct);
+
+                await command.ExecuteNonQueryAsync(cancellation);
+            }
+
+            await using (var drop = connection.CreateCommand())
+            {
+                drop.Transaction = (SqliteTransaction)transaction;
+                drop.CommandText = DropFallenOutReactions;
+                drop.Parameters.AddWithValue("$ticker", ticker);
+                drop.Parameters.AddWithValue(
+                    "$kept",
+                    System.Text.Json.JsonSerializer.Serialize(
+                        onFile.Reactions.Select(reaction => reaction.ReportDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))));
+
+                await drop.ExecuteNonQueryAsync(cancellation);
+            }
+
+            reactions += onFile.Reactions.Count;
+            unreached += onFile.Unreached;
 
             // Any session this name held that is not in tonight's set was a
             // biggest move and is not one now.
@@ -273,9 +357,9 @@ public sealed class MoveAnnotator : IComponent
             await drop.ExecuteNonQueryAsync(cancellation);
         }
 
-        await RecordAsync(connection, runId, startedAt, tickers.Count - stop.Stopped, written, readings, dropped + fallenOut, stop.Report(), cancellation);
+        await RecordAsync(connection, runId, startedAt, tickers.Count - stop.Stopped, written, readings, reactions, unreached, dropped + fallenOut, stop.Report(), cancellation);
 
-        return new MoveOutcome(tickers.Count - stop.Stopped, written, dropped + fallenOut, readings);
+        return new MoveOutcome(tickers.Count - stop.Stopped, written, dropped + fallenOut, readings, reactions, unreached);
     }
 
     async Task<IReadOnlyList<string>> TickersAsync(SqliteConnection connection, CancellationToken cancellation)
@@ -299,7 +383,7 @@ public sealed class MoveAnnotator : IComponent
     // read as decimals; the percentages the arithmetic makes of them are statistics and are
     // doubles, and the crossing is in `MoveSeries`, `Groups` and `PeerReadings`, where it is
     // named.
-    static async Task<IReadOnlyDictionary<string, IReadOnlyList<PeerBar>>> AllBarsAsync(
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<LadderBar>>> AllBarsAsync(
         SqliteConnection connection,
         CancellationToken cancellation)
     {
@@ -307,7 +391,7 @@ public sealed class MoveAnnotator : IComponent
 
         command.CommandText = AllBars;
 
-        var series = new Dictionary<string, List<PeerBar>>(StringComparer.Ordinal);
+        var series = new Dictionary<string, List<LadderBar>>(StringComparer.Ordinal);
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
@@ -320,14 +404,71 @@ public sealed class MoveAnnotator : IComponent
                 series[ticker] = bars = [];
             }
 
-            bars.Add(new PeerBar(
+            bars.Add(new LadderBar(
                 DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 Money.FromStorage(reader.GetString(2)),
-                Money.FromStorage(reader.GetString(3))));
+                Money.FromStorage(reader.GetString(3)),
+                Money.FromStorage(reader.GetString(4))));
         }
 
-        return series.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<PeerBar>)pair.Value, StringComparer.Ordinal);
+        return series.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<LadderBar>)pair.Value, StringComparer.Ordinal);
     }
+
+    // Every print on file by name, with the estimate, the actual and the surprise as the provider
+    // sent them, read off the calendar row's detail.
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<ReactionPrint>>> PastPrintsAsync(
+        SqliteConnection connection,
+        DateOnly session,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PastPrints;
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var prints = new Dictionary<string, List<ReactionPrint>>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            var ticker = reader.GetString(0);
+
+            if (!prints.TryGetValue(ticker, out var filed))
+            {
+                prints[ticker] = filed = [];
+            }
+
+            using var detail = System.Text.Json.JsonDocument.Parse(reader.IsDBNull(3) ? "{}" : reader.GetString(3));
+
+            string? Filed(string name) =>
+                detail.RootElement.TryGetProperty(name, out var value) && value.ValueKind == System.Text.Json.JsonValueKind.String
+                    ? value.GetString()
+                    : null;
+
+            filed.Add(new ReactionPrint(
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2) switch
+                {
+                    "before" => EventTiming.Before,
+                    "after" => EventTiming.After,
+                    _ => EventTiming.Unstated,
+                },
+                Filed("estimate"),
+                Filed("actual"),
+                Filed("surprise")));
+        }
+
+        return prints.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<ReactionPrint>)pair.Value, StringComparer.Ordinal);
+    }
+
+    // The timing as the calendar and the reaction table write it.
+    static string TimingWord(EventTiming timing) => timing switch
+    {
+        EventTiming.Before => "before",
+        EventTiming.After => "after",
+        _ => "unstated",
+    };
 
     static async Task<IReadOnlyList<GroupMember>> MembersAsync(
         SqliteConnection connection,
@@ -365,6 +506,8 @@ public sealed class MoveAnnotator : IComponent
         int names,
         int written,
         int readings,
+        int reactions,
+        int unreached,
         int dropped,
         string gaps,
         CancellationToken cancellation)
@@ -377,8 +520,8 @@ public sealed class MoveAnnotator : IComponent
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$outcome", "ok");
-        command.Parameters.AddWithValue("$rows_written", written + readings);
-        command.Parameters.AddWithValue("$detail", $"{names} name(s), {written} move(s), {dropped} dropped, {readings} peer reading(s){gaps}");
+        command.Parameters.AddWithValue("$rows_written", written + readings + reactions);
+        command.Parameters.AddWithValue("$detail", $"{names} name(s), {written} move(s), {dropped} dropped, {readings} peer reading(s), {reactions} earnings reaction(s), {unreached} print(s) the bars do not reach{gaps}");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

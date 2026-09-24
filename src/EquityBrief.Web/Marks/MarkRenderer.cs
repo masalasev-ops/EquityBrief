@@ -170,6 +170,12 @@ public sealed record PeerCell(string Ticker, bool Own, decimal? Close, string? T
 // The two readings as the annotator stored them for a name, with the bars they were read over.
 public sealed record PeerFigures(DateOnly Session, decimal YearHigh, double BelowHighPct, double? ReturnPct, int Bars);
 
+// One print of a name's earnings reaction record as the page is given it: the report date, when in
+// the session it was reported, the session it moved on, the estimate and the actual as filed and
+// null where the provider filed none, the provider's surprise, none beside no estimate, and the
+// session's move.
+public sealed record ReactionCell(DateOnly ReportDate, string Timing, DateOnly Session, string? Estimate, string? Actual, double? SurprisePct, double MovePct);
+
 // Where the causes in a moves table came from: the date the accepted cause section
 // was written on and the model that wrote it.
 public sealed record CauseSource(DateOnly AsOf, string Model);
@@ -3812,6 +3818,59 @@ public sealed class MarkRenderer : IComponent
 
             table.Append(Invariant, $"<td class=\"trend-state\">{Escaped((row.TrendState ?? NotClassified).Replace('_', ' '))}</td>");
             table.Append(Invariant, $"<td class=\"c\">{(row.Distance is { } cell ? DistanceRow(cell) : "<span class=\"degraded\" data-distance=\"none\">no bands stored for this name</span>")}</td>");
+            table.Append("</tr>");
+        }
+
+        table.Append("</table></div></div>");
+
+        return table.ToString();
+    }
+
+    // Section 4's earnings reaction record, beside the earnings setups: one row per print over the
+    // calendar's year behind, each with its report date, its timing, the session it moved on, the
+    // estimate, the actual, the provider's surprise and that session's move, drawn as stored. A print
+    // with no filed estimate says so and draws no surprise, so it is never read as having met one.
+    // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+    // see: A screen reads and renders, and computes nothing
+    public string ReactionsTable(string ticker, IReadOnlyList<ReactionCell> prints)
+    {
+        var table = new StringBuilder();
+
+        table.Append(Invariant, $"<div class=\"reactions\" data-ticker=\"{Escaped(ticker)}\" data-prints=\"{prints.Count}\">");
+
+        if (prints.Count == 0)
+        {
+            table.Append(Invariant, $"<p class=\"degraded\" data-reactions=\"none\">No print over the calendar's year behind is stored for {Escaped(ticker)} with a session the stored bars reach.</p></div>");
+
+            return table.ToString();
+        }
+
+        table.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"reactions-table\" data-rows=\"{prints.Count}\">");
+        table.Append("<tr><th>Reported</th><th>When</th><th>Moved on</th><th>Estimate</th><th>Actual</th><th>Surprise</th><th>That session</th></tr>");
+
+        foreach (var print in prints)
+        {
+            var when = print.Timing switch
+            {
+                "before" => "before the open",
+                "after" => "after the close",
+                _ => "timing not filed",
+            };
+
+            table.Append(Invariant, $"<tr data-report-date=\"{print.ReportDate:yyyy-MM-dd}\" data-timing=\"{Escaped(print.Timing)}\" data-session=\"{print.Session:yyyy-MM-dd}\">");
+            table.Append(Invariant, $"<td>{print.ReportDate:yyyy-MM-dd}</td><td>{when}</td><td>{print.Session:yyyy-MM-dd}</td>");
+            table.Append(print.Estimate is { } estimate
+                ? Formatted($"<td class=\"r num\" data-estimate=\"{Escaped(estimate)}\">{Escaped(Figures.Read(estimate))}</td>")
+                : "<td class=\"estimate\" data-estimate=\"\"><span class=\"degraded\">none was filed</span></td>");
+            table.Append(print.Actual is { } actual
+                ? Formatted($"<td class=\"r num\" data-actual=\"{Escaped(actual)}\">{Escaped(Figures.Read(actual))}</td>")
+                : "<td class=\"actual\" data-actual=\"\"><span class=\"degraded\">not filed</span></td>");
+            table.Append(print.Estimate is null
+                ? "<td class=\"surprise\" data-surprise=\"\"><span class=\"degraded\">none, with no estimate to measure against</span></td>"
+                : print.SurprisePct is { } surprise
+                    ? Formatted($"<td class=\"surprise\" data-surprise=\"{Number(surprise)}\">{surprise.ToString("+0.##;-0.##;0", Invariant)}%</td>")
+                    : "<td class=\"surprise\" data-surprise=\"\"><span class=\"degraded\">not filed</span></td>");
+            table.Append(Formatted($"<td class=\"reaction-move\" data-move=\"{Number(print.MovePct)}\">{print.MovePct.ToString("+0.##;-0.##;0", Invariant)}%</td>"));
             table.Append("</tr>");
         }
 

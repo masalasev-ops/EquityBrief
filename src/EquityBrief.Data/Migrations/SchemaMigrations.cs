@@ -657,6 +657,7 @@ public static class SchemaMigrations
         new Migration(34, "research_request.asked_from admits the night", RequestAskedByTheNight),
         new Migration(35, "add move's group median", AddMoveGroupMedian),
         new Migration(36, "create peer_reading", CreatePeerReading),
+        new Migration(37, "create earnings_reaction", CreateEarningsReaction),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -791,6 +792,26 @@ public static class SchemaMigrations
             below_high_pct REAL NOT NULL,
             return_pct     REAL,
             bars           INTEGER NOT NULL
+        ) STRICT;
+    ";
+
+    // Each print's earnings reaction, one row per name and print over the calendar's year behind,
+    // written again every night by the move annotator from the calendar and the stored bars and
+    // deleted by it where a print falls out of either. The estimate and the actual are kept as the
+    // provider sent them, as text, and are null where it filed none; the surprise is the provider's
+    // and is null beside no estimate; the move is the reaction session's, from the close before it.
+    // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+    const string CreateEarningsReaction = @"
+        CREATE TABLE earnings_reaction (
+            ticker           TEXT NOT NULL,
+            report_date      TEXT NOT NULL,
+            timing           TEXT NOT NULL CHECK (timing IN ('before', 'after', 'unstated')),
+            reaction_session TEXT NOT NULL,
+            estimate         TEXT,
+            actual           TEXT,
+            surprise_pct     REAL,
+            move_pct         REAL NOT NULL,
+            PRIMARY KEY (ticker, report_date)
         ) STRICT;
     ";
 
