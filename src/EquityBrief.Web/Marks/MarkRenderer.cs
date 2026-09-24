@@ -195,7 +195,7 @@ public sealed record ResearchPausedLine(string Cap, DateTimeOffset ResumesAt, st
 
 // The paid calls the run log carries a recorded cost for, the passes they were made
 // in, and what they came to.
-public sealed record PricedCalls(int Count, int Passes, decimal Total);
+public sealed record PricedCalls(int Count, int Passes, decimal Total, int AtPeak = 0);
 
 // One row of tonight's list, already projected.
 //
@@ -2605,8 +2605,8 @@ public sealed class MarkRenderer : IComponent
         // owes: The spend cap set from the passes the ledger has priced
         if (priced is { } calls)
         {
-            header.Append(Invariant, $"<p class=\"priced-calls\" data-calls=\"{calls.Count}\" data-passes=\"{calls.Passes}\" data-spend=\"{calls.Total}\">");
-            header.Append(Invariant, $"paid calls with a recorded cost: {calls.Count} over {calls.Passes} research pass(es), costing {SpendVerdict.Money(calls.Total)} in all</p>");
+            header.Append(Invariant, $"<p class=\"priced-calls\" data-calls=\"{calls.Count}\" data-passes=\"{calls.Passes}\" data-spend=\"{calls.Total}\" data-at-peak=\"{calls.AtPeak}\">");
+            header.Append(Invariant, $"paid calls with a recorded cost: {calls.Count} over {calls.Passes} research pass(es), costing {SpendVerdict.Money(calls.Total)} in all, {calls.AtPeak} of them answered inside a peak window</p>");
         }
 
         header.Append("</header>");

@@ -169,6 +169,46 @@ public partial class ReadSurface
         }
     }
 
+    // The first session the calendar read each member's own listing alone for is 2026-09-24, the
+    // night after the correction that made it so merged that afternoon. Earnings soon counts on that
+    // session and not on the one before it, and the share firing any reason with it, read off the
+    // page for both nights so the boundary is decided at its own date.
+    [Fact]
+    public async Task EarningsSoonCountsFromTheFirstNightTheCalendarReadEachMembersOwnListing()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        int[] fired = [2, 1, 0, 0, 1, 3];
+
+        foreach (var night in new[] { "2026-09-23", "2026-09-24" })
+        {
+            for (var member = 0; member < SharesMembers; member++)
+            {
+                store.Execute(
+                    "INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons) VALUES " +
+                    $"('T{member.ToString("00", CultureInfo.InvariantCulture)}', '{night}', '{SharesReasons(member, fired, false)}', 0, '{{}}', '{{\"candidates\":[],\"skipped\":[]}}');");
+            }
+        }
+
+        var union = Enumerable.Range(0, SharesMembers).Count(member => SharesFires(member, fired).Any(on => on));
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        foreach (var (night, counts) in new[] { ("2026-09-23", false), ("2026-09-24", true) })
+        {
+            var region = Assert.Single(Blocks(await client.GetStringAsync($"/screens/run/{night}"), "<section class=\"reason-shares\"[^>]*>.*?</section>"));
+            var soon = Regex.Match(region, $"<tr data-reason=\"{ShortlistSeries.EarningsSoon}\" data-fired=\"(?<fired>[^\"]+)\"");
+            var any = Regex.Match(region, $"<tr data-reason=\"{TargetShares.AnyReason}\" data-fired=\"[^\"]+\" data-counted=\"[^\"]+\" data-share=\"(?<share>[^\"]+)\"");
+
+            Assert.True(soon.Success && any.Success, $"The run page for {night} draws no row for earnings soon or for any reason.");
+            Assert.Equal(counts ? fired[^1].ToString(CultureInfo.InvariantCulture) : "none", soon.Groups["fired"].Value);
+            Assert.Equal(
+                counts ? ((double)union / SharesMembers).ToString(CultureInfo.InvariantCulture) : "none",
+                any.Groups["share"].Value);
+        }
+    }
+
     [Fact]
     public void AStoreWithNoEventSessionSaysSoAndANightNoListingHoldsDrawsNoShare()
     {

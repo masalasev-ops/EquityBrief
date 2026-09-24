@@ -23549,6 +23549,181 @@ Carried:    the peers decision's name, "Peers are shown by price alone, in secti
             has. Its body stands and the page draws the peers beside the move table as it rules;
             renaming it is a supersession of its own, left to the operator.
 
+### 4.3 - correction: the first night earnings soon counts over each member's own listing is pinned at its boundary, where the test's nights left 2026-09-24 undecided   2026-09-24
+Corrects:   the 4.3 correction (cab9fa6), whose run page test read nights 2026-09-01, 2026-09-22
+            and 2026-09-28 onward. The first session the calendar read each member's own listing
+            alone for is 2026-09-24, and nothing read that session or the one before it, so the
+            date could move by up to four sessions either way with the suite green.
+Found:      by the phase 11 sign-off review on 2026-09-24, which moved the date to 2026-09-25 and
+            saw nothing go red. Tonight's night of 2026-09-24 is the first one the date decides.
+Repaired:   no shipped code moves. The test adds the boundary.
+Guarded:    `read-surface`, one test added,
+            `EarningsSoonCountsFromTheFirstNightTheCalendarReadEachMembersOwnListing`, which writes
+            the same rows for 2026-09-23 and 2026-09-24 and reads the run page for each: earnings
+            soon counts toward no share on the first and fires for its three on the second, and the
+            share firing any reason with it.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Tests:      1303, from 1302: one added to `read-surface`, none removed. Migrations 0 to 37 with
+            none added and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: no table or figure changed.
+Mutated:    the rule, stated before the run: move the first own-listing session each way by one.
+            Predicted:
+            M1 the first own-listing session moved to 2026-09-25: red in the test this correction
+            adds and nowhere else.
+            M2 the first own-listing session moved to 2026-09-23: red in the same test and nowhere
+            else.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            c8bd6c5, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1303 of 1303. M1 turned 1 red and 1302 green, and M2 turned 1
+            red and 1302 green, each the test this correction adds.
+Held:       both, in the test each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1303 of 1303
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1303 of 1303 tests.
+            Both gates ran over the tree carrying this entry, c8bd6c5, and the operator's store
+            under `data/` was not touched by either.
+Carried:    nothing.
+
+### 11.4 - correction: a night run for a session named on the command line asks for no report, read through the worker's own entry, where the one test handed the night the flag itself   2026-09-24
+Corrects:   11.4 (1a90173), whose test of a night run again handed the night
+            `askForTheFirstName: false` itself. The worker's entry sets it from whether a session
+            was named, and nothing read that wiring: an entry that always asked left the suite
+            green, and every rehearsal of a named session would then write a request and start a
+            paid pass.
+Found:      by the phase 11 sign-off review on 2026-09-24, which set the entry to ask whatever was
+            named and saw nothing go red.
+Repaired:   no shipped code moves. The test reads the wiring.
+Guarded:    `nightly-run`, one test added, `ANightForASessionNamedOnTheCommandLineAsksForNoReport`:
+            the worker's own entry run as a process over the fixture with `--session 2026-09-08`
+            and both models at a closed port exits 0, says no report was asked for since the night
+            was run again, and writes no request.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Tests:      1303, from 1302: one added to `nightly-run`, none removed. Migrations 0 to 37 with
+            none added and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: no table or figure changed.
+Mutated:    the rule, stated before the run: make the entry ask for a report where a session is
+            named.
+            Predicted:
+            M1 the entry asks for the first name whether or not a session is named: red in the test
+            this correction adds and nowhere else.
+            Results: one run of the whole suite in a detached worktree at 94cf930, never a
+            filter, reverted with `git reset --hard` and the tree read clean after, with no drain
+            left running. The baseline is 1303 of 1303. M1 turned 1 red and 1302 green, the test
+            this correction adds.
+Held:       the one, in the test it named and in its number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1303 of 1303
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1303 of 1303 tests.
+            Both gates ran over the tree carrying this entry, 94cf930, and the operator's store
+            under `data/` was not touched by either.
+Carried:    nothing.
+
+### 11.9 - the phase 11 report, amended: the two operating rows the correction of 11.1's start opened after the report, handed over here   2026-09-24
+Amends:     the phase 11 report (894b3ee), which said phase 11 opened no operating row. The
+            correction of 11.1 in the entry that follows, on the operator's ruling of 2026-09-24,
+            opens two, and a phase's report is where what the phase leaves running is handed over.
+Opened:     two operating rows.
+            **A paid call answered inside a peak window**
+            Its trigger is the first paid call the run page counts as answered inside a peak window.
+            **The start bound reviewed at twenty passes**
+            Its trigger is 20 passes that ran to their end on the queue page's count.
+            `obligation-reconciles` states the count, two, in advance.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the entry that follows records.
+
+### 11.1 - correction: a pass starts only where the longest pass the store holds would end before a peak window opens, where the drain checked only the instant it claimed at   2026-09-24
+Corrects:   11.1 (332d716), whose drain waited for a window only where the instant it claimed at
+            fell inside one. A pass's paid calls come at its end, so a pass taken at 00:55 UTC on a
+            weekday made its calls after 01:00 at double the rate, where 11.1 says every pass is
+            paid at the off-peak rate and the operator ruled off-peak hours are for everything. The
+            night's own report can start as late as about 00:45 UTC when the overnight queue uses
+            its hour, and one earlier pass took 26 minutes.
+Found:      by the phase 11 sign-off review on 2026-09-24.
+Ruled:      by the operator on 2026-09-24: a pass is not started where it could reach a window,
+            bounded by the longest pass the store holds that ran to its end rather than the median
+            with a margin; the queue page states the same start from one function both call; the
+            cost is stated; the calls answered inside a window are counted where the run page
+            states the priced passes; and two operating rows carry the first such call and a
+            review of the bound at twenty passes.
+Repaired:   the pricing states the first instant at or after a moment at which a pass as long as
+            the bound starts off peak and ends before the next window opens. The drain waits for
+            it before it claims and the queue page states it, both calling it with the longest pass
+            the store holds that ran to its end, read by the one query both share. The queue page's
+            estimate line names the longest pass. The run page's priced calls line counts the paid
+            calls answered inside a peak window. A store holding no finished pass has no bound, and
+            only a start inside a window moves, as before.
+Costs:      with the 26-minute pass the store holds, on a weekday no pass starts after about 00:34
+            or 05:34 UTC. The night's own report, asked about 00:13 UTC after the night of
+            2026-09-23 and about 00:40 UTC when the overnight queue uses its hour, waits until 04:00
+            UTC on nights of Monday to Thursday in New York, midnight in New York before 2026-11-01
+            and 23:00 after, and the queue page and tonight's row say it starts then, when the peak
+            window ends.
+Missed:     the drain's tests read only whether the instant a pass was taken at fell inside a
+            window, and none took one whose pass would run into a window.
+Guarded:    `read-surface`, two tests added.
+            `ADrainTakesARequestOnlyWhereTheLongestPassItHoldsWouldEndBeforeTheNextPeakWindow`
+            reads six instants at both windows' edges on a weekday and a Saturday, with passes of
+            26 and 4 minutes held: the drain's pass and wait, and the queue page's start and basis,
+            each against the instant worked by hand. A pass taken at 00:33:59 starts then, and one
+            at 00:34:00 waits until 04:00.
+            `TheRunPageCountsThePaidCallsAnsweredInsideAPeakWindow` reads one call answered at
+            01:30 on a Monday and one at noon, and the line counts one.
+            Four existing tests read under the bound: the estimate carries the longest pass, and
+            a request behind a pass ending at 00:50 starts at 04:00 rather than at 00:50.
+Written:    the decision in `DECISIONS.md`; section 6's paragraph on pricing and section 15.15's
+            row on when each request will be written, in the architecture, their prior text in
+            `CHANGELOG.md`; two operating rows in `BUILD_PLAN.md`, each cited back at the end of the
+            checkpoint that builds its surface; the count of operating rows phase
+            11 opened, 2, in `obligation-reconciles`, and the amended report entry above naming
+            them; the roster's `read-surface` row, its prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      1309, from 1302: seven added to `read-surface`, the drain test's six cases and the run
+            page's count, none removed. Migrations 0 to 37 with none added and none pending,
+            schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: the row section 15.15 carries was
+            reworded and splits into the parts it had.
+Mutated:    the rule, stated before the run: break the bound on each side that reads it, the
+            boundary's side, and the count.
+            Predicted:
+            M1 the drain's bound read as the median of the finished passes: red in the drain test
+            this correction adds, in its two cases that wait, and nowhere else.
+            M2 the queue page's bound read as the median: red in the same test's same two cases,
+            and nowhere else.
+            M3 a pass whose bound ends as a window opens counted as clearing it: red in the same
+            two cases, and nowhere else.
+            M4 the run page counting no call as answered at peak: red in the run page test this
+            correction adds, and nowhere else.
+            Results: one run for each mutation in a detached worktree at 9e3b49e, filtered to the
+            35 tests of the drain, the queue page's times and the run page's spend on the
+            operator's instruction of 2026-09-24 that whole-suite runs took too long, each reverted
+            with `git reset --hard` and the tree read clean after. The whole suite ran green over
+            the same tree in the gates, 1309 of 1309. M1, M2 and M3 each turned 2 red and 33 green,
+            the drain test's cases at 00:34:00 and 05:34:00, and M4 turned 1 red and 34 green, the
+            run page test this correction adds.
+Held:       all four, in the tests each named and in their number, within the filtered scope;
+            whether nothing else went red was read over those 35 tests alone.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1309 of 1309
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1309 of 1309 tests.
+            Both gates ran over the tree carrying this entry, 9e3b49e, and the operator's store
+            under `data/` was not touched by either.
+Carried:    the operating rows A paid call answered inside a peak window and The start bound
+            reviewed at twenty passes.
+
 ### 4.3 ruling - the calendar keeps reading each member's own listing, no date is borrowed from another, and the members whose own listing files no next report date are carried   2026-09-24
 Not a checkpoint entry. It lands nothing.
 Ruled:      by the operator on 2026-09-24, from the phase 11 sign-off review's account of what the
