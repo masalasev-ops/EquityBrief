@@ -23564,17 +23564,27 @@ Guarded:    `read-surface`, one test added,
             share firing any reason with it.
 Written:    no spec.
 Expected:   derived: no expectation file moves.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. No claim added: no table or figure changed.
+Tests:      1303, from 1302: one added to `read-surface`, none removed. Migrations 0 to 37 with
+            none added and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: no table or figure changed.
 Mutated:    the rule, stated before the run: move the first own-listing session each way by one.
             Predicted:
             M1 the first own-listing session moved to 2026-09-25: red in the test this correction
             adds and nowhere else.
             M2 the first own-listing session moved to 2026-09-23: red in the same test and nowhere
             else.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            c8bd6c5, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1303 of 1303. M1 turned 1 red and 1302 green, and M2 turned 1
+            red and 1302 green, each the test this correction adds.
+Held:       both, in the test each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1303 of 1303
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1303 of 1303 tests.
+            Both gates ran over the tree carrying this entry, c8bd6c5, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing.
