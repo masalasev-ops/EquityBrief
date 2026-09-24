@@ -23845,8 +23845,11 @@ Repaired:   the test reads every manifest's inputs and holds the json files the 
 Guarded:    `banned-prose`, in the test that held the ceiling. The roster's row says so.
 Written:    the roster's `banned-prose` row, its prior text in `CHANGELOG.md`.
 Expected:   derived: no expectation file moves.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. No claim added: no table or figure changed.
+Tests:      1304, from 1302: two added to `read-surface`, 11.5's and 5.8's, and `banned-prose`'s
+            test held to the manifests rather than to a ceiling, none removed. Migrations 0 to 37
+            with none added and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: no table or figure changed.
 Mutated:    the rule, stated before the run: break the exclusion from each side the operator named.
             Predicted:
             M4 the exclusion widened to every json file beside a manifest: red in the test that
@@ -23854,9 +23857,21 @@ Mutated:    the rule, stated before the run: break the exclusion from each side 
             M5 one input removed from the manifest: red in the same test, naming its file.
             M6 a file's name added to the manifest's description: red in the same test, the file
             excluded but not declared.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run for each of this batch's six mutations in a detached worktree at
+            0427bf8, filtered to the 12 tests of 11.5's former-member test, 5.8's chart test and
+            `banned-prose` on the operator's instruction of 2026-09-24 that whole-suite runs took
+            too long, each reverted with `git reset --hard` and the tree read clean after. The whole
+            suite ran green over the same tree in the gates, 1304 of 1304. M1 and M2 each turned 1
+            red and 11 green, 11.5's test; M3 turned 1 red and 11 green, 5.8's test; and M4, M5 and
+            M6 each turned 1 red and 11 green, `banned-prose`'s
+            `TheCaptureExclusionIsTheCapturesAndNothingElse`.
+Held:       all six, in the test each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1304 of 1304
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1304 of 1304 tests.
+            Both gates ran over the tree carrying this entry and the three before it, 0427bf8,
+            and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
