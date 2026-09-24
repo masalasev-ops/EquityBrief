@@ -838,9 +838,12 @@ public static class RunScreen
         night);
 
     // The paid calls the log carries a recorded cost for, counted, their passes counted
-    // by the run each was made under, and summed, off the rows the read surface handed back.
-    public static PricedCalls Priced(IReadOnlyList<(string RunId, decimal Spend)> spends) =>
-        new(spends.Count, spends.Select(call => call.RunId).Distinct(StringComparer.Ordinal).Count(), spends.Sum(call => call.Spend));
+    // by the run each was made under, and summed, off the rows the read surface handed back,
+    // with how many came back inside a peak window, which is a pass that outlasted the bound
+    // it was started under.
+    // see: A pass starts only where the longest pass the store holds would end before a peak window opens
+    public static PricedCalls Priced(IReadOnlyList<(string RunId, decimal Spend)> spends, int atPeak = 0) =>
+        new(spends.Count, spends.Select(call => call.RunId).Distinct(StringComparer.Ordinal).Count(), spends.Sum(call => call.Spend), atPeak);
 }
 
 // One resolved setup, as the record counts it.

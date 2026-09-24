@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Passes;
+using EquityBrief.Api.Reading;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Checks;
@@ -292,6 +293,66 @@ public partial class ReadSurface
 
         Assert.Equal(waitsUntil is null ? [] : [begins], waits);
         Assert.Equal([begins], passes);
+    }
+
+    // The bound worked by hand at each window's edges, on a weekday and on a Saturday. The longest
+    // pass the store holds is twenty-six minutes, so a request taken at the last second whose pass
+    // would end before a window opens starts then, and one a second later waits for the window to
+    // end. The median, fifteen minutes, would have let the second run into the window. The queue
+    // page states the same instant, from the one function the drain calls.
+    // see: A pass starts only where the longest pass the store holds would end before a peak window opens
+    [Theory]
+    [InlineData("2026-09-24T00:33:59Z", "2026-09-24T00:33:59Z")]
+    [InlineData("2026-09-24T00:34:00Z", "2026-09-24T04:00:00Z")]
+    [InlineData("2026-09-24T05:33:59Z", "2026-09-24T05:33:59Z")]
+    [InlineData("2026-09-24T05:34:00Z", "2026-09-24T10:00:00Z")]
+    [InlineData("2026-09-26T00:34:00Z", "2026-09-26T00:34:00Z")]
+    [InlineData("2026-09-26T05:34:00Z", "2026-09-26T05:34:00Z")]
+    public async Task ADrainTakesARequestOnlyWhereTheLongestPassItHoldsWouldEndBeforeTheNextPeakWindow(string now, string begins)
+    {
+        using var store = RequestsFor("KEYS");
+
+        // Two passes that ran to their end, twenty-six minutes and four.
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome) VALUES "
+            + "('research-20260919T030000Z-NVDA', 'research', '2026-09-19T03:25:00Z', '2026-09-19T03:26:00Z', 'ok'),"
+            + "('research-20260920T100000Z-DGX', 'research', '2026-09-20T10:03:00Z', '2026-09-20T10:04:00Z', 'ok');");
+
+        var pricing = Providers.ResearchModelFeedTests.Shipped().Pricing;
+        var clock = new WaitedClock(UtcAt(now));
+        var waits = new List<DateTimeOffset>();
+        var passes = new List<DateTimeOffset>();
+
+        await RequestDrain.DrainAsync(
+            store.DatabaseFile,
+            clock,
+            _ =>
+            {
+                passes.Add(clock.UtcNow);
+
+                return Task.CompletedTask;
+            },
+            pricing,
+            until =>
+            {
+                waits.Add(until);
+                clock.UtcNow = until;
+
+                return Task.CompletedTask;
+            });
+
+        Assert.Equal([UtcAt(begins)], passes);
+        Assert.Equal(now == begins ? [] : [UtcAt(begins)], waits);
+
+        var time = Assert.Single(
+            QueueTimes.For(
+                [Request("KEYS", "2026-09-20T12:00:00Z", ResearchRequests.Outstanding)],
+                new Dictionary<RequestRow, DateTimeOffset?>(),
+                QueueTimes.Estimate([TimeSpan.FromMinutes(26), TimeSpan.FromMinutes(4)]),
+                pricing,
+                UtcAt(now)));
+
+        Assert.Equal((now == begins ? TimeBasis.Now : TimeBasis.PeakEnds, UtcAt(begins)), (time.Basis, time.Starts!.Value));
     }
 
     [Fact]

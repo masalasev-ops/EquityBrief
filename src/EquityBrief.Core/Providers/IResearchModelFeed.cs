@@ -239,6 +239,50 @@ public sealed record ResearchPricing
         throw new InvalidOperationException("Every hour of every day is at peak, so there is no off-peak window for paid work to wait for.");
     }
 
+    // The first instant at or after this one at which a pass as long as the bound starts off peak
+    // and ends before a peak window opens: the instant itself where it is off peak and the bound
+    // ends before the next window, and otherwise the end of the window the pass would reach, read
+    // again from there. A bound of nothing moves only a start that falls inside a window. The drain
+    // takes a request at this instant and the queue page states it, so the two cannot disagree.
+    // see: A pass starts only where the longest pass the store holds would end before a peak window opens
+    public DateTimeOffset StartFor(DateTimeOffset instant, TimeSpan bound)
+    {
+        var at = OffPeakFrom(instant);
+
+        // A week holds every window twice over on every day it names, so a bound that fits
+        // between two windows anywhere in it is found inside this many steps.
+        for (var step = 0; step < 64; step++)
+        {
+            if (PeakOpensAfter(at) is not { } opens || at + bound < opens)
+            {
+                return at;
+            }
+
+            at = OffPeakFrom(opens);
+        }
+
+        throw new InvalidOperationException(
+            $"No stretch between peak windows in a week is longer than a pass of {bound}, so no pass can start and end off peak.");
+    }
+
+    // The instant the next peak window opens after this one, which is always the start of an hour,
+    // or none where the pricing names no window in the week ahead.
+    public DateTimeOffset? PeakOpensAfter(DateTimeOffset instant)
+    {
+        var utc = instant.ToUniversalTime();
+        var hour = new DateTimeOffset(utc.Year, utc.Month, utc.Day, utc.Hour, 0, 0, TimeSpan.Zero);
+
+        for (var step = 1; step <= 24 * 8; step++)
+        {
+            if (IsPeak(hour.AddHours(step)))
+            {
+                return hour.AddHours(step);
+            }
+        }
+
+        return null;
+    }
+
     // What an answer cost: the cached prompt tokens, the uncached ones and the
     // completion, each at its rate, multiplied where the provider's own timestamp falls
     // at peak.

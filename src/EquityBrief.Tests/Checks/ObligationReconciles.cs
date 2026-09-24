@@ -474,7 +474,9 @@ public class ObligationReconciles
     static readonly Dictionary<string, int> OperatingRowsOpened = new(StringComparer.Ordinal)
     {
         ["10"] = 4,
-        ["11"] = 0,
+        // Two, opened by the correction of 11.1's start after the phase's report said none, and
+        // named in the report entry that amends it.
+        ["11"] = 2,
     };
 
     internal const string NoOperatingRowOpened = "opened no operating row";

@@ -206,7 +206,7 @@ public partial class ReadSurface
         var api = Api(store);
         var stages = RunScreen.Stages(await api.RunLogAsync(new DateOnly(2026, 9, 11)));
         var drawn = new MarkRenderer().OperationalHeader(new DateOnly(2026, 9, 11), stages, priced);
-        var line = Regex.Match(drawn, "<p class=\"priced-calls\" data-calls=\"(\\d+)\" data-passes=\"(\\d+)\" data-spend=\"([^\"]+)\">([^<]*)</p>");
+        var line = Regex.Match(drawn, "<p class=\"priced-calls\" data-calls=\"(\\d+)\" data-passes=\"(\\d+)\" data-spend=\"([^\"]+)\" data-at-peak=\"(\\d+)\">([^<]*)</p>");
 
         Assert.True(line.Success);
 
@@ -218,5 +218,33 @@ public partial class ReadSurface
             Summed(store, "stage LIKE 'research call:%' AND outcome = 'ok'"),
             decimal.Parse(line.Groups[3].Value, CultureInfo.InvariantCulture));
         Assert.Equal(0.00036785m, decimal.Parse(line.Groups[3].Value, CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public async Task TheRunPageCountsThePaidCallsAnsweredInsideAPeakWindow()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        // Two answered paid calls, one that came back at 01:30 on a Monday, inside the first window,
+        // and one at noon, and a call a cap refused, which carries no price. A night's stage is
+        // stored so the header draws its priced line.
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES "
+            + "('research-20260921T012000Z-KEYS', 'research call: The two cases', '2026-09-21T01:20:00Z', '2026-09-21T01:30:00Z', 'ok', 0, 1, 0, '0.0001', '{\"created\":\"2026-09-21T01:30:00Z\"}'),"
+            + "('research-20260921T115000Z-AAPL', 'research call: The two cases', '2026-09-21T11:50:00Z', '2026-09-21T12:00:00Z', 'ok', 0, 1, 0, '0.0001', '{\"created\":\"2026-09-21T12:00:00Z\"}'),"
+            + "('research-20260921T020000Z-MSFT', 'research call: The two cases', '2026-09-21T02:00:00Z', '2026-09-21T02:00:00Z', 'paused', 0, 0, 0, '0', '{\"created\":\"2026-09-21T02:00:00Z\"}');");
+        Spend(store, "night", "facts", "2026-09-21T21:10:00Z", "0");
+
+        var api = Api(store);
+        var answers = await api.PaidCallAnswersAsync();
+
+        Assert.Equal([UtcAt("2026-09-21T01:30:00Z"), UtcAt("2026-09-21T12:00:00Z")], answers.Order());
+
+        var priced = RunScreen.Priced(await api.PaidCallSpendsAsync(), answers.Count(Providers.ResearchModelFeedTests.Shipped().Pricing.IsPeak));
+        var drawn = new MarkRenderer().OperationalHeader(new DateOnly(2026, 9, 21), RunScreen.Stages(await api.RunLogAsync(new DateOnly(2026, 9, 21))), priced);
+
+        Assert.Contains("data-calls=\"2\" data-passes=\"2\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("data-at-peak=\"1\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("1 of them answered inside a peak window</p>", drawn, StringComparison.Ordinal);
     }
 }

@@ -459,6 +459,13 @@ public sealed class ReadApi : IComponent
     // call the provider answered with nothing usable and billed all the same, which is a
     // refusal carrying a cost. A call refused before it was made, or never answered,
     // carries none.
+    // The instant each answered paid call came back, which is the instant its price was read at.
+    const string PaidCallAnswers = @"
+        SELECT json_extract(detail, '$.created')
+        FROM run_log
+        WHERE substr(stage, 1, length($prefix)) = $prefix AND spend != $nothing AND json_valid(detail);
+    ";
+
     const string PaidCallSpends = @"
         SELECT run_id, spend
         FROM run_log
@@ -2152,6 +2159,32 @@ public sealed class ReadApi : IComponent
         return spends;
     }
 
+    // The instant every answered paid call came back, as the run log carries it.
+    public async Task<IReadOnlyList<DateTimeOffset>> PaidCallAnswersAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PaidCallAnswers;
+        command.Parameters.AddWithValue("$prefix", PaidCallStage + ":");
+        command.Parameters.AddWithValue("$nothing", NothingSpent);
+
+        var answers = new List<DateTimeOffset>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            if (!reader.IsDBNull(0)
+                && DateTimeOffset.TryParse(reader.GetString(0), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var answered))
+            {
+                answers.Add(answered);
+            }
+        }
+
+        return answers;
+    }
+
     // A name's written sections, one per section, each the newest the checker
     // accepted, with its industry cycle among them, which is its theme's rather than a row
     // of its own.
@@ -2944,14 +2977,6 @@ public sealed class ReadApi : IComponent
                 : $"nothing was taken out: {ticker}'s request is {state}, and only one nobody has started can be withdrawn.");
     }
 
-    // The passes that ran to their end, each from the instant its run is named for to the end
-    // of its last stage, which is the population the queue page's estimate is the median of.
-    // A pass the runner stopped before its last stage wrote no row here and is not one of them.
-    const string FinishedPasses = @"
-        SELECT run_id, ended_at FROM run_log
-        WHERE stage = 'research' AND outcome = 'ok' AND run_id LIKE 'research-%' AND ended_at IS NOT NULL;
-    ";
-
     // The newest row of a name's passes that started at or after a request was asked for,
     // read by the order rows were written, whose run names the instant that pass started.
     const string PassSince = @"
@@ -2965,7 +2990,7 @@ public sealed class ReadApi : IComponent
         await using var connection = Open();
         await using var command = connection.CreateCommand();
 
-        command.CommandText = FinishedPasses;
+        command.CommandText = PassRun.FinishedPasses;
 
         var passes = new List<TimeSpan>();
 
@@ -2973,9 +2998,9 @@ public sealed class ReadApi : IComponent
 
         while (await reader.ReadAsync())
         {
-            if (PassRun.StartedAt(reader.GetString(0)) is { } started)
+            if (PassRun.Took(reader.GetString(0), reader.GetString(1)) is { } took)
             {
-                passes.Add(RequestedAt(reader.GetString(1)) - started);
+                passes.Add(took);
             }
         }
 

@@ -39,7 +39,7 @@ public sealed record QueuedTime(string Basis, string? Starts, string? Ends, stri
 
 // What the queue page's times rest on: how many passes that ran to their end the store
 // holds, and their median in whole minutes where it holds any.
-public sealed record QueueEstimate(int Passes, string? Minutes);
+public sealed record QueueEstimate(int Passes, string? Minutes, string? LongestMinutes = null);
 
 // The shell the browser loads once, and the routes it answers.
 //
@@ -1068,7 +1068,7 @@ public sealed class SinglePageApp : IComponent
         if (estimate is not null)
         {
             body.Append(estimate.Minutes is { } minutes
-                ? Invariant($"<p class=\"queue-estimate\" data-passes=\"{estimate.Passes}\" data-median-minutes=\"{minutes}\">Times are New York's with the offset named and UTC beside them. A pass is expected to take {minutes} minutes, the median of the {estimate.Passes} {(estimate.Passes == 1 ? "pass" : "passes")} the store holds that ran to their end, and a pass asked at peak waits for the off-peak rate.</p>")
+                ? Invariant($"<p class=\"queue-estimate\" data-passes=\"{estimate.Passes}\" data-median-minutes=\"{minutes}\" data-longest-minutes=\"{estimate.LongestMinutes}\">Times are New York's with the offset named and UTC beside them. A pass is expected to take {minutes} minutes, the median of the {estimate.Passes} {(estimate.Passes == 1 ? "pass" : "passes")} the store holds that ran to their end, and a pass starts only where the longest of them, {estimate.LongestMinutes} minutes, would end before the next peak window opens.</p>")
                 : Invariant($"<p class=\"queue-estimate\" data-passes=\"0\">Times are New York's with the offset named and UTC beside them. The store holds no pass that ran to its end, so it cannot estimate how long one takes, and no request behind another is given a time.</p>"));
         }
 
