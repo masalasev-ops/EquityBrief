@@ -23371,17 +23371,27 @@ Guarded:    `figure-fits`, one test added,
             so.
 Written:    the architecture's stylesheet, its prior text in `CHANGELOG.md`.
 Expected:   derived: no expectation file moves.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. No claim added: the stylesheet is not a table.
+Tests:      1300, from 1299: one added to `figure-fits`, none removed. Migrations 0 to 37 with
+            none added and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: the stylesheet is not a table.
 Mutated:    the rule, stated before the run: put back a cap the correction lifts, one in each unit
             the reader reads.
             Predicted:
             M1 the paragraphs capped at 82 characters again: red in
             `TheDocumentsTextSpansTheColumnItsTablesAndFiguresDrawIn` and nowhere else.
             M2 the lists capped at 700 pixels: red in the same test and nowhere else.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            df47d84, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1300 of 1300. M1 turned 1 red and 1299 green, and M2 turned 1
+            red and 1299 green, each the test this correction adds.
+Held:       both, in the test each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1300 of 1300
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1300 of 1300 tests.
+            Both gates ran over the tree carrying this entry, df47d84, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing.
