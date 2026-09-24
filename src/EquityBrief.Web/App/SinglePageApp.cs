@@ -513,7 +513,8 @@ public sealed class SinglePageApp : IComponent
         NameMast? mast = null,
         DateOnly? filedOn = null,
         ListingHistoryCard? history = null,
-        DateOnly? night = null)
+        DateOnly? night = null,
+        PeersView? peers = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -690,6 +691,23 @@ public sealed class SinglePageApp : IComponent
             stamp: Cards.Night(session),
             id: "how-it-got-here",
             region: "how-it-got-here"));
+
+        // The peers, beneath the table of the biggest moves: every member of the group those
+        // moves are read against, by price alone and in ticker order, ranking none.
+        // see: Peers are shown by price alone, in section 2 beside the move table
+        if (peers is not null)
+        {
+            Card("peers", "Its group, by price", Cards.Computed(
+                "Its group, by price",
+                marks.PeersTable(ticker, peers) + Cards.Key(
+                    "How to read it.",
+                    Invariant($"Every member of the group the moves above are read against, in ticker order with {Escaped(ticker)} marked. Each row gives the last stored close, how far it sits below the highest price among the bars the store holds for it, its return over the last {EquityBrief.Core.Moves.PeerReadings.ReturnWindow} sessions, its trend and where the close sits between its nearest bands, in typical days, all computed from the stored daily bars. A name holding too few bars for the return says how many it holds rather than giving one over fewer sessions."),
+                    "The table lists and ranks none: a peer sitting further below its high is not a better or a worse name, and nothing on the page is decided by this table."),
+                title: "Its group, by price alone",
+                stamp: Cards.Night(session),
+                id: "peers",
+                region: "peers"));
+        }
 
         // The chart region: the level chart and, on its price scale, the volume profile
         // beside it, both drawn at one scale so a price is at one height in both.

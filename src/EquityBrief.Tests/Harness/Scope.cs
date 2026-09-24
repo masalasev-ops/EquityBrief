@@ -299,6 +299,58 @@ internal static class Scope
             Verdict.Pass,
             "every row of the table of the biggest moves carries its group's median as the annotator stored it, named as an industry or a sector with how many members it was taken over, read back off the name's page against the store, and a group holding nobody says so",
             ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Peers, beneath the table of the biggest moves")] = new Scoped(
+            Verdict.Pass,
+            "the peers card is drawn on the name's page immediately after the card holding the table of the biggest moves, read off the page's own markup",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Peers, every member of the name's group by price alone")] = new Scoped(
+            Verdict.Pass,
+            "every member of the group the name's readings were taken against is a row of the table and no other name is, read off each fixture name's page against the members the moves expectation derives by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Peers, in ticker order with the name's own row marked")] = new Scoped(
+            Verdict.Pass,
+            "the rows are in ticker order and exactly one of them, the name's own, is marked, read off each fixture name's page",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Peers, ranking none")] = new Scoped(
+            Verdict.Pass,
+            "no row carries a rank, a place or a number of its own, and the order is the tickers' whatever the figures, read off constructed rows whose figures run against their tickers",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Peers, each row carrying the close")] = new Scoped(
+            Verdict.Pass,
+            "each row's close is the universe row's stored close for its ticker, read off the page against the store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Peers, how far it sits below the stored year's high")] = new Scoped(
+            Verdict.Pass,
+            "each row's distance below the year's high and the high itself are the annotator's stored reading for its ticker, with the bars they were read over, read off the page against the store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Peers, its return over sixty sessions")] = new Scoped(
+            Verdict.Pass,
+            "each row's return is the annotator's stored reading for its ticker, and a name holding too few bars for it says not available with its bar count, read off the page against the store and over constructed rows",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Peers, its trend state")] = new Scoped(
+            Verdict.Pass,
+            "each row's trend state is the ladder's stored state for its ticker as the universe row carries it, in a word",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Peers, the distance row mark")] = new Scoped(
+            Verdict.Pass,
+            "each row draws the same distance row mark the universe table draws for its ticker, in typical days",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Peers, a key saying how to read it")] = new Scoped(
+            Verdict.Pass,
+            "the card closes on a key saying how to read the table and what to take from it",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Peer return window")] = new Scoped(
+            Verdict.Pass,
+            "a return is taken over sixty sessions and a series one short of the window and the close it is measured from has none, over constructed bars, and the constant the row states is the one the reading uses",
+            ByExpectations),
+        [CheckReach.Key(StoresTable, "Peer readings")] = new Scoped(
+            Verdict.Pass,
+            "one row per name carrying the session, the group, the year's high, the distance below it, the return and the bars, each read back off the store the fixture's replay wrote against readings worked by hand from the captured bars",
+            ByExpectations),
+        [CheckReach.Key(FixtureTable, "peers")] = new Scoped(
+            Verdict.Pass,
+            "each fixture name's two readings and the bars they rest on are diffed against an expectation worked by hand from the captured bars through the replay's own rules rather than frozen from a run",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "Group floor")] = new Scoped(
             Verdict.Pass,
             "an industry of five other members is the group and one of four gives way to the sector, over constructed members, and the constant the row states is the one the rule reads",
@@ -1960,6 +2012,9 @@ internal static class Scope
         // arrives rather than where the first does. The move annotator at 5.2
         // is that point; indicators land at 3.1 and ladders at 4.2.
         ["Indicators, swings, volume profile, levels, ladders, moves"] = "5.2",
+
+        // A store of its own from 11.6, one row per name rather than a year of them.
+        ["Peer readings"] = "11.6",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -2162,7 +2217,17 @@ internal static class Scope
         // The four parts phase 11's document pass wrote before any of them is drawn, each
         // owed at the checkpoint that builds it and out of scope until that one lands.
         [CheckReach.Key("15.9 Name", "Each move beside its group")] = "11.5",
-        [CheckReach.Key("15.9 Name", "Peers")] = "11.6",
+        // 11.6 read the Peers row as its parts, each owed where the table is drawn.
+        [CheckReach.Key("15.9 Name", "Peers, beneath the table of the biggest moves")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, every member of the name's group by price alone")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, in ticker order with the name's own row marked")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, ranking none")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, each row carrying the close")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, how far it sits below the stored year's high")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, its return over sixty sessions")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, its trend state")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, the distance row mark")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, a key saying how to read it")] = "11.6",
         [CheckReach.Key("15.9 Name", "Earnings reactions")] = "11.7",
         [CheckReach.Key("15.9 Name", "Dividend")] = "11.8",
         // Decomposed at 6.5, each into the part the judge's verdict draws and the
@@ -2268,6 +2333,10 @@ internal static class Scope
             ["the level chart", "the volume profile beside it on the same price axis", "the momentum panel beneath", "the level summary table with each band's members and dates"],
         [CheckReach.Key("15.9 Name", "The plan")] =
             ["the plan column mark", "the tranche table with conditions and stops", "the exit table with actions", "the earnings setups", "the sizing arithmetic"],
+        // 11.6. The row names the table's place, its population, its order and its five
+        // columns, and a verdict over it whole would pass with one column undrawn.
+        [CheckReach.Key("15.9 Name", "Peers")] =
+            ["beneath the table of the biggest moves", "every member of the name's group by price alone", "in ticker order with the name's own row marked", "ranking none", "each row carrying the close", "how far it sits below the stored year's high", "its return over sixty sessions", "its trend state", "the distance row mark", "a key saying how to read it"],
         [CheckReach.Key("15.9 Name", "How it got here")] =
             ["the table of the biggest moves", "the cause of each where research has been written", "the twelve-month picture"],
         [CheckReach.Key("15.10 Run", "Operational header")] =
@@ -2561,6 +2630,7 @@ internal static class Scope
         ["levels"] = "3.4",
         ["ladder"] = "4.4",
         ["moves"] = "5.2",
+        ["peers"] = "11.6",
         ["listings"] = "5.4",
         ["facts"] = "5.3",
         ["forward returns"] = "5.5",
@@ -2633,6 +2703,7 @@ internal static class Scope
         ["Nightly row coverage"] = "5.4",
         ["Reports the night asks for"] = "11.4",
         ["Group floor"] = "11.5",
+        ["Peer return window"] = "11.6",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

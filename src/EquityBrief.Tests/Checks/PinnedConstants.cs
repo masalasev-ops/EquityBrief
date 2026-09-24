@@ -163,6 +163,7 @@ public class PinnedConstants
             new(Versions, "18", RuleVersions.MostAtOnce, "RuleVersions.MostAtOnce"),
             new("Reports the night asks for", "1", RequestDrain.NightAsksFor, "RequestDrain.NightAsksFor"),
             new("Group floor", "5", Groups.Floor, "Groups.Floor"),
+            new("Peer return window", "60", PeerReadings.ReturnWindow, "PeerReadings.ReturnWindow"),
         ];
     }
 

@@ -8,12 +8,14 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Moves;
 
-public sealed record MoveOutcome(int NamesExamined, int RowsWritten, int RowsDropped);
+public sealed record MoveOutcome(int NamesExamined, int RowsWritten, int RowsDropped, int PeerReadings = 0);
 
 // The move annotator. Reads the stored bars for every name the store holds and
 // writes the largest single-day and multi-day moves of the stored year, which
 // become the rows of the how-it-got-here table, each beside its group's median
 // move over the same sessions, read off the membership on the night's session.
+// Over the same bars it writes each name's two readings for the peers table,
+// beside the group its moves are read against.
 //
 // It makes no request and calls no model, for the reason the swing finder does
 // not: everything it needs is already in the store.
@@ -41,6 +43,7 @@ public sealed class MoveAnnotator : IComponent
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Move, Touch.Insert | Touch.Update | Touch.Delete),
+            new StoreTouch(Store.PeerReading, Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -53,11 +56,34 @@ public sealed class MoveAnnotator : IComponent
     const string TickersWithBars = "SELECT DISTINCT ticker FROM bar ORDER BY ticker;";
 
     // Every stored bar at once, because a move's group median reads other names' closes
-    // on the move's own sessions, which a read one name at a time cannot reach.
+    // on the move's own sessions, which a read one name at a time cannot reach. The high is
+    // read for the peers table's distance below the year's high.
     const string AllBars = @"
-        SELECT ticker, session_date, close
+        SELECT ticker, session_date, high, close
         FROM bar
         ORDER BY ticker, session_date;
+    ";
+
+    // A name's two readings, one row per name, replaced every night.
+    const string UpsertReading = @"
+        INSERT INTO peer_reading (ticker, session_date, group_kind, group_name, year_high, below_high_pct, return_pct, bars)
+        VALUES ($ticker, $session_date, $group_kind, $group_name, $year_high, $below_high_pct, $return_pct, $bars)
+        ON CONFLICT (ticker) DO UPDATE SET
+            session_date = excluded.session_date,
+            group_kind = excluded.group_kind,
+            group_name = excluded.group_name,
+            year_high = excluded.year_high,
+            below_high_pct = excluded.below_high_pct,
+            return_pct = excluded.return_pct,
+            bars = excluded.bars;
+    ";
+
+    // The readings of a name the gap stop withheld tonight, and of a name that holds no bars
+    // any more, which a table of one row per name would otherwise keep beside tonight's close.
+    const string DropWithheldReadings = @"
+        DELETE FROM peer_reading
+        WHERE ticker IN (SELECT value FROM json_each($withheld))
+           OR ticker NOT IN (SELECT DISTINCT ticker FROM bar);
     ";
 
     // The members on the night's session, being joined by it where the join date is known
@@ -142,18 +168,22 @@ public sealed class MoveAnnotator : IComponent
         var closes = series.ToDictionary(pair => pair.Key, pair => pair.Value.ToDictionary(bar => bar.SessionDate, bar => bar.Close), StringComparer.Ordinal);
         var members = await MembersAsync(connection, clock.SessionDateAt(clock.UtcNow), cancellation);
         var written = 0;
+        var readings = 0;
         var fallenOut = 0;
+        var withheld = new List<string>();
         var stop = new SeriesGapStop();
 
         foreach (var ticker in tickers)
         {
-            var bars = series.TryGetValue(ticker, out var held) ? held : [];
+            var held = series.TryGetValue(ticker, out var found) ? found : [];
+            MoveBar[] bars = [.. held.Select(bar => new MoveBar(bar.SessionDate, bar.Close))];
 
             // A name whose stored series has an interior hole is
             // computed for nothing and named on the run log.
             // see: A gap is a session the exchange traded and the store does not hold
             if (stop.Stops(ticker, [.. bars.Select(bar => bar.SessionDate)]))
             {
+                withheld.Add(ticker);
                 continue;
             }
 
@@ -191,6 +221,30 @@ public sealed class MoveAnnotator : IComponent
                 written++;
             }
 
+            // The name's two readings for the peers table, over the same bars and beside the
+            // group its moves are read against, so the table lists the members the medians were
+            // taken over.
+            // see: Peers are shown by price alone, in section 2 beside the move table
+            if (PeerReadings.Of(held) is { } reading)
+            {
+                await using var command = connection.CreateCommand();
+
+                command.Transaction = (SqliteTransaction)transaction;
+                command.CommandText = UpsertReading;
+                command.Parameters.AddWithValue("$ticker", ticker);
+                command.Parameters.AddWithValue("$session_date", reading.Session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                command.Parameters.AddWithValue("$group_kind", group.Kind);
+                command.Parameters.AddWithValue("$group_name", (object?)group.Name ?? DBNull.Value);
+                command.Parameters.AddWithValue("$year_high", Money.ToStorage(reading.YearHigh));
+                command.Parameters.AddWithValue("$below_high_pct", reading.BelowHighPct);
+                command.Parameters.AddWithValue("$return_pct", (object?)reading.ReturnPct ?? DBNull.Value);
+                command.Parameters.AddWithValue("$bars", reading.Bars);
+
+                await command.ExecuteNonQueryAsync(cancellation);
+
+                readings++;
+            }
+
             // Any session this name held that is not in tonight's set was a
             // biggest move and is not one now.
             await using (var drop = connection.CreateCommand())
@@ -211,9 +265,17 @@ public sealed class MoveAnnotator : IComponent
 
         var dropped = await DroppedAsync(connection, await BoundaryAsync(connection, cancellation), cancellation);
 
-        await RecordAsync(connection, runId, startedAt, tickers.Count - stop.Stopped, written, dropped + fallenOut, stop.Report(), cancellation);
+        await using (var drop = connection.CreateCommand())
+        {
+            drop.CommandText = DropWithheldReadings;
+            drop.Parameters.AddWithValue("$withheld", System.Text.Json.JsonSerializer.Serialize(withheld));
 
-        return new MoveOutcome(tickers.Count - stop.Stopped, written, dropped + fallenOut);
+            await drop.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await RecordAsync(connection, runId, startedAt, tickers.Count - stop.Stopped, written, readings, dropped + fallenOut, stop.Report(), cancellation);
+
+        return new MoveOutcome(tickers.Count - stop.Stopped, written, dropped + fallenOut, readings);
     }
 
     async Task<IReadOnlyList<string>> TickersAsync(SqliteConnection connection, CancellationToken cancellation)
@@ -233,10 +295,11 @@ public sealed class MoveAnnotator : IComponent
         return tickers;
     }
 
-    // Every stored bar, by name in session order. The close is a price and is read as a
-    // decimal; the percentage the arithmetic makes of it is a statistic and is a double, and
-    // the crossing is in `MoveSeries` and `Groups`, where it is named.
-    static async Task<IReadOnlyDictionary<string, IReadOnlyList<MoveBar>>> AllBarsAsync(
+    // Every stored bar, by name in session order. The high and the close are prices and are
+    // read as decimals; the percentages the arithmetic makes of them are statistics and are
+    // doubles, and the crossing is in `MoveSeries`, `Groups` and `PeerReadings`, where it is
+    // named.
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<PeerBar>>> AllBarsAsync(
         SqliteConnection connection,
         CancellationToken cancellation)
     {
@@ -244,7 +307,7 @@ public sealed class MoveAnnotator : IComponent
 
         command.CommandText = AllBars;
 
-        var series = new Dictionary<string, List<MoveBar>>(StringComparer.Ordinal);
+        var series = new Dictionary<string, List<PeerBar>>(StringComparer.Ordinal);
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
@@ -257,12 +320,13 @@ public sealed class MoveAnnotator : IComponent
                 series[ticker] = bars = [];
             }
 
-            bars.Add(new MoveBar(
+            bars.Add(new PeerBar(
                 DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                Money.FromStorage(reader.GetString(2))));
+                Money.FromStorage(reader.GetString(2)),
+                Money.FromStorage(reader.GetString(3))));
         }
 
-        return series.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<MoveBar>)pair.Value, StringComparer.Ordinal);
+        return series.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<PeerBar>)pair.Value, StringComparer.Ordinal);
     }
 
     static async Task<IReadOnlyList<GroupMember>> MembersAsync(
@@ -300,6 +364,7 @@ public sealed class MoveAnnotator : IComponent
         DateTimeOffset startedAt,
         int names,
         int written,
+        int readings,
         int dropped,
         string gaps,
         CancellationToken cancellation)
@@ -312,8 +377,8 @@ public sealed class MoveAnnotator : IComponent
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$outcome", "ok");
-        command.Parameters.AddWithValue("$rows_written", written);
-        command.Parameters.AddWithValue("$detail", $"{names} name(s), {written} move(s), {dropped} dropped{gaps}");
+        command.Parameters.AddWithValue("$rows_written", written + readings);
+        command.Parameters.AddWithValue("$detail", $"{names} name(s), {written} move(s), {dropped} dropped, {readings} peer reading(s){gaps}");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

@@ -998,7 +998,17 @@ public partial class ArchitectureConformance
     static readonly string[] PhaseElevenRows =
     [
         CheckReach.Key("15.9 Name", "Each move beside its group"),
-        CheckReach.Key("15.9 Name", "Peers"),
+        // 11.6 read the Peers row as its parts, each a claim of its own.
+        CheckReach.Key("15.9 Name", "Peers, beneath the table of the biggest moves"),
+        CheckReach.Key("15.9 Name", "Peers, every member of the name's group by price alone"),
+        CheckReach.Key("15.9 Name", "Peers, in ticker order with the name's own row marked"),
+        CheckReach.Key("15.9 Name", "Peers, ranking none"),
+        CheckReach.Key("15.9 Name", "Peers, each row carrying the close"),
+        CheckReach.Key("15.9 Name", "Peers, how far it sits below the stored year's high"),
+        CheckReach.Key("15.9 Name", "Peers, its return over sixty sessions"),
+        CheckReach.Key("15.9 Name", "Peers, its trend state"),
+        CheckReach.Key("15.9 Name", "Peers, the distance row mark"),
+        CheckReach.Key("15.9 Name", "Peers, a key saying how to read it"),
         CheckReach.Key("15.9 Name", "Earnings reactions"),
         CheckReach.Key("15.9 Name", "Dividend"),
 
@@ -1015,6 +1025,12 @@ public partial class ArchitectureConformance
 
         // 11.5, section 17's floor for a name's industry to be its group.
         CheckReach.Key(Scope.LimitsTable, "Group floor"),
+
+        // 11.6, section 17's window for a peer's return, the peer readings' own store and
+        // their fixture row.
+        CheckReach.Key(Scope.LimitsTable, "Peer return window"),
+        CheckReach.Key(Scope.StoresTable, "Peer readings"),
+        CheckReach.Key(Scope.FixtureTable, "peers"),
     ];
 
     // The ones a phase 11 checkpoint has since drawn. A row moves here in the commit that
@@ -1027,6 +1043,19 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
         CheckReach.Key("15.9 Name", "Each move beside its group"),
         CheckReach.Key(Scope.LimitsTable, "Group floor"),
+        CheckReach.Key("15.9 Name", "Peers, beneath the table of the biggest moves"),
+        CheckReach.Key("15.9 Name", "Peers, every member of the name's group by price alone"),
+        CheckReach.Key("15.9 Name", "Peers, in ticker order with the name's own row marked"),
+        CheckReach.Key("15.9 Name", "Peers, ranking none"),
+        CheckReach.Key("15.9 Name", "Peers, each row carrying the close"),
+        CheckReach.Key("15.9 Name", "Peers, how far it sits below the stored year's high"),
+        CheckReach.Key("15.9 Name", "Peers, its return over sixty sessions"),
+        CheckReach.Key("15.9 Name", "Peers, its trend state"),
+        CheckReach.Key("15.9 Name", "Peers, the distance row mark"),
+        CheckReach.Key("15.9 Name", "Peers, a key saying how to read it"),
+        CheckReach.Key(Scope.LimitsTable, "Peer return window"),
+        CheckReach.Key(Scope.StoresTable, "Peer readings"),
+        CheckReach.Key(Scope.FixtureTable, "peers"),
     ];
 
     // Rows the document gained after the prediction, each one claim.

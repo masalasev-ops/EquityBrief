@@ -32,6 +32,7 @@ public enum Store
     Level,
     Ladder,
     Move,
+    PeerReading,
     Listing,
     ForwardReturn,
     Facts,

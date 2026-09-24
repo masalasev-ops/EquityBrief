@@ -59,6 +59,11 @@ public partial class FixtureExpectations
             // 11.5, the floor a name's industry has to reach before it is the name's group.
             CheckReach.Key(Scope.LimitsTable, "Group floor"),
 
+            // 11.6, the peers table's window, its store and its fixture row.
+            CheckReach.Key(Scope.LimitsTable, "Peer return window"),
+            CheckReach.Key(Scope.StoresTable, "Peer readings"),
+            CheckReach.Key(Scope.FixtureTable, "peers"),
+
             // 6.5, the staleness judge: section 17's trigger row read off the
             // document, the catalogue's judge over the fixture's own dates, and
             // figure 12.1's three questions.

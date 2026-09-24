@@ -155,6 +155,21 @@ public sealed record MoveCell(DateOnly SessionDate, int Sessions, double ChangeP
 // see: A name's group is its industry where at least five other members share it on the session, and its sector otherwise, and every surface that uses it says which and how many
 public sealed record MoveGroup(string Kind, string? Name, int Members, int Counted, double? Median);
 
+// A name's peers table as the page is given it: the group the name's moves are read against,
+// none where the store holds no readings for the name, and a row for every member of it and for
+// the name itself, in ticker order. `Kept` says the readings are the newest night's alone, which
+// a page drawn for an earlier night states rather than drawing them.
+// see: Peers are shown by price alone, in section 2 beside the move table
+public sealed record PeersView(string? GroupKind, string? GroupName, IReadOnlyList<PeerCell> Rows, bool Kept = true);
+
+// One row of a peers table: a member of the name's group, or the name itself, marked, with its
+// close and trend state as the universe table holds them, the two readings the annotator stored
+// for it, and the cell the distance row mark is drawn from.
+public sealed record PeerCell(string Ticker, bool Own, decimal? Close, string? TrendState, PeerFigures? Readings, UniverseCell? Distance);
+
+// The two readings as the annotator stored them for a name, with the bars they were read over.
+public sealed record PeerFigures(DateOnly Session, decimal YearHigh, double BelowHighPct, double? ReturnPct, int Bars);
+
 // Where the causes in a moves table came from: the date the accepted cause section
 // was written on and the model that wrote it.
 public sealed record CauseSource(DateOnly AsOf, string Model);
@@ -3731,6 +3746,78 @@ public sealed class MarkRenderer : IComponent
         return Formatted($"<td class=\"group-median\" {attributes} data-group-median=\"{Number(median)}\">{Number(median)}%, the median of {group.Counted} of the {group.Members} other members of {named}")
             + (missing > 0 ? Formatted($", {missing} holding no close on one of the two sessions") : string.Empty)
             + "</td>";
+    }
+
+    // Section 2's peers table: every member of the name's group by price alone, in ticker order
+    // with the name's own row marked, each with its close, how far it sits below the stored
+    // year's high, its return over the window, its trend state and the distance row mark. It
+    // lists and ranks none, and draws every figure as the store holds it: the order is the one
+    // the rows arrive in and nothing here sorts, filters or works a figure out.
+    // see: Peers are shown by price alone, in section 2 beside the move table
+    // see: A screen reads and renders, and computes nothing
+    public string PeersTable(string ticker, PeersView peers)
+    {
+        var table = new StringBuilder();
+        var others = peers.Rows.Count(row => !row.Own);
+
+        table.Append(Invariant, $"<div class=\"peers\" data-ticker=\"{Escaped(ticker)}\" data-group-kind=\"{Escaped(peers.GroupKind ?? string.Empty)}\" data-group-name=\"{Escaped(peers.GroupName ?? string.Empty)}\" data-others=\"{others}\">");
+
+        if (!peers.Kept)
+        {
+            table.Append("<p class=\"degraded\" data-peers=\"not-kept\">The peers' readings are kept for the newest night alone, so none is drawn for an earlier one.</p></div>");
+
+            return table.ToString();
+        }
+
+        if (peers.GroupKind is not { } kind)
+        {
+            table.Append(Invariant, $"<p class=\"degraded\" data-peers=\"none\">No readings are stored for {Escaped(ticker)}, so its group and its peers are not drawn.</p></div>");
+
+            return table.ToString();
+        }
+
+        var named = peers.GroupName is { Length: > 0 } name
+            ? $"the {Escaped(name)} {Escaped(kind)}"
+            : $"a {Escaped(kind)} its membership row does not name";
+
+        table.Append(others == 0
+            ? $"<p class=\"peers-group\" data-peers=\"alone\">{named} holds no other member, so the table holds {Escaped(ticker)} alone.</p>"
+            : Formatted($"<p class=\"peers-group\" data-peers=\"group\">{Escaped(ticker)} and the {others} other members of {named}, in ticker order.</p>"));
+
+        table.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"peers-table\" data-rows=\"{peers.Rows.Count}\">");
+        table.Append(Invariant, $"<tr><th>Name</th><th>Close</th><th>Below the year's high</th><th>Return over {EquityBrief.Core.Moves.PeerReadings.ReturnWindow} sessions</th><th>Trend</th><th>Distance</th></tr>");
+
+        foreach (var row in peers.Rows)
+        {
+            table.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-own=\"{(row.Own ? "true" : "false")}\">");
+            table.Append(row.Own
+                ? Formatted($"<td class=\"peer own\"><b>{Escaped(row.Ticker)}</b> <span class=\"own-mark\">this name</span></td>")
+                : Formatted($"<td class=\"peer\">{Escaped(row.Ticker)}</td>"));
+            table.Append(row.Close is { } close
+                ? Formatted($"<td class=\"r num\" data-close=\"{close.ToString(Invariant)}\">{Figures.Price(close)}</td>")
+                : "<td class=\"r num\" data-close=\"\">not computed</td>");
+
+            if (row.Readings is { } read)
+            {
+                table.Append(Formatted($"<td class=\"below-high\" data-below-high=\"{Number(read.BelowHighPct)}\" data-year-high=\"{read.YearHigh.ToString(Invariant)}\" data-bars=\"{read.Bars}\">{Number(read.BelowHighPct)}% below {Figures.Price(read.YearHigh)}, the high of {read.Bars} bars</td>"));
+                table.Append(read.ReturnPct is { } back
+                    ? Formatted($"<td class=\"peer-return\" data-return=\"{Number(back)}\" data-bars=\"{read.Bars}\">{back.ToString("+0.##;-0.##;0", Invariant)}%</td>")
+                    : Formatted($"<td class=\"peer-return\" data-return=\"\" data-bars=\"{read.Bars}\"><span class=\"degraded\">not available, {read.Bars} bars</span></td>"));
+            }
+            else
+            {
+                table.Append("<td class=\"below-high\" data-below-high=\"\" data-bars=\"\"><span class=\"degraded\">no readings stored</span></td>");
+                table.Append("<td class=\"peer-return\" data-return=\"\" data-bars=\"\"><span class=\"degraded\">no readings stored</span></td>");
+            }
+
+            table.Append(Invariant, $"<td class=\"trend-state\">{Escaped((row.TrendState ?? NotClassified).Replace('_', ' '))}</td>");
+            table.Append(Invariant, $"<td class=\"c\">{(row.Distance is { } cell ? DistanceRow(cell) : "<span class=\"degraded\" data-distance=\"none\">no bands stored for this name</span>")}</td>");
+            table.Append("</tr>");
+        }
+
+        table.Append("</table></div></div>");
+
+        return table.ToString();
     }
 
     // The distance row, section 15.5's mark for a table cell.

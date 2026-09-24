@@ -1416,7 +1416,10 @@ public partial class ArchitectureConformance
         // each: a move beside its group, the peers, the earnings reactions and the dividend.
         // 163 at 11.2, the queue page's row stating when each request will be written.
         // 164 at 11.3, tonight's row stating the report's state.
-        Assert.Equal(164, inDocument.Length);
+        // 173 at 11.6, the name screen's peers row read as the ten parts it names where it was
+        // one claim: its place, its population, its order, that it ranks none, its five
+        // columns and its key.
+        Assert.Equal(173, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1461,8 +1464,9 @@ public partial class ArchitectureConformance
         // for fails here; the argument for each is its checkpoint's entry.
         // 152 from 142 at 10.2, the run page's candidates' record region read as the ten parts
         // its row enumerates. 154 at the 5.8 correction that numbers tonight's list, the list
-        // read as its two new parts, the rows' places and the line counting them.
-        Assert.Equal(154, checkedElements);
+        // read as its two new parts, the rows' places and the line counting them. 164 at 11.6,
+        // the name screen's peers row read as its ten parts.
+        Assert.Equal(164, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

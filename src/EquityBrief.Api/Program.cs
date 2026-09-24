@@ -310,7 +310,11 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // draws the figures the night computed, and how a setup ended is something the store
         // learned after it.
         await read.ForwardReturnsAsync(ticker),
-        on);
+        on,
+        // The index on the page's night and every name's two readings, which the peers table
+        // draws for the members of the name's group.
+        universe,
+        on is null ? await read.PeerReadingsAsync() : []);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

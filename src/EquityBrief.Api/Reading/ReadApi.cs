@@ -289,6 +289,20 @@ public sealed record MoveRow(
     int? GroupCounted = null,
     double? GroupMedian = null);
 
+// A name's two readings for the peers table as the annotator stored them: the session they were
+// taken at, the group the name's moves are read against, the year's high and the distance below
+// it, the return over the window, null where the name holds too few bars for it, and how many
+// bars both were read over.
+public sealed record PeerReadingRow(
+    string Ticker,
+    DateOnly SessionDate,
+    string GroupKind,
+    string? GroupName,
+    decimal YearHigh,
+    double BelowHighPct,
+    double? ReturnPct,
+    int Bars);
+
 // One name's close on one session, as the day change is read from.
 //
 // A close and the session it is the close of, because a day change needs two of
@@ -374,6 +388,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.Ladder, Touch.Read),
             new StoreTouch(Store.Move, Touch.Read),
+            new StoreTouch(Store.PeerReading, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
@@ -755,6 +770,13 @@ public sealed class ReadApi : IComponent
         FROM move
         WHERE ticker = $ticker AND session_date <= $on
         ORDER BY rank;
+    ";
+
+    // Every name's two readings, which a name's peers table draws for the members of its group.
+    const string EveryPeerReading = @"
+        SELECT ticker, session_date, group_kind, group_name, year_high, below_high_pct, return_pct, bars
+        FROM peer_reading
+        ORDER BY ticker;
     ";
 
     // The newest night the listings hold, so the front page resolves to it
@@ -1703,6 +1725,35 @@ public sealed class ReadApi : IComponent
                 reader.IsDBNull(7) ? null : reader.GetInt32(7),
                 reader.IsDBNull(8) ? null : reader.GetInt32(8),
                 reader.IsDBNull(9) ? null : reader.GetDouble(9)));
+        }
+
+        return rows;
+    }
+
+    // Every name's two readings for the peers table, one row per name, as the annotator last
+    // wrote them.
+    public async Task<IReadOnlyList<PeerReadingRow>> PeerReadingsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = EveryPeerReading;
+
+        var rows = new List<PeerReadingRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new PeerReadingRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                reader.IsDBNull(3) ? null : reader.GetString(3),
+                Money.FromStorage(reader.GetString(4)),
+                reader.GetDouble(5),
+                reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                reader.GetInt32(7)));
         }
 
         return rows;
