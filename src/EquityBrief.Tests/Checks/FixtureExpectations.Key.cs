@@ -133,4 +133,28 @@ public partial class FixtureExpectations
         Assert.Equal([(ClaimRules.ComputedSection, ProseWriter.WrittenForTheNight)], again.Skipped.Select(section => (section.Section, section.Reason)));
         Assert.Equal(1, local.Requests);
     }
+
+    [Fact]
+    public async Task TheKeyThePaidLaneWritesIsDatedByTheNightOfItsFactsFileAndItsRetryIsReadOnThatNight()
+    {
+        // A pass two days after the fixture's night, the page asking the paid model for the local
+        // lane, writes the key from that night's facts file, so its row is dated by that night as the
+        // prose writer dates it and not by the day the pass ran. A first draft the checker refuses is
+        // written once more inside the pass, the refusal read on the night the draft is dated by. The
+        // year holds no article and no release, so the key is the one section a draft is asked for.
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        var paid = new ScriptedModel("The close is 98765.43.", "The key reads the figures drawn above it.");
+        var twoDaysOn = FixedClock.At(new DateTimeOffset(2026, 9, 10, 16, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        var pass = await FixtureReplay.Researcher(store, twoDaysOn, paid: paid, archive: new NoRelease(), news: new NoArticles(), search: new NoResults())
+            .RunAsync("KEYS", "key-paid-two-days-on", new ResearchPassRequest(PaidForLocal: true));
+
+        Assert.Equal(ResearchRunner.Written, pass.Outcome);
+        Assert.Equal(new DateOnly(2026, 9, 10), pass.AsOf);
+        Assert.Equal(2, paid.Requests);
+        Assert.Equal(
+            ["1|2026-09-08|rejected", "2|2026-09-08|accepted"],
+            Query(store, $"SELECT version || '|' || as_of || '|' || status FROM research_section WHERE ticker = 'KEYS' AND section = '{ClaimRules.ComputedSection}' ORDER BY version;"));
+    }
 }
