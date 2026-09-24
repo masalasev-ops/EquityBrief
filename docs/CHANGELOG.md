@@ -7042,3 +7042,44 @@ Was:
 > | `figure-fits` | every CI run | Every row of a figure in `ARCHITECTURE.html` fits the column the document draws it in, measured from the stylesheet's own numbers rather than from literals kept beside the check, at the narrowest width a row still holds one line. A row whose boxes carry no arrow between them is a set of peers and wraps, so it is bounded by one box and that bound is asserted; a row with arrows reads in one direction, holds one line, and is the shape that can run past the column. The two stylesheet rules the split rests on, the one that wraps a set of peers and the one that stacks every row when narrow, are read rather than assumed, because the exemption is worth no more than the rule behind it. An arrow is bounded by the size it is set at, which is above what it measures, so the bound errs into refusing |
 Now: figure-fits adds that the document's text spans the column its tables and figures draw in, no rule for its paragraphs, lists, decisions or notes capping them narrower and no element carrying a cap of its own.
 Why: a defect reported in a document lands with a check that refuses its recurrence, and the width the text is set at is read off the same stylesheet the figures' widths are.
+
+### 2026-09-24 - ARCHITECTURE.html - figure 10.2 is drawn inside its width
+Corrects: figure 10.2 was drawn 700 units wide and every label on its right started 88 units from that edge, so tonight's close, the midpoint, the stop, the first traded exit and the exit listed and not traded each ran past the drawing and were cut off where it ends, as was the line stating the risk and the reward beneath it; the arrow merging the candidates into one band ran down through the column of prices and ended between the labels 940 and 920, outside the band it points at; and the label for the exit too near the entry ended on "the blend". The operator reported both on 2026-09-24.
+Was:
+> <svg width="100%" viewBox="0 0 700 560" role="img" xmlns="http://www.w3.org/2000/svg">
+> <path d="M250 106 L258 106 L258 216 L250 216" fill="none" stroke="var(--rule)" stroke-width="1.2"/>
+> <path d="M258 161 C280 161 284 300 296 340" fill="none" stroke="var(--compute)" stroke-width="1.4"/>
+> <path d="M296 340 l-9 -6 l1 9 z" fill="var(--compute)"/>
+> <text x="268" y="250" fill="var(--compute)" font-family="Segoe UI, Arial, sans-serif" font-size="12">merged into one band</text>
+> <line x1="300" y1="60" x2="300" y2="510" stroke="var(--rule)" stroke-width="1.2"/>
+> <rect x="300" y="309" width="300" height="76" fill="var(--compute)" fill-opacity="0.13"/>
+> <line x1="300" y1="309" x2="600" y2="309" stroke="var(--compute)" stroke-width="1.6"/>
+> <line x1="300" y1="385" x2="600" y2="385" stroke="var(--compute)" stroke-width="1.6"/>
+> <text x="292" y="313" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11.5">940</text>
+> <text x="292" y="389" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11.5">900</text>
+> <text x="310" y="300" fill="var(--compute)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">support band, 900 to 940</text>
+> <line x1="300" y1="322" x2="600" y2="322" stroke="var(--ink)" stroke-width="1.8"/>
+> <path d="M300 322 l10 -6 l0 12 z" fill="var(--ink)"/>
+> <text x="612" y="326" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">tonight's close, 933</text>
+> <line x1="300" y1="347" x2="600" y2="347" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="5 4"/>
+> <text x="292" y="351" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11.5">920</text>
+> <text x="612" y="343" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">midpoint: the price the</text>
+> <text x="612" y="358" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">arithmetic is carried at,</text>
+> <text x="612" y="373" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">never a measured fill</text>
+> <rect x="300" y="443" width="300" height="28" fill="var(--compute)" fill-opacity="0.07"/>
+> <line x1="300" y1="443" x2="600" y2="443" stroke="var(--compute)" stroke-width="1" stroke-opacity="0.5"/>
+> <text x="292" y="447" text-anchor="end" fill="var(--faint)" font-family="Segoe UI, Arial, sans-serif" font-size="11.5">870</text>
+> <line x1="300" y1="471" x2="600" y2="471" stroke="var(--check)" stroke-width="1.8"/>
+> <text x="292" y="475" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11.5">855</text>
+> <text x="612" y="468" fill="var(--check)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">stop: a daily close below the</text>
+> <text x="612" y="483" fill="var(--check)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">low edge of the band beneath</text>
+> <line x1="300" y1="202" x2="600" y2="202" stroke="var(--faint)" stroke-width="1.4" stroke-dasharray="5 4"/>
+> <text x="292" y="206" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11.5">996</text>
+> <text x="612" y="198" fill="var(--faint)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">listed, not traded: nearer than</text>
+> <text x="612" y="213" fill="var(--faint)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5">two typical moves to the blend</text>
+> <line x1="300" y1="85" x2="600" y2="85" stroke="var(--store)" stroke-width="1.8"/>
+> <text x="292" y="89" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="11.5">1057</text>
+> <text x="612" y="89" fill="var(--store)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">first traded exit</text>
+> <text x="300" y="535" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12">Risk 65 points from the midpoint to the stop, reward 137 to the first traded exit.</text>
+Now: the drawing is 900 units wide, with the price axis and the bands moved right by 80 so the candidates, the column of prices and the labels on the right each have room; the prices are drawn right-aligned at 372, beside the axis at 380, and the labels on the right start at 692 and end inside the edge; the arrow leaves the candidates' bracket, crosses the column of prices between 996 and 940 and ends on the band's top edge; the exit listed and not traded reads "nearer than two typical moves to the blended entry" over three lines; and the line stating the risk and the reward starts at the drawing's left edge. The title, the description, every price and every colour are unchanged.
+Why: every label is drawn inside the drawing and no line crosses a label, so the figure shows every word it states; what it states is the worked example's, as before.
