@@ -2093,7 +2093,7 @@ public partial class NightlyRun
         // site added under either form moves one of the two. The universe reads
         // it twice: for its rows and for the one span a ticker is drawn from.
         Assert.Equal(
-            ["CalendarFetcher", "LadderBuilder", "NewsPulseCounter", "NightClose", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder"],
+            ["CalendarFetcher", "LadderBuilder", "MoveAnnotator", "NewsPulseCounter", "NightClose", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder"],
             member.Order(StringComparer.Ordinal));
     }
 

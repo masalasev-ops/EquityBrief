@@ -12,7 +12,8 @@ public sealed record MoveOutcome(int NamesExamined, int RowsWritten, int RowsDro
 
 // The move annotator. Reads the stored bars for every name the store holds and
 // writes the largest single-day and multi-day moves of the stored year, which
-// become the rows of the how-it-got-here table.
+// become the rows of the how-it-got-here table, each beside its group's median
+// move over the same sessions, read off the membership on the night's session.
 //
 // It makes no request and calls no model, for the reason the swing finder does
 // not: everything it needs is already in the store.
@@ -37,6 +38,7 @@ public sealed class MoveAnnotator : IComponent
     public static ComponentAccess Access => new(
         Stores:
         [
+            new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Move, Touch.Insert | Touch.Update | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
@@ -50,11 +52,23 @@ public sealed class MoveAnnotator : IComponent
     // and a report opened on it should read what it read last night.
     const string TickersWithBars = "SELECT DISTINCT ticker FROM bar ORDER BY ticker;";
 
-    const string BarsFor = @"
-        SELECT session_date, close
+    // Every stored bar at once, because a move's group median reads other names' closes
+    // on the move's own sessions, which a read one name at a time cannot reach.
+    const string AllBars = @"
+        SELECT ticker, session_date, close
         FROM bar
-        WHERE ticker = $ticker
-        ORDER BY session_date;
+        ORDER BY ticker, session_date;
+    ";
+
+    // The members on the night's session, being joined by it where the join date is known
+    // and not left by it, with the sector and the industry each one's row names, which is
+    // what a name's group is read from.
+    // see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement
+    const string MembersOnTheSession = @"
+        SELECT m.ticker, m.sector, m.industry
+        FROM membership m
+        WHERE (m.joined IS NULL OR m.joined <= $session)
+          AND (m.""left"" IS NULL OR m.""left"" > $session);
     ";
 
     // Insert or update on the primary key. A move is recomputed from the same
@@ -62,12 +76,17 @@ public sealed class MoveAnnotator : IComponent
     // session that was a top-eight move last night and is not tonight has to
     // go rather than stand.
     const string Upsert = @"
-        INSERT INTO move (ticker, session_date, sessions, change_pct, rank)
-        VALUES ($ticker, $session_date, $sessions, $change_pct, $rank)
+        INSERT INTO move (ticker, session_date, sessions, change_pct, rank, group_kind, group_name, group_members, group_counted, group_median)
+        VALUES ($ticker, $session_date, $sessions, $change_pct, $rank, $group_kind, $group_name, $group_members, $group_counted, $group_median)
         ON CONFLICT (ticker, session_date) DO UPDATE SET
             sessions = excluded.sessions,
             change_pct = excluded.change_pct,
-            rank = excluded.rank;
+            rank = excluded.rank,
+            group_kind = excluded.group_kind,
+            group_name = excluded.group_name,
+            group_members = excluded.group_members,
+            group_counted = excluded.group_counted,
+            group_median = excluded.group_median;
     ";
 
     // The rows this name no longer holds: every session for the name that is not
@@ -119,13 +138,16 @@ public sealed class MoveAnnotator : IComponent
         await connection.OpenAsync(cancellation);
 
         var tickers = await TickersAsync(connection, cancellation);
+        var series = await AllBarsAsync(connection, cancellation);
+        var closes = series.ToDictionary(pair => pair.Key, pair => pair.Value.ToDictionary(bar => bar.SessionDate, bar => bar.Close), StringComparer.Ordinal);
+        var members = await MembersAsync(connection, clock.SessionDateAt(clock.UtcNow), cancellation);
         var written = 0;
         var fallenOut = 0;
         var stop = new SeriesGapStop();
 
         foreach (var ticker in tickers)
         {
-            var bars = await BarsAsync(connection, ticker, cancellation);
+            var bars = series.TryGetValue(ticker, out var held) ? held : [];
 
             // A name whose stored series has an interior hole is
             // computed for nothing and named on the run log.
@@ -136,6 +158,7 @@ public sealed class MoveAnnotator : IComponent
             }
 
             var moves = MoveSeries.For(bars);
+            var group = Groups.Of(ticker, members);
 
             await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
@@ -150,6 +173,18 @@ public sealed class MoveAnnotator : IComponent
                 command.Parameters.AddWithValue("$sessions", move.Sessions);
                 command.Parameters.AddWithValue("$change_pct", move.ChangePct);
                 command.Parameters.AddWithValue("$rank", move.Rank);
+
+                // The members' moves over the move's own sessions: from the close the move
+                // was measured from to the close it ended on, each read off the member's own
+                // stored bars on those two sessions.
+                var from = bars[bars.Select(bar => bar.SessionDate).ToList().IndexOf(move.SessionDate) - move.Sessions].SessionDate;
+                var median = Groups.MedianMove([.. group.Members.Select(member => (CloseOn(closes, member, from), CloseOn(closes, member, move.SessionDate)))]);
+
+                command.Parameters.AddWithValue("$group_kind", group.Kind);
+                command.Parameters.AddWithValue("$group_name", (object?)group.Name ?? DBNull.Value);
+                command.Parameters.AddWithValue("$group_members", group.Members.Count);
+                command.Parameters.AddWithValue("$group_counted", median.Counted);
+                command.Parameters.AddWithValue("$group_median", (object?)median.Median ?? DBNull.Value);
 
                 await command.ExecuteNonQueryAsync(cancellation);
 
@@ -198,33 +233,66 @@ public sealed class MoveAnnotator : IComponent
         return tickers;
     }
 
-    // The close is a price and is read as a decimal. The percentage the
-    // arithmetic makes of it is a statistic and is a double, and the crossing is
-    // in `MoveSeries` where it is named rather than here where it would be
-    // incidental.
-    async Task<IReadOnlyList<MoveBar>> BarsAsync(
+    // Every stored bar, by name in session order. The close is a price and is read as a
+    // decimal; the percentage the arithmetic makes of it is a statistic and is a double, and
+    // the crossing is in `MoveSeries` and `Groups`, where it is named.
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<MoveBar>>> AllBarsAsync(
         SqliteConnection connection,
-        string ticker,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
-        command.CommandText = BarsFor;
-        command.Parameters.AddWithValue("$ticker", ticker);
+        command.CommandText = AllBars;
 
-        var bars = new List<MoveBar>();
+        var series = new Dictionary<string, List<MoveBar>>(StringComparer.Ordinal);
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         while (await reader.ReadAsync(cancellation))
         {
+            var ticker = reader.GetString(0);
+
+            if (!series.TryGetValue(ticker, out var bars))
+            {
+                series[ticker] = bars = [];
+            }
+
             bars.Add(new MoveBar(
-                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                Money.FromStorage(reader.GetString(1))));
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Money.FromStorage(reader.GetString(2))));
         }
 
-        return bars;
+        return series.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<MoveBar>)pair.Value, StringComparer.Ordinal);
     }
+
+    static async Task<IReadOnlyList<GroupMember>> MembersAsync(
+        SqliteConnection connection,
+        DateOnly session,
+        CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = MembersOnTheSession;
+        command.Parameters.AddWithValue("$session", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var members = new List<GroupMember>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            members.Add(new GroupMember(
+                reader.GetString(0),
+                reader.IsDBNull(1) ? null : reader.GetString(1),
+                reader.IsDBNull(2) ? null : reader.GetString(2)));
+        }
+
+        return members;
+    }
+
+    // A name's close on a session, or none where the name holds no bar for it.
+    static decimal? CloseOn(IReadOnlyDictionary<string, Dictionary<DateOnly, decimal>> closes, string ticker, DateOnly session) =>
+        closes.TryGetValue(ticker, out var byDate) && byDate.TryGetValue(session, out var close) ? close : null;
 
     async Task RecordAsync(
         SqliteConnection connection,

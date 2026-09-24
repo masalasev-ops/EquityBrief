@@ -684,7 +684,7 @@ public sealed class SinglePageApp : IComponent
             "How it got here",
             marks.MovesTable(ticker, moves, twelveMonths, causes) + Cards.Key(
                 "How to read it.",
-                "A year of daily candles. The numbered circles mark the year's biggest moves, numbered as the table beneath lists them, largest first, and each row says what drove the move where research has been written.",
+                "A year of daily candles. The numbered circles mark the year's biggest moves, numbered as the table beneath lists them, largest first, and each row says what drove the move where research has been written. Beside each move is its group's median move over the same sessions: the name's industry where at least five other members share it, and its sector otherwise, with how many members the median was taken over, so a move the whole group made reads apart from one the name made alone.",
                 "This is the path that produced tonight's bands."),
             title: "The last twelve months",
             stamp: Cards.Night(session),

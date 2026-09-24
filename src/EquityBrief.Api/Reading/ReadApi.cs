@@ -274,7 +274,20 @@ public sealed record VersionBlockRow(string Version, DateTimeOffset OpenedAt, Ve
 // No cause. It is a researched claim and lives in `research_section` with its
 // source, so the how-it-got-here table's cause column is explicitly absent until
 // phase 6 rather than blank.
-public sealed record MoveRow(string Ticker, DateOnly SessionDate, int Sessions, double ChangePct, int Rank);
+//
+// The group the annotator read the move against, and its median over the same sessions,
+// null on a row written before 11.5 wrote them.
+public sealed record MoveRow(
+    string Ticker,
+    DateOnly SessionDate,
+    int Sessions,
+    double ChangePct,
+    int Rank,
+    string? GroupKind = null,
+    string? GroupName = null,
+    int? GroupMembers = null,
+    int? GroupCounted = null,
+    double? GroupMedian = null);
 
 // One name's close on one session, as the day change is read from.
 //
@@ -737,7 +750,8 @@ public sealed class ReadApi : IComponent
     // A name's biggest moves, largest first, which is the order the
     // how-it-got-here table is read down.
     const string MovesForName = @"
-        SELECT ticker, session_date, sessions, change_pct, rank
+        SELECT ticker, session_date, sessions, change_pct, rank,
+               group_kind, group_name, group_members, group_counted, group_median
         FROM move
         WHERE ticker = $ticker AND session_date <= $on
         ORDER BY rank;
@@ -1683,7 +1697,12 @@ public sealed class ReadApi : IComponent
                 DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.GetInt32(2),
                 reader.GetDouble(3),
-                reader.GetInt32(4)));
+                reader.GetInt32(4),
+                reader.IsDBNull(5) ? null : reader.GetString(5),
+                reader.IsDBNull(6) ? null : reader.GetString(6),
+                reader.IsDBNull(7) ? null : reader.GetInt32(7),
+                reader.IsDBNull(8) ? null : reader.GetInt32(8),
+                reader.IsDBNull(9) ? null : reader.GetDouble(9)));
         }
 
         return rows;

@@ -295,6 +295,14 @@ internal static class Scope
             Verdict.Pass,
             "each of the four states is read back off a row's own markup and off the selected name's region against the store in both directions, over a store holding a request in each state: written with its day, being written since its pass's start, queued with the instant it starts, and not written with the control, the control drawn for the last alone",
             ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Each move beside its group")] = new Scoped(
+            Verdict.Pass,
+            "every row of the table of the biggest moves carries its group's median as the annotator stored it, named as an industry or a sector with how many members it was taken over, read back off the name's page against the store, and a group holding nobody says so",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Group floor")] = new Scoped(
+            Verdict.Pass,
+            "an industry of five other members is the group and one of four gives way to the sector, over constructed members, and the constant the row states is the one the rule reads",
+            ByExpectations),
         [CheckReach.Key("15.15 Queue", "Outstanding")] = new Scoped(
             Verdict.Pass,
             "every request nobody has started is drawn in this region and no other, read back off the page against the store in both directions, oldest first",
@@ -2624,6 +2632,7 @@ internal static class Scope
         ["Earnings horizon"] = "4.7",
         ["Nightly row coverage"] = "5.4",
         ["Reports the night asks for"] = "11.4",
+        ["Group floor"] = "11.5",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

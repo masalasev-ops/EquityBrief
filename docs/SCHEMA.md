@@ -259,8 +259,15 @@ Grain: one row per ticker and session selected as a large move.
 | `sessions` | INTEGER | how many sessions the move spans, 1 for a single day |
 | `change_pct` | REAL | |
 | `rank` | INTEGER | position within the window by absolute size |
+| `group_kind` | TEXT | `industry` or `sector`, the group the move is read against; null on a row written before 11.5 |
+| `group_name` | TEXT | the industry or sector the membership row names, null where it names none |
+| `group_members` | INTEGER | how many other members the group holds on the session, the name never among them |
+| `group_counted` | INTEGER | how many of them held a close on both of the move's sessions |
+| `group_median` | REAL | the median of those members' moves over the same sessions, in per cent; null where none held both closes |
 
 Primary key: `ticker`, `session_date`.
+
+**The group columns are the annotator's, written with the move they sit beside.** The group is the industry where at least five other members share it on the night's session and the sector otherwise, read off the membership, so the annotator reads the membership as well as the bars (see: A name's group is its industry where at least five other members share it on the session, and its sector otherwise, and every surface that uses it says which and how many) (see: A large move is shown beside its group's median move over the same sessions).
 
 **`sessions` is what makes the catalogue row true, and it was added at 5.0.** The annotator selects the largest single-day and multi-day moves of the stored year, and a table keyed on one session with no span could carry only the first of those. `session_date` is the session the move ended on, so a five-day run and a one-day gap on the same date are one row and the longer span wins, which is the reading that keeps the primary key.
 
