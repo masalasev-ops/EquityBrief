@@ -22945,9 +22945,11 @@ Guarded:    `read-surface`, one test added,
             numbered risk after an unnumbered one, drawn as two; and numbered from the third, drawn
             as written. The roster's `read-surface` row names what the first ordinal decides.
 Expected:   derived: the parts are read against constructed prose, and no expectation file moves.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. No claim added: section 15.9's row already states one part per
-            risk where the prose says where each part ends.
+Tests:      1294, from 1293. One added to `read-surface`, none removed. Migrations 0 to 37
+            with none added and none pending, schema version 37.
+Claims:     448, from 448, with 448 PASS and 0 out of scope, and 455 placements and verdicts
+            reconciled against a floor of 34. No claim added: section 15.9's row already states one
+            part per risk where the prose says where each part ends.
 Mutated:    the rule, stated before the run: put back each wrong reading of what the first ordinal
             decides, one for each thing it can mean.
             Predicted:
@@ -22959,9 +22961,19 @@ Mutated:    the rule, stated before the run: put back each wrong reading of what
             parts of prose that introduces its risks, and nowhere else.
             M3 a first ordinal past the second cut as though it were the second: red in the test
             this correction adds and nowhere else.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            d87aaeb, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1294 of 1294. M1 turned 1 red and 1293 green:
+            `TheFirstOrdinalRiskSaysWhetherWhatStandsBeforeItIsItsOwnPart`. M2 turned 1 red and
+            1293 green: the risks test the correction of 2026-09-20 added. M3 turned 1 red and 1293
+            green: the test this correction adds.
+Held:       all three, in the test each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1294 of 1294
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 448 claims, 448 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 455 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1294 of 1294 tests.
+            Both gates ran over the tree carrying this entry, d87aaeb, and the operator's store
+            under `data/` was not touched by either.
 Carried:    nothing.
