@@ -1418,8 +1418,9 @@ public partial class ArchitectureConformance
         // 164 at 11.3, tonight's row stating the report's state.
         // 173 at 11.6, the name screen's peers row read as the ten parts it names where it was
         // one claim: its place, its population, its order, that it ranks none, its five
-        // columns and its key. 183 at 11.7, the earnings reactions row read as its eleven parts.
-        Assert.Equal(183, inDocument.Length);
+        // columns and its key. 183 at 11.7, the earnings reactions row read as its eleven parts,
+        // and 189 at 11.8, the dividend row read as its seven.
+        Assert.Equal(189, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1466,8 +1467,8 @@ public partial class ArchitectureConformance
         // its row enumerates. 154 at the 5.8 correction that numbers tonight's list, the list
         // read as its two new parts, the rows' places and the line counting them. 164 at 11.6,
         // the name screen's peers row read as its ten parts, and 175 at 11.7, its earnings
-        // reactions row read as its eleven.
-        Assert.Equal(175, checkedElements);
+        // reactions row read as its eleven, and 182 at 11.8, its dividend row read as its seven.
+        Assert.Equal(182, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

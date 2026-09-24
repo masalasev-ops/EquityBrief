@@ -1021,7 +1021,14 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "Earnings reactions, that session's move"),
         CheckReach.Key("15.9 Name", "Earnings reactions, a print with no filed estimate saying none was filed"),
         CheckReach.Key("15.9 Name", "Earnings reactions, a key saying how to read it"),
-        CheckReach.Key("15.9 Name", "Dividend"),
+        // 11.8 read the Dividend row as its parts, each a claim of its own.
+        CheckReach.Key("15.9 Name", "Dividend, in the numbers section"),
+        CheckReach.Key("15.9 Name", "Dividend, from the newest filing alone"),
+        CheckReach.Key("15.9 Name", "Dividend, the forward annual rate"),
+        CheckReach.Key("15.9 Name", "Dividend, the forward yield as the provider states it"),
+        CheckReach.Key("15.9 Name", "Dividend, the payout ratio"),
+        CheckReach.Key("15.9 Name", "Dividend, the ex-dividend date and the pay date"),
+        CheckReach.Key("15.9 Name", "Dividend, one line saying the provider files none"),
 
         // 11.2, the queue page's row stating when each request will be written, which
         // arrives drawn.
@@ -1084,6 +1091,13 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "Earnings reactions, a key saying how to read it"),
         CheckReach.Key(Scope.StoresTable, "Earnings reactions"),
         CheckReach.Key(Scope.FixtureTable, "reactions"),
+        CheckReach.Key("15.9 Name", "Dividend, in the numbers section"),
+        CheckReach.Key("15.9 Name", "Dividend, from the newest filing alone"),
+        CheckReach.Key("15.9 Name", "Dividend, the forward annual rate"),
+        CheckReach.Key("15.9 Name", "Dividend, the forward yield as the provider states it"),
+        CheckReach.Key("15.9 Name", "Dividend, the payout ratio"),
+        CheckReach.Key("15.9 Name", "Dividend, the ex-dividend date and the pay date"),
+        CheckReach.Key("15.9 Name", "Dividend, one line saying the provider files none"),
     ];
 
     // Rows the document gained after the prediction, each one claim.

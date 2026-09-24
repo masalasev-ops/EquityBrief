@@ -454,6 +454,17 @@ public sealed class FundamentalsFetcher : IComponent
                 sell = fetched.Ratings.Sell,
                 strongSell = fetched.Ratings.StrongSell,
             } : null,
+            // The dividend the provider files, copied as it files it and on the newest filing's row
+            // for the reason the ratios are.
+            // see: The numbers section shows the dividend the provider files, on the newest filing alone
+            dividend = newest && fetched.Dividend is { } paid ? new
+            {
+                forwardAnnualRate = Money(paid.ForwardAnnualRate),
+                forwardYield = Money(paid.ForwardYield),
+                payoutRatio = Money(paid.PayoutRatio),
+                exDividendDate = paid.ExDividendDate is { } ex ? Stored(ex) : null,
+                payDate = paid.PayDate is { } pay ? Stored(pay) : null,
+            } : null,
             // The next print as the provider has it, and named for what it is: an
             // analysts' estimate. Section 4 places the guided quarter at the
             // earnings release exhibit, which is management stating what it
@@ -597,7 +608,7 @@ public sealed class FundamentalsFetcher : IComponent
     public static readonly string[] Parts =
     [
         "periodEnd", "quarter", "margin", "growth", "balanceSheet", "earnings", "epsBases", "valuation",
-        "marketCapitalisation", "ratings", "estimated", "segments", "revenueTables", "tableGrowth", "guidance", "facts",
+        "marketCapitalisation", "ratings", "dividend", "estimated", "segments", "revenueTables", "tableGrowth", "guidance", "facts",
     ];
 
     public const string Margin = "margin";
@@ -605,6 +616,8 @@ public sealed class FundamentalsFetcher : IComponent
     public const string GrowthPart = "growth";
 
     public const string RatingsPart = "ratings";
+
+    public const string DividendPart = "dividend";
 
     public const string TableGrowthPart = "tableGrowth";
 

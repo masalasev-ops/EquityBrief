@@ -819,6 +819,47 @@ public class FundamentalsFetcherTests
     }
 
     [Fact]
+    public async Task TheDividendIsCopiedOntoTheNewestFilingAsTheProviderFilesIt()
+    {
+        // AAPL's, read off the captured payload by hand: 1.08 a share, a yield of 0.0033 and a
+        // payout ratio of 0.1216, ex-dividend on 2026-08-10 and paid on 2026-08-13; KEYS files a
+        // rate of zero and no dates, which is stored as filed rather than left out.
+        // see: The numbers section shows the dividend the provider files, on the newest filing alone
+        using var store = new TemporaryStore().Migrated();
+
+        await Fetcher(store, Feed()).RunAsync("AAPL", null, "open-1");
+        await Fetcher(store, Feed()).RunAsync("KEYS", null, "open-2");
+
+        var apple = Rows(store, "AAPL");
+
+        using var newest = JsonDocument.Parse(apple[0].Payload);
+        using var source = JsonDocument.Parse(apple[0].Source);
+
+        var dividend = newest.RootElement.GetProperty("dividend");
+
+        Assert.Equal(
+            ["1.08", "0.0033", "0.1216", "2026-08-10", "2026-08-13"],
+            new[] { "forwardAnnualRate", "forwardYield", "payoutRatio", "exDividendDate", "payDate" }.Select(part => dividend.GetProperty(part).GetString()));
+        Assert.Equal(FundamentalsFetcher.Provider, source.RootElement.GetProperty(FundamentalsFetcher.DividendPart).GetString());
+
+        // On the newest filing alone, for the reason the ratios are.
+        Assert.All(apple.Skip(1), row =>
+        {
+            using var older = JsonDocument.Parse(row.Payload);
+
+            Assert.Equal(JsonValueKind.Null, older.RootElement.GetProperty("dividend").ValueKind);
+        });
+
+        using var keys = JsonDocument.Parse(Rows(store, "KEYS")[0].Payload);
+
+        var none = keys.RootElement.GetProperty("dividend");
+
+        Assert.Equal("0", none.GetProperty("forwardAnnualRate").GetString());
+        Assert.Equal(JsonValueKind.Null, none.GetProperty("exDividendDate").ValueKind);
+        Assert.Equal(JsonValueKind.Null, none.GetProperty("payDate").ValueKind);
+    }
+
+    [Fact]
     public async Task ANameFilingNoEstimateStoresNoneRatherThanAnEmptyOne()
     {
         using var store = new TemporaryStore().Migrated();

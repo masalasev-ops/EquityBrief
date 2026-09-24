@@ -200,6 +200,53 @@ public class FundamentalsFeedTests
     }
 
     [Fact]
+    public void TheDividendIsReadAsFiledForEveryCaptureAndAPayloadFilingNoneSaysSo()
+    {
+        // Each capture's dividend object read here with the test's own JSON reading, so a parser
+        // reading the wrong key or the wrong date would not agree with it: AAPL and MSFT pay one and
+        // KEYS and NFLX file a rate of zero and no dates.
+        // see: The numbers section shows the dividend the provider files, on the newest filing alone
+        foreach (var ticker in new[] { "AAPL", "MSFT", "KEYS", "NFLX" })
+        {
+            using var captured = System.Text.Json.JsonDocument.Parse(Captured(ticker));
+
+            var filed = captured.RootElement.GetProperty("SplitsDividends");
+
+            decimal? Number(string name) =>
+                filed.GetProperty(name).ValueKind == System.Text.Json.JsonValueKind.Number
+                    ? decimal.Parse(filed.GetProperty(name).GetRawText(), System.Globalization.CultureInfo.InvariantCulture)
+                    : null;
+
+            DateOnly? Day(string name) =>
+                filed.GetProperty(name).ValueKind == System.Text.Json.JsonValueKind.String
+                    ? DateOnly.ParseExact(filed.GetProperty(name).GetString()!, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)
+                    : null;
+
+            Assert.Equal(
+                new DividendFiled(Number("ForwardAnnualDividendRate"), Number("ForwardAnnualDividendYield"), Number("PayoutRatio"), Day("ExDividendDate"), Day("DividendDate")),
+                Read(ticker).Dividend);
+            Assert.DoesNotContain("dividend", Read(ticker).PartsNotCarried);
+        }
+
+        // AAPL's, stated as well as derived: a forward rate of 1.08 a share, a yield of 0.0033 and
+        // a payout ratio of 0.1216, ex-dividend on 2026-08-10 and paid on 2026-08-13; and KEYS's a
+        // rate of zero and no dates.
+        Assert.Equal(new DividendFiled(1.08m, 0.0033m, 0.1216m, new DateOnly(2026, 8, 10), new DateOnly(2026, 8, 13)), Read("AAPL").Dividend);
+        Assert.Equal(new DividendFiled(0m, 0m, 0m, null, null), Read("KEYS").Dividend);
+
+        // The same payload with the object taken out reads as a dividend not filed rather than as a
+        // company paying none.
+        var withNone = System.Text.Json.Nodes.JsonNode.Parse(Captured("AAPL"))!.AsObject();
+
+        withNone.Remove("SplitsDividends");
+
+        var without = RecordedFundamentalsFeed.Parse(withNone.ToJsonString(), "AAPL");
+
+        Assert.Contains("dividend", without.PartsNotCarried);
+        Assert.Null(without.Dividend);
+    }
+
+    [Fact]
     public void ThePartsReadAreTheOnesTheNumbersSectionStates()
     {
         // What is carried, said forward rather than only as an absence. Five

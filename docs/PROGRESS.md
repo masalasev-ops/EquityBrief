@@ -22843,3 +22843,73 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 9d5f56e, and the operator's store
             under `data/` was not touched by either.
 Carried:    nothing new. 11.8 draws the dividend lines.
+### 11.8 - the dividend lines, the dividend the provider files drawn in the numbers section from the newest filing alone   2026-09-23
+Built:      the fundamentals parser reads the provider's `SplitsDividends` object into a dividend
+            record: the forward annual rate, the forward yield and the payout ratio as the provider
+            states them, and the ex-dividend and pay dates, each none where the provider files none,
+            and a payload filing no such object reads as the part not filed rather than as a company
+            paying none. The fetcher writes it as a `dividend` part on the newest filing's row
+            alone, for the reason the ratios sit there, and the source column names the provider for
+            the part. The numbers section draws a payer's five values, each whole on its element and
+            drawn at the places a reader reads them, with the provider named, and a company filing a
+            rate of zero and no dates in one line saying the provider files no dividend for it. A
+            row fetched before the part existed says the part is absent and why, as any other part
+            does.
+Written:    `SCHEMA.md`'s fundamentals payload note gains the dividend part, the company financials
+            endpoint supplying eleven parts and the period end being the seventeenth. Section 15.9's
+            Dividend row, placed at 11.8 by the document pass, keeps its words and is read as its
+            seven parts, seven claims where it was one, its citation moved to the note beneath the
+            table, where the reader would otherwise have taken the citation's opening for part of
+            its last part. The `read-surface` roster row names what it now asserts. Every spec line
+            changed has its prior text in `CHANGELOG.md`.
+Expected:   derived by hand, each capture's dividend object read by the test with its own JSON
+            reading rather than through the parser: AAPL files 1.08 a share, a yield of 0.0033 and a
+            payout ratio of 0.1216, ex-dividend on 2026-08-10 and paid on 2026-08-13; MSFT 3.64,
+            0.0074 and 0.2035, ex-dividend on 2026-08-20 and paid on 2026-09-10; KEYS and NFLX a
+            rate of zero and no dates. No expectation file moves: the fixture's replay fetches no
+            fundamentals, and the parse and the fetch are asserted over the captures themselves.
+Measured:   the operator's store holds fundamentals only for the names a report was opened on, and
+            every such row was fetched before this checkpoint, so its numbers section says the
+            dividend part is absent with no source recorded until the next open fetches the name
+            again.
+Tests:      1293, from 1290: three added, the parse over the four captures, the fetch onto the
+            newest filing alone, and under `read-surface` a payer's and a non-payer's lines read
+            back off their pages against the store. Two exact counts move with the decomposed row,
+            each with its reason beside it. Migrations 0 to 37 with none added and none pending,
+            schema version 37.
+Claims:     448, from 442, with 448 PASS and 0 out of scope, and 455 placements and verdicts
+            reconciled against a floor of 34. Six more, the Dividend row read as its seven parts
+            where it was one, all passing here, as predicted, and none left out of scope.
+Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that
+            each date is read from its own key, that the part sits on the newest filing alone, that
+            a company paying none is one line, that the provider is named, and that the object is
+            read at all.
+            Predicted:
+            M1 the ex-dividend and pay dates read from each other's keys: red in
+            `TheDividendIsReadAsFiledForEveryCaptureAndAPayloadFilingNoneSaysSo` and in
+            `TheDividendIsCopiedOntoTheNewestFilingAsTheProviderFilesIt`, and nowhere else, since
+            the page reads what the store holds.
+            M2 the part written on every filing's row: red in
+            `TheDividendIsCopiedOntoTheNewestFilingAsTheProviderFilesIt` and nowhere else.
+            M3 a rate of zero read as a dividend paid: red in
+            `APayerDrawsItsDividendAsFiledAndANonPayerSaysTheProviderFilesNone` and nowhere else.
+            M4 the provider left unnamed on the page: red in the same test and nowhere else.
+            M5 the object looked for under another key: red in all three.
+            Results: whole-suite runs in a detached worktree at 4b2ecf6, never a filter, each
+            mutation reverted with `git reset --hard` and the tree read clean after each. The
+            baseline is 1293 of 1293.
+            M1 turned 2 red, the two it named, 1291 green. M2 turned 1 red, the one it named, 1292
+            green. M3 turned 1 red, the one it named, 1292 green. M4 turned 1 red, the same test,
+            1292 green. M5 turned 3 red, the three it named, 1290 green.
+Held:       all five exactly as written before the run, in the tests each named and in their
+            number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1293 of 1293
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 448 claims, 448 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 455 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1293 of 1293 tests.
+            Both gates ran over the tree carrying this entry, 4b2ecf6, and the operator's store
+            under `data/` was not touched by either.
+Carried:    the facts file half of 11.5, 11.7 and 11.8, 11.9's with the recordings made again,
+            whose paid half waits on the operator's agreed spend.
