@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Net;
 using System.Text.RegularExpressions;
+using EquityBrief.Core.Research;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Web.App;
@@ -320,6 +322,139 @@ public partial class ReadSurface
         Assert.True(
             page.IndexOf("<nav class=\"contents\"", StringComparison.Ordinal) < page.IndexOf("<section class=\"card\" id=\"how-to-read\"", StringComparison.Ordinal),
             "The contents is drawn below the first card it names.");
+    }
+
+    // Section 4 of the architecture is the report region by region, and the name page is what it
+    // specifies. Its rows are read against the contents of every fixture name's page, one name given
+    // every written region and its industry a cycle: every region a page draws is a row, in the rows'
+    // order, every row is a region some page draws, and the count the section states is its count of
+    // rows, so a region added, dropped, renamed or moved on either side fails here.
+    // see: Section 4 of the architecture defines the report region by region, and nothing outside the corpus does
+    [Fact]
+    public async Task SectionFourNamesEveryRegionTheNamePageDrawsInTheOrderItDrawsThem()
+    {
+        var document = Corpus.Read("docs/ARCHITECTURE.html");
+        var rows = ReportRegions(document);
+
+        // The reader, shown to read each row's first cell whole with its entities decoded, and to pass
+        // over the heading row and every other section's tables.
+        Assert.Equal(
+            ["Tonight's figures", "How it got here"],
+            [.. ReportRegions(
+                "<h2>3. Before</h2><table><tr><td>Not this</td></tr></table>" +
+                $"<h2>{ReportSection}</h2><p>up to two regions</p><table><tr><th>Region</th><th>What</th></tr>" +
+                "<tr><td>Tonight&#39;s figures</td><td>x</td></tr><tr><td>How it got here</td><td>y</td></tr></table>" +
+                "<h2>5. After</h2><table><tr><td>Nor this</td></tr></table>")]);
+
+        Assert.True(rows.Count >= 19, $"Section 4 names {rows.Count} region(s), expected at least 19.");
+
+        using var store = await FixtureExpectations.WithListings();
+
+        var night = NightIn(store);
+
+        // The fixture's researched name given every written region a page draws, each dated the night
+        // the page draws, and its industry a cycle.
+        string[] written =
+        [
+            .. SinglePageApp.AtTheTop,
+            .. SinglePageApp.UnderTheFigures,
+            .. SinglePageApp.BeforeTheNumbers,
+            .. SinglePageApp.AfterTheNumbers.Where(section => section != ClaimRules.CycleSection),
+            .. SinglePageApp.AfterThePlan,
+        ];
+
+        foreach (var section in written)
+        {
+            store.Execute($"INSERT INTO research_section VALUES ('KEYS', '{section}', 90, '{night}', 'a writer', 'accepted', 'A sentence.', '[]', NULL);");
+        }
+
+        ThemeDocument(store);
+        ThemeCycle(store, 1, night, "accepted", "Orders across the industry are turning up from a low [D1].");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var names = Rows(store, $"SELECT ticker FROM listing WHERE session_date = '{night}' AND ticker IN (SELECT ticker FROM bar) ORDER BY ticker;")
+            .Select(row => row[0])
+            .ToArray();
+
+        Assert.True(names.Length >= 4, $"Read {names.Length} name page(s), expected at least 4.");
+
+        var drawn = new List<string[]>();
+
+        foreach (var ticker in names)
+        {
+            var titles = ContentsTitles(await client.GetStringAsync($"/screens/name/{ticker}"));
+            var at = titles.Select(title => rows.IndexOf(title)).ToArray();
+
+            Assert.True(
+                at.All(index => index >= 0),
+                $"{ticker}'s page draws a region section 4 does not name: {string.Join(", ", titles.Where(title => !rows.Contains(title)))}.");
+            Assert.True(at.SequenceEqual(at.Order()), $"{ticker}'s page draws its regions out of section 4's order: {string.Join(", ", titles)}.");
+
+            drawn.Add(titles);
+        }
+
+        // Both directions: every row is a region some page draws.
+        Assert.Equal(
+            [.. rows.Order(StringComparer.Ordinal)],
+            [.. drawn.SelectMany(titles => titles).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)]);
+
+        // And the count the section states in words is its count of rows.
+        var stated = Regex.Match(ReportText(document), @"up to (\w+) regions");
+
+        Assert.True(stated.Success, "Section 4 states no count of its regions.");
+        Assert.Equal(rows.Count, Array.IndexOf(CountWords, stated.Groups[1].Value));
+    }
+
+    const string ReportSection = "4. The report, section by section, and where each part comes from";
+
+    static readonly string[] CountWords =
+    [
+        "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+        "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen",
+        "nineteen", "twenty", "twenty-one", "twenty-two", "twenty-three", "twenty-four", "twenty-five",
+    ];
+
+    // Section 4's own text, from its heading to the next.
+    static string ReportText(string document)
+    {
+        var heading = $"<h2>{ReportSection}</h2>";
+        var start = document.IndexOf(heading, StringComparison.Ordinal);
+
+        Assert.True(start >= 0, "The architecture carries no section 4.");
+
+        var end = document.IndexOf("<h2", start + heading.Length, StringComparison.Ordinal);
+
+        return document[start..(end < 0 ? document.Length : end)];
+    }
+
+    // The first cell of each row of section 4's table, as a reader reads it.
+    static List<string> ReportRegions(string document)
+    {
+        var table = Regex.Match(ReportText(document), "<table>.*?</table>", RegexOptions.Singleline);
+
+        Assert.True(table.Success, "Section 4 carries no table.");
+
+        return
+        [
+            .. Regex.Matches(table.Value, "<tr><td>(.*?)</td>", RegexOptions.Singleline)
+                .Select(match => WebUtility.HtmlDecode(Regex.Replace(match.Groups[1].Value, "<[^>]+>", string.Empty)).Trim()),
+        ];
+    }
+
+    // The titles the contents at the head of a name's page names, in its order.
+    static string[] ContentsTitles(string page)
+    {
+        var contents = Regex.Match(page, "<nav class=\"contents\"[^>]*>.*?</nav>", RegexOptions.Singleline);
+
+        Assert.True(contents.Success, "The name page draws no contents.");
+
+        return
+        [
+            .. Regex.Matches(contents.Value, "<li><a href=\"#[^\"]+\"><span class=\"c-n\">\\d+</span>([^<]*)</a></li>")
+                .Select(match => WebUtility.HtmlDecode(match.Groups[1].Value)),
+        ];
     }
 
     [Fact]

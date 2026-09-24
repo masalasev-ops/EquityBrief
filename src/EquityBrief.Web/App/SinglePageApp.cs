@@ -678,7 +678,7 @@ public sealed class SinglePageApp : IComponent
             id: "facts",
             region: "facts"));
 
-        // The short version, section 4's first section, with its date beside it.
+        // The short version, the first written region section 4 lists, with its date beside it.
         Draw(AtTheTop);
 
         // How it got here, the twelve-month picture above the table of the biggest moves,
@@ -795,10 +795,11 @@ public sealed class SinglePageApp : IComponent
                 region: "listing-history"));
         }
 
-        // What the company sells, section 4's fifth section, after the plan and before the numbers.
+        // What the company sells and the segment commentary, after the listing history and before
+        // the numbers, where section 4 lists them.
         Draw(BeforeTheNumbers);
 
-        // The numbers, which section 4 puts sixth. It arrives already written, for the
+        // The numbers, which section 4 lists after the segment commentary. It arrives already written, for the
         // reason the event book does: what it holds is stored figures and the sentences
         // that state an absence, rather than a mark.
         Card("numbers", "The numbers", Cards.Dated(
@@ -813,13 +814,13 @@ public sealed class SinglePageApp : IComponent
             note: "from the filing",
             id: "numbers"));
 
-        // The industry cycle and the two cases, section 4's seventh and eighth.
+        // The industry cycle and the two cases, after the numbers where section 4 lists them.
         Draw(AfterTheNumbers);
 
-        // What would make this wrong, section 4's ninth, after the two cases it tests.
+        // The risks, after the two cases they test, where section 4 lists them.
         Draw(AfterThePlan);
 
-        // Dates and sources, section 4's last two: the calendar, the dated items a pass
+        // What the research read, the region section 4 lists before the last: the calendar, the dated items a pass
         // read out of the documents, and every document the written sections cite.
         Card("sources", "What the research read", Cards.Computed(
             "Dates and sources",
