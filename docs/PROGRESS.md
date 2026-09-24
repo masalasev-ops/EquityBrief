@@ -23283,3 +23283,68 @@ Carried:    the rows written before this correction, kept as written: their earn
             and the eight-night measurement 11.9 recorded read earnings soon over the old calendar.
             The first night to run this correction must be the one for 2026-09-24's session, which
             is why it merges before that night's run.
+### 11.8 ruling - a company the provider files no dividend for draws no dividend part   2026-09-24
+Not a checkpoint entry. It lands nothing. It records the operator's ruling of 2026-09-24 on
+            what the numbers section draws for a company paying no dividend, with the code that
+            carries it, which meets the done conditions a checkpoint's code meets.
+Asked:      by the operator on 2026-09-24, in their words, "what happenes if a stock does not have
+            dividend ? We should skip the section in such cases i think". A company the provider
+            files no dividend for drew one line saying so, and a row fetched before the part
+            existed draws one line saying the part is absent and why.
+Ruled:      offered the two cases apart, the operator ruled that a company paying none draws no
+            dividend part at all, and that a row holding no dividend part keeps its line, so a
+            payer whose row predates the part is not drawn as a company paying none. Written into
+            `DECISIONS.md` as a decision superseding 11.8's, which moves to Previously decided with
+            its reasoning (see: The numbers section draws the dividend the provider files from the
+            newest filing alone, and nothing for a company paying none).
+Corrects:   the 11.8 entry's Measured line, which said a name whose fundamentals were fetched
+            before 11.8 draws the part as absent until the next open fetches the name again. An
+            open fetches only a filing the store does not hold, and the fundamentals table is kept
+            forever and never updated, so such a name draws the part as absent until its next
+            filing is fetched; DGX draws it so on the rehearsal copy of the operator's store.
+Built:      the numbers section draws nothing where the provider files a rate of zero and no dates,
+            and the section around it is drawn as before; a row holding no dividend part still
+            says the part is absent and why, and a payer's five values are unchanged.
+Amended:    this ruling amends 11.8's done condition, in those words: a non-payer draws no dividend
+            part since the operator's ruling of 2026-09-24, and a row holding no dividend part says
+            it is absent and why.
+Written:    `DECISIONS.md` gains the decision and moves the one it supersedes below. Every
+            citation of the old decision outside the records names the new one: section 4's row
+            for the numbers, the facts assembler's catalogue row, section 15.9's note,
+            `SCHEMA.md`'s fundamentals note, 11.8's text in `BUILD_PLAN.md` and the seven sources
+            citing it. Section 15.9's Dividend row keeps its
+            seven parts, its last now nothing where the provider files none, and the roster's
+            `read-surface` row says what the test reads. `CHANGELOG.md` carries every prior text.
+Guarded:    `read-surface`'s dividend test, renamed
+            `APayerDrawsItsDividendAsFiledAndANonPayerDrawsNone`, reads each non-payer's numbers
+            section drawn with no dividend element and no line, and a payer's row with its
+            dividend part taken out drawing the line saying the part is absent and why, beside the
+            two payers' five values it read before.
+Expected:   derived: no expectation file moves, since no stage's output changes.
+Tests:      1299, from 1299: none added and none removed, the dividend's test renamed and
+            widened. Migrations 0 to 37 with none added and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: the Dividend row keeps its seven
+            parts, and the part renamed keeps its place and its due point.
+Mutated:    the rule, stated before the run: break each property this ruling adds, being that a
+            company paying none draws nothing and that a row holding no dividend part still says
+            so.
+            Predicted:
+            M1 the non-payer's line put back: red in
+            `APayerDrawsItsDividendAsFiledAndANonPayerDrawsNone` and nowhere else.
+            M2 a row holding no dividend part drawing nothing too: red in the same test and
+            nowhere else.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            19b6602, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1299 of 1299. M1 turned 1 red and 1298 green, and M2 turned 1
+            red and 1298 green, each the dividend's test.
+Held:       both, in the test each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1299 of 1299
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1299 of 1299 tests.
+            Both gates ran over the tree carrying this entry, 19b6602, and the operator's store
+            under `data/` was not touched by either.
+Carried:    nothing.

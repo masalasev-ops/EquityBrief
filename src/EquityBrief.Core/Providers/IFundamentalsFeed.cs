@@ -102,7 +102,7 @@ public sealed record AnalystRatings(decimal? Rating, decimal? TargetPrice, int? 
 // date, each null where the provider files none. A company paying none files a rate of zero and no
 // dates. As of the fetch, for the reason the ratios are: a forward rate and a yield move with the
 // price and the board.
-// see: The numbers section shows the dividend the provider files, on the newest filing alone
+// see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none
 public sealed record DividendFiled(decimal? ForwardAnnualRate, decimal? ForwardYield, decimal? PayoutRatio, DateOnly? ExDividendDate, DateOnly? PayDate);
 
 // One name's fundamentals as one provider files them.

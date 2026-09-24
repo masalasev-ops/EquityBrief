@@ -15,7 +15,7 @@ namespace EquityBrief.Tests.Reading;
 public partial class ReadSurface
 {
     [Fact]
-    public async Task APayerDrawsItsDividendAsFiledAndANonPayerSaysTheProviderFilesNone()
+    public async Task APayerDrawsItsDividendAsFiledAndANonPayerDrawsNone()
     {
         using var store = await WithLadders();
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
@@ -57,16 +57,24 @@ public partial class ReadSurface
             Assert.Contains($">{dividend.GetProperty("exDividendDate").GetString()}</td>", drawn.Groups[2].Value, StringComparison.Ordinal);
         }
 
-        // The two non-payers, in one line each, naming the provider.
+        // The two non-payers draw none of it, while the numbers section around it is drawn.
         foreach (var ticker in new[] { "KEYS", "NFLX" })
         {
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{ticker}"));
 
-            Assert.Contains(
-                $"<p class=\"numbers-dividend\" data-dividend=\"none\" data-source=\"{FundamentalsFetcher.Provider}\">The provider files no dividend for {ticker}. From {FundamentalsFetcher.Provider}.</p>",
-                page,
-                StringComparison.Ordinal);
-            Assert.DoesNotContain("numbers-dividend-table", page, StringComparison.Ordinal);
+            Assert.Contains($"<section class=\"numbers\" data-ticker=\"{ticker}\"", page, StringComparison.Ordinal);
+            Assert.DoesNotContain("numbers-dividend", page, StringComparison.Ordinal);
+            Assert.DoesNotContain("no dividend", page, StringComparison.Ordinal);
         }
+
+        // A row holding no dividend part, as one fetched before the part existed, says the part is
+        // absent and why rather than drawing nothing, since that absence is the store's and a payer
+        // drawn as paying none would be wrong.
+        store.Execute("UPDATE fundamentals SET payload = json_remove(payload, '$.dividend') WHERE ticker = 'AAPL';");
+
+        var absent = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/AAPL"));
+
+        Assert.Contains("The dividend is absent rather than empty, and the row says why", absent, StringComparison.Ordinal);
+        Assert.DoesNotContain("numbers-dividend", absent, StringComparison.Ordinal);
     }
 }

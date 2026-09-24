@@ -456,7 +456,7 @@ public sealed class FundamentalsFetcher : IComponent
             } : null,
             // The dividend the provider files, copied as it files it and on the newest filing's row
             // for the reason the ratios are.
-            // see: The numbers section shows the dividend the provider files, on the newest filing alone
+            // see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none
             dividend = newest && fetched.Dividend is { } paid ? new
             {
                 forwardAnnualRate = Money(paid.ForwardAnnualRate),

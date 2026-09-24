@@ -824,7 +824,7 @@ public class FundamentalsFetcherTests
         // AAPL's, read off the captured payload by hand: 1.08 a share, a yield of 0.0033 and a
         // payout ratio of 0.1216, ex-dividend on 2026-08-10 and paid on 2026-08-13; KEYS files a
         // rate of zero and no dates, which is stored as filed rather than left out.
-        // see: The numbers section shows the dividend the provider files, on the newest filing alone
+        // see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none
         using var store = new TemporaryStore().Migrated();
 
         await Fetcher(store, Feed()).RunAsync("AAPL", null, "open-1");
