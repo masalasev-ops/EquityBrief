@@ -23875,3 +23875,44 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry and the three before it, 0427bf8,
             and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
+
+### 11.1 - correction: the count of paid calls answered inside a peak window is read off the run page the surface serves, where the one test built the line itself, and the peak rule's decision states each pass as its run log gives it and which night's report waits   2026-09-24
+Corrects:   11.1's correction (9e3b49e), in two places. Its run page states how many paid calls were
+            answered inside a peak window, the figure the operating row A paid call answered inside
+            a peak window is read off. The route hands the priced line that count through the
+            shipped peak windows, and the one test built the line from `RunScreen.Priced` itself, so
+            the route handing it a nought drew the same line with a nought in it and stayed 1313
+            green. And its decision, A pass starts only where the longest pass the store holds would
+            end before a peak window opens, gave the four passes the store held as 3.4, 3.9, 5.4 and
+            26.2 minutes where their run logs give 3.55, 3.97, 5.43 and 26.28, and read as though
+            the night's own report asked about 00:13 UTC waits until 04:00 UTC, where a pass started
+            then ends about 00:40, before the window opens at 01:00, and starts at once, as RTX's
+            did at 00:13:34 on 2026-09-24.
+Found:      by the phase 11 second sign-off review on 2026-09-24: the count by a mutation of its
+            own, and RTX's pass against its log. The other three figures and the sentence on 00:13
+            were found reading the decision for this correction.
+Ruled:      by the operator on 2026-09-24: the decision's wording corrected in this batch.
+Repaired:   no shipped code changes. The count is read off the run page the surface serves, and the
+            decision's two sentences are corrected in place, since neither changes what it decides.
+Guarded:    `read-surface`, one test added,
+            `TheRunPageTheSurfaceServesCountsThePaidCallsAnsweredInsideAPeakWindow`: three answered
+            paid calls placed by hand on Monday 2026-09-21 against the two windows, at 01:30 inside
+            the first, 06:30 inside the second and noon inside neither, and a call a cap refused at
+            02:00. The run page the surface serves for that night states 3 calls over 3 passes, 2 of
+            them answered inside a peak window. The decision's figures are measurements of the
+            operator's store, which no check reads.
+Written:    `DECISIONS.md`, the decision's two sentences in place: "took 3.4, 3.9, 5.4 and 26.2
+            minutes" now reads "took 3.55, 3.97, 5.43 and 26.28 minutes by their run logs", and the
+            sentence on what the bound costs now says the night's own report starts at once when it
+            is asked about 00:13 UTC and waits until 04:00 UTC when it is asked about 00:40 UTC,
+            where it said the report asked at either waits. No spec.
+Expected:   derived: no expectation file moves.
+Mutated:    the rule, stated before the run: break the route's count from each side.
+            Predicted:
+            M1 the route handing the priced line a nought: red in the test this correction adds.
+            M2 the route counting every answered call, inside a window or not: red in the same test.
+            Results: in the 11.5 correction closing this batch, which records every mutation the
+            batch ran.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the 11.5 correction closing this batch records.
+Carried:    nothing.
