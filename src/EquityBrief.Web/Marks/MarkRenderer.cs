@@ -3024,7 +3024,7 @@ public sealed class MarkRenderer : IComponent
             : FormattableString.Invariant($"Not drawn: the newest key explains the figures of {writtenFor:yyyy-MM-dd}, and no session is stored for this name."))
         + "</p>";
 
-    // Dates and sources, section 15.9's region and section 4's last two sections: the
+    // Dates and sources, section 15.9's region and the one section 4 calls what the research read: the
     // calendar, the dated items a pass read out of the documents, and every document the
     // written sections cite with its date and link.
     //

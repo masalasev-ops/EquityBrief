@@ -23466,3 +23466,72 @@ Carried:    DGX's version 6 on the operator's store stands as written, dated 202
             key, so from that night DGX's page draws it beside the 2026-09-24 figures until the
             2026-09-25 night writes the next one, or until a pass for DGX on 2026-09-25, which asks
             for the key again under this correction, writes one dated by the 2026-09-24 night.
+
+### 0.0 - correction: section 4 defines the report region by region as the name page draws it, where it still described eleven sections the page had outgrown and no check read it against the page   2026-09-24
+Corrects:   0.0 (d220839), the corpus as delivered, whose decision made section 4 the definition of
+            the report and said `architecture-conformance` checks the code against it, a check no
+            checkpoint built: the phase report places section 4 outside the claim scope. As the
+            name page gained regions from phase 5 to phase 11 the table stood as delivered, eleven
+            sections and a header, where the page draws up to nineteen regions. Five it never
+            named: how to read the page, why the name is here, the key under each figure, the
+            evenings it was on the list and where the research stands. Three it filed inside other
+            rows: the peers, the earnings reactions and the segment commentary. Its dates that
+            matter and its sources are drawn as one region, what the research read, and its row for
+            what would make this wrong is drawn as the risks, each with what would confirm it. Its
+            row for the plan named non-price exit triggers from the research record, which the plan
+            does not draw. Section 15.9 said four parts sit in the sections they belong to rather
+            than in regions of their own, where the page draws two of them, the peers and the
+            earnings reactions, as regions of their own.
+Found:      by the operator on 2026-09-24, from section 4 on their screen: the report's sections
+            are now out of date.
+Repaired:   section 4 lists the nineteen regions the name page can draw, in the order it draws them
+            and named as its contents names them, each with what produces it, what it costs and how
+            often it changes, with the count, what the paid model writes and what changes nightly
+            stated above the table, and the key beneath it saying what a name whose report was
+            never asked for still shows. Section 15.9's paragraph says which of the four
+            display-only parts sit inside regions already drawn and which are regions of their own.
+            Section 6's sentence names the regions the segment figures feed. The decision is
+            superseded by one naming the check that now reads the table, and the purpose paragraph
+            cites it. The comments that placed a written region by its position in the old table
+            name the region instead; no line of code moves.
+Missed:     the decision named a check that did not exist, and the phase report placed the table
+            outside the claim scope on the ground that section 15's screens tables assert what it
+            maps. They assert what each region holds, and nothing read the set of regions or their
+            order against the page.
+Guarded:    `read-surface`, one test added,
+            `SectionFourNamesEveryRegionTheNamePageDrawsInTheOrderItDrawsThem`, which reads section
+            4's first column and the contents of the page of every fixture name holding bars on the
+            night, one name given every written region and its industry a cycle: every region a
+            page draws is a row, each page's regions stand in the rows' order, every row is a region
+            some page draws, and the count the section states in words is its count of rows. Its
+            reader is shown to read a row's first cell whole with its entities decoded and to pass
+            over the heading row and every other section's tables. The roster's row says so.
+Written:    section 4, section 15.9's paragraph, section 6's sentence and the purpose paragraph's
+            citation in the architecture, their prior text in `CHANGELOG.md`; the decision in
+            `DECISIONS.md`, the one it supersedes moved to Previously decided with its reasoning;
+            the roster's `read-surface` row, its prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. No claim added: section 4 stays outside the claim scope, and
+            its rows are read by the test rather than as claims.
+Mutated:    the rule, stated before the run: break each property the test adds, the rows' order,
+            every drawn region being a row, every row being drawn, and the stated count, each from
+            the side it can be broken on.
+            Predicted:
+            M1 section 4's rows for the plan and the earnings reactions swapped: red in the test
+            this correction adds and nowhere else.
+            M2 section 4's row for the evenings it was on the list dropped: red in the same test
+            and nowhere else.
+            M3 the page's contents naming the peers' region "Its group by price": red in the same
+            test and nowhere else.
+            M4 the count section 4 states written as eighteen: red in the same test and nowhere
+            else.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    the peers decision's name, "Peers are shown by price alone, in section 2 beside the
+            move table", keeps "section 2" from section 4's old numbering, which the table no longer
+            has. Its body stands and the page draws the peers beside the move table as it rules;
+            renaming it is a supersession of its own, left to the operator.
