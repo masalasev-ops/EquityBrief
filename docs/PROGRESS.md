@@ -23991,3 +23991,170 @@ Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, 
             verdicts reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks
             carried and all 41 run, 1315 of 1315 tests. Both ran over bb7cbcc.
 Carried:    nothing.
+
+### Phase 11 sign-off                                                        2026-09-24
+Signed by a session that has committed no code to this repository. Its only commit is this
+            entry, which is a document, so the fresh session rule permits it. This is the second
+            review of phase 11. The first, over a888e63, did not sign, and PRs 222 to 225
+            corrected what it found. This review read a888e63..9137ac8, 25 files, and did not
+            sign over two defects it found there, which another session corrected in PR 226. It
+            then read 9137ac8..e7a747e, 7 files, and found no defect.
+Verified:   by re-running both gates on `main` at 9137ac8 and at e7a747e before this entry, and
+            again over the tree carrying it. At e7a747e: `tools/ci.ps1` green end to end, 0
+            warnings, 0 errors, 1315 of 1315 tests passing inside it, migrations 0 to 37 applied
+            against `data-ci/` and then none pending at schema version 37, exit 0.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT with 1 captured over 6 constituents and 4 names, 41 checks on the
+            roster and 41 carried, 41 ran and passed and none failed or did not run, the suite
+            1315 of 1315 with none failed and none unrun. At 9137ac8 the same over 1313 tests.
+            Windows PowerShell on the operator's Windows machine: `tools/ci.ps1` green.
+Matrix:     jobs enumerated rather than run conclusions read. The push runs of the 28 merges
+            since b40829f, 8f98341 through e7a747e, carry 2 jobs each, `macos` and
+            `case-sensitivity`, 56 jobs, all success. PRs 222 to 226 each carry a pull_request
+            run of the same 2 jobs, 10 jobs, all success. `.github/workflows/ci.yml` carries
+            zero `if:` and zero `continue-on-error:` keys.
+Plan:       all ten checkpoints, 11.0 through 11.9, are in `BUILD_PLAN.md` and recorded above,
+            with the 11.0 document pass, the 11.8 ruling, the report's amendment and the
+            corrections of PRs 209 and 222 to 226, over 295 entry headings before this one. No
+            open pull request. The carried obligations table holds 89 rows: 74 discharged, 15
+            operating and 0 open, two of the operating rows opened by the correction of 11.1's
+            start and one by the 4.3 ruling. All 39 expectation files state
+            `derivation: derived`. `DECISIONS.md` holds 277 decision names, none twice.
+Store:      the operator store under `data/` was not touched by either gate or by this review.
+            It was read immutable and copied twice, and everything this review wrote went to the
+            copies. `data/equitybrief.db` was last written at 11:45:39 UTC on 2026-09-24, the end
+            of DGX's rewrite, and is at user_version 34 with its newest bar and listing on
+            2026-09-23, so migrations 35 to 37 wait for the night of 2026-09-24.
+            `candidate_register` holds 3 rows, `rule_version` 24 with 8 open, and
+            `research_request` 2, both written. Its 4 passes that ran to their end took 3.55,
+            3.97, 5.43 and 26.28 minutes by their run logs, each ending in the form `PassRun.Took`
+            reads, and none of its 44 answered paid calls came back inside a peak window.
+Rehearsed:  on copies in the session scratchpad, on the SSD. The night of 2026-09-23 over
+            9137ac8 stopped at `news-pulse` at 19:02 UTC, "The operation was canceled", 146
+            seconds in; the live store's run log holds no failed news step. A second run on a
+            fresh copy, started at 19:47, was green in 66 seconds: migrations 34 to 37, 503
+            members, 4,056 moves over 507 names, 335 on the list with 424 reasons fired, 2,215
+            articles over 3 pages, 8 open versions with 5 replayed, 10 network requests, 328
+            weighted calls, the queue stopping after 1 local model call at a closed port, and no
+            report asked for, since the session was named. PR 226 changes no source the worker
+            builds from, which references Core and Data alone, so the same copy was served again
+            by the API built at e7a747e. At both trees 25 requests answered 200: `/`,
+            `/screens/tonight` with no night and 2026-09-23, `/screens/universe`, `/screens/find`,
+            `/screens/researched`, `/screens/queue`, `/screens/run` with no night and 2026-09-23,
+            `/screens/name` for DGX, NVDA, RTX, WMT, AAPL, TTD, EQR, BLDR and TAP, and for TTD on
+            2026-09-18 and 2026-09-22, EQR on 2026-09-16 and DGX on 2026-09-18,
+            `/marks/level-chart/AAPL`, and `/exports/name` for DGX and TTD. The shell was
+            captured with headless Chrome at 1,400 pixels and read: `#/`, `#/universe`,
+            `#/queue` and `#/researched` whole, `#/name/DGX` at its short version and its
+            twelve-month picture, `#/name/TTD` at its move table and peers region, and
+            `#/name/TTD/2026-09-18` at its masthead and move table, the last at both trees. The
+            phase 11 regions of the other pages were read from the markup served. At e7a747e
+            every move on the pages of TTD, EQR, BLDR and TAP, on TTD's for 2026-09-18 and
+            2026-09-22, on EQR's for 2026-09-16 and in TTD's export says it was not a member of
+            the index on 2026-09-23, the night its moves' groups were read, and TTD's page for
+            2026-09-18 names Communication Services in its masthead beside it. DGX's
+            moves name the Diagnostics & Research industry, 11 of 11 other members, on tonight's
+            page and on 2026-09-18's. The run page states 44 paid calls over 5 passes costing
+            $0.22, 0 answered inside a peak window, and the queue page a 5-minute median over 4
+            passes and the 26-minute bound. The API was stopped afterwards.
+Swept:      over the whole suite each time and never a filter, in a detached worktree under the
+            session scratchpad, reset between runs and removed after. The first sweep, at
+            9137ac8 over a baseline of 1313 of 1313, took the rule: the seven mutations the
+            handoff named, each at the one site that states its rule, and one of this review's
+            own, every place PRs 224 and 225 hand a page a figure through a route no test fetches
+            for it, of which there was one. Each prediction was written before its run.
+            M1 the first peak window's end moved an hour later in the worker's settings file:
+            red, 1300 of 1313, the drain's and the queue page's times at a window's end, the
+            shipped windows' readings, the runbook's stated settings and the theme refresh at
+            peak. As predicted, the count left unpredicted.
+            M2 the drain's bound read as the median of the finished passes: red, 1311 of 1313,
+            the bound test's cases at 00:34:00 and 05:34:00. As predicted.
+            M3 the night asking for its first name's report for a session named on the command
+            line: red, 1312 of 1313,
+            `ANightForASessionNamedOnTheCommandLineAsksForNoReport`. As predicted, and no drain
+            was left running.
+            M4 the group rule's five other members read as four, at the comparison and not the
+            constant: red, 1312 of 1313,
+            `AnIndustryOfFiveOtherMembersIsTheGroupAndOneOfFourGivesWayToTheSectorAndTheNameIsNeverInIt`.
+            As predicted.
+            M5 a former member's moves read as a member's on tonight's page: red, 1312 of 1313,
+            `ANameTheIndexDoesNotHoldOnTheNightSaysSoBesideItsMovesAndInItsPeersRegion`. As
+            predicted.
+            M6 a print reported after the close read as moving its own session, at the reaction
+            record's own call so no pinned source moved: red, 1169 of 1313. The three reaction
+            tests the prediction named are among the 144, and 140 more fail on "No recording
+            answers the local lane's call", since the reaction record is in the facts file and
+            the recordings are keyed on it. As predicted in the tests named, the count left
+            unpredicted.
+            M7 the calendar's window replaced where the night's answer stored nothing: red, 1312
+            of 1313, `EachNightsAnswerReplacesWhatTheWindowHeldAndAnEmptyOneRemovesNothing`. As
+            predicted.
+            M8 the run page's route handing its priced line no call answered at peak: green,
+            1313 of 1313. As predicted, and the first finding below.
+            The second sweep, at e7a747e over a baseline of 1315 of 1315, took the rule: put
+            each defect this review found back as it was before PR 226.
+            R1 M8 again: red, 1314 of 1315,
+            `TheRunPageTheSurfaceServesCountsThePaidCallsAnsweredInsideAPeakWindow`. As predicted.
+            R2 tonight's page alone marking a name the index did not hold when its groups were
+            read: red, 1314 of 1315,
+            `ANamesPageForAnEarlierNightNamesTheNightItsMovesGroupsWereReadWhereTheIndexDidNotHoldItThen`.
+            As predicted.
+Found:      two defects over 9137ac8, both corrected by PR 226 before this entry and neither
+            shown by the operator's store, which holds no move's group before the night of
+            2026-09-24 and no paid call answered inside a peak window.
+            1. 11.1: M8. The one test of the count built the line from `RunScreen.Priced`
+            itself, so the route the operating row A paid call answered inside a peak window is
+            read through could hand the line a nought unseen. PR 226's test reads the served
+            run page.
+            2. 11.5: a former member's page for an earlier night drew "a sector its membership
+            row does not name holds no other member" beside every move, since the move table
+            holds the newest night's groups and only tonight's page was marked. On the rehearsed
+            copy, TTD's page for 2026-09-18, whose masthead names Communication Services, drew it
+            beside all 8 moves, and TTD's for 2026-09-22 and EQR's for 2026-09-16 did the same.
+Judged:     PR 224's start bound, read at both windows' edges and over a weekend:
+            `ResearchPricing.StartFor` clears a window only where the start and the bound end
+            strictly before it opens, the drain and the queue page call it with the bound one
+            query reads, tonight's rows and the queue page share one read of the queue, and a
+            store with no finished pass has a bound of nothing, so only a start inside a window
+            moves. A pass longer than any the store holds can still reach a window, and the run
+            page now counts that where the operating row reads it. With the 26.28-minute bound a
+            report the night asks for after about 00:33 UTC on a weekday in UTC waits until 04:00
+            UTC; the night of 2026-09-23 asked at 00:13.
+            PR 226's night named beside a former member's moves is the newest the listings hold,
+            which is the night the annotator read the groups on unless a night stopped after its
+            moves step and before its list, as the correction's own entry states. A name whose
+            membership changed on such a night would be read against the other night's index
+            until the next night completes. It is carried, since it fails no done condition and
+            breaks no check.
+            The chart test of the 5.8 correction reads three of the six kinds of picture the
+            name page draws. The plan column, 440 pixels, sits in a scaling box the test does
+            not read, and the two drawn outside every box are the peers' distance marks at 146
+            pixels and the listing strip at 44, so no chart overflows unread today, and a new
+            wide picture of another class would pass the test unread. `banned-prose` reads the
+            one manifest's inputs, and every captured json file sits beside that manifest, so
+            its check for undeclared json reaches every capture.
+Carried:    not phase failures. The 15 operating obligations, each on its numeric trigger, three
+            opened on 2026-09-24: A paid call answered inside a peak window and The start bound
+            reviewed at twenty passes, and The next report dates only another listing files. The
+            members whose own listing files no next report date, which the 4.3 ruling named as
+            24; in the calendar fetched at 19:48 UTC on 2026-09-24, NVDA, PANW, TGT and TJX each
+            file 2026-11-18 on their own listing, NVDA one day after the other listing's
+            2026-11-17. WMT's two past reports the provider files on its own listing on
+            2025-12-03 and 2026-03-13, where its bars side with 2025-11-20 and 2026-02-19, drawn
+            in its reaction record. DGX, NVDA and RTX saying their dividend is absent with no
+            source recorded until each name's next filing is fetched. DGX's key version 6,
+            explaining the 2026-09-23 figures, drawn beside the 2026-09-24 figures until the
+            night of 2026-09-25 writes the next key. Listing rows before 2026-09-24 whose
+            earnings soon was read over another
+            exchange's dates, kept as written. The moves correction and risks with a severity,
+            waiting on a paid re-recording. The five mutation sweeps of phases 5, 6 and 9 never
+            written into the record. New from this review: the written reports of DGX, NVDA and
+            RTX quote next report dates read before the 4.3 correction, DGX's short version
+            2026-10-20, NVDA's short version and two cases 2026-11-17 and RTX's short version
+            and risks 2026-10-19, where that fetch files 2026-10-22, 2026-11-18 and 2026-10-20 on
+            their own listings. Each was checked against the facts file of its own day and
+            stands under its own date; rewriting one is a paid pass and the operator's to ask
+            for.
+Signed:     phase 11, 11.0 through 11.9, with the corrections through PR 226. Phases 0 to 11 are
+            signed, and the build plan holds no phase after 11.
