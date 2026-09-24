@@ -23493,7 +23493,10 @@ Repaired:   section 4 lists the nineteen regions the name page can draw, in the 
             Section 6's sentence names the regions the segment figures feed. The decision is
             superseded by one naming the check that now reads the table, and the purpose paragraph
             cites it. The comments that placed a written region by its position in the old table
-            name the region instead; no line of code moves.
+            name the region instead; no line of code moves. A `fixture-expectations` test read the
+            lane table's rows by their first cell from the document's head, and once section 4
+            named the two cases it read section 4's row; it reads from section 12.2's heading,
+            where the lane table is, and says why.
 Missed:     the decision named a check that did not exist, and the phase report placed the table
             outside the claim scope on the ground that section 15's screens tables assert what it
             maps. They assert what each region holds, and nothing read the set of regions or their

@@ -1035,9 +1035,16 @@ public partial class FixtureExpectations
         // document describing a pass nothing runs.
         string[] words = ["none", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 
+        // Read from section 12.2's heading, whose lane table states them: section 4 names the same
+        // sections as regions of the page, and a row read from the document's head is section 4's.
         var architecture = Corpus.Read("docs/ARCHITECTURE.html");
-        var cause = System.Text.RegularExpressions.Regex.Match(architecture, "<tr><td>The cause of each large move</td>.*?</tr>").Value;
-        var twoCases = System.Text.RegularExpressions.Regex.Match(architecture, "<tr><td>The two cases</td>.*?</tr>").Value;
+        var lanesAt = architecture.IndexOf("<h3>12.2 How one pass splits between the two models</h3>", StringComparison.Ordinal);
+
+        Assert.True(lanesAt >= 0, "The architecture carries no section 12.2.");
+
+        var lanes = architecture[lanesAt..];
+        var cause = System.Text.RegularExpressions.Regex.Match(lanes, "<tr><td>The cause of each large move</td>.*?</tr>").Value;
+        var twoCases = System.Text.RegularExpressions.Regex.Match(lanes, "<tr><td>The two cases</td>.*?</tr>").Value;
 
         Assert.Contains($"at most {words[Evidence.DocumentsPerMove]} a move", cause, StringComparison.Ordinal);
         Assert.Contains($"at most {words[Evidence.DocumentsSinceTheFiling]} documents published since it", twoCases, StringComparison.Ordinal);
