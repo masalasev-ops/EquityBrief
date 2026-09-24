@@ -21,16 +21,18 @@ public enum TimeBasis
 // When one request's pass will start or started, and when it is expected to end or ended.
 public sealed record RequestTime(TimeBasis Basis, DateTimeOffset? Starts, DateTimeOffset? Ends, int Ahead);
 
-// The passes a start behind other requests is estimated from: their median duration and how
-// many there are, or none where the store holds no pass that ran to its end.
-public sealed record PassEstimate(TimeSpan? Median, int Count);
+// The passes a start behind other requests is estimated from: their median duration, how many
+// there are and the longest of them, which bounds when a pass may start, or none where the store
+// holds no pass that ran to its end.
+public sealed record PassEstimate(TimeSpan? Median, int Count, TimeSpan? Longest = null);
 
 // When each request on the queue will be written, worked out in one place from the queue, the
 // passes the store holds, the prices' peak windows and the instant the page is drawn at.
 //
 // The drain takes requests one at a time, oldest first, and waits for the end of a peak window
-// before a pass it would start inside one, so a request's start is the end of whatever is ahead
-// of it, moved past a peak window where it falls in one. What is ahead of a request is the pass
+// before a pass it would start inside one or that the longest pass the store holds would carry
+// into one, so a request's start is the end of whatever is ahead of it, moved past a peak window
+// where it falls in one or would run into one. What is ahead of a request is the pass
 // being written and every older request outstanding. A pass is expected to take the median of
 // the passes the store holds, and where it holds none nothing behind the first request is given
 // a time, because a time with nothing under it would read as a promise.
@@ -50,7 +52,8 @@ public static class QueueTimes
         // An even count takes the mean of the two middle passes, which is the median's own rule.
         return new PassEstimate(
             sorted.Length % 2 == 1 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2,
-            sorted.Length);
+            sorted.Length,
+            sorted[^1]);
     }
 
     // Every request's time, in the order the rows are given, which is the queue's own order:
@@ -63,7 +66,10 @@ public static class QueueTimes
         ResearchPricing? pricing,
         DateTimeOffset now)
     {
-        DateTimeOffset OffPeak(DateTimeOffset at) => pricing is null ? at : pricing.OffPeakFrom(at);
+        // The instant the drain would take a request at, from the one function it calls, so the page
+        // and the drain cannot disagree about when a pass starts.
+        // see: A pass starts only where the longest pass the store holds would end before a peak window opens
+        DateTimeOffset OffPeak(DateTimeOffset at) => pricing is null ? at : pricing.StartFor(at, estimate.Longest ?? TimeSpan.Zero);
 
         // Where the next pass can start, and whether that is known: after every pass being
         // written, each expected to end a median after it started and never before now.

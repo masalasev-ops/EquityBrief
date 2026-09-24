@@ -31,8 +31,8 @@ public partial class ReadSurface
     [Fact]
     public void TheMedianIsTakenOverThePassesThatRanToTheirEndAndSaysHowManyAndNoneSaysItCannotEstimate()
     {
-        Assert.Equal(new PassEstimate(TimeSpan.FromMinutes(15), 2), QueueTimes.Estimate(TwoPasses));
-        Assert.Equal(new PassEstimate(TimeSpan.FromMinutes(26), 3), QueueTimes.Estimate([TimeSpan.FromMinutes(29), TimeSpan.FromMinutes(4), TimeSpan.FromMinutes(26)]));
+        Assert.Equal(new PassEstimate(TimeSpan.FromMinutes(15), 2, TimeSpan.FromMinutes(26)), QueueTimes.Estimate(TwoPasses));
+        Assert.Equal(new PassEstimate(TimeSpan.FromMinutes(26), 3, TimeSpan.FromMinutes(29)), QueueTimes.Estimate([TimeSpan.FromMinutes(29), TimeSpan.FromMinutes(4), TimeSpan.FromMinutes(26)]));
         Assert.Equal(new PassEstimate(null, 0), QueueTimes.Estimate([]));
     }
 
@@ -57,9 +57,10 @@ public partial class ReadSurface
     public void ARequestBehindOthersStartsWhenTheyEndMovedPastAPeakWindowItFallsIn()
     {
         // At 00:40 on a Monday, a pass started at 00:35 is being written, with two requests
-        // outstanding behind it. Worked by hand: the pass ends at 00:50, the first request runs
-        // from 00:50 to 01:05, and the second would start at 01:05, inside the window, so it
-        // starts at 04:00 and ends at 04:15.
+        // outstanding behind it. Worked by hand: the pass ends at 00:50, and the first request's
+        // pass, bounded by the longest pass of twenty-six minutes, would run past 01:00, so it
+        // starts at 04:00 and ends a median later at 04:15; the second starts at 04:15, whose
+        // bound ends at 04:41, before the window at 06:00, and ends at 04:30.
         var writing = Request("DGX", "2026-09-21T00:30:00Z", ResearchRequests.Writing);
         var first = Request("KEYS", "2026-09-21T00:31:00Z", ResearchRequests.Outstanding);
         var second = Request("AAPL", "2026-09-21T00:32:00Z", ResearchRequests.Outstanding);
@@ -69,8 +70,8 @@ public partial class ReadSurface
         Assert.Equal(
             [
                 new RequestTime(TimeBasis.Started, UtcAt("2026-09-21T00:35:00Z"), UtcAt("2026-09-21T00:50:00Z"), 0),
-                new RequestTime(TimeBasis.Estimated, UtcAt("2026-09-21T00:50:00Z"), UtcAt("2026-09-21T01:05:00Z"), 1),
-                new RequestTime(TimeBasis.Estimated, UtcAt("2026-09-21T04:00:00Z"), UtcAt("2026-09-21T04:15:00Z"), 2),
+                new RequestTime(TimeBasis.Estimated, UtcAt("2026-09-21T04:00:00Z"), UtcAt("2026-09-21T04:15:00Z"), 1),
+                new RequestTime(TimeBasis.Estimated, UtcAt("2026-09-21T04:15:00Z"), UtcAt("2026-09-21T04:30:00Z"), 2),
             ],
             times);
 
@@ -145,12 +146,12 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/queue"));
 
         // What every time rests on, stated once: two passes, fifteen minutes.
-        Assert.Matches("<p class=\"queue-estimate\" data-passes=\"2\" data-median-minutes=\"15\">[^<]*15 minutes, the median of the 2 passes the store holds that ran to their end", page);
+        Assert.Matches("<p class=\"queue-estimate\" data-passes=\"2\" data-median-minutes=\"15\" data-longest-minutes=\"26\">[^<]*15 minutes, the median of the 2 passes the store holds that ran to their end, and a pass starts only where the longest of them, 26 minutes, would end before the next peak window opens", page);
 
         // Each row's time, read back off its own cell against the instants worked by hand: KEYS
-        // started at 00:35 and ends at 00:50; AAPL runs from 00:50 to 01:05; MSFT would start at
-        // 01:05, inside the window, so it starts at 04:00 and ends at 04:15; DGX was written at
-        // 10:04 the day before.
+        // started at 00:35 and ends at 00:50; AAPL's pass, bounded by the longest pass of
+        // twenty-six minutes, would run past 01:00, so it starts at 04:00 and ends at 04:15; MSFT
+        // starts at 04:15 and ends at 04:30; DGX was written at 10:04 the day before.
         (string Basis, string Starts, string Ends) Cell(string ticker)
         {
             var row = Regex.Match(page, $"<tr data-ticker=\"{ticker}\"[^>]*>.*?<td class=\"q-when\" data-basis=\"([^\"]*)\" data-starts=\"([^\"]*)\" data-ends=\"([^\"]*)\">([^<]*)</td>", RegexOptions.Singleline);
@@ -161,13 +162,14 @@ public partial class ReadSurface
         }
 
         Assert.Equal(("Started", "2026-09-21T00:35:00Z", "2026-09-21T00:50:00Z"), Cell("KEYS"));
-        Assert.Equal(("Estimated", "2026-09-21T00:50:00Z", "2026-09-21T01:05:00Z"), Cell("AAPL"));
-        Assert.Equal(("Estimated", "2026-09-21T04:00:00Z", "2026-09-21T04:15:00Z"), Cell("MSFT"));
+        Assert.Equal(("Estimated", "2026-09-21T04:00:00Z", "2026-09-21T04:15:00Z"), Cell("AAPL"));
+        Assert.Equal(("Estimated", "2026-09-21T04:15:00Z", "2026-09-21T04:30:00Z"), Cell("MSFT"));
         Assert.Equal(("Settled", string.Empty, "2026-09-20T10:04:00Z"), Cell("DGX"));
 
         // And the words a reader reads, in New York's time with UTC beside it.
         Assert.Contains("started 2026-09-20 20:35 New York (UTC-04:00), 00:35 UTC, and is expected to end about 2026-09-20 20:50 New York (UTC-04:00), 00:50 UTC", page, StringComparison.Ordinal);
-        Assert.Contains("starts about 2026-09-21 00:00 New York (UTC-04:00), 04:00 UTC, after the 2 requests ahead of it", page, StringComparison.Ordinal);
+        Assert.Contains("starts about 2026-09-21 00:00 New York (UTC-04:00), 04:00 UTC, after the 1 request ahead of it", page, StringComparison.Ordinal);
+        Assert.Contains("starts about 2026-09-21 00:15 New York (UTC-04:00), 04:15 UTC, after the 2 requests ahead of it", page, StringComparison.Ordinal);
         Assert.Contains("written 2026-09-20 06:04 New York (UTC-04:00), 10:04 UTC", page, StringComparison.Ordinal);
     }
 

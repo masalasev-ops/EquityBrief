@@ -224,6 +224,29 @@ public static class RequestDrain
         return new NightAsk(asked, string.Join("; ", said));
     }
 
+    // The longest pass the store holds that ran to its end, the bound on how long a pass a claim
+    // starts may run, and nothing where the store holds none.
+    static async Task<TimeSpan> LongestPassAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PassRun.FinishedPasses;
+
+        var longest = TimeSpan.Zero;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            if (PassRun.Took(reader.GetString(0), reader.GetString(1)) is { } took && took > longest)
+            {
+                longest = took;
+            }
+        }
+
+        return longest;
+    }
+
     const string Outstanding = @"
         SELECT COUNT(*) FROM research_request WHERE state = 'outstanding';
     ";
@@ -260,18 +283,22 @@ public static class RequestDrain
                 break;
             }
 
-            // Every pass is paid at the off-peak rate. A drain started inside a peak window,
-            // or reaching one between passes, waits for the pricing's first off-peak instant
-            // before it claims, so the request it will take stays outstanding while it waits
-            // and the queue screen reads it as waiting rather than as being written. A drain
-            // with nothing outstanding has ended above, and waits for nothing.
+            // Every pass is paid at the off-peak rate. A pass's paid calls come at its end, so a
+            // request is taken only where the longest pass the store holds would end before the
+            // next peak window opens. A drain started inside a window, or whose next pass could
+            // run into one, waits for the instant the pricing states before it claims, so the
+            // request it will take stays outstanding while it waits and the queue screen reads it
+            // as waiting rather than as being written. A drain with nothing outstanding has ended
+            // above, and waits for nothing.
             // see: Queued work runs off-peak, and every schedule is written in UTC
+            // see: A pass starts only where the longest pass the store holds would end before a peak window opens
             var now = clock.UtcNow;
+            var startsAt = pricing.StartFor(now, await LongestPassAsync(connection, cancellation));
 
-            if (pricing.IsPeak(now))
+            if (startsAt > now)
             {
                 await connection.CloseAsync();
-                await waitUntil(pricing.OffPeakFrom(now));
+                await waitUntil(startsAt);
 
                 continue;
             }

@@ -40,4 +40,26 @@ public static class PassRun
             out var started)
             ? started
             : null;
+
+    // The passes that ran to their end, each measured from the instant its run is named for to the
+    // end of its last stage: the population the queue page's estimate is the median of and the
+    // drain's bound is the longest of. A pass the runner stopped before its last stage wrote no
+    // row here and is not one of them.
+    public const string FinishedPasses = @"
+        SELECT run_id, ended_at FROM run_log
+        WHERE stage = 'research' AND outcome = 'ok' AND run_id LIKE 'research-%' AND ended_at IS NOT NULL;
+    ";
+
+    // How long a finished pass took, from the instant its run is named for to the end of its
+    // row, or none where either is not an instant.
+    public static TimeSpan? Took(string runId, string endedAt) =>
+        StartedAt(runId) is { } started
+        && DateTimeOffset.TryParseExact(
+            endedAt,
+            "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+            out var ended)
+            ? ended - started
+            : null;
 }

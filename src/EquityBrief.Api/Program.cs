@@ -770,7 +770,10 @@ app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page, IClock clo
                     times[at].Ends?.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
                     QueueTimes.Words(times[at], row, clock.SessionZone)))),
         ],
-        new QueueEstimate(estimate.Count, estimate.Median is { } median ? QueueTimes.Minutes(median) : null)),
+        new QueueEstimate(
+            estimate.Count,
+            estimate.Median is { } median ? QueueTimes.Minutes(median) : null,
+            estimate.Longest is { } longest ? QueueTimes.Minutes(longest) : null)),
         "text/html; charset=utf-8");
 });
 
@@ -827,7 +830,9 @@ app.MapGet("/screens/run/{night?}", async (
             RunScreen.Queue(await read.QueueRowsAsync(), dated, Traded),
             RunScreen.Harness(PhaseReport(builder, checkout)),
             RunScreen.Shadow(await read.RegisteredCandidatesAsync(), clock.UtcNow),
-            RunScreen.Priced(await read.PaidCallSpendsAsync()),
+            RunScreen.Priced(
+                await read.PaidCallSpendsAsync(),
+                QueuePricing(builder.Configuration) is { } prices ? (await read.PaidCallAnswersAsync()).Count(prices.IsPeak) : 0),
             TonightScreen.WrittenBeforeTheCorrection(await read.ListingsAsync(dated)),
             RunScreen.Orders(everyListing, dated),
             RunScreen.Candidates(

@@ -23627,3 +23627,99 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 94cf930, and the operator's store
             under `data/` was not touched by either.
 Carried:    nothing.
+
+### 11.9 - the phase 11 report, amended: the two operating rows the correction of 11.1's start opened after the report, handed over here   2026-09-24
+Amends:     the phase 11 report (894b3ee), which said phase 11 opened no operating row. The
+            correction of 11.1 in the entry that follows, on the operator's ruling of 2026-09-24,
+            opens two, and a phase's report is where what the phase leaves running is handed over.
+Opened:     two operating rows.
+            **A paid call answered inside a peak window**
+            Its trigger is the first paid call the run page counts as answered inside a peak window.
+            **The start bound reviewed at twenty passes**
+            Its trigger is 20 passes that ran to their end on the queue page's count.
+            `obligation-reconciles` states the count, two, in advance.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the entry that follows records.
+
+### 11.1 - correction: a pass starts only where the longest pass the store holds would end before a peak window opens, where the drain checked only the instant it claimed at   2026-09-24
+Corrects:   11.1 (332d716), whose drain waited for a window only where the instant it claimed at
+            fell inside one. A pass's paid calls come at its end, so a pass taken at 00:55 UTC on a
+            weekday made its calls after 01:00 at double the rate, where 11.1 says every pass is
+            paid at the off-peak rate and the operator ruled off-peak hours are for everything. The
+            night's own report can start as late as about 00:45 UTC when the overnight queue uses
+            its hour, and one earlier pass took 26 minutes.
+Found:      by the phase 11 sign-off review on 2026-09-24.
+Ruled:      by the operator on 2026-09-24: a pass is not started where it could reach a window,
+            bounded by the longest pass the store holds that ran to its end rather than the median
+            with a margin; the queue page states the same start from one function both call; the
+            cost is stated; the calls answered inside a window are counted where the run page
+            states the priced passes; and two operating rows carry the first such call and a
+            review of the bound at twenty passes.
+Repaired:   the pricing states the first instant at or after a moment at which a pass as long as
+            the bound starts off peak and ends before the next window opens. The drain waits for
+            it before it claims and the queue page states it, both calling it with the longest pass
+            the store holds that ran to its end, read by the one query both share. The queue page's
+            estimate line names the longest pass. The run page's priced calls line counts the paid
+            calls answered inside a peak window. A store holding no finished pass has no bound, and
+            only a start inside a window moves, as before.
+Costs:      with the 26-minute pass the store holds, on a weekday no pass starts after about 00:34
+            or 05:34 UTC. The night's own report, asked about 00:13 UTC after the night of
+            2026-09-23 and about 00:40 UTC when the overnight queue uses its hour, waits until 04:00
+            UTC on nights of Monday to Thursday in New York, midnight in New York before 2026-11-01
+            and 23:00 after, and the queue page and tonight's row say it starts then, when the peak
+            window ends.
+Missed:     the drain's tests read only whether the instant a pass was taken at fell inside a
+            window, and none took one whose pass would run into a window.
+Guarded:    `read-surface`, two tests added.
+            `ADrainTakesARequestOnlyWhereTheLongestPassItHoldsWouldEndBeforeTheNextPeakWindow`
+            reads six instants at both windows' edges on a weekday and a Saturday, with passes of
+            26 and 4 minutes held: the drain's pass and wait, and the queue page's start and basis,
+            each against the instant worked by hand. A pass taken at 00:33:59 starts then, and one
+            at 00:34:00 waits until 04:00.
+            `TheRunPageCountsThePaidCallsAnsweredInsideAPeakWindow` reads one call answered at
+            01:30 on a Monday and one at noon, and the line counts one.
+            Four existing tests read under the bound: the estimate carries the longest pass, and
+            a request behind a pass ending at 00:50 starts at 04:00 rather than at 00:50.
+Written:    the decision in `DECISIONS.md`; section 6's paragraph on pricing and section 15.15's
+            row on when each request will be written, in the architecture, their prior text in
+            `CHANGELOG.md`; two operating rows in `BUILD_PLAN.md`, each cited back at the end of the
+            checkpoint that builds its surface; the count of operating rows phase
+            11 opened, 2, in `obligation-reconciles`, and the amended report entry above naming
+            them; the roster's `read-surface` row, its prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      1309, from 1302: seven added to `read-surface`, the drain test's six cases and the run
+            page's count, none removed. Migrations 0 to 37 with none added and none pending,
+            schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: the row section 15.15 carries was
+            reworded and splits into the parts it had.
+Mutated:    the rule, stated before the run: break the bound on each side that reads it, the
+            boundary's side, and the count.
+            Predicted:
+            M1 the drain's bound read as the median of the finished passes: red in the drain test
+            this correction adds, in its two cases that wait, and nowhere else.
+            M2 the queue page's bound read as the median: red in the same test's same two cases,
+            and nowhere else.
+            M3 a pass whose bound ends as a window opens counted as clearing it: red in the same
+            two cases, and nowhere else.
+            M4 the run page counting no call as answered at peak: red in the run page test this
+            correction adds, and nowhere else.
+            Results: one run for each mutation in a detached worktree at 9e3b49e, filtered to the
+            35 tests of the drain, the queue page's times and the run page's spend on the
+            operator's instruction of 2026-09-24 that whole-suite runs took too long, each reverted
+            with `git reset --hard` and the tree read clean after. The whole suite ran green over
+            the same tree in the gates, 1309 of 1309. M1, M2 and M3 each turned 2 red and 33 green,
+            the drain test's cases at 00:34:00 and 05:34:00, and M4 turned 1 red and 34 green, the
+            run page test this correction adds.
+Held:       all four, in the tests each named and in their number, within the filtered scope;
+            whether nothing else went red was read over those 35 tests alone.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1309 of 1309
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1309 of 1309 tests.
+            Both gates ran over the tree carrying this entry, 9e3b49e, and the operator's store
+            under `data/` was not touched by either.
+Carried:    the operating rows A paid call answered inside a peak window and The start bound
+            reviewed at twenty passes.
