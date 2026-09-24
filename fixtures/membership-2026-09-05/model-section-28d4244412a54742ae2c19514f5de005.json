@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-dogq66pwrxs4hidnwfsz",
+  "object": "chat.completion",
+  "created": 1790219503,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock closed at 316.22, trading within a session high of 320.7 and a low of 314.9 with volume of 35.42 million shares. Technical indicators show a 14-day average true range of 7.27, a 14-day relative strength index of 50.26, and the price is currently in a range trend state supported by a 20-day average of 314.80 and a 50-day average of 316.88. The most recent earnings reaction occurred on session 2026-07-31 with an actual value of 2.02 against an estimate of 1.88, resulting in a surprise of 7.45 per cent and a move of -7.35 per cent. Valuation context is provided by the 200-day average of 284.18, while immediate support edges are located at 323.67 and 307.04 with a strength rating of 55, and immediate resistance is set at 330.81 with a strength of 3.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1633,
+    "completion_tokens": 259,
+    "total_tokens": 1892,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

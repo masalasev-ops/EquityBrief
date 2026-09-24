@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-r4y3l90olcbnz94myb5zc",
+  "object": "chat.completion",
+  "created": 1790219469,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock closed at 76.77, trading within a range bounded by immediate support edges between 75.67 and 76.53 and immediate resistance edges between 78.44 and 79.56. The current price sits below the 20-day average of 79.56 and the 50-day average of 75.67, while remaining above the 200-day average of 86.39 is incorrect as the close is below that level. Recent technical indicators show a relative strength index of 45.43 and a MACD value of 0.66 with a histogram of -0.67 and a signal line at 1.33, suggesting a bearish momentum within a range trend state marked by 41 swings. The latest earnings reaction occurred on session 2026-07-17 following a report date of 2026-07-16, where the actual earnings per share of 0.8 beat the estimate of 0.79, resulting in a positive surprise of 1.27 percent and a subsequent move of -7.26 percent.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1604,
+    "completion_tokens": 257,
+    "total_tokens": 1861,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

@@ -6913,3 +6913,11 @@ Was:
 Now:
 > the row as it stood, with a closing clause naming what the check now asserts.
 Why: a roster row names what its check asserts, and 11.9 added that assertion.
+
+### 2026-09-24 - RUNBOOK.md - what a pass costs, from the pass recorded again
+Authorised by: Every number in written prose must exist in the facts file
+Was:
+> three on the local model and four through the spend cap for $0.0340, a sum that includes the cause of each large move, asked twice and answered with nothing both times, since a call answered with nothing is billed.
+Now:
+> three on the local model and four through the spend cap for $0.0770, a sum that includes the cause of each large move, asked twice and answered with nothing both times, since a call answered with nothing is billed, and is at twice the off-peak rate, since the pass's paid calls were recorded inside the provider's peak window.
+Why: 11.9 widened the facts file every section is handed, so the fixture's pass was recorded again, its paid calls inside the provider's peak window on the operator's instruction to run at once, and the same eight paid calls came to $0.076969284 at the peak rate.

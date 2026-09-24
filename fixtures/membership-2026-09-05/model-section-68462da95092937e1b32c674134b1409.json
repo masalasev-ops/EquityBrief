@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-dgndcki60843pbqoiaijud",
+  "object": "chat.completion",
+  "created": 1790219391,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock closed at 316.22 within an uptrend, trading between a session high of 320.7 and a session low of 314.9 with a volume of 35.42 million shares. The price sits above the 20-day average of 313.54 and the 50-day average of 315.64, while remaining below the immediate resistance edge at 334.70 and above the immediate support range spanning from 299.74 to 320.28. The most recent earnings reaction occurred after the report date of 2026-07-31 with an actual value of 2.02 against an estimate of 1.88, resulting in a surprise of 7.45 per cent and a move of -7.35 per cent on the session of 2026-07-31. Technical indicators show a MACD of 2.25 with a histogram of 0.92 above a signal line of 1.32, supported by a 14-day average true range of 7.50 and a relative strength index of 50.26.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1634,
+    "completion_tokens": 268,
+    "total_tokens": 1902,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-ngcbyjf3c0f9ocwnu8afst",
+  "object": "chat.completion",
+  "created": 1790219494,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock for Apple Inc. closed at 316.22 within an uptrend, trading between a session high of 320.7 and a session low of 314.9 with a volume of 35.42 million shares. Technical indicators show a 14-day average true range of 7.50, a 14-day relative strength index of 50.26, and MACD values of 2.25 for the line, 0.92 for the histogram, and 1.32 for the signal line. The price sits above a 20-day average of 313.54, a 50-day average of 315.64, and a 200-day average of 283.69, with immediate support edges at 320.28 and 299.74 and resistance at 334.70. Recent earnings reactions include a latest report on 2026-07-31 where the actual was 2.02 against an estimate of 1.88, resulting in a move of -7.35 per cent with a surprise of 7.45 per cent after the session.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1635,
+    "completion_tokens": 272,
+    "total_tokens": 1907,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-eqzd4a7nv3mjs0stycdvfe",
+  "object": "chat.completion",
+  "created": 1790219428,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The move from 2026-08-17 to 2026-08-24 ended on 2026-08-24 and was caused by the third quarter results release showing revenue of $1.85 billion and GAAP net income of $397 million, as stated in [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 11725,
+    "completion_tokens": 77,
+    "total_tokens": 11802,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}
