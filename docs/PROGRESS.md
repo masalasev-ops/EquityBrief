@@ -23548,3 +23548,32 @@ Carried:    the peers decision's name, "Peers are shown by price alone, in secti
             move table", keeps "section 2" from section 4's old numbering, which the table no longer
             has. Its body stands and the page draws the peers beside the move table as it rules;
             renaming it is a supersession of its own, left to the operator.
+
+### 11.4 - correction: a night run for a session named on the command line asks for no report, read through the worker's own entry, where the one test handed the night the flag itself   2026-09-24
+Corrects:   11.4 (1a90173), whose test of a night run again handed the night
+            `askForTheFirstName: false` itself. The worker's entry sets it from whether a session
+            was named, and nothing read that wiring: an entry that always asked left the suite
+            green, and every rehearsal of a named session would then write a request and start a
+            paid pass.
+Found:      by the phase 11 sign-off review on 2026-09-24, which set the entry to ask whatever was
+            named and saw nothing go red.
+Repaired:   no shipped code moves. The test reads the wiring.
+Guarded:    `nightly-run`, one test added, `ANightForASessionNamedOnTheCommandLineAsksForNoReport`:
+            the worker's own entry run as a process over the fixture with `--session 2026-09-08`
+            and both models at a closed port exits 0, says no report was asked for since the night
+            was run again, and writes no request.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. No claim added: no table or figure changed.
+Mutated:    the rule, stated before the run: make the entry ask for a report where a session is
+            named.
+            Predicted:
+            M1 the entry asks for the first name whether or not a session is named: red in the test
+            this correction adds and nowhere else.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing.

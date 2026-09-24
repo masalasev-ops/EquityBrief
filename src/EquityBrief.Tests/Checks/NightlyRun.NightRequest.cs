@@ -192,4 +192,35 @@ public partial class NightlyRun
         Assert.Equal(0, launcher.Started);
         Assert.Equal("no report was asked for, since this night was run again for an earlier session", RunLog(store, "night-again")[^1].Detail);
     }
+
+    [Fact]
+    public void ANightForASessionNamedOnTheCommandLineAsksForNoReport()
+    {
+        // Through the worker's own entry point, as a rehearsal runs it. The session named on the
+        // command line is what tells the night it is run again, so this reads the argument's wiring
+        // rather than a flag the test hands the night. Both models point at a closed port, so a night
+        // that did ask could start no paid pass. It starts from the worker's own build output, since
+        // the suite's output carries the packages the suite resolves rather than the ones the worker
+        // names.
+        using var store = new TemporaryStore().Migrated();
+
+        var dotnet = Shell.Locate("dotnet");
+        var worker = Repository.BuildOutput("EquityBrief.Worker", "EquityBrief.Worker.dll");
+
+        Assert.NotNull(dotnet);
+        Assert.True(File.Exists(worker), $"No worker assembly at {worker}.");
+
+        var environment = new Dictionary<string, string>
+        {
+            ["EquityBrief__DataRoot"] = store.Root,
+            ["EquityBrief__Models__Local__BaseAddress"] = "http://127.0.0.1:9/v1/",
+            ["EquityBrief__Models__Research__BaseAddress"] = "http://127.0.0.1:9/",
+        };
+
+        var night = Shell.Run(dotnet!, [worker, "nightly", "--session", "2026-09-08", "--fixture", FixtureFolder()], store.Root, environment);
+
+        Assert.True(night.ExitCode == 0, $"Exit {night.ExitCode}: {night.StandardError}");
+        Assert.Contains("report: no report was asked for, since this night was run again for an earlier session", night.StandardOutput, StringComparison.Ordinal);
+        Assert.Empty(StoreRows(store, "SELECT ticker FROM research_request;"));
+    }
 }
