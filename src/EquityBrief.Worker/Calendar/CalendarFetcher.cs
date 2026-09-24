@@ -15,7 +15,8 @@ public sealed record CalendarOutcome(
     int RowsDropped,
     int Requests,
     DateOnly From,
-    DateOnly To);
+    DateOnly To,
+    int NoLongerFiled = 0);
 
 // The calendar fetcher. One request for the whole index's dated events over the
 // window, stored for current members only.
@@ -95,6 +96,21 @@ public sealed class CalendarFetcher : IComponent
         DELETE FROM calendar WHERE event_date < $from;
     ";
 
+    // Rows inside the window tonight's answer does not carry: a date the provider
+    // has moved, whose old date the upsert cannot reach because the date is part of
+    // the key, or a print it no longer files. Each is removed in the write that
+    // stores the answer, so the window holds what the provider files tonight rather
+    // than everything it ever filed. Every row the answer carries was stamped with
+    // tonight's instant by the upsert, which is how the two are told apart.
+    // see: The calendar holds each member's own listing's prints, and each night's answer replaces what its window held
+    const string DropUnfiled = @"
+        DELETE FROM calendar
+        WHERE kind = $kind
+          AND event_date >= $from
+          AND event_date <= $to
+          AND observed_at <> $observed_at;
+    ";
+
     const string AppendRun = @"
         INSERT INTO run_log (
             run_id, stage, started_at, ended_at, outcome,
@@ -134,6 +150,8 @@ public sealed class CalendarFetcher : IComponent
 
         var written = 0;
         var notMembers = 0;
+        var unfiled = 0;
+        var observedAt = startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
 
         await using (var transaction = await connection.BeginTransactionAsync(cancellation))
         {
@@ -159,11 +177,28 @@ public sealed class CalendarFetcher : IComponent
                 command.Parameters.AddWithValue("$kind", Earnings);
                 command.Parameters.AddWithValue("$timing", Filed(entry.Timing));
                 command.Parameters.AddWithValue("$detail", Serialised(entry));
-                command.Parameters.AddWithValue("$observed_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+                command.Parameters.AddWithValue("$observed_at", observedAt);
 
                 await command.ExecuteNonQueryAsync(cancellation);
 
                 written++;
+            }
+
+            // An answer that stored no member's print removes nothing, because a
+            // provider answering nothing for the index is not one saying that
+            // nothing is scheduled.
+            if (written > 0)
+            {
+                await using var command = connection.CreateCommand();
+
+                command.Transaction = (SqliteTransaction)transaction;
+                command.CommandText = DropUnfiled;
+                command.Parameters.AddWithValue("$kind", Earnings);
+                command.Parameters.AddWithValue("$from", from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                command.Parameters.AddWithValue("$to", to.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                command.Parameters.AddWithValue("$observed_at", observedAt);
+
+                unfiled = await command.ExecuteNonQueryAsync(cancellation);
             }
 
             await transaction.CommitAsync(cancellation);
@@ -171,7 +206,7 @@ public sealed class CalendarFetcher : IComponent
 
         var dropped = await DroppedAsync(connection, from, cancellation);
 
-        var outcome = new CalendarOutcome(events.Count, written, notMembers, dropped, feed.Requests, from, to);
+        var outcome = new CalendarOutcome(events.Count, written, notMembers, dropped, feed.Requests, from, to, unfiled);
 
         await RecordAsync(connection, runId, startedAt, outcome, cancellation);
 
@@ -258,7 +293,7 @@ public sealed class CalendarFetcher : IComponent
             "$detail",
             FormattableString.Invariant($"{outcome.EventsReturned} event(s) over {outcome.From:yyyy-MM-dd} to {outcome.To:yyyy-MM-dd}, ") +
             $"{outcome.RowsWritten} stored, {outcome.NotMembers} for names the index does not hold, " +
-            $"{outcome.RowsDropped} dropped, {outcome.Requests} request(s)");
+            $"{outcome.NoLongerFiled} no longer filed, {outcome.RowsDropped} dropped, {outcome.Requests} request(s)");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

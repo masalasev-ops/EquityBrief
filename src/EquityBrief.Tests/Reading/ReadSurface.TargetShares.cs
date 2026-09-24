@@ -19,16 +19,22 @@ public partial class ReadSurface
     // Five nights over twenty members, each reason firing on a run of members starting at its own
     // place so the share firing any reason is a union and not the largest count. At entry zone
     // fires for more than a quarter of the index every night; unusual volume, usually one member
-    // or two, fires for twelve on 2026-09-03; and the first night's rows are in the shape they
-    // took before the 5.4 corrections, earnings soon firing for eighteen.
+    // or two, fires for twelve on 2026-09-28; the first night's rows are in the shape they took
+    // before the 5.4 corrections, earnings soon firing for eighteen; and the second night's session
+    // is before the calendar read each member's own listing alone, so its earnings soon, and with
+    // it the share firing any reason, counts toward no share.
     static readonly (string Night, bool Before, int[] Fired)[] SharesNights =
     [
         ("2026-09-01", true, [12, 2, 0, 0, 1, 18]),
-        ("2026-09-02", false, [11, 1, 1, 0, 1, 2]),
-        ("2026-09-03", false, [13, 3, 0, 1, 12, 2]),
-        ("2026-09-04", false, [10, 2, 0, 0, 0, 1]),
-        ("2026-09-08", false, [12, 0, 2, 1, 2, 0]),
+        ("2026-09-22", false, [11, 1, 1, 0, 1, 2]),
+        ("2026-09-28", false, [13, 3, 0, 1, 12, 2]),
+        ("2026-09-29", false, [10, 2, 0, 0, 0, 1]),
+        ("2026-09-30", false, [12, 0, 2, 1, 2, 0]),
     ];
+
+    // Whether a night's session is one the calendar read each member's own listing alone for,
+    // stated here rather than read off the code.
+    static bool OverOwnListing(string night) => string.CompareOrdinal(night, "2026-09-24") >= 0;
 
     static readonly int[] SharesStart = [0, 5, 10, 15, 3, 8];
 
@@ -49,17 +55,19 @@ public partial class ReadSurface
 
         // The arithmetic, done here and not by the page: a reason counts on the rows that evaluated
         // it under its current rule, which the first night's rows do not for the two reasons the
-        // 5.4 corrections changed; a night is an event session where a reason fires for more than
-        // a quarter of the index while its median over every night it counted on is below a
-        // quarter; and every median the page draws leaves those nights out.
+        // 5.4 corrections changed, and earnings soon counts only on a session the calendar read
+        // each member's own listing alone for; a night is an event session where a reason fires
+        // for more than a quarter of the index while its median over every night it counted on is
+        // below a quarter; and every median the page draws leaves those nights out.
         var reasons = ShortlistSeries.Reasons;
-        bool Counts(bool before, string reason) =>
-            !before || (reason != ShortlistSeries.EarningsSoon && reason != ShortlistSeries.BreakoutOnVolume);
+        bool Counts(string night, bool before, string reason) =>
+            (!before || (reason != ShortlistSeries.EarningsSoon && reason != ShortlistSeries.BreakoutOnVolume))
+            && (reason != ShortlistSeries.EarningsSoon || OverOwnListing(night));
 
         var shares = reasons.ToDictionary(
             reason => reason,
             reason => SharesNights
-                .Where(held => Counts(held.Before, reason))
+                .Where(held => Counts(held.Night, held.Before, reason))
                 .Select(held => (held.Night, Share: (double)held.Fired[reasons.ToList().IndexOf(reason)] / SharesMembers))
                 .ToArray(),
             StringComparer.Ordinal);
@@ -75,14 +83,19 @@ public partial class ReadSurface
         // Worked out rather than read: only the night unusual volume flooded is an event session,
         // and at entry zone, above a quarter every night, marks none; nor does earnings soon's
         // first night, whose eighteen were written before the correction and count for nothing.
-        Assert.Equal([("2026-09-03", ShortlistSeries.UnusualVolume, 0.6)], events);
+        Assert.Equal([("2026-09-28", ShortlistSeries.UnusualVolume, 0.6)], events);
         Assert.Equal(0.6, medians[ShortlistSeries.AtEntryZone]);
 
         var left = events.Select(held => held.Night).ToHashSet(StringComparer.Ordinal);
 
         int Union(int[] fired) => Enumerable.Range(0, SharesMembers).Count(member => SharesFires(member, fired).Any(on => on));
 
-        var anyOrdinary = SharesNights.Where(held => !held.Before && !left.Contains(held.Night)).Select(held => (double)Union(held.Fired) / SharesMembers).ToArray();
+        var anyOrdinary = SharesNights
+            .Where(held => !held.Before && OverOwnListing(held.Night) && !left.Contains(held.Night))
+            .Select(held => (double)Union(held.Fired) / SharesMembers)
+            .ToArray();
+
+        Assert.Equal(2, anyOrdinary.Length);
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
@@ -102,7 +115,7 @@ public partial class ReadSurface
                 var at = reasons.ToList().IndexOf(reason);
                 var ordinary = shares[reason].Where(held => !left.Contains(held.Night)).Select(held => held.Share).ToArray();
 
-                if (Counts(before, reason))
+                if (Counts(night, before, reason))
                 {
                     Assert.Equal(fired[at].ToString(CultureInfo.InvariantCulture), row.Groups["fired"].Value);
                     Assert.Equal(SharesMembers.ToString(CultureInfo.InvariantCulture), row.Groups["counted"].Value);
@@ -111,7 +124,8 @@ public partial class ReadSurface
                 }
                 else
                 {
-                    // A row written before the correction counts for neither reason it changed.
+                    // A row written before the 5.4 correction counts for neither reason it changed,
+                    // and earnings soon on a session read over other listings' dates for nothing.
                     Assert.Equal(("none", "none", "none"), (row.Groups["fired"].Value, row.Groups["counted"].Value, row.Groups["share"].Value));
                     Assert.Contains("not evaluated under its current rule", row.Groups["cells"].Value, StringComparison.Ordinal);
                 }
@@ -125,7 +139,7 @@ public partial class ReadSurface
 
             var any = rows.Single(held => held.Groups["reason"].Value == TargetShares.AnyReason);
 
-            if (before)
+            if (before || !OverOwnListing(night))
             {
                 Assert.Equal("none", any.Groups["share"].Value);
             }
@@ -151,7 +165,7 @@ public partial class ReadSurface
                 StringComparison.Ordinal);
 
             Assert.Contains($"data-event=\"{(left.Contains(night) ? "true" : "false")}\"", region, StringComparison.Ordinal);
-            Assert.Contains("Event sessions, left out of every median: 2026-09-03, unusual volume fired for 60.0% of the index against its median of 5.0%.", decoded, StringComparison.Ordinal);
+            Assert.Contains("Event sessions, left out of every median: 2026-09-28, unusual volume fired for 60.0% of the index against its median of 5.0%.", decoded, StringComparison.Ordinal);
         }
     }
 

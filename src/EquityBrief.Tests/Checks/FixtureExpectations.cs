@@ -2416,6 +2416,59 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task EachNightsAnswerReplacesWhatTheWindowHeldAndAnEmptyOneRemovesNothing()
+    {
+        // A date the provider moves and a print it stops filing are both rows the next
+        // night's answer no longer carries, and the key holds the date, so an upsert
+        // cannot reach the old one: the write that stores the answer removes it. A row
+        // the window does not reach is left for a window that does, and an answer that
+        // stores no member's print removes nothing.
+        using var store = await Replayed();
+
+        static CalendarEvent Print(string ticker, string date) =>
+            new(ticker, DateOnly.ParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture), EventTiming.After, null, null, null);
+
+        async Task<CalendarOutcome> Night(int minutes, params CalendarEvent[] events) =>
+            await new CalendarFetcher(new AnsweringCalendar(events), FixedClock.At(Instant.AddMinutes(minutes), SessionZones.UnitedStates), store.DatabaseFile)
+                .RunAsync(Index, CalendarSession, $"calendar-answer-{minutes}");
+
+        string[] Held() => [.. Query(store, "SELECT ticker, event_date FROM calendar ORDER BY ticker, event_date;")];
+
+        var first = await Night(0, Print("AAPL", "2026-10-29"), Print("AAPL", "2026-11-12"), Print("KEYS", "2026-11-24"));
+
+        Assert.Equal((3, 0), (first.RowsWritten, first.NoLongerFiled));
+
+        // Past the window's end, which a night for this session does not reach.
+        store.Execute("INSERT INTO calendar VALUES ('MSFT', '2026-12-20', 'earnings', 'after', '{}', '2026-09-05T21:00:00Z');");
+
+        // The provider keeps AAPL's first date alone.
+        var second = await Night(1, Print("AAPL", "2026-10-29"));
+
+        Assert.Equal((1, 2), (second.RowsWritten, second.NoLongerFiled));
+        Assert.Equal(["AAPL|2026-10-29", "MSFT|2026-12-20"], Held());
+
+        // An answer carrying no member's print, and one carrying nothing at all.
+        var third = await Night(2, Print("ZZZZ", "2026-10-01"));
+        var fourth = await Night(3);
+
+        Assert.Equal((0, 0, 0, 0), (third.RowsWritten, third.NoLongerFiled, fourth.RowsWritten, fourth.NoLongerFiled));
+        Assert.Equal(["AAPL|2026-10-29", "MSFT|2026-12-20"], Held());
+    }
+
+    // An earnings calendar answering what it was handed, once a request.
+    sealed class AnsweringCalendar(IReadOnlyList<CalendarEvent> events) : IEarningsCalendarFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<IReadOnlyList<CalendarEvent>> EventsAsync(DateOnly from, DateOnly to, CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            return Task.FromResult(events);
+        }
+    }
+
+    [Fact]
     public void TheParserReadsTheCaptureAsTheProviderSendsIt()
     {
         // The three things a parser written from the endpoint's name would have
@@ -2486,6 +2539,33 @@ public partial class FixtureExpectations
         // day on which nobody reports.
         Assert.Throws<InvalidOperationException>(
             () => RecordedEarningsCalendarFeed.Parse("{\"type\":\"Earnings\"}", from, to));
+
+        // Four. The payload is every market's and only the index's own exchange
+        // is read. The capture's rows listed elsewhere are read off the file by
+        // the test's own reading and are the ones the expectation names, and none
+        // of them is returned.
+        var elsewhere = JsonDocument.Parse(response).RootElement.GetProperty("earnings").EnumerateArray()
+            .Select(row => (Code: row.GetProperty("code").GetString()!, Date: row.GetProperty("report_date").GetString()!))
+            .Where(row => !row.Code.EndsWith(".US", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.Equal(
+            Listed(refused.GetProperty("otherExchanges")).Order(StringComparer.Ordinal),
+            elsewhere.Select(row => row.Code + " " + row.Date).Order(StringComparer.Ordinal));
+        Assert.Equal(expected.GetProperty("capture").GetProperty("rows").GetInt32() - elsewhere.Length, events.Count);
+        Assert.All(elsewhere, row => Assert.DoesNotContain(events, entry => entry.Ticker == row.Code[..row.Code.LastIndexOf('.')]));
+
+        // And a ticker the index holds arriving on another exchange as well, as
+        // another company or as the member's own shares listed there, each on a
+        // date of its own: the member's print is the one on the index's exchange.
+        const string Shared =
+            "{\"earnings\":[" +
+            "{\"code\":\"DGX.US\",\"report_date\":\"2026-10-20\",\"date\":\"2026-09-30\",\"before_after_market\":\"BeforeMarket\",\"estimate\":2.85}," +
+            "{\"code\":\"DGX.XX\",\"report_date\":\"2026-11-12\",\"date\":\"2026-09-30\",\"before_after_market\":\"BeforeMarket\",\"estimate\":-0.14}]}";
+
+        Assert.Equal(
+            new[] { ("DGX", new DateOnly(2026, 10, 20), (string?)"2.85") },
+            RecordedEarningsCalendarFeed.Parse(Shared, from, to).Select(entry => (entry.Ticker, entry.EventDate, entry.Estimate)).ToArray());
 
         // The timing, which is what the provider files where 4.0 expected a
         // confirmed flag. Both values the capture carries are read, and the

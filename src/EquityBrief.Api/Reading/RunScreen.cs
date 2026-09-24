@@ -795,8 +795,11 @@ public static class RunScreen
     // Each night's firing, read off every listing the store holds by the rule the records count
     // by, and each reason's share of the index against its target over them, for the night the
     // page is drawn for. A reason counts on a row only where the row evaluated it under its current
-    // rule, so the rows written before the 5.4 corrections count for neither reason they changed.
+    // rule, so the rows written before the 5.4 corrections count for neither reason they changed,
+    // and earnings soon on a session read over a calendar holding other listings' dates counts
+    // toward no share, which leaves that session's rows out of the share firing any reason too.
     // see: A reason's threshold is calibrated to a target share of the index over ordinary nights and a night a usually quiet reason floods is left out
+    // see: The calendar holds each member's own listing's prints, and each night's answer replaces what its window held
     public static SharesAgainstTargets Shares(IReadOnlyList<ListingRow> listings, DateOnly night) =>
         TargetShares.For(
         [
@@ -811,7 +814,9 @@ public static class RunScreen
 
                     foreach (var listing in group)
                     {
-                        var (counted, fired) = Counting(listing.Reasons);
+                        var (counting, firing) = Counting(listing.Reasons);
+                        var counted = counting.Where(reason => !ShortlistSeries.ReadOverAnotherListing(reason, listing.SessionDate)).ToArray();
+                        var fired = firing.Where(counted.Contains).ToArray();
 
                         foreach (var reason in counted.Where(reasons.ContainsKey))
                         {
@@ -823,7 +828,7 @@ public static class RunScreen
                         if (ShortlistSeries.Reasons.All(counted.Contains))
                         {
                             whole++;
-                            firedAny += fired.Count > 0 ? 1 : 0;
+                            firedAny += fired.Length > 0 ? 1 : 0;
                         }
                     }
 

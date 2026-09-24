@@ -201,7 +201,7 @@ public static class Nightly
                 return FormattableString.Invariant($"{outcome.EventsReturned} event(s) over {outcome.From:yyyy-MM-dd} to ") +
                     FormattableString.Invariant($"{outcome.To:yyyy-MM-dd}, {outcome.RowsWritten} stored, ") +
                     $"{outcome.NotMembers} for names the index does not hold, " +
-                    $"{outcome.RowsDropped} dropped, {outcome.Requests} request(s)";
+                    $"{outcome.NoLongerFiled} no longer filed, {outcome.RowsDropped} dropped, {outcome.Requests} request(s)";
             }),
             // Section 14's per-name computations, one step each and in its
             // order. They were one step in the document until 4.0 and one step
