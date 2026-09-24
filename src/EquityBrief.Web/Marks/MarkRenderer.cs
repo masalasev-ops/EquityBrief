@@ -2933,7 +2933,7 @@ public sealed class MarkRenderer : IComponent
     // Where one risk ends and the next begins, as the prose states it: a sentence opening on
     // an ordinal and the word risk.
     static readonly Regex RiskOpens = new(
-        @"(?:^|(?<=\.\s))(?:The|A)\s(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth)\srisk\b",
+        @"(?:^|(?<=\.\s))(?:The|A)\s(?<ordinal>first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth)\srisk\b",
         RegexOptions.CultureInvariant);
 
     // How a part opens what would confirm the risk it states, in the words the writer is asked
@@ -2947,9 +2947,13 @@ public sealed class MarkRenderer : IComponent
     // boundary this file guessed at would put one risk's words under another's.
     //
     // The parts are the prose cut and never edited, so joined back up they are the section as it
-    // was written, which is the property the surface reads them against. Anything before the
-    // first cut opens the first part rather than being dropped, so a section that introduces its
-    // risks before stating them keeps the introduction.
+    // was written, which is the property the surface reads them against. What stands before the
+    // first ordinal is read by that ordinal. Where it numbers the first risk, what stands before
+    // it is an introduction and opens the first part rather than being dropped. Where it numbers
+    // the second, what stands before it is the first risk, a part of its own, since reading it as
+    // an introduction would set the second risk beneath the first one's confirmation. Where it
+    // numbers any later one, the risks before it are stated without saying where they part, so
+    // the section is drawn as it was written.
     //
     // The order is the order they were written in. Ordering them by how severe each one is would
     // rank them on a judgement no model stated and no code computed.
@@ -2968,19 +2972,33 @@ public sealed class MarkRenderer : IComponent
         }
 
         var whole = paragraphs[0];
-        var opens = RiskOpens.Matches(whole).Select(one => one.Index).ToList();
+        var opens = RiskOpens.Matches(whole).ToList();
 
-        if (opens.Count < 2)
+        if (opens.Count == 0)
+        {
+            return null;
+        }
+
+        IEnumerable<Match>? cuts = opens[0].Groups["ordinal"].Value switch
+        {
+            "first" => opens.Skip(1),
+            "second" => opens,
+            _ => null,
+        };
+
+        if (cuts is null)
         {
             return null;
         }
 
         var edges = new List<int> { 0 };
 
-        edges.AddRange(opens.Skip(1));
+        edges.AddRange(cuts.Select(one => one.Index).Where(at => at > 0));
         edges.Add(whole.Length);
 
-        return [.. Enumerable.Range(0, edges.Count - 1).Select(at => whole[edges[at]..edges[at + 1]].Trim())];
+        return edges.Count < 3
+            ? null
+            : [.. Enumerable.Range(0, edges.Count - 1).Select(at => whole[edges[at]..edges[at + 1]].Trim())];
     }
 
     // A part as the risk and what would confirm it, where the part opens its confirmation in the

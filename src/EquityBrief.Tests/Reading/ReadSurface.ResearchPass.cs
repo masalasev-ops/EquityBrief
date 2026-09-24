@@ -344,6 +344,49 @@ public partial class ReadSurface
     }
 
     [Fact]
+    public void TheFirstOrdinalRiskSaysWhetherWhatStandsBeforeItIsItsOwnPart()
+    {
+        var marks = new MarkRenderer();
+
+        // Numbered from the second: what stands before it is the first risk, a part of its own
+        // with what would confirm it beneath it, so the second is never set beneath the first
+        // one's confirmation.
+        const string FromTheSecond =
+            "The clearest risk is that supply is short [D1]. That risk would be confirmed by a fall in units [D1]. " +
+            "A second risk is that the price is high [D2]. That risk would be confirmed by a lower multiple [D2]. " +
+            "A third risk is concentration [D1].";
+
+        var second = RisksDrawn(marks.WrittenSection("KEYS", RisksCell(FromTheSecond), []));
+
+        Assert.Equal(3, second.Count);
+        Assert.Equal(FromTheSecond, string.Join(" ", second.Select(RiskWhole)));
+        Assert.Equal("The clearest risk is that supply is short [D1].", second[0].Risk);
+        Assert.Equal("That risk would be confirmed by a fall in units [D1].", second[0].Confirmation);
+        Assert.Equal("A second risk is that the price is high [D2].", second[1].Risk);
+        Assert.Equal("That risk would be confirmed by a lower multiple [D2].", second[1].Confirmation);
+        Assert.Equal("A third risk is concentration [D1].", second[2].Risk);
+
+        // One numbered risk is two parts where it is the second, since the prose says where the
+        // second starts.
+        const string OneNumbered = "The clearest risk is that supply is short [D1]. A second risk is that the price is high [D2].";
+
+        Assert.Equal(
+            ["The clearest risk is that supply is short [D1].", "A second risk is that the price is high [D2]."],
+            [.. RisksDrawn(marks.WrittenSection("KEYS", RisksCell(OneNumbered), [])).Select(RiskWhole)]);
+
+        // Numbered from the third: two risks stand before it and the prose says nowhere where the
+        // first ends, so the section is drawn as it was written.
+        const string FromTheThird =
+            "Supply is short [D1]. The price is high [D2]. A third risk is concentration [D1]. A fourth risk is the cycle [D2].";
+
+        var third = marks.WrittenSection("KEYS", RisksCell(FromTheThird), []);
+
+        Assert.Empty(RisksDrawn(third));
+        Assert.DoesNotContain("class=\"risks\"", third, StringComparison.Ordinal);
+        Assert.Contains($"<p class=\"prose\">{FromTheThird}</p>", third, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task TheResearchedSectionsAreDrawnInSectionFoursOrderEachWithItsOwnDate()
     {
         using var store = await FixtureReplay.ResearchedAsync();
