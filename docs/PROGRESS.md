@@ -22913,3 +22913,55 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             under `data/` was not touched by either.
 Carried:    the facts file half of 11.5, 11.7 and 11.8, 11.9's with the recordings made again,
             whose paid half waits on the operator's agreed spend.
+### 5.8 - correction: a risk the prose states before the first one it numbers is drawn as its own part, rather than with the second set beneath its confirmation   2026-09-24
+Corrects:   the 5.8 correction of 2026-09-20 (6f8d3bb), which cuts risks run together in one
+            paragraph at each sentence opening on an ordinal and the word risk, and read whatever
+            stood before the first such sentence as an introduction opening the first part. A
+            section numbering its risks from the second states its first risk before any ordinal,
+            so the first two risks were drawn as one part and the second, with what would confirm
+            it, was set beneath the first one's confirmation.
+Found:      by the session building 11.9, whose fixture answer for the risks, recorded again over
+            the widened facts file, is one paragraph of five risks: the first opening "The clearest
+            risk" and numbered by nothing, the next four opening "A second risk" to "A fifth risk".
+Measured:   read-only over the operator's store, every accepted risks section it holds: three, none
+            of this shape. One numbers ten risks from the first and is cut as it was written, and
+            two number none and are drawn as written. So no page on the operator's machine drew the
+            fault, and the fixture's page would have from 11.9.
+Repaired:   the first ordinal the prose states says what stands before it. Where it numbers the
+            first risk, what stands before it is an introduction and opens that part, as before.
+            Where it numbers the second, what stands before it is the first risk, a part of its own
+            with what would confirm it beneath it, and one numbered risk is then enough for two
+            parts, since the prose says where the second starts. Where it numbers any later one,
+            the risks before it are stated without saying where they part, so the section is drawn
+            as it was written.
+Missed:     the rule was fitted to the samples in hand, which numbered from the first or not at all,
+            and the assertion over prose run together opened on an introduction and then "The
+            first risk". Nothing asked what an opening numbered by nothing means when the numbering
+            starts later.
+Guarded:    `read-surface`, one test added,
+            `TheFirstOrdinalRiskSaysWhetherWhatStandsBeforeItIsItsOwnPart`, over three constructed
+            sections read back off the markup: numbered from the second, drawn as three parts with
+            each confirmation beneath its own risk and the parts joining into the prose; one
+            numbered risk after an unnumbered one, drawn as two; and numbered from the third, drawn
+            as written. The roster's `read-surface` row names what the first ordinal decides.
+Expected:   derived: the parts are read against constructed prose, and no expectation file moves.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. No claim added: section 15.9's row already states one part per
+            risk where the prose says where each part ends.
+Mutated:    the rule, stated before the run: put back each wrong reading of what the first ordinal
+            decides, one for each thing it can mean.
+            Predicted:
+            M1 whatever stands before the first ordinal read as an introduction whatever the ordinal
+            numbers, as it was: red in
+            `TheFirstOrdinalRiskSaysWhetherWhatStandsBeforeItIsItsOwnPart` and nowhere else.
+            M2 whatever stands before the first ordinal made a part of its own where it numbers the
+            first: red in the risks test the correction of 2026-09-20 added, where it counts the
+            parts of prose that introduces its risks, and nowhere else.
+            M3 a first ordinal past the second cut as though it were the second: red in the test
+            this correction adds and nowhere else.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing.
