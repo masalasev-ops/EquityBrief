@@ -23949,8 +23949,11 @@ Guarded:    `read-surface`, one test added,
             11.5 correction's own test reads the new words on tonight's page.
 Written:    no spec.
 Expected:   derived: no expectation file moves.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. No claim added: no table or figure changed.
+Tests:      1315, from 1313: two added to `read-surface`, 11.1's served run page and 11.5's earlier
+            night, and the 11.5 correction's own test reading the new words, none removed.
+            Migrations 0 to 37 with none added and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: no table or figure changed.
 Mutated:    the rule, stated before the run: break which night's index is asked and which night is
             named, from the side of a name that left and of one that joined.
             Predicted:
@@ -23963,9 +23966,28 @@ Mutated:    the rule, stated before the run: break which night's index is asked 
             M6, added under the same rule because a first run of M3 failed at MSFT's cells before
             the test read KEYS's page: a name missing from either night's index marked: red in the
             same test, at KEYS's page.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
+            Results: one run for each of the six in a detached worktree at bb7cbcc, the tree
+            carrying this entry, filtered to the 32 tests whose names hold PeakWindow,
+            ANameTheIndexDoesNotHold, ANamesPageForAnEarlierNight, GroupsMedian or Peers, on the
+            operator's instruction of 2026-09-24 that whole-suite runs took too long, each reverted
+            with `git reset --hard` and the tree read clean after. The whole suite ran green over
+            the same tree in the gates, 1315 of 1315. M1 and M2 each turned 1 red and 31 green,
+            `TheRunPageTheSurfaceServesCountsThePaidCallsAnsweredInsideAPeakWindow`, reading 0 and 3
+            calls answered at peak where 2 was stated. M3, M4 and M5 each turned 1 red and 31 green,
+            the test this correction adds, at MSFT's cells: M3 and M5 drew the sentence naming a
+            sector holding nobody, and M4 named 2026-09-03, the page's own night, where 2026-09-04
+            was stated. M6 turned 1 red and 31 green, the same test, at KEYS's page, which it marked
+            not a member. A first run of M1 to M5 at 6465367, a commit this branch replaced whose
+            code and tests it carries unchanged, gave the same five results.
+Held:       all six, in the test each named and in their number, within the filtered scope. M3's
+            KEYS half is shown by M6, since M3 fails at MSFT's cells before the test reads KEYS's
+            page.
 Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
             carrying this entry and the one before it, with the operator's store under `data/`
-            untouched by either. The figures of both runs: FILLED IN AFTER THE RUN.
+            untouched by either. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1315 of 1315
+            tests ran with none failed, migrations 0 to 37 with none added and none pending, schema
+            version 37, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1`: 36
+            tables, 457 claims, 457 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 464 placements and
+            verdicts reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks
+            carried and all 41 run, 1315 of 1315 tests. Both ran over bb7cbcc.
 Carried:    nothing.
