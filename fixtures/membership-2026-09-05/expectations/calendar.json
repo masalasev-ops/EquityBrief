@@ -1,7 +1,7 @@
 {
   "stage": "calendar",
   "derivation": "derived",
-  "derivedFrom": "the captured calendar response read through the rules in section 7 and the window the fetcher asks for, not from a run. The window is a year behind the night's session and ninety days ahead of it, so a night dated 2026-09-08 asks 2025-09-08 to 2026-12-07. Each row's ticker is its code without the exchange suffix, its date is report_date and never date, which is the fiscal period the report covers, and a row is stored only where the ticker is a current index member. Every figure below was read off the captured file by hand, except what a window costs, which was measured against the account.",
+  "derivedFrom": "the captured calendar response read through the rules in section 7 and the window the fetcher asks for, not from a run. The window is a year behind the night's session and ninety days ahead of it, so a night dated 2026-09-08 asks 2025-09-08 to 2026-12-07. A row is read only where its code is listed on the index's own exchange, US, since the payload is every market's and a ticker the index holds can be listed elsewhere as another company or as the member's own shares on dates of their own; each row's ticker is its code without that suffix, its date is report_date and never date, which is the fiscal period the report covers, and a row is stored only where the ticker is a current index member. Every figure below was read off the captured file by hand, except what a window costs, which was measured against the account.",
   "tables": [
     "calendar"
   ],
@@ -18,9 +18,9 @@
     "note": "the provider's own envelope and row shape, trimmed to the fixture's six constituents plus four the index does not hold: a US listing, a London one, a Warsaw one and another US one. The unfiltered response over this window carries 112,647 rows worldwide. Every row in it falls inside the window, because the capture was taken over exactly that range; the window's own filtering is asserted by asking the parser for a narrower one."
   },
   "counts": {
-    "eventsReturned": 31,
+    "eventsReturned": 29,
     "rowsWritten": 18,
-    "notMembers": 13,
+    "notMembers": 11,
     "outsideTheWindow": 0
   },
   "cost": {
@@ -73,7 +73,6 @@
     "AAL": "a constituent that left the index on 2026-09-23 by the membership expectation, so it is in the store's membership and not in the index tonight. Its five prints are inside the window and none is stored.",
     "XRAY": "the second departed constituent, four prints inside the window and none stored",
     "notMembers": [
-      "0KO8.LSE 2025-09-08",
       "AAL.US 2025-10-23",
       "AAL.US 2026-01-27",
       "AAL.US 2026-04-23",
@@ -81,12 +80,16 @@
       "AAL.US 2026-10-22",
       "CASY.US 2025-09-08",
       "EMMA.US 2025-09-08",
-      "ENA.WAR 2025-09-08",
       "XRAY.US 2025-11-06",
       "XRAY.US 2026-02-26",
       "XRAY.US 2026-05-05",
       "XRAY.US 2026-08-06"
     ],
+    "otherExchanges": [
+      "0KO8.LSE 2025-09-08",
+      "ENA.WAR 2025-09-08"
+    ],
+    "otherExchangesNote": "the capture's two rows listed on another exchange, London and Warsaw, which the parser does not read at all, so neither is returned and neither is counted as a name the index does not hold. Until the 4.3 correction of 2026-09-24 both were returned and refused only because neither ticker is a member, and a listing elsewhere of a ticker the index holds was stored as the member's.",
     "outsideTheWindow": "no row in this capture falls outside the window, because the capture was taken over exactly that range. The parser's own range filter is asserted by asking it for a narrower window than the file holds, which is a property of the reader rather than of the capture."
   },
   "absent": {
@@ -97,6 +100,7 @@
   "properties": {
     "oneRequestWhateverTheUniverseSize": "the feed counts one request for the window, and the count does not vary with the number of members",
     "theTickerLosesItsExchange": "the provider sends AAPL.US and the store holds AAPL",
+    "onlyTheIndexExchangeIsRead": "a code listed on another exchange is not read, so a ticker the index holds that the payload also carries from another market is stored once, as its US listing files it",
     "theDateIsTheReportAndNotThePeriod": "AAPL reports on 2026-10-29 for a period ending 2026-09-30, and the two are a month apart",
     "theProviderFilesNoConfirmedFlag": "no row carries a confirmed or estimated field, which is the column 4.0 wrote into SCHEMA and 4.3 replaced with the timing the provider does file",
     "theWindowReachesBothWays": "eighteen rows are stored for four names, of which two are upcoming and sixteen are past, which is what the earnings rule reads"

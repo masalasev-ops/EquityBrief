@@ -23175,3 +23175,111 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    the phase 11 sign-off, owed to a fresh session because this one committed the code; and
             the report on DGX the operator asked to have written again once the phase is built,
             through the press, off-peak.
+### 4.3 - correction: the calendar reads each member's own listing and each night's answer replaces what its window held, where another exchange's listing of a member's ticker was stored as the member's prints and a moved date left its old one behind   2026-09-24
+Corrects:   4.3 (0aa6b4b), whose parser read every row of the earnings payload by its ticker without
+            the exchange, and whose fetcher only inserted and updated. The payload is every
+            market's, and a ticker the index holds can be listed on another exchange as another
+            company or as the member's own shares, each reporting on dates of its own, so those
+            rows were stored as the member's prints. And the date is part of the calendar's key, so
+            a date the provider moved was stored as a new row beside the old one, and a print it
+            stopped filing stayed until it fell a year behind. SCHEMA said the fetcher updated a
+            moved date, which the key cannot do.
+Found:      by the session preparing the phase 11 sign-off, reading the rehearsal's page for DGX:
+            its earnings reaction record drew eight prints, four of them another company's, with
+            estimates below zero on dates between Quest Diagnostics' own.
+Measured:   over two copies of the operator's store, each running the night of 2026-09-23 with the
+            merged code, the first before this correction and the second with it, each read
+            afterwards and read-only. Before, 180 of the 503 members held two or more prints for one
+            fiscal period; after, none. The payload's rows read fell from 110,809 to 36,718, the
+            index's exchange alone, and the night removed 612 stored rows its answer no longer
+            carried. The earnings reaction record fell from 2,428 rows over 506 names to 1,996 over
+            501, and DGX's from eight prints to its own four. 80 members' next dated event moved, 58
+            of them later and none earlier, and 22 read not on file where only another exchange's
+            listing carried their next print: 48 members hold no upcoming print after, against 26
+            before, and of the 22 only HPQ's was inside the twenty-session horizon, a print dated
+            the night itself. Earnings soon fired for 97 names before and 82 after, 15 going and
+            none coming: BEN, EOG and HPQ each read a print dated the night itself, and the other
+            twelve a date earlier than their own. No other reason's fires moved, 173 at entry zone,
+            133 crossed a level, 16 trend state changed, 15 unusual volume and 6 breakout on volume
+            either way.
+Repaired:   the parser reads a row only where its code is listed on the index's own exchange, US,
+            a code with no suffix still taken whole. The fetcher removes, in the write that stores
+            the answer, every row inside the window the answer no longer carries, told apart by the
+            instant the upsert stamps on every row the answer carries; it leaves a row the window
+            does not reach, and an answer that stores no member's print removes nothing. The night's
+            calendar line counts the rows removed. Rows written before this correction are kept as
+            written; earnings soon on a session before 2026-09-24, the first whose night runs it,
+            counts toward no share on the run page, the share firing any reason with it, since
+            nothing in a row but its session tells one read over the old calendar from one read
+            over the new, on the operator's choice of 2026-09-24 that the reason records and the
+            pages for earlier nights keep the rows as they were written.
+Ruled:      the operator's choice of 2026-09-24, given in conversation when offered three, is
+            written into the decision the correction rests on: the rows written before it are left
+            out of the run page's shares and nowhere else.
+Missed:     the parser was written against a capture trimmed to the fixture's names, whose two
+            foreign rows belonged to names the index does not hold, so every foreign row the
+            fixture could show was refused as a non-member rather than as another listing, and no
+            capture carried a member's ticker twice. And the upsert's key was never read against
+            the sentence in SCHEMA saying a moved date is updated.
+Guarded:    `fixture-expectations`, the parser's test extended and one test added,
+            `EachNightsAnswerReplacesWhatTheWindowHeldAndAnEmptyOneRemovesNothing`. The parser's
+            test reads the capture's rows listed elsewhere by its own reading, names them in the
+            expectation and finds none returned, and reads a constructed payload carrying a
+            member's ticker on two exchanges as the member's one print. The new test runs four
+            answers over a store: a moved date and a print no longer filed are removed, a row past
+            the window stays, and an answer carrying only a name the index does not hold, and one
+            carrying nothing, remove nothing. `read-surface`'s region test holds a night on each
+            side of 2026-09-24, stated in the test rather than read off the code. The roster's two
+            rows name what they now assert.
+Written:    `DECISIONS.md` gains the decision the correction rests on (see: The calendar holds each
+            member's own listing's prints, and each night's answer replaces what its window held);
+            `SCHEMA.md`'s calendar note says what the fetcher removes and whose rows it holds;
+            section 11's paragraph on the run page adds the rows it leaves out; the calendar
+            fetcher's catalogue row and section 19.1's calendar row name the member's own listing
+            and the night's answer. `CHANGELOG.md` carries every prior text.
+Expected:   derived: the calendar expectation's counts move from 31 returned and 13 not members to
+            29 and 11, the two rows listed on another exchange, London and Warsaw, read off the
+            capture by hand and named as refused at the parse; the stored rows are unchanged.
+Tests:      1299, from 1298: one added to `fixture-expectations`, none removed, the parser's
+            test and the run page region's test each widened. Migrations 0 to 37 with none added
+            and none pending, schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: both rows the correction rewords are
+            keyed on their first cell, which is unchanged.
+Mutated:    the rule, stated before the run: break each property this correction adds, being that
+            only the index's own exchange is read, that a row the answer no longer carries is
+            removed, that an answer storing no member's print removes nothing, that the window
+            bounds what is removed, that earnings soon read over the old calendar counts toward no
+            share, and the session that begins at.
+            Predicted:
+            M1 every exchange read, as it was: red in
+            `TheParserReadsTheCaptureAsTheProviderSendsIt` and
+            `TheCalendarCostsOneRequestWhateverTheUniverseSize`, and nowhere else.
+            M2 nothing the answer no longer carries removed, as it was: red in
+            `EachNightsAnswerReplacesWhatTheWindowHeldAndAnEmptyOneRemovesNothing` alone.
+            M3 an answer storing no member's print removing what the window held: red in the same
+            test alone.
+            M4 a row the window does not reach removed too: red in the same test alone.
+            M5 earnings soon counted on every session, as it was: red in
+            `EachReasonsShareIsDrawnAgainstItsTargetWithEachEventSessionMarkedAndLeftOut` alone.
+            M6 the first session the correction runs on moved five days later: red in the same
+            test alone.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            d7129e2, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1299 of 1299. M1 turned 2 red and 1297 green, the two it named.
+            M2, M3 and M4 each turned 1 red and 1298 green, the fetcher's new test. M5 and M6 each
+            turned 1 red and 1298 green, the run page region's test.
+Held:       all six, in the tests each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1299 of 1299
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1299 of 1299 tests.
+            Both gates ran over the tree carrying this entry, d7129e2, and the operator's store
+            under `data/` was not touched by either.
+Carried:    the rows written before this correction, kept as written: their earnings soon fires
+            stand in the reason records and on the pages for earlier nights, as the operator chose,
+            and the eight-night measurement 11.9 recorded read earnings soon over the old calendar.
+            The first night to run this correction must be the one for 2026-09-24's session, which
+            is why it merges before that night's run.

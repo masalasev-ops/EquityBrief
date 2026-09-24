@@ -14,7 +14,11 @@ namespace EquityBrief.Core.Providers;
 // rather than at the top level as the bulk price file and both action feeds do.
 //
 // `code` is a ticker and an exchange, `AAPL.US`, so a reader taking it whole
-// would key every row on a symbol the store does not hold.
+// would key every row on a symbol the store does not hold. And the payload is
+// every market's, so a ticker the index holds can arrive on another exchange as
+// well, as another company or as the member's own shares listed there, each on
+// dates of its own: only the index's own exchange is read, and a row listed
+// anywhere else is not the member's.
 //
 // And there are two dates. `report_date` is when the report lands; `date` is the
 // fiscal period it covers, and the two are weeks apart. A reader taking `date`
@@ -82,7 +86,7 @@ public sealed class RecordedEarningsCalendarFeed(string response) : IEarningsCal
             var code = Text(row, "code");
             var reported = Date(Text(row, "report_date"));
 
-            if (code is null || reported is not { } date || date < from || date > to)
+            if (code is null || !OnTheIndexExchange(code) || reported is not { } date || date < from || date > to)
             {
                 continue;
             }
@@ -114,6 +118,19 @@ public sealed class RecordedEarningsCalendarFeed(string response) : IEarningsCal
         var at = code.LastIndexOf('.');
 
         return at <= 0 ? code : code[..at];
+    }
+
+    // The exchange the index's members are listed on, as the provider suffixes it.
+    // see: The calendar holds each member's own listing's prints, and each night's answer replaces what its window held
+    public const string IndexExchange = "US";
+
+    // Whether a code is listed on the index's own exchange. A code with no suffix is
+    // taken whole, as the ticker is, because what is being read is a name.
+    static bool OnTheIndexExchange(string code)
+    {
+        var at = code.LastIndexOf('.');
+
+        return at <= 0 || string.Equals(code[(at + 1)..], IndexExchange, StringComparison.Ordinal);
     }
 
     static EventTiming Timing(string? filed) => filed switch

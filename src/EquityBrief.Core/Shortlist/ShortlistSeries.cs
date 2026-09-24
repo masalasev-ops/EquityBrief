@@ -261,6 +261,19 @@ public static class ShortlistSeries
         _ => false,
     };
 
+    // The first session whose night reads the calendar for each member's own listing
+    // alone. Earnings soon on a row of an earlier session read a calendar that also held
+    // other exchanges' listings of the member's ticker and dates the provider had moved,
+    // and the rule wrote the same values over either calendar, so the row's session is
+    // the only thing that tells the two apart.
+    // see: The calendar holds each member's own listing's prints, and each night's answer replaces what its window held
+    public static readonly DateOnly OwnListingFrom = new(2026, 9, 24);
+
+    // Whether a stored reason was read over a calendar holding other listings' dates,
+    // which only earnings soon reads.
+    public static bool ReadOverAnotherListing(string reason, DateOnly session) =>
+        string.Equals(reason, EarningsSoon, StringComparison.Ordinal) && session < OwnListingFrom;
+
     static IReadOnlyDictionary<string, string> Values(params (string Name, string Value)[] values) =>
         values.ToDictionary(value => value.Name, value => value.Value, StringComparer.Ordinal);
 
