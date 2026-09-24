@@ -922,6 +922,13 @@ public static class NameScreen
             .OrderBy(row => row.SessionDate)
             .LastOrDefault()?.Value;
         var (cells, causes) = Causes(moves, accepted);
+
+        // Each move's group, for a name the index does not hold on tonight's night, says that is why
+        // no group is read for it.
+        if (night is null && universe is not null && !universe.Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)))
+        {
+            cells = [.. cells.Select(cell => cell.Group is { } group ? cell with { Group = group with { Member = false } } : cell)];
+        }
         var newest = Pass(pass);
         var notWritten = NotWritten(pass, accepted, leftOut);
 
@@ -1056,6 +1063,14 @@ public static class NameScreen
         if (night is not null)
         {
             return new PeersView(null, null, [], Kept: false);
+        }
+
+        // A name the index does not hold on the night, which is a name that left it and keeps its
+        // stored history, has no group, and the region says so rather than reading the membership
+        // row it no longer has as a group of one.
+        if (!universe.Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)))
+        {
+            return new PeersView(null, null, [], Member: false);
         }
 
         var byTicker = readings.ToDictionary(row => row.Ticker, StringComparer.Ordinal);

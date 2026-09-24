@@ -23595,3 +23595,36 @@ Written:    the operating row in `BUILD_PLAN.md`, cited back at the end of 5.8, 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
             entry, with the figures the 11.9 correction closing this batch records.
 
+### 11.5 - correction: a name the index does not hold on the night says so beside each move and in its peers region, where both read the membership row it no longer has as a group of one   2026-09-24
+Corrects:   11.5 (3c9f315), whose group cell beside each move, and 11.6 (e723114), whose peers
+            region, read a name the index does not hold on the night as a member of a group of one.
+            A name that left the index keeps its bars, and the annotator reads its group through a
+            membership row it no longer has: a sector unnamed, holding nobody. TTD's page said "a
+            sector its membership row does not name holds no other member" where its row names
+            Communication Services, and "the table holds TTD alone" with no rows.
+Found:      by the phase 11 sign-off review on 2026-09-24: TTD, BLDR and TAP left the index on
+            2026-09-21 and EQR on 2026-09-18, and all four still hold bars.
+Repaired:   the name page reads whether the index holds the name on its night off the night's own
+            members, which its peers are read from. A name it does not hold says, beside every move,
+            that it was not a member of the index on the night so no group is read for the move,
+            and its peers region says it has no group and draws no peers. A member's page is as it
+            was, a group of one included. A page for an earlier night draws its peers as before.
+Guarded:    `read-surface`, one test added,
+            `ANameTheIndexDoesNotHoldOnTheNightSaysSoBesideItsMovesAndInItsPeersRegion`: MSFT made
+            to leave the index before the fixture's night with its moves and readings stored as the
+            annotator stores them for a name it reads no membership row for; its page says so in
+            every group cell and in its peers region and names no empty group, and AAPL's page
+            draws its group.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Mutated:    the rule, stated before the run: break each side that reads the membership.
+            Predicted:
+            M1 the peers region reading a name the index does not hold as a member: red in the test
+            this correction adds.
+            M2 the moves' group cells reading it as a member: red in the same test.
+            Results: in the 11.9 correction closing this batch, which records every mutation the
+            batch ran.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the 11.9 correction closing this batch records.
+Carried:    nothing.
+
