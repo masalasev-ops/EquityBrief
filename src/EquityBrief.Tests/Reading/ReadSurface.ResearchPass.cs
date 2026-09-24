@@ -295,20 +295,39 @@ public partial class ReadSurface
             "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted');")
             .Single()[0];
 
-        // The fixture's risks are written a paragraph to a risk, so each paragraph is a part,
-        // unchanged and in the order it was written.
-        var paragraphs = stored.Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        // The fixture's risks are one paragraph of five: the first opens it numbered by nothing and
+        // the four after it each open on an ordinal from the second, so each is a part, cut where
+        // the prose says it starts, with the first one's confirmation beneath it and never the
+        // second risk. The parts joined back up are the prose as it was stored.
         var drawn = RisksDrawn(written.Value);
 
-        Assert.True(paragraphs.Length > 1, "the fixture's risks are one paragraph, and this reads the shape that is several");
-        Assert.Equal(paragraphs.Length, drawn.Count);
-        Assert.Equal([.. paragraphs], [.. drawn.Select(RiskWhole)]);
+        Assert.DoesNotContain("\n\n", stored.Trim(), StringComparison.Ordinal);
+        Assert.Equal(5, drawn.Count);
+        Assert.Equal(stored.Trim(), string.Join(" ", drawn.Select(RiskWhole)));
+        Assert.StartsWith("The clearest risk", drawn[0].Risk, StringComparison.Ordinal);
+        Assert.StartsWith("That risk would be confirmed", drawn[0].Confirmation, StringComparison.Ordinal);
+        Assert.DoesNotContain("A second risk", drawn[0].Confirmation, StringComparison.Ordinal);
+        Assert.Equal(
+            ["A second risk", "A third risk", "A fourth risk", "A fifth risk"],
+            [.. drawn.Skip(1).Select(part => string.Join(' ', part.Risk.Split(' ').Take(3)))]);
+
+        var marks = new MarkRenderer();
+
+        // Prose the writer broke into paragraphs is a part to a paragraph, unchanged and in the
+        // order it was written.
+        const string AParagraphEach =
+            "The first risk is that supply is short [D1]. That risk would be confirmed by a fall in units [D1].\n\n" +
+            "The second risk is that the price is high [D2].";
+
+        var each = RisksDrawn(marks.WrittenSection("KEYS", RisksCell(AParagraphEach), []));
+
+        Assert.Equal([.. AParagraphEach.Split("\n\n")], [.. each.Select(RiskWhole)]);
+        Assert.Equal("That risk would be confirmed by a fall in units [D1].", each[0].Confirmation);
 
         // A section run together as one paragraph is cut where its own prose says a risk starts,
         // and what would confirm each is set apart from it. Nothing is dropped or reworded by
         // either: the parts joined back up are the prose as it was written, the run before the
         // first cut opening the first part rather than being lost.
-        var marks = new MarkRenderer();
         const string RunTogether =
             "These are the risks. The first risk is that supply is short [D1]. That risk would be confirmed by a fall in units [D1]. " +
             "The second risk is that the price is high [D2]. That risk would be confirmed by a lower multiple [D2]. " +

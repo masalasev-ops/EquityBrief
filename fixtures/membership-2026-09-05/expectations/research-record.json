@@ -91,7 +91,7 @@
     "local": 3,
     "paid": 8
   },
-  "spend": "0.034046598",
+  "spend": "0.076969284",
   "theme": {
     "theme": "Scientific & Technical Instruments",
     "searches": 12,
@@ -105,25 +105,25 @@
   "comparison": {
     "paid": {
       "accepted": {
-        "What the company sells": 2,
+        "What the company sells": 1,
         "The segment commentary": 1,
         "The key under each figure": 1,
         "The dated calendar items": 1,
         "The two cases": 2,
         "The risks, each with what would confirm it": 1,
-        "The short version": 1
+        "The short version": 2
       },
       "fallback": [],
       "calls": 11,
-      "spend": "0.036846078"
+      "spend": "0.079531656"
     },
     "local": {
       "accepted": {
-        "The cause of each large move": 1,
+        "The cause of each large move": 2,
         "What the company sells": 1,
         "The segment commentary": 1,
         "The key under each figure": 1,
-        "The risks, each with what would confirm it": 2
+        "The risks, each with what would confirm it": 1
       },
       "fallback": [
         "The dated calendar items",

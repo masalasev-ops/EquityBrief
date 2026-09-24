@@ -1053,6 +1053,19 @@ public partial class ArchitectureConformance
         // 11.7, the reaction record's own store and its fixture row.
         CheckReach.Key(Scope.StoresTable, "Earnings reactions"),
         CheckReach.Key(Scope.FixtureTable, "reactions"),
+
+        // 11.9, on the operator's addendum of 2026-09-23: the run page's region stating each
+        // reason's share of the index against its target, read as its six parts, and section 17's
+        // two targets and the event share.
+        CheckReach.Key("15.10 Run", "Reasons against their targets, each reason's share of the index tonight"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, its median share over the ordinary nights"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, its target"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, the share firing any reason with its median and its target"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, the ordinary nights counted against the sixty the calibration waits on"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, every event session marked with the reason that made it one"),
+        CheckReach.Key(Scope.LimitsTable, "Reason share target"),
+        CheckReach.Key(Scope.LimitsTable, "Any-reason share target"),
+        CheckReach.Key(Scope.LimitsTable, "Event session share"),
     ];
 
     // The ones a phase 11 checkpoint has since drawn. A row moves here in the commit that
@@ -1098,6 +1111,15 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "Dividend, the payout ratio"),
         CheckReach.Key("15.9 Name", "Dividend, the ex-dividend date and the pay date"),
         CheckReach.Key("15.9 Name", "Dividend, one line saying the provider files none"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, each reason's share of the index tonight"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, its median share over the ordinary nights"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, its target"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, the share firing any reason with its median and its target"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, the ordinary nights counted against the sixty the calibration waits on"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, every event session marked with the reason that made it one"),
+        CheckReach.Key(Scope.LimitsTable, "Reason share target"),
+        CheckReach.Key(Scope.LimitsTable, "Any-reason share target"),
+        CheckReach.Key(Scope.LimitsTable, "Event session share"),
     ];
 
     // Rows the document gained after the prediction, each one claim.
@@ -1141,6 +1163,59 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "Provenance footer, fundamentals as of a filing date"),
         CheckReach.Key("15.9 Name", "Provenance footer, research as of the date it was written"),
     ];
+
+    // 11.0's document pass predicted 421 claims and 421 PASS after 11.9, within 419 to 425, with none
+    // out of scope. The actual is that prediction and every claim that moved from it, each named:
+    // the name screen's three rows read as their parts where the prediction counted each as one, at
+    // 11.6, 11.7 and 11.8; the peers' readings and the reaction record each arriving with a row of
+    // their own in section 19.1's fixture table, which the range's high end named; and the claims
+    // the operator's addendum of 2026-09-23 brought to 11.9 after the prediction was made, the run
+    // page's region stating each reason's share against its target, read as its six parts, and
+    // section 17's two targets and the event share.
+    [Fact]
+    public void ThePairElevenZeroPredictedIsCheckedAgainstTheActual()
+    {
+        const int Predicted = 421;
+
+        var report = Report();
+
+        string[] readAsParts =
+        [
+            CheckReach.Key("15.9 Name", "Peers"),
+            CheckReach.Key("15.9 Name", "Earnings reactions"),
+            CheckReach.Key("15.9 Name", "Dividend"),
+        ];
+
+        string[] fixtureRows =
+        [
+            CheckReach.Key(Scope.FixtureTable, "peers"),
+            CheckReach.Key(Scope.FixtureTable, "reactions"),
+        ];
+
+        string[] addendum =
+        [
+            CheckReach.Key("15.10 Run", "Reasons against their targets, each reason's share of the index tonight"),
+            CheckReach.Key("15.10 Run", "Reasons against their targets, its median share over the ordinary nights"),
+            CheckReach.Key("15.10 Run", "Reasons against their targets, its target"),
+            CheckReach.Key("15.10 Run", "Reasons against their targets, the share firing any reason with its median and its target"),
+            CheckReach.Key("15.10 Run", "Reasons against their targets, the ordinary nights counted against the sixty the calibration waits on"),
+            CheckReach.Key("15.10 Run", "Reasons against their targets, every event session marked with the reason that made it one"),
+            CheckReach.Key(Scope.LimitsTable, "Reason share target"),
+            CheckReach.Key(Scope.LimitsTable, "Any-reason share target"),
+            CheckReach.Key(Scope.LimitsTable, "Event session share"),
+        ];
+
+        Assert.All([.. fixtureRows, .. addendum], key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+
+        var expected = Predicted + readAsParts.Sum(key => Scope.ElementsOf(key).Count - 1) + fixtureRows.Length + addendum.Length;
+
+        Assert.Equal(
+            (expected, 0, 0, expected),
+            (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
+
+        // Stated, so a claim added or lost without being named here moves this rather than the sum.
+        Assert.Equal(457, expected);
+    }
 
     [Fact]
     public void ThePairEightZeroPredictedIsCheckedAgainstTheActual()

@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Shortlist;
 using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Web.App;
@@ -1382,7 +1383,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null,
         OrderComparison? orders = null,
         CandidateRegion? candidates = null,
-        TrendVersionRegion? versions = null)
+        TrendVersionRegion? versions = null,
+        SharesAgainstTargets? shares = null)
     {
         var region = new StringBuilder();
 
@@ -1410,6 +1412,20 @@ public sealed class SinglePageApp : IComponent
             lede: "The base rate sits above the rows, so no reason's figure stands alone.",
             stamp: Cards.Night(night),
             region: "records"));
+
+        if (shares is { } against)
+        {
+            region.Append(Cards.Computed(
+                "Reasons against their targets",
+                marks.ReasonShares(against) + Cards.Key(
+                    "How to read it.",
+                    "Each share is the reason's fires over the index's rows that night, counting only the rows that evaluated it under its current rule. The median is over the ordinary nights, and the target is where the calibration moves each threshold once sixty of them are stored. An event session, a night a reason usually below a quarter of the index fires for more than a quarter of it, is counted and read by no median.",
+                    "A share far above its target means that reason's setups are close to the universe's, so its record can say little about it. The gap between the two is what the calibration closes."),
+                title: "How much of the index each reason fires for, against its target",
+                lede: "The targets are proposals; the thresholds move only once the ordinary nights reach sixty.",
+                stamp: Cards.Night(night),
+                region: "shares"));
+        }
 
         region.Append(Cards.Computed(
             "Shadow candidates",

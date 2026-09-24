@@ -266,10 +266,13 @@ public class BannedProse
         // which is the fault 6.8 recorded arriving a second time, and its sweep's
         // baseline is what showed it. Ninety-four at 6.11: the twenty-four searches a site
         // the replay's two theme passes make, and the three theme calls over what they kept.
+        // A hundred and two at 11.9, from ninety-eight: the four keys the nightly run's
+        // rebalance asks, which the group the facts file carries tells apart from the other
+        // nights' keys.
         var tracked = Repository.TrackedFiles();
         var excluded = tracked.Count(IsCapture);
 
-        Assert.True(excluded is >= 5 and <= 100, $"Excluded {excluded} captured responses, expected between 5 and 100.");
+        Assert.True(excluded is >= 5 and <= 110, $"Excluded {excluded} captured responses, expected between 5 and 110.");
 
         // And the count is over the tree as it will be committed. The ceiling failed on a
         // committed tree at 6.8 and again at 6.10, each time because the run verifying the

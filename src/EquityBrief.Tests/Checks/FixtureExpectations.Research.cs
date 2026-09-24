@@ -769,12 +769,14 @@ public partial class FixtureExpectations
         store.Execute("INSERT INTO research_section VALUES ('KEYS', 'The short version', 1, '2026-09-08', 'a writer', 'accepted', 'prose', '[]', NULL);");
 
         // A context too small for the two sections handed the release and large enough for
-        // the key: the two are refused before any local call and left for the paid path,
-        // which writes them in this pass from the recordings the comparison made.
+        // the key, the one the prose expectation works by hand: the two are refused before any
+        // local call and left for the paid path, which writes them in this pass from the
+        // recordings the comparison made.
         var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
         var local = new RecordedLocalModelFeed(Folder());
+        var context = Expected("prose").GetProperty("cannotHold").GetProperty("contextTokens").GetInt32();
 
-        var outcome = await FixtureReplay.Researcher(store, ResearchClock, local: local, paid: paid, localSettings: new LocalModelSettings(null, null, null, 8000, null))
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, local: local, paid: paid, localSettings: new LocalModelSettings(null, null, null, context, null))
             .RunAsync("KEYS", "research-cannot-hold");
 
         Assert.Equal(["What the company sells", "The segment commentary"], outcome.LeftForThePaidPath);

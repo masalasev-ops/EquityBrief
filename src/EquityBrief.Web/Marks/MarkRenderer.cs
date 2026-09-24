@@ -3209,6 +3209,85 @@ public sealed class MarkRenderer : IComponent
     // correction that disagree show it on the page rather than agreeing by construction.
     // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
     // see: The significance threshold is divided by the family size, and the divisor is shown
+    // Each reason's share of the index against its target, the share firing any reason against its
+    // own, the ordinary nights counted against the sixty the calibration waits on, and every event
+    // session with the reason that made it one. Each share is drawn at one place and carried whole
+    // on its row, and a reason the night did not evaluate under its current rule says so.
+    // see: A reason's threshold is calibrated to a target share of the index over ordinary nights and a night a usually quiet reason floods is left out
+    public string ReasonShares(SharesAgainstTargets shares)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"reason-shares\" data-night=\"{shares.Night:yyyy-MM-dd}\" ");
+        region.Append(Invariant, $"data-event=\"{(shares.IsAnEventSession ? "true" : "false")}\" data-nights-wanted=\"{shares.NightsWanted}\">");
+
+        var tonight = shares.Events.FirstOrDefault(session => session.Session == shares.Night);
+
+        if (tonight is { } flooded)
+        {
+            region.Append(Invariant, $"<p class=\"event-line\" data-event=\"true\">The night of {shares.Night:yyyy-MM-dd} is an event session: {Floods(flooded)}. It is counted, and no median below reads it.</p>");
+        }
+        else
+        {
+            region.Append(Invariant, $"<p class=\"event-line\" data-event=\"false\">The night of {shares.Night:yyyy-MM-dd} is an ordinary night: no reason usually below a quarter of the index fired for more than a quarter of it.</p>");
+        }
+
+        region.Append("<div class=\"tbl-wrap\">");
+        region.Append("<table class=\"shares-table\">");
+        region.Append("<tr><th>Reason</th><th>On the night</th><th>Median over ordinary nights</th><th>Ordinary nights</th><th>Target</th></tr>");
+
+        foreach (var share in shares.Reasons.Append(shares.AnyReason))
+        {
+            region.Append(Invariant, $"<tr data-reason=\"{Escaped(share.Reason)}\" ");
+            region.Append(Invariant, $"data-fired=\"{(share.Night is { } night ? night.Fired.ToString(Invariant) : "none")}\" ");
+            region.Append(Invariant, $"data-counted=\"{(share.Night is { } whole ? whole.Counted.ToString(Invariant) : "none")}\" ");
+            region.Append(Invariant, $"data-share=\"{(share.Share is { } drawn ? drawn.ToString("R", Invariant) : "none")}\" ");
+            region.Append(Invariant, $"data-median=\"{(share.Median is { } median ? median.ToString("R", Invariant) : "none")}\" ");
+            region.Append(Invariant, $"data-ordinary=\"{share.OrdinaryNights}\" data-target=\"{share.Target.ToString("R", Invariant)}\">");
+            region.Append(Invariant, $"<td>{Escaped(share.Reason)}</td>");
+
+            if (share.Night is { } counted && share.Share is { } fraction)
+            {
+                region.Append(Invariant, $"<td>{counted.Fired} of {counted.Counted}, {Figures.Share(fraction)}</td>");
+            }
+            else
+            {
+                region.Append("<td>not evaluated under its current rule</td>");
+            }
+
+            region.Append(share.Median is { } typical ? $"<td>{Figures.Share(typical)}</td>" : "<td>no ordinary night yet</td>");
+            region.Append(Invariant, $"<td>{share.OrdinaryNights} of {shares.NightsWanted}</td>");
+            region.Append(Invariant, $"<td>{Figures.Share(share.Target)}, proposed</td></tr>");
+        }
+
+        region.Append("</table></div>");
+
+        region.Append(Invariant, $"<p class=\"event-sessions\" data-events=\"{shares.Events.Count}\">");
+        if (shares.Events.Count == 0)
+        {
+            region.Append("No event session among the nights the store holds.");
+        }
+        else
+        {
+            region.Append("Event sessions, left out of every median: ");
+
+            for (var at = 0; at < shares.Events.Count; at++)
+            {
+                region.Append(Invariant, $"{(at == 0 ? string.Empty : "; ")}{shares.Events[at].Session:yyyy-MM-dd}, {Floods(shares.Events[at])}");
+            }
+
+            region.Append('.');
+        }
+
+        region.Append("</p></section>");
+
+        return region.ToString();
+    }
+
+    static string Floods(EventSession session) =>
+        string.Join(" and ", session.FloodedBy.Select(flood =>
+            $"{Escaped(flood.Reason)} fired for {Figures.Share(flood.Share)} of the index against its median of {Figures.Share(flood.Median)}"));
+
     public string ShadowCandidates(ShadowRegion shadow)
     {
         var region = new StringBuilder();

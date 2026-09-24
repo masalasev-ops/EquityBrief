@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-2d1h9ag2d4sxb5tfnffdfl",
+  "object": "chat.completion",
+  "created": 1790222253,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Keysight Technologies Inc reported earnings reaction 2 actual of 2.87 on session 2026-05-20 [D1]. Keysight Technologies Inc reported earnings reaction 3 actual of 2.17 on session 2026-02-24 [D1]. Keysight Technologies Inc reported earnings reaction 4 actual of 1.91 on session 2025-11-25 [D1]. Keysight Technologies Inc reported latest earnings reaction actual of 2.82 on session 2026-08-19 [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18604,
+    "completion_tokens": 132,
+    "total_tokens": 18736,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

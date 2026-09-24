@@ -465,19 +465,27 @@ public partial class FixtureExpectations
             Assert.Equal(outcome.NotWritten.Select(section => (section.Section, section.Reason)).ToArray(), Lines(detail, "notWritten"));
 
             // The derivation the expectation states, held against the prompts rather than
-            // taken on its word: the release's text outside digits and outside ASCII
-            // exceeds the room alone, and the asked prompt, counted as the rule counts it,
-            // each digit and each byte outside ASCII a token and the rest at the stated
-            // characters a token, fits inside it.
+            // taken on its word, each counted as the rule counts it, each digit and each byte
+            // outside ASCII a token and the rest at the stated characters a token: the
+            // release's text alone, which every refused prompt carries whole, exceeds the room,
+            // and the asked prompt fits inside it.
             var room = context - OpenAiCompatibleModelFeed.AnswerTokens;
-            var plain = document.Body!.EnumerateRunes().Count(rune => rune.IsAscii && !Rune.IsDigit(rune));
 
-            Assert.True(plain / SectionPrompt.CharactersPerToken > room, $"The release carries {plain} plain characters, which fit in {room} tokens.");
+            static decimal Counted(string text)
+            {
+                var runes = text.EnumerateRunes().ToArray();
+
+                return runes.Sum(rune => rune.IsAscii ? (Rune.IsDigit(rune) ? 1 : 0) : rune.Utf8SequenceLength)
+                    + Math.Ceiling(runes.Count(rune => rune.IsAscii && !Rune.IsDigit(rune)) / SectionPrompt.CharactersPerToken);
+            }
+
+            var release = Counted(document.Body!);
+
+            Assert.True(release > room, $"The release counts {release} tokens, which fit in {room}.");
+            Assert.Equal(hold.GetProperty("releaseTokens").GetInt32(), release);
 
             var asked = feed.Asked.Single();
-            var runes = (asked.System + asked.Prompt).EnumerateRunes().ToArray();
-            var counted = runes.Sum(rune => rune.IsAscii ? (Rune.IsDigit(rune) ? 1 : 0) : rune.Utf8SequenceLength)
-                + Math.Ceiling(runes.Count(rune => rune.IsAscii && !Rune.IsDigit(rune)) / SectionPrompt.CharactersPerToken);
+            var counted = Counted(asked.System + asked.Prompt);
 
             Assert.True(counted <= room, $"The facts-only prompt counts {counted} tokens against {room}.");
             Assert.Equal(hold.GetProperty("askedTokens").GetInt32(), counted);
@@ -599,6 +607,38 @@ public partial class FixtureExpectations
             asked.AddRange(laterQueued.Asked);
         }
 
+        // And the two nights of the rebalance the nightly run's tests make, one member leaving the
+        // index on the second and another joining it there, so on each night one Technology member
+        // is out of the index and the other two each read a group of one.
+        var members = FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal).ToArray();
+
+        using (var rebalanced = new TemporaryStore())
+        {
+            NightFeeds Rebalanced(IBulkPriceFeed? bulk)
+            {
+                var feeds = NightFeeds.FromFixture(Folder());
+
+                return feeds with
+                {
+                    Membership = new RebalancedMembershipFeed(feeds.Membership, members[0], members[1], new DateOnly(2026, 9, 9)),
+                    Bulk = bulk ?? feeds.Bulk,
+                };
+            }
+
+            foreach (var (at, runId, bulk) in new (DateTimeOffset, string, IBulkPriceFeed?)[]
+            {
+                (new DateTimeOffset(2026, 9, 8, 21, 10, 0, TimeSpan.Zero), "token-night-announced", null),
+                (new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), "token-night-effective", new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(Folder()), new DateOnly(2026, 9, 8))),
+            })
+            {
+                var rebalancedQueued = new RecordedLocalModelFeed(Folder());
+                var (code, _, error) = await NightlyRun.NightAsync(rebalanced, Rebalanced(bulk), runId, FixedClock.At(at, SessionZones.UnitedStates), NightQueue.FromFixture(Folder()) with { LocalModel = rebalancedQueued });
+
+                Assert.True(code == 0, error);
+                asked.AddRange(rebalancedQueued.Asked);
+            }
+        }
+
         var (store, document) = await WithRelease();
 
         using (store)
@@ -624,8 +664,11 @@ public partial class FixtureExpectations
         // again; eight from the two later nights, every member's key on each; and one from the
         // night after a short catch-up, the key of the member the caught-up file left out, over
         // the facts file its missing session left it, the other three being the missed night's
-        // requests asked again.
-        Assert.Equal(28, recorded.Length);
+        // requests asked again; and four from the rebalance's two nights, whose Technology names
+        // each read a group of one: AAPL's key and MSFT's on the fixture's night, before KEYS
+        // joins, and KEYS's and MSFT's on the next session, AAPL having left, NFLX's on each being
+        // a request the other nights asked, since its group holds nobody either way.
+        Assert.Equal(32, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 
         foreach (var request in asked)

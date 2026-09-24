@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-9zf4krxo6vg55h27fcbwl8",
+  "object": "chat.completion",
+  "created": 1790219395,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock for Microsoft Corporation closed at 493.95, trading within a session range between 490.15 and 495.19 with a volume of 18.88 million shares. Technical indicators show the price is above its 20-day average of 494.78 and 50-day average of 446.00, while remaining below the 200-day average of 429.39, though the trend state is marked as uptrend. The most recent earnings reaction occurred on session 2026-07-30 with an actual value of 4.74 against an estimate of 4.21, resulting in a surprise of 12.59 per cent and a move of 15.51 per cent after the report date of 2026-07-29. The 14-day average true range stands at 11.66 and the relative strength index is 56.17, indicating moderate momentum within an uptrend supported by immediate support edges at 501.92 and 492.12.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1636,
+    "completion_tokens": 254,
+    "total_tokens": 1890,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

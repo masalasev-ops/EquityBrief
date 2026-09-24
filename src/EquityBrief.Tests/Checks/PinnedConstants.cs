@@ -164,6 +164,9 @@ public class PinnedConstants
             new("Reports the night asks for", "1", RequestDrain.NightAsksFor, "RequestDrain.NightAsksFor"),
             new("Group floor", "5", Groups.Floor, "Groups.Floor"),
             new("Peer return window", "60", PeerReadings.ReturnWindow, "PeerReadings.ReturnWindow"),
+            new("Reason share target", "2", (decimal)TargetShares.ReasonTarget * 100, "TargetShares.ReasonTarget as a percentage"),
+            new("Any-reason share target", "6", (decimal)TargetShares.AnyReasonTarget * 100, "TargetShares.AnyReasonTarget as a percentage"),
+            new("Event session share", "25", (decimal)TargetShares.EventShare * 100, "TargetShares.EventShare as a percentage"),
         ];
     }
 

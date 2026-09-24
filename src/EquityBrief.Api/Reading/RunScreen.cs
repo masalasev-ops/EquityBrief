@@ -792,6 +792,46 @@ public static class RunScreen
             [.. counted.Where(reason => reason.GetProperty("fired").GetBoolean()).Select(reason => reason.GetProperty("name").GetString()!)]);
     }
 
+    // Each night's firing, read off every listing the store holds by the rule the records count
+    // by, and each reason's share of the index against its target over them, for the night the
+    // page is drawn for. A reason counts on a row only where the row evaluated it under its current
+    // rule, so the rows written before the 5.4 corrections count for neither reason they changed.
+    // see: A reason's threshold is calibrated to a target share of the index over ordinary nights and a night a usually quiet reason floods is left out
+    public static SharesAgainstTargets Shares(IReadOnlyList<ListingRow> listings, DateOnly night) =>
+        TargetShares.For(
+        [
+            .. listings
+                .GroupBy(listing => listing.SessionDate)
+                .OrderBy(group => group.Key)
+                .Select(group =>
+                {
+                    var reasons = ShortlistSeries.Reasons.ToDictionary(reason => reason, _ => new ReasonCount(0, 0), StringComparer.Ordinal);
+                    var whole = 0;
+                    var firedAny = 0;
+
+                    foreach (var listing in group)
+                    {
+                        var (counted, fired) = Counting(listing.Reasons);
+
+                        foreach (var reason in counted.Where(reasons.ContainsKey))
+                        {
+                            var held = reasons[reason];
+
+                            reasons[reason] = new ReasonCount(held.Counted + 1, held.Fired + (fired.Contains(reason) ? 1 : 0));
+                        }
+
+                        if (ShortlistSeries.Reasons.All(counted.Contains))
+                        {
+                            whole++;
+                            firedAny += fired.Count > 0 ? 1 : 0;
+                        }
+                    }
+
+                    return new NightFiring(group.Key, reasons, whole, firedAny);
+                }),
+        ],
+        night);
+
     // The paid calls the log carries a recorded cost for, counted, their passes counted
     // by the run each was made under, and summed, off the rows the read surface handed back.
     public static PricedCalls Priced(IReadOnlyList<(string RunId, decimal Spend)> spends) =>

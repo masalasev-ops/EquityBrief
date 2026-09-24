@@ -100,7 +100,7 @@
     ]
   },
   "cannotHold": {
-    "contextTokens": 8000,
+    "contextTokens": 9250,
     "refused": [
       "The cause of each large move",
       "What the company sells",
@@ -109,8 +109,9 @@
     "asked": [
       "The key under each figure"
     ],
-    "why": "a call fits where its estimated prompt and the answer's budget of 1,024 tokens sit inside the context. The three sections handed the release carry its 22,996 characters of text, of which at least 19,184 are neither digits nor outside ASCII, and those alone come to 6,976 tokens at 2.75 characters a token, so none fits in 8,000. The key under each figure carries the facts file alone, as a reader reads it, 14,919 characters in all, 1,334 of them digits and none outside ASCII, which the rule counts as a token each, and 13,585 others at 2.75 characters a token, 4,940 tokens, so 6,274 in all, which fits with the answer's budget in 8,000.",
-    "askedTokens": 6274
+    "why": "a call fits where its estimated prompt and the answer's budget of 1,024 tokens sit inside the context. The three sections handed the release carry its text whole, 22,996 characters, 1,281 of them digits and 73 outside ASCII in 219 bytes, which the rule counts as a token each, and 21,642 others at 2.75 characters a token, 7,870 tokens, so 9,370 in all, which with the answer's budget does not fit in 9,250 before a word of the rest of the prompt is counted. The key under each figure carries the facts file alone, as a reader reads it, 16,894 characters in all, 1,520 of them digits and none outside ASCII, which the rule counts as a token each, and 15,374 others at 2.75 characters a token, 5,591 tokens, so 7,111 in all, which fits with the answer's budget in 9,250. The context was 8,000 until 11.9 widened the facts file, which took the key past what 8,000 holds.",
+    "releaseTokens": 9370,
+    "askedTokens": 7111
   },
   "unavailable": {
     "modelCalls": 1,

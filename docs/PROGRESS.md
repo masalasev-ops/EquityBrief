@@ -22977,3 +22977,201 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, d87aaeb, and the operator's store
             under `data/` was not touched by either.
 Carried:    nothing.
+### 11.9 - the eight nights from 2026-09-09 to 2026-09-18 measured, each reason's nightly share of the index and the share firing any reason, over the rows written after the 5.4 corrections   2026-09-24
+Measured:   on the operator's addendum of 2026-09-23, read from the operator's store,
+            `data/equitybrief.db`, opened read-only and immutable, so nothing there was written.
+            The population is every listing row of the eight nights from 2026-09-09 to
+            2026-09-18, one per index member, 501, 507, 504, 504, 504, 504, 504 and 503 a night,
+            each reason counted on the rows that evaluated it under its current rule, by the rule
+            the run page's region counts with. The rows of the five nights to 2026-09-15 were
+            written before the 5.4 corrections, so earnings soon's and breakout on volume's figures
+            on those five are left out, since they measure the defect rather than the threshold,
+            and so is the share firing any reason there, which needs all six; the other four
+            reasons read the same before the corrections and after, and count on all eight. A night
+            is an event session where a reason whose own median share over the eight is below a
+            quarter fires for more than a quarter of the index, as the operator ruled that evening.
+            Each reason's share of the index, night by night from 2026-09-09:
+            at entry zone 42.3, 40.4, 45.6, 47.2, 44.2, 39.3, 43.5 and 44.7%;
+            crossed a level 34.7, 29.2, 23.6, 31.7, 25.8, 33.1, 22.2 and 24.3%;
+            breakout on volume, from 2026-09-16, 1.0, 3.2 and 1.4%;
+            trend state changed 0.0, 4.5, 5.6, 8.5, 6.3, 5.2, 6.5 and 5.0%;
+            unusual volume 1.6, 0.8, 1.6, 0.8, 1.6, 3.4, 1.6 and 50.1%;
+            earnings soon, from 2026-09-16, 7.5, 9.9 and 10.7%;
+            and the share firing any reason, from 2026-09-16, 68.3, 65.5 and 85.9%.
+            2026-09-18 is the one event session: unusual volume fired for 252 of 503, 50.1%,
+            against its median of 1.6%. At entry zone fired for more than a quarter every night and
+            crossed a level on five of the eight, and neither marks a session, their medians over
+            the eight being 43.9% and 27.5%.
+            Over the ordinary nights, each median with how many nights it is over: at entry zone
+            43.5% over seven, crossed a level 29.2% over seven, breakout on volume 2.1% over two,
+            trend state changed 5.6% over seven, unusual volume 1.6% over seven, earnings soon 8.7%
+            over two, and the share firing any reason 66.9% over two.
+            Against the proposed targets of 2% a reason and 6% for any reason: unusual volume sits
+            under its target and breakout on volume at it, trend state changed at nearly three
+            times it and earnings soon at over four, crossed a level at nearly fifteen times and at
+            entry zone at nearly twenty-two, and on an ordinary night the list carries about two
+            thirds of the index against a target of 6%.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, whose figures the phase 11
+            report entry below records. The measurement ran on the store read-only and immutable,
+            outside either gate, and nothing under `data/` was written.
+### 11.9 - the phase 11 report, the facts file carrying the four parts' figures with every recording they reach made again, and section 11's thresholds given a target, a rule and an exclusion   2026-09-24
+Built:      the report over phase 11, the facts file half the phase carried here, and the
+            operator's addendum of 2026-09-23.
+            The facts file carries the name's group once, its name, its kind and how many others it
+            holds, each move's median over its own sessions with how many members it counted, each
+            print's reaction newest first, and the newest filing's dividend, so a section may quote
+            what the page draws beside them. A print is named by its place counting back from the
+            newest, as a move is named by its rank, and carries its report date as a value: the
+            claim checker reads a number in a fact's name as a window the file carries, so a date
+            written into a name would have admitted its year, its month and its day as windows. The
+            key under each figure reads a dividend's yield and payout ratio as percentages, as it
+            reads a growth and a margin. The assembler declares the reaction record read, and its
+            catalogue row says so.
+            Every fixture recording the facts file reaches was made again, since a figure added to
+            the file changes every prompt carrying it: 32 local answers from qwen/qwen3.5-9b
+            on the operator's LM Studio at the recorded context of 50,176 tokens, and 12 paid
+            answers from deepseek-flash. The paid calls were made from 03:51 to 03:56 UTC on
+            2026-09-24, inside the provider's peak window at twice the rate, on the operator's
+            instruction to run at once and the spend the operator agreed: 13 calls, $0.101291 in
+            all by the configured rates over the provider's own token counts. One of them, and one
+            of the 33 local calls, answered the request the suite makes only to show a recording
+            refusing it, and both were set aside rather than kept. 40 recordings nothing asks for
+            any more were removed, and the manifest names each new one with the request it answers
+            and, for a paid one, that it was made inside the peak window. The recordings were made
+            through a hook that answers a request no recording holds from the live model, in a
+            scratch worktree and never committed.
+            The new answer for the risks states its first risk numbered by nothing and the next
+            four from "A second risk", which the page read as an introduction and so set the second
+            risk beneath the first one's confirmation. That is a fault in built work, so the 5.8
+            correction of 2026-09-24 landed first, as its own pull request, PR 214, and this
+            checkpoint resumed on the corrected tree.
+            On the addendum, section 11's thresholds paragraph is replaced whole by five things in
+            order: what the values are; what calibrated means, as a target, each reason's median
+            nightly share of the index at or below 2% and the share firing any reason at or below
+            6%, both proposed; what is left out, a night on which a reason whose own median share is
+            below a quarter fires for more than a quarter of the index being an event session; the
+            rule, each threshold moved once after sixty ordinary nights to the value that puts its
+            median at its target; and where it is read. The run page gains the region stating each
+            reason's share of the index on its night, its median over the ordinary nights and its
+            target, the same for the share firing any reason, the ordinary nights counted against
+            the sixty, and every event session with the reason that made it one. A reason counts on
+            a row only where the row evaluated it under its current rule, by the rule the reason
+            records count with, so a row written before the 5.4 corrections counts for neither
+            reason they changed.
+            The pair 11.0's document pass predicted is checked against the actual with every claim
+            that moved named, and the check reading a phase's report entry states in advance how
+            many operating rows each phase opened, since phase 11 opened none and the floor of two
+            it read against refused this entry rather than reading it.
+Ruled:      two operator rulings of 2026-09-23, each written into `DECISIONS.md` with the decision
+            the addendum rests on, and a third given in conversation on 2026-09-24. The addendum
+            as issued made any reason above a quarter of the index mark an event session, and the
+            eight nights measured in the entry above marked
+            every one of them by it, at entry zone firing for 39 to 47% of the index each night, so
+            no night would have been ordinary and the calibration could never have started; offered
+            that finding, the operator ruled that a reason above a quarter on its ordinary nights is
+            flooding by its threshold and marks no session. And the paid recordings were made on
+            the operator's agreement to the spend, and at once rather than off-peak on the
+            operator's instruction of 2026-09-24, which is the third and is carried by this entry
+            alone, since it rules one run and no rule of the system.
+Amended:    11.9 amends its own done condition, on the operator's addendum: the run page's region,
+            read back off the page over constructed nights, and section 17's two targets and event
+            share held by their constants join it, written into `BUILD_PLAN.md` beside the
+            addendum's paragraph in 11.9's own text.
+Written:    `ARCHITECTURE.html`: section 11's paragraph as above; section 13.2's condition
+            thresholds row and the sentence beneath it naming the target and the ordinary nights,
+            since the row states the obligation's trigger word for word; section 15.10's new region,
+            read as its six parts; section 17's three limits, each marked proposed and each naming
+            the run page; and the facts assembler's catalogue row. `DECISIONS.md` gains the decision
+            the addendum rests on. `BUILD_PLAN.md`: 11.9's text and done condition, and the six
+            thresholds obligation told its target and its exclusion, its trigger now 60 ordinary
+            nights. `RUNBOOK.md` states what the fixture's pass costs at the rate its recordings
+            were made at. Three roster rows name what their checks now assert. `CHANGELOG.md`
+            carries the prior text of every changed spec line, and with section 11's the first
+            night's figures, the two defects behind them and the paragraph's "after a few weeks",
+            which are why the 5.4 corrections exist and not part of the rule.
+Owed:       nothing: phase 11 opened no operating row, so there is none for this report to hand
+            over. The rows still open are phase 10's four and the ones opened before them, each
+            unchanged but the six thresholds row, which is told its target and its exclusion.
+Expected:   derived, three ways. The move group facts are the fixture's groups worked by hand, each
+            Technology name's sector with the other two in it and NFLX's with nobody, and the
+            facts expectation's list gains the nineteen names each fixture name carries for them.
+            Each print's facts are read against the reaction record, newest first and named by
+            place, whose every column 11.7 worked by hand from the captured calendar and bars. The
+            dividend is each capture's own object read with the test's own reading. The run page's
+            region is worked by hand over five constructed nights of twenty members, a reason above
+            a quarter every night among them, a usually quiet reason flooding one night and a night
+            written before the 5.4 corrections.
+            The expectations the new recordings move are worked again rather than copied from a
+            run. The research record's spend, $0.076969284 over the pass's eight paid calls, and
+            the paid comparison's, $0.079531656 over its eleven, are each worked by hand from the
+            provider's token counts at the configured rates, doubled since every call was created
+            inside the peak window, and each is what the code prices. The comparison's accepted
+            versions are readings of the new answers. What the machine cannot hold is read at a
+            context of 9,250 tokens, worked by hand: the release counted whole by the rule is 9,370
+            tokens, which every refused prompt carries, and the key's facts-only prompt is 7,111,
+            which no longer fits the 8,000 it was read at, so the test now counts the release by
+            the whole rule rather than by its plain characters alone. The runbook states the pass's
+            cost as $0.0770. The token estimate's population is 32 recordings from 28: the four
+            keys the nightly run's rebalance asks, whose Technology names read a group of one on
+            its two nights and so differ from the other nights' keys only by the group the facts
+            file now carries, and the test makes those two nights as it makes the others; the
+            banned-prose check's ceiling on the captures it leaves out is raised by hand, as its
+            test says, to 110, since the fixture now holds 102 from 98. The risks test reads the
+            fixture's section as the five parts its numbering states, and the shape of a paragraph
+            to a risk over constructed prose.
+Tests:      1298, from 1294 on main with the 5.8 correction: four added, the facts file's parts,
+            the run page's region over constructed nights and over a store holding no event
+            session, and the pair 11.0 predicted, none removed. Migrations 0 to 37 with none added
+            and none pending, schema version 37.
+Claims:     457, from 448, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34, which is the 457 predicted: the 421 11.0's pass
+            predicted, 25 more from the name screen's three rows read as their parts at 11.6, 11.7
+            and 11.8, 2 from the peers' and the reactions' own fixture rows, and 9 from the
+            addendum, the run page's region as its six parts and section 17's three limits.
+Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that
+            a print's facts run newest first, that the event session is judged against the
+            reason's own median, that a row written before the 5.4 corrections counts for neither
+            reason they changed, that the medians leave the event sessions out, that the region
+            reads the constant section 17 states, and that a phase opening no operating row says so
+            in its report. Not mutated: the group and the dividend facts, which the facts test reads
+            as it reads the reactions and whose change moves recorded prompts as the first mutation
+            does, and the pair, whose count every added claim already moves.
+            Predicted:
+            M1 the reactions read oldest first: red in
+            `TheFactsFileCarriesTheGroupMediansTheReactionsNewestFirstAndTheDividendAsFiled`,
+            and in the 141 tests red at this checkpoint's first run of the suite, before the
+            recordings were made again, each for want of a recording, since every prompt carrying
+            the facts file moves with it.
+            M2 an event session judged without the reason's own median: red in
+            `EachReasonsShareIsDrawnAgainstItsTargetWithEachEventSessionMarkedAndLeftOut`
+            and `AStoreWithNoEventSessionSaysSoAndANightNoListingHoldsDrawsNoShare`, and nowhere
+            else.
+            M3 a row written before the 5.4 corrections counted for every reason: red in the first
+            of those two alone.
+            M4 the medians taken over every night, event sessions among them: red in the same test
+            alone.
+            M5 the reason target moved from 0.02 to 0.03: red in that test and in
+            `EveryFigureSectionSeventeenStatesInDigitsIsHeldByTheCodeOrNamedForWhatItIs`, and
+            nowhere else.
+            M6 the Owed line's statement that the phase opened none taken out of it: red in
+            `EveryOperatingRowThePhaseOpenedIsNamedInItsOwnReportEntry` alone.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            4f3a2b1, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1298 of 1298. M1 turned 142 red and 1156 green: the facts test
+            and the 141 red at the first run, each of them and no other. M2 turned 2 red and 1296
+            green, the two it named. M3 turned 1 red and 1297 green, the region's first test. M4
+            turned 1 red and 1297 green, the same test. M5 turned 2 red and 1296 green, that test
+            and the pinned constants' test. M6 turned 1 red and 1297 green, the operating rows'
+            test.
+Held:       all six, in the tests each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1298 of 1298
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1298 of 1298 tests.
+            Both gates ran over the tree carrying this entry, 4f3a2b1, and the operator's store
+            under `data/` was not touched by either.
+Carried:    the phase 11 sign-off, owed to a fresh session because this one committed the code; and
+            the report on DGX the operator asked to have written again once the phase is built,
+            through the press, off-peak.
