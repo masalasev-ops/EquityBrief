@@ -23119,11 +23119,15 @@ Expected:   derived, three ways. The move group facts are the fixture's groups w
             test says, to 110, since the fixture now holds 102 from 98. The risks test reads the
             fixture's section as the five parts its numbering states, and the shape of a paragraph
             to a risk over constructed prose.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN. 457 predicted, all passing and none out of scope: the 421
-            11.0's pass predicted, 25 more from the name screen's three rows read as their parts at
-            11.6, 11.7 and 11.8, 2 from the peers' and the reactions' own fixture rows, and 9 from
-            the addendum, the run page's region as its six parts and section 17's three limits.
+Tests:      1298, from 1294 on main with the 5.8 correction: four added, the facts file's parts,
+            the run page's region over constructed nights and over a store holding no event
+            session, and the pair 11.0 predicted, none removed. Migrations 0 to 37 with none added
+            and none pending, schema version 37.
+Claims:     457, from 448, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34, which is the 457 predicted: the 421 11.0's pass
+            predicted, 25 more from the name screen's three rows read as their parts at 11.6, 11.7
+            and 11.8, 2 from the peers' and the reactions' own fixture rows, and 9 from the
+            addendum, the run page's region as its six parts and section 17's three limits.
 Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that
             a print's facts run newest first, that the event session is judged against the
             reason's own median, that a row written before the 5.4 corrections counts for neither
@@ -23151,11 +23155,23 @@ Mutated:    the rule, stated before the run: break each property this checkpoint
             nowhere else.
             M6 the Owed line's statement that the phase opened none taken out of it: red in
             `EveryOperatingRowThePhaseOpenedIsNamedInItsOwnReportEntry` alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run of the whole suite for each mutation in a detached worktree at
+            4f3a2b1, never a filter, each reverted with `git reset --hard` and the tree read clean
+            after. The baseline is 1298 of 1298. M1 turned 142 red and 1156 green: the facts test
+            and the 141 red at the first run, each of them and no other. M2 turned 2 red and 1296
+            green, the two it named. M3 turned 1 red and 1297 green, the region's first test. M4
+            turned 1 red and 1297 green, the same test. M5 turned 2 red and 1296 green, that test
+            and the pinned constants' test. M6 turned 1 red and 1297 green, the operating rows'
+            test.
+Held:       all six, in the tests each named and in their number.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1298 of 1298
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1298 of 1298 tests.
+            Both gates ran over the tree carrying this entry, 4f3a2b1, and the operator's store
+            under `data/` was not touched by either.
 Carried:    the phase 11 sign-off, owed to a fresh session because this one committed the code; and
             the report on DGX the operator asked to have written again once the phase is built,
             through the press, off-peak.
