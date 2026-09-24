@@ -684,6 +684,30 @@ public class GapRefusal
         }
     }
 
+    [Fact]
+    public async Task AReadingLeftFromAnEarlierNightGoesWhenTheGapStopWithholdsItsNameOrTheNameHoldsNoBars()
+    {
+        // The peer readings are one row per name rather than one per night, so a row a name held
+        // from an earlier night would otherwise be read beside tonight's close. Two such rows,
+        // written straight into a throwaway store: one for the name tonight's gap stop withholds,
+        // and one for a name the store holds no bars for at all.
+        using var store = await WithAHoleAsync();
+
+        store.Execute(
+            "INSERT INTO peer_reading (ticker, session_date, group_kind, group_name, year_high, below_high_pct, return_pct, bars) VALUES " +
+            $"('{GappedName}', '2026-01-02', 'sector', 'Technology', '1', 1.0, 1.0, 100), " +
+            "('ZZZZ', '2026-01-02', 'sector', 'Energy', '1', 1.0, 1.0, 100);");
+
+        await new MoveAnnotator(GapClock(), store.DatabaseFile).RunAsync("gap-moves");
+
+        Assert.Equal(0, GapCount(store, $"SELECT COUNT(*) FROM peer_reading WHERE ticker IN ('{GappedName}', 'ZZZZ');"));
+
+        // And every other name holding bars keeps the row tonight wrote for it.
+        Assert.Equal(
+            GapCount(store, $"SELECT COUNT(DISTINCT ticker) FROM bar WHERE ticker <> '{GappedName}';"),
+            GapCount(store, "SELECT COUNT(*) FROM peer_reading;"));
+    }
+
     // A store holding the fixture's year with one interior session cut out of
     // one name. Constructed input written straight into a throwaway store, which
     // is what the suite's exemption from writer ownership is for.
@@ -769,7 +793,7 @@ public class GapRefusal
     public void TheSplitBetweenWithholdingAndWritingIsTheThingAsserted()
     {
         // Two opposite failures, so the split is asserted rather than a loop run
-        // over all seven. A stage computing a figure across the hole and a stage
+        // over all eight. A stage computing a figure across the hole and a stage
         // leaving a member without the row every member gets are both defects,
         // and a test written as one loop catches neither: each table satisfies
         // whichever half the loop happens to assert.
@@ -777,7 +801,7 @@ public class GapRefusal
         var writes = Strings(Expected("gap-stop").GetProperty("writesARowStatingTheReason"));
         var tables = Strings(Expected("gap-stop").GetProperty("tables"));
 
-        Assert.Equal(5, withholds.Count);
+        Assert.Equal(6, withholds.Count);
         Assert.Equal(2, writes.Count);
         Assert.Equal(tables.Count, withholds.Count + writes.Count);
         Assert.Empty(withholds.Intersect(writes, StringComparer.Ordinal));

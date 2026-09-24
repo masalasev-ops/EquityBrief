@@ -1,0 +1,68 @@
+{
+ "stage": "peers",
+ "derivation": "derived",
+ "derivedFrom": "the captured bars read through the rules the replay applies, not from a run. The backfill stores each current member's year ending on 2026-09-04; the fetch stores the 2026-09-08 bulk row for each and drops every session more than a year before the newest, which is 2025-09-05; the corporate action check, run as of 2026-08-10, refetches AAPL, the one current member an action landed on, deleting its bars and writing back the year ending on 2026-08-10. Over the bars that leaves each name, every price scaled by the adjusted close over the close, the year's high is the highest high, the distance below it is the gap from the newest close in per cent of the high, and the return is the newest close against the close sixty sessions before it. Computed outside this repository from the captured payloads, so a component that read the wrong bars would not agree with it. AAPL's readings rest on 234 bars ending 2026-08-10 and the other three on 252 ending 2026-09-08, because the replay's action check refetches AAPL as of 2026-08-10. No fixture name holds fewer bars than the window, so the not-available case is constructed in the suite.",
+ "tables": [
+  "peer_reading"
+ ],
+ "returnWindow": 60,
+ "readings": {
+  "AAPL": {
+   "session": "2026-08-10",
+   "bars": 234,
+   "close": "308.26",
+   "yearHigh": "344.2731",
+   "belowHighPct": 10.4606,
+   "returnFrom": "2026-05-13",
+   "returnPct": 3.2308
+  },
+  "KEYS": {
+   "session": "2026-09-08",
+   "bars": 252,
+   "close": "333.42",
+   "yearHigh": "374.9630",
+   "belowHighPct": 11.0792,
+   "returnFrom": "2026-06-11",
+   "returnPct": -1.9439
+  },
+  "MSFT": {
+   "session": "2026-09-08",
+   "bars": 252,
+   "close": "493.95",
+   "yearHigh": "549.2013",
+   "belowHighPct": 10.0603,
+   "returnFrom": "2026-06-11",
+   "returnPct": 26.7817
+  },
+  "NFLX": {
+   "session": "2026-09-08",
+   "bars": 252,
+   "close": "76.77",
+   "yearHigh": "126.7000",
+   "belowHighPct": 39.4081,
+   "returnFrom": "2026-06-11",
+   "returnPct": -5.5371
+  }
+ },
+ "groups": {
+  "note": "each name's group as the moves expectation derives it, which the peers table lists with the name itself marked, in ticker order",
+  "AAPL": [
+   "AAPL",
+   "KEYS",
+   "MSFT"
+  ],
+  "KEYS": [
+   "AAPL",
+   "KEYS",
+   "MSFT"
+  ],
+  "MSFT": [
+   "AAPL",
+   "KEYS",
+   "MSFT"
+  ],
+  "NFLX": [
+   "NFLX"
+  ]
+ }
+}

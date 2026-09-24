@@ -859,7 +859,9 @@ public static class NameScreen
         UniverseRow? member = null,
         IReadOnlyList<ListingRow>? history = null,
         IReadOnlyList<ForwardReturnRow>? outcomes = null,
-        DateOnly? night = null)
+        DateOnly? night = null,
+        IReadOnlyList<UniverseRow>? universe = null,
+        IReadOnlyList<PeerReadingRow>? peerReadings = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -976,7 +978,61 @@ public static class NameScreen
             new NameMast(member?.Name, member?.Sector, member?.Industry, DayChange(ticker, bars)),
             filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null,
             history is null ? null : History(history, outcomes ?? [], bars),
-            night);
+            night,
+            Peers(ticker, universe, peerReadings, night));
+    }
+
+    // A name's peers table: the group the annotator took its readings against, read off the
+    // name's own reading row rather than worked out again here, and every member of it with the
+    // name itself, in ticker order. The members are the universe's rows in that group on the
+    // page's night, which are the members the annotator read on the session, each with its close
+    // and trend state as the universe holds them, its readings as the annotator stored them and
+    // the cell the universe table draws its distance row mark from. The readings are one row per
+    // name and the newest night's alone, so a page for an earlier night says so rather than
+    // drawing tonight's beside that night's figures.
+    // see: Peers are shown by price alone, in section 2 beside the move table
+    public static PeersView? Peers(string ticker, IReadOnlyList<UniverseRow>? universe, IReadOnlyList<PeerReadingRow>? readings, DateOnly? night)
+    {
+        if (universe is null || readings is null)
+        {
+            return null;
+        }
+
+        if (night is not null)
+        {
+            return new PeersView(null, null, [], Kept: false);
+        }
+
+        var byTicker = readings.ToDictionary(row => row.Ticker, StringComparer.Ordinal);
+
+        if (!byTicker.TryGetValue(ticker, out var own))
+        {
+            return new PeersView(null, null, []);
+        }
+
+        string? GroupOf(UniverseRow row) =>
+            string.Equals(own.GroupKind, EquityBrief.Core.Moves.Group.Industry, StringComparison.Ordinal) ? row.Industry : row.Sector;
+
+        var cells = UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
+
+        PeerCell[] rows =
+        [
+            .. universe
+                .Where(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)
+                    || (own.GroupName is not null && string.Equals(GroupOf(row), own.GroupName, StringComparison.Ordinal)))
+                .OrderBy(row => row.Ticker, StringComparer.Ordinal)
+                .Select(row => new PeerCell(
+                    row.Ticker,
+                    string.Equals(row.Ticker, ticker, StringComparison.Ordinal),
+                    row.Close,
+                    row.TrendState,
+                    byTicker.TryGetValue(row.Ticker, out var reading)
+                        ? new PeerFigures(reading.SessionDate, reading.YearHigh, reading.BelowHighPct, reading.ReturnPct, reading.Bars)
+                        : null,
+                    cells.TryGetValue(row.Ticker, out var cell) ? cell : null)),
+        ];
+
+        return new PeersView(own.GroupKind, own.GroupName, rows);
     }
 
     // A name's listing history over the evenings the store holds its listings for: whether it was

@@ -656,6 +656,7 @@ public static class SchemaMigrations
         new Migration(33, "create version_block", CreateVersionBlock),
         new Migration(34, "research_request.asked_from admits the night", RequestAskedByTheNight),
         new Migration(35, "add move's group median", AddMoveGroupMedian),
+        new Migration(36, "create peer_reading", CreatePeerReading),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -770,6 +771,27 @@ public static class SchemaMigrations
         ALTER TABLE move ADD COLUMN group_members INTEGER;
         ALTER TABLE move ADD COLUMN group_counted INTEGER;
         ALTER TABLE move ADD COLUMN group_median REAL;
+    ";
+
+    // Each name's two readings for the peers table, one row per name the store holds bars for,
+    // written again every night by the move annotator and deleted by it where the name holds no
+    // bars or its series has a gap. The year's high is a price and is text; the distance below it
+    // and the return are statistics; the bars are how many the readings were taken over, which
+    // is what a return the name holds too few bars for says instead. The group is the one the
+    // name's moves are read against, so the peers table lists the members the medians were taken
+    // over.
+    // see: Peers are shown by price alone, in section 2 beside the move table
+    const string CreatePeerReading = @"
+        CREATE TABLE peer_reading (
+            ticker         TEXT NOT NULL PRIMARY KEY,
+            session_date   TEXT NOT NULL,
+            group_kind     TEXT NOT NULL,
+            group_name     TEXT,
+            year_high      TEXT NOT NULL,
+            below_high_pct REAL NOT NULL,
+            return_pct     REAL,
+            bars           INTEGER NOT NULL
+        ) STRICT;
     ";
 
     // The night's own request, marked as asked by the night beside the two screens a press

@@ -22605,3 +22605,116 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             `data/` was not touched by either.
 Carried:    the facts file half of 11.5, 11.7 and 11.8, now 11.9's with the recordings made again,
             whose paid half waits on the operator's agreed spend.
+### 11.6 - the peers table, every member of a name's group by price alone beneath the table of its biggest moves   2026-09-23
+Built:      the move annotator writes each name's two readings for the peers table over the bars it
+            already reads for the moves, into a table of its own, one row per name: how far the
+            newest close sits below the highest high the store holds for the name, and the return
+            from the close sixty sessions back, each with the count of bars it was read over, beside
+            the group the name's moves are read against. The readings are one rule,
+            `PeerReadings.Of`, a pure function of a session-ordered series: a name holding fewer
+            bars than the window and the close it is measured from has no return rather than one
+            over a shorter span. The annotator deletes the row of a name the gap stop withholds and
+            of a name holding no bars, so no reading stands beside a close it was not taken at.
+            Migration 36 creates the table. A name's page draws the peers table as its own card
+            beneath the table of the biggest moves: every member of the group and the name itself in
+            ticker order, the name's own row marked, each with its close, its distance below the
+            high with the high and the bars, its return or not available with the bars, its trend
+            state and the distance row mark the universe table draws, ranking none, with a key
+            saying how to read it. The group is read off the name's own reading row and the members
+            off the universe on the page's night, in the name screen's projection; the page computes
+            nothing. A page for an earlier night says the readings are kept for the newest night
+            alone and draws none.
+Written:    `SCHEMA.md` declares the `peer_reading` table, its grain, its columns and the move
+            annotator as its writer and its deleter. The move annotator's catalogue row writes the
+            peer readings, and the read and write matrix's computed tables column carries them.
+            Section 15.9's Peers row, placed at 11.6 by the document pass, is reworded so its parts
+            are read one by one: its place, its population, its order and that it ranks none, then
+            the five columns each row carries, then its key, ten claims where it was one, since a
+            verdict over it whole would have passed with a column undrawn and its citation sat
+            inside its last part. Section 16 gains the peer readings' store, section 17 the return
+            window of 60, pinned to `PeerReadings.ReturnWindow`, and section 19.1 the peers
+            expectation. The gap stop's population gains the table among those that withhold a
+            gapped name's rows, six where there were five. The `read-surface`,
+            `fixture-expectations` and `gap-refusal` roster rows name what they now assert. Every
+            spec line changed has its prior text in `CHANGELOG.md`.
+Expected:   `peers.json`, derived by hand from the captured bars through the replay's own rules
+            rather than frozen from a run: the backfill's year ending 2026-09-04, the fetch's bar
+            for 2026-09-08 and its retention dropping 2025-09-05, and the action check refetching
+            AAPL as of 2026-08-10, which deletes its bars and writes back its year to that day. So
+            AAPL's readings rest on 234 bars ending 2026-08-10, 10.4606 per cent below 344.2731 and
+            +3.2308 over sixty sessions from 2026-05-13, and KEYS, MSFT and NFLX's on 252 ending
+            2026-09-08. Over constructed bars, sixty-one sessions give a return of +20 and a
+            distance of 20 worked by hand, and sixty give no return. The members each table lists
+            come from the moves expectation's groups.
+Measured:   over the same copy of the operator's store as 11.5,
+            `data/equitybrief-before-nvda-scrub.db`, whose newest session is 2026-09-17, copied to
+            the scratchpad and never written in place: the copy was migrated from 35 to 36 and the
+            move annotator run over it alone as that session's night, 508 names, 4064 moves and 508
+            peer readings, and DUK's peers were drawn through the projection the name page uses,
+            over the universe on 2026-09-17 and the readings the annotator wrote. DUK's group is its
+            industry, Utilities - Regulated Electric, 23 rows with DUK's own, every one read over
+            252 bars. Each member in ticker order with its close, its distance below the year's
+            high, its return over sixty sessions, its trend state and its distance to its nearest
+            bands: AEE 103.90, 11.57% below 117.49, -6.32%, range, no support band and 0.1 typical
+            days to resistance; AEP 121.62, 12.83% below 139.52, -8.37%, range, 2.4 typical days to
+            support and 3.4 typical days to resistance; CMS 66.20, 16.31% below 79.10, -11.41%,
+            downtrend, no support band and 0.9 typical days to resistance; CNP 38.56, 14.29% below
+            44.99, -10.83%, downtrend, 0.1 typical days to support and 0.4 typical days to
+            resistance; D 64.29, 11.03% below 72.26, -5.13%, range, 0.2 typical days to support and
+            0.3 typical days to resistance; DTE 130.44, 16.25% below 155.75, -12.57%, range, no
+            support band and 1.7 typical days to resistance; DUK (itself) 118.54, 10.32% below
+            132.18, -4.37%, range, no support band and 0.3 typical days to resistance; ED 107.08,
+            6.34% below 114.33, -0.73%, range, 1.7 typical days to support and 4.0 typical days to
+            resistance; EIX 55.50, 32.00% below 81.62, -23.01%, range, 0.9 typical days to support
+            and 1.5 typical days to resistance; ES 68.99, 9.90% below 76.57, -2.87%, range, no
+            support band and 0.4 typical days to resistance; ETR 103.31, 12.26% below 117.74,
+            -8.68%, range, no support band and 0.5 typical days to resistance; EVRG 80.84, 8.02%
+            below 87.89, -3.92%, range, 0.9 typical days to support and 1.4 typical days to
+            resistance; EXC 42.64, 14.21% below 49.70, -7.67%, downtrend, 1.7 typical days to
+            support and 2.2 typical days to resistance; FE 45.73, 10.85% below 51.30, -2.67%, range,
+            0.6 typical days to support and 0.0 typical days to resistance; LNT 66.64, 14.80% below
+            78.22, -9.95%, range, no support band and 0.5 typical days to resistance; NEE 81.28,
+            16.46% below 97.30, -5.25%, downtrend, 0.4 typical days to support and 0.2 typical days
+            to resistance; PCG 13.38, 29.76% below 19.05, -19.98%, downtrend, 1.3 typical days to
+            support and 2.1 typical days to resistance; PEG 70.98, 16.89% below 85.40, -12.00%,
+            downtrend, no support band and 0.8 typical days to resistance; PNW 95.59, 13.22% below
+            110.16, -7.30%, range, no support band and 0.5 typical days to resistance; PPL 33.60,
+            14.85% below 39.46, -6.64%, downtrend, 0.2 typical days to support and 0.5 typical days
+            to resistance; SO 86.76, 11.87% below 98.45, -7.85%, range, no support band and 0.3
+            typical days to resistance; WEC 104.73, 11.90% below 118.87, -7.44%, range, 1.6 typical
+            days to support and 2.4 typical days to resistance; XEL 73.63, 10.81% below 82.56,
+            -7.60%, range, no support band and 0.4 typical days to resistance. DUK's, EIX's and ED's
+            readings were worked again by hand off the copy's bars outside the code, each to the
+            same distance and return.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. Twelve more, the Peers row read as its ten parts where it was
+            one, and section 17's window, section 16's store and section 19.1's row, all passing
+            here, as predicted.
+Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that
+            the return is taken from the close sixty sessions back, that the high is the highest
+            high, that the name is in its own table, that the table ranks none, and that a withheld
+            name's reading goes.
+            Predicted:
+            M1 the return taken from fifty-nine sessions back: red in
+            `TheFixturesPeerReadingsAreTheOnesWorkedByHandFromTheCapturedBars` and nowhere else,
+            since the constructed closes before the newest are all one price and the page reads
+            what the store holds.
+            M2 the high read as the highest close: red in
+            `APeerReadingIsWorkedByHandAndASeriesOneShortOfTheWindowHasNoReturn` and in
+            `TheFixturesPeerReadingsAreTheOnesWorkedByHandFromTheCapturedBars`, and nowhere else.
+            M3 the name filtered out of its own table, the rows being the group's other members:
+            red in `EachNamesPeersTableIsDrawnFromTheStoreOverTheFixture` and nowhere else, since
+            the table's own test is handed its rows.
+            M4 the rows drawn in order of their distance below the high: red in
+            `APeersTableDrawsItsRowsAsTheyArriveMarksTheNameAndRanksNone` and in
+            `EachNamesPeersTableIsDrawnFromTheStoreOverTheFixture`, and nowhere else.
+            M5 a withheld name's reading left standing: red in
+            `AReadingLeftFromAnEarlierNightGoesWhenTheGapStopWithholdsItsNameOrTheNameHoldsNoBars`
+            and nowhere else, since on a store no night wrote before the withheld name never gets
+            a row.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing new. 11.7 draws each print's earnings reaction.

@@ -41,6 +41,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `level` | LevelBuilder | LevelBuilder | LevelBuilder |
 | `ladder` | LadderBuilder | LadderBuilder | LadderBuilder |
 | `move` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
+| `peer_reading` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
 | `listing` | ShortlistBuilder | ShortlistBuilder | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
@@ -272,6 +273,24 @@ Primary key: `ticker`, `session_date`.
 **`sessions` is what makes the catalogue row true, and it was added at 5.0.** The annotator selects the largest single-day and multi-day moves of the stored year, and a table keyed on one session with no span could carry only the first of those. `session_date` is the session the move ended on, so a five-day run and a one-day gap on the same date are one row and the longer span wins, which is the reading that keeps the primary key.
 
 The cause of each move is not stored here. It is a researched claim and lives in `research_section` with its source.
+
+### peer_reading
+Grain: one row per ticker, the newest night's.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the name's newest stored session, which the readings are taken at |
+| `group_kind` | TEXT | `industry` or `sector`, the group the name's moves are read against |
+| `group_name` | TEXT | the industry or sector the membership row names, null where it names none |
+| `year_high` | TEXT | decimal in code: the highest high among the bars the store holds for the name |
+| `below_high_pct` | REAL | how far the newest close sits below `year_high`, in per cent of it |
+| `return_pct` | REAL | the newest close against the close sixty sessions before it, in per cent; null where the name holds fewer bars than that and the one it is measured from |
+| `bars` | INTEGER | how many bars both readings were read over |
+
+Primary key: `ticker`.
+
+**The move annotator writes it over the bars it already reads for the moves, and is its own deleter** (see: Every computed table's writer is its own deleter) (see: Peers are shown by price alone, in section 2 beside the move table). A row is replaced every night rather than kept by night, so a name's page for an earlier night says the readings are the newest night's and draws none. The annotator deletes the row of a name the gap stop withheld that night and of a name holding no bars, since a row left standing would be read beside a close it was not taken at. Nothing reads it but the peers table: no reason, gate, plan or candidate evaluator.
 
 ### listing
 Grain: one row per ticker per night, **for every index member and not only the listed ones**.
