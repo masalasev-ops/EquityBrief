@@ -23687,8 +23687,12 @@ Written:    the decision in `DECISIONS.md`; section 6's paragraph on pricing and
             11 opened, 2, in `obligation-reconciles`, and the amended report entry above naming
             them; the roster's `read-surface` row, its prior text in `CHANGELOG.md`.
 Expected:   derived: no expectation file moves.
-Tests:      FILLED IN AFTER THE RUN.
-Claims:     FILLED IN AFTER THE RUN.
+Tests:      1309, from 1302: seven added to `read-surface`, the drain test's six cases and the run
+            page's count, none removed. Migrations 0 to 37 with none added and none pending,
+            schema version 37.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. No claim added: the row section 15.15 carries was
+            reworded and splits into the parts it had.
 Mutated:    the rule, stated before the run: break the bound on each side that reads it, the
             boundary's side, and the count.
             Predicted:
@@ -23700,10 +23704,22 @@ Mutated:    the rule, stated before the run: break the bound on each side that r
             two cases, and nowhere else.
             M4 the run page counting no call as answered at peak: red in the run page test this
             correction adds, and nowhere else.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
-            carrying this entry, with the operator's store under `data/` untouched by either. The
-            figures of both runs: FILLED IN AFTER THE RUN.
+            Results: one run for each mutation in a detached worktree at 9e3b49e, filtered to the
+            35 tests of the drain, the queue page's times and the run page's spend on the
+            operator's instruction of 2026-09-24 that whole-suite runs took too long, each reverted
+            with `git reset --hard` and the tree read clean after. The whole suite ran green over
+            the same tree in the gates, 1309 of 1309. M1, M2 and M3 each turned 2 red and 33 green,
+            the drain test's cases at 00:34:00 and 05:34:00, and M4 turned 1 red and 34 green, the
+            run page test this correction adds.
+Held:       all four, in the tests each named and in their number, within the filtered scope;
+            whether nothing else went red was read over those 35 tests alone.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1309 of 1309
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1309 of 1309 tests.
+            Both gates ran over the tree carrying this entry, 9e3b49e, and the operator's store
+            under `data/` was not touched by either.
 Carried:    the operating rows A paid call answered inside a peak window and The start bound
             reviewed at twenty passes.
