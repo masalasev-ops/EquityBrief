@@ -1,0 +1,163 @@
+{
+ "stage": "reactions",
+ "derivation": "derived",
+ "derivedFrom": "the captured calendar and bars read through the rules the replay applies, not from a run. The stored bars are the backfill's year ending 2026-09-04 with the fetch's bar for 2026-09-08 and its retention dropping 2025-09-05, and AAPL's year refetched as of 2026-08-10 by the action check. Each print the calendar holds for a current member on or before the night's session is read as the earnings rule reads it: a report after the close moves the next stored session and one before the open, or with its timing unstated, moves its own day or the first session after it, and the move is that session's close against the stored close before it, in per cent. The estimate, the actual and the provider's surprise are the provider's own text. Computed outside this repository from the captured payloads, so a component that read a print's session differently from the earnings rule would not agree with it. Every one of the sixteen prints is reported after the close with an estimate filed, and every one is reached by its name's bars, so the other timings, a print with no estimate and a print the bars do not reach are constructed in the suite.",
+ "tables": [
+  "earnings_reaction"
+ ],
+ "reactions": {
+  "NFLX": [
+   {
+    "reportDate": "2025-10-21",
+    "timing": "after",
+    "session": "2025-10-22",
+    "estimate": "0.7",
+    "actual": "0.59",
+    "movePct": -10.0681,
+    "surprise": "-15.7143"
+   },
+   {
+    "reportDate": "2026-01-20",
+    "timing": "after",
+    "session": "2026-01-21",
+    "estimate": "0.55",
+    "actual": "0.56",
+    "movePct": -2.1774,
+    "surprise": "1.8182"
+   },
+   {
+    "reportDate": "2026-04-16",
+    "timing": "after",
+    "session": "2026-04-17",
+    "estimate": "1.32",
+    "actual": "1.23",
+    "movePct": -9.7226,
+    "surprise": "-6.8182"
+   },
+   {
+    "reportDate": "2026-07-16",
+    "timing": "after",
+    "session": "2026-07-17",
+    "estimate": "0.79",
+    "actual": "0.8",
+    "movePct": -7.2629,
+    "surprise": "1.2658"
+   }
+  ],
+  "MSFT": [
+   {
+    "reportDate": "2025-10-29",
+    "timing": "after",
+    "session": "2025-10-30",
+    "estimate": "3.66",
+    "actual": "3.72",
+    "movePct": -2.9157,
+    "surprise": "1.6393"
+   },
+   {
+    "reportDate": "2026-01-28",
+    "timing": "after",
+    "session": "2026-01-29",
+    "estimate": "3.92",
+    "actual": "5.16",
+    "movePct": -9.9932,
+    "surprise": "31.6327"
+   },
+   {
+    "reportDate": "2026-04-29",
+    "timing": "after",
+    "session": "2026-04-30",
+    "estimate": "4.09",
+    "actual": "4.27",
+    "movePct": -3.9297,
+    "surprise": "4.401"
+   },
+   {
+    "reportDate": "2026-07-29",
+    "timing": "after",
+    "session": "2026-07-30",
+    "estimate": "4.21",
+    "actual": "4.74",
+    "movePct": 15.5067,
+    "surprise": "12.5891"
+   }
+  ],
+  "AAPL": [
+   {
+    "reportDate": "2025-10-30",
+    "timing": "after",
+    "session": "2025-10-31",
+    "estimate": "1.77",
+    "actual": "1.85",
+    "movePct": -0.3795,
+    "surprise": "4.5198"
+   },
+   {
+    "reportDate": "2026-01-29",
+    "timing": "after",
+    "session": "2026-01-30",
+    "estimate": "2.67",
+    "actual": "2.84",
+    "movePct": 0.4646,
+    "surprise": "6.367"
+   },
+   {
+    "reportDate": "2026-04-30",
+    "timing": "after",
+    "session": "2026-05-01",
+    "estimate": "1.94",
+    "actual": "2.01",
+    "movePct": 3.2394,
+    "surprise": "3.6082"
+   },
+   {
+    "reportDate": "2026-07-30",
+    "timing": "after",
+    "session": "2026-07-31",
+    "estimate": "1.88",
+    "actual": "2.02",
+    "movePct": -7.3539,
+    "surprise": "7.4468"
+   }
+  ],
+  "KEYS": [
+   {
+    "reportDate": "2025-11-24",
+    "timing": "after",
+    "session": "2025-11-25",
+    "estimate": "1.85",
+    "actual": "1.91",
+    "movePct": 10.0129,
+    "surprise": "3.2432"
+   },
+   {
+    "reportDate": "2026-02-23",
+    "timing": "after",
+    "session": "2026-02-24",
+    "estimate": "2",
+    "actual": "2.17",
+    "movePct": 23.0531,
+    "surprise": "8.5"
+   },
+   {
+    "reportDate": "2026-05-19",
+    "timing": "after",
+    "session": "2026-05-20",
+    "estimate": "2.32",
+    "actual": "2.87",
+    "movePct": -0.5899,
+    "surprise": "23.7069"
+   },
+   {
+    "reportDate": "2026-08-18",
+    "timing": "after",
+    "session": "2026-08-19",
+    "estimate": "2.16",
+    "actual": "2.82",
+    "movePct": -6.3196,
+    "surprise": "30.5556"
+   }
+  ]
+ },
+ "unreached": 0
+}

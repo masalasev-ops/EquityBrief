@@ -42,6 +42,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `ladder` | LadderBuilder | LadderBuilder | LadderBuilder |
 | `move` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
 | `peer_reading` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
+| `earnings_reaction` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
 | `listing` | ShortlistBuilder | ShortlistBuilder | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
@@ -154,7 +155,7 @@ Grain: one row per ticker, event date and kind.
 | `event_date` | TEXT | date the event falls on |
 | `kind` | TEXT | a provider event kind, `earnings` today |
 | `timing` | TEXT | `before`, `after`, or `unstated`, which is when in the session the provider says it falls |
-| `detail` | TEXT | JSON: what the provider carries about the event beyond its date |
+| `detail` | TEXT | JSON: what the provider carries about the event beyond its date, being the period it covers and the estimate, the actual and the surprise as the provider sent them |
 | `observed_at` | TEXT | UTC instant of the fetch that recorded this |
 
 Primary key: `ticker`, `event_date`, `kind`.
@@ -291,6 +292,24 @@ Grain: one row per ticker, the newest night's.
 Primary key: `ticker`.
 
 **The move annotator writes it over the bars it already reads for the moves, and is its own deleter** (see: Every computed table's writer is its own deleter) (see: Peers are shown by price alone, in section 2 beside the move table). A row is replaced every night rather than kept by night, so a name's page for an earlier night says the readings are the newest night's and draws none. The annotator deletes the row of a name the gap stop withheld that night and of a name holding no bars, since a row left standing would be read beside a close it was not taken at. Nothing reads it but the peers table: no reason, gate, plan or candidate evaluator.
+
+### earnings_reaction
+Grain: one row per ticker and print over the calendar's year behind.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `report_date` | TEXT | the day the print was reported |
+| `timing` | TEXT | `before`, `after` or `unstated`, as the calendar holds it |
+| `reaction_session` | TEXT | the session the earnings rule takes for the print |
+| `estimate` | TEXT | the estimate as the provider sent it; null where it filed none |
+| `actual` | TEXT | the actual as the provider sent it; null where it filed none |
+| `surprise_pct` | REAL | the provider's surprise, in per cent; null beside no estimate |
+| `move_pct` | REAL | the reaction session's close against the close before it, in per cent |
+
+Primary key: `ticker`, `report_date`.
+
+**The move annotator writes it from the calendar and the stored bars, and is its own deleter** (see: Every computed table's writer is its own deleter) (see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan). A print's session is the one the earnings rule takes for it, read by calling the rule's own function one print at a time, so no source a rule version pins is edited to share the reading. A print whose session the stored bars do not reach, or whose session has no stored close before it, is left out and counted on the run log rather than read off a session the store does not hold, which is how the retention drops a print with its bars. The annotator writes the whole set again every night and deletes the prints a name no longer holds, and the rows of a name the gap stop withheld or that holds no bars. A print with no filed estimate keeps its actual and carries no surprise, so it is never read as having met an estimate. Nothing reads it but the name page: no reason, gate, plan or candidate evaluator.
 
 ### listing
 Grain: one row per ticker per night, **for every index member and not only the listed ones**.

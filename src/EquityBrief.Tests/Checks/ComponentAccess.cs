@@ -20,7 +20,7 @@ namespace EquityBrief.Tests.Checks;
 // than left to be worked out. Most of the document-against-document directions
 // hold over the whole catalogue today; the class-against-document ones hold over
 // the components that exist, which is one.
-public class ComponentAccess
+public partial class ComponentAccess
 {
     internal static CheckReach Reach => new(
         "component-access",

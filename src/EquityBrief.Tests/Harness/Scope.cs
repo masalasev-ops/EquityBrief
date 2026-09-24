@@ -339,6 +339,58 @@ internal static class Scope
             Verdict.Pass,
             "the card closes on a key saying how to read the table and what to take from it",
             ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, beside the earnings setups")] = new Scoped(
+            Verdict.Pass,
+            "the reactions card is drawn on the name's page immediately after the plan's card, which closes on the earnings setups, read off the page's own markup",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, one row per print over the calendar's year behind")] = new Scoped(
+            Verdict.Pass,
+            "every print the calendar holds for a fixture name whose bars reach it is one row of the name's record, read off every fixture name's page against the store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, each row carrying its report date")] = new Scoped(
+            Verdict.Pass,
+            "each row's report date is the stored print's, in the order the store holds them",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, its timing")] = new Scoped(
+            Verdict.Pass,
+            "each row's timing is the stored print's, drawn as before the open, after the close or timing not filed",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, the session it moved on")] = new Scoped(
+            Verdict.Pass,
+            "each row's session is the one the earnings rule takes for the print, as the annotator stored it",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, the estimate")] = new Scoped(
+            Verdict.Pass,
+            "each row's estimate is the provider's as stored, whole on its element",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, the actual")] = new Scoped(
+            Verdict.Pass,
+            "each row's actual is the provider's as stored, whole on its element",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, the provider's surprise")] = new Scoped(
+            Verdict.Pass,
+            "each row's surprise is the provider's as stored, and none is drawn where it filed none",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, that session's move")] = new Scoped(
+            Verdict.Pass,
+            "each row's move is the reaction session's as the annotator stored it, read off the page against the store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, a print with no filed estimate saying none was filed")] = new Scoped(
+            Verdict.Pass,
+            "a print with no filed estimate draws its actual, says none was filed and draws no surprise, over constructed rows",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Earnings reactions, a key saying how to read it")] = new Scoped(
+            Verdict.Pass,
+            "the card closes on a key saying how to read the record and what to take from it",
+            ByReadSurface),
+        [CheckReach.Key(StoresTable, "Earnings reactions")] = new Scoped(
+            Verdict.Pass,
+            "one row per name and print carrying the session the earnings rule takes, the estimate, the actual, the surprise and the move, each read back off the store the fixture's replay wrote against reactions worked by hand from the captured calendar and bars, and a print the bars do not reach left out and counted",
+            ByExpectations),
+        [CheckReach.Key(FixtureTable, "reactions")] = new Scoped(
+            Verdict.Pass,
+            "each fixture print's session and move and the provider's figures are diffed against an expectation worked by hand from the captured calendar and bars through the replay's own rules rather than frozen from a run",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "Peer return window")] = new Scoped(
             Verdict.Pass,
             "a return is taken over sixty sessions and a series one short of the window and the close it is measured from has none, over constructed bars, and the constant the row states is the one the reading uses",
@@ -2015,6 +2067,9 @@ internal static class Scope
 
         // A store of its own from 11.6, one row per name rather than a year of them.
         ["Peer readings"] = "11.6",
+
+        // And 11.7's, one row per name and print over the calendar's year behind.
+        ["Earnings reactions"] = "11.7",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -2228,7 +2283,18 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Peers, its trend state")] = "11.6",
         [CheckReach.Key("15.9 Name", "Peers, the distance row mark")] = "11.6",
         [CheckReach.Key("15.9 Name", "Peers, a key saying how to read it")] = "11.6",
-        [CheckReach.Key("15.9 Name", "Earnings reactions")] = "11.7",
+        // 11.7 read the Earnings reactions row as its parts, each owed where the record is drawn.
+        [CheckReach.Key("15.9 Name", "Earnings reactions, beside the earnings setups")] = "11.7",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, one row per print over the calendar's year behind")] = "11.7",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, each row carrying its report date")] = "11.7",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, its timing")] = "11.7",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, the session it moved on")] = "11.7",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, the estimate")] = "11.7",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, the actual")] = "11.7",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, the provider's surprise")] = "11.7",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, that session's move")] = "11.7",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, a print with no filed estimate saying none was filed")] = "11.7",
+        [CheckReach.Key("15.9 Name", "Earnings reactions, a key saying how to read it")] = "11.7",
         [CheckReach.Key("15.9 Name", "Dividend")] = "11.8",
         // Decomposed at 6.5, each into the part the judge's verdict draws and the
         // parts the research runner draws. The line saying research is missing or
@@ -2337,6 +2403,10 @@ internal static class Scope
         // columns, and a verdict over it whole would pass with one column undrawn.
         [CheckReach.Key("15.9 Name", "Peers")] =
             ["beneath the table of the biggest moves", "every member of the name's group by price alone", "in ticker order with the name's own row marked", "ranking none", "each row carrying the close", "how far it sits below the stored year's high", "its return over sixty sessions", "its trend state", "the distance row mark", "a key saying how to read it"],
+        // 11.7. The row names the record's place, its population, the seven things each row
+        // carries, how a print with no estimate is drawn and its key.
+        [CheckReach.Key("15.9 Name", "Earnings reactions")] =
+            ["beside the earnings setups", "one row per print over the calendar's year behind", "each row carrying its report date", "its timing", "the session it moved on", "the estimate", "the actual", "the provider's surprise", "that session's move", "a print with no filed estimate saying none was filed", "a key saying how to read it"],
         [CheckReach.Key("15.9 Name", "How it got here")] =
             ["the table of the biggest moves", "the cause of each where research has been written", "the twelve-month picture"],
         [CheckReach.Key("15.10 Run", "Operational header")] =
@@ -2631,6 +2701,7 @@ internal static class Scope
         ["ladder"] = "4.4",
         ["moves"] = "5.2",
         ["peers"] = "11.6",
+        ["reactions"] = "11.7",
         ["listings"] = "5.4",
         ["facts"] = "5.3",
         ["forward returns"] = "5.5",

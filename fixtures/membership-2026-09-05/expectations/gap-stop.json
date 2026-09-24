@@ -9,6 +9,7 @@
   "level",
   "move",
   "peer_reading",
+  "earnings_reaction",
   "ladder",
   "listing"
  ],
@@ -18,7 +19,8 @@
   "volume_profile",
   "level",
   "move",
-  "peer_reading"
+  "peer_reading",
+  "earnings_reaction"
  ],
  "writesARowStatingTheReason": [
   "ladder",
@@ -39,5 +41,5 @@
   "a series of fewer than two sessions, which has no interior",
   "a series reaching outside the closure table's range, which the table refuses to place rather than guessing"
  ],
- "note": "the six that withhold and the two that write are the whole of the population, and the split is what is asserted rather than one loop over seven tables. The two failures are opposite: a stage that computed a figure across the hole, and a stage that left a member without the row every member gets. A test written as one loop would catch neither, because each table would satisfy whichever half the loop happened to assert. Every stopped name is reported on run_log.detail by the stage that stopped it, with its earliest gap, and the names the closure table could not place are counted separately there rather than folded into the clean ones."
+ "note": "the seven that withhold and the two that write are the whole of the population, and the split is what is asserted rather than one loop over seven tables. The two failures are opposite: a stage that computed a figure across the hole, and a stage that left a member without the row every member gets. A test written as one loop would catch neither, because each table would satisfy whichever half the loop happened to assert. Every stopped name is reported on run_log.detail by the stage that stopped it, with its earliest gap, and the names the closure table could not place are counted separately there rather than folded into the clean ones."
 }

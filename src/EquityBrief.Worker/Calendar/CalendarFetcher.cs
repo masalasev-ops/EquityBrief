@@ -187,16 +187,16 @@ public sealed class CalendarFetcher : IComponent
         _ => "unstated",
     };
 
-    // What the provider carries about the event beyond its date. The estimate
-    // and the actual are kept as they were sent, as strings, because nothing
-    // computes with them and a double here would round a figure the report
-    // quotes.
+    // What the provider carries about the event beyond its date. The estimate,
+    // the actual and the provider's surprise are kept as they were sent, as
+    // strings, because a double here would round a figure the report quotes.
     static string Serialised(CalendarEvent entry) =>
         JsonSerializer.Serialize(new
         {
             periodEnd = entry.PeriodEnd?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             estimate = entry.Estimate,
             actual = entry.Actual,
+            surprise = entry.Surprise,
         });
 
     static async Task<HashSet<string>> MembersAsync(

@@ -33,6 +33,7 @@ public enum Store
     Ladder,
     Move,
     PeerReading,
+    EarningsReaction,
     Listing,
     ForwardReturn,
     Facts,

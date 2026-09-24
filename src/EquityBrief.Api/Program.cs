@@ -314,7 +314,9 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // The index on the page's night and every name's two readings, which the peers table
         // draws for the members of the name's group.
         universe,
-        on is null ? await read.PeerReadingsAsync() : []);
+        on is null ? await read.PeerReadingsAsync() : [],
+        // The name's earnings reaction record as of the page's night.
+        await read.ReactionsAsync(ticker, on));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

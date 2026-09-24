@@ -861,7 +861,8 @@ public static class NameScreen
         IReadOnlyList<ForwardReturnRow>? outcomes = null,
         DateOnly? night = null,
         IReadOnlyList<UniverseRow>? universe = null,
-        IReadOnlyList<PeerReadingRow>? peerReadings = null)
+        IReadOnlyList<PeerReadingRow>? peerReadings = null,
+        IReadOnlyList<ReactionRow>? reactions = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -979,8 +980,14 @@ public static class NameScreen
             filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null,
             history is null ? null : History(history, outcomes ?? [], bars),
             night,
-            Peers(ticker, universe, peerReadings, night));
+            Peers(ticker, universe, peerReadings, night),
+            reactions is null ? null : Reactions(reactions));
     }
+
+    // A name's earnings reaction record as the page draws it, each print as the annotator stored it.
+    // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+    public static IReadOnlyList<ReactionCell> Reactions(IReadOnlyList<ReactionRow> rows) =>
+        [.. rows.Select(row => new ReactionCell(row.ReportDate, row.Timing, row.Session, row.Estimate, row.Actual, row.SurprisePct, row.MovePct))];
 
     // A name's peers table: the group the annotator took its readings against, read off the
     // name's own reading row rather than worked out again here, and every member of it with the

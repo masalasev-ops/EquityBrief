@@ -514,7 +514,8 @@ public sealed class SinglePageApp : IComponent
         DateOnly? filedOn = null,
         ListingHistoryCard? history = null,
         DateOnly? night = null,
-        PeersView? peers = null)
+        PeersView? peers = null,
+        IReadOnlyList<ReactionCell>? reactions = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -759,6 +760,23 @@ public sealed class SinglePageApp : IComponent
             "Everything above the price marker is a sale, everything below it is a purchase, and the lowest line is where the whole idea is wrong. The risk you take is yours to choose; the page only does the division."));
 
         Card("plan", "Where it is bought, sold, and wrong", Cards.Computed("The plan", planned.ToString(), title: "Where it is bought, sold, and wrong", stamp: Cards.Night(session), id: "plan", region: "plan"));
+
+        // The earnings reaction record, beside the earnings setups the plan closes on: what each
+        // print over the calendar's year behind did on the session it moved.
+        // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+        if (reactions is not null)
+        {
+            Card("reactions", "Earnings reactions", Cards.Computed(
+                "Earnings reactions",
+                marks.ReactionsTable(ticker, reactions) + Cards.Key(
+                    "How to read it.",
+                    "One row for every print over the last year, from the provider's earnings calendar: the day it was reported and whether before the open or after the close, the session the report moved, the earnings per share the provider says was expected and what was reported, the provider's surprise, and how far the stock closed that session from the close before it. A print reported after the close moves the next session, and one whose timing was not filed is read on its own day, as the earnings setups read it. A print with no filed estimate says so and has no surprise.",
+                    "A record of what past reports did, not a forecast of the next: nothing on the page, no reason, plan or setup, reads it."),
+                title: "What each report did to the price",
+                stamp: Cards.Night(session),
+                id: "reactions",
+                region: "reactions"));
+        }
 
         // The listing history, after the plan: the evenings the name was on the list and what
         // followed each, section 15.9's row.

@@ -93,7 +93,8 @@ public sealed class RecordedEarningsCalendarFeed(string response) : IEarningsCal
                 Timing(Text(row, "before_after_market")),
                 Date(Text(row, "date")),
                 Number(row, "estimate"),
-                Number(row, "actual")));
+                Number(row, "actual"),
+                Number(row, "percent")));
         }
 
         return
