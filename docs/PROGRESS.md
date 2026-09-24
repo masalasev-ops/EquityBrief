@@ -23651,3 +23651,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             entry, with the figures the 11.9 correction closing this batch records.
 Carried:    nothing.
 
+### 11.9 - correction: banned-prose excludes exactly the json inputs the manifests declare, read from their inputs, where a ceiling raised by hand let eight captures through unannounced   2026-09-24
+Corrects:   11.9 (894b3ee), which raised banned-prose's ceiling on captured responses by hand from
+            100 to 110 for 102 captures, so 8 more could arrive unannounced. The slack had been 3 at
+            6.10 and 6 at 6.11, and the ceiling was not the bound its comment described.
+Found:      by the phase 11 sign-off review on 2026-09-24, as one of the operator's calls.
+Ruled:      by the operator on 2026-09-24: the exclusion read from the manifests, exactly, on four
+            conditions: declared is read from each manifest's inputs and never through the
+            exclusion's own reader; the filings a manifest declares stay scanned; the three json
+            files beside the manifest that it does not declare are settled; and the ceiling of 110
+            is removed with the comment rewritten.
+Repaired:   the test reads every manifest's inputs and holds the json files the exclusion takes to
+            exactly the json inputs declared, with a floor of 5. Every json file beside a manifest
+            is declared by it, constructed here and saying so in its first key, or the one payload
+            the test names with its reason: the earnings calendar committed at 4.8 with no entry,
+            whose fetch instant was never recorded. The two constructed files are
+            inadmissible-documents.json and research-prose.json, and all three stay scanned.
+Guarded:    `banned-prose`, in the test that held the ceiling. The roster's row says so.
+Written:    the roster's `banned-prose` row, its prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. No claim added: no table or figure changed.
+Mutated:    the rule, stated before the run: break the exclusion from each side the operator named.
+            Predicted:
+            M4 the exclusion widened to every json file beside a manifest: red in the test that
+            held the ceiling, naming the undeclared files.
+            M5 one input removed from the manifest: red in the same test, naming its file.
+            M6 a file's name added to the manifest's description: red in the same test, the file
+            excluded but not declared.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    nothing.
