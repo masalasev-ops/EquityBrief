@@ -97,6 +97,14 @@ public sealed record MarketValue(decimal? Capitalisation);
 // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
 public sealed record AnalystRatings(decimal? Rating, decimal? TargetPrice, int? StrongBuy, int? Buy, int? Hold, int? Sell, int? StrongSell);
 
+// The dividend the provider files for the company: the forward annual rate a share, the forward
+// yield and the payout ratio as the provider states them, and the ex-dividend date and the pay
+// date, each null where the provider files none. A company paying none files a rate of zero and no
+// dates. As of the fetch, for the reason the ratios are: a forward rate and a yield move with the
+// price and the board.
+// see: The numbers section shows the dividend the provider files, on the newest filing alone
+public sealed record DividendFiled(decimal? ForwardAnnualRate, decimal? ForwardYield, decimal? PayoutRatio, DateOnly? ExDividendDate, DateOnly? PayDate);
+
 // One name's fundamentals as one provider files them.
 //
 // `PartsNotCarried` is the part of this record that took a probe to write. The
@@ -128,7 +136,8 @@ public sealed record CompanyFundamentals(
     MarketValue Market,
     AnalystRatings Ratings,
     IReadOnlyList<string> PartsNotCarried,
-    int QuartersWithNoFilingDate);
+    int QuartersWithNoFilingDate,
+    DividendFiled? Dividend = null);
 
 // One name's fundamentals, in one request, on demand.
 //

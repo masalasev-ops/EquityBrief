@@ -49,6 +49,7 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
         ("segments", "segment"),
         ("guidance", "guidance"),
         ("ratings", "AnalystRatings"),
+        ("dividend", "SplitsDividends"),
     ];
 
     public int Requests { get; private set; }
@@ -155,7 +156,8 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
             Market(root),
             Ratings(root),
             [.. MayBeAbsent.Where(part => !CarriesAKeyFor(root, part.Key)).Select(part => part.Part)],
-            withNoFilingDate);
+            withNoFilingDate,
+            Dividend(root));
     }
 
     // The next print, which is the row carrying an estimate and no actual. The
@@ -254,6 +256,19 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
                 Count(ratings, "Sell"),
                 Count(ratings, "StrongSell"))
             : new AnalystRatings(null, null, null, null, null, null, null);
+
+    // The dividend, from the one object the payload files it in, each value as the provider sends
+    // it and none where the object is not filed at all.
+    // see: The numbers section shows the dividend the provider files, on the newest filing alone
+    static DividendFiled? Dividend(JsonElement root) =>
+        root.TryGetProperty("SplitsDividends", out var part) && part.ValueKind == JsonValueKind.Object
+            ? new DividendFiled(
+                Money(part, "ForwardAnnualDividendRate"),
+                Money(part, "ForwardAnnualDividendYield"),
+                Money(part, "PayoutRatio"),
+                Date(Text(part, "ExDividendDate")),
+                Date(Text(part, "DividendDate")))
+            : null;
 
     // A count of analysts, which the payload sends as a whole number.
     static int? Count(JsonElement row, string name) =>

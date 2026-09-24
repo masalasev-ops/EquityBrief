@@ -431,6 +431,7 @@ public static class NameScreen
 
         html.Append(Sheet(newest.RootElement, filings[0].FilingDate, currency));
         html.Append(Valuation(newest.RootElement));
+        html.Append(Dividend(filings[0].Ticker, newest.RootElement, Attribution(filings[0].Source)));
         html.Append(Segments(newest.RootElement, Attribution(filings[0].Source), currency));
 
         html.Append("</section>");
@@ -459,6 +460,52 @@ public static class NameScreen
             // still the store's.
             return new Dictionary<string, string>(StringComparer.Ordinal);
         }
+    }
+
+    // The dividend the provider files, from the newest filing alone: the forward annual rate, the
+    // forward yield as the provider states it, the payout ratio, the ex-dividend date and the pay
+    // date, or one line saying the provider files none, with the provider it came from. A row
+    // fetched before the part existed says the part is absent and why, as any other part does.
+    // see: The numbers section shows the dividend the provider files, on the newest filing alone
+    static string Dividend(string ticker, JsonElement payload, IReadOnlyDictionary<string, string> source)
+    {
+        if (!payload.TryGetProperty("dividend", out var dividend) || dividend.ValueKind != JsonValueKind.Object)
+        {
+            return Unavailable("dividend", source, "the dividend");
+        }
+
+        var from = source.TryGetValue("dividend", out var provider) && provider.Length > 0 ? provider : "no source recorded";
+
+        // A company paying none files a rate of zero and no dates, which is one line rather than a
+        // row of zeros read as a dividend of nothing.
+        var rate = Text(dividend, "forwardAnnualRate");
+
+        if ((rate is null || decimal.Parse(rate, NumberStyles.Float, CultureInfo.InvariantCulture) == 0)
+            && Text(dividend, "exDividendDate") is null
+            && Text(dividend, "payDate") is null)
+        {
+            return Invariant($"<p class=\"numbers-dividend\" data-dividend=\"none\" data-source=\"{Escaped(from)}\">The provider files no dividend for {Escaped(ticker)}. From {Escaped(from)}.</p>");
+        }
+
+        var html = new System.Text.StringBuilder();
+
+        html.Append(Invariant($"<div class=\"numbers-dividend\" data-dividend=\"paid\" data-source=\"{Escaped(from)}\">"));
+        html.Append("<div class=\"tbl-wrap\"><table class=\"numbers-dividend-table\"><tr><th>Forward annual rate</th><th>Forward yield, as the provider states it</th><th>Payout ratio</th><th>Ex-dividend date</th><th>Pay date</th></tr><tr>");
+        html.Append(Cell(dividend, "forwardAnnualRate", Figures.PerShare));
+        html.Append(Cell(dividend, "forwardYield", Figures.Percent));
+        html.Append(Cell(dividend, "payoutRatio", Figures.Percent));
+
+        foreach (var date in new[] { "exDividendDate", "payDate" })
+        {
+            html.Append(Text(dividend, date) is { } day
+                ? Invariant($"<td data-{date}=\"{day}\">{day}</td>")
+                : Invariant($"<td class=\"degraded\" data-{date}=\"absent\">not filed</td>"));
+        }
+
+        html.Append("</tr></table></div>");
+        html.Append(Invariant($"<p class=\"dividend-source\">From {Escaped(from)}, as of the newest filing's fetch.</p></div>"));
+
+        return html.ToString();
     }
 
     // Management's own forecast, as filed, with the exhibit and the date it came

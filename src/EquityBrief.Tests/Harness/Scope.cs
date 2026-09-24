@@ -383,6 +383,34 @@ internal static class Scope
             Verdict.Pass,
             "the card closes on a key saying how to read the record and what to take from it",
             ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Dividend, in the numbers section")] = new Scoped(
+            Verdict.Pass,
+            "the dividend is drawn inside the numbers section of a name's page, read off each payer's and non-payer's page",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Dividend, from the newest filing alone")] = new Scoped(
+            Verdict.Pass,
+            "the part sits on the newest filing's row alone, every older row carrying none, and the page draws it from that row",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Dividend, the forward annual rate")] = new Scoped(
+            Verdict.Pass,
+            "a payer's forward annual rate is the stored value whole on its element, drawn as a figure a share",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Dividend, the forward yield as the provider states it")] = new Scoped(
+            Verdict.Pass,
+            "a payer's forward yield is the provider's as stored, whole on its element and drawn as a percentage",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Dividend, the payout ratio")] = new Scoped(
+            Verdict.Pass,
+            "a payer's payout ratio is the provider's as stored, whole on its element and drawn as a percentage",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Dividend, the ex-dividend date and the pay date")] = new Scoped(
+            Verdict.Pass,
+            "a payer's ex-dividend date and pay date are the provider's as stored, each on its element",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Dividend, one line saying the provider files none")] = new Scoped(
+            Verdict.Pass,
+            "a non-payer draws one line saying the provider files no dividend for it, naming the provider, and no table",
+            ByReadSurface),
         [CheckReach.Key(StoresTable, "Earnings reactions")] = new Scoped(
             Verdict.Pass,
             "one row per name and print carrying the session the earnings rule takes, the estimate, the actual, the surprise and the move, each read back off the store the fixture's replay wrote against reactions worked by hand from the captured calendar and bars, and a print the bars do not reach left out and counted",
@@ -2295,7 +2323,14 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Earnings reactions, that session's move")] = "11.7",
         [CheckReach.Key("15.9 Name", "Earnings reactions, a print with no filed estimate saying none was filed")] = "11.7",
         [CheckReach.Key("15.9 Name", "Earnings reactions, a key saying how to read it")] = "11.7",
-        [CheckReach.Key("15.9 Name", "Dividend")] = "11.8",
+        // 11.8 read the Dividend row as its parts, each owed where the lines are drawn.
+        [CheckReach.Key("15.9 Name", "Dividend, in the numbers section")] = "11.8",
+        [CheckReach.Key("15.9 Name", "Dividend, from the newest filing alone")] = "11.8",
+        [CheckReach.Key("15.9 Name", "Dividend, the forward annual rate")] = "11.8",
+        [CheckReach.Key("15.9 Name", "Dividend, the forward yield as the provider states it")] = "11.8",
+        [CheckReach.Key("15.9 Name", "Dividend, the payout ratio")] = "11.8",
+        [CheckReach.Key("15.9 Name", "Dividend, the ex-dividend date and the pay date")] = "11.8",
+        [CheckReach.Key("15.9 Name", "Dividend, one line saying the provider files none")] = "11.8",
         // Decomposed at 6.5, each into the part the judge's verdict draws and the
         // parts the research runner draws. The line saying research is missing or
         // naming the trigger that fired is a reading of the stores this checkpoint
@@ -2405,6 +2440,10 @@ internal static class Scope
             ["beneath the table of the biggest moves", "every member of the name's group by price alone", "in ticker order with the name's own row marked", "ranking none", "each row carrying the close", "how far it sits below the stored year's high", "its return over sixty sessions", "its trend state", "the distance row mark", "a key saying how to read it"],
         // 11.7. The row names the record's place, its population, the seven things each row
         // carries, how a print with no estimate is drawn and its key.
+        // 11.8. The row names the part's place, the filing it is read from, the five values and
+        // the line a company paying none is drawn as.
+        [CheckReach.Key("15.9 Name", "Dividend")] =
+            ["in the numbers section", "from the newest filing alone", "the forward annual rate", "the forward yield as the provider states it", "the payout ratio", "the ex-dividend date and the pay date", "one line saying the provider files none"],
         [CheckReach.Key("15.9 Name", "Earnings reactions")] =
             ["beside the earnings setups", "one row per print over the calendar's year behind", "each row carrying its report date", "its timing", "the session it moved on", "the estimate", "the actual", "the provider's surprise", "that session's move", "a print with no filed estimate saying none was filed", "a key saying how to read it"],
         [CheckReach.Key("15.9 Name", "How it got here")] =

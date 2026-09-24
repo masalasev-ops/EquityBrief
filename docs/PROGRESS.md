@@ -22843,3 +22843,57 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 9d5f56e, and the operator's store
             under `data/` was not touched by either.
 Carried:    nothing new. 11.8 draws the dividend lines.
+### 11.8 - the dividend lines, the dividend the provider files drawn in the numbers section from the newest filing alone   2026-09-23
+Built:      the fundamentals parser reads the provider's `SplitsDividends` object into a dividend
+            record: the forward annual rate, the forward yield and the payout ratio as the provider
+            states them, and the ex-dividend and pay dates, each none where the provider files none,
+            and a payload filing no such object reads as the part not filed rather than as a company
+            paying none. The fetcher writes it as a `dividend` part on the newest filing's row
+            alone, for the reason the ratios sit there, and the source column names the provider for
+            the part. The numbers section draws a payer's five values, each whole on its element and
+            drawn at the places a reader reads them, with the provider named, and a company filing a
+            rate of zero and no dates in one line saying the provider files no dividend for it. A
+            row fetched before the part existed says the part is absent and why, as any other part
+            does.
+Written:    `SCHEMA.md`'s fundamentals payload note gains the dividend part, the company financials
+            endpoint supplying eleven parts and the period end being the seventeenth. Section 15.9's
+            Dividend row, placed at 11.8 by the document pass, keeps its words and is read as its
+            seven parts, seven claims where it was one, its citation moved to the note beneath the
+            table, where the reader would otherwise have taken the citation's opening for part of
+            its last part. The `read-surface` roster row names what it now asserts. Every spec line
+            changed has its prior text in `CHANGELOG.md`.
+Expected:   derived by hand, each capture's dividend object read by the test with its own JSON
+            reading rather than through the parser: AAPL files 1.08 a share, a yield of 0.0033 and a
+            payout ratio of 0.1216, ex-dividend on 2026-08-10 and paid on 2026-08-13; MSFT 3.64,
+            0.0074 and 0.2035, ex-dividend on 2026-08-20 and paid on 2026-09-10; KEYS and NFLX a
+            rate of zero and no dates. No expectation file moves: the fixture's replay fetches no
+            fundamentals, and the parse and the fetch are asserted over the captures themselves.
+Measured:   the operator's store holds fundamentals only for the names a report was opened on, and
+            every such row was fetched before this checkpoint, so its numbers section says the
+            dividend part is absent with no source recorded until the next open fetches the name
+            again.
+Tests:      FILLED IN AFTER THE RUN.
+Claims:     FILLED IN AFTER THE RUN. Six more, the Dividend row read as its seven parts where it was
+            one, all passing here, as predicted, and none left out of scope.
+Mutated:    the rule, stated before the run: break each property this checkpoint adds, being that
+            each date is read from its own key, that the part sits on the newest filing alone, that
+            a company paying none is one line, that the provider is named, and that the object is
+            read at all.
+            Predicted:
+            M1 the ex-dividend and pay dates read from each other's keys: red in
+            `TheDividendIsReadAsFiledForEveryCaptureAndAPayloadFilingNoneSaysSo` and in
+            `TheDividendIsCopiedOntoTheNewestFilingAsTheProviderFilesIt`, and nowhere else, since
+            the page reads what the store holds.
+            M2 the part written on every filing's row: red in
+            `TheDividendIsCopiedOntoTheNewestFilingAsTheProviderFilesIt` and nowhere else.
+            M3 a rate of zero read as a dividend paid: red in
+            `APayerDrawsItsDividendAsFiledAndANonPayerSaysTheProviderFilesNone` and nowhere else.
+            M4 the provider left unnamed on the page: red in the same test and nowhere else.
+            M5 the object looked for under another key: red in all three.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green, both over the tree
+            carrying this entry, with the operator's store under `data/` untouched by either. The
+            figures of both runs: FILLED IN AFTER THE RUN.
+Carried:    the facts file half of 11.5, 11.7 and 11.8, 11.9's with the recordings made again,
+            whose paid half waits on the operator's agreed spend.
