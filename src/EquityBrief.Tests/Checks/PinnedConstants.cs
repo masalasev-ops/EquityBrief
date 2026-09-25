@@ -198,6 +198,15 @@ public class PinnedConstants
             new("Gate bands", "35", ShapeClock.GateBands[3].High, "ShapeClock.GateBands[3].High"),
             new("List band", "5", ShapeClock.ListLow, "ShapeClock.ListLow"),
             new("List band", "30", ShapeClock.ListHigh, "ShapeClock.ListHigh"),
+            new("Shape lever ranges", "0.40", (decimal)ShapeProposals.LeverRanges[0].From / 100, "ShapeProposals.LeverRanges[0].From in hundredths"),
+            new("Shape lever ranges", "0.95", (decimal)ShapeProposals.LeverRanges[0].To / 100, "ShapeProposals.LeverRanges[0].To in hundredths"),
+            new("Shape lever ranges", "0.01", (decimal)ShapeProposals.LeverRanges[0].Hundredths / 100, "ShapeProposals.LeverRanges[0].Hundredths in hundredths"),
+            new("Shape lever ranges", "0.50", (decimal)ShapeProposals.LeverRanges[1].From / 100, "ShapeProposals.LeverRanges[1].From in hundredths"),
+            new("Shape lever ranges", "2.00", (decimal)ShapeProposals.LeverRanges[1].To / 100, "ShapeProposals.LeverRanges[1].To in hundredths"),
+            new("Shape lever ranges", "0.05", (decimal)ShapeProposals.LeverRanges[1].Hundredths / 100, "ShapeProposals.LeverRanges[1].Hundredths in hundredths"),
+            new("Shape lever ranges", "1.00", (decimal)ShapeProposals.LeverRanges[3].From / 100, "ShapeProposals.LeverRanges[3].From in hundredths"),
+            new("Shape lever ranges", "4.00", (decimal)ShapeProposals.LeverRanges[3].To / 100, "ShapeProposals.LeverRanges[3].To in hundredths"),
+            new("Shape lever ranges", "0.10", (decimal)ShapeProposals.LeverRanges[3].Hundredths / 100, "ShapeProposals.LeverRanges[3].Hundredths in hundredths"),
         ];
     }
 

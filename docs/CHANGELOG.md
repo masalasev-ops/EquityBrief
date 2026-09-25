@@ -7337,9 +7337,49 @@ Why: 12.3 replaces 11.9's region with the Calibration region, since the reasons 
 Was: the row, as it stood before this entry, ending at "the shape counts over the two-night store are the funnel the gates worked by hand give, leave the store's bytes as they were, and replayed as of each night give the bands, the trend and the plan the store kept".
 Now: the row adds the classifier and the trigger worked by hand over constructed nights and over nights carrying the operator's stored shares.
 Why: 12.3 builds the shape clock, and a classifier nothing works by hand at its thresholds is one nothing has shown to be the rule's.
+
 ### 2026-09-25 - .claude/rules/checks.md - read-surface reads the refusal to rank inside sections 15.9 and 15.14 and holds the page to one wording
 Was:
 > the name page opens with what it is for, its three refusals and its ten words,
 Now:
 > the name page opens with what it is for, its three refusals and its ten words, the refusal to rank being the one sentence the code holds, read inside section 15.9 and inside section 15.14 each between its own heading and the next, and stated on the page in no other words, the swing readings' key drawing the same sentence,
 Why: the 12.1 correction. The test searched the whole document for the sentence and read no second wording on the page, and the swing readings' key carried one (see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns).
+
+### 2026-09-25 - ARCHITECTURE.html - the shape proposer and the shape command
+Was:
+> The arithmetic, being steps 1 to 19, calls no model and makes no per-name network request, and step 20 is carved out of the first of those by name
+Now: section 7 and the matrix carry the shape proposer and the shape command; section 13.8 closes on the proposer and the command; section 14 gains the proposal step after the swing filter, the arithmetic being steps 1 to 20 and the queue step 21; section 15.10 gains The shape proposal row; section 16 gains the shape proposals, and the filter versions' retention names the shape command as what opens the first; section 17 gains the lever ranges and the acceptance bound; section 18 gains a rejected proposal.
+Why: 12.4 builds the proposer and the command (see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes) (see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts).
+
+### 2026-09-25 - ARCHITECTURE.html - the filter versions' retention names what opens the first
+Was:
+> forever; none is open until the operator accepts the first, and the filter runs on section 17's proposed values until then
+Now:
+> forever; none is open until the operator's shape command opens the first, and the filter runs on section 17's proposed values until then
+Why: 12.4 builds the command, and the first version is the operator's ruled settings rather than an accepted proposal.
+
+### 2026-09-25 - SCHEMA.md - the filter versions' writer and the shape proposals
+Was:
+> | `filter_version` | none | none | none |
+
+> | `version` | TEXT | the version's name |
+
+> **Nothing writes it yet.** The verb that opens and closes a version is built at 12.4 and is its writer from then; the swing filter reads the open row and, where none is open, runs on section 17's proposed values and says so on every row.
+Now: `filter_version` is written by the shape command alone, a version named by its place in the order opened, and `shape_proposal` is inserted by the shape proposer with its decision written by the shape command, neither deleted.
+Why: 12.4 builds the proposer and the command, and a store is declared here before any code writes it.
+
+### 2026-09-25 - RUNBOOK.md - the shape proposal in the night's arithmetic, and the shape command
+Was:
+> the arithmetic: membership, bars, corporate actions, indicators, swings, volume profile, levels, trend, ladder, moves, swing readings and the night's breadth, listings, the swing filter, facts, forward returns, news pulse
+Now: the list names the shape proposal after the swing filter, and a section before registering a candidate shows the `shape` command opening the first version on ruled settings, accepting and rejecting a proposal, and stating the blocks a later acceptance restarts.
+Why: 12.4 adds the proposal as a night step and the command as a worker verb, and every verb the worker dispatches is shown here.
+
+### 2026-09-25 - .claude/rules/checks.md - fixture-expectations works the shape proposer and the shape command
+Was: the row as it stood before this entry, ending at "and an event night read by no median".
+Now: the row adds the proposer's settings worked by hand, its trigger at sixty ordinary nights and not one short or with events among them, the next proposal sixty nights after a rejection, that it never applies what it proposes, and the command's first version, rejection, refusals and first live acceptance.
+Why: 12.4 builds the proposer and the command, and a proposal nothing works by hand is one nothing has shown to be the rule's.
+
+### 2026-09-25 - .claude/rules/checks.md - read-surface reads the shape proposal and the blocks beside it off the run page
+Was: the row as it stood before this entry, ending at "a night the filter stored nothing for saying so".
+Now: the row adds the shape proposal read back off the run page against settings worked by hand, and the blocks beside it read off the page and held against the command's refusals and its acceptance.
+Why: 12.4 draws the proposal, and the count a later acceptance must state is the one the page draws.

@@ -68,6 +68,12 @@ public partial class ReadSurface
             CheckReach.Key(Scope.LimitsTable, "Gate bands"),
             CheckReach.Key(Scope.LimitsTable, "List band"),
 
+            // 12.4, the run page's shape proposal and the blocks beside it.
+            CheckReach.Key("15.10 Run", "The shape proposal, each gate's setting held and proposed with its median count and the list's under each against their bands"),
+            CheckReach.Key("15.10 Run", "The shape proposal, every gate no value in its range brings inside its band named as a finding"),
+            CheckReach.Key("15.10 Run", "The shape proposal, beside it the non-empty blocks accepting it would restart"),
+            CheckReach.Key(Scope.LimitsTable, "Shape acceptance bound"),
+
             // 12.2, the name's gates and the run page's funnel.
             CheckReach.Key("15.9 Name", "Gates, each of the five gates with whether it passed and why"),
             CheckReach.Key("15.9 Name", "Gates, the setup's family and whether the trigger's event happened"),
@@ -386,7 +392,15 @@ public partial class ReadSurface
             CheckReach.Key("15.5 The mark vocabulary", "Level chart, the level bands"),
             CheckReach.Key("15.5 The mark vocabulary", "Momentum panel"),
             CheckReach.Key(Scope.FailureTable, "Fewer than 200 bars for a new index member, nn bars"),
-        ]);
+        ])
+    {
+        // Section 17's acceptance bound, whose verdict is fixture-expectations': the count a later
+        // acceptance states is the one read off the page here.
+        Held = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [CheckReach.Key(Scope.LimitsTable, "Shape acceptance bound")] = nameof(ALaterAcceptanceWhileTheListIsLiveIsHeldToTheBlocksThePageDrawsBesideTheProposal),
+        },
+    };
 
     const string Fixture = "membership-2026-09-05";
     const string Index = "GSPC";

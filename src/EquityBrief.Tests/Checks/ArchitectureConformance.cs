@@ -1372,7 +1372,8 @@ public partial class ArchitectureConformance
         // 67 at 12.1, the name page's swing readings and the run page's market row.
         // 69 at 12.2, the name page's gates and the run page's swing filter funnel.
         // 71 at 12.3, the Calibration region's three rows where 11.9's region was one.
-        Assert.Equal(71, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 72 at 12.4, the run page's shape proposal.
+        Assert.Equal(72, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1430,7 +1431,8 @@ public partial class ArchitectureConformance
         // 216 at 12.2: the name page's gates as their four parts and the run page's funnel as its four.
         // 223 at 12.3: the Calibration region's shape clock as its seven parts, its sentence as one and its
         // trigger lines as their five, where 11.9's region was six.
-        Assert.Equal(223, inDocument.Length);
+        // 226 at 12.4: the run page's shape proposal as its three parts.
+        Assert.Equal(226, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1484,7 +1486,8 @@ public partial class ArchitectureConformance
         // 209 at 12.2: the name page's gates as their four parts and the run page's funnel as its four.
         // 215 at 12.3: the Calibration region's shape clock as its seven parts and its trigger lines as
         // their five, where 11.9's region was six.
-        Assert.Equal(215, checkedElements);
+        // 218 at 12.4: the run page's shape proposal as its three parts.
+        Assert.Equal(218, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

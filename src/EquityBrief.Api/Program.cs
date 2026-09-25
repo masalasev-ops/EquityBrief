@@ -877,7 +877,14 @@ app.MapGet("/screens/run/{night?}", async (
                 dated),
             RunScreen.Market(await read.MarketReadingAsync(dated)),
             RunScreen.Funnel(await read.GateResultsAsync(dated), dated),
-            RunScreen.Triggers(await read.TriggerReadsAsync(), priced)),
+            RunScreen.Triggers(await read.TriggerReadsAsync(), priced),
+            RunScreen.Proposal(
+                await read.LatestShapeProposalAsync(),
+                await read.RegisteredCandidatesAsync(),
+                await read.CandidateNightsAsync(),
+                await read.CandidateSetupsAsync(),
+                everyListing,
+                clock.UtcNow)),
         "text/html; charset=utf-8");
 });
 

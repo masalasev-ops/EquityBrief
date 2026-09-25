@@ -83,6 +83,13 @@ public static class SwingGates
     public const string GapExclusion = "gap";
 
     public const string Uptrend = "uptrend";
+
+    // The setup's values naming whether the close sat inside an anchored support band and whether it
+    // cleared a band that sat at or above the previous close, which the shape proposer recounts from:
+    // neither is a threshold, so a count under another setting keeps them as the night found them.
+    public const string PullbackBandValue = "inside an anchored support band";
+
+    public const string BreakoutBandValue = "cleared a band above the previous close";
     public const string SupportRole = "support";
 
     public static GateResult Evaluate(GateInputs inputs, FilterSettings settings)
@@ -241,7 +248,9 @@ public static class SwingGates
                     ("tightness", Figure(reading.Tightness)),
                     ("volume multiple", inputs.Volume is { } v2 && inputs.VolumeAverage50 is > 0 and var a2 ? Figure(Statistic.FromVolume(v2) / a2) : "none"),
                     ("band low", Price(pullbackBand?.LowEdge ?? breakoutBand?.LowEdge)),
-                    ("band high", Price(pullbackBand?.HighEdge ?? breakoutBand?.HighEdge)))),
+                    ("band high", Price(pullbackBand?.HighEdge ?? breakoutBand?.HighEdge)),
+                    (PullbackBandValue, pullbackBand is null ? "no" : "yes"),
+                    (BreakoutBandValue, breakoutBand is null ? "no" : "yes"))),
             family);
     }
 

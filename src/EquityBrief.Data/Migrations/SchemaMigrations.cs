@@ -660,6 +660,7 @@ public static class SchemaMigrations
         new Migration(37, "create earnings_reaction", CreateEarningsReaction),
         new Migration(38, "create swing_reading and market_reading", CreateSwingReadings),
         new Migration(39, "create gate_result and filter_version", CreateGateResults),
+        new Migration(40, "create shape_proposal", CreateShapeProposal),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -984,6 +985,30 @@ public static class SchemaMigrations
             opened_at  TEXT NOT NULL,
             closed_at  TEXT,
             evidence   TEXT NOT NULL
+        ) STRICT;
+    ";
+
+    // A shape proposal the proposer wrote at a trigger, and the decision on it. The proposer inserts and
+    // never decides; the operator's command writes the decision and nothing about the proposal itself.
+    // Kept whole, since a rejected proposal is as much the record as an accepted one.
+    // see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes
+    const string CreateShapeProposal = @"
+        CREATE TABLE shape_proposal (
+            id               INTEGER PRIMARY KEY,
+            proposed_at      TEXT    NOT NULL,
+            session_date     TEXT    NOT NULL,
+            version          TEXT    NOT NULL,
+            ordinary         INTEGER NOT NULL,
+            current_settings TEXT    NOT NULL,
+            settings         TEXT    NOT NULL,
+            levers           TEXT    NOT NULL,
+            list_now         REAL,
+            list_proposed    REAL,
+            findings         TEXT    NOT NULL,
+            decision         TEXT CHECK (decision IS NULL OR decision IN ('accepted', 'rejected')),
+            decided_at       TEXT,
+            reason           TEXT,
+            opened           TEXT
         ) STRICT;
     ";
 

@@ -1431,7 +1431,8 @@ public sealed class SinglePageApp : IComponent
         ShapeState? shape = null,
         MarketView? market = null,
         FunnelView? funnel = null,
-        IReadOnlyList<TriggerLine>? triggers = null)
+        IReadOnlyList<TriggerLine>? triggers = null,
+        ProposalView? proposal = null)
     {
         var region = new StringBuilder();
 
@@ -1486,7 +1487,7 @@ public sealed class SinglePageApp : IComponent
         {
             region.Append(Cards.Computed(
                 "Calibration",
-                marks.Calibration(clock, triggers ?? []) + Cards.Key(
+                marks.Calibration(clock, triggers ?? []) + marks.Proposal(proposal) + Cards.Key(
                     "How to read it.",
                     "The shape clock counts, over the ordinary nights under the open filter version, how many members pass each gate after the market and every gate before it, the market held open, and how many reach the list, against the bands each is calibrated to. An event night, one on which a usually quiet gate or reason passes more than a quarter of the index or the index trades at 1.8 times its fifty-day volume, is counted and read by no median. The lines beneath count what five other settings are waiting on.",
                     "A median outside its band is what the shape calibration moves a threshold for, once sixty ordinary nights are stored; until then the figures are drawn as not yet measured and decide nothing."),

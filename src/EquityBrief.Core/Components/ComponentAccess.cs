@@ -38,6 +38,7 @@ public enum Store
     MarketReading,
     GateResult,
     FilterVersion,
+    ShapeProposal,
     Listing,
     ForwardReturn,
     Facts,

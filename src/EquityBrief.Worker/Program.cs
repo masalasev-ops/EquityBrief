@@ -33,13 +33,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "register" => await Register(args),
     "version" => await VersionWindows(args),
     "filter-counts" => await FilterCountsReport(args),
+    "shape" => await Shape(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. Eight are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. Nine are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
         "'research --ticker <TICKER>' writes the sections of one name's research that are not written or have gone " +
@@ -55,7 +56,10 @@ static int NoVerb()
         "opens the version replacing it, '--close <name> --evidence <text>' closes one, '--backfill <yyyy-MM-dd>' scores a past " +
         "night the store computed under the windows open now, and '--list' names the open windows, " +
         "'filter-counts' prints the swing filter's shape counts over the nights the store keeps bands and plans for, " +
-        "with '--year' to replay every session of the stored year as well, reading the store and writing nothing. '--live' " +
+        "with '--year' to replay every session of the stored year as well, reading the store and writing nothing, and " +
+        "'shape --accept <proposal>' opens a shape proposal's settings as the next filter version, '--settings <name=value,...> " +
+        "--evidence <text>' with '--trade ladder' or '--trade swing' opens settings the operator ruled, '--restarts <blocks>' states " +
+        "the live filter's blocks an acceptance restarts, and '--reject <proposal> --reason <text>' records a proposal's rejection. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -96,6 +100,25 @@ static async Task<int> VersionWindows(string[] args)
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
 
     return await VersionVerb.RunAsync(
+        args,
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        Console.Out,
+        Console.Error);
+}
+
+// A shape proposal accepted or rejected, or ruled settings opened as a filter version.
+//
+// A verb rather than a step, for the reason a registration is one: a filter that moved its own
+// thresholds would be tuning itself toward whatever it last saw. The verb's work is in
+// `ShapeCommand`, so a test runs the verb a person runs rather than a copy of it.
+// see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts
+static async Task<int> Shape(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await ShapeCommand.RunAsync(
         args,
         SystemClock.ForUnitedStatesSessions(),
         store.DatabaseFile,

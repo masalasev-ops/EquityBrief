@@ -289,6 +289,77 @@ public sealed class CandidateRegistrar : IComponent
         return new RegistrationOutcome(Retired, id, detail);
     }
 
+    // A retirement and the registration that replaces it at one instant, with the caller's own write in
+    // the same transaction, or none of the three. What a shape acceptance writes when the live filter's
+    // candidate stands: the accepted settings are a new candidate, and the version they open is the
+    // caller's row, so the register and the version can never disagree about which settings are live.
+    // see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts
+    public async Task<RegistrationOutcome> ReplaceAsync(
+        string retire,
+        Registration with,
+        string evidence,
+        Func<SqliteConnection, SqliteTransaction, CancellationToken, Task> alongside,
+        string runId,
+        CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        var rows = await RowsAsync(connection, cancellation);
+
+        if (RetirementRefusal(rows, retire, evidence, startedAt, ShortlistSeries.Reasons) is { } refusal)
+        {
+            await transaction.RollbackAsync(cancellation);
+            await RecordAsync(connection, runId, startedAt, Refused, 0, refusal, cancellation);
+
+            return new RegistrationOutcome(Refused, null, refusal);
+        }
+
+        var standing = rows.Last(row => row.Event == CandidateFamily.Registered
+            && string.Equals(row.Candidate, retire, StringComparison.Ordinal));
+
+        // The registration is judged against the register as it will stand once the retirement is in it.
+        var afterRetiring = rows
+            .Append(new RegisterRow(
+                rows.Count == 0 ? 1 : rows.Max(row => row.Id) + 1,
+                retire, standing.Rule, standing.Test, standing.Evaluator, standing.Parameters, standing.EvaluatorVersion,
+                Retired, retire, startedAt, evidence))
+            .ToArray();
+
+        if ((Unstated(with.Rule, with.Test) ?? Refusal(afterRetiring, with.Candidate, with.Evaluator, with.Parameters, startedAt)) is { } refused)
+        {
+            await transaction.RollbackAsync(cancellation);
+
+            var said = $"'{with.Candidate}' was refused, so '{retire}' was not retired either: {refused}";
+
+            await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation);
+
+            return new RegistrationOutcome(Refused, null, said);
+        }
+
+        var retired = await AppendAsync(
+            connection, rows, retire, standing.Rule, standing.Test, standing.Evaluator, standing.Parameters,
+            standing.EvaluatorVersion, Retired, retires: retire, startedAt, evidence, cancellation);
+
+        var carried = CandidateEvaluators.Find(with.Evaluator)!;
+        var registered = await AppendAsync(
+            connection, afterRetiring, with.Candidate, with.Rule, with.Test, with.Evaluator,
+            CandidateEvaluator.Write(with.Parameters), carried.Version, Registered, retires: null, startedAt, evidence: null, cancellation);
+
+        await alongside(connection, transaction, cancellation);
+
+        var detail = $"retired '{retire}' as {retired} and registered '{with.Candidate}' as {registered} at one instant, on the evidence: {evidence}";
+
+        await RecordAsync(connection, runId, startedAt, Registered, 2, detail, cancellation);
+        await transaction.CommitAsync(cancellation);
+
+        return new RegistrationOutcome(Registered, registered, detail);
+    }
+
     // Why a retirement is refused, or null. A candidate standing registered is retired
     // whatever the live reasons carry, so a promoted candidate can leave the family.
     // see: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone

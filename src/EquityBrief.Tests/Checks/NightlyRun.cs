@@ -54,6 +54,9 @@ public partial class NightlyRun
             // 5.3, the facts file.
             CheckReach.Key(NightlyRunSteps.Heading, "Write the facts file for every name."),
 
+            // 12.4, the shape proposal.
+            CheckReach.Key(NightlyRunSteps.Heading, "Count the ordinary nights stored under the open filter version and, once they reach sixty, propose for each gate the one setting that brings its median count inside its band, writing one proposal for the version and stating the crossed trigger on the night's run log; nothing proposed is applied until the operator's command accepts it."),
+
             // 12.2, the swing filter.
             CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it did not fire on the session before, the trade read from the ladder's first tranche and from the swing trade's own plan, and the exclusions, storing every answer with the values that decided it and ranking the names passing; tonight's list is not read from it."),
 
