@@ -25913,3 +25913,33 @@ Mutated:    the rule, stated before the run: each repair put back to what it rep
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
             the figures the 12.7 correction closing this batch records.
 Carried:    nothing.
+
+### 12.4 - correction: a gate or reason at exactly twice its median share marks no event night and one member more marks it, where no constructed night sat at twice its median and at least twice read as more than twice   2026-09-25
+Corrects:   12.4's tests, and no shipped code. The 12.4 ruling's event rule, carried into
+            `ShapeClock.Events`, marks a night where a usually quiet gate or reason passes more than a
+            quarter of the index and more than twice its own median share. The tests held the twice clause
+            well inside it and well past it, and no constructed night sat at exactly twice its median, so the
+            clause read as at least twice turned no test red.
+Found:      by the first phase 12 sign-off review over 4a7c7e0 on 2026-09-25, the comparison made at least
+            twice leaving all 1407 tests green, and reproduced on `main` at ecb1dc4 before the assertion was
+            written, the test this correction widens staying green.
+Repaired:   nothing shipped changes: the correction is two assertions.
+Guarded:    `fixture-expectations`, in
+            `ABroadGateRisingWithinTwiceItsMedianIsNoEventAndANarrowOneCrossingAQuarterAndTwiceItsMedianIs`:
+            over a thousand members, the setup at 130 on six nights and 260 on the seventh, a median of 13%
+            and a seventh night at exactly twice it, doubling being exact in binary floating point, marks no
+            night; at 261 the seventh night is marked for the setup alone, trend and strength rising with it
+            to 26.1% and staying inside twice its median of 23%.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Pins:       the branch against `main` at ecb1dc4; this correction edits a test, in none of the twelve,
+            twenty-one or sixteen pinned sources. `ShapeClock.cs`, which holds the rule, is in none of the
+            three lists and is not edited.
+Mutated:    the rule, stated before the run: the mutation that found the gap, run again.
+            Predicted:
+            C3 more than twice read as at least twice (`>` to `>=` on the twice clause): red in the test this
+            correction widens alone.
+            Results: C3 in the 12.7 correction closing this batch.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 12.7 correction closing this batch records.
+Carried:    nothing.
