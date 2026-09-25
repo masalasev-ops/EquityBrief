@@ -279,6 +279,12 @@ The operator's ruling of 2026-09-25 opens version 1 with (see: The swing filter 
 dotnet run --project src/EquityBrief.Worker -- shape --settings strengthFloor=0.5,depthLow=1,depthHigh=5,dryUpCeiling=1.5,stopLow=0.5,stopHigh=4,rewardToRiskFloor=1.5,arrivalSessions=3 --trade swing --evidence "the operator's ruling of 2026-09-25 on 12.2's counts and the re-measure under the three-session arrival window"
 ```
 
+The operator's second ruling of 2026-09-25 opened version 2 at a 45% market floor, every other setting version 1's, run at 14:04:07Z (see: Version 2 of the swing filter lowers the market floor to 45% before the list's first live night, and nothing else moves):
+
+```
+dotnet run --project src/EquityBrief.Worker -- shape --settings breadthFloor=0.45 --evidence "the operator's ruling of 2026-09-25: the market floor at 45%, from version 1 replayed over the 53 stored sessions, which listed a median of 3 names a night and none on 5 at 45%, and none on 7 at 50%, the two differing only on 2026-09-23 and 2026-09-24, the only sessions breadth fell below 50%"
+```
+
 The settings are `breadthFloor`, `strengthFloor`, `depthLow`, `depthHigh`, `dryUpCeiling`, `tightnessCeiling`, `breakoutVolumeMultiple`, `rewardToRiskFloor`, `stopLow`, `stopHigh`, `earningsWindowSessions` and `arrivalSessions`, and `--trade` takes `ladder` or `swing`; every setting not named keeps the open version's value, or section 17's where none is open. It closes the open version and opens the next, named 1, 2 and so on in the order opened. A setting the filter does not hold, a value that is not a finite number, a range whose low end sits above its high and settings the open version already holds are each refused with nothing changed.
 
 **A shape proposal** is written by the night once sixty ordinary nights are stored under the open version, and the run page's Calibration region draws it with each gate's setting held and proposed and, beside it, the non-empty blocks the live filter's clock has run (see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes). Accept it by its number, or reject it with the reason:

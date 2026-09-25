@@ -25813,3 +25813,41 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
+
+### 12.4 ruling - version 2 of the swing filter lowers the market floor to 45% before the list's first live night, every other setting version 1's   2026-09-25
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-25, on seeing that version 1 lists no name on the evening of
+            2026-09-24 with breadth at 47.6%: "My worry is if filter is too strong we will never see
+            any results", and asked for a trial at a 45% market floor.
+Trial:      read-only and never committed, over copies of the operator's store. Version 1 replayed
+            over the 53 stored sessions from 2026-07-13 to 2026-09-24 by the counts command, its
+            settings pointed at version 1 at 45% and at 50% in a scratch tree: at 45% a median of 3
+            names a night, at most 8, none on 5 sessions and 153 in all; at 50% none on 7 and 146 in
+            all. The two differ only on 2026-09-23 and 2026-09-24, the only sessions breadth fell
+            below 50%, where at 45% the replay lists SJM, BDX, VEEV and BRK-B, then CPAY, DVN and
+            KO. Every name listed was a pullback. On a copy holding the replay's trigger events for
+            2026-09-17 to 2026-09-23 and a version at 45%, the night of 2026-09-24 run again listed
+            the same three, CPAY, DVN and KO, in that order.
+Ruled:      "ok lets do 45%" (see: Version 2 of the swing filter lowers the market floor to 45%
+            before the list's first live night, and nothing else moves). Run on the operator's yes at
+            2026-09-25T14:04:07Z through the shape command, on the live store: version 1 closed,
+            version 2 opened at 45%, and in the same write the live candidate registered for version
+            1 retired as 13 and version 2's registered as 14. It restarted no block, the family
+            having run no night.
+Changed:    `DECISIONS.md` gains the decision beside version 1's, and `RUNBOOK.md` records the command
+            run beside version 1's. Nothing is edited or removed from a spec, and no code changes.
+Consequences: the five variants keep the 50% floor they were registered with and the run page names
+            the floor as moved since. The acceptance version 1 had left while the list is live is
+            spent, so every further one states the blocks it restarts. Ten candidate conditions have
+            now ever been registered, and the per-window level's revisit, due since the ninth, stays
+            the operator's.
+Tests:      1407, unchanged. A ruling adds none.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1407 of 1407 tests
+            ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 41 tables, 554
+            claims, 554 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 564 placements and verdicts
+            reconciled against a floor of 34, 41 of 41 roster checks carried and all 41 run, 1407 of
+            1407 tests. No claim moves, because a ruling lands nothing. Both gates ran with this entry in
+            place, in the worktree beside the repository, and they did not touch the operator's
+            store under `data/`.
+Carried:    nothing.
