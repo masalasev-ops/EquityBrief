@@ -517,7 +517,8 @@ public sealed class SinglePageApp : IComponent
         DateOnly? night = null,
         PeersView? peers = null,
         IReadOnlyList<ReactionCell>? reactions = null,
-        SwingReadingsView? swing = null)
+        SwingReadingsView? swing = null,
+        GatesView? gates = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -695,6 +696,22 @@ public sealed class SinglePageApp : IComponent
                 stamp: Cards.Night(swing.Session),
                 id: "swing",
                 region: "swing"));
+        }
+
+        // The swing filter's answer for the name, whatever the name: each gate with whether it passed
+        // and why, the setup and the trigger, the trade read both ways and the exclusions.
+        if (gates is not null)
+        {
+            Card("gates", "Its gates", Cards.Computed(
+                "The swing filter's gates",
+                marks.GatesTable(ticker, gates) + Cards.Key(
+                    "How to read it.",
+                    "Each gate is one question the swing filter asks of every member each night, in order: the market's breadth, the trend and strength, a setup, a trigger new on the night, and a trade worth taking. A name passes only where all five pass and no exclusion applies. The trade is read two ways, from the ladder's first tranche and from the swing trade's own stop and target, and the plan the filter reads decides the gate.",
+                    "A failed gate names what it read and why it failed. Tonight's list is still drawn from the six reasons, so these answers decide nothing on the list yet."),
+                title: "Where it stands against the swing filter",
+                stamp: Cards.Night(gates.Session),
+                id: "gates",
+                region: "gates"));
         }
 
         // The short version, the first written region section 4 lists, with its date beside it.
@@ -1411,7 +1428,8 @@ public sealed class SinglePageApp : IComponent
         CandidateRegion? candidates = null,
         TrendVersionRegion? versions = null,
         SharesAgainstTargets? shares = null,
-        MarketView? market = null)
+        MarketView? market = null,
+        FunnelView? funnel = null)
     {
         var region = new StringBuilder();
 
@@ -1436,6 +1454,15 @@ public sealed class SinglePageApp : IComponent
             lede: "How much of the index closed above its own long average, the same above the shorter one, and how heavily the index traded against its own fifty-day average, each read off the stored bars and averages.",
             stamp: Cards.Night(night),
             region: "market"));
+
+        // The swing filter's funnel: how many members each gate passed in order and how many it removed.
+        region.Append(Cards.Computed(
+            Invariant($"Swing filter of {night:yyyy-MM-dd}"),
+            marks.Funnel(funnel),
+            title: "The swing filter's funnel",
+            lede: "Every member through the five gates in order, how many each passed and removed, and how many the exclusions removed of the rest. It is stored for every member every night and decides nothing on tonight's list yet.",
+            stamp: Cards.Night(night),
+            region: "funnel"));
 
         region.Append(WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection));
 

@@ -272,6 +272,15 @@ public sealed class SwingReader : IComponent
 
     static string GapAt(DateOnly gap) => GapOpening + " " + Stamp(gap) + ", so nothing is read across it";
 
+    // The gap a row's note names, and none where the note names none.
+    public static DateOnly? GapIn(string? note) =>
+        note is not null
+            && note.StartsWith(GapOpening + " ", StringComparison.Ordinal)
+            && note.Length >= GapOpening.Length + 11
+            && DateOnly.TryParseExact(note.AsSpan(GapOpening.Length + 1, 10), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var gap)
+                ? gap
+                : null;
+
     static string Stamp(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     static object Nullable(double? value) => value is { } present ? present : DBNull.Value;

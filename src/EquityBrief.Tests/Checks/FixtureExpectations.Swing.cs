@@ -317,6 +317,69 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task TheVolumeRatioLeavesOutAMemberTradingNothingOrHoldingNoAverageAndAYearOldNightIsDropped()
+    {
+        // Three members over 127 sessions closing at 100. ZZA trades 1,000 on the night against an
+        // average of 1,000; ZZB trades nothing on the night; ZZC holds no fifty-day average. Worked by
+        // hand, the ratio is counted over ZZA alone and is 1. Two rows two years old, a member's and a
+        // night's, fall out of the year and are dropped, and a second run of the night writes the same set.
+        using var store = new TemporaryStore().Migrated();
+
+        var sessions = RecordedHistoricalBarFeed
+            .Parse(File.ReadAllText(Path.Combine(Folder(), "bars-KEYS.json")), "KEYS")
+            .Select(bar => bar.SessionDate)
+            .Where(session => session <= new DateOnly(2026, 9, 4))
+            .Order()
+            .TakeLast(SwingReadings.ReturnLongSessions + 1)
+            .ToArray();
+        var night = sessions[^1];
+
+        string Day(DateOnly on) => on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        foreach (var ticker in new[] { "ZZA", "ZZB", "ZZC" })
+        {
+            store.Execute(
+                "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) " +
+                $"VALUES ('GSPC', '{ticker}', NULL, NULL, '2026-09-05T21:00:00Z');");
+
+            foreach (var session in sessions)
+            {
+                var volume = ticker == "ZZB" && session == night ? 0 : 1000;
+
+                store.Execute(
+                    "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) " +
+                    $"VALUES ('{ticker}', '{Day(session)}', '100', '101', '99', '100', {volume}, 'test', '2026-09-05T21:00:00Z', '100');");
+            }
+
+            if (ticker != "ZZC")
+            {
+                store.Execute(
+                    "INSERT INTO indicator (ticker, session_date, name, value, bar_count) " +
+                    $"VALUES ('{ticker}', '{Day(night)}', '{IndicatorSeries.VolAvg50}', 1000, {sessions.Length});");
+            }
+        }
+
+        store.Execute(
+            "INSERT INTO swing_reading (ticker, session_date, bars, note) VALUES ('ZZA', '2024-09-04', 1, 'old');" +
+            "INSERT INTO market_reading (session_date, members, counted, above, counted_context, above_context, volume_counted) VALUES ('2024-09-04', 1, 0, 0, 0, 0, 0);");
+
+        var reader = new SwingReader(FixedClock.At(new DateTimeOffset(2026, 9, 5, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile);
+
+        var first = await reader.RunAsync("GSPC", "ratio-first");
+
+        Assert.Equal(["1|1"], Query(store, $"SELECT volume_counted || '|' || printf('%g', median_volume_ratio) FROM market_reading WHERE session_date = '{Day(night)}';"));
+        Assert.Equal(["0"], Query(store, "SELECT COUNT(*) FROM swing_reading WHERE session_date = '2024-09-04';"));
+        Assert.Equal(["0"], Query(store, "SELECT COUNT(*) FROM market_reading WHERE session_date = '2024-09-04';"));
+        Assert.Equal(2, first.RowsDropped);
+
+        // Run again, the night's set is written whole once more and nothing else is there.
+        await reader.RunAsync("GSPC", "ratio-again");
+
+        Assert.Equal(["3"], Query(store, "SELECT COUNT(*) FROM swing_reading;"));
+        Assert.Equal(["1"], Query(store, "SELECT COUNT(*) FROM market_reading;"));
+    }
+
+    [Fact]
     public async Task TheFixturesSwingReadingsAreTheOnesWorkedByHandFromTheCapturedBars()
     {
         var expected = Expected("swing-readings");

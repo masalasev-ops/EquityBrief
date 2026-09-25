@@ -36,6 +36,8 @@ public enum Store
     EarningsReaction,
     SwingReading,
     MarketReading,
+    GateResult,
+    FilterVersion,
     Listing,
     ForwardReturn,
     Facts,

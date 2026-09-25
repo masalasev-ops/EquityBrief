@@ -1370,7 +1370,8 @@ public partial class ArchitectureConformance
         // 64 at 11.3, tonight's row stating the report's state.
         // 65 at 11.9, the run page's region stating each reason's share of the index against its target.
         // 67 at 12.1, the name page's swing readings and the run page's market row.
-        Assert.Equal(67, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 69 at 12.2, the name page's gates and the run page's swing filter funnel.
+        Assert.Equal(69, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1425,7 +1426,8 @@ public partial class ArchitectureConformance
         // stating each reason's share of the index against its target, read as its six parts.
         // 208 at 12.1: the night header's breadth, the universe table's four new columns, the name
         // page's readings as their five parts and the run page's market row as its three.
-        Assert.Equal(208, inDocument.Length);
+        // 216 at 12.2: the name page's gates as their four parts and the run page's funnel as its four.
+        Assert.Equal(216, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1476,7 +1478,8 @@ public partial class ArchitectureConformance
         // 188 at 11.9, the run page's region stating each reason's share against its target read as its six.
         // 201 at 12.1: the night header's breadth, the universe table's four new columns, the name
         // page's readings as their five parts and the run page's market row as its three.
-        Assert.Equal(201, checkedElements);
+        // 209 at 12.2: the name page's gates as their four parts and the run page's funnel as its four.
+        Assert.Equal(209, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

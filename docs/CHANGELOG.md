@@ -7200,3 +7200,36 @@ Why: 12.1 builds the swing reader, and the operator ruled on 2026-09-24 that the
 Was: no `swing_reading` or `market_reading` table and no ownership row for either.
 Now: the two tables, each written, and deleted, by the swing reader alone, `swing_reading` one row per member per night and `market_reading` one row per night, both kept for one year.
 Why: 12.1 builds the swing reader, and a store is declared here before any code writes it.
+
+### 2026-09-25 - .claude/rules/checks.md - fixture-expectations works the swing filter's gates by hand
+Was: the row as it stood before this entry, ending at "the member the night read nothing for keeping its row with the reason".
+Now: the row adds each gate, the trigger and the exclusions worked by hand on both sides of their thresholds and at them, the fixture's gates on the two-night store's nights read against results worked by hand, the rank, a night whose breadth is not available, the open version, a night run again, tonight's list unchanged, the filter's code pin, and the shape counts held to the gates worked by hand and leaving the store as it was.
+Why: 12.2 builds the swing filter and its counts, and a gate nothing works by hand at its threshold is a gate nothing has shown to be the rule's.
+
+### 2026-09-25 - .claude/rules/checks.md - gap-refusal counts the gate results among the rows a gapped member keeps
+Was:
+> | `gap-refusal` | every CI run | A series arriving with an interior session missing is refused, that name's stored series is left as it was, and the gap's date is named on the run log; a hole at either edge is a shorter history rather than a gap, and one series alone reports that it cannot be checked rather than that it is clean, so a year the backfill asks for alone is read against the exchange's closure table and refused there, which is how a refused name asked for again on its own is refused again. Every computation over a name whose stored series already holds a hole stops, so the seven computed tables withhold every row for it while the ladder, the listing and the swing readings still carry theirs with the gap's date as the reason, asserted per table over a constructed store rather than in one loop over the ten, and a peer reading or an earnings reaction a withheld name or a name holding no bars kept from an earlier night is deleted, because the two failures are opposite: a figure computed across the hole, and a member left without the row every member gets |
+Now: the gate results join the ladder, the listing and the swing readings as a row every member keeps with the gap's date as its reason, and the per-table assertion is over eleven.
+Why: 12.2's swing filter writes a row for every member every night, a gapped member's excluded for its gap.
+
+### 2026-09-25 - .claude/rules/checks.md - read-surface reads a name's gates and the run page's funnel off the pages
+Was: the row as it stood before this entry, ending at "a night storing no market reading and a breadth held by fewer than half the members each saying so".
+Now: the row adds a name's gates read back off every fixture member's page against the stored row, and the run page's funnel read back against counts made from the stored rows, a night storing none saying so.
+Why: 12.2 draws the filter's answers on two surfaces, and a figure drawn is asserted off the page it is drawn on.
+
+### 2026-09-25 - RUNBOOK.md - the swing filter in the night's arithmetic, and the counts verb
+Was:
+> the arithmetic: membership, bars, corporate actions, indicators, swings, volume profile, levels, trend, ladder, moves, swing readings and the night's breadth, listings, facts, forward returns, news pulse
+Now: the list names the swing filter after the listings, and a section before registering a candidate shows `filter-counts` and `filter-counts --year`, what they print, that they open the store read-only and write nothing, and that the operator rules the starting settings from them.
+Why: 12.2 adds the filter as a night step and the counts as a worker verb, and every verb the worker dispatches is shown here.
+
+### 2026-09-25 - ARCHITECTURE.html - the swing filter and its counts
+Was:
+> The arithmetic, being steps 1 to 18, calls no model and makes no per-name network request, and step 19 is carved out of the first of those by name
+Now: section 7 and the matrix carry the swing filter and the filter counts; section 14 gains the filter's step after the listings, the arithmetic being steps 1 to 19 and the queue step 20; section 15.9 gains the Gates row and section 15.10 the Swing filter funnel row; section 16 gains the gate results and the filter versions; section 17 gains nine rows, the market gate, the strength gate, the pullback depth, the volume dry-up, the base tightness, the breakout volume, the trade's reward to risk and stop distance and the earnings exclusion, each marked proposed; section 18 gains breadth not available on a night and a gate's reading absent for a name; section 19.1 gains the gate results row.
+Why: 12.2 builds the filter, stored for every member and deciding nothing on tonight's list, and the verb whose counts the operator rules the starting settings from (see: The swing filter's starting settings are ruled from shape counts before tonight's list switches to it).
+
+### 2026-09-25 - SCHEMA.md - the gate results and the filter versions
+Was: no `gate_result` or `filter_version` table and no ownership row for either.
+Now: `gate_result`, written and deleted by the swing filter alone, one row per member per night and kept whole, and `filter_version`, which nothing writes until the verb 12.4 builds, the filter reading its open row.
+Why: 12.2 builds the filter, and a store is declared here before any code writes it.

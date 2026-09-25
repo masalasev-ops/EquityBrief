@@ -324,7 +324,9 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         await read.ReactionsAsync(ticker, on),
         NameScreen.NotAMemberOn(ticker, groupsReadOn, membersThen),
         // The name's swing readings for the page's night, or its newest where the page is tonight's.
-        await read.SwingReadingAsync(ticker, on));
+        await read.SwingReadingAsync(ticker, on),
+        // The name's swing filter result for the page's night, or its newest where the page is tonight's.
+        await read.GateResultAsync(ticker, on));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -864,7 +866,8 @@ app.MapGet("/screens/run/{night?}", async (
                 flips.Nights,
                 dated),
             RunScreen.Shares(everyListing, dated),
-            RunScreen.Market(await read.MarketReadingAsync(dated))),
+            RunScreen.Market(await read.MarketReadingAsync(dated)),
+            RunScreen.Funnel(await read.GateResultsAsync(dated), dated)),
         "text/html; charset=utf-8");
 });
 

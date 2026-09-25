@@ -169,6 +169,47 @@ public sealed record SwingReadingsView(
     double? Tightness,
     string? Note);
 
+// One step of the swing filter's funnel: the gate, how many members passed it and every gate before it,
+// and how many it removed.
+public sealed record FunnelStep(string Gate, int Passed, int Removed);
+
+// The run page's funnel for a night: the members, each gate in order, the setup's two families, what
+// the exclusions removed, and how many pass, with the version the night ran under.
+public sealed record FunnelView(
+    DateOnly Session,
+    string Version,
+    int Members,
+    IReadOnlyList<FunnelStep> Steps,
+    int Pullbacks,
+    int Breakouts,
+    IReadOnlyList<(string Exclusion, int Count)> Exclusions,
+    int Excluded,
+    int Passing);
+
+// One gate's answer as a name's page draws it.
+public sealed record GateLine(string Gate, bool Passed, string Reason);
+
+// A name's swing filter result on a night as its page draws it: the five gates with their reasons,
+// the family and the trigger, the trade read both ways, the exclusions and the notes, and its rank
+// where it passed.
+public sealed record GatesView(
+    DateOnly Session,
+    string Version,
+    IReadOnlyList<GateLine> Gates,
+    string? Family,
+    bool? TriggerEvent,
+    double? LadderRewardToRisk,
+    double? LadderStopMoves,
+    decimal? SwingEntry,
+    decimal? SwingStop,
+    decimal? SwingTarget,
+    double? SwingRewardToRisk,
+    double? SwingStopMoves,
+    IReadOnlyList<string> Exclusions,
+    IReadOnlyList<string> Notes,
+    bool Passed,
+    int? Rank);
+
 // The night's market reading as the swing reader stored it: the members, the breadth over the ones
 // read with how many it was counted over, the same over the shorter average as context, and the
 // median of the members' volume against their fifty-day average.
@@ -4308,6 +4349,105 @@ public sealed class MarkRenderer : IComponent
             ? head + Formatted($"breadth: {share * 100:0.0}% of the {market.Counted} members read close above their own {SwingReadings.BreadthAverageSessions}-day average") +
                 (market.BreadthContext is { } context ? Formatted($", and {context * 100:0.0}% above their {SwingReadings.ContextAverageSessions}-day average, as context") : string.Empty) + "</p>"
             : head + Formatted($"breadth: not available, {market.Counted} of the {market.Members} members hold a close and a {SwingReadings.BreadthAverageSessions}-day average, fewer than half</p>");
+    }
+
+    // The run page's funnel, section 15.10's row: how many members each gate passed in order and how
+    // many it removed, the setup's two families, what the exclusions removed and how many pass, and
+    // the version the night ran under, each count whole on its row.
+    public string Funnel(FunnelView? funnel)
+    {
+        if (funnel is null)
+        {
+            return "<p class=\"degraded\" data-funnel=\"none\">no swing filter results are stored for this night</p>";
+        }
+
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"funnel-table\" data-session=\"{funnel.Session:yyyy-MM-dd}\" data-members=\"{funnel.Members}\" data-version=\"{Escaped(funnel.Version)}\">");
+        region.Append("<tr><th>Step</th><th>Passed</th><th>Removed</th></tr>");
+        region.Append(Invariant, $"<tr data-step=\"members\" data-passed=\"{funnel.Members}\" data-removed=\"0\"><td>Members of the index</td><td class=\"num\">{funnel.Members}</td><td class=\"num\"></td></tr>");
+
+        foreach (var step in funnel.Steps)
+        {
+            region.Append(Invariant, $"<tr data-step=\"{Escaped(step.Gate)}\" data-passed=\"{step.Passed}\" data-removed=\"{step.Removed}\"><td>{Escaped(char.ToUpperInvariant(step.Gate[0]) + step.Gate[1..])}");
+
+            if (step.Gate == "setup")
+            {
+                region.Append(Invariant, $" <span class=\"families\" data-pullbacks=\"{funnel.Pullbacks}\" data-breakouts=\"{funnel.Breakouts}\">({funnel.Pullbacks} pullback(s), {funnel.Breakouts} breakout(s))</span>");
+            }
+
+            region.Append(Invariant, $"</td><td class=\"num\">{step.Passed}</td><td class=\"num\">{step.Removed}</td></tr>");
+        }
+
+        region.Append(Invariant, $"<tr data-step=\"excluded\" data-passed=\"{funnel.Passing}\" data-removed=\"{funnel.Excluded}\"><td>Not excluded");
+
+        if (funnel.Exclusions.Count > 0)
+        {
+            region.Append(" <span class=\"exclusions\">(");
+            region.Append(string.Join(", ", funnel.Exclusions.Select(pair => Formatted($"<span data-exclusion=\"{Escaped(pair.Exclusion)}\" data-count=\"{pair.Count}\">{pair.Count} {Escaped(pair.Exclusion)}</span>"))));
+            region.Append(")</span>");
+        }
+
+        region.Append(Invariant, $"</td><td class=\"num\">{funnel.Passing}</td><td class=\"num\">{funnel.Excluded}</td></tr>");
+        region.Append("</table></div>");
+        region.Append(Invariant, $"<p class=\"funnel-version\" data-version=\"{Escaped(funnel.Version)}\">");
+        region.Append(funnel.Version == "none"
+            ? "No filter version is open, so the night ran on section 17's proposed values."
+            : Formatted($"The night ran under filter version {Escaped(funnel.Version)}."));
+        region.Append(Invariant, $" {funnel.Passing} of {funnel.Members} member(s) pass. Tonight's list is still drawn from the six reasons, and these counts decide nothing on it.</p>");
+
+        return region.ToString();
+    }
+
+    // A name's gates, section 15.9's row: each of the five with whether it passed and why, the setup's
+    // family and the trigger, the trade read from the ladder's first tranche and from the swing trade's
+    // own plan, and the exclusions and notes, each whole on its element as the store holds it.
+    public string GatesTable(string ticker, GatesView view)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"gates\" data-ticker=\"{Escaped(ticker)}\" data-session=\"{view.Session:yyyy-MM-dd}\" data-version=\"{Escaped(view.Version)}\" data-passed=\"{(view.Passed ? "yes" : "no")}\" data-rank=\"{(view.Rank is { } at ? at.ToString(Invariant) : "none")}\">");
+        region.Append("<div class=\"tbl-wrap\"><table class=\"gates-table\"><tr><th>Gate</th><th>Passed</th><th>Why</th></tr>");
+
+        foreach (var gate in view.Gates)
+        {
+            region.Append(Invariant, $"<tr data-gate=\"{Escaped(gate.Gate)}\" data-passed=\"{(gate.Passed ? "yes" : "no")}\"><td>{Escaped(gate.Gate)}</td><td>{(gate.Passed ? "passed" : "failed")}</td><td>{Escaped(gate.Reason)}</td></tr>");
+        }
+
+        region.Append("</table></div>");
+
+        region.Append(Invariant, $"<p class=\"family\" data-family=\"{Escaped(view.Family ?? "none")}\" data-trigger-event=\"{(view.TriggerEvent is { } happened ? (happened ? "yes" : "no") : "none")}\">");
+        region.Append(view.Family is { } family ? Formatted($"The setup is a {Escaped(family)}") : "No setup passed");
+        region.Append(view.TriggerEvent switch
+        {
+            true => "; the trigger's event happened on the night.",
+            false => "; the trigger's event did not happen on the night.",
+            null => "; the night's bars cannot say whether the trigger's event happened.",
+        });
+        region.Append("</p>");
+
+        region.Append("<div class=\"tbl-wrap\"><table class=\"trade-table\"><tr><th>Plan</th><th>Reward to risk</th><th>Stop below the entry</th></tr>");
+        region.Append(Invariant, $"<tr data-plan=\"ladder\" data-reward-to-risk=\"{Whole(view.LadderRewardToRisk)}\" data-stop-moves=\"{Whole(view.LadderStopMoves)}\"><td>The ladder's first tranche</td><td class=\"num\">{Ratio(view.LadderRewardToRisk)}</td><td class=\"num\">{Moves(view.LadderStopMoves)}</td></tr>");
+        region.Append(Invariant, $"<tr data-plan=\"swing\" data-entry=\"{Plain(view.SwingEntry)}\" data-stop=\"{Plain(view.SwingStop)}\" data-target=\"{Plain(view.SwingTarget)}\" data-reward-to-risk=\"{Whole(view.SwingRewardToRisk)}\" data-stop-moves=\"{Whole(view.SwingStopMoves)}\"><td>The swing trade's own: in at {(view.SwingEntry is { } entry ? Price(entry) : "no close")}, stop {(view.SwingStop is { } stop ? Price(stop) : "none")}, target {(view.SwingTarget is { } target ? Price(target) : "none")}</td><td class=\"num\">{Ratio(view.SwingRewardToRisk)}</td><td class=\"num\">{Moves(view.SwingStopMoves)}</td></tr>");
+        region.Append("</table></div>");
+
+        region.Append(Invariant, $"<p class=\"exclusions\" data-exclusions=\"{Escaped(string.Join(",", view.Exclusions))}\">");
+        region.Append(view.Exclusions.Count == 0 ? "No exclusion applies." : "Excluded: " + Escaped(string.Join(", ", view.Exclusions)) + ".");
+
+        foreach (var note in view.Notes)
+        {
+            region.Append(' ').Append(Escaped(char.ToUpperInvariant(note[0]) + note[1..])).Append('.');
+        }
+
+        region.Append("</p></div>");
+
+        return region.ToString();
+
+        static string Ratio(double? value) => value is { } held ? held.ToString("0.00", Invariant) : "<span class=\"degraded\">none</span>";
+
+        static string Moves(double? value) => value is { } held ? held.ToString("0.00", Invariant) + " typical moves" : "<span class=\"degraded\">none</span>";
+
+        static string Plain(decimal? value) => value is { } held ? held.ToString(Invariant) : "none";
     }
 
     // The run page's market reading, section 15.10's row: the breadth with how many members it was

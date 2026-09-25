@@ -12,6 +12,7 @@ using EquityBrief.Worker;
 using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Fundamentals;
+using EquityBrief.Worker.Filter;
 using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Research;
 using EquityBrief.Worker.Rules;
@@ -31,13 +32,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "drain" => await Drain(),
     "register" => await Register(args),
     "version" => await VersionWindows(args),
+    "filter-counts" => await FilterCountsReport(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. Seven are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. Eight are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
         "'research --ticker <TICKER>' writes the sections of one name's research that are not written or have gone " +
@@ -51,7 +53,9 @@ static int NoVerb()
         "opens a version beside it, '--trend-version <name>' opens one of the trend rule's three versions at the numbers the code " +
         "carries, '--replace <name> --with <name> --parameters <name=value,...> --evidence <text>' closes one and " +
         "opens the version replacing it, '--close <name> --evidence <text>' closes one, '--backfill <yyyy-MM-dd>' scores a past " +
-        "night the store computed under the windows open now, and '--list' names the open windows. '--live' " +
+        "night the store computed under the windows open now, and '--list' names the open windows, " +
+        "'filter-counts' prints the swing filter's shape counts over the nights the store keeps bands and plans for, " +
+        "with '--year' to replay every session of the stored year as well, reading the store and writing nothing. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -527,6 +531,26 @@ static IConfiguration Configuration() =>
         .AddJsonFile("appsettings.Secrets.json", optional: true)
         .AddEnvironmentVariables()
         .Build();
+
+// The swing filter's shape counts, printed for the operator to rule the starting settings from. It
+// opens the configured store read-only and writes nothing, and progress goes to the error stream so
+// the report on the output stream is the counts alone.
+// see: The swing filter's starting settings are ruled from shape counts before tonight's list switches to it
+static async Task<int> FilterCountsReport(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    var counter = new FilterCounts(store.DatabaseFile);
+    var counts = await counter.CountAsync(
+        Argument(args, "--index") ?? "GSPC",
+        args.Contains("--year", StringComparer.Ordinal),
+        line => Console.Error.WriteLine(line));
+
+    Console.Write(FilterCounts.Report(counts, counter.Notes));
+
+    return 0;
+}
 
 static int Migrate()
 {

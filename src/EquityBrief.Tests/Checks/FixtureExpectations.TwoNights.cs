@@ -7,6 +7,7 @@ using EquityBrief.Core.Time;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Facts;
+using EquityBrief.Worker.Filter;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Levels;
@@ -78,9 +79,11 @@ public partial class FixtureExpectations
 
         await new LadderBuilder(clock, store.DatabaseFile).RunAsync(Index, $"two-nights-{night}-ladders");
         await new MoveAnnotator(clock, store.DatabaseFile).RunAsync($"two-nights-{night}-moves");
+        await new SwingReader(clock, store.DatabaseFile).RunAsync(Index, $"two-nights-{night}-swing-readings");
         await new FactsAssembler(clock, store.DatabaseFile).RunAsync($"two-nights-{night}-facts");
         await new ChangeDetector(clock, store.DatabaseFile).RunAsync($"two-nights-{night}-changes");
         await new ShortlistBuilder(clock, store.DatabaseFile).RunAsync(Index, $"two-nights-{night}-listings", startedAt);
+        await new SwingFilter(clock, store.DatabaseFile).RunAsync(Index, $"two-nights-{night}-swing-filter");
     }
 
     // One session's bulk file for the exchange, from each captured name's committed bar on it, in

@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Filter;
+using EquityBrief.Worker.Filter;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Moves;
 using EquityBrief.Core.Providers;
@@ -172,6 +173,18 @@ public class PinnedConstants
             new("Range tightness windows", "50", SwingReadings.TightLongSessions, "SwingReadings.TightLongSessions"),
             new("Breadth", "200", SwingReadings.BreadthAverageSessions, "SwingReadings.BreadthAverageSessions"),
             new("Breadth", "50", SwingReadings.ContextAverageSessions, "SwingReadings.ContextAverageSessions"),
+            new("Market gate", "50", (decimal)FilterSettings.ProposedBreadthFloor * 100, "FilterSettings.ProposedBreadthFloor as a percentage"),
+            new("Market gate", "45", (decimal)FilterCounts.LowerBreadthFloor * 100, "FilterCounts.LowerBreadthFloor as a percentage"),
+            new("Market gate", "50", (decimal)FilterSettings.ProposedBreadthFloor * 100, "FilterSettings.ProposedBreadthFloor as a percentage, the second floor counted"),
+            new("Pullback depth", "2", (decimal)FilterSettings.ProposedDepthLow, "FilterSettings.ProposedDepthLow"),
+            new("Pullback depth", "5", (decimal)FilterSettings.ProposedDepthHigh, "FilterSettings.ProposedDepthHigh"),
+            new("Volume dry-up", "1.0", (decimal)FilterSettings.ProposedDryUpCeiling, "FilterSettings.ProposedDryUpCeiling"),
+            new("Base tightness", "0.7", (decimal)FilterSettings.ProposedTightnessCeiling, "FilterSettings.ProposedTightnessCeiling"),
+            new("Breakout volume", "1.5", (decimal)FilterSettings.ProposedBreakoutVolumeMultiple, "FilterSettings.ProposedBreakoutVolumeMultiple"),
+            new("Trade reward to risk", "2", (decimal)FilterSettings.ProposedRewardToRiskFloor, "FilterSettings.ProposedRewardToRiskFloor"),
+            new("Trade stop distance", "1.0", (decimal)FilterSettings.ProposedStopLow, "FilterSettings.ProposedStopLow"),
+            new("Trade stop distance", "2.5", (decimal)FilterSettings.ProposedStopHigh, "FilterSettings.ProposedStopHigh"),
+            new("Earnings exclusion", "15", FilterSettings.ProposedEarningsWindowSessions, "FilterSettings.ProposedEarningsWindowSessions"),
             new("Reason share target", "2", (decimal)TargetShares.ReasonTarget * 100, "TargetShares.ReasonTarget as a percentage"),
             new("Any-reason share target", "6", (decimal)TargetShares.AnyReasonTarget * 100, "TargetShares.AnyReasonTarget as a percentage"),
             new("Event session share", "25", (decimal)TargetShares.EventShare * 100, "TargetShares.EventShare as a percentage"),

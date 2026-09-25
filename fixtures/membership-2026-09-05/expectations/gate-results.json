@@ -1,0 +1,308 @@
+{
+ "stage": "gate-results",
+ "derivation": "derived",
+ "derivedFrom": "the rules in section 11 and the settings section 17 proposes, worked by hand outside the repository over the two nights the fixture's two-night store computes, 2026-09-03 and 2026-09-04, with no filter version open. Every reading is worked from the captured bars as the swing readings expectation works them: each return and its place among the four, the high of the last 20 sessions and the pullback from it in Wilder's fourteen-session typical move, the volume since it against the fifty-session mean, the tightness, and breadth over the four closes against their 200-session means. On 2026-09-04 every band, its role, strength and anchor, comes from levels.json, each trend state from ladder.json and each plan from listings.json, all derived by hand; on 2026-09-03 the bands and trend states, and the plans of AAPL and NFLX, which no expectation states, are the level builder's, the ladder builder's and the listings stage's stored rows, read and not derived, and every gate over them is worked by hand here. The pullback's band is the highest anchored support band holding the close; the breakout's the highest band the close cleared that sat at or above the previous close; the trigger event a close above the previous session's high or back into that band after a close below it; arrival the event tonight with none on the session before, so 2026-09-03, the store's first night, reads no arrival and 2026-09-04 reads 2026-09-03's events; the ladder's reward to risk from the zone's middle to the first traded target against the stop, rounded to four places; the swing trade's from the close to the lowest band above it against the setup band's low edge. No name on either night passes every gate, so no rank is written, and the rank is worked over a constructed night instead.",
+ "tables": [
+  "gate_result"
+ ],
+ "settings": {
+  "breadthFloor": 0.5,
+  "strengthFloor": "two thirds",
+  "depth": [
+   2,
+   5
+  ],
+  "dryUpCeiling": 1,
+  "tightnessCeiling": 0.7,
+  "breakoutVolumeMultiple": 1.5,
+  "rewardToRiskFloor": 2,
+  "stop": [
+   1,
+   2.5
+  ],
+  "earningsWindowSessions": 15,
+  "trade": "ladder"
+ },
+ "readFromTheStore": [
+  "the 2026-09-03 bands",
+  "the 2026-09-03 trend states",
+  "the 2026-09-03 plans of AAPL and NFLX"
+ ],
+ "nights": {
+  "2026-09-03": {
+   "AAPL": {
+    "gates": {
+     "market": true,
+     "trend and strength": true,
+     "setup": false,
+     "trigger": false,
+     "trade": false
+    },
+    "family": null,
+    "triggerEvent": false,
+    "ladderRewardToRisk": "1.0792",
+    "ladderStopMoves": 3.104441944798107,
+    "swingStop": null,
+    "swingTarget": null,
+    "swingRewardToRisk": null,
+    "swingStopMoves": null,
+    "strength": 0.8333333333333333,
+    "bandStrength": null,
+    "exclusions": [],
+    "passed": false,
+    "worked": {
+     "breadth": 0.75,
+     "trend": "uptrend",
+     "depth": 0.35280139417115575,
+     "dryUp": null,
+     "tightness": 0.8204538068523877,
+     "volumeMultiple": 0.6828526569725747,
+     "close": "328.21",
+     "previousHigh": "328.4",
+     "pullbackBand": null
+    }
+   },
+   "KEYS": {
+    "gates": {
+     "market": true,
+     "trend and strength": false,
+     "setup": true,
+     "trigger": false,
+     "trade": false
+    },
+    "family": "pullback",
+    "triggerEvent": true,
+    "ladderRewardToRisk": "1.7057",
+    "ladderStopMoves": 2.5078510899767177,
+    "swingStop": "300.87",
+    "swingTarget": "366.41",
+    "swingRewardToRisk": "2.0133",
+    "swingStopMoves": 1.8763527200454628,
+    "strength": 0.16666666666666666,
+    "bandStrength": 59,
+    "exclusions": [],
+    "passed": false,
+    "worked": {
+     "breadth": 0.75,
+     "trend": "range",
+     "depth": 3.777723476358198,
+     "dryUp": 0.922383982150458,
+     "tightness": 0.649401095369952,
+     "volumeMultiple": 0.5283781565674129,
+     "close": "322.62",
+     "previousHigh": "321.96",
+     "pullbackBand": [
+      "300.87",
+      "332.78"
+     ]
+    }
+   },
+   "MSFT": {
+    "gates": {
+     "market": true,
+     "trend and strength": true,
+     "setup": false,
+     "trigger": false,
+     "trade": false
+    },
+    "family": null,
+    "triggerEvent": true,
+    "ladderRewardToRisk": null,
+    "ladderStopMoves": 1.753881861536751,
+    "swingStop": "507.9797",
+    "swingTarget": null,
+    "swingRewardToRisk": null,
+    "swingStopMoves": 0.18079218562831484,
+    "strength": 0.8333333333333333,
+    "bandStrength": 9,
+    "exclusions": [],
+    "passed": false,
+    "worked": {
+     "breadth": 0.75,
+     "trend": "uptrend",
+     "depth": 0.6470439386594832,
+     "dryUp": 0.6200210945086364,
+     "tightness": 0.8267077599954114,
+     "volumeMultiple": 0.6622820336134094,
+     "close": "510.12",
+     "previousHigh": "500.27",
+     "pullbackBand": [
+      "507.9797",
+      "517.78"
+     ]
+    }
+   },
+   "NFLX": {
+    "gates": {
+     "market": true,
+     "trend and strength": false,
+     "setup": false,
+     "trigger": false,
+     "trade": false
+    },
+    "family": null,
+    "triggerEvent": false,
+    "ladderRewardToRisk": "3.5434",
+    "ladderStopMoves": 0.5789076344546423,
+    "swingStop": null,
+    "swingTarget": null,
+    "swingRewardToRisk": null,
+    "swingStopMoves": null,
+    "strength": 0.16666666666666666,
+    "bandStrength": null,
+    "exclusions": [],
+    "passed": false,
+    "worked": {
+     "breadth": 0.75,
+     "trend": "range",
+     "depth": 0.4157406177936814,
+     "dryUp": null,
+     "tightness": 0.8302108585619697,
+     "volumeMultiple": 0.6086773246705833,
+     "close": "82.67",
+     "previousHigh": "83.12",
+     "pullbackBand": null
+    }
+   }
+  },
+  "2026-09-04": {
+   "AAPL": {
+    "gates": {
+     "market": true,
+     "trend and strength": true,
+     "setup": false,
+     "trigger": false,
+     "trade": false
+    },
+    "family": null,
+    "triggerEvent": false,
+    "ladderRewardToRisk": "0.9292",
+    "ladderStopMoves": 3.480756559143936,
+    "swingStop": "299.7415",
+    "swingTarget": "334.7013",
+    "swingRewardToRisk": "0.7282",
+    "swingStopMoves": 2.6498248725297775,
+    "strength": 0.8333333333333333,
+    "bandStrength": 57,
+    "exclusions": [],
+    "passed": false,
+    "worked": {
+     "breadth": 0.75,
+     "trend": "uptrend",
+     "depth": 1.4199817889721327,
+     "dryUp": 0.7439318706035016,
+     "tightness": 0.9075883329556862,
+     "volumeMultiple": 0.7439318706035016,
+     "close": "319.97",
+     "previousHigh": "330.81",
+     "pullbackBand": [
+      "299.7415",
+      "320.28"
+     ]
+    }
+   },
+   "KEYS": {
+    "gates": {
+     "market": true,
+     "trend and strength": false,
+     "setup": true,
+     "trigger": false,
+     "trade": true
+    },
+    "family": "pullback",
+    "triggerEvent": true,
+    "ladderRewardToRisk": "2.1304",
+    "ladderStopMoves": 2.0640232499952895,
+    "swingStop": "300.87",
+    "swingTarget": "366.41",
+    "swingRewardToRisk": "1.4882",
+    "swingStopMoves": 2.335826956170824,
+    "strength": 0.3333333333333333,
+    "bandStrength": 59,
+    "exclusions": [],
+    "passed": false,
+    "worked": {
+     "breadth": 0.75,
+     "trend": "uptrend",
+     "depth": 3.476249684202593,
+     "dryUp": 0.8853929434848113,
+     "tightness": 0.6197482014933401,
+     "volumeMultiple": 0.4245121053922427,
+     "close": "327.21",
+     "previousHigh": "324.13",
+     "pullbackBand": [
+      "300.87",
+      "332.78"
+     ]
+    }
+   },
+   "MSFT": {
+    "gates": {
+     "market": true,
+     "trend and strength": true,
+     "setup": false,
+     "trigger": false,
+     "trade": false
+    },
+    "family": null,
+    "triggerEvent": false,
+    "ladderRewardToRisk": null,
+    "ladderStopMoves": 1.0044248912183105,
+    "swingStop": "492.1166",
+    "swingTarget": "507.9797",
+    "swingRewardToRisk": "1.0918",
+    "swingStopMoves": 0.6413414377906923,
+    "strength": 0.8333333333333333,
+    "bandStrength": 20,
+    "exclusions": [],
+    "passed": false,
+    "worked": {
+     "breadth": 0.75,
+     "trend": "uptrend",
+     "depth": 1.5290573087606767,
+     "dryUp": 0.5934329970163827,
+     "tightness": 0.8619908080055639,
+     "volumeMultiple": 0.5096211490182834,
+     "close": "499.7",
+     "previousHigh": "515.65",
+     "pullbackBand": [
+      "492.1166",
+      "501.9168"
+     ]
+    }
+   },
+   "NFLX": {
+    "gates": {
+     "market": true,
+     "trend and strength": false,
+     "setup": false,
+     "trigger": false,
+     "trade": true
+    },
+    "family": null,
+    "triggerEvent": false,
+    "ladderRewardToRisk": "2.0653",
+    "ladderStopMoves": 1.1178083873748965,
+    "swingStop": null,
+    "swingTarget": null,
+    "swingRewardToRisk": null,
+    "swingStopMoves": null,
+    "strength": 0.0,
+    "bandStrength": null,
+    "exclusions": [],
+    "passed": false,
+    "worked": {
+     "breadth": 0.75,
+     "trend": "range",
+     "depth": 2.233112349684726,
+     "dryUp": 1.018131957884938,
+     "tightness": 0.9409382717643081,
+     "volumeMultiple": 1.018131957884938,
+     "close": "78.25",
+     "previousHigh": "83.6",
+     "pullbackBand": null
+    }
+   }
+  }
+ }
+}

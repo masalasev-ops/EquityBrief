@@ -322,6 +322,34 @@ public sealed record SwingReadingRow(
     double? Tightness,
     string? Note);
 
+// One member's swing filter result on a night as the filter stored it: each gate's pass, the family
+// and the trigger, the trade read both ways, the exclusions, the rank among the names passing, and
+// the gates' reasons and values as stored.
+public sealed record GateResultRow(
+    string Ticker,
+    DateOnly SessionDate,
+    string Version,
+    bool Market,
+    bool Trend,
+    bool Setup,
+    string? Family,
+    bool Trigger,
+    bool? TriggerEvent,
+    bool Trade,
+    double? LadderRewardToRisk,
+    double? LadderStopMoves,
+    decimal? SwingEntry,
+    decimal? SwingStop,
+    decimal? SwingTarget,
+    double? SwingRewardToRisk,
+    double? SwingStopMoves,
+    IReadOnlyList<string> Exclusions,
+    bool Passed,
+    int? Rank,
+    double? Strength,
+    int? BandStrength,
+    string Gates);
+
 // The night's market reading as the swing reader stored it.
 public sealed record MarketReadingRow(
     DateOnly SessionDate,
@@ -436,6 +464,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.PeerReading, Touch.Read),
             new StoreTouch(Store.SwingReading, Touch.Read),
             new StoreTouch(Store.MarketReading, Touch.Read),
+            new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
@@ -1902,6 +1931,92 @@ public sealed class ReadApi : IComponent
             reader.IsDBNull(12) ? null : reader.GetDouble(12),
             reader.IsDBNull(13) ? null : reader.GetDouble(13),
             reader.IsDBNull(14) ? null : reader.GetString(14));
+
+    // The swing filter's columns, in the order every read of them takes them.
+    const string GateColumns = @"
+        ticker, session_date, version, market, trend, setup, family, trigger_pass, trigger_event, trade,
+        ladder_reward_to_risk, ladder_stop_moves, swing_entry, swing_stop, swing_target, swing_reward_to_risk,
+        swing_stop_moves, exclusions, passed, rank, strength, band_strength, gates";
+
+    const string GateResultOn = "SELECT " + GateColumns + " FROM gate_result WHERE ticker = $ticker AND session_date = $on;";
+
+    const string NewestGateResult = "SELECT " + GateColumns + " FROM gate_result WHERE ticker = $ticker ORDER BY session_date DESC LIMIT 1;";
+
+    // Every member's result for one night, which the run page's funnel counts.
+    const string GateResultsOn = "SELECT " + GateColumns + " FROM gate_result WHERE session_date = $on ORDER BY ticker;";
+
+    // A name's swing filter result for a night, or its newest where no night is named, and none where
+    // the filter stored none.
+    public async Task<GateResultRow?> GateResultAsync(string ticker, DateOnly? on = null)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = on is null ? NewestGateResult : GateResultOn;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        if (on is { } night)
+        {
+            command.Parameters.AddWithValue("$on", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync() ? GateRow(reader) : null;
+    }
+
+    // Every member's swing filter result for one night.
+    public async Task<IReadOnlyList<GateResultRow>> GateResultsAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = GateResultsOn;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<GateResultRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(GateRow(reader));
+        }
+
+        return rows;
+    }
+
+    static GateResultRow GateRow(Microsoft.Data.Sqlite.SqliteDataReader reader)
+    {
+        double? Real(int at) => reader.IsDBNull(at) ? null : reader.GetDouble(at);
+
+        decimal? Price(int at) => reader.IsDBNull(at) ? null : Money.FromStorage(reader.GetString(at));
+
+        return new GateResultRow(
+            reader.GetString(0),
+            DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            reader.GetString(2),
+            reader.GetInt32(3) == 1,
+            reader.GetInt32(4) == 1,
+            reader.GetInt32(5) == 1,
+            reader.IsDBNull(6) ? null : reader.GetString(6),
+            reader.GetInt32(7) == 1,
+            reader.IsDBNull(8) ? null : reader.GetInt32(8) == 1,
+            reader.GetInt32(9) == 1,
+            Real(10),
+            Real(11),
+            Price(12),
+            Price(13),
+            Price(14),
+            Real(15),
+            Real(16),
+            System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(17)) ?? [],
+            reader.GetInt32(18) == 1,
+            reader.IsDBNull(19) ? null : reader.GetInt32(19),
+            Real(20),
+            reader.IsDBNull(21) ? null : reader.GetInt32(21),
+            reader.GetString(22));
+    }
 
     // The night's market reading, and none where the night stored none.
     public async Task<MarketReadingRow?> MarketReadingAsync(DateOnly on)

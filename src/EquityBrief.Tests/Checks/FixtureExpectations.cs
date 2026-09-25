@@ -56,6 +56,23 @@ public partial class FixtureExpectations
         "fixture-expectations",
         ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
+            // 12.2, the swing filter: the nine thresholds it is proposed at, its two stores, its
+            // fixture row and the two failures its gates answer.
+            CheckReach.Key(Scope.LimitsTable, "Market gate"),
+            CheckReach.Key(Scope.LimitsTable, "Strength gate"),
+            CheckReach.Key(Scope.LimitsTable, "Pullback depth"),
+            CheckReach.Key(Scope.LimitsTable, "Volume dry-up"),
+            CheckReach.Key(Scope.LimitsTable, "Base tightness"),
+            CheckReach.Key(Scope.LimitsTable, "Breakout volume"),
+            CheckReach.Key(Scope.LimitsTable, "Trade reward to risk"),
+            CheckReach.Key(Scope.LimitsTable, "Trade stop distance"),
+            CheckReach.Key(Scope.LimitsTable, "Earnings exclusion"),
+            CheckReach.Key(Scope.StoresTable, "Gate results"),
+            CheckReach.Key(Scope.StoresTable, "Filter versions"),
+            CheckReach.Key(Scope.FixtureTable, "gate results"),
+            CheckReach.Key(Scope.FailureTable, "Breadth not available on a night"),
+            CheckReach.Key(Scope.FailureTable, "A gate's reading is absent for a name"),
+
             // 12.1, the swing readings: the four limits they are read under, their two stores
             // and their fixture row.
             CheckReach.Key(Scope.LimitsTable, "Relative strength windows"),
