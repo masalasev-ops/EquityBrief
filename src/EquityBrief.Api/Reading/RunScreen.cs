@@ -327,11 +327,7 @@ public static class RunScreen
 
         // A retirement the operator wrote after a promotion says so in its evidence, which is what
         // tells a candidate that left the family having been shown from one that left having not.
-        bool Promoted(string candidate) =>
-            rows.Any(row => row.Event == CandidateFamily.Retired
-                && row.Retires == candidate
-                && row.Evidence is { } evidence
-                && evidence.StartsWith(CandidateFamily.PromotedBy, StringComparison.Ordinal));
+        bool Promoted(string candidate) => PromotionOf(rows, candidate) is not null;
 
         // The instant of the last retirement naming a candidate by the page's instant, or the page's
         // own where there is none.
@@ -344,10 +340,7 @@ public static class RunScreen
         IReadOnlyList<GraphLevel> Graph(IEnumerable<string> candidates) =>
             HolmGraph.Levels(
                 [
-                    .. candidates
-                        .Where(candidate => registered.Contains(candidate, StringComparer.Ordinal))
-                        .Distinct(StringComparer.Ordinal)
-                        .OrderBy(candidate => candidate, StringComparer.Ordinal)
+                    .. StepOrder(rows, candidates.Where(candidate => registered.Contains(candidate, StringComparer.Ordinal)))
                         .Select(candidate => new GraphMember(
                             candidate,
                             Promoted(candidate),
@@ -410,6 +403,34 @@ public static class RunScreen
             NullWin.CostBasisPoints,
             NullWin.SensitivityBasisPoints);
     }
+
+    // The order the graph steps its members in: the promoted first, in the order their promotions
+    // were written, which is the order their levels passed in, and then the rest in the order they
+    // were first registered, which decides which of two crossing on one read steps first.
+    // see: The graph steps promoted candidates in the order their promotions were written, and candidates crossing on one read in the order they were registered
+    public static IReadOnlyList<string> StepOrder(IReadOnlyList<RegisterRow> rows, IEnumerable<string> candidates) =>
+    [
+        .. candidates
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(candidate => PromotionOf(rows, candidate)?.RegisteredAt ?? DateTimeOffset.MaxValue)
+            .ThenBy(candidate => PromotionOf(rows, candidate)?.Id ?? long.MaxValue)
+            .ThenBy(candidate => rows
+                .Where(row => row.Event == CandidateFamily.Registered && row.Candidate == candidate)
+                .Select(row => row.Id)
+                .DefaultIfEmpty(long.MaxValue)
+                .Min()),
+    ];
+
+    // The retirement that promoted a candidate, the first written where there is one: a retirement the
+    // operator wrote after a promotion says so in its evidence.
+    static RegisterRow? PromotionOf(IReadOnlyList<RegisterRow> rows, string candidate) =>
+        rows.Where(row => row.Event == CandidateFamily.Retired
+                && row.Retires == candidate
+                && row.Evidence is { } evidence
+                && evidence.StartsWith(CandidateFamily.PromotedBy, StringComparison.Ordinal))
+            .OrderBy(row => row.RegisteredAt)
+            .ThenBy(row => row.Id)
+            .FirstOrDefault();
 
     // The trend rule's open versions, what each labelled the night, and the flip-backs the stored
     // labels show.
