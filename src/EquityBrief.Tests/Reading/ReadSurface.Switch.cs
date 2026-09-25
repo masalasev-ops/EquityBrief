@@ -3,6 +3,8 @@ using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Shortlist;
+using EquityBrief.Tests.Checks;
+using EquityBrief.Tests.Harness;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -164,7 +166,7 @@ public partial class ReadSurface
         Assert.Contains($"6 of 45 name(s) fired on {TheSwitch}, as context", page, StringComparison.Ordinal);
 
         // The rule, and the line counting the rows against the count listed.
-        Assert.Contains("data-rule=\"filter\">This evening was " + ListRules.ByFilter + ".</p>", list, StringComparison.Ordinal);
+        Assert.Contains("data-rule=\"filter\">This evening was " + ListRules.EveningByFilter + ".</p>", list, StringComparison.Ordinal);
         Assert.StartsWith("Showing 20 of the 40 names the swing filter listed.", WordsOf(Regex.Match(list, "<p class=\"list-count\"[^>]*>.*?</p>", RegexOptions.Singleline).Value), StringComparison.Ordinal);
 
         // The card names the swing filter's list and the order it is drawn in.
@@ -183,8 +185,12 @@ public partial class ReadSurface
         Assert.Equal(40, passed.Count);
 
         // Each row's gates, with the rank it holds, the family, the session its trigger arrived on and the
-        // trade the gate read, and the reward to risk drawn being the trade's.
+        // trade the gate read, and the reward to risk drawn being the trade's, its figures to the hundredth
+        // as the reward to risk column draws them: the first row's 3.25 and 1.2 worked by hand, and never the
+        // figure as the gate stored it.
         Assert.Contains("<th>Gates</th>", list, StringComparison.Ordinal);
+        Assert.Contains("pullback, arrived tonight; the swing trade's reward to risk 3.25, its stop 1.20 typical moves below the entry", WordsOf(RowOf(list, drawn[0])), StringComparison.Ordinal);
+        Assert.DoesNotContain("trade at ", list, StringComparison.Ordinal);
 
         foreach (var (ticker, place) in drawn.Select((ticker, at) => (ticker, at + 1)))
         {
@@ -193,7 +199,7 @@ public partial class ReadSurface
 
             Assert.Contains($"data-rank=\"{place}\" data-family=\"pullback\" data-arrived=\"tonight\" data-input=\"swing\"", row, StringComparison.Ordinal);
             Assert.Contains($"data-reward-to-risk=\"{((decimal)member.RewardToRisk).ToString(CultureInfo.InvariantCulture)}\"", row, StringComparison.Ordinal);
-            Assert.Contains($"pullback, arrived tonight; swing trade at {member.RewardToRisk.ToString("R", CultureInfo.InvariantCulture)}, stop 1.2 typical moves below", WordsOf(row), StringComparison.Ordinal);
+            Assert.Contains($"pullback, arrived tonight; the swing trade's reward to risk {member.RewardToRisk.ToString("0.00", CultureInfo.InvariantCulture)}, its stop 1.20 typical moves below the entry", WordsOf(row), StringComparison.Ordinal);
         }
     }
 
@@ -246,7 +252,76 @@ public partial class ReadSurface
             Assert.Contains(says, list, StringComparison.Ordinal);
             Assert.Empty(DrawnTickers(list));
             Assert.Contains("data-listed=\"0\"", page, StringComparison.Ordinal);
+
+            // The evening's rule says what puts a name on the list, and on a night that listed none it
+            // does not say a gate passed.
+            Assert.Contains("data-rule=\"filter\">This evening was " + ListRules.EveningByFilter + ".</p>", list, StringComparison.Ordinal);
+            Assert.DoesNotContain(ListRules.ByFilter, list, StringComparison.Ordinal);
         }
+    }
+
+    // Every sentence the switch night's pages draw read for the old selection, as the architecture's are:
+    // tonight's page with a name selected, that name's own page, its exported report and the universe, each split at its
+    // sentences and cells, with the term of each word the name page defines read with its meaning. The
+    // evening before the switch, whose reasons did choose its list, is read the same way and its reason
+    // totals are found, which shows the reader finds what it looks for on a page.
+    [Fact]
+    public async Task NoSentenceTheSwitchNightDrawsDescribesTheReasonsChoosingTheList()
+    {
+        using var store = SwitchStore();
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var tonight = await client.GetStringAsync($"/screens/tonight/{TheSwitch}?name=Z00");
+        var name = await client.GetStringAsync($"/screens/name/Z00/{TheSwitch}");
+        var universe = await client.GetStringAsync("/screens/universe");
+        var export = await client.GetStringAsync("/exports/name/Z00");
+
+        foreach (var page in new[] { tonight, name, export, universe })
+        {
+            var sentences = SentencesOf(page);
+
+            Assert.True(sentences.Count > 20, $"Read {sentences.Count} sentences, expected more than 20.");
+            Assert.DoesNotContain(sentences, ArchitectureConformance.DescribesTheReasonsChoosing);
+        }
+
+        // The words each surface of the switch night states in their place, worked from section 15.7's rows.
+        var words = WebUtility.HtmlDecode(tonight);
+
+        Assert.Contains("These names appear whether or not they are on the list.", words, StringComparison.Ordinal);
+        Assert.Contains("Every name here passed the swing filter's five gates at a price its own chart made significant, and its gates say whether it pulled back to support or broke out; the reasons beside it are context.", words, StringComparison.Ordinal);
+        Assert.Contains("Which reasons fired tonight, as context", words, StringComparison.Ordinal);
+        Assert.Contains("Most of tonight's fired names carry the same reason, so the evening is one thing happening to many names.", words, StringComparison.Ordinal);
+        Assert.Contains("every name that fired tonight is a setup nothing has scored yet", words, StringComparison.Ordinal);
+
+        // The name page's word for a reason means what section 3's row says it means.
+        var vocabulary = Assert.Single(ArchitectureTables.In(File.ReadAllText(Repository.Architecture)), table => table.Heading == "3. Vocabulary");
+        var reason = Assert.Single(vocabulary.Body, row => row.Count > 1 && row[0] == "Reason")[1];
+
+        Assert.Contains($"<dt>Reason</dt><dd>{reason}</dd>", WebUtility.HtmlDecode(name), StringComparison.Ordinal);
+        Assert.Contains($"<dt>Reason</dt><dd>{reason}</dd>", WebUtility.HtmlDecode(export), StringComparison.Ordinal);
+
+        // Shown to find what it looks for: the evening before the switch, listed by the reasons, says so.
+        var before = await client.GetStringAsync($"/screens/tonight/{BeforeTheSwitch}");
+
+        Assert.Contains(SentencesOf(before), ArchitectureConformance.DescribesTheReasonsChoosing);
+        Assert.Contains("Which reasons put tonight's names on the list", WebUtility.HtmlDecode(before), StringComparison.Ordinal);
+    }
+
+    // A page's words as sentences, read as section 12.9's scan reads the architecture: scripts, styles and
+    // pictures taken out, each cell, paragraph and item its own boundary, and a defined word's term read
+    // with its meaning.
+    static IReadOnlyList<string> SentencesOf(string page)
+    {
+        var body = Regex.Replace(page, @"<(script|style|svg)\b.*?</\1>", " ", RegexOptions.Singleline);
+
+        body = Regex.Replace(body, "</(td|th|p|li|dd|figcaption|div|h[1-6]|summary|caption|button|a)>", " |. ");
+
+        var text = WebUtility.HtmlDecode(Regex.Replace(body, "<[^>]+>", " "));
+
+        text = Regex.Replace(text, @"\s+", " ");
+
+        return [.. Regex.Split(text, @"(?<=[.;])\s+").Where(sentence => sentence.Trim().Length > 2)];
     }
 
     [Fact]

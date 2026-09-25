@@ -25610,3 +25610,57 @@ Carried:    the merges of 12.6 to 12.9, in order, each on its own CI green and n
             live store, which at 07:03Z stood at schema 37 with no filter version and phase 10's three
             standing. Then the sign-off, owed on the phase as a whole by a session that committed none of
             its code: this session committed phase 12's code and signs nothing.
+
+### 12.6 - correction: an evening the swing filter listed says its reasons are context in every sentence the pages draw, where tonight's page, the name page's glossary and the exported report described the reasons choosing the list, and the gates cell draws the trade's figures to the hundredth   2026-09-25
+Corrects:   12.6, whose switch left six sentences on the pages describing the list the reasons chose
+            as the live one: the watch list's lede, its names shown whether or not a reason fired;
+            the list's key, the reason saying what kind of arrival a name was; the reason totals'
+            title, which reasons put tonight's names on the list, and its key, reading the fired
+            names' bars as the list's stories; the totals' note, every name listed tonight; and the
+            glossary of the name page and the exported report, a reason being the thing that put a
+            name on the list. The evening's rule line said every gate passed on a night the market
+            gate closed and listed no name, and each row's gates cell drew the trade's reward to
+            risk and stop as the gate stored them, 4.1698 and 0.5688612110382504 on CPAY, beside a
+            reward to risk column drawing 4.17.
+Found:      by the rehearsal before the phase 12 sign-off handoff on 2026-09-25, over copies of the
+            operator's store taken from 10:47Z through SQLite's backup opened immutable: the night
+            of 2026-09-24 run again on each, on one of them with the breadth floor at 45% and a
+            stored result for 2026-09-23 so that two names passed, and every screen fetched and
+            captured. 12.9's scan read the architecture's sentences and no page's.
+Repaired:   the watch list's names appear whether or not they are on the list. On an evening the
+            swing filter listed, the list's key says each name passed the five gates and its gates
+            say whether it pulled back or broke out, the reasons beside it context, and the totals
+            are titled which reasons fired tonight, as context. The totals' key reads the bars as
+            the evening's fired names and its note every name that fired. The glossary's reason is
+            section 3's row, word for word. The evening's rule line says the swing filter puts a
+            name on the list where every gate passed, and a name's own line keeps saying every gate
+            passed. The gates cell draws the reward to risk and the stop to the hundredth. An
+            evening the reasons listed reads as it did.
+Guarded:    `read-surface`, one test added,
+            `NoSentenceTheSwitchNightDrawsDescribesTheReasonsChoosingTheList`: every sentence of the
+            switch night's tonight page with a name selected, that name's page, its exported report
+            and the universe read by 12.9's predicate and none found, the evening before the switch
+            read the same way and its totals' title found, each repaired sentence read in its place
+            and the glossary's reason held to section 3's row. The forty-passing test reads the
+            gates cell's figures, the first row's worked by hand, and the evening's rule line, and
+            the closed-market test reads the rule line on a night that listed no name.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Pins:       the branch against `main` at 34f5ccd; this correction edits `ListRules.cs`,
+            `MarkRenderer.cs`, `SinglePageApp.cs` and a test, in none of the twelve, twenty-one or
+            sixteen pinned sources.
+Mutated:    the rule, stated before the run: each repair put back to what it replaced, one at a
+            time.
+            Predicted:
+            M1 the gates cell's figures as the gate stored them: red in the forty-passing test
+            alone.
+            M2 the evening's rule line in a name's words: red in the forty-passing and the
+            closed-market tests.
+            M3 the glossary's reason put back: red in the test this correction adds alone.
+            M4 the totals' title put back on every evening: red in the test this correction adds
+            alone.
+            M5 the watch list's lede put back: red in the test this correction adds alone.
+            Results: M1 to M5 in the 12.5 correction closing this batch.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the 12.5 correction closing this batch records.
+Carried:    nothing.

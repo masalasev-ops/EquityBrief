@@ -2211,7 +2211,7 @@ public sealed class MarkRenderer : IComponent
         // The rule the evening was listed by, so a row read from an evening before the switch is not
         // taken for one the swing filter drew.
         // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
-        list.Append(Invariant, $"<p class=\"list-rule\" data-rule=\"{Escaped(rule?.Rule ?? ListRules.Reasons)}\">This evening was {Escaped(ListRules.Said(rule?.Rule ?? ListRules.Reasons))}.</p>");
+        list.Append(Invariant, $"<p class=\"list-rule\" data-rule=\"{Escaped(rule?.Rule ?? ListRules.Reasons)}\">This evening was {Escaped(ListRules.EveningSaid(rule?.Rule ?? ListRules.Reasons))}.</p>");
 
         if (byFilter && rule is { MarketOpen: false } closed)
         {
@@ -2359,11 +2359,12 @@ public sealed class MarkRenderer : IComponent
                 : $"<td class=\"reward-to-risk\"><span class=\"degraded\" data-reward-to-risk=\"none\">{Escaped(row.NoRewardToRisk ?? NoRewardToRiskStated)}</span></td>");
 
             // The gates that put the row on the list, each with why, the setup's family, the session its
-            // trigger arrived on and the trade the gate read.
+            // trigger arrived on and the trade the gate read, its figures to the hundredth as the reward to
+            // risk column and the name page draw them rather than as the gate stored them.
             if (byFilter)
             {
                 list.Append(row.Filter is { } gates
-                    ? Formatted($"<td class=\"gates\" data-rank=\"{gates.Rank}\" data-family=\"{Escaped(gates.Family ?? "none")}\" data-arrived=\"{Escaped(gates.Arrived)}\" data-input=\"{Escaped(gates.Input)}\" title=\"{Escaped(string.Join("; ", gates.Gates.Select(gate => gate.Name + ": " + gate.Reason)))}\">{Escaped(gates.Family ?? "no family")}, arrived {Escaped(gates.Arrived)}; {Escaped(gates.Input)} trade at {Escaped(gates.RewardToRisk)}, stop {Escaped(gates.StopMoves)} typical moves below</td>")
+                    ? Formatted($"<td class=\"gates\" data-rank=\"{gates.Rank}\" data-family=\"{Escaped(gates.Family ?? "none")}\" data-arrived=\"{Escaped(gates.Arrived)}\" data-input=\"{Escaped(gates.Input)}\" title=\"{Escaped(string.Join("; ", gates.Gates.Select(gate => gate.Name + ": " + gate.Reason)))}\">{Escaped(gates.Family ?? "no family")}, arrived {Escaped(gates.Arrived)}; the {Escaped(gates.Input)} trade's reward to risk {Hundredths(gates.RewardToRisk)}, its stop {Hundredths(gates.StopMoves)} typical moves below the entry</td>")
                     : "<td class=\"gates\"><span class=\"degraded\">no gate result stored</span></td>");
             }
 
@@ -4046,7 +4047,7 @@ public sealed class MarkRenderer : IComponent
         }
 
         region.Append("</table></div>");
-        region.Append("<p class=\"degraded\" data-unresolved=\"all\">every name listed tonight is a setup nothing has scored yet, so these are counts and not outcomes; each reason's record over time is on the run page</p>");
+        region.Append("<p class=\"degraded\" data-unresolved=\"all\">every name that fired tonight is a setup nothing has scored yet, so these are counts and not outcomes; each reason's record over time is on the run page</p>");
         region.Append("</section>");
 
         return region.ToString();
@@ -4145,8 +4146,8 @@ public sealed class MarkRenderer : IComponent
     }
 
     // The watch list, section 15.7's second region: the two or three names shown
-    // every evening whether or not a reason fired, above the list rather than
-    // inside it.
+    // every evening whether or not they are on the list, above the list rather
+    // than inside it.
     //
     // No store holds a watch list, and none is invented here. The region states
     // that rather than being absent, because a region a reader cannot find is
@@ -4695,6 +4696,10 @@ public sealed class MarkRenderer : IComponent
 
     // A stored statistic whole, for the element a test reads it back off, and a word where none was stored.
     static string Whole(double? value) => value is { } held ? held.ToString("R", Invariant) : "none";
+
+    // A gate's stored figure to the hundredth, and the gate's own word where it stored none.
+    static string Hundredths(string stored) =>
+        double.TryParse(stored, NumberStyles.Float, Invariant, out var value) ? value.ToString("0.00", Invariant) : Escaped(stored);
 
     // The night's breadth line for tonight's header: the share of the members read closing above
     // their own long average, with how many it was counted over and the shorter average beside it
