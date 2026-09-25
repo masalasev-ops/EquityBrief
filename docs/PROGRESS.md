@@ -24263,14 +24263,16 @@ Mutated:    the rule, stated before the run: break the one property this pass ad
             20 carries a row for every phase the plan holds. Predicted: phase 11's row taken out of
             section 20 turns `NoDoneConditionWaitsOnTheCalendar` red and nothing else in the
             filter, being `DoneConditionProducible`, run in a detached worktree and reverted.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one filtered run in a detached worktree at e6518ed, phase 11's row taken out of
+            section 20, reverted by removing the worktree: `NoDoneConditionWaitsOnTheCalendar` red and
+            the filter's other 3 tests green. As predicted.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1316 of 1316
             tests ran with none failed, migrations 0 to 37 with none added and none pending,
             schema version 37, exit 0, against `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
             scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
             fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1316 of 1316 tests.
-            Both gates ran over the tree carrying this entry, in the worktree beside the
+            Both gates ran over the tree carrying this entry, e6518ed, in the worktree beside the
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    the operator's ruling on the starting settings after 12.4, and the operator's two
             commands against the live store, the filter's first version and the family's
