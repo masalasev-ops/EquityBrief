@@ -15,6 +15,7 @@ using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Swings;
 using EquityBrief.Worker.Volume;
 using EquityBrief.Worker.Bars;
+using EquityBrief.Worker.Filter;
 using EquityBrief.Worker.Membership;
 using Microsoft.Data.Sqlite;
 
@@ -658,6 +659,30 @@ public class GapRefusal
     }
 
     [Fact]
+    public async Task TheSwingReadingsRowIsStillWrittenAndItsNoteNamesTheGap()
+    {
+        // Every member keeps a readings row every night, for the reason the listings row is written
+        // for every member: a gate reading nothing for a name has to say why rather than find no row.
+        // A gapped name's row holds no reading, and its note names the gap rather than the absence.
+        using var store = await WithAHoleAsync();
+        var cut = CutSession(store);
+
+        await new IndicatorEngine(GapClock(), store.DatabaseFile).RunAsync("gap-indicators");
+        await new SwingReader(GapClock(), store.DatabaseFile).RunAsync(Index, "gap-swing-readings");
+
+        Assert.Equal(
+            $"|||the stored series has a gap at {cut}, so nothing is read across it",
+            Assert.Single(GapRows(
+                store,
+                $"SELECT IFNULL(return_short, '') || '|' || IFNULL(recent_high, '') || '|' || IFNULL(tightness, '') || '|' || note FROM swing_reading WHERE ticker = '{GappedName}';")));
+
+        // The name beside it is read, and the gap is reported on the stage's run log row as every
+        // other stage reports it.
+        Assert.Equal(1, GapCount(store, $"SELECT COUNT(*) FROM swing_reading WHERE ticker = '{ControlName}' AND note IS NULL AND recent_high IS NOT NULL;"));
+        Assert.Contains($"stopped at a gap ({GappedName} {cut})", GapDetail(store, SwingReader.Stage));
+    }
+
+    [Fact]
     public async Task ACleanNameKeepsEveryComputedRowWhileAnotherNameIsStopped()
     {
         // The control. A hole in one name's series stops that name and nothing
@@ -807,7 +832,7 @@ public class GapRefusal
     public void TheSplitBetweenWithholdingAndWritingIsTheThingAsserted()
     {
         // Two opposite failures, so the split is asserted rather than a loop run
-        // over all nine. A stage computing a figure across the hole and a stage
+        // over all ten. A stage computing a figure across the hole and a stage
         // leaving a member without the row every member gets are both defects,
         // and a test written as one loop catches neither: each table satisfies
         // whichever half the loop happens to assert.
@@ -816,7 +841,7 @@ public class GapRefusal
         var tables = Strings(Expected("gap-stop").GetProperty("tables"));
 
         Assert.Equal(7, withholds.Count);
-        Assert.Equal(2, writes.Count);
+        Assert.Equal(3, writes.Count);
         Assert.Equal(tables.Count, withholds.Count + writes.Count);
         Assert.Empty(withholds.Intersect(writes, StringComparer.Ordinal));
         Assert.Equal([.. tables.Order(StringComparer.Ordinal)], [.. withholds.Concat(writes).Order(StringComparer.Ordinal)]);

@@ -1122,6 +1122,37 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Event session share"),
     ];
 
+    // Phase 12's rows, each written by the checkpoint that draws or asserts it, so none reads as out
+    // of scope: 12.1's swing reader and its two stores, its night step, the readings drawn on
+    // tonight's header, the universe table, the name page and the run page, section 17's four
+    // limits and the fixture's row.
+    static readonly string[] PhaseTwelveRows =
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Swing reader"),
+        CheckReach.Key(Scope.MatrixTable, "Swing reader"),
+        CheckReach.Key(Scope.StoresTable, "Swing readings"),
+        CheckReach.Key(Scope.StoresTable, "Market readings"),
+        CheckReach.Key(NightlyRunSteps.Heading, "Compute the swing readings for every member and the night's breadth: each return over 63 and over 126 sessions with its place among the members' returns, the highest high of the last 20 sessions and the pullback from it in typical days' moves, the volume while it came down, the tightness of the range, and the share of the members closing above their own 200-day average, a member read over nothing keeping its row with the reason."),
+        CheckReach.Key("15.7 Tonight", "Night header, the night's breadth with the share above the 50-day average beside it as context"),
+        CheckReach.Key("15.8 Universe", "The table, relative strength"),
+        CheckReach.Key("15.8 Universe", "The table, the pullback from the recent high in typical days"),
+        CheckReach.Key("15.8 Universe", "The table, the volume while it came down"),
+        CheckReach.Key("15.8 Universe", "The table, the tightness of the range"),
+        CheckReach.Key("15.9 Name", "Swing readings, the return over 63 sessions and over 126 sessions with each one's place among the members' returns"),
+        CheckReach.Key("15.9 Name", "Swing readings, the highest high of the last 20 sessions and how far the close sits below it in typical days' moves"),
+        CheckReach.Key("15.9 Name", "Swing readings, the median volume of the sessions since that high against the fifty-day average"),
+        CheckReach.Key("15.9 Name", "Swing readings, the mean true range of the last ten sessions against the last fifty"),
+        CheckReach.Key("15.9 Name", "Swing readings, a key saying how to read it"),
+        CheckReach.Key("15.10 Run", "Market reading, the night's breadth with how many members it was counted over"),
+        CheckReach.Key("15.10 Run", "Market reading, the share above the 50-day average beside it as context"),
+        CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
+        CheckReach.Key(Scope.LimitsTable, "Relative strength windows"),
+        CheckReach.Key(Scope.LimitsTable, "Recent high window"),
+        CheckReach.Key(Scope.LimitsTable, "Range tightness windows"),
+        CheckReach.Key(Scope.LimitsTable, "Breadth"),
+        CheckReach.Key(Scope.FixtureTable, "swing readings"),
+    ];
+
     // Rows the document gained after the prediction, each one claim.
     static readonly string[] AddedAfterThePrediction =
     [
@@ -1151,6 +1182,7 @@ public partial class ArchitectureConformance
         .. PhaseNineRows,
         .. PhaseTenRows,
         .. PhaseElevenRows,
+        .. PhaseTwelveRows,
     ];
 
 
@@ -1209,8 +1241,13 @@ public partial class ArchitectureConformance
 
         var expected = Predicted + readAsParts.Sum(key => Scope.ElementsOf(key).Count - 1) + fixtureRows.Length + addendum.Length;
 
+        // Phase 12's rows came after the phase this pair is about, each named where it was added.
+        var now = expected + PhaseTwelveRows.Length;
+
+        Assert.All(PhaseTwelveRows, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+
         Assert.Equal(
-            (expected, 0, 0, expected),
+            (now, 0, 0, now),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.

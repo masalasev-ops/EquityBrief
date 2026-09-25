@@ -509,7 +509,16 @@ public partial class ReadSurface
         // The name page opens with what it is for, its three refusals and its ten words.
         Assert.Contains("<section class=\"intro\" aria-label=\"About this page\"><p class=\"intro-p\">This page finds the prices ", page, StringComparison.Ordinal);
         Assert.Contains("<li>It does not predict where the price will go.</li>", page, StringComparison.Ordinal);
-        Assert.Contains($"<li>It does not rank {name} against any other name.</li>", page, StringComparison.Ordinal);
+        Assert.Contains($"<li>It {SinglePageApp.RankRefusal}.</li>", page, StringComparison.Ordinal);
+
+        // The refusal to rank is one sentence held once in code, and sections 15.9 and 15.14 state it in the
+        // same words, so the page and the two sections cannot come to say different things.
+        // see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns
+        var document = WebUtility.HtmlDecode(File.ReadAllText(Repository.Architecture));
+
+        Assert.Contains("its three refusals, being that it does not predict where the price will go, that it " + SinglePageApp.RankRefusal + ", and that it does not say how much to buy", document, StringComparison.Ordinal);
+        Assert.Contains("<li>A screen " + SinglePageApp.RankRefusal + " (see:", document, StringComparison.Ordinal);
+        Assert.DoesNotContain("does not rank the name against any other", document, StringComparison.Ordinal);
         Assert.Contains("<li>It does not say how much to buy: the sizing near the end only divides the amount you choose to risk.</li>", page, StringComparison.Ordinal);
 
         var glossary = Regex.Match(page, "<details class=\"gloss\"><summary>Words used on this page</summary>(.*?)</details>", RegexOptions.Singleline);

@@ -658,6 +658,7 @@ public static class SchemaMigrations
         new Migration(35, "add move's group median", AddMoveGroupMedian),
         new Migration(36, "create peer_reading", CreatePeerReading),
         new Migration(37, "create earnings_reaction", CreateEarningsReaction),
+        new Migration(38, "create swing_reading and market_reading", CreateSwingReadings),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -896,6 +897,44 @@ public static class SchemaMigrations
 
         CREATE UNIQUE INDEX membership_span
             ON membership (index_code, ticker, IFNULL(joined, ''));
+    ";
+
+    // The readings the swing filter's gates are measured against, one row per member per night,
+    // and the night's breadth, one row per night. Every figure but the recent high is a statistic
+    // and is `REAL`; the high is a price and is `TEXT`.
+    // see: Every computed table's writer is its own deleter
+    const string CreateSwingReadings = @"
+        CREATE TABLE swing_reading (
+            ticker             TEXT    NOT NULL,
+            session_date       TEXT    NOT NULL,
+            bars               INTEGER NOT NULL,
+            return_short          REAL,
+            return_long         REAL,
+            place_short           REAL,
+            place_long          REAL,
+            strength           REAL,
+            recent_high            TEXT,
+            high_session       TEXT,
+            pullback_sessions  INTEGER,
+            depth              REAL,
+            dry_up             REAL,
+            tightness          REAL,
+            note               TEXT,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+
+        CREATE TABLE market_reading (
+            session_date         TEXT    NOT NULL PRIMARY KEY,
+            members              INTEGER NOT NULL,
+            counted              INTEGER NOT NULL,
+            above                INTEGER NOT NULL,
+            breadth              REAL,
+            counted_context           INTEGER NOT NULL,
+            above_context             INTEGER NOT NULL,
+            breadth_context           REAL,
+            volume_counted       INTEGER NOT NULL,
+            median_volume_ratio  REAL
+        ) STRICT;
     ";
 
     public static int LatestVersion => All.Max(migration => migration.Version);

@@ -26,6 +26,10 @@ public partial class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 12.1, the swing reader.
+            CheckReach.Key(Scope.CatalogueTable, "Swing reader"),
+            CheckReach.Key(Scope.MatrixTable, "Swing reader"),
+
             // 9.2, the request drain, the worker's half of the request store.
             CheckReach.Key(Scope.CatalogueTable, "Request drain"),
             CheckReach.Key(Scope.MatrixTable, "Request drain"),

@@ -10,6 +10,7 @@ using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Fundamentals;
 using EquityBrief.Worker.Facts;
+using EquityBrief.Worker.Filter;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
@@ -95,6 +96,7 @@ public class FixtureReplay
         await new LevelBuilder(night, store.DatabaseFile).RunAsync("replay-levels");
         await new LadderBuilder(night, store.DatabaseFile).RunAsync(Index, "replay-ladders");
         await new MoveAnnotator(night, store.DatabaseFile).RunAsync("replay-moves");
+        await new SwingReader(night, store.DatabaseFile).RunAsync(Index, "replay-swing-readings");
         await new FactsAssembler(night, store.DatabaseFile).RunAsync("replay-facts");
         await new ChangeDetector(night, store.DatabaseFile).RunAsync("replay-changes");
         await new ShortlistBuilder(night, store.DatabaseFile).RunAsync(Index, "replay-listings", Night);

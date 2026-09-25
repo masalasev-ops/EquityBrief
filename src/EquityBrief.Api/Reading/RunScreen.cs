@@ -18,6 +18,13 @@ namespace EquityBrief.Api.Reading;
 // see: A screen reads and renders, and computes nothing
 public static class RunScreen
 {
+    // The night's market reading as the run page and tonight's header draw it, as the swing reader stored it.
+    public static MarketView? Market(MarketReadingRow? row) =>
+        row is null
+            ? null
+            : new MarketView(row.SessionDate, row.Members, row.Counted, row.Above, row.Breadth, row.CountedContext,
+                row.AboveContext, row.BreadthContext, row.VolumeCounted, row.MedianVolumeRatio);
+
     // One row per reason, in section 11's order, whether or not it has earned a
     // number. A reason absent from the page is a reason nobody can ask about.
     //

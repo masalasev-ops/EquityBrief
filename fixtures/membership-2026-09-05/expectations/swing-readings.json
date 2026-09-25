@@ -1,0 +1,98 @@
+{
+ "stage": "swing-readings",
+ "derivation": "derived",
+ "derivedFrom": "the captured bars read through the rules the replay applies, not from a run. The backfill stores each current member's year ending on 2026-09-04, the fetch stores the 2026-09-08 bulk row and drops every session more than a year before the newest, and the corporate action check, run as of 2026-08-10, leaves AAPL holding the year ending on that session, so on the night of 2026-09-08 AAPL holds no bar and is read over nothing while KEYS, MSFT and NFLX are read over 252 bars each, every price scaled by the adjusted close over the close and rounded to four places, half to even. Each return is the night's close against the close the span before it; each place the share of the other names read whose return is strictly lower, a tie counting half; the high the highest of the last 20 sessions' highs with the newest session making it; the pullback that high less the close over the typical move, which is Wilder's fourteen-session average true range seeded on the mean of the first fourteen ranges; the dry-up the median volume of the sessions since the high against the mean of the last fifty sessions' volume; the tightness the mean true range of the last ten sessions against the last fifty; and breadth over the names read holding both a close and the average. Computed outside this repository from the captured payloads, so a component that read the wrong bars or the wrong window would not agree with it.",
+ "tables": [
+  "swing_reading",
+  "market_reading"
+ ],
+ "night": "2026-09-08",
+ "windows": {
+  "returnShort": 63,
+  "returnLong": 126,
+  "high": 20,
+  "tightShort": 10,
+  "tightLong": 50,
+  "breadthAverage": 200,
+  "contextAverage": 50
+ },
+ "readings": {
+  "KEYS": {
+   "bars": 252,
+   "returnShort": 0.548854041013269,
+   "returnShortFrom": "2026-06-08",
+   "returnLong": 18.225657754769166,
+   "returnLongFrom": "2026-03-09",
+   "recentHigh": "366.41",
+   "highSession": "2026-08-17",
+   "pullbackSessions": 15,
+   "typicalMove": 11.047475958448592,
+   "depth": 2.986202470508279,
+   "dryUp": 0.8981864114389096,
+   "volumeAverage50": 1336916.24,
+   "tightness": 0.6329678554160336,
+   "sma200": 289.30685,
+   "sma50": 326.21299999999997,
+   "close": "333.42",
+   "placeShort": 0.5,
+   "placeLong": 0.5,
+   "strength": 0.5
+  },
+  "MSFT": {
+   "bars": 252,
+   "returnShort": 20.192307692307693,
+   "returnShortFrom": "2026-06-08",
+   "returnLong": 21.138146781323023,
+   "returnLongFrom": "2026-03-09",
+   "recentHigh": "517.78",
+   "highSession": "2026-08-28",
+   "pullbackSessions": 6,
+   "typicalMove": 11.661830364005201,
+   "depth": 2.0434185077457854,
+   "dryUp": 0.6215642400429882,
+   "volumeAverage50": 32119960.76,
+   "tightness": 0.8876160584446459,
+   "sma200": 429.393863,
+   "sma50": 445.9957,
+   "close": "493.95",
+   "placeShort": 1.0,
+   "placeLong": 1.0,
+   "strength": 1.0
+  },
+  "NFLX": {
+   "bars": 252,
+   "returnShort": -7.103097773475314,
+   "returnShortFrom": "2026-06-08",
+   "returnLong": -21.91822620016273,
+   "returnLongFrom": "2026-03-09",
+   "recentHigh": "83.6",
+   "highSession": "2026-09-03",
+   "pullbackSessions": 2,
+   "typicalMove": 2.391062341389383,
+   "depth": 2.8564709007257707,
+   "dryUp": 0.9593999211834108,
+   "volumeAverage50": 38530162.64,
+   "tightness": 0.9860635261844856,
+   "sma200": 86.6969,
+   "sma50": 75.4994,
+   "close": "76.77",
+   "placeShort": 0.0,
+   "placeLong": 0.0,
+   "strength": 0.0
+  }
+ },
+ "notes": {
+  "AAPL": "no bar for this session; the last session stored for the name is 2026-08-10"
+ },
+ "market": {
+  "members": 4,
+  "counted": 3,
+  "above": 2,
+  "breadth": 0.6666666666666666,
+  "countedContext": 3,
+  "aboveContext": 3,
+  "breadthContext": 1.0,
+  "volumeCounted": 3,
+  "medianVolumeRatio": 0.7628839933906405
+ }
+}

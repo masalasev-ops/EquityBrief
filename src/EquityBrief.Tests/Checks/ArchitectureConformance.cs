@@ -1369,7 +1369,8 @@ public partial class ArchitectureConformance
         // 63 at 11.2, the queue page's row stating when each request will be written.
         // 64 at 11.3, tonight's row stating the report's state.
         // 65 at 11.9, the run page's region stating each reason's share of the index against its target.
-        Assert.Equal(65, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 67 at 12.1, the name page's swing readings and the run page's market row.
+        Assert.Equal(67, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1422,7 +1423,9 @@ public partial class ArchitectureConformance
         // columns and its key. 183 at 11.7, the earnings reactions row read as its eleven parts,
         // and 189 at 11.8, the dividend row read as its seven. 195 at 11.9, the run page's region
         // stating each reason's share of the index against its target, read as its six parts.
-        Assert.Equal(195, inDocument.Length);
+        // 208 at 12.1: the night header's breadth, the universe table's four new columns, the name
+        // page's readings as their five parts and the run page's market row as its three.
+        Assert.Equal(208, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1471,7 +1474,9 @@ public partial class ArchitectureConformance
         // the name screen's peers row read as its ten parts, and 175 at 11.7, its earnings
         // reactions row read as its eleven, and 182 at 11.8, its dividend row read as its seven.
         // 188 at 11.9, the run page's region stating each reason's share against its target read as its six.
-        Assert.Equal(188, checkedElements);
+        // 201 at 12.1: the night header's breadth, the universe table's four new columns, the name
+        // page's readings as their five parts and the run page's market row as its three.
+        Assert.Equal(201, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

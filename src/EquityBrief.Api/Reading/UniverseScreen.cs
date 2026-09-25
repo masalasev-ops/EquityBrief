@@ -49,10 +49,11 @@ public static class UniverseScreen
         IReadOnlyList<UniverseRow> rows,
         IReadOnlyDictionary<string, IReadOnlyList<ListingRow>>? history = null,
         IReadOnlyDictionary<string, DateOnly>? nextEventByTicker = null,
-        DateOnly? night = null) =>
+        DateOnly? night = null,
+        IReadOnlyDictionary<string, SwingReadingRow>? readings = null) =>
     [
         .. rows
-            .Select(row => Cell(row, history, nextEventByTicker, night))
+            .Select(row => WithReadings(Cell(row, history, nextEventByTicker, night), readings))
             .OrderBy(cell => cell.Nearest is null)
             .ThenBy(cell => cell.Nearest ?? double.MaxValue)
             .ThenBy(cell => cell.Ticker, StringComparer.Ordinal),
@@ -114,6 +115,13 @@ public static class UniverseScreen
     // The page of rows a request draws, with the page it is and the number of
     // rows the filters left, which is what the nav states.
     public sealed record Shown(IReadOnlyList<UniverseCell> Page, int At, int Rows);
+
+    // A cell with the name's swing readings as the swing reader stored them for the night, and
+    // without them where it stored none.
+    static UniverseCell WithReadings(UniverseCell cell, IReadOnlyDictionary<string, SwingReadingRow>? readings) =>
+        readings is not null && readings.TryGetValue(cell.Ticker, out var read)
+            ? cell with { Strength = read.Strength, Depth = read.Depth, DryUp = read.DryUp, Tightness = read.Tightness }
+            : cell;
 
     static UniverseCell Cell(
         UniverseRow row,

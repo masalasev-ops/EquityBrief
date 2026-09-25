@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Shortlist;
@@ -142,7 +143,46 @@ public sealed record UniverseCell(
     string? Name = null,
     // The day the name's newest researched section was written, drawn under its name, and
     // null for a name holding none.
-    DateOnly? Researched = null);
+    DateOnly? Researched = null,
+    // The swing readings the universe table draws: the mean of the two places among the members'
+    // returns, the pullback in typical days, the volume while it came down and the range's
+    // tightness, each as the swing reader stored it and null where it stored none.
+    double? Strength = null,
+    double? Depth = null,
+    double? DryUp = null,
+    double? Tightness = null);
+
+// One name's swing readings on a night as the swing reader stored them, and the reason it read
+// nothing where it did.
+public sealed record SwingReadingsView(
+    DateOnly Session,
+    int Bars,
+    double? ReturnShort,
+    double? ReturnLong,
+    double? PlaceShort,
+    double? PlaceLong,
+    decimal? RecentHigh,
+    DateOnly? HighSession,
+    int? PullbackSessions,
+    double? Depth,
+    double? DryUp,
+    double? Tightness,
+    string? Note);
+
+// The night's market reading as the swing reader stored it: the members, the breadth over the ones
+// read with how many it was counted over, the same over the shorter average as context, and the
+// median of the members' volume against their fifty-day average.
+public sealed record MarketView(
+    DateOnly Session,
+    int Members,
+    int Counted,
+    int Above,
+    double? Breadth,
+    int CountedContext,
+    int AboveContext,
+    double? BreadthContext,
+    int VolumeCounted,
+    double? MedianVolumeRatio);
 
 // One of a name's biggest moves, as the table is given it. `Cause` is the text of
 // the accepted cause section that names this move, and null where no sentence of
@@ -3625,7 +3665,7 @@ public sealed class MarkRenderer : IComponent
     // the one number the twenty drawn rows cannot tell you. The quantities phase
     // 6 supplies are absent and say so rather than being drawn as zero, which
     // would read as a night that spent nothing because it did nothing.
-    public string NightHeader(DateOnly night, int index, int fired, string? duration, HarnessCounts? harness, NightSpend? spend = null, NightProse? prose = null)
+    public string NightHeader(DateOnly night, int index, int fired, string? duration, HarnessCounts? harness, NightSpend? spend = null, NightProse? prose = null, MarketView? market = null)
     {
         var header = new StringBuilder();
 
@@ -3636,6 +3676,7 @@ public sealed class MarkRenderer : IComponent
         header.Append(Invariant, $"<div class=\"headline\" aria-hidden=\"true\"><div class=\"big\">{fired}</div><div class=\"cap\">names fired<span>out of {index} in the index</span></div></div>");
         header.Append("<div class=\"ops\">");
         header.Append(Invariant, $"<p class=\"fired\">{fired} of {index} name(s) fired on {night:yyyy-MM-dd}</p>");
+        header.Append(BreadthLine(market));
         header.Append(Invariant, $"<p class=\"duration\" data-duration=\"{Escaped(duration ?? "not recorded")}\">the night took {Escaped(duration ?? "a time the run log does not record")}</p>");
 
         // The harness verdict, which section 15.7 states in this header and
@@ -4178,7 +4219,7 @@ public sealed class MarkRenderer : IComponent
         table.Append("<div class=\"tbl-wrap\">");
         table.Append(Formatted($"<table class=\"universe-table\" data-rows=\"{rows.Count}\">"));
         table.Append("<tr><th>Name</th><th>Sector</th><th>Close</th><th>Trend</th><th>Distance</th>");
-        table.Append("<th>Sessions to earnings</th><th>Last on the list</th><th>Sixty evenings</th></tr>");
+        table.Append("<th>Sessions to earnings</th><th>Strength</th><th>Pullback</th><th>Dry-up</th><th>Tightness</th><th>Last on the list</th><th>Sixty evenings</th></tr>");
 
         foreach (var row in rows)
         {
@@ -4217,6 +4258,14 @@ public sealed class MarkRenderer : IComponent
                     : "<span class=\"degraded\">no dated event</span>");
             table.Append("</td>");
 
+            // The swing readings, each as the swing reader stored it and drawn whole on its
+            // cell: the mean of the two places among the members' returns, the pullback in
+            // typical days, the volume while it came down and the range's tightness.
+            table.Append(SwingCell("strength", row.Strength, held => Formatted($"{held * 100:0}%")));
+            table.Append(SwingCell("depth", row.Depth, held => Formatted($"{held:0.00}")));
+            table.Append(SwingCell("dry-up", row.DryUp, held => Formatted($"{held:0.00}")));
+            table.Append(SwingCell("tightness", row.Tightness, held => Formatted($"{held:0.00}")));
+
             // The two right-hand columns count evenings a name appeared on the
             // list. They say nothing about index membership, which every name in
             // this table has by definition.
@@ -4234,6 +4283,127 @@ public sealed class MarkRenderer : IComponent
     // What a name with no ladder row is shown as. Its own value rather than an
     // empty cell, so it can be filtered for and counted.
     const string NotClassified = "not classified";
+
+    // One swing reading in a universe cell, the stored value whole on the element and a word where none was stored.
+    static string SwingCell(string attribute, double? value, Func<double, string> shown) =>
+        Formatted($"<td class=\"num swing\" data-{attribute}=\"{Whole(value)}\">") +
+        (value is { } held ? shown(held) : "<span class=\"degraded\">not read</span>") + "</td>";
+
+    // A stored statistic whole, for the element a test reads it back off, and a word where none was stored.
+    static string Whole(double? value) => value is { } held ? held.ToString("R", Invariant) : "none";
+
+    // The night's breadth line for tonight's header: the share of the members read closing above
+    // their own long average, with how many it was counted over and the shorter average beside it
+    // as context, and a line saying so where the night stored none or too few members to read.
+    static string BreadthLine(MarketView? market)
+    {
+        if (market is null)
+        {
+            return "<p class=\"breadth degraded\" data-breadth=\"none\">breadth: no market reading is stored for this night</p>";
+        }
+
+        var head = Formatted($"<p class=\"breadth\" data-breadth=\"{Whole(market.Breadth)}\" data-counted=\"{market.Counted}\" data-members=\"{market.Members}\" data-breadth-context=\"{Whole(market.BreadthContext)}\">");
+
+        return market.Breadth is { } share
+            ? head + Formatted($"breadth: {share * 100:0.0}% of the {market.Counted} members read close above their own {SwingReadings.BreadthAverageSessions}-day average") +
+                (market.BreadthContext is { } context ? Formatted($", and {context * 100:0.0}% above their {SwingReadings.ContextAverageSessions}-day average, as context") : string.Empty) + "</p>"
+            : head + Formatted($"breadth: not available, {market.Counted} of the {market.Members} members hold a close and a {SwingReadings.BreadthAverageSessions}-day average, fewer than half</p>");
+    }
+
+    // The run page's market reading, section 15.10's row: the breadth with how many members it was
+    // counted over, the share above the shorter average as context, and the index's median volume
+    // against its fifty-day average, each drawn whole as the store holds it.
+    public string MarketReading(MarketView? market)
+    {
+        if (market is null)
+        {
+            return "<p class=\"degraded\" data-market=\"none\">no market reading is stored for this night</p>";
+        }
+
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"market-table\" data-session=\"{market.Session:yyyy-MM-dd}\" data-members=\"{market.Members}\">");
+        region.Append("<tr><th>Reading</th><th>On the night</th></tr>");
+        region.Append(Invariant, $"<tr data-part=\"breadth\" data-breadth=\"{Whole(market.Breadth)}\" data-counted=\"{market.Counted}\" data-above=\"{market.Above}\"><td>Breadth</td><td>");
+        region.Append(market.Breadth is { } share
+            ? Formatted($"{share * 100:0.0}% of the {market.Counted} members read close above their own {SwingReadings.BreadthAverageSessions}-day average, of {market.Members} in the index")
+            : Formatted($"not available: {market.Counted} of the {market.Members} members hold a close and a {SwingReadings.BreadthAverageSessions}-day average, fewer than half"));
+        region.Append("</td></tr>");
+        region.Append(Invariant, $"<tr data-part=\"context\" data-breadth-context=\"{Whole(market.BreadthContext)}\" data-counted-context=\"{market.CountedContext}\"><td>Above the {SwingReadings.ContextAverageSessions}-day average, as context</td><td>");
+        region.Append(market.BreadthContext is { } context
+            ? Formatted($"{context * 100:0.0}% of the {market.CountedContext} members read")
+            : "<span class=\"degraded\">not available</span>");
+        region.Append("</td></tr>");
+        region.Append(Invariant, $"<tr data-part=\"volume\" data-median-volume-ratio=\"{Whole(market.MedianVolumeRatio)}\" data-volume-counted=\"{market.VolumeCounted}\"><td>The index's median volume against its fifty-day average</td><td>");
+        region.Append(market.MedianVolumeRatio is { } ratio
+            ? Formatted($"{ratio:0.00} over the {market.VolumeCounted} members trading")
+            : "<span class=\"degraded\">not available</span>");
+        region.Append("</td></tr></table></div>");
+
+        return region.ToString();
+    }
+
+    // A name's swing readings, section 15.9's row: each return with its place among the members'
+    // returns, the recent high and the pullback from it, the volume while it came down and the
+    // range's tightness, each drawn whole on its element as the store holds it, and a line naming
+    // why where the night read nothing for the name.
+    public string SwingTable(string ticker, SwingReadingsView view)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"swing-readings\" data-ticker=\"{Escaped(ticker)}\" data-session=\"{view.Session:yyyy-MM-dd}\" data-bars=\"{view.Bars}\">");
+
+        if (view.Note is { } why)
+        {
+            region.Append(Invariant, $"<p class=\"degraded\" data-reading=\"none\">no swing readings for this night: {Escaped(why)}</p></div>");
+
+            return region.ToString();
+        }
+
+        region.Append("<div class=\"tbl-wrap\"><table class=\"swing-table\"><tr><th>Reading</th><th>On the night</th></tr>");
+
+        string ReturnCell(double? value, double? place, int sessions) =>
+            value is { } made
+                ? Formatted($"{made:+0.00;-0.00;0.00}% over {sessions} sessions") +
+                    (place is { } share ? Formatted($", above {share * 100:0.0}% of the other members' returns") : ", with no other member's return to place it among")
+                : Formatted($"<span class=\"degraded\">not available, {view.Bars} bars</span>");
+
+        region.Append(Invariant, $"<tr data-reading=\"return-short\"><td>Return over {SwingReadings.ReturnShortSessions} sessions</td><td data-value=\"{Whole(view.ReturnShort)}\" data-place=\"{Whole(view.PlaceShort)}\">");
+        region.Append(ReturnCell(view.ReturnShort, view.PlaceShort, SwingReadings.ReturnShortSessions)).Append("</td></tr>");
+        region.Append(Invariant, $"<tr data-reading=\"return-long\"><td>Return over {SwingReadings.ReturnLongSessions} sessions</td><td data-value=\"{Whole(view.ReturnLong)}\" data-place=\"{Whole(view.PlaceLong)}\">");
+        region.Append(ReturnCell(view.ReturnLong, view.PlaceLong, SwingReadings.ReturnLongSessions)).Append("</td></tr>");
+
+        region.Append(Invariant, $"<tr data-reading=\"recent-high\"><td>Highest high of the last {SwingReadings.HighWindow} sessions</td>");
+        region.Append(Invariant, $"<td data-value=\"{(view.RecentHigh is { } high ? high.ToString(Invariant) : "none")}\" data-session=\"{(view.HighSession is { } made ? made.ToString("yyyy-MM-dd", Invariant) : "none")}\" data-since=\"{(view.PullbackSessions is { } since ? since.ToString(Invariant) : "none")}\">");
+        if (view.RecentHigh is { } top && view.HighSession is { } on && view.PullbackSessions is { } after)
+        {
+            region.Append(Invariant, $"{Price(top)} on {on:yyyy-MM-dd}, {after} session(s) ago");
+        }
+        else
+        {
+            region.Append(Formatted($"<span class=\"degraded\">not available, {view.Bars} bars</span>"));
+        }
+
+        region.Append("</td></tr>");
+
+        region.Append(Invariant, $"<tr data-reading=\"depth\"><td>How far the close sits below it</td><td data-value=\"{Whole(view.Depth)}\">");
+        region.Append(view.Depth is { } depth ? Formatted($"{depth:0.00} typical days' moves") : "<span class=\"degraded\">not available</span>");
+        region.Append("</td></tr>");
+
+        region.Append(Invariant, $"<tr data-reading=\"dry-up\"><td>Volume since the high against its fifty-day average</td><td data-value=\"{Whole(view.DryUp)}\">");
+        region.Append(view.DryUp is { } dry
+            ? Formatted($"{dry:0.00}")
+            : view.PullbackSessions == 0
+                ? "<span class=\"degraded\">the high was made on the night, so no session has come down from it</span>"
+                : "<span class=\"degraded\">not available</span>");
+        region.Append("</td></tr>");
+
+        region.Append(Invariant, $"<tr data-reading=\"tightness\"><td>True range of the last {SwingReadings.TightShortSessions} sessions against the last {SwingReadings.TightLongSessions}</td><td data-value=\"{Whole(view.Tightness)}\">");
+        region.Append(view.Tightness is { } tight ? Formatted($"{tight:0.00}") : Formatted($"<span class=\"degraded\">not available, {view.Bars} bars</span>"));
+        region.Append("</td></tr></table></div></div>");
+
+        return region.ToString();
+    }
 
     // The filters, section 15.8's third region: trend state and sector as chips,
     // in the hash so a filtered view is a link.
