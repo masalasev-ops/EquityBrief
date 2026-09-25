@@ -24905,7 +24905,20 @@ Mutated:    the rule, stated before the run: one mutation for each property the 
             M10 the night with no band answers recounted: red in the band answers test alone.
             M11 a rejected version proposed again at once: red in the trigger test alone.
             And the 12.1 correction's MC1 to MC4, stated in its entry above, in the same sweep.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run for each of the fifteen, M1 to M11 and MC1 to MC4, in a detached
+            worktree at b8fbaf4, the tree carrying both entries, filtered to the eleven tests the
+            two entries name, on the operator's instruction of 2026-09-24, each reverted with
+            `git checkout -- .` and the tree read clean after. Every one went red as predicted and
+            every other test of the eleven stayed green. M1, M2 and M11 each turned the trigger test
+            red alone. M3 turned four red, the settings test, the trigger test, the band answers
+            test and the drawn proposal. M4 turned the never applies test red alone; M5 the
+            rejection test and the trigger test; M6, M7 and M8 each the blocks test alone; M9 the
+            first live acceptance test and the blocks test; M10 the band answers test alone. MC1
+            turned both of the correction's tests red, MC2 and MC3 the first alone, and MC4 the
+            second alone. MC2 was run once more over b2027ad, the tree before the correction, and
+            the test as it stood there passed with 15.14's sentence moved into 15.13: the gap the
+            correction closes, shown rather than said. The whole suite ran green over b8fbaf4 in the
+            gates, 1371 of 1371.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1371 of 1371
             tests ran with none failed, migrations 0 to 40 with none pending, schema version 40,
             exit 0, against `data-ci` and never `data`.
