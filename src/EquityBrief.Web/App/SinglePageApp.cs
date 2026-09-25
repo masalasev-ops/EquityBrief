@@ -692,7 +692,7 @@ public sealed class SinglePageApp : IComponent
                 marks.SwingTable(ticker, swing) + Cards.Key(
                     "How to read it.",
                     Invariant($"Each return is the close against the close {EquityBrief.Core.Filter.SwingReadings.ReturnShortSessions} and {EquityBrief.Core.Filter.SwingReadings.ReturnLongSessions} sessions before it, beside the share of the index's other members whose return over the same span is lower. The pullback is how far the close sits below the highest high of the last {EquityBrief.Core.Filter.SwingReadings.HighWindow} sessions, counted in the moves {Escaped(ticker)} usually makes in a session; the volume beneath it is the median session's volume since that high against its fifty-day average, and the tightness is the last {EquityBrief.Core.Filter.SwingReadings.TightShortSessions} sessions' true range against the last {EquityBrief.Core.Filter.SwingReadings.TightLongSessions}'s. All of it is computed from the stored daily bars."),
-                    "These are facts about the chart. A high place is a strong return behind the name and not a forecast in front of it, and none of it ranks the company as an investment."),
+                    "These are facts about the chart. A high place is a strong return behind the name and not a forecast in front of it, and this page " + RankRefusal + "."),
                 title: "Where it stands for a swing trade",
                 stamp: Cards.Night(swing.Session),
                 id: "swing",

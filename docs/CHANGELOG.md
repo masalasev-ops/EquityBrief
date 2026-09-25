@@ -7337,3 +7337,9 @@ Why: 12.3 replaces 11.9's region with the Calibration region, since the reasons 
 Was: the row, as it stood before this entry, ending at "the shape counts over the two-night store are the funnel the gates worked by hand give, leave the store's bytes as they were, and replayed as of each night give the bands, the trend and the plan the store kept".
 Now: the row adds the classifier and the trigger worked by hand over constructed nights and over nights carrying the operator's stored shares.
 Why: 12.3 builds the shape clock, and a classifier nothing works by hand at its thresholds is one nothing has shown to be the rule's.
+### 2026-09-25 - .claude/rules/checks.md - read-surface reads the refusal to rank inside sections 15.9 and 15.14 and holds the page to one wording
+Was:
+> the name page opens with what it is for, its three refusals and its ten words,
+Now:
+> the name page opens with what it is for, its three refusals and its ten words, the refusal to rank being the one sentence the code holds, read inside section 15.9 and inside section 15.14 each between its own heading and the next, and stated on the page in no other words, the swing readings' key drawing the same sentence,
+Why: the 12.1 correction. The test searched the whole document for the sentence and read no second wording on the page, and the swing readings' key carried one (see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns).

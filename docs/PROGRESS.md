@@ -24754,3 +24754,52 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    the operator's ruling on the starting settings, the trade gate's input, the five variants
             and the gate bands after 12.4; and the operator's two commands against the live store.
+
+### 12.1 - correction: the refusal to rank is read inside sections 15.9 and 15.14 between their headings, and the name page states it in no other words, where the test searched the whole document and the swing readings' key carried a second wording   2026-09-25
+Corrects:   12.1 (0742f07), which placed the refusal to rank as one sentence held once in code,
+            `SinglePageApp.RankRefusal`, drawn on the name page and stated in sections 15.9 and
+            15.14 in the same words, with a test reading all three.
+Found:      by the operator on 2026-09-25, reading section 15.9 as holding no sentence saying the
+            page does not rank the company as an investment and none naming the rank it shows as a
+            return's place among the members' returns.
+Cause:      of the three causes the operator named, the third, in part, and neither of the other
+            two. The wording landed at 12.1 in the constant's words: 15.9's paragraph on the page's
+            three refusals says "that it ranks no company as an investment, and the one rank it
+            draws is a return's place among the members' returns, a fact about the chart", and
+            15.14's list says "A screen" and the same sentence. So no checkpoint recorded work it
+            did not do, and the sentence did not land under other words; a reading for "does not
+            rank the company" finds neither, because the held sentence says "ranks no company". The
+            test exists and reads the surfaces it names, the constant, the name page the surface
+            serves and the architecture, but it searched the whole of ARCHITECTURE.html for each
+            sentence rather than 15.9 and 15.14, so either could have left its section with the
+            test green. And the name page drew the refusal a second time in other words, the swing
+            readings' key saying "none of it ranks the company as an investment", which nothing
+            asserted: a second wording on the page the one wording was held to prevent.
+Repaired:   the swing readings' key draws the held sentence, "this page" and the constant. No
+            document changes: 15.9 and 15.14 already state the constant's words.
+Guarded:    `read-surface`, two tests extended and none added.
+            `EveryScreenIsLaidOutInCardsAndEveryKeyClosesOnWhatToTakeFromTheFigure` reads 15.9
+            between its heading and 15.10's, and 15.14 between its heading and 15.15's, each for the
+            held sentence, and holds the fixture's name page to stating the refusal in no other
+            words: every "as an investment" on it is inside the held sentence.
+            `EachNamesSwingReadingsAreDrawnOnItsPageAsTheStoreHoldsThem` holds every page drawing
+            the swing readings to the held sentence in the key and to two statements of the refusal
+            on the page, its opening and the key, and no third in any wording.
+Written:    `.claude/rules/checks.md`'s `read-surface` row, prior text in `CHANGELOG.md`.
+Tests:      no test added or removed; the count is 12.4's, below, whose tree this rides in.
+Mutated:    the rule, stated before the run: change each of the three places the one wording lives
+            by the smallest edit that changes what it says, and move each section's sentence out
+            of its section, filtered to the two extended tests, one at a time in a detached worktree
+            at the commit carrying this entry, reverted after each.
+            Predicted:
+            MC1 the constant says "ranks no company as a holding": red in both tests, the first at
+            15.9 and the second at the key's count of the refusal.
+            MC2 15.14's sentence moved into 15.13's list, word for word: red in the first test
+            alone, at 15.14; before this correction the test read the whole document and passed it.
+            MC3 15.9's sentence reworded as "that it does not rank any company as an investment":
+            red in the first test alone, at 15.9.
+            MC4 the swing readings' key given back its own wording: red in the second test alone.
+            Results: recorded in 12.4's entry, which follows this one, from the one sweep run over the
+            tree carrying both.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry and 12.4's, with the figures from
+            that run recorded in 12.4's entry.
