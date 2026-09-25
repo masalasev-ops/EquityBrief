@@ -680,7 +680,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             TonightScreen.WrittenBeforeTheCorrection(listings),
             RunScreen.Market(market),
             TonightScreen.RuleView(rule, gates, market),
-            TonightScreen.Listed(listings)),
+            TonightScreen.Listed(listings),
+            held: await read.NightsAsync()),
         "text/html; charset=utf-8");
 });
 
@@ -909,7 +910,8 @@ app.MapGet("/screens/run/{night?}", async (
                 clock.UtcNow),
             await read.OpenFilterVersionAsync() is { } open
                 ? EdgeScreen.NearMisses(open, await read.NearMissRowsAsync(open), dated)
-                : EdgeScreen.NearMisses(null, [], dated)),
+                : EdgeScreen.NearMisses(null, [], dated),
+            held: await read.NightsAsync()),
         "text/html; charset=utf-8");
 });
 

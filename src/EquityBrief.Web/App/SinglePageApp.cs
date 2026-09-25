@@ -259,6 +259,20 @@ public sealed class SinglePageApp : IComponent
           paintTheme();
         }
         addEventListener('hashchange', show);
+        // A day picked on a dated screen's calendar opens the stored night on or before it, or the
+        // first stored night where the day falls before them all.
+        document.addEventListener('change', (event) => {
+          const picked = event.target.closest ? event.target.closest('input.np-date') : null;
+          if (!picked || !picked.value) {
+            return;
+          }
+          const held = (picked.dataset.nights || '').split(' ').filter((night) => night !== '');
+          const onOrBefore = held.filter((night) => night <= picked.value);
+          const night = onOrBefore.length > 0 ? onOrBefore[onOrBefore.length - 1] : held[0];
+          if (night) {
+            location.hash = picked.closest('.night-picker').dataset.route + night;
+          }
+        });
         // A link followed or a row picked is a new place, and back or forward returns to where
         // the reader was. Anywhere on a row of tonight's list but its links picks that row, which
         // draws its plan beneath the list.
@@ -1290,7 +1304,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null,
         MarketView? market = null,
         ListRuleView? rule = null,
-        int? listed = null)
+        int? listed = null,
+        IReadOnlyList<DateOnly>? held = null)
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -1298,7 +1313,10 @@ public sealed class SinglePageApp : IComponent
         region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-index=\"{index}\" data-fired=\"{fired}\" data-rule=\"{Escaped(rule?.Rule ?? EquityBrief.Core.Shortlist.ListRules.Reasons)}\" "));
         region.Append(Invariant($"data-selected=\"{Escaped(selectedTicker ?? "none")}\">"));
 
-        region.Append(Cards.Masthead("Tonight", "<span class=\"m-screen\">Tonight</span>", Invariant($"Night of {night:yyyy-MM-dd}, computed after the close")));
+        region.Append(Cards.Masthead(
+            "Tonight",
+            "<span class=\"m-screen\">Tonight</span>",
+            Invariant($"Night of {night:yyyy-MM-dd}, computed after the close") + Cards.NightPicker(night, held ?? [], NightRoute, "#/")));
 
         region.Append(Cards.Computed(
             Invariant($"Night of {night:yyyy-MM-dd} · computed after the close"),
@@ -1449,13 +1467,17 @@ public sealed class SinglePageApp : IComponent
         ProposalView? proposal = null,
         OverlapView? overlap = null,
         EdgeView? edge = null,
-        NearMissView? nearMisses = null)
+        NearMissView? nearMisses = null,
+        IReadOnlyList<DateOnly>? held = null)
     {
         var region = new StringBuilder();
 
         region.Append(Invariant($"<section class=\"run\" data-night=\"{night:yyyy-MM-dd}\" data-stages=\"{stages.Count}\">"));
 
-        region.Append(Cards.Masthead("Run evidence", "<span class=\"m-screen\">Run evidence</span>", Invariant($"Night of {night:yyyy-MM-dd}")));
+        region.Append(Cards.Masthead(
+            "Run evidence",
+            "<span class=\"m-screen\">Run evidence</span>",
+            Invariant($"Night of {night:yyyy-MM-dd}") + Cards.NightPicker(night, held ?? [], RunRoute, RunRoute)));
 
         // Once sixty ordinary nights are stored under the open version, the page says so before anything else.
         region.Append(shape is { } due ? marks.ShapeDue(due) : string.Empty);
