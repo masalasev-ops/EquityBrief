@@ -207,7 +207,8 @@ public sealed record FunnelView(
     int Breakouts,
     IReadOnlyList<(string Exclusion, int Count)> Exclusions,
     int Excluded,
-    int Passing);
+    int Passing,
+    string Rule = ListRules.Reasons);
 
 // One gate's answer as a name's page draws it.
 public sealed record GateLine(string Gate, bool Passed, string Reason);
@@ -231,7 +232,8 @@ public sealed record GatesView(
     IReadOnlyList<string> Exclusions,
     IReadOnlyList<string> Notes,
     bool Passed,
-    int? Rank);
+    int? Rank,
+    string Rule = ListRules.Reasons);
 
 // The night's market reading as the swing reader stored it: the members, the breadth over the ones
 // read with how many it was counted over, the same over the shorter average as context, and the
@@ -343,7 +345,30 @@ public sealed record ListingCell(
     // with the instant it will start, or being written since the instant its pass started.
     // Null for a name the queue holds nothing waiting for.
     // see: The queue page states when each request will be written
-    QueueState? Queue = null);
+    QueueState? Queue = null,
+    // Where the swing filter drew the row: its rank and the gates that decided it.
+    FilterRow? Filter = null);
+
+// A row the swing filter drew: its rank, the setup's family, the session its trigger arrived on, the plan
+// the trade gate read with its reward to risk and the stop's distance in typical moves, and each gate with
+// whether it passed and why.
+// see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+public sealed record FilterRow(int Rank, string? Family, string Arrived, string Input, string RewardToRisk, string StopMoves, IReadOnlyList<FilterGate> Gates);
+
+public sealed record FilterGate(string Name, bool Passed, string Reason);
+
+// Why a name the swing filter listed is on the list: the evening, each gate with why it passed, and the
+// reasons that fired on it, as context.
+public sealed record FilterWhy(DateOnly Evening, IReadOnlyList<FilterGate> Gates, IReadOnlyList<string> Reasons);
+
+// The list from night to night: of the night's names, how many were on the list the evening before, and how
+// many at least once over the five and the twenty evenings before, each evening read by the rule that
+// listed it.
+public sealed record OverlapView(DateOnly Night, int Names, DateOnly? LastNight, int OnLastNight, int FiveHeld, int OnFive, int TwentyHeld, int OnTwenty);
+
+// The rule the night's list was drawn by, and on a night the swing filter drew it, whether the market gate
+// was open with the breadth and its floor, and how many members reached each gate after it.
+public sealed record ListRuleView(string Rule, bool MarketOpen, double? Breadth, double? Floor, IReadOnlyList<int> Reached);
 
 // A request the queue holds for a name and has not settled, as a row of tonight's list and the
 // selected name's region state it: `queued` or `writing`, the instant it starts or started as
@@ -372,9 +397,9 @@ public sealed record FiredReason(string Name, IReadOnlyDictionary<string, string
 // universe base rate the row carries.
 public sealed record HorizonResult(string? Outcome, double? ReturnPct, double? BaseRate);
 
-// One evening a name was on the list: the reasons that fired, the stored close that night,
-// and what the two session horizons came to.
-public sealed record ListingEvening(DateOnly Evening, IReadOnlyList<string> Reasons, decimal? Close, HorizonResult Five, HorizonResult TwentyOne);
+// One evening a name was on the list: the rule that listed that evening, the reasons that fired, the
+// stored close that night, and what the two session horizons came to.
+public sealed record ListingEvening(DateOnly Evening, string Rule, IReadOnlyList<string> Reasons, decimal? Close, HorizonResult Five, HorizonResult TwentyOne);
 
 // A name's listing history: whether it was on the list on each stored evening of the window,
 // oldest first, and the evenings it was, newest first.
@@ -1905,6 +1930,62 @@ public sealed class MarkRenderer : IComponent
         return why.ToString();
     }
 
+    // Why a name the swing filter listed is on the list: each gate with why it passed, and the reasons
+    // that fired on it as context, so the page states the rule that listed the evening.
+    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    public string WhyItPassed(string ticker, FilterWhy why)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"why-it-is-here\" data-ticker=\"{Escaped(ticker)}\" data-rule=\"{ListRules.Filter}\" data-gates=\"{why.Gates.Count}\">");
+        region.Append(Invariant, $"<p class=\"list-rule\">{Escaped(ticker)} was {Escaped(ListRules.ByFilter)} on {why.Evening:yyyy-MM-dd}.</p>");
+
+        foreach (var gate in why.Gates)
+        {
+            region.Append(Invariant, $"<p class=\"gate\" data-gate=\"{Escaped(gate.Name)}\" data-passed=\"{(gate.Passed ? "true" : "false")}\"><b>{Escaped(gate.Name)}</b>: {Escaped(gate.Reason)}</p>");
+        }
+
+        region.Append(Invariant, $"<p class=\"context\" data-reasons=\"{why.Reasons.Count}\">");
+        region.Append(why.Reasons.Count == 0
+            ? "None of the six reasons fired on it that evening; they are context and no longer choose the list."
+            : "As context, the reasons that fired on it that evening: " + Escaped(string.Join(", ", why.Reasons)) + ".");
+        region.Append("</p></section>");
+
+        return region.ToString();
+    }
+
+    // The list from night to night, the run page's overlap.
+    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    public string Overlap(OverlapView? overlap)
+    {
+        if (overlap is null)
+        {
+            return "<section class=\"overlap\" data-names=\"none\"><p class=\"degraded\">no list is stored for the night</p></section>";
+        }
+
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"overlap\" data-names=\"{overlap.Names}\" data-last-night=\"{overlap.OnLastNight}\" data-five=\"{overlap.OnFive}\" data-twenty=\"{overlap.OnTwenty}\">");
+
+        if (overlap.Names == 0)
+        {
+            region.Append(Invariant, $"<p class=\"degraded\">No name is on the list on {overlap.Night:yyyy-MM-dd}, so nothing carries over from the evenings before.</p></section>");
+
+            return region.ToString();
+        }
+
+        region.Append(Invariant, $"<p>Of the {overlap.Names} name(s) on the list on {overlap.Night:yyyy-MM-dd}: ");
+        region.Append(overlap.LastNight is { } before
+            ? "on the list the evening before, " + before.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ", " + overlap.OnLastNight.ToString(CultureInfo.InvariantCulture) + "; "
+            : "on the list the evening before, none, since the store holds no evening before it; ");
+        region.Append(Invariant, $"on it at least once over the last {overlap.FiveHeld} evening(s) before it, {overlap.OnFive}; over the last {overlap.TwentyHeld}, {overlap.OnTwenty}");
+        region.Append(overlap.TwentyHeld < 20
+            ? Formatted($", the store holding {overlap.TwentyHeld} evening(s) before it.</p></section>")
+            : ".</p></section>");
+
+        return region.ToString();
+    }
+
     // Each reason as a sentence. Every reason the shortlist carries has its own
     // arm and anything else throws, for the reason the plan column's mapping
     // does: a sentence a reader acts on that was produced by a value nobody
@@ -2018,12 +2099,17 @@ public sealed class MarkRenderer : IComponent
 
         foreach (var evening in history.Evenings)
         {
-            drawn.Append(Invariant, $"<tr data-evening=\"{evening.Evening:yyyy-MM-dd}\" data-close=\"{(evening.Close is { } stored ? stored.ToString(CultureInfo.InvariantCulture) : "none")}\"{Horizon("5", evening.Five)}{Horizon("21", evening.TwentyOne)}>");
+            drawn.Append(Invariant, $"<tr data-evening=\"{evening.Evening:yyyy-MM-dd}\" data-rule=\"{Escaped(evening.Rule)}\" data-close=\"{(evening.Close is { } stored ? stored.ToString(CultureInfo.InvariantCulture) : "none")}\"{Horizon("5", evening.Five)}{Horizon("21", evening.TwentyOne)}>");
             // The evening is a link to the page for it, which is the one place a reader
             // reaches an earlier night's page from.
             // see: A name's page for an earlier night is what the store held that night
             drawn.Append(Invariant, $"<td><a href=\"#/name/{Escaped(ticker)}/{evening.Evening:yyyy-MM-dd}\">{evening.Evening:yyyy-MM-dd}</a></td>");
-            drawn.Append(Invariant, $"<td>{Escaped(string.Join(", ", evening.Reasons))}</td>");
+            // Each evening names the rule that listed it; on an evening the swing filter listed, the reasons
+            // stand after it as context.
+            // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+            drawn.Append(evening.Rule == ListRules.Filter
+                ? "<td>the swing filter passed it" + (evening.Reasons.Count == 0 ? string.Empty : "; as context, " + Escaped(string.Join(", ", evening.Reasons))) + "</td>"
+                : "<td>" + Escaped(string.Join(", ", evening.Reasons)) + "</td>");
             drawn.Append(Invariant, $"<td class=\"num\">{(evening.Close is { } close ? Figures.Price(close) : "not stored")}</td>");
             drawn.Append(Invariant, $"<td>{Result(evening.Five)}</td><td>{Result(evening.TwentyOne)}</td></tr>");
         }
@@ -2096,7 +2182,7 @@ public sealed class MarkRenderer : IComponent
 
     // Tonight's list, section 15.7's third region.
     //
-    // One row per name that fired, in the order the rows arrive in, at most
+    // One row per name on the list, in the order the rows arrive in, at most
     // twenty drawn, each numbered by its place in that order. The true count is
     // the header's headline, because a page that shows twenty every night cannot
     // tell you how busy the night was, and the line above the rows states it again
@@ -2106,16 +2192,36 @@ public sealed class MarkRenderer : IComponent
     public string TonightList(
         IReadOnlyList<ListingCell> rows,
         int drawn,
-        IReadOnlyList<ReasonRecord>? records = null)
+        IReadOnlyList<ReasonRecord>? records = null,
+        ListRuleView? rule = null)
     {
         var shown = rows.Take(drawn).ToArray();
         var list = new StringBuilder();
+        var byFilter = rule is { Rule: ListRules.Filter };
 
-        list.Append(Invariant, $"<section class=\"tonight-list\" data-fired=\"{rows.Count}\" data-drawn=\"{shown.Length}\">");
+        list.Append(Invariant, $"<section class=\"tonight-list\" data-fired=\"{rows.Count}\" data-drawn=\"{shown.Length}\" data-rule=\"{Escaped(rule?.Rule ?? ListRules.Reasons)}\">");
+
+        // The rule the evening was listed by, so a row read from an evening before the switch is not
+        // taken for one the swing filter drew.
+        // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+        list.Append(Invariant, $"<p class=\"list-rule\" data-rule=\"{Escaped(rule?.Rule ?? ListRules.Reasons)}\">This evening was {Escaped(ListRules.Said(rule?.Rule ?? ListRules.Reasons))}.</p>");
+
+        if (byFilter && rule is { MarketOpen: false } closed)
+        {
+            list.Append(Invariant, $"<p class=\"degraded\" data-market=\"closed\" data-breadth=\"{(closed.Breadth is { } share ? share.ToString("R", Invariant) : "none")}\">");
+            list.Append(closed.Breadth is { } breadth && closed.Floor is { } floor
+                ? Formatted($"The market gate closed tonight: {breadth * 100:0.0}% of the members closed above their 200-day average, below its floor of {floor * 100:0.#}%, so no name is listed.")
+                : "The market gate closed tonight: the night's breadth is not available, so no name is listed.");
+            list.Append("</p></section>");
+
+            return list.ToString();
+        }
 
         if (rows.Count == 0)
         {
-            list.Append("<p class=\"degraded\" data-fired=\"0\">no name fired a reason tonight</p></section>");
+            list.Append(byFilter && rule is { Reached.Count: 4 } none
+                ? Formatted($"<p class=\"degraded\" data-fired=\"0\" data-passed=\"0\">No name passed the swing filter tonight: {none.Reached[0]} passed the trend and strength gate, {none.Reached[1]} the setup, {none.Reached[2]} the trigger and {none.Reached[3]} the trade, and none of those past the exclusions.</p></section>")
+                : "<p class=\"degraded\" data-fired=\"0\">no name fired a reason tonight</p></section>");
 
             return list.ToString();
         }
@@ -2133,15 +2239,18 @@ public sealed class MarkRenderer : IComponent
         // How many rows the list draws of how many fired, above the rows it counts, and where
         // the rows leave a name out, where every name is.
         list.Append(Invariant, $"<p class=\"list-count\" data-drawn=\"{shown.Length}\" data-undrawn=\"{rows.Count - shown.Length}\">");
+        var named = byFilter ? "the swing filter listed" : "that fired";
+
         list.Append(rows.Count > shown.Length
-            ? Formatted($"Showing {shown.Length} of the {rows.Count} names that fired. <a href=\"#/universe\">See every name on the universe page</a>")
+            ? Formatted($"Showing {shown.Length} of the {rows.Count} names {named}. <a href=\"#/universe\">See every name on the universe page</a>")
             : rows.Count == 1
-                ? "Showing the one name that fired."
-                : Formatted($"Showing all {rows.Count} names that fired."));
+                ? $"Showing the one name {named}."
+                : Formatted($"Showing all {rows.Count} names {named}."));
         list.Append("</p>");
 
         list.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table\" data-rows=\"{shown.Length}\">");
         list.Append("<thead><tr><th class=\"place\">#</th><th>Name</th><th class=\"r\">Close</th><th class=\"r\">Day</th><th>Trend</th><th class=\"c\">Distance to levels</th><th class=\"r\">Reward to risk</th>");
+        list.Append(byFilter ? "<th>Gates</th>" : string.Empty);
 
         foreach (var column in columns)
         {
@@ -2242,6 +2351,15 @@ public sealed class MarkRenderer : IComponent
                 ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">{Figures.Ratio(ratio)}</td>")
                 : $"<td class=\"reward-to-risk\"><span class=\"degraded\" data-reward-to-risk=\"none\">{Escaped(row.NoRewardToRisk ?? NoRewardToRiskStated)}</span></td>");
 
+            // The gates that put the row on the list, each with why, the setup's family, the session its
+            // trigger arrived on and the trade the gate read.
+            if (byFilter)
+            {
+                list.Append(row.Filter is { } gates
+                    ? Formatted($"<td class=\"gates\" data-rank=\"{gates.Rank}\" data-family=\"{Escaped(gates.Family ?? "none")}\" data-arrived=\"{Escaped(gates.Arrived)}\" data-input=\"{Escaped(gates.Input)}\" title=\"{Escaped(string.Join("; ", gates.Gates.Select(gate => gate.Name + ": " + gate.Reason)))}\">{Escaped(gates.Family ?? "no family")}, arrived {Escaped(gates.Arrived)}; {Escaped(gates.Input)} trade at {Escaped(gates.RewardToRisk)}, stop {Escaped(gates.StopMoves)} typical moves below</td>")
+                    : "<td class=\"gates\"><span class=\"degraded\">no gate result stored</span></td>");
+            }
+
             list.Append(ReasonsForRow(row, columns, byReason));
             list.Append("</tr>");
         }
@@ -2253,7 +2371,7 @@ public sealed class MarkRenderer : IComponent
         // see: A reason's record is displayed, beside the reason and never beside the name
         if (byReason is not null)
         {
-            list.Append("<tfoot><tr><td colspan=\"7\" class=\"rec-lab\">Each reason's record across every name it has fired for. ");
+            list.Append(Invariant, $"<tfoot><tr><td colspan=\"{(byFilter ? 8 : 7)}\" class=\"rec-lab\">Each reason's record across every name it has fired for. ");
             list.Append("Solid: the share that reached target before stop, of how many resolved, against the break-even they needed. ");
             list.Append("Dashed: not enough setups have finished to say anything yet, shown as how many have finished against the number needed.</td>");
 
@@ -3834,17 +3952,28 @@ public sealed class MarkRenderer : IComponent
     // the one number the twenty drawn rows cannot tell you. The quantities phase
     // 6 supplies are absent and say so rather than being drawn as zero, which
     // would read as a night that spent nothing because it did nothing.
-    public string NightHeader(DateOnly night, int index, int fired, string? duration, HarnessCounts? harness, NightSpend? spend = null, NightProse? prose = null, MarketView? market = null)
+    public string NightHeader(DateOnly night, int index, int fired, string? duration, HarnessCounts? harness, NightSpend? spend = null, NightProse? prose = null, MarketView? market = null, int? listed = null)
     {
         var header = new StringBuilder();
 
         header.Append(Invariant, $"<header class=\"night-header\" data-night=\"{night:yyyy-MM-dd}\" ");
-        header.Append(Invariant, $"data-index=\"{index}\" data-fired=\"{fired}\"><div class=\"night\">");
+        header.Append(Invariant, $"data-index=\"{index}\" data-fired=\"{fired}\" data-listed=\"{(listed is { } count ? count.ToString(Invariant) : "none")}\"><div class=\"night\">");
 
-        // The fired count as the headline, large, with the index it is out of beneath it.
-        header.Append(Invariant, $"<div class=\"headline\" aria-hidden=\"true\"><div class=\"big\">{fired}</div><div class=\"cap\">names fired<span>out of {index} in the index</span></div></div>");
+        // The headline, large, with the index it is out of beneath it: on a night the swing filter
+        // listed, the names it passed, and the fired count as context beside it; before the switch, the
+        // fired count.
+        // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+        header.Append(listed is { } passed
+            ? Formatted($"<div class=\"headline\" aria-hidden=\"true\"><div class=\"big\">{passed}</div><div class=\"cap\">names the swing filter passed<span>out of {index} in the index</span></div></div>")
+            : Formatted($"<div class=\"headline\" aria-hidden=\"true\"><div class=\"big\">{fired}</div><div class=\"cap\">names fired<span>out of {index} in the index</span></div></div>"));
         header.Append("<div class=\"ops\">");
-        header.Append(Invariant, $"<p class=\"fired\">{fired} of {index} name(s) fired on {night:yyyy-MM-dd}</p>");
+
+        if (listed is { } onTheList)
+        {
+            header.Append(Invariant, $"<p class=\"listed\" data-listed=\"{onTheList}\">{onTheList} of {index} name(s) passed the swing filter on {night:yyyy-MM-dd}</p>");
+        }
+
+        header.Append(Invariant, $"<p class=\"fired\">{fired} of {index} name(s) fired on {night:yyyy-MM-dd}{(listed is null ? string.Empty : ", as context")}</p>");
         header.Append(BreadthLine(market));
         header.Append(Invariant, $"<p class=\"duration\" data-duration=\"{Escaped(duration ?? "not recorded")}\">the night took {Escaped(duration ?? "a time the run log does not record")}</p>");
 
@@ -4522,7 +4651,12 @@ public sealed class MarkRenderer : IComponent
         region.Append(funnel.Version == "none"
             ? "No filter version is open, so the night ran on section 17's proposed values."
             : Formatted($"The night ran under filter version {Escaped(funnel.Version)}."));
-        region.Append(Invariant, $" {funnel.Passing} of {funnel.Members} member(s) pass. Tonight's list is still drawn from the six reasons, and these counts decide nothing on it.</p>");
+        // Whether these counts drew the evening's list is the evening's rule.
+        // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+        region.Append(Invariant, $" {funnel.Passing} of {funnel.Members} member(s) pass.");
+        region.Append(funnel.Rule == ListRules.Filter
+            ? " The names passing are this evening's list.</p>"
+            : " The six reasons drew this evening's list, and these counts decided nothing on it.</p>");
 
         return region.ToString();
     }

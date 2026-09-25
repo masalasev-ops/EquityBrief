@@ -1038,7 +1038,7 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.7 Tonight", "The report's state"),
 
         // 11.4, section 14's step writing the night's own request and section 17's count of one.
-        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, one request marked as asked by the night unless that name has one outstanding or being written, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, the first the swing filter passed, one request marked as asked by the night unless that name has one outstanding or being written and none on a night no name passed, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list)."),
         CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
 
         // 11.5, section 17's floor for a name's industry to be its group.
@@ -1074,7 +1074,7 @@ public partial class ArchitectureConformance
     [
         CheckReach.Key("15.15 Queue", "When each will be written"),
         CheckReach.Key("15.7 Tonight", "The report's state"),
-        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, one request marked as asked by the night unless that name has one outstanding or being written, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, the first the swing filter passed, one request marked as asked by the night unless that name has one outstanding or being written and none on a night no name passed, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list)."),
         CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
         CheckReach.Key("15.9 Name", "Each move beside its group"),
         CheckReach.Key(Scope.LimitsTable, "Group floor"),
@@ -1169,7 +1169,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.MatrixTable, "Filter counts"),
         CheckReach.Key(Scope.StoresTable, "Gate results"),
         CheckReach.Key(Scope.StoresTable, "Filter versions"),
-        CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche and from the swing trade's own plan, and the exclusions, storing every answer with the values that decided it and ranking the names passing; tonight's list is not read from it."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche and from the swing trade's own plan, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it)."),
         CheckReach.Key(Scope.LimitsTable, "Market gate"),
         CheckReach.Key(Scope.LimitsTable, "Strength gate"),
         CheckReach.Key(Scope.LimitsTable, "Pullback depth"),
@@ -1223,6 +1223,23 @@ public partial class ArchitectureConformance
 
         // 12.5's: section 17's family.
         CheckReach.Key(Scope.LimitsTable, "The swing family"),
+
+        // 12.6's: tonight's list switched to the filter, its header's count, the list's four new parts and
+        // the evening before the switch, the rule's store, the run page's overlap as its three counts, and
+        // section 18's two rows. The list's two parts that read the reasons' order moved to the evening
+        // before the switch with their verdicts, and two follow the row's words, so they add nothing.
+        CheckReach.Key("15.7 Tonight", "Night header, names the swing filter listed"),
+        CheckReach.Key("15.7 Tonight", "The list, one row per name on the list"),
+        CheckReach.Key("15.7 Tonight", "The list, ordered by the swing filter's reward to risk then strength then band strength"),
+        CheckReach.Key("15.7 Tonight", "The list, a line naming the rule that listed the evening"),
+        CheckReach.Key("15.7 Tonight", "The list, the gates with the values that decided them"),
+        CheckReach.Key("15.7 Tonight", "An evening before the switch, drawn as it was listed"),
+        CheckReach.Key(Scope.StoresTable, "List rules"),
+        CheckReach.Key("15.10 Run", "The list from night to night, how many of the night's names were on the list the evening before"),
+        CheckReach.Key("15.10 Run", "The list from night to night, how many at least once over the five evenings before"),
+        CheckReach.Key("15.10 Run", "The list from night to night, how many over the twenty evenings before"),
+        CheckReach.Key(Scope.FailureTable, "The market gate closed on a night"),
+        CheckReach.Key(Scope.FailureTable, "No name passed the swing filter on a night"),
     ];
 
     // Rows phase 12 took out of the document: 11.9's region stating each reason's share against its
@@ -1259,7 +1276,7 @@ public partial class ArchitectureConformance
         // The 5.8 correction that numbered tonight's list, whose row gains two parts: the rows'
         // places and the line counting them.
         CheckReach.Key("15.7 Tonight", "The list, each numbered by its place in that order"),
-        CheckReach.Key("15.7 Tonight", "The list, a line above them stating how many are drawn of how many fired"),
+        CheckReach.Key("15.7 Tonight", "The list, a line above them stating how many are drawn of how many are listed"),
 
         // 9.2, the worker's half of the request store, which is a component of its own
         // rather than the runner's: the pass writes the research and this moves the

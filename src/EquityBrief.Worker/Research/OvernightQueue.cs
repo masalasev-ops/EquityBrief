@@ -39,8 +39,8 @@ public sealed record QueueOutcome(
 }
 
 // The overnight queue. After the arithmetic has closed, every name in the index whose
-// research is missing or stale, the names on tonight's list first in order of reasons
-// fired, each given a pass of the local lane's sections, until the configured number of
+// research is missing or stale, the names on tonight's list first in the swing filter's
+// order, each given a pass of the local lane's sections, until the configured number of
 // hours has passed. Every name rather than the listed ones, because the one section the
 // queue writes explains the night's figures and every name's page draws them.
 // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
@@ -71,6 +71,7 @@ public sealed class OvernightQueue(
         Stores:
         [
             new StoreTouch(Store.Listing, Touch.Read),
+            new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -94,11 +95,15 @@ public sealed class OvernightQueue(
     public const string AwakeReason = "EquityBrief's overnight queue is writing tonight's drafts";
 
     // A listing row is written for every name in the index every night, so the night's
-    // rows are the index that night, and the names that fired lead.
+    // rows are the index that night, and the names on tonight's list lead in the swing
+    // filter's order.
+    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
     const string MembersOnNight = @"
-        SELECT ticker, fired_count FROM listing
-        WHERE session_date = $session
-        ORDER BY fired_count DESC, ticker;
+        SELECT l.ticker, CASE WHEN g.passed = 1 THEN 1 ELSE 0 END
+        FROM listing l
+        LEFT JOIN gate_result g ON g.ticker = l.ticker AND g.session_date = l.session_date
+        WHERE l.session_date = $session
+        ORDER BY CASE WHEN g.passed = 1 THEN 0 ELSE 1 END, g.rank, l.ticker;
     ";
 
     const string AppendRun = @"
@@ -150,7 +155,7 @@ public sealed class OvernightQueue(
         await connection.OpenAsync(cancellation);
 
         var members = await MembersAsync(connection, night, cancellation);
-        var listed = members.Where(member => member.Fired > 0).Select(member => member.Ticker).ToArray();
+        var listed = members.Where(member => member.Passed > 0).Select(member => member.Ticker).ToArray();
 
         using var held = awake.Hold(AwakeReason);
 
@@ -308,7 +313,7 @@ public sealed class OvernightQueue(
         seconds = pass.Seconds,
     };
 
-    static async Task<IReadOnlyList<(string Ticker, int Fired)>> MembersAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
+    static async Task<IReadOnlyList<(string Ticker, int Passed)>> MembersAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 

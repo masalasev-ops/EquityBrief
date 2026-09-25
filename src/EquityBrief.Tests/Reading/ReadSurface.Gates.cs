@@ -96,7 +96,7 @@ public partial class ReadSurface
         Assert.Contains($"data-pullbacks=\"{pullbacks}\" data-breakouts=\"0\"", card, StringComparison.Ordinal);
         Assert.Contains($"<tr data-step=\"excluded\" data-passed=\"{rows.Count(row => row[7] == "1")}\" data-removed=\"0\">", card, StringComparison.Ordinal);
         Assert.Contains("No filter version is open, so the night ran on section 17's proposed values.", card, StringComparison.Ordinal);
-        Assert.Contains("Tonight's list is still drawn from the six reasons, and these counts decide nothing on it.", card, StringComparison.Ordinal);
+        Assert.Contains("The six reasons drew this evening's list, and these counts decided nothing on it.", card, StringComparison.Ordinal);
 
         // A night the filter stored nothing for says so rather than drawing a funnel of zeroes.
         var earlier = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/run/2026-09-02"));

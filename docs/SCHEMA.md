@@ -49,6 +49,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `filter_version` | ShapeCommand | ShapeCommand | none |
 | `shape_proposal` | ShapeProposer | ShapeCommand | none |
 | `listing` | ShortlistBuilder | ShortlistBuilder | none |
+| `list_rule` | NightClose | NightClose | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
 | `fundamentals` | FundamentalsFetcher | none | none |
@@ -456,6 +457,18 @@ Primary key: `ticker`, `session_date`.
 **`plan_at_listing` is the column the improvement loop rests on.** Bars can be replayed and the plan cannot, because by the time a verdict is possible the rules may have changed and recomputing would score old listings under new ones. It is written by a component that is already running and it is the difference between the loop being a feature and being a wait.
 
 About 125,000 rows a year at index size. Kept forever.
+
+### list_rule
+Grain: one row per session a night's swing filter drew the list for.
+
+| Column | Type | Notes |
+|---|---|---|
+| `session_date` | TEXT | the session the list was drawn for, the newest any name holds on the night that drew it |
+| `rule` | TEXT | `filter`, the swing filter; `reasons` is the rule an evening holding no row was drawn by, and the column allows it so the rule is one word wherever it is read |
+
+Primary key: `session_date`.
+
+**The night close writes it and is its only writer, from the swing filter's step** (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it). Once the swing filter has stored its rows for the night's session, the night records that session as listed by the filter, before any later step can stop the night, and only where the filter stored rows for it. A night run again over a session records it again, and the session is then listed by the rule of the night that drew it last. An evening holding no row was listed by any of the six reasons firing, which is every evening before the switch, so every surface reading a listing reads this table beside it and names the rule. Nothing deletes a row.
 
 ### forward_return
 Grain: one row per listing per horizon.

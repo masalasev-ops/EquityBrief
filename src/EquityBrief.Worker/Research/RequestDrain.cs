@@ -93,10 +93,12 @@ public static class RequestDrain
     // comes from.
     public const string FromNight = "night";
 
-    // Every name that fired on the night, with what the order it is drawn in reads off the row.
-    const string FiredOnTheNight = @"
-        SELECT ticker, fired_count, plan_at_listing FROM listing
-        WHERE session_date = $night AND fired_count > 0;
+    // Every name the swing filter passed on the night, in its order.
+    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    const string PassedOnTheNight = @"
+        SELECT ticker FROM gate_result
+        WHERE session_date = $night AND passed = 1
+        ORDER BY rank, ticker;
     ";
 
     // A request for the name nobody has settled, being one outstanding or being written.
@@ -166,29 +168,26 @@ public static class RequestDrain
 
         await connection.OpenAsync(cancellation);
 
-        var fired = new List<(string Ticker, int Fired, decimal? RewardToRisk)>();
+        var passed = new List<string>();
 
         await using (var reading = connection.CreateCommand())
         {
-            reading.CommandText = FiredOnTheNight;
+            reading.CommandText = PassedOnTheNight;
             reading.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
             await using var reader = await reading.ExecuteReaderAsync(cancellation);
 
             while (await reader.ReadAsync(cancellation))
             {
-                fired.Add((reader.GetString(0), reader.GetInt32(1), DrawnOrder.FirstTranche(reader.GetString(2)).RewardToRisk));
+                passed.Add(reader.GetString(0));
             }
         }
 
-        var first = DrawnOrder.Ordered(fired, row => row.Fired, row => row.RewardToRisk, row => row.Ticker)
-            .Take(NightAsksFor)
-            .Select(row => row.Ticker)
-            .ToArray();
+        var first = passed.Take(NightAsksFor).ToArray();
 
         if (first.Length == 0)
         {
-            return new NightAsk([], FormattableString.Invariant($"no name fired on {night:yyyy-MM-dd}, so no report was asked for"));
+            return new NightAsk([], FormattableString.Invariant($"no name passed the swing filter on {night:yyyy-MM-dd}, so no report was asked for"));
         }
 
         var asked = new List<string>();

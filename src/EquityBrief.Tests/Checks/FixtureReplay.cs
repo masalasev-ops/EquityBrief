@@ -16,6 +16,7 @@ using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
 using EquityBrief.Worker.News;
+using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Research;
 using EquityBrief.Worker.Returns;
 using EquityBrief.Worker.Shortlist;
@@ -250,10 +251,17 @@ public class FixtureReplay
 
         await Themer(store, night, cap, new ClaimChecker(night, store.DatabaseFile)).RunAsync(RecordedTheme, "replay-theme");
 
+        // The rule the night's list is drawn by, which the night records in its filter step and this
+        // replay records here rather than in the replay the other checks read, so their stores stand as
+        // an evening the reasons listed, as every evening before the swing filter's is, and a check of
+        // the filter's list records the rule itself.
+        await NightClose.RecordRuleAsync(store.DatabaseFile);
+
         // The night's own request, from 11.4, which the night makes after its overnight queue
         // and this replay makes last: the replay the other checks read does not make it, since
-        // a request written there would sit in every store a press is read over, and the table
-        // is populated here so `night-request.json` has a replay that writes what it names.
+        // a request written there would sit in every store a press is read over. On the fixture's
+        // night no name passes the swing filter, so it writes nothing, which `night-request.json`
+        // states.
         await RequestDrain.AskForTheNightAsync(store.DatabaseFile, new DateOnly(2026, 9, 8), night);
 
         return store;

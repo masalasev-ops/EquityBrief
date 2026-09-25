@@ -301,16 +301,20 @@ public static class Nightly
             }),
             // Section 14's step 14. The swing filter, after the listings, because the trade
             // gate reads the ladder's first tranche as tonight's listing kept it. It changes
-            // nothing the listings wrote and makes no request.
+            // nothing the listings wrote and makes no request. The names it passes are
+            // tonight's list, and the rule is recorded for its session once its rows are stored.
+            // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
             new("swing-filter", async () =>
             {
                 // The swing family standing when the night started, evaluated in the filter's shadow.
                 var family = FamilyShadow.For(await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync(night.Token), nightStartedAt);
                 var outcome = await new SwingFilter(clock, store.DatabaseFile)
                     .RunAsync(indexCode, runId, family, night.Token);
+                var recorded = await NightClose.RecordRuleAsync(store.DatabaseFile, night.Token);
 
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
-                    $"{outcome.Excluded} excluded, version {outcome.Version}";
+                    $"{outcome.Excluded} excluded, version {outcome.Version}" +
+                    (recorded ? ", listed by the swing filter" : ", no session stored for the list's rule");
             }),
             // Section 14's step 15. The shape proposer, after the swing filter, since it counts the
             // gate results the filter has just stored. It writes a proposal once the open version's

@@ -139,7 +139,7 @@ public static class UniverseScreen
             ? found
             : [];
 
-        var listed = listings.Where(listing => listing.FiredCount > 0).ToArray();
+        var listed = listings.Where(listing => listing.IsListed).ToArray();
 
         // The name's next dated event, where the calendar holds one. A name with
         // none has no date rather than a date nobody has, which is the rule the
@@ -159,7 +159,7 @@ public static class UniverseScreen
             toResistance,
             Nearest(toSupport, toResistance),
             listed.Length == 0 ? null : listed.Max(listing => listing.SessionDate),
-            [.. listings.OrderBy(listing => listing.SessionDate).Select(listing => listing.FiredCount > 0)],
+            [.. listings.OrderBy(listing => listing.SessionDate).Select(listing => listing.IsListed)],
             // The sessions to it, section 15.8's column, counted where the
             // shortlist builder counts the same thing.
             nextEvent is { } dated && night is { } on ? ExchangeClosures.SessionsUntil(on, dated) : null,

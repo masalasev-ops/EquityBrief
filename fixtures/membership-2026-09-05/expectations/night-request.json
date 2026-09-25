@@ -1,14 +1,14 @@
 {
  "stage": "night-request",
  "derivation": "derived",
- "derivedFrom": "section 14's step asking for a report on the first name drawn on tonight's list, section 17's row counting the names the night asks for, and the decision that the night asks for a report on the first name of its list, not a run. The night asks for the first name its list draws and no other: the list draws the names that fired by how many reasons fired, then by the plan's reward to risk from its first tranche, the zone's midpoint against its stop and its first traded exit, with a plan holding none after every one holding one, then by the ticker, and the test works that order out with its own arithmetic off the listing rows the night wrote rather than reading it back through the order the page draws. The request is marked as asked by the night, under the paid lane every request carries until the local one is offered, and outstanding until the drain claims it. A name already holding a request outstanding or being written gets none, and the night's own row says so. On the fixture's night of 2026-09-08 three names fired one reason each, AAPL, KEYS and MSFT, as the overnight queue's expectation states, so the plan's reward to risk decides which is first; the stage replay the other checks read computes that night's list from a store the whole night does not share, and its night is the same session.",
+ "derivedFrom": "section 11's arrival rule, section 14's step recording the rule tonight's list is drawn by once the swing filter has stored its rows and its step asking for a report on the first name drawn on tonight's list, section 17's row counting the names the night asks for, the decision that tonight's list is the swing filter's and an evening is listed by the rule that listed it, and the decision that the night asks for a report on the first name of its list. The fixture's night of 2026-09-08 is the first night its store runs the swing filter over, so the trigger gate of every member reads its arrival off gate rows stored for the sessions before the night, finds none, and fails, whatever the member's readings; with the trigger failing no member passes every gate, so no name is on the night's list, which is why this file names the rule's table and not the request's: the night records its session as listed by the swing filter, since the filter stored its rows for it, and the step asking for a report finds no first name, writes no request and starts no drain, and its row says so. Until 12.6 the list was the names that fired, and on this night three fired one reason each, AAPL, KEYS and MSFT, so the night asked for the first of them by the plan's reward to risk. The stage replay the other checks read computes the same night from a store the whole night does not share, and its night is the same session. The order a night with names passing asks in is worked over a constructed night, since the fixture holds none.",
  "tables": [
-  "research_request"
+  "list_rule"
  ],
  "night": "2026-09-08",
  "replayNight": "2026-09-08",
- "count": 1,
- "askedFrom": "night",
- "lane": "paid",
- "state": "outstanding"
+ "rule": "filter",
+ "listed": [],
+ "count": 0,
+ "line": "no name passed the swing filter on 2026-09-08, so no report was asked for"
 }

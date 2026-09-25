@@ -519,7 +519,8 @@ public sealed class SinglePageApp : IComponent
         PeersView? peers = null,
         IReadOnlyList<ReactionCell>? reactions = null,
         SwingReadingsView? swing = null,
-        GatesView? gates = null)
+        GatesView? gates = null,
+        FilterWhy? passed = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -642,14 +643,17 @@ public sealed class SinglePageApp : IComponent
         // Why it is here, which section 15.9 puts above the chart and which is
         // present only when the name is on tonight's list, beneath the line
         // section 18 draws where the listing was written before the correction.
-        var why = WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection) + marks.WhyItIsHere(ticker, firedReasons);
+        var why = WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection)
+            + (passed is { } filtered ? marks.WhyItPassed(ticker, filtered) : marks.WhyItIsHere(ticker, firedReasons));
 
-        if (firedReasons.Count > 0)
+        if (passed is not null || firedReasons.Count > 0)
         {
             Card("why", "Why it is here", Cards.Computed(
                 "Why it is here",
                 why,
-                title: night is { } listed ? Invariant($"On the list on {listed:yyyy-MM-dd} for these reasons") : "On tonight's list for these reasons",
+                title: passed is { } through
+                    ? Invariant($"On the list on {through.Evening:yyyy-MM-dd} because the swing filter passed it")
+                    : night is { } listed ? Invariant($"On the list on {listed:yyyy-MM-dd} for these reasons") : "On tonight's list for these reasons",
                 stamp: Cards.Night(session),
                 id: "why",
                 region: "why"));
@@ -708,7 +712,9 @@ public sealed class SinglePageApp : IComponent
                 marks.GatesTable(ticker, gates) + Cards.Key(
                     "How to read it.",
                     "Each gate is one question the swing filter asks of every member each night, in order: the market's breadth, the trend and strength, a setup, a trigger new on the night, and a trade worth taking. A name passes only where all five pass and no exclusion applies. The trade is read two ways, from the ladder's first tranche and from the swing trade's own stop and target, and the plan the filter reads decides the gate.",
-                    "A failed gate names what it read and why it failed. Tonight's list is still drawn from the six reasons, so these answers decide nothing on the list yet."),
+                    gates.Rule == EquityBrief.Core.Shortlist.ListRules.Filter
+                        ? "A failed gate names what it read and why it failed, and a name passing all five that no exclusion removes is on that evening's list."
+                        : "A failed gate names what it read and why it failed. The six reasons drew that evening's list, so these answers decided nothing on it."),
                 title: "Where it stands against the swing filter",
                 stamp: Cards.Night(gates.Session),
                 id: "gates",
@@ -1282,18 +1288,21 @@ public sealed class SinglePageApp : IComponent
         NightSpend? spend = null,
         NightProse? prose = null,
         IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null,
-        MarketView? market = null)
+        MarketView? market = null,
+        ListRuleView? rule = null,
+        int? listed = null)
     {
         var region = new StringBuilder();
+        var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
 
-        region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-index=\"{index}\" data-fired=\"{fired}\" "));
+        region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-index=\"{index}\" data-fired=\"{fired}\" data-rule=\"{Escaped(rule?.Rule ?? EquityBrief.Core.Shortlist.ListRules.Reasons)}\" "));
         region.Append(Invariant($"data-selected=\"{Escaped(selectedTicker ?? "none")}\">"));
 
         region.Append(Cards.Masthead("Tonight", "<span class=\"m-screen\">Tonight</span>", Invariant($"Night of {night:yyyy-MM-dd}, computed after the close")));
 
         region.Append(Cards.Computed(
             Invariant($"Night of {night:yyyy-MM-dd} · computed after the close"),
-            marks.NightHeader(night, index, fired, duration, harness, spend, prose, market)
+            marks.NightHeader(night, index, fired, duration, harness, spend, prose, market, byFilter ? listed : null)
                 + Invariant($"<p class=\"oneline\"><a href=\"{RunRoute}{night:yyyy-MM-dd}\">What ran tonight, and what it cost</a></p>"),
             stamp: Cards.Night(night),
             region: "night"));
@@ -1309,12 +1318,14 @@ public sealed class SinglePageApp : IComponent
 
         region.Append(Cards.Computed(
             "The list",
-            marks.TonightList(rows, TonightDrawn, records) + Cards.Key(
+            marks.TonightList(rows, TonightDrawn, records, rule) + Cards.Key(
                 "How to read the list.",
                 "Each reason has its own column, always in the same place, so a night that is all one thing shows as one dark stripe running down one column. The one-word heads are short for at entry zone, crossed a level, breakout on volume, trend state changed, unusual volume and earnings soon; point at a head for its full name, and at a reason for the values that made it true and its record. The distance picture fixes the close at its centre line: the green block to its left is the nearest support and the orange block to its right the nearest resistance, one tick per typical day, so a block touching the centre is a name at an edge. The last line of each column is that reason's record across every name it has fired for, and a dashed one is not yet measured. Select a row to draw its plan just below the list; report opens the name's full page.",
                 "Every name here has reached a price its own chart made significant, and the reason says what kind of arrival it was. The distance picture counts in days of the stock's own ordinary movement, so a block one tick from the centre is a distance the price often covers in a single session."),
-            title: "Names that fired tonight",
-            lede: "Each one has reached a price its own chart made significant. Most reasons first, then the strongest band.",
+            title: byFilter ? "Names at a buy point tonight" : "Names that fired tonight",
+            lede: byFilter
+                ? "Each passed every gate of the swing filter, its trigger arrived and nothing excluded it; in the filter's order, the trade's reward to risk first, then strength, then band strength. The reasons stand beside them as context."
+                : "Each one has reached a price its own chart made significant. Most reasons first, then the plan's reward to risk.",
             stamp: Cards.Night(night),
             region: "list"));
 
@@ -1432,7 +1443,8 @@ public sealed class SinglePageApp : IComponent
         MarketView? market = null,
         FunnelView? funnel = null,
         IReadOnlyList<TriggerLine>? triggers = null,
-        ProposalView? proposal = null)
+        ProposalView? proposal = null,
+        OverlapView? overlap = null)
     {
         var region = new StringBuilder();
 
@@ -1466,7 +1478,7 @@ public sealed class SinglePageApp : IComponent
             Invariant($"Swing filter of {night:yyyy-MM-dd}"),
             marks.Funnel(funnel),
             title: "The swing filter's funnel",
-            lede: "Every member through the five gates in order, how many each passed and removed, and how many the exclusions removed of the rest. It is stored for every member every night and decides nothing on tonight's list yet.",
+            lede: "Every member through the five gates in order, how many each passed and removed, and how many the exclusions removed of the rest. It is stored for every member every night, and on an evening the swing filter listed, the names passing are the list.",
             stamp: Cards.Night(night),
             region: "funnel"));
 
@@ -1496,6 +1508,15 @@ public sealed class SinglePageApp : IComponent
                 stamp: Cards.Night(night),
                 region: "calibration"));
         }
+
+        // The list from night to night: of tonight's names, how many were on it before.
+        region.Append(Cards.Computed(
+            Invariant($"Overlap of {night:yyyy-MM-dd}"),
+            marks.Overlap(overlap),
+            title: "The list from night to night",
+            lede: "How many of the night's names were on the list the evening before and over the five and twenty evenings before, each evening read by the rule that listed it.",
+            stamp: Cards.Night(night),
+            region: "overlap"));
 
         region.Append(Cards.Computed(
             "Shadow candidates",

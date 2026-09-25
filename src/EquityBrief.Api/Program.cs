@@ -6,6 +6,7 @@ using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Rules;
+using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Spending;
 using EquityBrief.Core.Time;
 using EquityBrief.Web.App;
@@ -251,7 +252,8 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
             evening,
             listings,
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
-            await read.ClosesToTheNightAsync(evening))
+            await read.ClosesToTheNightAsync(evening),
+            gates: await read.ListRuleAsync(evening) == ListRules.Filter ? await read.GateResultsAsync(evening) : null)
         : [];
 
     var at = ordered.Select((row, position) => (row.Ticker, position))
@@ -605,6 +607,13 @@ app.MapGet("/screens/tonight/{night?}", async (
     // column on any row.
     var cells = UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
 
+    // The rule the night's list was drawn by, and on a night the swing filter drew it, each member's gates,
+    // which order the list and say why each row is on it.
+    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    var rule = await read.ListRuleAsync(dated);
+    var gates = rule == ListRules.Filter ? await read.GateResultsAsync(dated) : null;
+    var market = await read.MarketReadingAsync(dated);
+
     // The names whose stored series is suspect, which a row says beside the name.
     var listed = TonightScreen.Rows(
         dated,
@@ -612,7 +621,8 @@ app.MapGet("/screens/tonight/{night?}", async (
         cells,
         await read.ClosesToTheNightAsync(dated),
         await read.SuspectSeriesAsync(),
-        await read.ResearchedAsync());
+        await read.ResearchedAsync(),
+        gates);
 
     // What the queue holds for each listed name, from the times the queue page states, so a
     // row and the selected name say a report is queued or being written and when.
@@ -665,7 +675,9 @@ app.MapGet("/screens/tonight/{night?}", async (
             TonightScreen.Spend(dated, await SpentOn(read, dated), caps),
             TonightScreen.Prose(dated, await read.WrittenOnOrBeforeAsync(dated)),
             TonightScreen.WrittenBeforeTheCorrection(listings),
-            RunScreen.Market(await read.MarketReadingAsync(dated))),
+            RunScreen.Market(market),
+            TonightScreen.RuleView(rule, gates, market),
+            TonightScreen.Listed(listings)),
         "text/html; charset=utf-8");
 });
 
@@ -876,7 +888,7 @@ app.MapGet("/screens/run/{night?}", async (
                 await read.OpenFilterVersionAsync(),
                 dated),
             RunScreen.Market(await read.MarketReadingAsync(dated)),
-            RunScreen.Funnel(await read.GateResultsAsync(dated), dated),
+            RunScreen.Funnel(await read.GateResultsAsync(dated), dated, await read.ListRuleAsync(dated)),
             RunScreen.Triggers(await read.TriggerReadsAsync(), priced),
             RunScreen.Proposal(
                 await read.LatestShapeProposalAsync(),
@@ -884,7 +896,8 @@ app.MapGet("/screens/run/{night?}", async (
                 await read.CandidateNightsAsync(),
                 await read.CandidateSetupsAsync(),
                 everyListing,
-                clock.UtcNow)),
+                clock.UtcNow),
+            RunScreen.Overlap(everyListing, dated)),
         "text/html; charset=utf-8");
 });
 

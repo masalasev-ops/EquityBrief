@@ -1,3 +1,4 @@
+using System.Globalization;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Spending;
 using System.Text.Json;
@@ -99,13 +100,17 @@ public static class TonightScreen
     // The order section 15.7 states: how many reasons fired, then the plan's reward to risk, then
     // the ticker. Every figure is read off the night's own listing rows, which carry the plan and
     // the band strength as that night had them.
+    // On a night the swing filter listed, the names it passed in its own order, each with its gates and the
+    // reasons beside it as context; before the switch, the names that fired in the order section 15.7 states.
+    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
     public static IReadOnlyList<ListingCell> Rows(
         DateOnly night,
         IReadOnlyList<ListingRow> listings,
         IReadOnlyDictionary<string, UniverseCell> cellByTicker,
         IReadOnlyList<CloseRow> closesToTheNight,
         IReadOnlyList<SuspectSeriesRow>? suspects = null,
-        IReadOnlyList<ResearchedRow>? researched = null)
+        IReadOnlyList<ResearchedRow>? researched = null,
+        IReadOnlyList<GateResultRow>? gates = null)
     {
         // The names whose stored series is suspect, which a row says beside the name.
         var suspectByTicker = (suspects ?? [])
@@ -130,16 +135,98 @@ public static class TonightScreen
                 group => (IReadOnlyList<CloseRow>)[.. group.OrderByDescending(row => row.SessionDate)],
                 StringComparer.Ordinal);
 
-        return Ordered(
-            listings
-                .Where(listing => listing.FiredCount > 0)
-                .Select(listing => Cell(listing, night, cellByTicker, sessions) with
-                {
-                    Suspect = NameScreen.Suspect(suspectByTicker.GetValueOrDefault(listing.Ticker)),
-                    ResearchedOn = researchedByTicker.TryGetValue(listing.Ticker, out var written) ? written : null,
-                }),
-            Order.FiredThenRewardToRisk);
+        ListingCell Drawn(ListingRow listing) => Cell(listing, night, cellByTicker, sessions) with
+        {
+            Suspect = NameScreen.Suspect(suspectByTicker.GetValueOrDefault(listing.Ticker)),
+            ResearchedOn = researchedByTicker.TryGetValue(listing.Ticker, out var written) ? written : null,
+        };
+
+        if (gates is not null)
+        {
+            var byTicker = listings.ToDictionary(listing => listing.Ticker, StringComparer.Ordinal);
+
+            return
+            [
+                .. gates
+                    .Where(gate => gate.Passed && byTicker.ContainsKey(gate.Ticker))
+                    .OrderBy(gate => gate.Rank ?? int.MaxValue)
+                    .ThenBy(gate => gate.Ticker, StringComparer.Ordinal)
+                    .Select(gate =>
+                    {
+                        var filter = FilterRowOf(gate);
+
+                        return Drawn(byTicker[gate.Ticker]) with
+                        {
+                            Filter = filter,
+                            RewardToRisk = decimal.TryParse(filter.RewardToRisk, NumberStyles.Float, CultureInfo.InvariantCulture, out var ratio) ? ratio : null,
+                            NoRewardToRisk = null,
+                        };
+                    }),
+            ];
+        }
+
+        return Ordered(listings.Where(listing => listing.FiredCount > 0).Select(Drawn), Order.FiredThenRewardToRisk);
     }
+
+    // A gate row as the list draws it: its rank, the setup's family, the session its trigger arrived on,
+    // the plan its trade gate read with the reward to risk and the stop's distance, and each gate with why.
+    public static FilterRow FilterRowOf(GateResultRow gate)
+    {
+        using var document = JsonDocument.Parse(gate.Gates);
+
+        var gates = document.RootElement.GetProperty("gates").EnumerateArray()
+            .Select(one => (
+                Name: one.GetProperty("gate").GetString()!,
+                Passed: one.GetProperty("passed").GetBoolean(),
+                Reason: one.GetProperty("reason").GetString()!,
+                Values: one.GetProperty("values").EnumerateObject().ToDictionary(value => value.Name, value => value.Value.GetString() ?? string.Empty, StringComparer.Ordinal)))
+            .ToArray();
+
+        string Value(string name, string key) =>
+            gates.FirstOrDefault(one => one.Name == name).Values is { } values && values.TryGetValue(key, out var value) ? value : "none";
+
+        return new FilterRow(
+            gate.Rank ?? 0,
+            gate.Family,
+            Value(EquityBrief.Core.Filter.SwingGates.Trigger, EquityBrief.Core.Filter.SwingGates.ArrivedValue),
+            Value(EquityBrief.Core.Filter.SwingGates.Trade, "input"),
+            Value(EquityBrief.Core.Filter.SwingGates.Trade, "reward to risk"),
+            Value(EquityBrief.Core.Filter.SwingGates.Trade, "stop in typical moves"),
+            [.. gates.Select(one => new FilterGate(one.Name, one.Passed, one.Reason))]);
+    }
+
+    // The rule the night's list was drawn by, and on a night the swing filter drew it, whether the market
+    // gate opened, the breadth and the floor its rows read, and how many members reached each gate after it.
+    public static ListRuleView RuleView(string rule, IReadOnlyList<GateResultRow>? gates, MarketReadingRow? market)
+    {
+        if (rule != ListRules.Filter || gates is null)
+        {
+            return new ListRuleView(ListRules.Reasons, true, null, null, []);
+        }
+
+        double? floor = null;
+
+        if (gates.Count > 0)
+        {
+            using var document = JsonDocument.Parse(gates[0].Gates);
+
+            var marketGate = document.RootElement.GetProperty("gates").EnumerateArray().FirstOrDefault(one => one.GetProperty("gate").GetString() == EquityBrief.Core.Filter.SwingGates.Market);
+
+            if (marketGate.ValueKind == JsonValueKind.Object
+                && marketGate.GetProperty("values").TryGetProperty("floor", out var held)
+                && double.TryParse(held.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
+            {
+                floor = parsed;
+            }
+        }
+
+        int Through(int last) => gates.Count(gate => gate.Market && gate.Trend && (last < 1 || gate.Setup) && (last < 2 || gate.Trigger) && (last < 3 || gate.Trade));
+
+        return new ListRuleView(ListRules.Filter, gates.Any(gate => gate.Market), market?.Breadth, floor, [Through(0), Through(1), Through(2), Through(3)]);
+    }
+
+    // How many names the night listed, by the rule that listed it.
+    public static int Listed(IReadOnlyList<ListingRow> listings) => listings.Count(listing => listing.IsListed);
 
     // The day's change, as a signed percentage of the session before.
     //
@@ -301,7 +388,7 @@ public static class TonightScreen
     // count. They say nothing about index membership, which every name in that
     // table has by definition.
     public static IReadOnlyList<bool> Strip(IReadOnlyList<ListingRow> history) =>
-        [.. history.OrderBy(listing => listing.SessionDate).Select(listing => listing.FiredCount > 0)];
+        [.. history.OrderBy(listing => listing.SessionDate).Select(listing => listing.IsListed)];
 
     // What research spent on a night: its UTC day, and its month up to the end of that
     // day, from the rows the month holds, beside the caps. Summed from the rows as the

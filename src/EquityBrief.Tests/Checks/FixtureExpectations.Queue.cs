@@ -50,7 +50,7 @@ public partial class FixtureExpectations
     // ---- what the queue writes ----
 
     [Fact]
-    public async Task TheQueueWritesEveryNamesKeyTheListedFirstInOrderOfReasonsFiredAndSpendsNothing()
+    public async Task TheQueueWritesEveryNamesKeyTheListedFirstInTheFiltersOrderAndSpendsNothing()
     {
         var expected = Expected("overnight-queue");
         var events = new List<string>();
@@ -62,13 +62,13 @@ public partial class FixtureExpectations
 
         Assert.True(night.Code == 0, night.Error);
 
-        // The names on the night's list, in order of reasons fired and then of their tickers,
-        // read off the listing rows the arithmetic wrote, and the order the file states.
+        // The names on the night's list, the ones the swing filter passed in its order, read off the
+        // gate rows the arithmetic wrote, and the order the file states.
         var listed = Listed(expected.GetProperty("listed"));
 
         Assert.Equal(
             listed,
-            Query(store, $"SELECT ticker FROM listing WHERE session_date = '{expected.GetProperty("night").GetString()}' AND fired_count > 0 ORDER BY fired_count DESC, ticker;"));
+            Query(store, $"SELECT ticker FROM gate_result WHERE session_date = '{expected.GetProperty("night").GetString()}' AND passed = 1 ORDER BY rank, ticker;"));
 
         var row = QueueRow(store);
 
@@ -135,16 +135,13 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task TheQueueTakesTheNamesThatFiredInOrderOfReasonsFiredAndNotOfTheirTickers()
+    public async Task TheQueueTakesTheNamesTheFilterPassedInItsOrderAndNotOfTheirTickersOrTheirReasons()
     {
-        // Three members of the fixture's night fired one reason each and NFLX fired none, so
-        // the order of reasons fired and the order of tickers are one order there and a queue
-        // reading either passed, which 6.10's sweep showed. Over a copy of that night two
-        // listings are changed: NFLX firing three reasons, which puts it first where its ticker
-        // puts it last, and KEYS firing none, which takes it off tonight's list and puts it
-        // after every name that fired. Until the 5.4 correction AAPL fired two, earnings soon
-        // among them, and NFLX one, earnings soon alone, each on a count of 0 read off stored
-        // bars the night did not hold.
+        // No member of the fixture's night passes the swing filter, so every member follows in the order
+        // of its ticker and a queue reading the tickers alone would pass. Over a copy of that night the
+        // filter is made to pass two, NFLX ranked first and MSFT second, which the tickers put last and
+        // third, and KEYS, which passes nothing, is made to fire three reasons, which the order before
+        // 12.6 put first.
         var night = await FixtureReplay.NightAsync(NightQueue.FromFixture(Folder(), new RecordingAwake()) with { LocalModel = new NothingAnsweringLocal() });
 
         using var store = night.Store;
@@ -152,12 +149,11 @@ public partial class FixtureExpectations
         Assert.True(night.Code == 0, night.Error);
 
         // The coincidence, stated, so the change below is read against the night it changes.
-        Assert.Equal(
-            ["AAPL|1", "KEYS|1", "MSFT|1"],
-            Query(store, "SELECT ticker || '|' || fired_count FROM listing WHERE session_date = '2026-09-08' AND fired_count > 0 ORDER BY fired_count DESC, ticker;"));
+        Assert.Empty(Query(store, "SELECT ticker FROM gate_result WHERE session_date = '2026-09-08' AND passed = 1;"));
 
-        store.Execute("UPDATE listing SET fired_count = 3 WHERE ticker = 'NFLX' AND session_date = '2026-09-08';");
-        store.Execute("UPDATE listing SET fired_count = 0 WHERE ticker = 'KEYS' AND session_date = '2026-09-08';");
+        store.Execute("UPDATE gate_result SET passed = 1, rank = 1 WHERE ticker = 'NFLX' AND session_date = '2026-09-08';");
+        store.Execute("UPDATE gate_result SET passed = 1, rank = 2 WHERE ticker = 'MSFT' AND session_date = '2026-09-08';");
+        store.Execute("UPDATE listing SET fired_count = 3 WHERE ticker = 'KEYS' AND session_date = '2026-09-08';");
 
         var clock = FixedClock.At(QueueNight, SessionZones.UnitedStates);
         var local = new RecordedLocalModelFeed(Folder());
@@ -172,9 +168,9 @@ public partial class FixtureExpectations
             clock,
             store.DatabaseFile).RunAsync("reordered", new DateOnly(2026, 9, 8));
 
-        Assert.Equal(["NFLX", "AAPL", "MSFT"], reordered.Listed);
-        Assert.Equal(["NFLX", "AAPL", "MSFT", "KEYS"], reordered.Queued);
-        Assert.Equal(["NFLX", "AAPL", "MSFT", "KEYS"], reordered.Completed.Select(pass => pass.Ticker));
+        Assert.Equal(["NFLX", "MSFT"], reordered.Listed);
+        Assert.Equal(["NFLX", "MSFT", "AAPL", "KEYS"], reordered.Queued);
+        Assert.Equal(["NFLX", "MSFT", "AAPL", "KEYS"], reordered.Completed.Select(pass => pass.Ticker));
     }
 
     // A local runtime answering one name's first draft with a figure no facts file holds and its

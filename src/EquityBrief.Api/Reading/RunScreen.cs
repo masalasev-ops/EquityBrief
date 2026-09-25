@@ -24,7 +24,7 @@ public static class RunScreen
     // in section 11's order passing that gate and every gate before it, the setup's two families, what
     // each exclusion removed of the members passing every gate, and how many pass. None where the night
     // stored no result.
-    public static FunnelView? Funnel(IReadOnlyList<GateResultRow> rows, DateOnly night)
+    public static FunnelView? Funnel(IReadOnlyList<GateResultRow> rows, DateOnly night, string rule = ListRules.Reasons)
     {
         if (rows.Count == 0)
         {
@@ -62,7 +62,8 @@ public static class RunScreen
             rows.Count(row => row.Market && row.Trend && row.Family == "breakout"),
             exclusions,
             throughAll.Count(row => row.Exclusions.Count > 0),
-            rows.Count(row => row.Passed));
+            rows.Count(row => row.Passed),
+            rule);
     }
 
     // The night's market reading as the run page and tonight's header draw it, as the swing reader stored it.
@@ -576,6 +577,45 @@ public static class RunScreen
                 horizon,
                 returns.FirstOrDefault(row => row.Horizon == horizon && row.BaseRate is not null)?.BaseRate)),
     ];
+
+    // The list from night to night: of the names listed on the night, how many were listed on the evening
+    // before it and at least once over the five and the twenty evenings before it, the evenings being the
+    // ones the listings hold and each read by the rule that listed it. None where the night holds no listing.
+    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    public static OverlapView? Overlap(IReadOnlyList<ListingRow> listings, DateOnly night)
+    {
+        var tonight = listings.Where(listing => listing.SessionDate == night).ToArray();
+
+        if (tonight.Length == 0)
+        {
+            return null;
+        }
+
+        var names = tonight.Where(listing => listing.IsListed).Select(listing => listing.Ticker).ToHashSet(StringComparer.Ordinal);
+        var before = listings
+            .Select(listing => listing.SessionDate)
+            .Where(session => session < night)
+            .Distinct()
+            .OrderByDescending(session => session)
+            .ToArray();
+
+        (int Held, int On) Over(int evenings)
+        {
+            var window = before.Take(evenings).ToHashSet();
+            var listed = listings
+                .Where(listing => window.Contains(listing.SessionDate) && listing.IsListed)
+                .Select(listing => listing.Ticker)
+                .ToHashSet(StringComparer.Ordinal);
+
+            return (window.Count, names.Count(listed.Contains));
+        }
+
+        var (_, onLast) = Over(1);
+        var (fiveHeld, onFive) = Over(5);
+        var (twentyHeld, onTwenty) = Over(20);
+
+        return new OverlapView(night, names.Count, before.Length > 0 ? before[0] : null, onLast, fiveHeld, onFive, twentyHeld, onTwenty);
+    }
 
     // How many nights the record stands on, which is what makes the count
     // against the minimum readable as a distance rather than as a small number.

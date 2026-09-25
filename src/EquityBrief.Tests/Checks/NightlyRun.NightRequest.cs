@@ -11,9 +11,9 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Checks;
 
-// nightly-run, 11.4: after the overnight queue the night asks for a report on the first name
-// drawn on its list, one request marked as asked by the night, and starts the drain it was
-// handed as a press does.
+// nightly-run, 11.4 and 12.6: after the overnight queue the night asks for a report on the first
+// name drawn on its list, the first the swing filter passed in its order, one request marked as
+// asked by the night, and starts the drain it was handed as a press does.
 public partial class NightlyRun
 {
     // What the night starts, held by the test so a night is run without a drain reaching a model.
@@ -53,49 +53,47 @@ public partial class NightlyRun
         return rows;
     }
 
-    // The first name the night's list draws, worked by the test's own arithmetic off the listing
-    // rows the night wrote: most reasons fired first, then the plan's reward to risk from its first
-    // tranche, the zone's midpoint against its stop and its first traded exit, with a plan holding
-    // none after every one holding one, then the ticker.
-    static string FirstDrawn(TemporaryStore store, string night)
+    // The first name the night's list draws, worked by the test's own arithmetic off the gate rows the
+    // night stored for the names the swing filter passed: the reward to risk of the trade the gate read,
+    // higher first, then relative strength, then band strength, then the ticker. The stored rank is not
+    // read, so a drain following something other than the filter's order is caught.
+    static string? FirstPassed(TemporaryStore store, string night)
     {
-        var rows = StoreRows(store, $"SELECT ticker, fired_count, plan_at_listing FROM listing WHERE session_date = '{night}' AND fired_count > 0;")
+        var rows = StoreRows(store, $"SELECT ticker, ladder_reward_to_risk, swing_reward_to_risk, strength, band_strength, gates FROM gate_result WHERE session_date = '{night}' AND passed = 1;")
             .Select(row =>
             {
-                using var plan = JsonDocument.Parse(row[2]);
-                var root = plan.RootElement;
+                using var gates = JsonDocument.Parse(row[5]);
+                var input = gates.RootElement.GetProperty("gates").EnumerateArray()
+                    .Single(gate => gate.GetProperty("gate").GetString() == "trade")
+                    .GetProperty("values").GetProperty("input").GetString();
 
-                decimal? Price(string name) =>
-                    root.ValueKind == JsonValueKind.Object && root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
-                        ? decimal.Parse(value.GetString()!, CultureInfo.InvariantCulture)
-                        : null;
+                double? Figure(string value) => value == "null" ? null : double.Parse(value, CultureInfo.InvariantCulture);
 
-                decimal? ratio = null;
-
-                if (Price("entryLow") is { } low && Price("entryHigh") is { } high && Price("stop") is { } stop && Price("firstTradedTarget") is { } target)
-                {
-                    var middle = (low + high) / 2;
-
-                    ratio = middle > stop ? Math.Round((target - middle) / (middle - stop), 4, MidpointRounding.AwayFromZero) : null;
-                }
-
-                return (Ticker: row[0], Fired: int.Parse(row[1], CultureInfo.InvariantCulture), Ratio: ratio);
+                return (Ticker: row[0], Ratio: Figure(input == "swing" ? row[2] : row[1]) ?? double.MinValue, Strength: Figure(row[3]) ?? double.MinValue, Band: Figure(row[4]) ?? double.MinValue);
             })
             .ToList();
 
-        Assert.NotEmpty(rows);
-
         rows.Sort((a, b) =>
-            b.Fired != a.Fired ? b.Fired.CompareTo(a.Fired)
-            : (a.Ratio is null) != (b.Ratio is null) ? (a.Ratio is null ? 1 : -1)
-            : a.Ratio != b.Ratio ? b.Ratio!.Value.CompareTo(a.Ratio!.Value)
+            a.Ratio != b.Ratio ? b.Ratio.CompareTo(a.Ratio)
+            : a.Strength != b.Strength ? b.Strength.CompareTo(a.Strength)
+            : a.Band != b.Band ? b.Band.CompareTo(a.Band)
             : string.CompareOrdinal(a.Ticker, b.Ticker));
 
-        return rows[0].Ticker;
+        return rows.Count == 0 ? null : rows[0].Ticker;
+    }
+
+    // Two of the fixture night's members passed, in an order neither their tickers nor their reasons give:
+    // MSFT's trade at 3.2 before AAPL's at 2.4, and KEYS, which fired three reasons, failing a gate. The
+    // ranks are the ones the filter's order gives those figures.
+    static void Passing(TemporaryStore store, string night)
+    {
+        store.Execute($"UPDATE gate_result SET passed = 1, rank = 1, ladder_reward_to_risk = 3.2, swing_reward_to_risk = 3.2 WHERE ticker = 'MSFT' AND session_date = '{night}';");
+        store.Execute($"UPDATE gate_result SET passed = 1, rank = 2, ladder_reward_to_risk = 2.4, swing_reward_to_risk = 2.4 WHERE ticker = 'AAPL' AND session_date = '{night}';");
+        store.Execute($"UPDATE listing SET fired_count = 3 WHERE ticker = 'KEYS' AND session_date = '{night}';");
     }
 
     [Fact]
-    public async Task AfterTheQueueTheNightAsksForAReportOnTheFirstNameItsListDrawsAndStartsTheDrainItWasHanded()
+    public async Task AfterTheQueueTheNightAsksForNoReportOnANightNoNamePassedAndItsRowSaysWhy()
     {
         var expected = Expected("night-request");
         var launcher = new NightLauncher();
@@ -107,26 +105,76 @@ public partial class NightlyRun
         Assert.True(code == 0, error);
 
         var night = expected.GetProperty("night").GetString()!;
-        var first = FirstDrawn(store, night);
 
-        // One request, for the first name the list draws and no other, marked as the expectation
-        // says a night's request is marked, and one drain asked to start.
+        // The fixture's night is the first its store filters, so no member's trigger can read an arrival
+        // and none passes, which the test reads off the rows rather than off the drain.
+        Assert.Null(FirstPassed(store, night));
+        Assert.Equal(expected.GetProperty("listed").GetArrayLength(), StoreRows(store, $"SELECT ticker FROM gate_result WHERE session_date = '{night}' AND passed = 1;").Count);
         Assert.Equal(
-            [[first, expected.GetProperty("askedFrom").GetString()!, expected.GetProperty("lane").GetString()!, expected.GetProperty("state").GetString()!]],
-            StoreRows(store, "SELECT ticker, asked_from, lane, state FROM research_request;"));
-        Assert.Equal(RequestDrain.NightAsksFor, expected.GetProperty("count").GetInt32());
-        Assert.Equal(RequestDrain.NightAsksFor, launcher.Started);
+            [[night, expected.GetProperty("rule").GetString()!]],
+            StoreRows(store, "SELECT session_date, rule FROM list_rule;"));
 
-        // The step runs last, after the close and the queue, and its own row says what it asked
-        // for and what the drain came to, and records no model call and no request.
+        // No request and no drain started, and the step still runs last, after the close and the queue,
+        // its own row saying why and recording no model call and no request.
+        Assert.Empty(StoreRows(store, "SELECT ticker FROM research_request;"));
+        Assert.Equal(expected.GetProperty("count").GetInt32(), StoreRows(store, "SELECT ticker FROM research_request;").Count);
+        Assert.Equal(0, launcher.Started);
+
         var stages = RunLog(store, "night-with-request");
 
         Assert.Equal([EquityBrief.Worker.Nights.NightClose.Stage, OvernightQueue.Stage, "report"], stages.Select(row => row.Stage).TakeLast(3));
         Assert.Equal("ok", stages[^1].Outcome);
-        Assert.Contains($"{first} is first on the list, and a report on it was asked for. {NightLauncher.Line}", stages[^1].Detail, StringComparison.Ordinal);
+        Assert.Equal(expected.GetProperty("line").GetString(), stages[^1].Detail);
         Assert.Equal(
             [["0", "0"]],
             StoreRows(store, "SELECT model_calls, network_requests FROM run_log WHERE run_id = 'night-with-request' AND stage = 'report';"));
+    }
+
+    [Fact]
+    public async Task TheNightAsksForTheFirstNameTheSwingFilterPassedInItsOrderAndNoOther()
+    {
+        using var store = await FixtureReplay.ReplayedAsync();
+
+        var night = Expected("night-request").GetProperty("replayNight").GetString()!;
+
+        Passing(store, night);
+
+        var first = FirstPassed(store, night);
+
+        Assert.Equal("MSFT", first);
+
+        var ask = await RequestDrain.AskForTheNightAsync(
+            store.DatabaseFile,
+            DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            FixedClock.At(new DateTimeOffset(2026, 9, 8, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates));
+
+        Assert.Equal([first!], ask.Asked);
+        Assert.Equal($"{first} is first on the list, and a report on it was asked for", ask.Line);
+        Assert.Equal([[first!, "night", "paid", "outstanding"]], StoreRows(store, "SELECT ticker, asked_from, lane, state FROM research_request;"));
+    }
+
+    [Fact]
+    public async Task OnANightTheMarketGateClosedTheNightAsksForNoReportAndSaysWhy()
+    {
+        using var store = await FixtureReplay.ReplayedAsync();
+
+        var night = Expected("night-request").GetProperty("replayNight").GetString()!;
+
+        // The two names made to pass, and then the market gate closed for every member, as a night whose
+        // breadth fell below its floor stores it: no member passes, and the night asks for none.
+        Passing(store, night);
+        store.Execute($"UPDATE gate_result SET market = 0, passed = 0, rank = NULL WHERE session_date = '{night}';");
+
+        Assert.Null(FirstPassed(store, night));
+
+        var ask = await RequestDrain.AskForTheNightAsync(
+            store.DatabaseFile,
+            DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            FixedClock.At(new DateTimeOffset(2026, 9, 8, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates));
+
+        Assert.Empty(ask.Asked);
+        Assert.Equal($"no name passed the swing filter on {night}, so no report was asked for", ask.Line);
+        Assert.Empty(StoreRows(store, "SELECT ticker FROM research_request;"));
     }
 
     [Fact]
@@ -137,7 +185,10 @@ public partial class NightlyRun
             using var store = await FixtureReplay.ReplayedAsync();
 
             var night = Expected("night-request").GetProperty("replayNight").GetString()!;
-            var first = FirstDrawn(store, night);
+
+            Passing(store, night);
+
+            var first = FirstPassed(store, night);
 
             store.Execute(
                 "INSERT INTO research_request (ticker, asked_at, asked_from, lane, state) VALUES "
@@ -153,7 +204,7 @@ public partial class NightlyRun
             Assert.Single(StoreRows(store, "SELECT ticker FROM research_request;"));
         }
 
-        // And a night on which nothing fired asks for nothing and says so.
+        // And a night the store holds no gate row for asks for nothing and says so.
         using var quiet = await FixtureReplay.ReplayedAsync();
 
         var none = await RequestDrain.AskForTheNightAsync(
@@ -162,7 +213,7 @@ public partial class NightlyRun
             FixedClock.At(new DateTimeOffset(2026, 8, 3, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates));
 
         Assert.Empty(none.Asked);
-        Assert.Equal("no name fired on 2026-08-03, so no report was asked for", none.Line);
+        Assert.Equal("no name passed the swing filter on 2026-08-03, so no report was asked for", none.Line);
         Assert.Empty(StoreRows(quiet, "SELECT ticker FROM research_request;"));
     }
 
