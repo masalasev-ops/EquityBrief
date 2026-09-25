@@ -7439,3 +7439,34 @@ Why: the operator's ruling of 2026-09-25 (see: The swing filter opens loose on t
 Was: the row as it stood before this entry, ending at "and accepted at the count the page draws" in the 12.4 clause.
 Now: the row adds the trigger's arrival window worked by hand on both sides of it and at its edge, and a broad gate within twice its median marking no event where a narrow one past a quarter and twice its median does.
 Why: the 12.4 ruling changes both rules, and a rule nothing works by hand at its edge is one nothing has shown to be the rule's.
+
+### 2026-09-25 - ARCHITECTURE.html - the swing family, evaluated in the filter's shadow and registered at one instant
+Was:
+> | Candidate registrar | compute | on request | candidate register | candidate register |
+
+> and ranks the names passing; tonight's list is not read from it</td></tr>
+
+> and each gate's reason and values</td>
+Now: the swing filter's row adds the family's shadow; the registrar's reads the filter versions and registers the family through `register --the-family`, and its matrix row reads the computed tables; the gate results carry the shadow; section 13.8 closes on the swing family's paragraph, since 13.6 and 13.7 hold phase 10's research-marked rules alone; and section 17 gains the swing family's row.
+Why: 12.5 builds the family's evaluator, its shadow and its registration (see: The swing filter opens loose on the swing trade's own plan, and each of its five variants moves one setting to its other side) (see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read).
+
+### 2026-09-25 - SCHEMA.md - the gate results' shadow column
+Was: no `shadow` column on `gate_result`.
+Now: `shadow`, each standing swing family candidate's verdict and the candidates the night could not evaluate, written by the swing filter.
+Why: 12.5 splits the shadow by stage, the listings stage keeping its own evaluators on its own rows.
+
+### 2026-09-25 - BUILD_PLAN.md - the three candidates' numbers discharged at 12.5
+Was:
+> | **The candidates' proposed numbers read at their looks** | 10.0 | operating | 8 non-empty blocks of 63 sessions of a registered candidate's closed-window setups, read on the run page's candidate record region, which 10.2 builds. The zone width of 1 typical move and the volume multiple of 2 are read there, both proposed, and the crossing margin of 0.5 beside them, settled by the operator at 10.3 on the per-night counts and registered rather than proposed; a changed number is a new registration with its own window counted in the lifetime count, never a change to the running one (see: Nothing a candidate or a version is registered with changes while it runs, and a proposed number is settled only by a new registration) |
+Now: 12.5, discharged, since the three retire at the family's registration before any result of theirs was read, and 12.5's text cites the row.
+Why: the operator's ruling of 2026-09-24 retires the three when the family registers (see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read).
+
+### 2026-09-25 - RUNBOOK.md - the swing family's command
+Was: no command registering the swing family.
+Now: `register --the-family`, run once after the merge and after filter version 1 is open, before the night, with what it writes and when it is refused.
+Why: 12.5 builds the command, and it writes the live store, so it is the operator's.
+
+### 2026-09-25 - .claude/rules/checks.md - register-append-only, fixture-expectations and read-surface read the swing family
+Was: each row as it stood before this entry.
+Now: register-append-only holds the grown twenty-one evaluation sources and the filter's pin clear of a candidate's code; fixture-expectations works the six on both sides of each setting they move, their shadow on every member's row and the family's command; read-surface reads six registered and a divisor of 6 off the shadow region.
+Why: 12.5 builds the family.

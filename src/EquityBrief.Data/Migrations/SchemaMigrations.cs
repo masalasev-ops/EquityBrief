@@ -661,6 +661,7 @@ public static class SchemaMigrations
         new Migration(38, "create swing_reading and market_reading", CreateSwingReadings),
         new Migration(39, "create gate_result and filter_version", CreateGateResults),
         new Migration(40, "create shape_proposal", CreateShapeProposal),
+        new Migration(41, "add gate_result.shadow", AddGateResultShadow),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -1010,6 +1011,14 @@ public static class SchemaMigrations
             reason           TEXT,
             opened           TEXT
         ) STRICT;
+    ";
+
+    // Each standing swing family candidate evaluated over the member's gate inputs in the filter's own
+    // stage, and the ones the night could not evaluate with why: the shadow split by stage, the listings
+    // stage keeping its own evaluators on its own rows.
+    // see: A variant of the swing filter is registered as a whole rule and runs on unchanged when the live settings move
+    const string AddGateResultShadow = @"
+        ALTER TABLE gate_result ADD COLUMN shadow TEXT;
     ";
 
     public static int LatestVersion => All.Max(migration => migration.Version);

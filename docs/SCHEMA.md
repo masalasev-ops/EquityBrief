@@ -390,6 +390,7 @@ Grain: one row per index member per night.
 | `strength` | REAL | the mean of the two places the ranking reads |
 | `band_strength` | INTEGER | the setup band's strength, the ranking's third key |
 | `gates` | TEXT | JSON: the five gates' answers, each with its reason and values, and the notes on what could not be counted |
+| `shadow` | TEXT | JSON: from 12.5, each swing family candidate standing when the night started, whether it fired with each gate's answer, the market read or not, the exclusions and the session it arrived on, and the candidates the night could not evaluate with why; null on a row written before it or with no family standing |
 
 Primary key: `(ticker, session_date)`.
 

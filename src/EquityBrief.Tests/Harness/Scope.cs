@@ -739,6 +739,10 @@ internal static class Scope
             Verdict.Pass,
             "a trigger first fired tonight, one session back and two sessions back passes, one that fired on every session of the window and the one before fails, and a session the answer turns on that stored no result fails and is named, over constructed sessions, and the constant the row states is the one the gate reads",
             ByExpectations),
+        [CheckReach.Key(LimitsTable, "The swing family")] = new Scoped(
+            Verdict.Pass,
+            "each of the six fires on its own side of every setting it moves and not a step past it, over constructed members, the family's command writes the six at one instant, and the constants the row states are the ones the family is registered with",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "Peer return window")] = new Scoped(
             Verdict.Pass,
             "a return is taken over sixty sessions and a series one short of the window and the close it is measured from has none, over constructed bars, and the constant the row states is the one the reading uses",

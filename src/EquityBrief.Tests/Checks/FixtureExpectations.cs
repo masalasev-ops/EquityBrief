@@ -61,6 +61,9 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.LimitsTable, "Event volume ratio"),
             CheckReach.Key(Scope.LimitsTable, "Shape calibration nights"),
 
+            // 12.5, the swing family.
+            CheckReach.Key(Scope.LimitsTable, "The swing family"),
+
             // The 12.4 ruling, the trigger's arrival window.
             CheckReach.Key(Scope.LimitsTable, "Trigger arrival window"),
 

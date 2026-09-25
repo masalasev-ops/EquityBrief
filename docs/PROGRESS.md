@@ -25058,3 +25058,107 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    the operator's command opening version 1 on these settings, given in `RUNBOOK.md`, which
             writes the live store and is theirs to run once this merges; and 12.5, the family's
             registration, whose command is theirs too.
+
+### 12.5 - the swing family: the live filter and five variants as one evaluator's registrations, evaluated in the filter's own stage over every member's gate inputs, and registered at one instant with phase 10's three retired   2026-09-25
+Built:      `SwingFilterRule`, one evaluator of a new gate kind, `GateEvaluator`, whose parameters are
+            every threshold of the filter, the trade gate's input and whether the market gate is read,
+            and which fires where every gate read passes and no exclusion applies. The six are its
+            registrations, written by `TheSwingFamily`: the live filter at the open filter version's
+            settings, and five variants each moving one setting to its other side, a reward to risk of
+            2, a pullback 1 to 3 moves deep, the market gate off, strength in the top third, and arrival
+            on the night alone. The shadow is split by stage: the listings stage leaves the gate kind
+            alone, and the swing filter's stage evaluates it over every member's gate inputs through
+            `FamilyShadow`, which the night builds from the register as it stood when the night started
+            and hands in through `IMemberShadow`, an interface in a file of its own, so the filter's own
+            pin reaches no candidate's code while every candidate's pin reads the filter. Each verdict,
+            with each gate's answer, the market read or not, the exclusions and the session it arrived
+            on, is stored on the member's row in `gate_result.shadow`, migration 41; a member the night
+            holds no bar for, or holds across a gap, is a counted skip, and a missing or moved evaluator
+            fails the stage as it fails the listings. `register --the-family` writes phase 10's three
+            retirements, each on the words that no result of the candidate was read before it, and the
+            six registrations, at one instant or none, refused where no filter version is open, where
+            any of the three does not stand, and on a second run. The shape command carries an accepted
+            version's settings into the live filter's next registration under the rule's own names.
+Written:    section 7's swing filter and candidate registrar rows and the registrar's matrix row, the gate
+            results in section 16, a paragraph on the swing family closing section 13.8, where the plan
+            named 13.6 and 13.7, since those two hold phase 10's research-marked rules alone and a phase
+            12 paragraph among them is refused, and section 17's family row; `SCHEMA.md`'s `shadow` column; `BUILD_PLAN.md`'s row on the three candidates' numbers,
+            discharged here, and 12.5's text citing it; `RUNBOOK.md`'s command; the `register-append-only`,
+            `fixture-expectations` and `read-surface` roster rows. Every spec line changed has its prior
+            text in `CHANGELOG.md`.
+Found:      the filter's code pin is derived from what its run reaches in the compiled code, and a run that
+            called the candidates' code would have pinned every evaluator's version line while each
+            evaluator's pin read the filter's version line, two pins that could never both settle. The
+            shadow is handed in through an interface, whose methods have no body to reach, so the filter
+            reaches the same 16 files it did.
+Expected:   worked by hand over the member that passes every gate: breadth 0.75, strength 0.8, a pullback
+            3 moves deep on a dry-up of 0.8, its event tonight, and its swing trade from 102 over a stop
+            at 100 to 120, a reward to risk of 9 with the stop 0.5 moves below, on which all six fire.
+            Each setting on both sides and at its edge: a reward to risk of 1.5 at a target of 105 and
+            1.49 at 104.98 for the live filter, 2 at 106 and 1.99 at 105.98 for its variant; depths of 5,
+            5.01, 1 and 0.99 live and 3 and 3.01 for the variant; a dry-up of 1.49 firing all six and 1.5
+            none; strengths of 0.5 and 0.49 live and two thirds and 0.66 for the variant; the stop at 0.5
+            and 4 moves firing and at 0.4988 and 4.08 not; breadth at 0.5 and 0.49, and none, the variant
+            that reads no market firing on both; arrival one session back firing the live window of three
+            and not the variant's one, two sessions back firing, and three not. Over the constructed
+            store, ZZA and ZZC fire all six, ZZB at strength 0.6 all but the strength variant, and ZZD in
+            a range none, 24 verdicts; and the command's nine rows at one instant after the three.
+Tests:      1381, from 1376: five added and none removed. Under `fixture-expectations` four: the six on
+            both sides of every setting they move, the shadow split by stage with the night's skips, the
+            family's command, and the filter's stage storing each verdict. Under `read-surface` one: the
+            shadow region reading six registered and a divisor of 6 off the run page. `obligation-reconciles`
+            states phase 10's operating rows as three, since one of its four is discharged here.
+Claims:     530 predicted, from 529, with 530 PASS and 0 out of scope, and 537 placements and verdicts
+            reconciled against a floor of 34. One more, section 17's family, as the plan predicted for
+            this checkpoint. The pair after 12.9 stays at 555 and 555.
+Pins:       the branch against `main` at 1dd9904. The twelve `RuleVersionScorer.CodeVersionSources` names
+            are unedited. Of the fourteen `CandidateEvaluator.EvaluationSources` named before this
+            checkpoint, the three it planned to edit are edited, `CandidateEvaluator.cs`,
+            `CandidateEvaluators.cs` and `ShadowColumn.cs`, and no other; the list grows to twenty-one,
+            `FilterSettings.cs`, `SwingGates.cs`, `SwingReadings.cs`, `SwingReader.cs`, `ListedTranche.cs`,
+            `SwingFilter.cs` and `FamilyShadow.cs` joining it, and every evaluator's version moves to the
+            pin of its grown sources: momentum-index-reading 7c3bee53d309, momentum-histogram-turn
+            d2e1429c7243, arrived-and-narrow 9117a53605c0, volume-against-the-night 82d449fc696b,
+            crossed-by-a-margin 6591db1c05ad and swing-filter d1936df599dd. From this merge phase 10's
+            three, registered under their earlier versions, are skipped as moved and named as a failure
+            on the listings stage's row until the family's command retires them, which is why the command
+            runs after the merge and before the night. `SwingFilter.cs` is edited for the shadow, so the
+            filter's own code pin moves from 6885c403890b to 08408580d719. From here the reader's and the
+            filter's files are pinned by the family: a later edit to any of them costs its registration.
+Mutated:    the rule, stated before the run: one mutation for each property the 12.5 done condition
+            names, each the smallest edit that changes the property's answer and still compiles, filtered
+            to the tests this checkpoint added and the pin check, one at a time in a detached worktree at
+            this entry's commit and reverted after each.
+            Predicted:
+            F1 the market gate read by every candidate: red in the six test alone.
+            F2 every candidate reading the live arrival window: red in the six test alone.
+            F3 the listings stage evaluating the gate kind: red in the stage split test alone.
+            F4 the command retiring two of the three: red in the command test and the shadow region's
+            page test, two.
+            F5 a retirement without the words: red in the command test alone.
+            F6 the command writing with no version open: red in the command test alone.
+            F7 the filter's stage storing no shadow: red in the store test alone.
+            F8 a member with no bar evaluated rather than skipped: red in the stage split test alone.
+            F9 an evaluator's source moved without its version: red in the pin check alone.
+            F10 the filter's file dropped from the evaluation sources: red in the pin check alone.
+            Results: one run for each of the ten in a detached worktree at 2e7e100, the tree carrying
+            this entry, filtered to the six tests named, each reverted with `git checkout -- .` and the
+            tree read clean after. All ten went red in the test predicted. Five of them also turned the
+            pin check red, which the prediction did not say: F1, F2, F3, F7 and F8 each edit a file the
+            evaluators' pin is taken over, the rule's own, the shadow column, the swing filter or the
+            family's shadow, and any edit to one of those moves every evaluator's pin, as the check
+            exists to make it do. F4 turned the command test and the shadow region's page test red, the
+            page reading seven standing with one of the three not retired; F5 and F6 the command test
+            alone; F9 and F10 the pin check alone. The whole suite ran green over 2e7e100 in the gates,
+            1381 of 1381.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1381 of 1381
+            tests ran with none failed, migrations 0 to 41 with none pending, schema version 41,
+            exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 530 claims, 530 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 537 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1381 of 1381 tests.
+            Both gates ran over the tree carrying this entry, in the worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    the operator's two commands against the live store, in order: filter version 1 through the
+            shape command, if not yet run, and after this merges and before the night, `tools/migrate`
+            and `register --the-family`. 12.6 does not merge until the register shows the family standing.

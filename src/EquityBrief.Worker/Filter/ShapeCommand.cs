@@ -359,7 +359,7 @@ public sealed class ShapeCommand : IComponent
     // and any other as it stood, so the registration reads the parameters its evaluator reads.
     static IReadOnlyDictionary<string, double> Carried(IReadOnlyDictionary<string, double> standing, FilterSettings settings)
     {
-        var accepted = Numbers(settings);
+        var accepted = SwingFilterRule.ParametersOf(settings);
 
         return standing.ToDictionary(
             pair => pair.Key,

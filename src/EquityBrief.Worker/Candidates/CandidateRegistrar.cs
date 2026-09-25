@@ -1,6 +1,7 @@
 using System.Globalization;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
@@ -33,6 +34,7 @@ public sealed class CandidateRegistrar : IComponent
         Stores:
         [
             new StoreTouch(Store.CandidateRegister, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -231,6 +233,113 @@ public sealed class CandidateRegistrar : IComponent
             + string.Join("; ", written);
 
         await RecordAsync(connection, runId, startedAt, Registered, written.Count, detail, cancellation);
+        await transaction.CommitAsync(cancellation);
+
+        return new RegistrationOutcome(Registered, null, detail);
+    }
+
+    const string OpenVersion = "SELECT version, settings FROM filter_version WHERE closed_at IS NULL ORDER BY opened_at DESC LIMIT 1;";
+
+    // The swing family's registration: phase 10's three retired, each on the words saying no result of it
+    // was read, and the six registered, the live filter at the open filter version's settings, all at one
+    // instant or none. Refused whole where no version is open, since the live filter's candidate states
+    // the settings the list runs on, or where any one row would be refused.
+    // see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read
+    // see: The swing filter opens loose on the swing trade's own plan, and each of its five variants moves one setting to its other side
+    public async Task<RegistrationOutcome> RegisterTheFamilyAsync(string runId, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        (string Version, FilterSettings Settings)? open = null;
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = OpenVersion;
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            if (await reader.ReadAsync(cancellation))
+            {
+                open = (reader.GetString(0), FilterSettings.Read(reader.GetString(1)));
+            }
+        }
+
+        async Task<RegistrationOutcome> RefuseAsync(string said)
+        {
+            await transaction.RollbackAsync(cancellation);
+            await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation);
+
+            return new RegistrationOutcome(Refused, null, said);
+        }
+
+        if (open is not { } held)
+        {
+            return await RefuseAsync(
+                "no filter version is open, so the live filter's candidate has no settings to state, and none of the nine was written. " +
+                "Open the first version with the shape command, then register the family.");
+        }
+
+        var rows = await RowsAsync(connection, cancellation);
+        var taken = rows.ToList();
+
+        foreach (var retire in TheSwingFamily.Retires)
+        {
+            if (RetirementRefusal(taken, retire, TheSwingFamily.Evidence, startedAt, ShortlistSeries.Reasons) is { } refusal)
+            {
+                return await RefuseAsync($"'{retire}' was refused, so none of the nine was written: {refusal}");
+            }
+
+            var standing = taken.Last(row => row.Event == CandidateFamily.Registered && string.Equals(row.Candidate, retire, StringComparison.Ordinal));
+
+            taken.Add(standing with { Id = taken.Max(row => row.Id) + 1, Event = Retired, Retires = retire, RegisteredAt = startedAt, Evidence = TheSwingFamily.Evidence });
+        }
+
+        var family = TheSwingFamily.For(held.Version, held.Settings);
+
+        foreach (var one in family)
+        {
+            if ((Unstated(one.Rule, one.Test) ?? Refusal(taken, one.Candidate, one.Evaluator, one.Parameters, startedAt)) is { } refusal)
+            {
+                return await RefuseAsync($"'{one.Candidate}' was refused, so none of the nine was written: {refusal}");
+            }
+
+            taken.Add(new RegisterRow(
+                taken.Count == 0 ? 1 : taken.Max(row => row.Id) + 1,
+                one.Candidate,
+                one.Rule,
+                one.Test,
+                one.Evaluator,
+                CandidateEvaluator.Write(one.Parameters),
+                CandidateEvaluators.Find(one.Evaluator)!.Version,
+                Registered,
+                null,
+                startedAt,
+                null));
+        }
+
+        var appended = rows;
+
+        foreach (var row in taken.Skip(rows.Count))
+        {
+            var id = await AppendAsync(
+                connection, appended, row.Candidate, row.Rule, row.Test, row.Evaluator, row.Parameters,
+                row.EvaluatorVersion, row.Event, row.Retires, startedAt, row.Evidence, cancellation);
+
+            appended = [.. appended, row with { Id = id }];
+        }
+
+        var detail = FormattableString.Invariant(
+            $"retired {TheSwingFamily.Retires.Count} and registered {family.Count} at one instant, the live filter at filter version {held.Version}, ")
+            + FormattableString.Invariant($"family of {CandidateFamily.Standing(appended, startedAt).Count} of {CandidateFamily.Maximum}: ")
+            + string.Join("; ", family.Select(one => $"'{one.Candidate}'"));
+
+        await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation);
         await transaction.CommitAsync(cancellation);
 
         return new RegistrationOutcome(Registered, null, detail);

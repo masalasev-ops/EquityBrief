@@ -12,11 +12,13 @@ using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Shortlist;
 using EquityBrief.Core.Candidates;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Candidates;
+using EquityBrief.Worker.Filter;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Checks;
@@ -509,7 +511,10 @@ public class RegisterAppendOnly
         var evaluators = CandidateEvaluators.All;
 
         Assert.True(evaluators.Count >= 5, $"The code carries {evaluators.Count} evaluator(s), expected at least 5.");
-        Assert.Equal(14, CandidateEvaluator.EvaluationSources.Count);
+        // Fourteen until 12.5, and twenty-one from it, when the swing family's evaluation through the filter's
+        // gates over the readings the reader stores added the reader's and the filter's six files and the
+        // family's shadow.
+        Assert.Equal(21, CandidateEvaluator.EvaluationSources.Count);
 
         var shared = CandidateEvaluator.EvaluationSources
             .Select(path => File.ReadAllText(Path.Combine(Repository.Root, path)))
@@ -585,6 +590,13 @@ public class RegisterAppendOnly
             typeof(ShadowColumn),
             typeof(CandidateEvaluators),
             typeof(CandidateEvaluator),
+            typeof(FilterSettings),
+            typeof(SwingGates),
+            typeof(SwingReadings),
+            typeof(SwingReader),
+            typeof(ListedTranche),
+            typeof(SwingFilter),
+            typeof(FamilyShadow),
         ];
 
         Assert.Equal(CandidateEvaluator.EvaluationSources, called.Select(FileOf));
@@ -596,7 +608,7 @@ public class RegisterAppendOnly
     }
 
     static readonly Regex EvaluationCall = new(
-        @"\bIndicatorSeries\.For\(|\bnew\s+CandidateNight\(|\bShadowColumn\.Evaluate\(|\bCandidateEvaluator\.Read\(|\binsert\s+into\s+indicator\b",
+        @"\bIndicatorSeries\.For\(|\bnew\s+CandidateNight\(|\bShadowColumn\.Evaluate\(|\bShadowColumn\.EvaluateGates\(|\bCandidateEvaluator\.Read\(|\binsert\s+into\s+indicator\b",
         RegexOptions.IgnoreCase);
 
     static string FileOf(Type type) =>

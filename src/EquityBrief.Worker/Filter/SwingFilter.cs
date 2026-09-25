@@ -11,14 +11,17 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Filter;
 
-public sealed record SwingFilterOutcome(int Members, int RowsWritten, IReadOnlyList<int> Funnel, int Excluded, int Passing, string Version);
+public sealed record SwingFilterOutcome(int Members, int RowsWritten, IReadOnlyList<int> Funnel, int Excluded, int Passing, string Version, int Evaluated = 0, IReadOnlyList<string>? Faults = null);
 
 // The swing filter. Evaluates every member of the index on the night through the five gates, the
 // trigger and the exclusions, ranks the names passing, and stores every answer, so what each gate
 // removed can be counted, and a gate's near misses read later from rows nothing rewrites.
 //
 // It runs after the listings, so the ladder's first tranche it reads is the one tonight's listing
-// kept, and it changes nothing the listings wrote. It makes no request and calls no model.
+// kept, and it changes nothing the listings wrote. It makes no request and calls no model. Each
+// standing swing family candidate is evaluated in its shadow over the same inputs by the shadow the
+// night hands in, and stored on the member's row, a missing or moved evaluator failing the stage as it
+// fails the listings.
 // see: The nightly run is arithmetic only
 // see: The swing filter's starting settings are ruled from shape counts before tonight's list switches to it
 public sealed class SwingFilter : IComponent
@@ -52,7 +55,7 @@ public sealed class SwingFilter : IComponent
     // the list from the compiled code and holds this to it.
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "6885c403890b";
+    public const string CodeVersion = "08408580d719";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
@@ -152,19 +155,20 @@ public sealed class SwingFilter : IComponent
         INSERT INTO gate_result (
             ticker, session_date, version, code, market, trend, setup, family, trigger_pass, trigger_event, trade,
             ladder_reward_to_risk, ladder_stop_moves, swing_entry, swing_stop, swing_target, swing_reward_to_risk,
-            swing_stop_moves, exclusions, passed, rank, strength, band_strength, gates)
+            swing_stop_moves, exclusions, passed, rank, strength, band_strength, gates, shadow)
         VALUES (
             $ticker, $session_date, $version, $code, $market, $trend, $setup, $family, $trigger_pass, $trigger_event, $trade,
             $ladder_reward_to_risk, $ladder_stop_moves, $swing_entry, $swing_stop, $swing_target, $swing_reward_to_risk,
-            $swing_stop_moves, $exclusions, $passed, $rank, $strength, $band_strength, $gates);
+            $swing_stop_moves, $exclusions, $passed, $rank, $strength, $band_strength, $gates, $shadow);
     ";
+
 
     const string AppendRun = @"
         INSERT INTO run_log (
             run_id, stage, started_at, ended_at, outcome,
             rows_written, model_calls, network_requests, spend, detail)
         VALUES (
-            $run_id, $stage, $started_at, $ended_at, 'ok',
+            $run_id, $stage, $started_at, $ended_at, $outcome,
             $rows_written, 0, 0, '0', $detail);
     ";
 
@@ -177,7 +181,9 @@ public sealed class SwingFilter : IComponent
         this.databaseFile = databaseFile;
     }
 
-    public async Task<SwingFilterOutcome> RunAsync(string indexCode, string runId, CancellationToken cancellation = default)
+    // The family's shadow is the night's, read off the register as it stood when the night started, and
+    // none where no night handed one.
+    public async Task<SwingFilterOutcome> RunAsync(string indexCode, string runId, IMemberShadow? family = null, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
 
@@ -193,7 +199,7 @@ public sealed class SwingFilter : IComponent
         var members = await MembersAsync(connection, indexCode, Stamp(clock.SessionDateAt(clock.UtcNow)), cancellation);
         var market = await MarketAsync(connection, session, cancellation);
         var readings = await ReadingsAsync(connection, session, night, cancellation);
-        var bars = await LastTwoAsync(connection, Math.Max(2, settings.ArrivalSessions + 1), cancellation);
+        var bars = await LastTwoAsync(connection, Math.Max(2, Math.Max(settings.ArrivalSessions, family?.ArrivalReach ?? 0) + 1), cancellation);
         var indicators = await IndicatorsAsync(connection, session, cancellation);
         var trends = await TextsAsync(connection, LaddersOn, session, cancellation);
         var bands = await BandsAsync(connection, session, cancellation);
@@ -214,6 +220,7 @@ public sealed class SwingFilter : IComponent
             befores.TryGetValue(session, out var stored) && stored.TryGetValue(ticker, out var happened) ? happened : null;
 
         var results = new List<GateResult>();
+        var shadows = new Dictionary<string, string>(StringComparer.Ordinal);
 
         foreach (var ticker in members)
         {
@@ -228,8 +235,7 @@ public sealed class SwingFilter : IComponent
                 ? [.. pair.Skip(2).Select(bar => new SessionEvent(bar.Session, FiredOn(ticker, bar.Session)))]
                 : [];
 
-            results.Add(SwingGates.Evaluate(
-                new GateInputs(
+            var inputs = new GateInputs(
                     ticker,
                     market,
                     trends.GetValueOrDefault(ticker),
@@ -250,8 +256,16 @@ public sealed class SwingFilter : IComponent
                     SwingReader.GapIn(read?.Note),
                     before?.Session,
                     fired,
-                    earlier),
-                settings));
+                    earlier);
+
+            results.Add(SwingGates.Evaluate(inputs, settings));
+
+            // A member with no bar for the night, or one held across a gap, is skipped by every candidate
+            // with the reason, as the listings stage skips it, rather than scored over nothing.
+            if (family is not null)
+            {
+                shadows[ticker] = family.Evaluate(inputs, tonight is null, SwingReader.GapIn(read?.Note));
+            }
         }
 
         var ranked = SwingGates.Ranked(results, settings);
@@ -274,7 +288,7 @@ public sealed class SwingFilter : IComponent
 
         foreach (var result in results)
         {
-            await WriteAsync(connection, (SqliteTransaction)transaction, session, version, result, rank.TryGetValue(result.Ticker, out var at) ? at : null, cancellation);
+            await WriteAsync(connection, (SqliteTransaction)transaction, session, version, result, rank.TryGetValue(result.Ticker, out var at) ? at : null, shadows.GetValueOrDefault(result.Ticker), cancellation);
         }
 
         await using (var command = connection.CreateCommand())
@@ -286,14 +300,15 @@ public sealed class SwingFilter : IComponent
             command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$rows_written", results.Count);
-            command.Parameters.AddWithValue("$detail", SwingFunnel.Line(funnel, excluded, ranked.Count, version));
+            command.Parameters.AddWithValue("$outcome", family is { Faults.Count: > 0 } ? "failed" : "ok");
+            command.Parameters.AddWithValue("$detail", SwingFunnel.Line(funnel, excluded, ranked.Count, version) + (family?.Said ?? string.Empty));
 
             await command.ExecuteNonQueryAsync(cancellation);
         }
 
         await transaction.CommitAsync(cancellation);
 
-        return new SwingFilterOutcome(members.Count, results.Count, funnel, excluded, ranked.Count, version);
+        return new SwingFilterOutcome(members.Count, results.Count, funnel, excluded, ranked.Count, version, family?.Evaluated ?? 0, family?.Faults ?? []);
     }
 
     // The five gates' answers, their reasons and values, and the notes, as the row stores them.
@@ -311,6 +326,7 @@ public sealed class SwingFilter : IComponent
         string version,
         GateResult result,
         int? rank,
+        string? shadow,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -341,6 +357,7 @@ public sealed class SwingFilter : IComponent
         command.Parameters.AddWithValue("$strength", Nullable(result.Strength));
         command.Parameters.AddWithValue("$band_strength", result.BandStrength is { } strength ? strength : DBNull.Value);
         command.Parameters.AddWithValue("$gates", GatesJson(result));
+        command.Parameters.AddWithValue("$shadow", shadow is null ? DBNull.Value : shadow);
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

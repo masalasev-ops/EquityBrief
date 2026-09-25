@@ -473,7 +473,9 @@ public class ObligationReconciles
     // rows a phase did open, so a count of none is a reading and not a reader that finds nothing.
     static readonly Dictionary<string, int> OperatingRowsOpened = new(StringComparer.Ordinal)
     {
-        ["10"] = 4,
+        // Four opened; the candidates' proposed numbers were discharged at 12.5, when phase 10's three
+        // retired before any look read them, so three stand operating.
+        ["10"] = 3,
         // Two, opened by the correction of 11.1's start after the phase's report said none, and
         // named in the report entry that amends it.
         ["11"] = 2,
@@ -520,7 +522,7 @@ public class ObligationReconciles
             Assert.Contains(NoOperatingRowOpened, body, StringComparison.Ordinal);
         }
 
-        // Over phase 10's report, which opened four and names them.
+        // Over phase 10's report, which opened four and names them, three of them still operating.
         var tenth = Assert.Single(reports, match => match.Groups["phase"].Value == "10");
         var tenOpened = Opened("10");
 
