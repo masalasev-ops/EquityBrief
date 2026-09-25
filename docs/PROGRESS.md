@@ -25717,8 +25717,9 @@ Written:    section 13.6's sentence, its prior text in `CHANGELOG.md`.
 Expected:   derived: no expectation file moves.
 Tests:      1406, from 1403: three added to `read-surface`, one for each correction of this batch,
             none removed. Migrations 0 to 42 with none added and none pending, schema version 42.
-Claims:     VC, from 554, with VP PASS and 0 out of scope, and VR placements and verdicts
-            reconciled against a floor of 34.
+Claims:     554, from 554, with 554 PASS and 0 out of scope, and 564 placements and verdicts
+            reconciled against a floor of 34. No claim added: no table or figure changed, and section
+            13.6's sentence is no claim's.
 Pins:       the branch against `main` at 34f5ccd; this correction edits `MarkRenderer.cs`, a test and
             two documents. The batch edits `ListRules.cs`, `MarkRenderer.cs`, `SinglePageApp.cs`,
             `NameScreen.cs`, the read surface's `Program.cs`, three tests and two documents, none of
@@ -25733,15 +25734,25 @@ Mutated:    the rule, stated before the run: each repair put back to what it rep
             Predicted:
             M7 the line put back to of at most eight: red in the test this correction adds alone.
             M8 section 13.6's sentence put back: red in the test this correction adds alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, VT of VT tests ran
-            with none failed, migrations 0 to 42 with none pending, schema version 42, exit 0,
-            against `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at VTB tables, VC claims, VP PASS, 0 FAIL, 0 out of
-            scope, 0 unexamined, VR placements and verdicts reconciled against a floor of 34,
-            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, VT of VT tests.
-            Both gates ran over the tree carrying this entry and the two before it, in the worktree
-            beside the repository, and the operator's store under `data/` was not touched by
+            Results: one run for each of this batch's eight mutations in a detached worktree at
+            d61f9db, the tree carrying this entry, filtered to the five tests they name on the
+            operator's instruction of 2026-09-24, each reverted with `git checkout -- .` and the tree
+            read clean after. The whole suite ran green over d61f9db in the gates, 1406 of 1406. M1
+            turned 1 red and 4 green, the forty-passing test. M2 turned 2 red, the forty-passing and
+            the closed-market tests. M3, M4 and M5 each turned 1 red, the test the 12.6 correction
+            adds. M6 as first written, the bands handed no distance, left the local function that
+            measures them unused, which the build refuses as a warning, so it ran as the distance
+            answering none for every band: 1 red, the test the 5.8 correction adds. M7 and M8 each
+            turned 1 red, the test this correction adds.
+Held:       all eight, in the test each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1406 of 1406
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 564 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1406 of 1406 tests.
+            Both gates ran over the tree carrying this entry and the two before it, d61f9db, in the
+            worktree beside the repository, and the operator's store under `data/` was not touched by
             either.
 Carried:    the revisit of the per-window level, due since the count ever registered reached nine
             at 10:39:49Z on 2026-09-25, is the operator's ruling (see: Holm's level passes between
