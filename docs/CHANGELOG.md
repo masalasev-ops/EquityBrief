@@ -7602,3 +7602,27 @@ Why: 12.7 scores the swing plans (see: The swing filter's setups are scored on t
 Was: each row as it stood before this entry, fixture-expectations ending at "on its night and no other's" and read-surface ending at "worked by hand over constructed evenings".
 Now: fixture-expectations adds the swing plan scored by hand on both sides of both caps and through the filler, the fixture's plans carrying both horizons, the near misses' arithmetic and the edge half's sources naming no recount; read-surface adds the edge half and the near misses read off the page, below and above the floor, unmoved by the open version's settings, and the blocks beside a proposal agreeing with the shape command's.
 Why: 12.7 builds each of them.
+
+### 2026-09-25 - ARCHITECTURE.html - section 11's worked example, section 1's goal and section 3's words
+Authorised by: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+Was:
+> The selection starts from the stocks sitting at a price their own chart has made significant, and the improvement loop in section 13 exists to make it select better. (see: Tonight's list selects the stocks worth buying or paying attention to that evening, and the improvement loop exists to make that selection better) Four of the six conditions detect arrival at a price the evening's arithmetic has an instruction for, one detects a break on unusual volume, and one is a calendar fact. That arithmetic is not authored in advance and is not carried over from a previous night: the levels and the plan are recomputed from the chart every evening, so a name arriving at a level and the plan naming that level are the same night's work. Whether those arrivals are worth acting on is measured rather than assumed, and section 13 is how.
+
+> and the shortlist selects on chart state alone with no fundamentals and no model in the decision.
+
+> <tr><td>Reward to risk</td><td>Distance from entry to target divided by distance from entry to stop.</td></tr>
+
+> <tr><td>Block</td><td>For judging a candidate, a run of 63 consecutive trading sessions keyed on the listing date. Setups listed inside one block can share the bars they resolve over, so the block and not the setup is the unit a candidate's test counts.</td></tr>
+
+> <tr><td><b>Tonight's list</b></td><td>The names where a stated condition fired tonight. It is not a ranking and it has no fixed length.</td></tr>
+
+> <tr><td><b>Reason</b></td><td>One of the six stated conditions that can put a name on tonight's list.</td></tr>
+
+> it needs sixty ordinary nights of fired counts, where the other two need setups
+Now: section 1's purpose states the operator's goal and that the list is chosen by the swing filter's gates, facts about the chart and the plan, while a listed name's success is measured by the loop over time, keeping the six conditions' breakdown as context beside the list; section 3 restates reward to risk, block, tonight's list and reason, and gains nineteen of the phase's words, one sentence each; section 11 gains 11.3, five figures, three drawn from what the code computes over the committed fixture and two illustrative; section 13.2's first row waits on the swing filter's gate counts.
+Why: 12.8 writes the worked example, and the words and the purpose it rests on.
+
+### 2026-09-25 - .claude/rules/checks.md - architecture-conformance and fixture-expectations read the worked example and section 3
+Was: each row as it stood before this entry, architecture-conformance ending at "the version scored on every one" and fixture-expectations ending at "none of the recount the shape clock may make".
+Now: architecture-conformance adds section 3 carrying every word phase 12 uses in one sentence each; fixture-expectations adds the worked example's figures regenerated from the fixture and held to the document and the fixture's expectations.
+Why: 12.8 builds both.

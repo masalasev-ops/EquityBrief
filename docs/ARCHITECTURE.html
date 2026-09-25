@@ -148,9 +148,9 @@
 </ol>
 
 <h2>1. Purpose and boundaries</h2>
-<p><b>What it is for.</b> To select, every evening, the stocks worth buying or paying attention to as of that day, and then to produce a full research report on any name you choose to open. The selection starts from the stocks sitting at a price their own chart has made significant, and the improvement loop in section 13 exists to make it select better. (see: Tonight's list selects the stocks worth buying or paying attention to that evening, and the improvement loop exists to make that selection better) Four of the six conditions detect arrival at a price the evening's arithmetic has an instruction for, one detects a break on unusual volume, and one is a calendar fact. That arithmetic is not authored in advance and is not carried over from a previous night: the levels and the plan are recomputed from the chart every evening, so a name arriving at a level and the plan naming that level are the same night's work. Whether those arrivals are worth acting on is measured rather than assumed, and section 13 is how. The universe is the S&amp;P 500, and its membership is fetched from the provider rather than maintained by hand. (see: The universe is the S&amp;P 500, and membership is fetched, not maintained) The report it produces, specified in section 4, (see: Section 4 of the architecture defines the report region by region, and nothing outside the corpus does) carries a narrative verdict, how the stock got here with the causes of its biggest moves, what the company sells, the numbers over five quarters, the industry cycle it sits in, the bull and bear cases side by side, a chart with levels and a volume profile, a staged entry and exit plan in two books, a risk table where every risk names the number that would confirm it, and a dated calendar.</p>
+<p><b>What it is for.</b> To select, every evening, the stocks worth buying or paying attention to as of that day, and then to produce a full research report on any name you choose to open. The operator's goal is that tonight's list holds the best stocks at a buy point for a swing trade of a few weeks, and that any name in the index still opens to its report. The list is chosen by the swing filter's gates, each a fact about the chart or the plan, and the improvement loop in section 13 exists to make it select better. (see: Tonight's list selects the stocks worth buying or paying attention to that evening, and the improvement loop exists to make that selection better) (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it) Four of the six conditions detect arrival at a price the evening's arithmetic has an instruction for, one detects a break on unusual volume, and one is a calendar fact, and the six are computed for every name every night and stand beside the list as context. The arithmetic the gates read is not authored in advance and is not carried over from a previous night: the levels and the plan are recomputed from the chart every evening, so a name arriving at a level and the plan naming that level are the same night's work. Whether a listed name's setup succeeds is measured by the loop over time rather than asserted, and section 13 is how. The universe is the S&amp;P 500, and its membership is fetched from the provider rather than maintained by hand. (see: The universe is the S&amp;P 500, and membership is fetched, not maintained) The report it produces, specified in section 4, (see: Section 4 of the architecture defines the report region by region, and nothing outside the corpus does) carries a narrative verdict, how the stock got here with the causes of its biggest moves, what the company sells, the numbers over five quarters, the industry cycle it sits in, the bull and bear cases side by side, a chart with levels and a volume profile, a staged entry and exit plan in two books, a risk table where every risk names the number that would confirm it, and a dated calendar.</p>
 <p><b>The constraint that shapes everything.</b> Nightly work must be free and fast, and paid work must happen only when you ask for it. So the nightly run is arithmetic over price bars with no model calls and no per-name network calls, and everything expensive happens when you open a name and is then stored permanently with the date it was written.</p>
-<p><b>What it is not.</b> The universe is a published index membership, not a filtered set, and the shortlist selects on chart state alone with no fundamentals and no model in the decision. (see: No reading of the fundamentals fires a reason, gates a tranche or draws a panel) It does not trade, does not size positions, and produces no short or options ideas. (see: The plan places a position and never sizes one)</p>
+<p><b>What it is not.</b> The universe is a published index membership, not a filtered set, and tonight's list is chosen on the chart and the plan alone, with no fundamentals and no model in the decision. (see: No reading of the fundamentals fires a reason, gates a tranche or draws a panel) It does not trade, does not size positions, and produces no short or options ideas. (see: The plan places a position and never sizes one)</p>
 <p><b>Who runs it.</b> Program  in .NET, with a local model on and an EODHD subscription.</p>
 
 <h2>2. The shape in one paragraph</h2>
@@ -175,7 +175,7 @@
   <tr><td>Tranche</td><td>One step of a staged purchase. The plan buys at successively lower support bands rather than all at once.</td></tr>
   <tr><td>Stop</td><td>The price at which an entry is admitted to be wrong. This system uses daily-close stops: the exit triggers only if the day ends beyond the line, because intraday dips through a level are routine.</td></tr>
   <tr><td>Invalidation</td><td>The single price below which the whole position, not just one tranche, is wrong.</td></tr>
-  <tr><td>Reward to risk</td><td>Distance from entry to target divided by distance from entry to stop.</td></tr>
+  <tr><td>Reward to risk</td><td>Distance from entry to target divided by distance from entry to stop, which on the swing filter's list is read from the swing plan entered at the night's close.</td></tr>
   <tr><td>The print, guidance</td><td>The quarterly results announcement, and the company's own forecast for the next quarter given with it. Stocks move most on those days.</td></tr>
   <tr><td>Base rate</td><td>What happens to an average name on an average night. Any claim that a signal predicts something must beat it, because most stocks rise over a month regardless.</td></tr>
   <tr><td>Break-even</td><td>The share of the time a plan must reach its target before its stop simply to come out level. It is arithmetic on the plan's own numbers: risk divided by risk plus reward. A plan with a distant target and a tight stop needs to be right rarely; one with a near target and a wide stop needs to be right often.</td></tr>
@@ -184,14 +184,14 @@
   <tr><td><b>Facts file</b></td><td>The JSON for one name on one night holding every number the computed sections may use, each with its source. It is what the model is allowed to see and what the fixture is diffed against.</td></tr>
   <tr><td><b>Research record</b></td><td>The stored output of one research pass for one name: the prose of each researched section, the as-of date, the model used, and every source document read.</td></tr>
   <tr><td><b>Theme record</b></td><td>Research about an industry rather than a company, for example memory-chip contract pricing. One record serves every name in that industry.</td></tr>
-  <tr><td><b>Tonight's list</b></td><td>The names where a stated condition fired tonight. It is not a ranking and it has no fixed length.</td></tr>
-  <tr><td><b>Reason</b></td><td>One of the six stated conditions that can put a name on tonight's list.</td></tr>
+  <tr><td><b>Tonight's list</b></td><td>The names the swing filter passed tonight, drawn in its order with no fixed length, and on an evening before the switch the names where one of the six reasons fired.</td></tr>
+  <tr><td><b>Reason</b></td><td>One of the six stated conditions, which chose tonight's list before the swing filter did and stand beside its names as context from it.</td></tr>
   <tr><td><b>Listing</b></td><td>The record that a named stock appeared on tonight's list, holding which reasons fired and the plan as it stood that night. One row per name per night it was listed, kept forever (see: Your own listing history is kept forever).</td></tr>
   <tr><td><b>Setup</b></td><td>One listing considered as a prediction: an entry, a stop and a target that will eventually be right or wrong. A setup starts on the first close at or below its entry zone's top edge and is resolved when the target is reached, the stop is closed through, or the time cap expires; a target reached before it starts is never entered, and never a win.</td></tr>
   <tr><td><b>Shadow</b></td><td>Scored and stored exactly like a live thing, but shown nowhere and acting on nothing. A shadow condition accumulates a record of how it would have done, so a decision to adopt it later rests on evidence rather than on the idea.</td></tr>
   <tr><td><b>Fixture</b></td><td>A frozen, committed set of inputs with expected outputs beside them, so a run is checked by diff rather than by opinion.</td></tr>
   <tr><td><b>Harness</b></td><td>The one command that reads this document's tables, checks the code against them, runs the fixture, and reports every claim as PASS, FAIL or UNEXAMINED.</td></tr>
-  <tr><td>Block</td><td>For judging a candidate, a run of 63 consecutive trading sessions keyed on the listing date. Setups listed inside one block can share the bars they resolve over, so the block and not the setup is the unit a candidate's test counts.</td></tr>
+  <tr><td>Block</td><td>For judging a candidate, a run of 63 consecutive trading sessions keyed on the session its setup was read on, the unit its test counts because setups inside one block can share the bars they resolve over.</td></tr>
   <tr><td>Look</td><td>One of the few points, fixed when a candidate is registered, at which its verdict is read: at 8, 12 and 16 non-empty blocks. Between looks the verdict does not move.</td></tr>
   <tr><td>Information fraction</td><td>How far a candidate is through the evidence it was registered to gather, the blocks it holds over the blocks at its last look. The looks sit at 0.5, 0.75 and 1.0.</td></tr>
   <tr><td>Null win probability</td><td>The chance a setup with no edge reaches its target before its stop, simulated from its own plan, costs and the name's volatility. It replaces the planned break-even as the bar a setup is scored against.</td></tr>
@@ -200,6 +200,25 @@
   <tr><td>Futility guideline</td><td>A rule, read only at the first two looks, that retires a candidate whose record is running below its bar. It binds nothing: the promotion boundary is computed as if it did not exist.</td></tr>
   <tr><td>Monitoring figure</td><td>The running figure the run page shows every night for a candidate, labelled so. It is not the verdict, which only a look changes.</td></tr>
   <tr><td>Closed window</td><td>A setup whose whole outcome window has passed, so its result can no longer change. A look counts only these.</td></tr>
+  <tr><td><b>Swing filter</b></td><td>The five gates, the trigger's arrival and the exclusions that choose tonight's list, each a stated condition read off the chart and the plan.</td></tr>
+  <tr><td><b>Gate</b></td><td>One question the swing filter asks of every member each night, in order the market, the name's trend and strength, a setup, a trigger and a trade.</td></tr>
+  <tr><td><b>Breadth</b></td><td>The share of the index's members closing above their own 200-day average, which the market gate reads against its floor.</td></tr>
+  <tr><td><b>Relative strength</b></td><td>A member's place among the index's members by its return over 63 and over 126 sessions, the mean of the two places.</td></tr>
+  <tr><td><b>Pullback, depth</b></td><td>How far the close sits below the highest high of the last 20 sessions, counted in typical days' moves.</td></tr>
+  <tr><td><b>Dry-up</b></td><td>The median volume of the sessions since that high against the fifty-day average, which a pullback wants low.</td></tr>
+  <tr><td><b>Tight base, tightness</b></td><td>A range whose last ten sessions move less than its last fifty, the base a breakout leaves from.</td></tr>
+  <tr><td><b>Breakout</b></td><td>A close above a band that sat at or above the previous close, on volume above its multiple of the fifty-day average.</td></tr>
+  <tr><td><b>Trigger, arrival</b></td><td>The setup's event, a close above the previous session's high or back inside its band, which arrives when it first happens inside the arrival window.</td></tr>
+  <tr><td><b>Swing plan</b></td><td>The trade the swing filter reads, entered at the night's close, stopped below the setup band's low edge and targeting the nearest resistance band above.</td></tr>
+  <tr><td><b>Exclusion</b></td><td>A reason a name passing every gate is still left off the list, being earnings inside the holding window, a suspect series or a gap.</td></tr>
+  <tr><td><b>Filter version</b></td><td>One set of the swing filter's settings, opened by your shape command and named on every row a night stores under it.</td></tr>
+  <tr><td><b>Shape clock</b></td><td>The count of ordinary nights under one filter version that proposes a setting once a gate's median count sits outside its band.</td></tr>
+  <tr><td><b>Event night, ordinary night</b></td><td>A night one cause pushes a usually quiet gate or reason far past its own normal share is an event night that no median reads, and every other night is ordinary.</td></tr>
+  <tr><td><b>Gate band</b></td><td>The range each gate's median count through the funnel is held against, a third to three times what the ruled filter passed.</td></tr>
+  <tr><td><b>Edge clock</b></td><td>The swing family's records read at looks over blocks, which can retire a candidate at its first look and promote one no earlier than its second.</td></tr>
+  <tr><td><b>Swing family</b></td><td>The live filter and five variants, each a whole rule with one setting on its other side, judged together as one family of six.</td></tr>
+  <tr><td><b>Near miss</b></td><td>A setup one gate or one exclusion alone rejected while everything else passed, read against its own break-even and null.</td></tr>
+  <tr><td><b>List rule</b></td><td>The rule an evening's list was drawn by, the six reasons before the switch and the swing filter from it, which every surface names.</td></tr>
 </table>
 
 <h2>4. The report, section by section, and where each part comes from</h2>
@@ -623,6 +642,151 @@
 <p>The names passing are ordered by the trade's reward to risk, higher first, then relative strength, then the setup band's strength, then the ticker, each a fact about the chart or the plan and none a judgement about the company (see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns). At most twenty are drawn and the true count is stated (see: The page shows twenty and states the true count); the ruled filter passed a median of three names a night over the stored year, so the list will rarely approach twenty, and that is the filter's selectivity rather than a fault. A night the market gate closed draws no row and one line with the breadth and its floor, and a night no name passed draws one line with how many reached each gate, so an empty list says why it is empty. The six reasons are still computed for every member every night and stored on its listing row, and on the filter's list they stand beside each name as context and choose nothing.</p>
 <p>An evening is listed by the rule that listed it. The night records its session as the filter's once the filter has stored its rows, before any later step can stop the night, and an evening the store holds no such record for was listed by any of the six reasons firing, which is every evening before the switch, drawn in the order 11.1 states. Every surface that says whether a name was on the list reads each evening by its own rule and names it: tonight's list and its header, a name's page, its listing history and its walk, the universe's last evening and strip, the run page's overlap, the facts retention, the overnight queue and the night's own request. The run page states how many of the night's names were on the list the evening before and at least once over the five and the twenty evenings before.</p>
 
+<h3>11.3 A worked example</h3>
+<p>Five figures follow the swing filter through one night and one name. The first three are drawn from what the code computes over the committed fixture, the fixture's date in each key, and a check regenerates them from the fixture and holds this section to them word for word; the last two are illustrative, say so, and state no figure a limit, a decision or a claim rests on (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it).</p>
+<figure class="fig svgfig">
+<svg width="100%" viewBox="0 0 700 302" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>One night through the swing filter&#39;s gates, 2026-09-04</title>
+<desc>The committed fixture&#39;s 4 members on 2026-09-04, counted through the market, trend and strength, setup, trigger and trade gates in order and the exclusions after them.</desc>
+<text x="188" y="41" text-anchor="end" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">Members of the index</text>
+<rect x="200" y="28" width="420" height="20" rx="3" fill="var(--compute)" fill-opacity="0.8"/>
+<text x="628" y="42" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">4</text>
+<text x="188" y="79" text-anchor="end" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">Market</text>
+<rect x="200" y="66" width="420" height="20" rx="3" fill="var(--compute)" fill-opacity="0.8"/>
+<text x="628" y="80" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">4</text>
+<text x="188" y="117" text-anchor="end" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">Trend and strength</text>
+<rect x="200" y="104" width="210" height="20" rx="3" fill="var(--compute)" fill-opacity="0.8"/>
+<text x="418" y="118" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">2</text>
+<text x="680" y="118" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">2 removed</text>
+<text x="188" y="155" text-anchor="end" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">Setup</text>
+<line x1="200" y1="142" x2="200" y2="162" stroke="var(--compute)" stroke-width="2"/>
+<text x="210" y="156" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">0</text>
+<text x="680" y="156" text-anchor="end" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">2 removed</text>
+<text x="188" y="193" text-anchor="end" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">Trigger</text>
+<line x1="200" y1="180" x2="200" y2="200" stroke="var(--compute)" stroke-width="2"/>
+<text x="210" y="194" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">0</text>
+<text x="188" y="231" text-anchor="end" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">Trade</text>
+<line x1="200" y1="218" x2="200" y2="238" stroke="var(--compute)" stroke-width="2"/>
+<text x="210" y="232" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">0</text>
+<text x="188" y="269" text-anchor="end" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">Not excluded</text>
+<line x1="200" y1="256" x2="200" y2="276" stroke="var(--compute)" stroke-width="2"/>
+<text x="210" y="270" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">0</text>
+</svg>
+<figcaption>Figure 11.1. One night through the swing filter&#39;s gates, the committed fixture&#39;s 2026-09-04.</figcaption>
+</figure>
+<div class="key">
+  <p><b>Key.</b> Computed by the swing filter over the committed fixture&#39;s 4 members on 2026-09-04, at section 17&#39;s proposed values with no filter version open. Each bar is how many members passed that gate and every gate before it, and the figure at the right is how many that gate removed; the last bar is the names no exclusion removed, which is the list.</p>
+  <p>A night is read from the top down: where the bars drop is where the night&#39;s names stopped, and an empty bar says no name got further, so the list is empty for a reason the figure names.</p>
+</div>
+<figure class="fig svgfig">
+<svg width="100%" viewBox="0 0 700 366" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>KEYS through every gate on 2026-09-04</title>
+<desc>KEYS&#39;s closes to 2026-09-04 with its support band, the stop at the band&#39;s low edge, the target at the nearest resistance above, the recent high, and each gate&#39;s answer.</desc>
+<rect x="64" y="156" width="376" height="106.3" fill="var(--compute)" fill-opacity="0.14" stroke="var(--compute)" stroke-width="1"/>
+<line x1="64" y1="43.9" x2="440" y2="43.9" stroke="var(--src)" stroke-width="1.6"/>
+<line x1="64" y1="262.2" x2="440" y2="262.2" stroke="var(--compute)" stroke-width="1.6" stroke-dasharray="5 4"/>
+<line x1="64" y1="43.9" x2="440" y2="43.9" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 4"/>
+<polyline points="64,195.8 73.6,179.4 83.3,189.5 92.9,222.6 102.6,212.2 112.2,218.1 121.8,171.5 131.5,173.4 141.1,181.4 150.8,203 160.4,219.6 170.1,247.9 179.7,276.1 189.3,222.9 199,201.6 208.6,192.2 218.3,127.8 227.9,145.2 237.5,142 247.2,128.7 256.8,147.2 266.5,119.6 276.1,83.6 285.7,85.8 295.4,72.5 305,61.5 314.7,128.6 324.3,200.4 333.9,210.1 343.6,211.4 353.2,229.6 362.9,198.1 372.5,192.3 382.2,179.1 391.8,198.6 401.4,189.5 411.1,201 420.7,193.3 430.4,189.8 440,174.5" fill="none" stroke="var(--ink)" stroke-width="1.4"/>
+<circle cx="440" cy="174.5" r="4" fill="var(--ink)"/>
+<text x="448" y="47.9" text-anchor="start" fill="var(--src)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">target 366.41</text>
+<text x="70" y="37.9" text-anchor="start" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">20-session high 366.41</text>
+<text x="448" y="178.5" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">close 327.21</text>
+<text x="448" y="276.2" text-anchor="start" fill="var(--compute)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">stop 300.87</text>
+<text x="64" y="20" text-anchor="start" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">KEYS, 40 sessions to 2026-09-04</text>
+<text x="566" y="60" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">market: passed</text>
+<text x="566" y="84" text-anchor="start" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">trend and strength: failed</text>
+<text x="566" y="108" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">setup: passed</text>
+<text x="566" y="132" text-anchor="start" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">trigger: failed</text>
+<text x="566" y="156" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">trade: passed</text>
+<text x="566" y="186" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">stopped at trend and strength</text>
+<text x="64" y="324" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">Pullback: 3.5 typical days below the 20-session high of 366.41.</text>
+<text x="64" y="346" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">Plan: entry 327.21, stop 300.87, target 366.41: reward 39.20 against risk 26.34, a reward to risk of 1.4882.</text>
+</svg>
+<figcaption>Figure 11.2. One name through every gate, KEYS on the committed fixture&#39;s 2026-09-04.</figcaption>
+</figure>
+<div class="key">
+  <p><b>Key.</b> Computed over the committed fixture on 2026-09-04 at section 17&#39;s proposed values. No member passed every gate that night, so the figure draws the one that passed the most, KEYS, and names the first gate that stopped it. The green band is the anchored support band the setup read, the dashed green line the stop at its low edge, the orange line the target at the nearest resistance band above the close, and the dotted line the highest high of the last 20 sessions the pullback is measured from. The plan is the swing trade&#39;s own: entered at the night&#39;s close, stopped below the band, won at the target.</p>
+  <p>Every figure on the plan is a fact about the chart: where support sits, how far the price came down to it, and what the trade stands to gain against what it risks. None of it is a forecast, and a name that fails a gate is not on the list however good its plan looks.</p>
+</div>
+<figure class="fig svgfig">
+<svg width="100%" viewBox="0 0 700 300" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>A setup resolving, KEYS from 2026-07-24</title>
+<desc>KEYS&#39;s swing plan read on 2026-07-24, its closes from the entry to the session it resolved on, with the stop and the target it resolved against.</desc>
+<line x1="64" y1="45.2" x2="560" y2="45.2" stroke="var(--src)" stroke-width="1.6"/>
+<line x1="64" y1="221.4" x2="560" y2="221.4" stroke="var(--compute)" stroke-width="1.6" stroke-dasharray="5 4"/>
+<polyline points="64,164 126,180.1 188,207.6 250,234.8 312,183.3 374,162.7 436,153.6 498,91.2 560,108" fill="none" stroke="var(--ink)" stroke-width="1.4"/>
+<circle cx="64" cy="164" r="4" fill="var(--ink)"/>
+<circle cx="250" cy="234.8" r="5" fill="none" stroke="var(--compute)" stroke-width="2"/>
+<text x="568" y="49.2" text-anchor="start" fill="var(--src)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">target 355.49</text>
+<text x="568" y="225.4" text-anchor="start" fill="var(--compute)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">stop 300.87</text>
+<text x="64" y="20" text-anchor="start" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">KEYS, entered at 318.67 on 2026-07-24</text>
+<text x="64" y="280" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">Lost on 2026-07-29, 3 session(s) after the entry, at a close of 296.72.</text>
+</svg>
+<figcaption>Figure 11.3. A setup resolving, KEYS replayed on the committed fixture&#39;s 2026-07-24.</figcaption>
+</figure>
+<div class="key">
+  <p><b>Key.</b> Replayed by the code over the committed fixture as of 2026-07-24, an earlier session than the fixture&#39;s nights, so the closes after it are stored and the setup can resolve: the latest session at least twenty sessions before the fixture&#39;s night whose swing plan passed the trade gate and resolved, at section 17&#39;s proposed values. The dot on the left is the entry at that session&#39;s close, the dashed green line the stop and the orange line the target; the ringed close is the one that decided it, the first close past either line.</p>
+  <p>A setup is scored on closes and on nothing else: a close through the stop is a loss and a close at the target is a win, whichever comes first, and one that reaches neither inside 63 sessions is unresolved and never a win.</p>
+</div>
+<figure class="fig svgfig">
+<svg width="100%" viewBox="0 0 700 262" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>The swing filter&#39;s two clocks on one timeline, illustrative</title>
+<desc>Illustrative. The shape clock tunes how many names pass and moves thresholds only through your rulings; the edge clock gathers evidence and changes nothing until it can retire a variant or promote one.</desc>
+<text x="20" y="26" text-anchor="start" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">Illustrative: the order things happen in, not a measurement.</text>
+<line x1="40" y1="96" x2="660" y2="96" stroke="var(--faint)" stroke-width="1"/>
+<line x1="40" y1="196" x2="660" y2="196" stroke="var(--faint)" stroke-width="1"/>
+<text x="40" y="70" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">Shape clock: how many names pass</text>
+<text x="40" y="170" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="600">Edge clock: whether passing names win</text>
+<circle cx="60" cy="96" r="5" fill="var(--compute)"/>
+<text x="60" y="120" text-anchor="middle" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">version opened</text>
+<circle cx="230" cy="96" r="5" fill="var(--compute)"/>
+<text x="230" y="120" text-anchor="middle" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">ordinary nights counted</text>
+<circle cx="400" cy="96" r="5" fill="var(--compute)"/>
+<text x="400" y="120" text-anchor="middle" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">a proposal, your ruling</text>
+<circle cx="590" cy="96" r="5" fill="var(--compute)"/>
+<text x="590" y="120" text-anchor="middle" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">shape frozen</text>
+<circle cx="60" cy="196" r="5" fill="var(--src)"/>
+<text x="60" y="220" text-anchor="middle" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">family registered</text>
+<circle cx="330" cy="196" r="5" fill="var(--src)"/>
+<text x="330" y="220" text-anchor="middle" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">first look: retire or leave</text>
+<circle cx="590" cy="196" r="5" fill="var(--src)"/>
+<text x="590" y="220" text-anchor="middle" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">earliest promotion</text>
+<text x="330" y="244" text-anchor="middle" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">about two years</text>
+<text x="590" y="244" text-anchor="middle" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">about three years</text>
+</svg>
+<figcaption>Figure 11.4. The two clocks on one timeline, illustrative.</figcaption>
+</figure>
+<div class="key">
+  <p><b>Key.</b> Illustrative: the positions show the order the events come in and not when they fall. The upper lane is the shape clock, which counts ordinary nights under one filter version and proposes a setting for your ruling, and is frozen after the one further acceptance the bound allows. The lower lane is the edge clock, which reads each candidate&#39;s blocks and can first retire one at its first look and first promote one at the look after.</p>
+  <p>Nothing on the edge clock moves a threshold before its looks, and nothing on the shape clock reads an outcome, which is why the list can be tuned early and judged only late.</p>
+</div>
+<figure class="fig svgfig">
+<svg width="100%" viewBox="0 0 700 222" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Near-miss attribution, illustrative</title>
+<desc>Illustrative. Beside the setups the filter admitted, the setups each gate or exclusion alone rejected, each group&#39;s share reaching target before stop against the break-even its own plans demanded.</desc>
+<text x="20" y="26" text-anchor="start" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">Illustrative: invented shares, to show how the region reads.</text>
+<text x="230" y="68" text-anchor="end" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">admitted by the filter</text>
+<rect x="244" y="56" width="184" height="18" rx="3" fill="var(--compute)" fill-opacity="0.8"/>
+<line x1="396" y1="52" x2="396" y2="78" stroke="var(--src)" stroke-width="2"/>
+<text x="436" y="69" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">46%</text>
+<text x="230" y="108" text-anchor="end" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">rejected by trigger alone</text>
+<rect x="244" y="96" width="164" height="18" rx="3" fill="var(--compute)" fill-opacity="0.8"/>
+<line x1="396" y1="92" x2="396" y2="118" stroke="var(--src)" stroke-width="2"/>
+<text x="416" y="109" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">41%</text>
+<text x="230" y="148" text-anchor="end" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">rejected by trade alone</text>
+<rect x="244" y="136" width="116" height="18" rx="3" fill="var(--compute)" fill-opacity="0.8"/>
+<line x1="404" y1="132" x2="404" y2="158" stroke="var(--src)" stroke-width="2"/>
+<text x="368" y="149" text-anchor="start" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="600">29%</text>
+<text x="230" y="188" text-anchor="end" fill="var(--ink)" font-family="Segoe UI, Arial, sans-serif" font-size="12.5" font-weight="400">removed by suspect series alone</text>
+<text x="244" y="188" text-anchor="start" fill="var(--muted)" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400">withheld below the block floor</text>
+</svg>
+<figcaption>Figure 11.5. Near-miss attribution, illustrative.</figcaption>
+</figure>
+<div class="key">
+  <p><b>Key.</b> Illustrative, with invented shares. Each bar is one group&#39;s share of setups that reached target before stop, and the orange mark is the break-even its own plans demanded. The first group is what the filter admitted; each other is what one gate or one exclusion alone kept out while everything else passed; a group below the block floor draws no bar.</p>
+  <p>A gate is earning its place where the setups it alone rejects fall short of their own break-even, and costing setups where they clear it. Each group is a population and not a test, so it says where to look and never moves a threshold by itself.</p>
+</div>
+
 <h2>12. The research runner and its staleness rules</h2>
 <div class="fig">
   <div class="title">Figure 12.1. What happens when you open a name. Most of the time, nothing is spent.</div>
@@ -830,7 +994,7 @@ section carrying its own date and the model that wrote it.</p>
   <tr><td><b>Which conditions exist</b></td><td>a condition whose setups fail to clear their own break-even over enough resolved cases is retired; a new one is registered and scored in shadow until it has earned promotion (see: A live reason is added or retired only by a change to section 11 and the code together, and the register holds candidates alone)</td><td>8, at the register and the shadow column</td></tr>
   <tr><td><b>The ladder rules</b></td><td>the merge distance, where the stop sits, the near-exit skip, and whether a zone's edges come from its non-average anchors alone. Each is a named rule version, and because the bars are stored every night can be scored under every version at once</td><td>8, at rule versions scored counterfactually</td></tr>
 </table>
-<p>Only the first is cheap enough to do without resolved setups, and it is the one that matters least: it needs sixty ordinary nights of fired counts, where the other two need setups that have reached a target or a stop. All three wait on the calendar rather than on a checkpoint, which is why the other two sit in phase 8 and why phase 5 has an obligation described below. A fourth row stood here until 8.0, the model's own proposal stored beside the computed plan and scored with it, and it is dropped rather than carved out of the rule that no model is asked for a number (see: The model writes no entry or exit proposal, and the loop scores only what code computes).</p>
+<p>Only the first is cheap enough to do without resolved setups, and it is the one that matters least: it needs sixty ordinary nights of the swing filter's gate counts, where the other two need setups that have reached a target or a stop. All three wait on the calendar rather than on a checkpoint, which is why the other two sit in phase 8 and why phase 5 has an obligation described below. A fourth row stood here until 8.0, the model's own proposal stored beside the computed plan and scored with it, and it is dropped rather than carved out of the rule that no model is asked for a number (see: The model writes no entry or exit proposal, and the loop scores only what code computes).</p>
 
 <h3>13.3 The guardrails</h3>
 <p>The danger in a loop like this is not that it fails to find anything. It is that it finds something that is not there. Run five candidate conditions of no real value and the chance that at least one clears an ordinary significance test is about 23%; run twenty and it is 64%. Picking the best of twenty noise processes and shipping it is the standard way a self-improving system makes itself worse while appearing to learn.</p>
