@@ -25036,7 +25036,17 @@ Mutated:    the rule, stated before the run: one mutation for each property the 
             W6 the recount reading the event on the night for the arrival: red in the recount test alone.
             W7 the filter reading one earlier session fewer: red in the filter's store test alone.
             W8 the counts reading no earlier session: red in the counts' window test alone.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run for each of the eight in a detached worktree at 91033ca, the tree carrying
+            this entry, filtered to the sixteen tests the entry names and the properties reached, each
+            reverted with `git checkout -- .` and the tree read clean after. All eight went red, five as
+            predicted and three turning one test more than predicted, each for a reason read off the run.
+            W1 turned three red, the two predicted and the one-session variant's trigger test, since a
+            loop one session short at a window of one reads no session at all. W2 turned five, the four
+            predicted and the same variant test, since an unread session read as no event makes an
+            arrival at any window. W3 and W4 each turned the twice-median test red alone. W5 turned four,
+            the three predicted and the drawn proposal, which draws the trend band. W6 turned the recount
+            test red alone, W7 the filter's store test alone, and W8 the counts' window test alone. The
+            whole suite ran green over 91033ca in the gates, 1376 of 1376.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1376 of 1376
             tests ran with none failed, migrations 0 to 40 with none pending, schema version 40,
             exit 0, against `data-ci` and never `data`.
