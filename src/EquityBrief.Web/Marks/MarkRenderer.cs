@@ -169,6 +169,9 @@ public sealed record SwingReadingsView(
     double? Tightness,
     string? Note);
 
+// One operating obligation's count against its trigger, as the Calibration region states it.
+public sealed record TriggerLine(string Obligation, int Count, int Trigger, string Says);
+
 // One step of the swing filter's funnel: the gate, how many members passed it and every gate before it,
 // and how many it removed.
 public sealed record FunnelStep(string Gate, int Passed, int Removed);
@@ -3291,84 +3294,111 @@ public sealed class MarkRenderer : IComponent
     // correction that disagree show it on the page rather than agreeing by construction.
     // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
     // see: The significance threshold is divided by the family size, and the divisor is shown
-    // Each reason's share of the index against its target, the share firing any reason against its
-    // own, the ordinary nights counted against the sixty the calibration waits on, and every event
-    // session with the reason that made it one. Each share is drawn at one place and carried whole
-    // on its row, and a reason the night did not evaluate under its current rule says so.
-    // see: A reason's threshold is calibrated to a target share of the index over ordinary nights and a night a usually quiet reason floods is left out
-    public string ReasonShares(SharesAgainstTargets shares)
+    // The run page's Calibration region, section 15.10's rows: what the two clocks can do, in the one
+    // sentence section 13 states; the shape half, being the ordinary nights under the open filter
+    // version against the sixty the calibration waits on, every event night with what made it one, each
+    // gate's median count and the list's against their bands, drawn as not yet measured until the
+    // trigger, and each reason's share as context; and a line for each operating obligation no other
+    // surface counts, its count against its trigger.
+    // see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out
+    public string Calibration(ShapeState shape, IReadOnlyList<TriggerLine> triggers)
     {
         var region = new StringBuilder();
 
-        region.Append(Invariant, $"<section class=\"reason-shares\" data-night=\"{shares.Night:yyyy-MM-dd}\" ");
-        region.Append(Invariant, $"data-event=\"{(shares.IsAnEventSession ? "true" : "false")}\" data-nights-wanted=\"{shares.NightsWanted}\">");
+        region.Append(Invariant, $"<section class=\"calibration\" data-night=\"{shape.Night:yyyy-MM-dd}\" data-version=\"{Escaped(shape.Version)}\" ");
+        region.Append(Invariant, $"data-window=\"{shape.WindowNights}\" data-ordinary=\"{shape.Ordinary}\" data-wanted=\"{shape.Wanted}\" data-crossed=\"{(shape.Crossed ? "true" : "false")}\">");
+        region.Append(Invariant, $"<p class=\"timeline\">{Escaped(ShapeClock.Timeline)}</p>");
 
-        var tonight = shares.Events.FirstOrDefault(session => session.Session == shares.Night);
+        region.Append("<h4>The shape clock</h4>");
+        region.Append(Invariant, $"<p class=\"shape-window\" data-ordinary=\"{shape.Ordinary}\">");
+        region.Append(shape.VersionOpen
+            ? Formatted($"{shape.Ordinary} of the {shape.Wanted} ordinary nights under filter version {Escaped(shape.Version)} are stored, of {shape.WindowNights} night(s) under it.")
+            : Formatted($"No filter version is open, so no night counts toward the {shape.Wanted} yet: {shape.Ordinary} ordinary night(s) of {shape.WindowNights} are stored under section 17's proposed values."));
+        region.Append(shape.Crossed ? " The trigger is crossed, and shape calibration is due." : string.Empty);
+        region.Append("</p>");
 
-        if (tonight is { } flooded)
+        region.Append(Invariant, $"<p class=\"event-line\" data-event=\"{(shape.Tonight is null ? "false" : "true")}\">");
+        if (shape.Tonight is { } flooded)
         {
-            region.Append(Invariant, $"<p class=\"event-line\" data-event=\"true\">The night of {shares.Night:yyyy-MM-dd} is an event session: {Floods(flooded)}. It is counted, and no median below reads it.</p>");
+            region.Append(Invariant, $"The night of {shape.Night:yyyy-MM-dd} is an event night: {Causes(flooded)}. It is counted, and no median below reads it.");
         }
         else
         {
-            region.Append(Invariant, $"<p class=\"event-line\" data-event=\"false\">The night of {shares.Night:yyyy-MM-dd} is an ordinary night: no reason usually below a quarter of the index fired for more than a quarter of it.</p>");
+            region.Append(Invariant, $"The night of {shape.Night:yyyy-MM-dd} is an ordinary night, or one the filter stored nothing for.");
         }
 
-        region.Append("<div class=\"tbl-wrap\">");
-        region.Append("<table class=\"shares-table\">");
-        region.Append("<tr><th>Reason</th><th>On the night</th><th>Median over ordinary nights</th><th>Ordinary nights</th><th>Target</th></tr>");
+        region.Append("</p>");
 
-        foreach (var share in shares.Reasons.Append(shares.AnyReason))
+        region.Append("<div class=\"tbl-wrap\"><table class=\"shape-table\"><tr><th>Through</th><th>Median over the ordinary nights</th><th>Band, proposed</th></tr>");
+
+        foreach (var banded in shape.Gates.Append(shape.List))
         {
-            region.Append(Invariant, $"<tr data-reason=\"{Escaped(share.Reason)}\" ");
-            region.Append(Invariant, $"data-fired=\"{(share.Night is { } night ? night.Fired.ToString(Invariant) : "none")}\" ");
-            region.Append(Invariant, $"data-counted=\"{(share.Night is { } whole ? whole.Counted.ToString(Invariant) : "none")}\" ");
-            region.Append(Invariant, $"data-share=\"{(share.Share is { } drawn ? drawn.ToString("R", Invariant) : "none")}\" ");
-            region.Append(Invariant, $"data-median=\"{(share.Median is { } median ? median.ToString("R", Invariant) : "none")}\" ");
-            region.Append(Invariant, $"data-ordinary=\"{share.OrdinaryNights}\" data-target=\"{share.Target.ToString("R", Invariant)}\">");
-            region.Append(Invariant, $"<td>{Escaped(share.Reason)}</td>");
-
-            if (share.Night is { } counted && share.Share is { } fraction)
-            {
-                region.Append(Invariant, $"<td>{counted.Fired} of {counted.Counted}, {Figures.Share(fraction)}</td>");
-            }
-            else
-            {
-                region.Append("<td>not evaluated under its current rule</td>");
-            }
-
-            region.Append(share.Median is { } typical ? $"<td>{Figures.Share(typical)}</td>" : "<td>no ordinary night yet</td>");
-            region.Append(Invariant, $"<td>{share.OrdinaryNights} of {shares.NightsWanted}</td>");
-            region.Append(Invariant, $"<td>{Figures.Share(share.Target)}, proposed</td></tr>");
+            region.Append(Invariant, $"<tr data-measure=\"{Escaped(banded.Measure)}\" data-median=\"{(banded.Median is { } median ? median.ToString("R", Invariant) : "none")}\" data-low=\"{banded.Low}\" data-high=\"{banded.High}\" data-measured=\"{(shape.Crossed ? "true" : "false")}\">");
+            region.Append(Invariant, $"<td>{Escaped(banded.Measure)}</td>");
+            region.Append(banded.Median is { } drawn
+                ? Formatted($"<td class=\"{(shape.Crossed ? "num" : "num not-yet")}\">{drawn:0.#}{(shape.Crossed ? string.Empty : ", not yet measured")}</td>")
+                : "<td class=\"not-yet\">no ordinary night yet</td>");
+            region.Append(Invariant, $"<td class=\"num\">{banded.Low} to {banded.High}</td></tr>");
         }
 
         region.Append("</table></div>");
 
-        region.Append(Invariant, $"<p class=\"event-sessions\" data-events=\"{shares.Events.Count}\">");
-        if (shares.Events.Count == 0)
+        region.Append(Invariant, $"<p class=\"event-sessions\" data-events=\"{shape.Events.Count}\">");
+        if (shape.Events.Count == 0)
         {
-            region.Append("No event session among the nights the store holds.");
+            region.Append("No event night among the nights in the window.");
         }
         else
         {
-            region.Append("Event sessions, left out of every median: ");
+            region.Append("Event nights, left out of every median: ");
 
-            for (var at = 0; at < shares.Events.Count; at++)
+            for (var at = 0; at < shape.Events.Count; at++)
             {
-                region.Append(Invariant, $"{(at == 0 ? string.Empty : "; ")}{shares.Events[at].Session:yyyy-MM-dd}, {Floods(shares.Events[at])}");
+                region.Append(Invariant, $"{(at == 0 ? string.Empty : "; ")}{shape.Events[at].Session:yyyy-MM-dd}, {Causes(shape.Events[at])}");
             }
 
             region.Append('.');
         }
 
-        region.Append("</p></section>");
+        region.Append("</p>");
+
+        region.Append("<div class=\"tbl-wrap\"><table class=\"reason-context\"><tr><th>Reason, as context</th><th>On the night</th><th>Median over the ordinary nights</th></tr>");
+
+        foreach (var reason in shape.Reasons)
+        {
+            region.Append(Invariant, $"<tr data-reason=\"{Escaped(reason.Reason)}\" data-share=\"{(reason.Tonight is { } share ? share.ToString("R", Invariant) : "none")}\" data-median=\"{(reason.Median is { } median ? median.ToString("R", Invariant) : "none")}\">");
+            region.Append(Invariant, $"<td>{Escaped(reason.Reason)}</td>");
+            region.Append(reason.Tonight is { } tonight ? $"<td>{Figures.Share(tonight)}</td>" : "<td>not evaluated under its current rule</td>");
+            region.Append(reason.Median is { } typical ? $"<td>{Figures.Share(typical)}</td>" : "<td>no ordinary night yet</td>");
+            region.Append("</tr>");
+        }
+
+        region.Append("</table></div>");
+
+        region.Append("<h4>What else is waiting on a count</h4><ul class=\"triggers\">");
+
+        foreach (var line in triggers)
+        {
+            region.Append(Invariant, $"<li data-trigger=\"{Escaped(line.Obligation)}\" data-count=\"{line.Count}\" data-of=\"{line.Trigger}\">{line.Count} of {line.Trigger}: {Escaped(line.Says)}</li>");
+        }
+
+        region.Append("</ul></section>");
 
         return region.ToString();
     }
 
-    static string Floods(EventSession session) =>
-        string.Join(" and ", session.FloodedBy.Select(flood =>
-            $"{Escaped(flood.Reason)} fired for {Figures.Share(flood.Share)} of the index against its median of {Figures.Share(flood.Median)}"));
+    // The line at the top of the run page once the shape clock's trigger is crossed.
+    public string ShapeDue(ShapeState shape) =>
+        shape.Crossed
+            ? Formatted($"<p class=\"due\" data-due=\"shape\">Shape calibration is due: {shape.Ordinary} ordinary nights under filter version {Escaped(shape.Version)} are stored, against the {shape.Wanted} it waits on.</p>")
+            : string.Empty;
+
+    static string Causes(EventNight night) =>
+        string.Join(
+            " and ",
+            night.Floods
+                .Select(flood => $"{Escaped(flood.Measure)} at {Figures.Share(flood.Share)} of the index against its median of {Figures.Share(flood.Median)}")
+                .Concat(night.VolumeRatio is { } ratio ? [Formatted($"the index trading at {ratio:0.00} times its fifty-day volume")] : []));
 
     public string ShadowCandidates(ShadowRegion shadow)
     {

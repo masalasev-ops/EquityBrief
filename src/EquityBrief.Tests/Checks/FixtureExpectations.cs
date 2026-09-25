@@ -56,6 +56,11 @@ public partial class FixtureExpectations
         "fixture-expectations",
         ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
+            // 12.3, the shape clock's event rule and its sixty nights.
+            CheckReach.Key(Scope.LimitsTable, "Event session share"),
+            CheckReach.Key(Scope.LimitsTable, "Event volume ratio"),
+            CheckReach.Key(Scope.LimitsTable, "Shape calibration nights"),
+
             // 12.2, the swing filter: the nine thresholds it is proposed at, its two stores, its
             // fixture row and the two failures its gates answer.
             CheckReach.Key(Scope.LimitsTable, "Market gate"),

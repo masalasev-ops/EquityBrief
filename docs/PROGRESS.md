@@ -24630,3 +24630,112 @@ Carried:    the trigger test's assertion that a session before with no stored re
             variants after 12.4, from the counts above; and the operator's two commands against the
             live store. The live store takes migration 39 when the first night after the merge
             starts, and from that night stores a gate result for every member.
+
+### 12.3 - the shape clock and the run page's Calibration region, in place of 11.9's region stating each reason's share against its target   2026-09-25
+Built:      the shape clock, pure functions in `ShapeClock`: over the nights stored under the open
+            filter version, or with none open under section 17's proposed values, which count toward
+            no window, it counts each gate after the market through the funnel with the market held
+            open, and the list. A night is an event night where a gate counted that way or a reason,
+            whose median share over every night in the window is below a quarter, passes or fires for
+            more than a quarter of the index, or where the index's median volume is 1.8 times its
+            fifty-day average or more; the market gate is never read. Events are counted, marked and
+            read by no median; the ordinary nights are counted against sixty, and each gate's median
+            and the list's are held against their bands, proposed. The run page's Calibration region
+            replaces 11.9's region: it opens with the sentence on what the two clocks can do, held once
+            in code and stated word for word in section 13.8; draws the shape clock, marked not yet
+            measured until the trigger, with a line at the top of the page once it is crossed; draws
+            the reasons' shares as context; and counts, each against its trigger, what five operating
+            rows wait on. Each night's firing off its listings moved from the run page's code to Core,
+            `NightFirings`, so the page and the counts read one statement of it, and `filter-counts`
+            now prints the shape clock's reading of every stored night and its class.
+Written:    the decision "The swing filter's shape is calibrated over its ordinary nights, and a night
+            one cause floods is left out", superseding the one that calibrated each reason to a target
+            share, which moves to Previously decided with what stands and what changed. Section 11's
+            three calibration paragraphs, 13.2's condition thresholds row, a new 13.8, section 15.10's
+            three Calibration rows in place of 11.9's one, and section 17's event share reworded, the
+            two targets taken out, and four rows added: the event volume ratio, the sixty nights, the
+            gate bands and the list band. In `BUILD_PLAN.md` the six reason thresholds are discharged
+            by the switch rather than by a calibration, and the five operating rows are read on the
+            Calibration region, each cited back by 12.3's own text. The `fixture-expectations` and
+            `read-surface` roster rows. Every spec line changed has its prior text in `CHANGELOG.md`.
+            The gate bands are the plan's, stated here for the first time, and are the operator's to
+            amend in the ruling after 12.4: through trend and strength 50 to 100 names, the setup 20
+            to 60, the trigger 8 to 40, the trade 5 to 35, and the list 5 to 30.
+Found:      the event rule as the plan stated it, a gate whose own median share is below a quarter,
+            marks three of the operator's ordinary nights if a gate is counted alone: the setup gate
+            alone passes 27 to 28% of the index on 2026-09-09, 09-11 and 09-14 against a median of
+            24%. Counted through the funnel, as the gates' bands are, no gate reaches a quarter on any
+            stored night. The decision states the count through the funnel and says why.
+Expected:   worked by hand over constructed nights: a usually quiet gate and a usually quiet reason each
+            marking the night they pass a quarter, one at exactly a quarter marking nothing, and one
+            above a quarter every night marking none; a volume ratio at 1.8 marking and 1.79 not;
+            sixty ordinary nights under an open version crossing and fifty-nine not, sixty under no
+            version counting toward nothing, and sixty with ten events among them crossing only at
+            seventy; an event night's counts left out of every median. And twelve constructed nights
+            carrying the operator's stored nights' measured shares, gates through the funnel and
+            reasons in tenths of a per cent with the volume ratio, marking 2026-09-18 alone, for
+            unusual volume at 50.1% against a median of 1.6% and the index at 2.00 times its volume.
+Measured:   the classifier over the operator's twelve stored nights, through `filter-counts` on the copy
+            made at 2026-09-25T01:18Z, read-only: 2026-09-18 is the only event night, for unusual
+            volume and the volume ratio; every other night is ordinary. Through the funnel, the market
+            held open, trend and strength passes 8.5 to 16.7% of the index, the setup 1.2 to 3.4%, the
+            trigger 0 to 1.4% and the trade 0 to 0.2%. Crossed a level fires for 22.2 to 34.7% with a
+            median of 27.2%, above a quarter, so it marks no night; at entry zone 34.2 to 47.2%;
+            unusual volume 0.8 to 3.8% but for the expiry's 50.1%; the volume ratio 0.81 to 0.98 but
+            for 2.00. No filter version is open on the live store, so none of these nights counts
+            toward the sixty.
+Tests:      1362, from 1357: nine added and four taken out. Under `fixture-expectations` six, the
+            classifier, the volume ratio, the stored nights, the trigger and the medians, and the
+            trigger test's assertion carried from 12.2 that a session before with no stored result
+            fails the gate. Under `read-surface` three: the region against the test's own arithmetic,
+            the due line at sixty nights and not at fifty-nine, and the sentence and the five counts.
+            11.9's four tests of its region go with the region. Exact counts moved, each with its
+            reason beside it: the screens' rows 69 to 71, checked elements 209 to 215 and claims 216
+            to 223, and the tables the screens draw 32 to 33.
+Claims:     516, from 507, with 516 PASS and 0 out of scope, and 523 placements and verdicts
+            reconciled against a floor of 34. Nine more, as the plan predicted for this checkpoint:
+            seventeen rows added, the shape clock's seven parts, its sentence, its five counts and
+            section 17's four, and eight removed, 11.9's six parts and its two targets, named in
+            `ArchitectureConformance.Loop.PhaseTwelveRemoved` and asserted absent. The pair after
+            12.9 stays at 553 and 553 on the ladder's first tranche and 554 and 554 on the swing
+            trade's plan.
+Pins:       the branch against `main` at d4be565, read off `RuleVersionScorer.CodeVersionSources` and
+            `CandidateEvaluator.EvaluationSources` in this tree, 20 distinct files, and the filter's own
+            `SwingFilter.CodeVersionSources`, 16: none of them is edited, so the filter's code pin is
+            unmoved at 786919e5c608.
+Mutated:    the rule, stated before the run: one mutation for each property the 12.3 done condition
+            names, section H's event exclusion removed from the shape sample among them, and one for
+            each line the page draws off its own read, each the smallest edit that changes the
+            property's answer and still compiles, filtered to the tests this checkpoint added, one at
+            a time in a detached worktree at this entry's commit and reverted after each.
+            Predicted:
+            M1 the event share one step looser (`>` to `>=`): red in the classifier test alone.
+            M2 the event nights left in the shape sample: red in the trigger test, the medians test
+            and the region test, three.
+            M3 the volume clause dropped: red in the volume ratio test, the stored nights, the trigger
+            test and the region test, four.
+            M4 nights counting toward the sixty before a version is open: red in the trigger test alone.
+            M5 the trigger one night early: red in the trigger test and the due line test, two.
+            M6 the list's median read off the trade's count: red in the medians test alone, the
+            constructed region's list equalling its trade by construction.
+            M7 the page opening with anything other than the sentence the code holds: red in the
+            sentence and counts test alone.
+            M8 a night run by hand for a named session counted toward the wall clock: red in the
+            sentence and counts test alone.
+            M9 a version step replaying only the merge distance counted as both kinds: red in the same
+            test alone.
+            M10 an in-sample night counted toward the trend confirmation: red in the same test alone.
+            M11 the due line drawn before the trigger: red in the region test and the due line test,
+            two.
+            M12 the medians drawn as measured before the trigger: red in the region test alone.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1362 of 1362
+            tests ran with none failed, migrations 0 to 39 with none added and none pending, schema
+            version 39, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 516 claims, 516 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 523 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1362 of 1362 tests.
+            Both gates ran over the tree carrying this entry, in the worktree beside the
+            repository, and the operator's store under `data/` was not touched by either.
+Carried:    the operator's ruling on the starting settings, the trade gate's input, the five variants
+            and the gate bands after 12.4; and the operator's two commands against the live store.

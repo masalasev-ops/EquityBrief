@@ -548,6 +548,7 @@ static async Task<int> FilterCountsReport(string[] args)
         line => Console.Error.WriteLine(line));
 
     Console.Write(FilterCounts.Report(counts, counter.Notes));
+    Console.Write(FilterCounts.ShapeReport(counter.Shapes, counter.Firings));
 
     return 0;
 }

@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Web.Marks;
 
@@ -1427,15 +1428,19 @@ public sealed class SinglePageApp : IComponent
         OrderComparison? orders = null,
         CandidateRegion? candidates = null,
         TrendVersionRegion? versions = null,
-        SharesAgainstTargets? shares = null,
+        ShapeState? shape = null,
         MarketView? market = null,
-        FunnelView? funnel = null)
+        FunnelView? funnel = null,
+        IReadOnlyList<TriggerLine>? triggers = null)
     {
         var region = new StringBuilder();
 
         region.Append(Invariant($"<section class=\"run\" data-night=\"{night:yyyy-MM-dd}\" data-stages=\"{stages.Count}\">"));
 
         region.Append(Cards.Masthead("Run evidence", "<span class=\"m-screen\">Run evidence</span>", Invariant($"Night of {night:yyyy-MM-dd}")));
+
+        // Once sixty ordinary nights are stored under the open version, the page says so before anything else.
+        region.Append(shape is { } due ? marks.ShapeDue(due) : string.Empty);
 
         region.Append(Cards.Computed(
             Invariant($"Run of {night:yyyy-MM-dd}"),
@@ -1477,18 +1482,18 @@ public sealed class SinglePageApp : IComponent
             stamp: Cards.Night(night),
             region: "records"));
 
-        if (shares is { } against)
+        if (shape is { } clock)
         {
             region.Append(Cards.Computed(
-                "Reasons against their targets",
-                marks.ReasonShares(against) + Cards.Key(
+                "Calibration",
+                marks.Calibration(clock, triggers ?? []) + Cards.Key(
                     "How to read it.",
-                    "Each share is the reason's fires over the index's rows that night, counting only the rows that evaluated it under its current rule. The median is over the ordinary nights, and the target is where the calibration moves each threshold once sixty of them are stored. An event session, a night a reason usually below a quarter of the index fires for more than a quarter of it, is counted and read by no median.",
-                    "A share far above its target means that reason's setups are close to the universe's, so its record can say little about it. The gap between the two is what the calibration closes."),
-                title: "How much of the index each reason fires for, against its target",
-                lede: "The targets are proposals; the thresholds move only once the ordinary nights reach sixty.",
+                    "The shape clock counts, over the ordinary nights under the open filter version, how many members pass each gate after the market and every gate before it, the market held open, and how many reach the list, against the bands each is calibrated to. An event night, one on which a usually quiet gate or reason passes more than a quarter of the index or the index trades at 1.8 times its fifty-day volume, is counted and read by no median. The lines beneath count what five other settings are waiting on.",
+                    "A median outside its band is what the shape calibration moves a threshold for, once sixty ordinary nights are stored; until then the figures are drawn as not yet measured and decide nothing."),
+                title: "What the calibration is waiting on",
+                lede: "Thresholds move only through the shape calibration and your rulings.",
                 stamp: Cards.Night(night),
-                region: "shares"));
+                region: "calibration"));
         }
 
         region.Append(Cards.Computed(

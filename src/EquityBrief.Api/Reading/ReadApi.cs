@@ -322,6 +322,17 @@ public sealed record SwingReadingRow(
     double? Tightness,
     string? Note);
 
+// One night's swing filter results counted: the version it ran under, the members, how many passed
+// each gate after the market and every one before it, the market held open, and how many of those no
+// exclusion removed.
+public sealed record GateNightRow(DateOnly Session, string Version, int Members, int Trend, int Setup, int Trigger, int Trade, int Listed);
+
+// What the calibration region's trigger lines read off the run log and the rule versions: the nights
+// run for the session the clock fell on that closed, the version step's line on each of them, and the
+// nights of trend labels since the version holding a new label for more than one night opened, with
+// its name, none where no such version is open.
+public sealed record TriggerReads(int ClockNights, IReadOnlyList<string> VersionSteps, int? ConfirmationNights, string? ConfirmationVersion);
+
 // One member's swing filter result on a night as the filter stored it: each gate's pass, the family
 // and the trigger, the trade read both ways, the exclusions, the rank among the names passing, and
 // the gates' reasons and values as stored.
@@ -465,6 +476,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.SwingReading, Touch.Read),
             new StoreTouch(Store.MarketReading, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
+            new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
@@ -1931,6 +1943,171 @@ public sealed class ReadApi : IComponent
             reader.IsDBNull(12) ? null : reader.GetDouble(12),
             reader.IsDBNull(13) ? null : reader.GetDouble(13),
             reader.IsDBNull(14) ? null : reader.GetString(14));
+
+    // Every night's swing filter results counted, the market gate held open.
+    const string GateNights = @"
+        SELECT session_date, MIN(version), COUNT(*),
+               SUM(trend),
+               SUM(trend * setup),
+               SUM(trend * setup * trigger_pass),
+               SUM(trend * setup * trigger_pass * trade),
+               SUM(CASE WHEN trend = 1 AND setup = 1 AND trigger_pass = 1 AND trade = 1 AND exclusions = '[]' THEN 1 ELSE 0 END)
+        FROM gate_result
+        GROUP BY session_date
+        ORDER BY session_date;
+    ";
+
+    const string MarketRatios = "SELECT session_date, median_volume_ratio FROM market_reading;";
+
+    const string OpenFilterVersion = "SELECT version FROM filter_version WHERE closed_at IS NULL ORDER BY opened_at DESC LIMIT 1;";
+
+    // A night run for the session the clock fell on carries no named session in its run id, and one
+    // run by hand for a named session does.
+    const string ClockNightCloses = @"
+        SELECT COUNT(DISTINCT run_id)
+        FROM run_log
+        WHERE stage = 'close' AND outcome = 'ok' AND run_id LIKE 'night-%' AND run_id NOT LIKE '%-for-%';
+    ";
+
+    const string ClockNightVersionSteps = @"
+        SELECT detail
+        FROM run_log
+        WHERE stage = 'rule-versions' AND outcome = 'ok' AND run_id LIKE 'night-%' AND run_id NOT LIKE '%-for-%';
+    ";
+
+    const string OpenTrendVersions = @"
+        SELECT version, parameters, opened_at
+        FROM rule_version
+        WHERE rule = $rule AND closed_at IS NULL;
+    ";
+
+    const string VersionNights = @"
+        SELECT COUNT(DISTINCT session_date)
+        FROM version_score
+        WHERE rule = $rule AND version = $version AND opened_at = $opened_at AND sample = 'scored';
+    ";
+
+    public async Task<IReadOnlyList<GateNightRow>> GateNightsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = GateNights;
+
+        var rows = new List<GateNightRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new GateNightRow(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(1),
+                reader.GetInt32(2),
+                reader.GetInt32(3),
+                reader.GetInt32(4),
+                reader.GetInt32(5),
+                reader.GetInt32(6),
+                reader.GetInt32(7)));
+        }
+
+        return rows;
+    }
+
+    public async Task<IReadOnlyDictionary<DateOnly, double?>> MarketRatiosAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = MarketRatios;
+
+        var ratios = new Dictionary<DateOnly, double?>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            ratios[DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture)] = reader.IsDBNull(1) ? null : reader.GetDouble(1);
+        }
+
+        return ratios;
+    }
+
+    // The open filter version's name, and none where none is open.
+    public async Task<string?> OpenFilterVersionAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = OpenFilterVersion;
+
+        return await command.ExecuteScalarAsync() as string;
+    }
+
+    public async Task<TriggerReads> TriggerReadsAsync()
+    {
+        await using var connection = Open();
+
+        int clockNights;
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = ClockNightCloses;
+            clockNights = Convert.ToInt32(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
+        }
+
+        var steps = new List<string>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = ClockNightVersionSteps;
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                steps.Add(reader.IsDBNull(0) ? string.Empty : reader.GetString(0));
+            }
+        }
+
+        // The trend version whose new label has to hold more than one night, read off its stored parameters.
+        (string Version, string OpenedAt)? confirmation = null;
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = OpenTrendVersions;
+            command.Parameters.AddWithValue("$rule", LadderRules.TrendRule);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                using var parameters = JsonDocument.Parse(reader.GetString(1));
+
+                if (parameters.RootElement.TryGetProperty(EquityBrief.Core.Ladders.TrendSeries.NightsTheNewLabelHolds, out var nights)
+                    && nights.ValueKind == JsonValueKind.Number
+                    && nights.GetDouble() > 1)
+                {
+                    confirmation = (reader.GetString(0), reader.GetString(2));
+                }
+            }
+        }
+
+        int? confirmationNights = null;
+
+        if (confirmation is { } version)
+        {
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = VersionNights;
+            command.Parameters.AddWithValue("$rule", LadderRules.TrendRule);
+            command.Parameters.AddWithValue("$version", version.Version);
+            command.Parameters.AddWithValue("$opened_at", version.OpenedAt);
+            confirmationNights = Convert.ToInt32(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
+        }
+
+        return new TriggerReads(clockNights, steps, confirmationNights, confirmation?.Version);
+    }
 
     // The swing filter's columns, in the order every read of them takes them.
     const string GateColumns = @"

@@ -177,6 +177,7 @@ public partial class FixtureExpectations
 
         Assert.False(Passed(again, SwingGates.Trigger));
         Assert.Equal("the trigger fired on 2026-09-04 too, so tonight is not its arrival", Reason(again, SwingGates.Trigger));
+        Assert.False(Passed(Gates(Passing() with { TriggerFiredTheSessionBefore = null }), SwingGates.Trigger));
         Assert.Equal(
             "no gate result is stored for 2026-09-04, so the trigger's arrival cannot be read",
             Reason(Gates(Passing() with { TriggerFiredTheSessionBefore = null }), SwingGates.Trigger));
