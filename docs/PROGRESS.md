@@ -25593,7 +25593,10 @@ Mutated:    the rule, stated before the run: one mutation for each check this ch
             sentence test alone.
             P4 the words that say a sentence is not about the live rule widened to any mention of the list:
             red in the sentence test alone, the scan no longer finding section 8.1's old sentence.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run for each of the four in a detached worktree at 382b807, the tree carrying this
+            entry, filtered to the two tests, each reverted with `git checkout -- .` and the tree read clean
+            after. All four went red in the test predicted and no other: P1 and P2 the pair test, P3 and P4
+            the sentence test. The whole suite ran green over 382b807 in the gates, 1403 of 1403.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1403 of 1403
             tests ran with none failed, migrations 0 to 42 with none pending, schema version 42,
             exit 0, against `data-ci` and never `data`.
