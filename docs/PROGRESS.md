@@ -25990,15 +25990,30 @@ Mutated:    the rule, stated before the run: the three mutations that found the 
             test alone.
             C6 the target's side of the not-scorable guard dropped (`(raw < row.Stop || raw > row.Target)` to
             `(raw < row.Stop)`): red in the filler test alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, VT of VT tests ran with
-            none failed, migrations 0 to 42 with none pending, schema version 42, exit 0, against `data-ci`
-            and never `data`.
-            `tools/verify-phase.ps1` green at VTB tables, VC claims, VP PASS, 0 FAIL, 0 out of scope, 0
-            unexamined, VR placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
-            41 roster checks carried and all 41 run, VT of VT tests.
-            Both gates ran over the tree carrying this entry and the two before it, TREESHA, in the worktree
-            beside the repository, and the operator's store under `data/` was not touched by either.
+            Results: one run for each of this batch's eight mutations in a detached worktree at ef946b7,
+            the tree carrying this entry, filtered to the tests they name on the operator's instruction of
+            2026-09-24, each reverted with `git checkout -- .` and the tree read clean after. The whole
+            suite ran green over ef946b7 in the gates, 1408 of 1408. C1, C2, C7 and C8 each turned 1 red,
+            the test the 12.5 correction adds, and left the windows test green. C3 turned 1 red, the
+            twice-median test. C4 and C5 each turned 1 red, the near misses test. C6 turned 1 red, the
+            filler test.
+Held:       all eight, in the test each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1408 of 1408
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 564 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, 1408 of 1408 tests.
+            Both gates ran over the tree carrying this entry and the two before it, ef946b7, in the worktree
+            beside the repository, and the operator's store under `data/` was not touched by either. The
+            first run of the gates, over 9128e04, stopped at `nightly-run`: the test the 12.5 correction
+            adds named the graph's steps by number in its comment and one assertion, which the check
+            refuses outside section 14 and the night's own list, and they were reworded in that
+            correction's commit. Both gates then ran green over 8de2414, and the builder's read of the
+            repair found two edits its tests left green there, shown by a run filtered to the windows test
+            and the test the 12.5 correction adds: a retired candidate read at its first retirement, and
+            the candidate left out of its own graph. The 12.5 correction's test and entry gained them as
+            C7 and C8 before both gates ran again over this tree.
 Carried:    nothing new. The per-window level's revisit stays the operator's ruling, the count of candidates
             ever registered standing at ten since 14:04:07Z against the eight it is due at (see: Holm's level
             passes between the candidates by a graph fixed when they are registered, and every verdict shows
