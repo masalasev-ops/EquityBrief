@@ -25787,8 +25787,8 @@ Expected:   derived: no expectation file moves.
 Tests:      1407, from 1406: one added to `read-surface` and one test of `fixture-expectations`
             widened, none removed. Migrations 0 to 42 with none added and none pending, schema
             version 42.
-Claims:     VC, from 554, with VP PASS and 0 out of scope, and VR placements and verdicts
-            reconciled against a floor of 34.
+Claims:     554, from 554, with 554 PASS and 0 out of scope, and 564 placements and verdicts
+            reconciled against a floor of 34. No claim added: no table or figure changed.
 Pins:       the branch against `main` at 34f5ccd; this correction edits two tests, in none of the
             twelve, twenty-one or sixteen pinned sources.
 Mutated:    the rule, stated before the run: the two mutations that found the gaps, run again.
@@ -25797,13 +25797,19 @@ Mutated:    the rule, stated before the run: the two mutations that found the ga
             correction widens and the evaluators' pin test, two.
             H2 the candidates' records read as one window: red in the test this correction adds
             alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, VT of VT tests ran
-            with none failed, migrations 0 to 42 with none pending, schema version 42, exit 0,
-            against `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at VTB tables, VC claims, VP PASS, 0 FAIL, 0 out of
-            scope, 0 unexamined, VR placements and verdicts reconciled against a floor of 34,
-            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, VT of VT tests.
-            Both gates ran over the tree carrying this entry, in the worktree beside the repository,
+            Results: one run for each in a detached worktree at e23b843, the tree carrying this
+            entry, filtered to the family test, the test added and the evaluators' pin test, each
+            reverted with `git checkout -- .` and the tree read clean after. The whole suite ran green
+            over e23b843 in the gates, 1407 of 1407. H5 turned 2 red, the family test this correction
+            widens and the evaluators' pin test. H2 turned 1 red, the test this correction adds.
+Held:       both, in the tests each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1407 of 1407
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 564 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1407 of 1407 tests.
+            Both gates ran over the tree carrying this entry, e23b843, in the worktree beside the
+            repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
