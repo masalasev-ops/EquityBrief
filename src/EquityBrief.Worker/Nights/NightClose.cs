@@ -30,6 +30,8 @@ public sealed class NightClose : IComponent
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Ladder, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
+            new StoreTouch(Store.GateResult, Touch.Read),
+            new StoreTouch(Store.ListRule, Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: []);
@@ -41,9 +43,23 @@ public sealed class NightClose : IComponent
         WHERE as_of = (SELECT MAX(as_of) FROM ladder);
     ";
 
+    // The names on the night's list, being the members the swing filter passed on its night, the newest
+    // session any name holds, which is the session the night records the rule for.
+    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
     const string OnTheList = @"
-        SELECT COUNT(*) FROM listing
-        WHERE session_date = (SELECT MAX(session_date) FROM listing) AND fired_count > 0;
+        SELECT COUNT(*) FROM gate_result
+        WHERE session_date = (SELECT MAX(session_date) FROM bar) AND passed = 1;
+    ";
+
+    // The rule is recorded for the session the filter drew and only where it stored its rows, so an
+    // evening no filter drew keeps reading as listed by the reasons. A night run again over a session
+    // draws that session again, and the session is then listed by the rule of the night that drew it last.
+    const string RecordRule = @"
+        INSERT INTO list_rule (session_date, rule)
+        SELECT night.session_date, $rule
+        FROM (SELECT MAX(session_date) AS session_date FROM bar) night
+        WHERE EXISTS (SELECT 1 FROM gate_result g WHERE g.session_date = night.session_date)
+        ON CONFLICT (session_date) DO UPDATE SET rule = excluded.rule;
     ";
 
     const string ReasonsFired = @"
@@ -128,6 +144,23 @@ public sealed class NightClose : IComponent
         await command.ExecuteNonQueryAsync(cancellation);
 
         return new NightCloseOutcome(computed, listed, reasons, stale, duration);
+    }
+
+    // The rule tonight's list is drawn by, recorded as soon as the swing filter has stored its rows rather
+    // than at the close, so a night that stops at a later step still reads as listed by the rule that drew
+    // it. Returns whether a session was recorded, which it is not where the filter stored nothing.
+    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    public static async Task<bool> RecordRuleAsync(string databaseFile, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = RecordRule;
+        command.Parameters.AddWithValue("$rule", EquityBrief.Core.Shortlist.ListRules.Filter);
+
+        return await command.ExecuteNonQueryAsync(cancellation) == 1;
     }
 
     // The end of the exchange closure table, named on the closing line once a

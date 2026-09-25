@@ -4,6 +4,7 @@ using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Returns;
+using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Spending;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
@@ -1017,7 +1018,7 @@ public static class NameScreen
             Numbers(filings),
             cells,
             TwelveMonths(bars),
-            FiredReasons(listing),
+            listing?.ListedBy == ListRules.Filter ? [] : FiredReasons(listing),
             previousOnTheList,
             nextOnTheList,
             leftOut,
@@ -1041,7 +1042,25 @@ public static class NameScreen
             Peers(ticker, universe, peerReadings, night),
             reactions is null ? null : Reactions(reactions),
             swing is null ? null : Swing(swing),
-            gates is null ? null : Gates(gates));
+            gates is null ? null : Gates(gates) with { Rule = listing is { } held && held.SessionDate == gates.SessionDate ? held.ListedBy : ListRules.Reasons },
+            Passed(listing, gates));
+    }
+
+    // Why the swing filter listed the name on an evening it listed it: each gate with why it passed, and
+    // the reasons that fired on it as context. An evening the reasons listed, or one the filter did not pass
+    // the name on, has none.
+    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    public static FilterWhy? Passed(ListingRow? listing, GateResultRow? gates)
+    {
+        if (listing is null || listing.ListedBy != ListRules.Filter || gates is not { Passed: true } || gates.SessionDate != listing.SessionDate)
+        {
+            return null;
+        }
+
+        return new FilterWhy(
+            listing.SessionDate,
+            TonightScreen.FilterRowOf(gates).Gates,
+            [.. FiredReasons(listing).Select(reason => reason.Name)]);
     }
 
     // A name's swing filter result as the page draws it, each gate's reason and the notes read off the
@@ -1167,10 +1186,10 @@ public static class NameScreen
                 : new HorizonResult(null, null, null);
 
         return new ListingHistoryCard(
-            [.. listings.OrderBy(listing => listing.SessionDate).Select(listing => listing.FiredCount > 0)],
+            [.. listings.OrderBy(listing => listing.SessionDate).Select(listing => listing.IsListed)],
             [
                 .. listings
-                    .Where(listing => listing.FiredCount > 0)
+                    .Where(listing => listing.IsListed)
                     .OrderByDescending(listing => listing.SessionDate)
                     .Select(listing =>
                     {
@@ -1178,6 +1197,7 @@ public static class NameScreen
 
                         return new ListingEvening(
                             listing.SessionDate,
+                            listing.ListedBy,
                             [.. fired.Select(reason => reason.Name)],
                             bars.FirstOrDefault(bar => bar.SessionDate == listing.SessionDate)?.Close,
                             Result(listing.SessionDate, ForwardReturnSeries.FiveSessions),

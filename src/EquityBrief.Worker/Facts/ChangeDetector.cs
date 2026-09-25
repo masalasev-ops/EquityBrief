@@ -41,6 +41,8 @@ public sealed class ChangeDetector : IComponent
         Stores:
         [
             new StoreTouch(Store.Listing, Touch.Read),
+            new StoreTouch(Store.GateResult, Touch.Read),
+            new StoreTouch(Store.ListRule, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -104,9 +106,11 @@ public sealed class ChangeDetector : IComponent
           AND session_date < $tonight
           AND NOT EXISTS (
               SELECT 1 FROM listing l
+              LEFT JOIN list_rule r ON r.session_date = l.session_date
+              LEFT JOIN gate_result g ON g.ticker = l.ticker AND g.session_date = l.session_date
               WHERE l.ticker = facts.ticker
                 AND l.session_date = facts.session_date
-                AND l.fired_count > 0);
+                AND CASE WHEN r.rule = 'filter' THEN IFNULL(g.passed, 0) = 1 ELSE l.fired_count > 0 END);
     ";
 
     const string AppendRun = @"

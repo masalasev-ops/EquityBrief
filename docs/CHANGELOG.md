@@ -7470,3 +7470,94 @@ Why: 12.5 builds the command, and it writes the live store, so it is the operato
 Was: each row as it stood before this entry.
 Now: register-append-only holds the grown twenty-one evaluation sources and the filter's pin clear of a candidate's code; fixture-expectations works the six on both sides of each setting they move, their shadow on every member's row and the family's command; read-surface reads six registered and a divisor of 6 off the shadow region.
 Why: 12.5 builds the family.
+
+### 2026-09-25 - ARCHITECTURE.html - tonight's list switched to the swing filter, and every surface reads an evening by the rule that listed it
+Authorised by: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+Was:
+> stores every answer with the values that decided it and the version it ran under, and ranks the names passing; tonight's list is not read from it.
+
+> <td>facts, listings</td><td>facts</td><td>compares tonight's facts against the last stored ones and writes only the material changes, on its own column of the same row, and empties the payload of a past night the name did not fire on</td></tr>
+
+> <td>membership, bar store, ladders, listings, run log</td><td>run log</td><td>records what the night did, in the counts section 14's last step names: names computed, names on the list, reasons fired, stale names and duration, every one counted off the store rather than reported by the stage that wrote it; and on a night that stops, the step it stopped on and why, as that stage's own row, because a scheduled night's error output reaches nobody</td></tr>
+
+> <td>listings</td><td>run log</td><td>works through the names on tonight's list whose research is missing or stale, in order of reasons fired, and has
+
+> <td>listings, research requests, run log</td><td>research requests</td><td>the worker's <code>drain</code> verb
+
+> After the night's overnight queue it writes the night's own request, for the first name drawn on the night's list where that name has none outstanding or being written (see: The night asks for a report on the first name of its list).
+
+> <tr><td>Change detector</td><td></td><td></td><td></td><td></td><td><span class="r">R</span></td><td></td><td><span class="r">R</span> <span class="w">W</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+
+> <tr><td>Night close</td><td><span class="r">R</span></td><td><span class="r">R</span></td><td></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="r">R</span> <span class="w">W</span></td></tr>
+
+> <tr><td>Request drain</td><td></td><td></td><td></td><td></td><td><span class="r">R</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="r">R</span> <span class="w">W</span></td><td><span class="w">W</span></td></tr>
+
+> <tr><td>Overnight queue</td><td></td><td></td><td></td><td></td><td><span class="r">R</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td><span class="w">W</span></td></tr>
+
+> an entry and exit ladder, and the reasons each name does or does not belong on tonight's list. That is seconds of arithmetic and it costs nothing. The result is stored. When you open the app you see tonight's list, built from those reasons.
+
+> <p>Six reasons. A name is on tonight's list if any is true. There is no score and no fixed length,
+
+> <b>The thresholds in the table are proposals, set before any night was measured, and none will be moved.</b> The reasons stop choosing tonight's list when it switches to the swing filter, and from then they are context on a row,
+
+> <p data-phase="10">Every member of the index is evaluated every night against the six reasons above, and a name is listed when any fires;
+
+> storing every answer with the values that decided it and ranking the names passing; tonight's list is not read from it.</li>
+
+> for every name in the index whose research is missing or stale, the names on tonight's list first in order of reasons fired (see: The key under each figure
+
+> <li>Ask for a report on the first name drawn on tonight's list, one request marked as asked by the night unless that name has one outstanding or being written, and start the drain as a press does,
+
+> <p><b>Answers:</b> which names are sitting at a price their own chart has made significant, and how busy the evening was.</p>
+> <p><b>Route:</b> <code>#/</code>, resolving to the newest night
+
+> <p><b>Reads:</b> the listings, ladders, levels and facts for that night, the run log for the header,
+
+> <tr><td>Night header</td><td>names in the index, names that fired, the night's breadth
+
+> The fired count is the headline, because it is the market's mood and it is the one number the twenty drawn rows cannot tell you</td></tr>
+
+> <tr><td>The list</td><td>one row per name that fired, ordered by how many fired then by the plan's reward to risk, at most twenty drawn, each numbered by its place in that order, and a line above them stating how many are drawn of how many fired. Each row: name, close, day change, trend state in a word, the distance row mark, the reward to risk or the plan's reason for none, the reasons, and beside the name a line saying so where its prices may not reflect a dividend or split</td></tr>
+
+> The order is how many reasons fired and then the plan's reward to risk, which are facts about the chart, and a row whose plan computes no reward to risk is drawn after every row with one in its group, saying why (see: Tonight's list breaks a tie in fired count by the plan's reward to risk, and a row with none is drawn after every row with one and says why). Each row carries its place in that order, counted from one, and a line above the rows says how many are drawn of how many fired, so the list says how long it is before a row of it is read (see: The page shows twenty and states the true count).
+
+> <p class="note">The two right-hand columns count evenings a name appeared on the list. They say nothing about index membership,
+
+> <tr><td>Why it is here</td><td>present only when the name is on tonight's list: each reason in a full sentence rather than a label, with the values that made it true</td></tr>
+
+> <tr><td>Listing history</td><td>the listing strip over sixty sessions and one row per evening the name was listed, each with the reasons that fired and the close that night
+
+> <p><b>Reads:</b> the run log, the listings, the forward returns, and the research store,
+
+> <tr><td>Shadow candidates</td><td>how many candidate conditions are registered,
+
+> <li>No screen orders names by a judgement about the company. The universe orders by distance to a level and tonight's list by how many reasons fired and then the plan's reward to risk, each a fact about the chart.
+
+> <td>kept whole for every night the name fired; every other night keeps the hash and the material changes, with the payload emptied by the change detector.
+
+> <tr><td>List display</td><td>the first 20 in the list's order drawn, the true fired count always stated (see: The page shows twenty and states the true count)</td>
+
+> for every name in the index whose research is missing or stale, the names on tonight's list first in order of reasons fired, starting no pass
+
+> <tr><td>Reports the night asks for</td><td>1 a night, the first name drawn on tonight's list, one request marked as asked by the night unless that name has one outstanding or being written
+
+> <tr><td>A gate's reading is absent for a name</td><td>that gate fails with the reason the reading is absent, and never passes on an absence</td><td>the name's gates name the reading and why it is absent</td><td>a gate passing on a missing value is a list built from what nobody measured</td></tr>
+Now: section 2 says tonight's list is the swing filter's; section 11 says the reasons chose the list on every evening before the switch and stand beside the filter's names as context from it, and gains 11.2, stating the five gates, the exclusions, the order, the two empty lists and the rule each evening is read by; section 7's swing filter row says its passes are tonight's list, the night close records the rule and counts the filter's passes, the change detector reads the rule and the gate results for the retention, the overnight queue takes the filter's order and the request drain reads the gate results; the matrix fills those cells; section 14's filter step records the rule, its queue step takes the filter's order and its request step asks for the first name the filter passed and none where none passed; section 15.7's answers, reads, header, list and note name the filter's list, its gates and its rule, with a row for an evening before the switch; 15.8's note and 15.9's why and history read each evening by its rule; 15.10 reads the rules and gains the list from night to night; 15.14 states both orders; section 16 gains the list rules and the facts are kept by each evening's rule; section 17's list display, overnight queue and reports rows name the filter; section 18 gains the market gate closing and no name passing.
+Why: 12.6 switches tonight's list to the swing filter, and an evening drawn before the switch keeps the rule that drew it.
+
+### 2026-09-25 - SCHEMA.md - the list rules
+Was: no `list_rule` table and no ownership row for it.
+Now: `list_rule`, one row per session the swing filter drew the list for, written by the night close alone from the filter's step, an evening with no row having been listed by the reasons.
+Why: 12.6 records the rule each evening's list was drawn by (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it).
+
+### 2026-09-25 - BUILD_PLAN.md - 12.6 narrows the decisions the old selection and order rest on
+Corrects: 12.6's text said the checkpoint supersedes the decisions the old selection and order rest on, and each of them still describes code that runs: the gates are stated conditions and not a score, the page still draws twenty and states the true count, and the fired-count order still draws every evening the reasons listed, one of the three cited from a source the swing family's registration pins. Found building 12.6.
+Was:
+> section 17's list display and section 18's two rows, and supersedes the decisions the old selection and order rest on.
+Now: 12.6 narrows those decisions to the evenings the reasons listed, since each still describes code that draws them.
+Why: a superseded decision may not be cited from shipped source, and editing the pinned source would cost the family's registration.
+
+### 2026-09-25 - .claude/rules/checks.md - fixture-expectations, nightly-run and read-surface read the list switched to the swing filter
+Was: each row as it stood before this entry, fixture-expectations ending at "where no version is open or one of the three does not stand", nightly-run's night request reading "the first name its list draws, worked out by the test's own arithmetic off the listing rows", and read-surface ending at "reads six registered and a divisor of 6".
+Now: fixture-expectations adds the list rule recorded for the filter's session, the facts retention by each evening's rule, the queue's order and the closing count; nightly-run's request reads the first name the filter passed off the gate rows and none on a night no name passed or the market gate closed; read-surface adds tonight's list, the evening before the switch, the two empty lists, the name page, the walk, the universe and the overlap.
+Why: 12.6 builds each of them.

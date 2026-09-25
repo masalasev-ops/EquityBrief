@@ -40,6 +40,7 @@ public enum Store
     FilterVersion,
     ShapeProposal,
     Listing,
+    ListRule,
     ForwardReturn,
     Facts,
     Fundamentals,

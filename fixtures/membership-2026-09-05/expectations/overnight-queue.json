@@ -1,26 +1,22 @@
 {
   "stage": "overnight-queue",
   "derivation": "derived",
-  "derivedFrom": "section 14's step running the overnight queue after the close, section 17's overnight queue row, the decision that the queue writes the local lane's sections that rest on no document, the decision that it is bounded by its own limit and starts no pass once the limit has passed, the decision that the key under each figure is written for every name each night, and the fixture's own night: its four members, the three listed on 2026-09-08 with the reasons each fired, as the listings expectation recomputes them from section 11's rules, and NFLX, which fired none. The order the names are queued in, which of them are queued, which sections each pass asks for, what each is handed, that nothing is left at a limit of an hour on a clock that does not move, and that nothing is spent or requested were worked out from those rules before the tests that read this file were run.",
+  "derivedFrom": "section 14's step running the overnight queue after the close, section 17's overnight queue row, the decision that the queue writes the local lane's sections that rest on no document, the decision that it is bounded by its own limit and starts no pass once the limit has passed, the decision that the key under each figure is written for every name each night, and the fixture's own night: its four members, none of which the swing filter passes on 2026-09-08, as the night request's expectation derives from the arrival rule on the first night the store filters, so none leads. The order the names are queued in, which of them are queued, which sections each pass asks for, what each is handed, that nothing is left at a limit of an hour on a clock that does not move, and that nothing is spent or requested were worked out from those rules before the tests that read this file were run.",
   "tables": [
     "research_section"
   ],
   "frozen": "the claim checker's verdict on each draft the recorded local model wrote, which is a reading of a recording rather than a figure a rule produces, and with it that no draft draws a retry, every first draft being accepted. Every other value in this file is derived.",
   "night": "2026-09-08",
   "limitHours": 1,
-  "listed": [
-    "AAPL",
-    "KEYS",
-    "MSFT"
-  ],
-  "listedNote": "three members of the fixture's night fired a reason, one each, so they follow in the order of their tickers, and NFLX fired none. Until the 5.4 correction every member fired: AAPL two and the other three one each, where AAPL's second and NFLX's only reason was earnings soon on a count of 0 read off stored bars the night does not hold, and NFLX's print is thirty sessions after the night.",
+  "listed": [],
+  "listedNote": "no member of the fixture's night passes the swing filter, since the night is the first its store filters and no member's trigger can read an arrival, so no name is listed. Until 12.6 the listed names were the ones that fired a reason, AAPL, KEYS and MSFT one each, and NFLX none; until the 5.4 correction every member fired: AAPL two and the other three one each, where AAPL's second and NFLX's only reason was earnings soon on a count of 0 read off stored bars the night does not hold, and NFLX's print is thirty sessions after the night.",
   "queued": [
     "AAPL",
     "KEYS",
     "MSFT",
     "NFLX"
   ],
-  "queuedNote": "every member, the three listed first in the order of reasons fired and then of their tickers and NFLX after them, since no name holds a section of the local lane on the night and each has a facts file, so the one section of the lane resting on no document is missing for all four. Until the 6.10 correction of 2026-09-19 the queue took the listed names alone, and NFLX, which fired nothing, was not queued.",
+  "queuedNote": "every member, the names the swing filter passed first in its order and then every other member in the order of its ticker, which on this night is every member in ticker order since none passed, and no name holds a section of the local lane on the night and each has a facts file, so the one section of the lane resting on no document is missing for all four. Until 12.6 the three that fired led, in the order of reasons fired and then of their tickers, which was the same order here; until the 6.10 correction of 2026-09-19 the queue took the listed names alone, and NFLX, which fired nothing, was not queued.",
   "asked": [
     "The key under each figure"
   ],

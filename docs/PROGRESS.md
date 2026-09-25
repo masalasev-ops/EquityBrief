@@ -25162,3 +25162,137 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    the operator's two commands against the live store, in order: filter version 1 through the
             shape command, if not yet run, and after this merges and before the night, `tools/migrate`
             and `register --the-family`. 12.6 does not merge until the register shows the family standing.
+
+### 12.6 - tonight's list switches to the swing filter: the names it passes in its order with their gates, the reasons beside them as context, and every evening read by the rule that listed it   2026-09-25
+Built:      tonight's list from the swing filter. On an evening the filter listed, the list draws the
+            names it passed in its stored order, being the trade's reward to risk, then strength, then
+            band strength, then the ticker, at most twenty with the true count, each row carrying its
+            rank, the setup's family, the session its trigger arrived on, the plan its trade gate read
+            with the reward to risk and the stop's distance, and each gate with why, and the six reasons
+            beside it as context. A line names the rule that listed the evening, the header states the
+            count the filter passed with the fired count beside it as context, a night the market gate
+            closed draws no row and one line with the breadth and its floor or with breadth not
+            available, and a night no name passed draws one line with how many reached each gate.
+            `list_rule`, migration 42, holds the rule for each session the filter drew, and the night
+            close is its one writer: `NightClose.RecordRuleAsync`, called in the swing filter's step
+            once the filter has stored its rows and only where it stored them, so a night that stops at
+            a later step still reads as the filter drew it. An evening with no row was listed by the
+            reasons, and every surface reads each evening by its own rule and names it: tonight's list
+            and header, the name page's why, which on a filter evening names the rule and each gate with
+            the reasons as context, its listing history, which names each evening's rule, and its walk,
+            which follows the filter's order, the universe's last evening and strip, the facts
+            retention, the night's closing count, the overnight queue, which takes the filter's names
+            first in its order, and the night's own request, which asks for the first name the filter
+            passed and for none, saying why, where none passed. The run page's funnel and the name
+            page's gates key say whether the filter's counts drew the evening, and the run page gains
+            the list from night to night: of the night's names, how many were on the list the evening
+            before and at least once over the last five and twenty evenings, each read by its own rule.
+Written:    section 2's paragraph; section 11's opening and 11.1's first sentence narrowed to the
+            evenings the reasons listed, and 11.2, the swing filter's list, where the plan named section
+            11 rewritten, since 11.1 holds phase 10's research-marked rules alone; section 7's rows for
+            the swing filter, the change detector, the night close, the overnight queue and the request
+            drain, and their matrix rows, the list rules sharing the listings' column; section 14's
+            filter, queue and request steps; section 15.7's answers, reads, header, list and note, with
+            a row for an evening before the switch; 15.8's note; 15.9's why and listing history; 15.10's
+            reads and the list from night to night; 15.14's order; section 16's list rules and the
+            facts' retention; section 17's list display, overnight queue and reports rows; section 18's
+            two rows; `SCHEMA.md`'s `list_rule`; the decision **Tonight's list is the swing filter's, and
+            an evening is listed by the rule that listed it**; 12.6's text in `BUILD_PLAN.md`; and the
+            `fixture-expectations`, `nightly-run` and `read-surface` roster rows. Every spec line changed
+            has its prior text in `CHANGELOG.md`.
+Found:      12.6 amends its own text, not its done condition: the plan said it supersedes the decisions
+            the old selection and order rest on, and each still describes code that runs. The gates are
+            stated conditions and not a score, the page still draws twenty and states the true count,
+            and the fired-count order still draws every evening the reasons listed, so the new decision
+            narrows the three rather than superseding them. **Tonight's list is built from stated
+            conditions, not a score** is cited from `ShortlistBuilder.cs`, which the swing family's
+            registration pins, and a superseded decision may not be cited from shipped source, so
+            superseding it would have cost the family's registration or failed `decision-citations`.
+            The rule was planned for the close, and a night that stops at a later step, the version step
+            among them, would have left its evening reading as the reasons' list while its gate rows
+            held the filter's; it is recorded in the filter's step instead, and since `SwingFilter.cs`
+            is pinned by the family, the statement stays in the night close and the night calls it
+            there. The run page's funnel and the name page's gates key said the list was still drawn
+            from the six reasons, which the switch makes false; each now reads the evening's rule. The
+            fixture's night is the first its store filters, so every member's trigger reads an arrival
+            off no stored session and fails, and no member passes: the night request's expectation now
+            names the rule's table and states the night asks for none, and the order a night asks in is
+            worked over a constructed night. The replay the other checks read records no rule, so their
+            stores stand as evenings the reasons listed, and the whole replay records it.
+Expected:   worked by hand. Forty passing on a constructed night, rewards to risk from 1.5 to 3.25 by a
+            quarter, strength 0.50 to 0.54 and band strength 0 to 2, so rows tie on the first and on the
+            first two: the twenty first in that order drawn and no other, with five names firing three
+            reasons each and passing nothing drawn on no row. The evening before, listed by the reasons:
+            Z41 and Z43 at 3 taken by the ticker, Z40 at 2, Z44 at 1, Z42 with no reward to risk last of
+            its group, then Z00 firing one, and Z01, which the filter's row passed that evening, not
+            drawn. A closed market at 42.0% below 50%, and with breadth not available. Eight members
+            passing the trend gate 6, the setup 4, the trigger 2, the trade 1, and that one excluded.
+            The overlap over 22 evenings: the evening before 1, the last five 2 and the last twenty 3,
+            the name listed only 21 evenings back counted by neither, and six evenings back 0, 0 and 1
+            over the 15 the store holds. The facts retention over a reasons evening and a filter
+            evening: whole where each evening's rule listed the name, emptied where the reasons fired
+            on a filter evening and where the filter passed on a reasons evening. The queue: NFLX and
+            MSFT ranked first and second ahead of AAPL and KEYS, KEYS firing three. The request: MSFT at
+            3.2 before AAPL at 2.4. The closing count: 2, a pass on an earlier session not counted.
+Preview:    the replay over a copy of the operator's store at schema 37, taken at 07:03Z through
+            SQLite's backup opened immutable, never through the harness: the counts verb in a scratch
+            worktree at `dbf2ca5`, never committed, printing each stored night's names passing under
+            version 1's settings with arrival read off the stored year. Over the twelve stored nights,
+            2026-09-09 to 09-24, the list held 2, 2, 7, 5, 6, 4, 2, 1, 1, 1, 0 and 0 names, 31 in all. Of
+            the 29 on a night with an evening before it, 4 were on the list that evening; 6 of the 31
+            were on it at least once over the last five evenings, and the same 6 over every evening
+            before, the store holding twelve. All 31 also fired one of the six reasons that night, on
+            nights the reasons fired for 330 to 499 of about 504 members. A preview, not a measurement:
+            the first five nights predate the 5.4 corrections, and a stored night's bands, trends and
+            plans are the ones the pre-phase-12 code wrote.
+Tests:      1391, from 1381: ten added and none removed. Under `read-surface` six: the forty passing
+            read back in both directions, the evening before the switch, the closed market, the night no
+            name passed, the surfaces read by each evening's rule, and the overlap. Under
+            `fixture-expectations` two: the rule recorded for the filter's session and the retention by
+            each evening's rule. Under `nightly-run` two: the first name the filter passed asked for, and
+            none on a night the market gate closed. Rewritten over the filter: the queue's two tests
+            and its expectation, the closing count, the whole night's request, now none, and the night
+            request's expectation; the funnel's sentence.
+Claims:     542 predicted, from 530, with 542 PASS and 0 out of scope. The plan predicted 14 at 12.6
+            and 12 landed: tonight's parts are six and not eight, the list's order, count line and
+            reasons changing their words and the reasons' own order moving to the evening before the
+            switch with its verdicts; the name page's why stays one claim with its note widened rather
+            than read as a second part; and section 16's list rules add one the plan did not count. The
+            pair after 12.9 moves from 555 to 553.
+Pins:       the branch against `main` at dbf2ca5. The twelve `RuleVersionScorer.CodeVersionSources`, the
+            twenty-one `CandidateEvaluator.EvaluationSources` and the sixteen
+            `SwingFilter.CodeVersionSources`, each read from the tree being committed, and the branch
+            touches none of them.
+Mutated:    the rule, stated before the run: one mutation for each property the 12.6 done condition
+            names, each the smallest edit that changes the property's answer and still compiles,
+            filtered to the fifteen tests this checkpoint added or rewrote, one at a time in a detached
+            worktree at this entry's commit and reverted after each.
+            Predicted:
+            S1 tonight's rows drawn by the reasons on a filter evening: red in the forty-passing test,
+            the closed-market test and the surfaces test.
+            S2 the filter's rows drawn by ticker and not by rank: red in the forty-passing test and the
+            surfaces test.
+            S3 the rule recorded where the filter stored no rows: red in the rule's store test alone.
+            S4 the night not recording the rule: red in the whole night's request test alone.
+            S5 the night asking for the first passing ticker and not the first ranked: red in the
+            constructed request test and the waiting-request test.
+            S6 the queue taking the filter's names by ticker: red in the queue's order test alone.
+            S7 the retention reading fired reasons on a filter evening: red in the retention test alone.
+            S8 the overlap's five counting six evenings: red in the overlap test alone.
+            S9 an evening read as listed by its reasons whatever its rule: red in the forty-passing test
+            and the surfaces test.
+            S10 the closing count reading the fired listings: red in the closing count test alone.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1391 of 1391
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42,
+            exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 542 claims, 542 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 549 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1391 of 1391 tests.
+            Both gates ran over the tree carrying this entry, in the worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    the operator's three commands against the live store, which at 07:03Z still stood at schema
+            37 with no filter version and no family: `tools/migrate`, filter version 1 through the shape
+            command, and `register --the-family`. 12.6 does not merge until the register shows the
+            family standing and no night is running. From the first night after it merges, tonight's
+            list is the swing filter's, and every evening before it reads as the reasons listed it.

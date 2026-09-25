@@ -1373,7 +1373,8 @@ public partial class ArchitectureConformance
         // 69 at 12.2, the name page's gates and the run page's swing filter funnel.
         // 71 at 12.3, the Calibration region's three rows where 11.9's region was one.
         // 72 at 12.4, the run page's shape proposal.
-        Assert.Equal(72, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 74 at 12.6, tonight's evening before the switch and the run page's list from night to night.
+        Assert.Equal(74, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1432,7 +1433,9 @@ public partial class ArchitectureConformance
         // 223 at 12.3: the Calibration region's shape clock as its seven parts, its sentence as one and its
         // trigger lines as their five, where 11.9's region was six.
         // 226 at 12.4: the run page's shape proposal as its three parts.
-        Assert.Equal(226, inDocument.Length);
+        // 235 at 12.6: the night header's count the swing filter listed, the list's rule line and gates,
+        // the evening before the switch as its three parts and the run page's overlap as its three.
+        Assert.Equal(235, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1487,7 +1490,9 @@ public partial class ArchitectureConformance
         // 215 at 12.3: the Calibration region's shape clock as its seven parts and its trigger lines as
         // their five, where 11.9's region was six.
         // 218 at 12.4: the run page's shape proposal as its three parts.
-        Assert.Equal(218, checkedElements);
+        // 227 at 12.6: the night header's count the swing filter listed, the list's rule line and gates,
+        // the evening before the switch as its three parts and the run page's overlap as its three.
+        Assert.Equal(227, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

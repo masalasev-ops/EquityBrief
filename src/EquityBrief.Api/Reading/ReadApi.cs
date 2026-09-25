@@ -137,13 +137,23 @@ public sealed record MoveExtremes(string Ticker, DateOnly Ended, int Sessions, d
 // `BandStrength` is null on a row written before the listing recorded it, which is a row the
 // comparison of tonight's orders does not read.
 // see: A listing records the band strength the old order read, and the three orders are compared over the nights that recorded it
+// Whether the evening listed the name, read by the rule that listed that evening: a reason firing
+// before the switch and the swing filter passing it from the switch; and that rule.
+// see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
 public sealed record ListingRow(
     string Ticker,
     DateOnly SessionDate,
     string Reasons,
     int FiredCount,
     string PlanAtListing,
-    int? BandStrength = null);
+    int? BandStrength = null,
+    bool? Listed = null,
+    string? Rule = null)
+{
+    public bool IsListed => Listed ?? FiredCount > 0;
+
+    public string ListedBy => Rule ?? EquityBrief.Core.Shortlist.ListRules.Reasons;
+}
 
 // One stage of one run, as the run log holds it.
 //
@@ -494,6 +504,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.ShapeProposal, Touch.Read),
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
+            new StoreTouch(Store.ListRule, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
             new StoreTouch(Store.Fundamentals, Touch.Read),
@@ -927,10 +938,14 @@ public sealed class ReadApi : IComponent
     // header states the true fired count over the whole index and the twenty
     // drawn rows cannot tell you it.
     const string ListingsForNight = @"
-        SELECT ticker, session_date, reasons, fired_count, plan_at_listing, band_strength
-        FROM listing
-        WHERE session_date = $session_date
-        ORDER BY ticker;
+        SELECT l.ticker, l.session_date, l.reasons, l.fired_count, l.plan_at_listing, l.band_strength,
+               CASE WHEN r.rule = 'filter' THEN IFNULL(g.passed, 0) ELSE l.fired_count > 0 END,
+               IFNULL(r.rule, 'reasons')
+        FROM listing l
+        LEFT JOIN list_rule r ON r.session_date = l.session_date
+        LEFT JOIN gate_result g ON g.ticker = l.ticker AND g.session_date = l.session_date
+        WHERE l.session_date = $session_date
+        ORDER BY l.ticker;
     ";
 
     // Every listing the store holds, which is what a reason's record is counted
@@ -943,20 +958,30 @@ public sealed class ReadApi : IComponent
     // reloads: the reasons are JSON on the row, so a count per reason cannot be
     // asked of the store.
     const string EveryListing = @"
-        SELECT ticker, session_date, reasons, fired_count, plan_at_listing, band_strength
-        FROM listing
-        ORDER BY session_date, ticker;
+        SELECT l.ticker, l.session_date, l.reasons, l.fired_count, l.plan_at_listing, l.band_strength,
+               CASE WHEN r.rule = 'filter' THEN IFNULL(g.passed, 0) ELSE l.fired_count > 0 END,
+               IFNULL(r.rule, 'reasons')
+        FROM listing l
+        LEFT JOIN list_rule r ON r.session_date = l.session_date
+        LEFT JOIN gate_result g ON g.ticker = l.ticker AND g.session_date = l.session_date
+        ORDER BY l.session_date, l.ticker;
     ";
 
     // A name's own listing history, which is what the universe screen's two
     // right-hand columns count and what the listing strip draws.
     const string ListingsForName = @"
-        SELECT ticker, session_date, reasons, fired_count, plan_at_listing, band_strength
-        FROM listing
-        WHERE ticker = $ticker AND session_date <= $on
-        ORDER BY session_date DESC
+        SELECT l.ticker, l.session_date, l.reasons, l.fired_count, l.plan_at_listing, l.band_strength,
+               CASE WHEN r.rule = 'filter' THEN IFNULL(g.passed, 0) ELSE l.fired_count > 0 END,
+               IFNULL(r.rule, 'reasons')
+        FROM listing l
+        LEFT JOIN list_rule r ON r.session_date = l.session_date
+        LEFT JOIN gate_result g ON g.ticker = l.ticker AND g.session_date = l.session_date
+        WHERE l.ticker = $ticker AND l.session_date <= $on
+        ORDER BY l.session_date DESC
         LIMIT $sessions;
     ";
+
+    const string ListRuleOn = "SELECT rule FROM list_rule WHERE session_date = $on;";
 
     // Every current member of the index, with what the night computed for it.
     //
@@ -1812,10 +1837,24 @@ public sealed class ReadApi : IComponent
                 reader.GetString(2),
                 reader.GetInt32(3),
                 reader.GetString(4),
-                reader.IsDBNull(5) ? null : reader.GetInt32(5)));
+                reader.IsDBNull(5) ? null : reader.GetInt32(5),
+                reader.GetInt64(6) == 1,
+                reader.GetString(7)));
         }
 
         return rows;
+    }
+
+    // The rule the evening's list was drawn by, the reasons where the store records none.
+    public async Task<string> ListRuleAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ListRuleOn;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteScalarAsync() as string ?? EquityBrief.Core.Shortlist.ListRules.Reasons;
     }
 
     public async Task<IReadOnlyList<MoveRow>> MovesAsync(string ticker, DateOnly? asOf = null)

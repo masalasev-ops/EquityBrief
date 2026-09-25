@@ -21,6 +21,7 @@ using EquityBrief.Worker.Fundamentals;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Core.Facts;
 using EquityBrief.Worker.Facts;
+using EquityBrief.Worker.Filter;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
@@ -60,6 +61,9 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.LimitsTable, "Event session share"),
             CheckReach.Key(Scope.LimitsTable, "Event volume ratio"),
             CheckReach.Key(Scope.LimitsTable, "Shape calibration nights"),
+
+            // 12.6, the rule each evening's list was drawn by.
+            CheckReach.Key(Scope.StoresTable, "List rules"),
 
             // 12.5, the swing family.
             CheckReach.Key(Scope.LimitsTable, "The swing family"),
@@ -4521,14 +4525,32 @@ public partial class FixtureExpectations
         using var store = await WithReturns();
 
         var clock = FixedClock.At(Instant, SessionZones.UnitedStates);
+
+        // The filter's rows for the night, as the night's step before the close writes them. No name
+        // passes on the fixture's night, so two are made to, and one on an earlier session, which the
+        // night's list must not count.
+        await new SwingFilter(clock, store.DatabaseFile).RunAsync(Index, "close-filter");
+
+        Insert(store, "UPDATE gate_result SET passed = 1 WHERE ticker IN ('AAPL', 'MSFT') AND session_date = (SELECT MAX(session_date) FROM bar);");
+        Insert(
+            store,
+            "INSERT INTO gate_result (ticker, session_date, version, code, market, trend, setup, family, trigger_pass, trigger_event, trade, " +
+            "ladder_reward_to_risk, ladder_stop_moves, swing_entry, swing_stop, swing_target, swing_reward_to_risk, swing_stop_moves, exclusions, " +
+            "passed, rank, strength, band_strength, gates, shadow) " +
+            "SELECT ticker, '2026-08-03', version, code, market, trend, setup, family, trigger_pass, trigger_event, trade, " +
+            "ladder_reward_to_risk, ladder_stop_moves, swing_entry, swing_stop, swing_target, swing_reward_to_risk, swing_stop_moves, exclusions, " +
+            "1, 1, strength, band_strength, gates, shadow FROM gate_result WHERE ticker = 'KEYS';");
+
         var closed = await new NightClose(clock, store.DatabaseFile).RunAsync(Index, "close-check");
 
         Assert.Equal(
             int.Parse(Query(store, "SELECT COUNT(*) FROM ladder WHERE as_of = (SELECT MAX(as_of) FROM ladder);").Single(), CultureInfo.InvariantCulture),
             closed.NamesComputed);
 
+        // The names on the list are the ones the swing filter passed on the night.
+        Assert.Equal(2, closed.NamesOnTheList);
         Assert.Equal(
-            int.Parse(Query(store, "SELECT COUNT(*) FROM listing WHERE fired_count > 0;").Single(), CultureInfo.InvariantCulture),
+            int.Parse(Query(store, "SELECT COUNT(*) FROM gate_result WHERE passed = 1 AND session_date = (SELECT MAX(session_date) FROM bar);").Single(), CultureInfo.InvariantCulture),
             closed.NamesOnTheList);
 
         Assert.Equal(

@@ -23,9 +23,10 @@ internal static class ComponentVocabulary
     internal static string TableName(DataStore store) =>
         Regex.Replace(store.ToString(), "(?<!^)([A-Z])", "_$1").ToLowerInvariant();
 
-    // The columns of the read and write matrix, and what each holds. Four
+    // The columns of the read and write matrix, and what each holds. Five
     // aggregate, which section 16 states of itself: computed tables is the row
-    // naming six stores, research and theme is the two research rows, sources is
+    // naming six stores, listings is the listings beside the rule each evening's
+    // list was drawn by, research and theme is the two research rows, sources is
     // source documents, and version scores and blocks is the scores a night
     // writes beside the blocks frozen from them, which no component touches one
     // of without the other.
@@ -35,7 +36,7 @@ internal static class ComponentVocabulary
         ("Bars", [DataStore.Bar]),
         ("Calendar", [DataStore.Calendar]),
         ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal]),
-        ("Listings", [DataStore.Listing]),
+        ("Listings", [DataStore.Listing, DataStore.ListRule]),
         ("Forward returns", [DataStore.ForwardReturn]),
         ("Facts", [DataStore.Facts]),
         ("Fundamentals", [DataStore.Fundamentals]),
@@ -136,6 +137,7 @@ internal static class ComponentVocabulary
         ["source documents"] = DataStore.SourceDocument,
         ["series state"] = DataStore.SeriesState,
         ["listings"] = DataStore.Listing,
+        ["list rules"] = DataStore.ListRule,
         ["indicators"] = DataStore.Indicator,
         ["swings"] = DataStore.Swing,
         ["volume profile"] = DataStore.VolumeProfile,

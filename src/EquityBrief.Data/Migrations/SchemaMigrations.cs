@@ -662,6 +662,7 @@ public static class SchemaMigrations
         new Migration(39, "create gate_result and filter_version", CreateGateResults),
         new Migration(40, "create shape_proposal", CreateShapeProposal),
         new Migration(41, "add gate_result.shadow", AddGateResultShadow),
+        new Migration(42, "create list_rule", CreateListRule),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -1019,6 +1020,16 @@ public static class SchemaMigrations
     // see: A variant of the swing filter is registered as a whole rule and runs on unchanged when the live settings move
     const string AddGateResultShadow = @"
         ALTER TABLE gate_result ADD COLUMN shadow TEXT;
+    ";
+
+    // The rule each evening's list was drawn by, written by the night that drew it, so an evening before the
+    // switch reads as listed by the reasons and one from it by the swing filter, whatever code reads it later.
+    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    const string CreateListRule = @"
+        CREATE TABLE list_rule (
+            session_date TEXT NOT NULL PRIMARY KEY,
+            rule         TEXT NOT NULL CHECK (rule IN ('reasons', 'filter'))
+        ) STRICT;
     ";
 
     public static int LatestVersion => All.Max(migration => migration.Version);
