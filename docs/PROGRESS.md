@@ -26266,3 +26266,27 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    the calendar lists every night the listings hold, the two partial evenings of 2026-04-16 and
             2026-08-17 among them, as the pages' own newest-night reading does.
+
+### 12.6 ruling - the swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone   2026-09-25
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-25, on finding the store's evening of 2026-09-24 listing no name, which
+            its night had drawn under version 1's 50% floor before version 2 opened at 45%, where the 45%
+            trial copy listed CPAY, DVN and KO: "Make it official", and then "ok can we at least rerun with
+            the filter and leave everything as is". The night refuses a session older than the store's
+            newest, its corporate action refetch cutting a refetched name's later bars, and the night of
+            2026-09-24 run again alone would fail every pullback whose trigger turned on an earlier session,
+            the sessions before it holding no result of the filter's.
+Ruled:      the filter's results are replayed for the sessions before its first stored night and stored for
+            the trigger's arrival alone, and every other record is left as it is (see: The swing filter's
+            results are replayed for the sessions before its first stored night, for the trigger's arrival
+            alone).
+Changed:    `DECISIONS.md` gains the decision beside the arrival's own. No code changes here: the 12.6
+            correction that follows builds the command.
+Consequences: once the command has replayed 2026-09-21 to 2026-09-23 on the operator's store, the night of
+            2026-09-24 run again reads their results, and the night of 2026-09-25 reads a full window from
+            its first run. No clock counts a replayed session and no page draws one, and the evenings of
+            2026-09-21 to 2026-09-23 keep the lists their own nights drew.
+Tests:      none added here; the 12.6 correction that follows adds the ones that hold it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 12.6 correction closing this batch records.
+Carried:    nothing.
