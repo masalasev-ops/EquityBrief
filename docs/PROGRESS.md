@@ -25842,12 +25842,12 @@ Consequences: the five variants keep the 50% floor they were registered with and
             now ever been registered, and the per-window level's revisit, due since the ninth, stays
             the operator's.
 Tests:      1407, unchanged. A ruling adds none.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, VT of VT tests ran
-            with none failed, migrations 0 to 42 with none pending, schema version 42, exit 0,
-            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at VTB tables, VC
-            claims, VP PASS, 0 FAIL, 0 out of scope, 0 unexamined, VR placements and verdicts
-            reconciled against a floor of 34, 41 of 41 roster checks carried and all 41 run, VT of VT
-            tests. No claim moves, because a ruling lands nothing. Both gates ran with this entry in
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1407 of 1407 tests
+            ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit 0,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1` green at 41 tables, 554
+            claims, 554 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 564 placements and verdicts
+            reconciled against a floor of 34, 41 of 41 roster checks carried and all 41 run, 1407 of
+            1407 tests. No claim moves, because a ruling lands nothing. Both gates ran with this entry in
             place, in the worktree beside the repository, and they did not touch the operator's
             store under `data/`.
 Carried:    nothing.
