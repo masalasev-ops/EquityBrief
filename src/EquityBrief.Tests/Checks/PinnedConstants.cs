@@ -185,9 +185,19 @@ public class PinnedConstants
             new("Trade stop distance", "1.0", (decimal)FilterSettings.ProposedStopLow, "FilterSettings.ProposedStopLow"),
             new("Trade stop distance", "2.5", (decimal)FilterSettings.ProposedStopHigh, "FilterSettings.ProposedStopHigh"),
             new("Earnings exclusion", "15", FilterSettings.ProposedEarningsWindowSessions, "FilterSettings.ProposedEarningsWindowSessions"),
-            new("Reason share target", "2", (decimal)TargetShares.ReasonTarget * 100, "TargetShares.ReasonTarget as a percentage"),
-            new("Any-reason share target", "6", (decimal)TargetShares.AnyReasonTarget * 100, "TargetShares.AnyReasonTarget as a percentage"),
-            new("Event session share", "25", (decimal)TargetShares.EventShare * 100, "TargetShares.EventShare as a percentage"),
+            new("Event session share", "25", (decimal)ShapeClock.EventShare * 100, "ShapeClock.EventShare as a percentage"),
+            new("Event volume ratio", "1.8", (decimal)ShapeClock.EventVolumeRatio, "ShapeClock.EventVolumeRatio"),
+            new("Shape calibration nights", "60", ShapeClock.CalibrationNights, "ShapeClock.CalibrationNights"),
+            new("Gate bands", "50", ShapeClock.GateBands[0].Low, "ShapeClock.GateBands[0].Low"),
+            new("Gate bands", "100", ShapeClock.GateBands[0].High, "ShapeClock.GateBands[0].High"),
+            new("Gate bands", "20", ShapeClock.GateBands[1].Low, "ShapeClock.GateBands[1].Low"),
+            new("Gate bands", "60", ShapeClock.GateBands[1].High, "ShapeClock.GateBands[1].High"),
+            new("Gate bands", "8", ShapeClock.GateBands[2].Low, "ShapeClock.GateBands[2].Low"),
+            new("Gate bands", "40", ShapeClock.GateBands[2].High, "ShapeClock.GateBands[2].High"),
+            new("Gate bands", "5", ShapeClock.GateBands[3].Low, "ShapeClock.GateBands[3].Low"),
+            new("Gate bands", "35", ShapeClock.GateBands[3].High, "ShapeClock.GateBands[3].High"),
+            new("List band", "5", ShapeClock.ListLow, "ShapeClock.ListLow"),
+            new("List band", "30", ShapeClock.ListHigh, "ShapeClock.ListHigh"),
         ];
     }
 

@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using EquityBrief.Core.Candidates;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Shortlist;
@@ -100,7 +102,7 @@ public static class RunScreen
 
         foreach (var listing in listings)
         {
-            var (counting, fired) = Counting(listing.Reasons);
+            var (counting, fired) = NightFirings.Counting(listing.Reasons);
 
             foreach (var reason in counting)
             {
@@ -826,68 +828,80 @@ public static class RunScreen
     //
     // A reason counts only where the row stored the threshold the code carries now.
     // see: A reason's record reads only the rows written under the threshold the code carries, and the rows written under another are kept
-    static (IReadOnlyList<string> Counted, IReadOnlyList<string> Fired) Counting(string reasons)
-    {
-        using var document = JsonDocument.Parse(reasons);
+    // Each night's firing, read off every listing the store holds by the rule the records count by.
+    public static IReadOnlyList<NightFiring> Firings(IReadOnlyList<ListingRow> listings) =>
+        NightFirings.Of(listings.Select(listing => (listing.SessionDate, listing.Reasons)));
 
-        var counted = document.RootElement.EnumerateArray()
-            .Where(reason => !ShortlistSeries.WrittenBeforeTheCorrection(
-                reason.GetProperty("name").GetString()!,
-                value => reason.GetProperty("values").TryGetProperty(value, out _)))
-            .Where(reason => !ShortlistSeries.MeasuredUnderAnotherThreshold(
-                reason.GetProperty("name").GetString()!,
-                value => reason.GetProperty("values").TryGetProperty(value, out var stored) ? stored.GetString() : null))
-            .ToArray();
+    // The shape half of the calibration for the night the page is drawn for, over every night's stored
+    // filter results and the listings' firing, in the window the open filter version names.
+    // see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out
+    public static ShapeState Calibration(
+        IReadOnlyList<GateNightRow> nights,
+        IReadOnlyDictionary<DateOnly, double?> ratios,
+        IReadOnlyList<NightFiring> firings,
+        string? openVersion,
+        DateOnly night) =>
+        ShapeClock.For(
+            [
+                .. nights.Select(row => new NightShape(
+                    row.Session,
+                    row.Version,
+                    row.Members,
+                    [row.Trend, row.Setup, row.Trigger, row.Trade],
+                    row.Listed,
+                    ratios.TryGetValue(row.Session, out var ratio) ? ratio : null)),
+            ],
+            firings,
+            openVersion ?? ShapeClock.NoVersion,
+            night);
 
-        return (
-            [.. counted.Select(reason => reason.GetProperty("name").GetString()!)],
-            [.. counted.Where(reason => reason.GetProperty("fired").GetBoolean()).Select(reason => reason.GetProperty("name").GetString()!)]);
-    }
+    // The count each of five operating obligations waits on, against its trigger, where no other surface
+    // draws one: the nights the clock chose the session for, the research passes carrying a recorded
+    // cost, the nights the version step replayed both kinds of version, the event book's resolved
+    // setups, which nothing scores yet, and the nights of trend labels under the version holding a new
+    // label for more than one night.
+    // owes: The nightly wall clock at index size, measured from nights that ran on the schedule
+    // owes: The spend cap set from the passes the ledger has priced
+    // owes: The rule version bound set from nights the version scorer ran
+    // owes: The event setups' triggers calibrated from resolved setups
+    // owes: The trend confirmation's nights settled from flip-backs
+    public static IReadOnlyList<TriggerLine> Triggers(TriggerReads reads, PricedCalls priced) =>
+    [
+        new(
+            "wall clock",
+            reads.ClockNights,
+            5,
+            "night(s) run for the session the clock fell on have closed, which is what the schedule runs, against the five the night's wall clock is set from"),
+        new(
+            "spend cap",
+            priced.Passes,
+            20,
+            "research pass(es) carry a recorded cost, against the twenty the spend cap is set from"),
+        new(
+            "version bound",
+            reads.VersionSteps.Count(ReplayedBothKinds),
+            5,
+            "night(s) run for the session the clock fell on replayed a merge distance version and another rule's, against the five the bound on versions scored at once is set from"),
+        new(
+            "event setups",
+            0,
+            250,
+            "resolved event-book setups, against the 250 their triggers are calibrated from: no stage scores an event-book setup yet, so nothing counts toward it"),
+        new(
+            "trend confirmation",
+            reads.ConfirmationNights ?? 0,
+            60,
+            reads.ConfirmationVersion is { } version
+                ? $"night(s) of trend labels scored under '{version}' since its window opened, against the sixty its nights are settled from"
+                : "night(s) of trend labels: no version holding a new label for more than one night is open, so nothing counts toward the sixty"),
+    ];
 
-    // Each night's firing, read off every listing the store holds by the rule the records count
-    // by, and each reason's share of the index against its target over them, for the night the
-    // page is drawn for. A reason counts on a row only where the row evaluated it under its current
-    // rule, so the rows written before the 5.4 corrections count for neither reason they changed,
-    // and earnings soon on a session read over a calendar holding other listings' dates counts
-    // toward no share, which leaves that session's rows out of the share firing any reason too.
-    // see: A reason's threshold is calibrated to a target share of the index over ordinary nights and a night a usually quiet reason floods is left out
-    // see: The calendar holds each member's own listing's prints, and each night's answer replaces what its window held
-    public static SharesAgainstTargets Shares(IReadOnlyList<ListingRow> listings, DateOnly night) =>
-        TargetShares.For(
-        [
-            .. listings
-                .GroupBy(listing => listing.SessionDate)
-                .OrderBy(group => group.Key)
-                .Select(group =>
-                {
-                    var reasons = ShortlistSeries.Reasons.ToDictionary(reason => reason, _ => new ReasonCount(0, 0), StringComparer.Ordinal);
-                    var whole = 0;
-                    var firedAny = 0;
-
-                    foreach (var listing in group)
-                    {
-                        var (counting, firing) = Counting(listing.Reasons);
-                        var counted = counting.Where(reason => !ShortlistSeries.ReadOverAnotherListing(reason, listing.SessionDate)).ToArray();
-                        var fired = firing.Where(counted.Contains).ToArray();
-
-                        foreach (var reason in counted.Where(reasons.ContainsKey))
-                        {
-                            var held = reasons[reason];
-
-                            reasons[reason] = new ReasonCount(held.Counted + 1, held.Fired + (fired.Contains(reason) ? 1 : 0));
-                        }
-
-                        if (ShortlistSeries.Reasons.All(counted.Contains))
-                        {
-                            whole++;
-                            firedAny += fired.Length > 0 ? 1 : 0;
-                        }
-                    }
-
-                    return new NightFiring(group.Key, reasons, whole, firedAny);
-                }),
-        ],
-        night);
+    // A version step's line replayed both kinds where it replayed at least one merge distance version
+    // and at least one version of another rule, read off the words the scorer writes.
+    static bool ReplayedBothKinds(string detail) =>
+        Regex.Match(detail, @"(\d+) replayed with (\d+) of the merge distance") is { Success: true } replayed
+            && int.Parse(replayed.Groups[2].Value, CultureInfo.InvariantCulture) >= 1
+            && int.Parse(replayed.Groups[1].Value, CultureInfo.InvariantCulture) > int.Parse(replayed.Groups[2].Value, CultureInfo.InvariantCulture);
 
     // The paid calls the log carries a recorded cost for, counted, their passes counted
     // by the run each was made under, and summed, off the rows the read surface handed back,

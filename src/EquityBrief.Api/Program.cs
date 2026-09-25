@@ -820,6 +820,12 @@ app.MapGet("/screens/run/{night?}", async (
             "text/html; charset=utf-8");
     }
 
+    // The paid calls with a recorded cost, which the operational header draws and the calibration's
+    // spend cap line counts the passes of.
+    var priced = RunScreen.Priced(
+        await read.PaidCallSpendsAsync(),
+        QueuePricing(builder.Configuration) is { } prices ? (await read.PaidCallAnswersAsync()).Count(prices.IsPeak) : 0);
+
     // The reason record is over every night the store holds and not over this
     // one. A record is a property of the reason across every name it ever fired
     // for, and a record over one evening would be a statement about that
@@ -846,9 +852,7 @@ app.MapGet("/screens/run/{night?}", async (
             RunScreen.Queue(await read.QueueRowsAsync(), dated, Traded),
             RunScreen.Harness(PhaseReport(builder, checkout)),
             RunScreen.Shadow(await read.RegisteredCandidatesAsync(), clock.UtcNow),
-            RunScreen.Priced(
-                await read.PaidCallSpendsAsync(),
-                QueuePricing(builder.Configuration) is { } prices ? (await read.PaidCallAnswersAsync()).Count(prices.IsPeak) : 0),
+            priced,
             TonightScreen.WrittenBeforeTheCorrection(await read.ListingsAsync(dated)),
             RunScreen.Orders(everyListing, dated),
             RunScreen.Candidates(
@@ -865,9 +869,15 @@ app.MapGet("/screens/run/{night?}", async (
                 flips.Returns,
                 flips.Nights,
                 dated),
-            RunScreen.Shares(everyListing, dated),
+            RunScreen.Calibration(
+                await read.GateNightsAsync(),
+                await read.MarketRatiosAsync(),
+                RunScreen.Firings(everyListing),
+                await read.OpenFilterVersionAsync(),
+                dated),
             RunScreen.Market(await read.MarketReadingAsync(dated)),
-            RunScreen.Funnel(await read.GateResultsAsync(dated), dated)),
+            RunScreen.Funnel(await read.GateResultsAsync(dated), dated),
+            RunScreen.Triggers(await read.TriggerReadsAsync(), priced)),
         "text/html; charset=utf-8");
 });
 

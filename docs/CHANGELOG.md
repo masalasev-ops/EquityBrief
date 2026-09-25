@@ -7233,3 +7233,107 @@ Why: 12.2 builds the filter, stored for every member and deciding nothing on ton
 Was: no `gate_result` or `filter_version` table and no ownership row for either.
 Now: `gate_result`, written and deleted by the swing filter alone, one row per member per night and kept whole, and `filter_version`, which nothing writes until the verb 12.4 builds, the filter reading its open row.
 Why: 12.2 builds the filter, and a store is declared here before any code writes it.
+
+### 2026-09-25 - ARCHITECTURE.html - section 11's calibration paragraphs describe the swing filter's shape clock
+Was:
+> <p><b>The thresholds in the table are proposals, set before any night was measured, and none has been moved since.</b> Calibrated means a target. On an ordinary night each reason fires for a small minority of the index, so that its setups can be told apart from the universe's: a reason firing on a large share of the index has setups whose base rate is the universe's, and its measured edge comes out near zero by construction. Two targets are proposed. Each reason's median nightly share of the index is at or below 2%, about ten names, and the share of the index firing any reason is at or below 6%, about thirty names, so that on an ordinary night the list's membership sits near the twenty drawn and the conditions select rather than the ordering. The page draws twenty, which is 4% of the index, and a target far above that leaves the tie-breaker choosing (see: A reason's threshold is calibrated to a target share of the index over ordinary nights and a night a usually quiet reason floods is left out).</p>
+  <p>A session on which a reason fires for more than a quarter of the index, where that reason's own median nightly share is below a quarter, is an event session. It is counted, shown as one on the run page and left out of the calibration sample, because its setups share one cause and are closer to one observation than to hundreds. A reason above a quarter on its ordinary nights is flooding by its threshold, which is what the calibration moves, and marks no session. The quarterly  ...
+Now:
+> the three paragraphs say the reasons' thresholds will not be moved, the shape clock counts each gate through the funnel with the market held open, an event night is one a usually quiet gate or reason floods or the index trades at 1.8 times its volume, the market never read, and the Calibration region states it all
+Why: 12.3 builds the shape clock and the Calibration region in place of 11.9's region, since the reasons no longer choose the list (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out).
+
+### 2026-09-25 - ARCHITECTURE.html - section 13.2's condition thresholds row names the swing filter's
+Was:
+>   <tr><td><b>Condition thresholds</b></td><td>how close to a band counts, what volume multiple counts. Each moved once, to the value that puts its median nightly share of the index at its target over the ordinary nights recorded (see: A reason's threshold is calibrated to a target share of the index over ordinary nights and a night a usually quiet reason floods is left out). Changes how long the list is more than how good it is</td><td>none. Phase 5 is what first records how many names fire each night, and the calibration itself waits on 60 ordinary nights of that record, which no checkpoint accumulates. It is carried as an operating obligation and read on the run page, using those nights rather than a backfill (owes: The six reason thresholds calibrated from the nights they fired on)</td></tr>
+Now:
+>   <tr><td><b>Condition thresholds</b></td><td>the swing filter's thresholds, each moved only by a shape calibration the operator accepts, to the value that puts its gate's median count over the ordinary nights inside its band (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out). Changes how long the list is more than how good it is</td><td>none. It waits on 60 ordinary nights under one filter version, read on the run page's Calibration region, which 12.3 builds (owes: The swing filter's shape calibrated from its ordinary nights)</td></tr>
+Why: 12.3 builds the shape clock and the Calibration region in place of 11.9's region, since the reasons no longer choose the list (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out).
+
+### 2026-09-25 - ARCHITECTURE.html - section 15.10's Calibration rows replace the reasons against their targets
+Was:
+> <tr><td>Reasons against their targets</td><td>each reason's share of the index tonight, its median share over the ordinary nights, its target, the share firing any reason with its median and its target, the ordinary nights counted against the sixty the calibration waits on, and every event session marked with the reason that made it one</td></tr>
+Now:
+> <tr><td>The shape clock</td><td>the ordinary nights under the open filter version against the sixty the calibration waits on, every event night with what made it one, each gate's median count through it against its band, the list's median size against its band of 5 to 30, drawn as not yet measured until the trigger, said at the top of the page once the trigger is crossed, and each reason's share of the index as context</td></tr>
+  <tr><td>What the two clocks can do</td><td>the sentence section 13.8 opens with, word for word</td></tr>
+  <tr><td>What else is waiting on a count</td><td>the nights run for the session the clock fell on against five, the research passes carrying a recorded cost against twenty, the nights the version step replayed both kinds against five, the resolved event-book setups against 250, and the nights of trend labels under the third trend version against sixty</td></tr>
+Why: 12.3 builds the shape clock and the Calibration region in place of 11.9's region, since the reasons no longer choose the list (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out).
+
+### 2026-09-25 - ARCHITECTURE.html - section 17 drops the reasons' two targets and states the shape clock's figures
+Was:
+> <tr><td>Reason share target</td><td>2% of the index, each reason's median nightly share over the ordinary nights written under the current code, proposed, and checked on the run page beside the share each reason fires for tonight (see: A reason's threshold is calibrated to a target share of the index over ordinary nights and a night a usually quiet reason floods is left out)</td><td>a reason firing on a large share of the index has setups whose base rate is the universe's and a measured edge near zero by construction, so on an ordinary night each reason fires for about ten names; the operator's proposal of 2026-09-23</td><td>read-surface, over constructed nights on the run page</td></tr> <tr><td>Any-reason share target</td><td>6% of the index, the median nightly share firing any reason over the ordinary nights, proposed, and checked on the run page beside the share firing any reason tonight (see: A reason's threshold is calibrated to a target share of the index over ordinary nights and a night a usually quiet reason floods is left out)</td><td>about thirty names, so on an ordinary night the list's membership sits near the twenty drawn and the conditions select rather than the ordering; the page draws twenty, 4% of the index, and a target far above that leaves the tie-breaker choosing; the operator's proposal of 2026-09-23</td><td>read-surface, over constructed nights on the run page</td></tr> <tr><td>Event session share</td><td>25% of the index, the share a reason whose own median nightly share is below it fires for on a night that makes the night an event session, which is counted, marked on the run page and left out of the calibration sample, proposed (see: A reason's threshold is calibrated to a target share of the index over ordinary nights and a night a usually quiet reason floods is left out)</td><td>its setups share one cause and are closer to one observation than to hundreds, and a reason above a quarter on its ordinary nights is flooding by its threshold, which the calibration moves, and marks no session; the quarterly expiry of 2026-09-18 is the case it names, on the operator's rulings of 2026-09-23</td><td>read-surface, over constructed nights on the run page</td></tr>
+Now:
+> the event session share covers a gate counted through the funnel or a reason, over every night in the window, and four rows follow it: the event volume ratio at 1.8, sixty ordinary nights under one version, the four gate bands and the list's band of 5 to 30, each proposed
+Why: 12.3 builds the shape clock and the Calibration region in place of 11.9's region, since the reasons no longer choose the list (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out).
+
+### 2026-09-25 - BUILD_PLAN.md - an operating row counted against its trigger on the Calibration region
+Was:
+> 5 scheduled nights over the whole index, read on the run page's operational header, which 5.6 builds.
+Now:
+> 5 scheduled nights over the whole index, read on the run page's Calibration region against its trigger, which 12.3 builds, as the nights run for the session the clock fell on.
+Why: 12.3 builds the shape clock and the Calibration region in place of 11.9's region, since the reasons no longer choose the list (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out).
+
+### 2026-09-25 - BUILD_PLAN.md - an operating row counted against its trigger on the Calibration region
+Was:
+> 20 research passes carrying a recorded cost, read on the run page's operational header, which 6.7 fills with the spend its ledger prices.
+Now:
+> 20 research passes carrying a recorded cost, read on the run page's Calibration region against its trigger, which 12.3 builds; the operational header, which 6.7 fills, draws the spend its ledger prices.
+Why: 12.3 builds the shape clock and the Calibration region in place of 11.9's region, since the reasons no longer choose the list (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out).
+
+### 2026-09-25 - BUILD_PLAN.md - an operating row counted against its trigger on the Calibration region
+Was:
+> read on the run page's operational header, which 8.6 fills with that step's own duration and the versions it replayed of each kind, apart from any row a person ran by hand.
+Now:
+> read on the run page's Calibration region against its trigger, which 12.3 builds, off the lines the operational header, which 8.6 fills, draws for that step's duration and the versions it replayed of each kind, apart from any row a person ran by hand.
+Why: 12.3 builds the shape clock and the Calibration region in place of 11.9's region, since the reasons no longer choose the list (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out).
+
+### 2026-09-25 - BUILD_PLAN.md - an operating row counted against its trigger on the Calibration region
+Was:
+> 250 resolved event-book setups, read on the run page, which 5.6 builds and 8.5 fills with verdicts.
+Now:
+> 250 resolved event-book setups, read on the run page's Calibration region against its trigger, which 12.3 builds and which says that no stage scores an event-book setup yet.
+Why: 12.3 builds the shape clock and the Calibration region in place of 11.9's region, since the reasons no longer choose the list (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out).
+
+### 2026-09-25 - BUILD_PLAN.md - an operating row counted against its trigger on the Calibration region
+Was:
+> 60 stored nights of trend labels after version C opens, read on the run page's rule versions region, which 8.6 builds and 10.4 extends to the trend rule.
+Now:
+> 60 stored nights of trend labels after version C opens, read on the run page's Calibration region against its trigger, which 12.3 builds, beside the rule versions region, which 8.6 builds and 10.4 extends to the trend rule.
+Why: 12.3 builds the shape clock and the Calibration region in place of 11.9's region, since the reasons no longer choose the list (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out).
+
+### 2026-09-25 - BUILD_PLAN.md - the six reason thresholds discharged by the switch to the swing filter
+Was:
+> **The six reason thresholds calibrated from the nights they fired on** | 5.0 | operating | 60 ordinary nights of listings, read on the run page, which 5.6 builds and on which 11.9 draws each reason's ordinary nights against the sixty, each reason's own count being the ordinary nights written under its current rule, which leaves out earnings soon's and breakout on volume's rows written before their correction. 60 because it is the quarter of trading the level window already uses, long enough that a distribution of fired counts is not one week's weather. The calibration is told its target and its exclusion rather than left to find them: each threshold is moved once, to the value that puts its median nightly share of the index at its target, 2% for each reason and 6% for the share firing any reason, both proposed, and a night on which a reason whose own median nightly share is below a quarter fires for more than a quarter of the index is an event session, counted and left out of the sample (see: A reason's threshold is calibrated to a target share of the index over ordinary nights and a night a usually quiet reason floods is left out). No checkpoint accumulates nights, so 5.6 makes th
+Now:
+> **The six reason thresholds calibrated from the nights they fired on** | 5.0 | 12.3, discharged | discharged by the switch to the swing filter rather than by a calibration: the reasons stop choosing tonight's list, so no reason's threshold is calibrated to a share of the index, and what is calibrated is each gate's count through the funnel against its band (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out). The reasons' shares stay on the run page's Calibration region as context. What the row asked for was 60 ordinary nights of listings read against each reason's target, and the targets are withdrawn with it
+Why: 12.3 builds the shape clock and the Calibration region in place of 11.9's region, since the reasons no longer choose the list (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out).
+
+### 2026-09-25 - DECISIONS.md - the swing filter's shape clock supersedes the reasons' target shares
+Was: **A reason's threshold is calibrated to a target share of the index over ordinary nights and a night a usually quiet reason floods is left out** in The list.
+Now: **The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out** in How the picks improve, and the earlier entry under Previously decided with what stands and what changed.
+Why: the operator ruled on 2026-09-24 that tonight's list becomes a swing filter, so what is calibrated is each gate's count rather than each reason's share.
+
+### 2026-09-25 - BUILD_PLAN.md - cites the decision that superseded the reasons' target shares
+Was:
+> (see: A reason's threshold is calibrated to a target share of the index over ordinary nights and a night a usually quiet reason floods is left out)
+Now:
+> (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out)
+Why: a citation of a superseded decision is refused, and 11.9's section named the entry 12.3 supersedes.
+
+### 2026-09-25 - BUILD_PLAN.md - 12.3 cites the rows its Calibration region counts and the one it discharges
+Was:
+> Writes section 11's calibration paragraph, section 13, section 15.10, and section 17's bands, the list's band and the volume median, less the two targets.
+Now:
+> The region's lines count what five operating rows wait on, where no surface drew a count of its own (owes: The nightly wall clock at index size, measured from nights that ran on the schedule) (owes: The spend cap set from the passes the ledger has priced) (owes: The rule version bound set from nights the version scorer ran) (owes: The event setups' triggers calibrated from resolved setups) (owes: The trend confirmation's nights settled from flip-backs), and the reasons' thresholds are discharged with the region that answered them (owes: The six reason thresholds calibrated from the nights they fired on). Writes section 11's calibration paragraph, section 13, section 15.10, and section 17's bands, the list's band and the volume median, less the two targets.
+Why: an operating row is cited back by the checkpoint that builds its surface, and the five rows now read on the Calibration region and the discharged reasons' row name 12.3.
+
+### 2026-09-25 - .claude/rules/checks.md - read-surface reads the Calibration region where it read 11.9's region
+Was:
+> and the run page states each reason's share of the index on the night it is read for, its median over the ordinary nights and its target, the same three for the share firing any reason, the ordinary nights counted against sixty and every event session with the reason that made it one, each read back off the page against the test's own arithmetic over constructed nights, a reason above a quarter on every night marking none, a usually quiet reason above a quarter on one night marking it and that night read by no median, and a row written before the 5.4 corrections counting for neither reason they changed, and earnings soon on a session before the calendar read each member's own listing alone counting toward no share, the share firing any reason with it
+Now:
+> and the run page's Calibration region opens with the sentence the code holds once and section 13.8 states word for word, and states the shape clock as the test's own arithmetic over constructed nights gives it: the ordinary nights under the open filter version against sixty, none counting before a version is open, every event night with the gate, the reason or the volume that made it one, each gate's median count through the funnel and the list's against their bands, marked not yet measured until the trigger and with a line at the top of the page once it is crossed, and each reason's share as context; and the region counts what five operating rows wait on, each against its trigger, read back off the page over a constructed run log, rule versions and version scores
+Why: 12.3 replaces 11.9's region with the Calibration region, since the reasons no longer choose the list.
+
+### 2026-09-25 - .claude/rules/checks.md - fixture-expectations works the shape clock's classifier and its trigger by hand
+Was: the row, as it stood before this entry, ending at "the shape counts over the two-night store are the funnel the gates worked by hand give, leave the store's bytes as they were, and replayed as of each night give the bands, the trend and the plan the store kept".
+Now: the row adds the classifier and the trigger worked by hand over constructed nights and over nights carrying the operator's stored shares.
+Why: 12.3 builds the shape clock, and a classifier nothing works by hand at its thresholds is one nothing has shown to be the rule's.

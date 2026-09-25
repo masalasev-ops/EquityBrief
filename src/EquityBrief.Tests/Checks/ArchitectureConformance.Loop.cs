@@ -620,7 +620,7 @@ public partial class ArchitectureConformance
     // operating obligation it cites where it names none.
     static readonly (string Row, string[] Checkpoints, string Obligation)[] WhatCanImprove =
     [
-        ("Condition thresholds", [], "The six reason thresholds calibrated from the nights they fired on"),
+        ("Condition thresholds", [], "The swing filter's shape calibrated from its ordinary nights"),
         ("Which conditions exist", ["8.3", "8.4"], ""),
         ("The ladder rules", ["8.6"], ""),
     ];
@@ -1182,6 +1182,41 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.FailureTable, "Breadth not available on a night"),
         CheckReach.Key(Scope.FailureTable, "A gate's reading is absent for a name"),
         CheckReach.Key(Scope.FixtureTable, "gate results"),
+
+        // 12.3's: the Calibration region's shape clock, its sentence and its trigger lines, and section 17's
+        // four rows for the event volume ratio, the sixty nights and the two bands.
+        CheckReach.Key("15.10 Run", "The shape clock, the ordinary nights under the open filter version against the sixty the calibration waits on"),
+        CheckReach.Key("15.10 Run", "The shape clock, every event night with what made it one"),
+        CheckReach.Key("15.10 Run", "The shape clock, each gate's median count through it against its band"),
+        CheckReach.Key("15.10 Run", "The shape clock, the list's median size against its band of 5 to 30"),
+        CheckReach.Key("15.10 Run", "The shape clock, drawn as not yet measured until the trigger"),
+        CheckReach.Key("15.10 Run", "The shape clock, said at the top of the page once the trigger is crossed"),
+        CheckReach.Key("15.10 Run", "The shape clock, each reason's share of the index as context"),
+        CheckReach.Key("15.10 Run", "What the two clocks can do"),
+        CheckReach.Key("15.10 Run", "What else is waiting on a count, the nights run for the session the clock fell on against five"),
+        CheckReach.Key("15.10 Run", "What else is waiting on a count, the research passes carrying a recorded cost against twenty"),
+        CheckReach.Key("15.10 Run", "What else is waiting on a count, the nights the version step replayed both kinds against five"),
+        CheckReach.Key("15.10 Run", "What else is waiting on a count, the resolved event-book setups against 250"),
+        CheckReach.Key("15.10 Run", "What else is waiting on a count, the nights of trend labels under the third trend version against sixty"),
+        CheckReach.Key(Scope.LimitsTable, "Event volume ratio"),
+        CheckReach.Key(Scope.LimitsTable, "Shape calibration nights"),
+        CheckReach.Key(Scope.LimitsTable, "Gate bands"),
+        CheckReach.Key(Scope.LimitsTable, "List band"),
+    ];
+
+    // Rows phase 12 took out of the document: 11.9's region stating each reason's share against its
+    // target, read as its six parts, and section 17's two targets, which 12.3 replaced with the Calibration
+    // region when the reasons stopped choosing the list.
+    static readonly string[] PhaseTwelveRemoved =
+    [
+        CheckReach.Key("15.10 Run", "Reasons against their targets, each reason's share of the index tonight"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, its median share over the ordinary nights"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, its target"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, the share firing any reason with its median and its target"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, the ordinary nights counted against the sixty the calibration waits on"),
+        CheckReach.Key("15.10 Run", "Reasons against their targets, every event session marked with the reason that made it one"),
+        CheckReach.Key(Scope.LimitsTable, "Reason share target"),
+        CheckReach.Key(Scope.LimitsTable, "Any-reason share target"),
     ];
 
     // Rows the document gained after the prediction, each one claim.
@@ -1268,12 +1303,15 @@ public partial class ArchitectureConformance
             CheckReach.Key(Scope.LimitsTable, "Event session share"),
         ];
 
-        Assert.All([.. fixtureRows, .. addendum], key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All([.. fixtureRows, .. addendum.Except(PhaseTwelveRemoved)], key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
         var expected = Predicted + readAsParts.Sum(key => Scope.ElementsOf(key).Count - 1) + fixtureRows.Length + addendum.Length;
 
-        // Phase 12's rows came after the phase this pair is about, each named where it was added.
-        var now = expected + PhaseTwelveRows.Length;
+        // Phase 12's rows came after the phase this pair is about, each named where it was added, and
+        // the rows it took out are named too, 11.9's region among them.
+        var now = expected + PhaseTwelveRows.Length - PhaseTwelveRemoved.Length;
+
+        Assert.All(PhaseTwelveRemoved, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
         Assert.All(PhaseTwelveRows, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
@@ -1294,10 +1332,11 @@ public partial class ArchitectureConformance
         var expected = PredictedClaims
             + ReadAsItsParts.Sum(key => Scope.ElementsOf(key).Count - 1)
             + AddedAfterThePrediction.Length
-            - RemovedAfterThePrediction.Length;
+            - RemovedAfterThePrediction.Length
+            - PhaseTwelveRemoved.Length;
 
-        Assert.All(AddedAfterThePrediction, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
-        Assert.All(RemovedAfterThePrediction, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All(AddedAfterThePrediction.Except(PhaseTwelveRemoved), key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All([.. RemovedAfterThePrediction, .. PhaseTwelveRemoved], key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
         // Out of scope was zero while phase 8 was the last phase. Phase 9's rows are
         // placed at checkpoints the record does not carry, so each reads as out of scope

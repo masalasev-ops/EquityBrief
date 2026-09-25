@@ -5,6 +5,7 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Levels;
+using EquityBrief.Core.Shortlist;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
 
@@ -69,6 +70,13 @@ public sealed class FilterCounts : IComponent
     // Every counted session under every setting, keyed by the setting's name.
     public CountNotes Notes { get; private set; } = new(0, null, 0, 0, 0, 0);
 
+    // Each night the store keeps listings for, as the shape clock reads it at section 17's proposed
+    // values: the counts through the gates with the market held open, the list, and the index's median
+    // volume ratio; and each night's firing off its listings. What the classifier is run over.
+    public IReadOnlyList<NightShape> Shapes { get; private set; } = [];
+
+    public IReadOnlyList<NightFiring> Firings { get; private set; } = [];
+
     public async Task<IReadOnlyDictionary<string, IReadOnlyList<SessionCounts>>> CountAsync(
         string indexCode,
         bool year,
@@ -100,6 +108,7 @@ public sealed class FilterCounts : IComponent
         var previous = settings.Keys.ToDictionary(name => name, _ => (DateOnly?)null, StringComparer.Ordinal);
         var lastEvents = settings.Keys.ToDictionary(name => name, _ => new Dictionary<string, bool?>(StringComparer.Ordinal), StringComparer.Ordinal);
 
+        var shapes = new List<NightShape>();
         var unreadable = 0;
         DateOnly? firstReadable = null;
         var compared = 0;
@@ -163,6 +172,13 @@ public sealed class FilterCounts : IComponent
                     results.Count(result => result.Family == SwingGates.Pullback),
                     results.Count(result => result.Family == SwingGates.Breakout)));
 
+                // The shape clock reads the proposed values with the trigger's arrival read off the night
+                // before, as the night itself does, over the nights the store keeps listings for.
+                if (stored is not null && setting == FilterSettings.Proposed)
+                {
+                    shapes.Add(ShapeOf(session, inputs, results));
+                }
+
                 lastEvents[name] = results.ToDictionary(result => result.Ticker, result => result.TriggerEvent, StringComparer.Ordinal);
                 previous[name] = session;
             }
@@ -171,8 +187,83 @@ public sealed class FilterCounts : IComponent
         }
 
         Notes = new CountNotes(unreadable, firstReadable, compared, bandsAgree, trendsAgree, plansAgree);
+        Shapes = shapes;
+        Firings = await FiringsAsync(connection, [.. shapes.Select(one => one.Session)], cancellation);
 
         return counts.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<SessionCounts>)pair.Value, StringComparer.Ordinal);
+    }
+
+    // A night's shape off the results the night's evaluation gave, counted through the gates after the
+    // market with the market held open.
+    static NightShape ShapeOf(DateOnly session, SessionInputs inputs, IReadOnlyList<GateResult> results)
+    {
+        var ratios = inputs.Rows
+            .Where(row => row.Inputs.Volume is > 0 && row.Inputs.VolumeAverage50 is > 0)
+            .Select(row => EquityBrief.Core.Prices.Statistic.FromVolume(row.Inputs.Volume!.Value) / row.Inputs.VolumeAverage50!.Value)
+            .ToArray();
+
+        int Through(int last) => results.Count(result => result.Gates.Skip(1).Take(last + 1).All(gate => gate.Passed));
+
+        return new NightShape(
+            session,
+            ShapeClock.NoVersion,
+            results.Count,
+            [Through(0), Through(1), Through(2), Through(3)],
+            results.Count(result => result.Gates.Skip(1).All(gate => gate.Passed) && result.Exclusions.Count == 0),
+            SwingReadings.Median(ratios));
+    }
+
+    static async Task<IReadOnlyList<NightFiring>> FiringsAsync(SqliteConnection connection, IReadOnlyList<DateOnly> sessions, CancellationToken cancellation)
+    {
+        var rows = new List<(DateOnly, string)>();
+
+        foreach (var session in sessions)
+        {
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = "SELECT reasons FROM listing WHERE session_date = $day;";
+            command.Parameters.AddWithValue("$day", session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                rows.Add((session, reader.GetString(0)));
+            }
+        }
+
+        return NightFirings.Of(rows);
+    }
+
+    // The shape clock's readings over the nights given and its classification of each, as the operator
+    // reads them: each gate's share through the funnel with the market held open, each reason's share,
+    // the volume ratio, and whether the night is an event with what made it one.
+    public static string ShapeReport(IReadOnlyList<NightShape> shapes, IReadOnlyList<NightFiring> firings)
+    {
+        var report = new StringBuilder();
+        var events = ShapeClock.Events(shapes, firings).ToDictionary(one => one.Session);
+
+        report.AppendLine();
+        report.AppendLine("The shape clock over the nights the store keeps listings for, the market held open: each gate's share through the funnel, each reason's share, the volume ratio, and the night's class.");
+        report.AppendLine("session     trend setup trigger trade | " + string.Join(" ", ShortlistSeries.Reasons.Select(reason => reason.Split(' ')[0])) + " | volume | class");
+
+        foreach (var shape in shapes)
+        {
+            var firing = firings.FirstOrDefault(one => one.Session == shape.Session);
+            var gates = string.Join(" ", shape.Through.Select(count => (count * 100.0 / Math.Max(1, shape.Members)).ToString("0.0", CultureInfo.InvariantCulture)));
+            var reasons = string.Join(" ", ShortlistSeries.Reasons.Select(reason =>
+                firing is not null && firing.Reasons.TryGetValue(reason, out var count) && count.Counted > 0
+                    ? (count.Fired * 100.0 / count.Counted).ToString("0.0", CultureInfo.InvariantCulture)
+                    : "n/a"));
+            var ratio = shape.MedianVolumeRatio is { } held ? held.ToString("0.00", CultureInfo.InvariantCulture) : "n/a";
+            var type = events.TryGetValue(shape.Session, out var flooded)
+                ? "event: " + string.Join(" and ", flooded.Floods.Select(flood => flood.Measure).Concat(flooded.VolumeRatio is null ? [] : ["volume"]))
+                : "ordinary";
+
+            report.AppendLine(FormattableString.Invariant($"{shape.Session:yyyy-MM-dd}  {gates} | {reasons} | {ratio} | {type}"));
+        }
+
+        return report.ToString();
     }
 
     // On a night the store keeps bands, trends and plans for, how many members the replay gives the same
