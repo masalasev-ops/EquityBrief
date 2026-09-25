@@ -578,6 +578,18 @@ app.MapGet("/screens/tonight/{night?}", async (
             "text/html; charset=utf-8");
     }
 
+    // The record starts on the swing filter's first night, and an evening before it is not drawn.
+    // see: The dated screens open from the swing filter's first night, and an evening before it is not drawn
+    var first = await read.FirstFilterNightAsync();
+    var held = (await read.NightsAsync()).Where(one => first is not { } from || one >= from).ToArray();
+
+    if (first is { } start && dated < start)
+    {
+        return Results.Content(
+            SinglePageApp.BeforeTheRecord(dated, start, "Tonight", SinglePageApp.NightRoute, "#/", held),
+            "text/html; charset=utf-8");
+    }
+
     var listings = await read.ListingsAsync(dated);
 
     // Section 18's banner. A night the store has no listings for shows the data
@@ -681,7 +693,7 @@ app.MapGet("/screens/tonight/{night?}", async (
             RunScreen.Market(market),
             TonightScreen.RuleView(rule, gates, market),
             TonightScreen.Listed(listings),
-            held: await read.NightsAsync()),
+            held: held),
         "text/html; charset=utf-8");
 });
 
@@ -836,6 +848,18 @@ app.MapGet("/screens/run/{night?}", async (
             "text/html; charset=utf-8");
     }
 
+    // The record starts on the swing filter's first night, and a night before it is not drawn.
+    // see: The dated screens open from the swing filter's first night, and an evening before it is not drawn
+    var first = await read.FirstFilterNightAsync();
+    var held = (await read.NightsAsync()).Where(one => first is not { } from || one >= from).ToArray();
+
+    if (first is { } start && dated < start)
+    {
+        return Results.Content(
+            SinglePageApp.BeforeTheRecord(dated, start, "Run evidence", SinglePageApp.RunRoute, SinglePageApp.RunRoute, held),
+            "text/html; charset=utf-8");
+    }
+
     // The paid calls with a recorded cost, which the operational header draws and the calibration's
     // spend cap line counts the passes of.
     var priced = RunScreen.Priced(
@@ -911,7 +935,7 @@ app.MapGet("/screens/run/{night?}", async (
             await read.OpenFilterVersionAsync() is { } open
                 ? EdgeScreen.NearMisses(open, await read.NearMissRowsAsync(open), dated)
                 : EdgeScreen.NearMisses(null, [], dated),
-            held: await read.NightsAsync()),
+            held: held),
         "text/html; charset=utf-8");
 });
 

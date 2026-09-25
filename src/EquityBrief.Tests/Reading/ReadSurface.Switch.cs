@@ -204,11 +204,22 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task AnEveningBeforeTheSwitchIsDrawnAsItWasListedAndSaysByWhichRule()
+    public async Task AnEveningBeforeTheSwitchIsNotDrawnAndOnAStoreTheFilterNeverListedIsDrawnAsItWasListed()
     {
         using var store = SwitchStore();
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
+
+        // The record starts on the switch, so the evening before it is not drawn, and the line says where
+        // the record starts.
+        // see: The dated screens open from the swing filter's first night, and an evening before it is not drawn
+        Assert.Contains(
+            $"<section class=\"before-the-record\" data-night=\"{BeforeTheSwitch}\" data-first=\"{TheSwitch}\">",
+            await client.GetStringAsync($"/screens/tonight/{BeforeTheSwitch}"),
+            StringComparison.Ordinal);
+
+        // On a store the filter never listed, the same evening is drawn as its reasons listed it.
+        store.Execute("DELETE FROM list_rule WHERE rule = 'filter';");
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{BeforeTheSwitch}"));
         var list = Assert.Single(Blocks(page, "<section class=\"tonight-list\".*?</section>"));
@@ -301,7 +312,11 @@ public partial class ReadSurface
         Assert.Contains($"<dt>Reason</dt><dd>{reason}</dd>", WebUtility.HtmlDecode(name), StringComparison.Ordinal);
         Assert.Contains($"<dt>Reason</dt><dd>{reason}</dd>", WebUtility.HtmlDecode(export), StringComparison.Ordinal);
 
-        // Shown to find what it looks for: the evening before the switch, listed by the reasons, says so.
+        // Shown to find what it looks for: the evening before the switch, listed by the reasons, says so,
+        // drawn over the store read as one the filter never listed, since an evening before the filter's
+        // first night is not drawn.
+        store.Execute("DELETE FROM list_rule WHERE rule = 'filter';");
+
         var before = await client.GetStringAsync($"/screens/tonight/{BeforeTheSwitch}");
 
         Assert.Contains(SentencesOf(before), ArchitectureConformance.DescribesTheReasonsChoosing);
@@ -442,7 +457,12 @@ public partial class ReadSurface
         Assert.Contains($"Of the 3 name(s) on the list on {On(0)}: on the list the evening before, {On(1)}, 1; on it at least once over the last 5 evening(s) before it, 2; over the last 20, 3.", overlap, StringComparison.Ordinal);
 
         // With fewer than twenty evenings before it, the line says how many the store holds: six back the
-        // reasons listed C alone, and the store holds 15 evenings before that one, C listed on the last.
+        // reasons listed C alone, and the store holds 15 evenings before that one, C listed on the last. A
+        // night before the filter's first is not drawn, so the store is read as one the filter never listed.
+        Assert.Contains("<section class=\"before-the-record\"", await client.GetStringAsync($"/screens/run/{On(6)}"), StringComparison.Ordinal);
+
+        store.Execute("DELETE FROM list_rule WHERE rule = 'filter';");
+
         var early = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{On(6)}"));
 
         Assert.Contains($"Of the 1 name(s) on the list on {On(6)}: on the list the evening before, {On(7)}, 0; on it at least once over the last 5 evening(s) before it, 0; over the last 15, 1, the store holding 15 evening(s) before it.", Assert.Single(Blocks(early, "<section class=\"overlap\".*?</section>")), StringComparison.Ordinal);

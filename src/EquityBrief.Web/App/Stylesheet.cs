@@ -82,7 +82,17 @@ code{font-size:.92em}
 .night-picker .np-move{display:inline-block;min-width:22px;text-align:center;line-height:20px;border:1px solid var(--hair);border-radius:4px;color:var(--ink);text-decoration:none}
 .night-picker a.np-move:hover{border-color:var(--ink)}
 .night-picker span.np-move{opacity:.35}
-.night-picker .np-date{font:inherit;font-size:12.5px;line-height:18px;padding:0 4px;border:1px solid var(--hair);border-radius:4px;background:var(--surface);color:var(--ink)}
+.night-picker .np-cal{position:relative;display:inline-block}
+.night-picker .np-date{list-style:none;cursor:pointer;font-size:12.5px;line-height:18px;padding:0 6px;border:1px solid var(--hair);border-radius:4px;background:var(--surface);color:var(--ink);font-variant-numeric:tabular-nums}
+.night-picker .np-date::-webkit-details-marker{display:none}
+.night-picker .np-months{position:absolute;z-index:30;top:24px;left:0;display:flex;gap:14px;padding:10px;background:var(--surface);border:1px solid var(--hair);border-radius:6px;box-shadow:var(--shadow);max-width:80vw;overflow-x:auto}
+.np-month{font-size:12px;font-variant-numeric:tabular-nums}
+.np-caption{font-weight:600;padding:0 0 4px;color:var(--ink);white-space:nowrap}
+.np-grid{display:grid;grid-template-columns:repeat(7,24px);gap:3px 2px;text-align:center;line-height:18px}
+.np-wd{font-weight:500;color:var(--soft)}
+.np-grid .np-day{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.np-grid .np-day[aria-current]{background:var(--ink);color:var(--surface);border-radius:3px;text-decoration:none}
+.np-grid .np-off{color:var(--soft);opacity:.45}
 .night-picker .np-newest{margin-left:4px;color:var(--ink)}
 .m-right{display:flex;align-items:center;gap:16px}
 .m-nav{display:flex;gap:14px;font-size:13.5px}

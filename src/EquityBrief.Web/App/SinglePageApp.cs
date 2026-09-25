@@ -259,20 +259,6 @@ public sealed class SinglePageApp : IComponent
           paintTheme();
         }
         addEventListener('hashchange', show);
-        // A day picked on a dated screen's calendar opens the stored night on or before it, or the
-        // first stored night where the day falls before them all.
-        document.addEventListener('change', (event) => {
-          const picked = event.target.closest ? event.target.closest('input.np-date') : null;
-          if (!picked || !picked.value) {
-            return;
-          }
-          const held = (picked.dataset.nights || '').split(' ').filter((night) => night !== '');
-          const onOrBefore = held.filter((night) => night <= picked.value);
-          const night = onOrBefore.length > 0 ? onOrBefore[onOrBefore.length - 1] : held[0];
-          if (night) {
-            location.hash = picked.closest('.night-picker').dataset.route + night;
-          }
-        });
         // A link followed or a row picked is a new place, and back or forward returns to where
         // the reader was. Anywhere on a row of tonight's list but its links picks that row, which
         // draws its plan beneath the list.
@@ -1637,6 +1623,16 @@ public sealed class SinglePageApp : IComponent
 
         return banner.ToString();
     }
+
+    // An evening before the swing filter's first night, which neither dated screen draws: the record
+    // starts on the first night the filter listed, and the line says so and opens it. The screen's own
+    // calendar sits in its header, over the nights from that one on.
+    // see: The dated screens open from the swing filter's first night, and an evening before it is not drawn
+    public static string BeforeTheRecord(DateOnly asked, DateOnly first, string title, string route, string newest, IReadOnlyList<DateOnly> held) =>
+        Invariant($"<section class=\"before-the-record\" data-night=\"{asked:yyyy-MM-dd}\" data-first=\"{first:yyyy-MM-dd}\">")
+        + Cards.Masthead(title, Invariant($"<span class=\"m-screen\">{Escaped(title)}</span>"), Invariant($"The record starts on {first:yyyy-MM-dd}") + Cards.NightPicker(first, held, route, newest))
+        + Invariant($"<p class=\"banner\" role=\"status\">The record starts on {first:yyyy-MM-dd}, the swing filter's first night, so {asked:yyyy-MM-dd} is not drawn. <a href=\"{route}{first:yyyy-MM-dd}\">Open {first:yyyy-MM-dd}</a></p>")
+        + "</section>";
 
     // A name asked for on something that is not a date: tonight's page with a line saying
     // what was asked for, as an unknown route is tonight's list with one.

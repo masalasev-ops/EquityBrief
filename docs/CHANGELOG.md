@@ -7708,3 +7708,13 @@ Why: the operator's ruling of 2026-09-25 that the filter's results are replayed 
 Was: no section; the command did not exist.
 Now: a section before "Registering a candidate and versioning a ladder rule" giving the `filter-history` command, the night run again after it, what it refuses and its run log row.
 Why: the operator runs the command, and the runbook is where a command is given.
+
+### 2026-09-25 - ARCHITECTURE.html - the dated screens open from the swing filter's first night, and the calendar underlines the nights it holds
+Corrects: sections 15.7 and 15.10 drew every evening the store holds, those before the swing filter's first night listed by a rule the list no longer uses, and the calendar was a date field that could not tell a day holding a night from one holding none. The operator's rulings of 2026-09-25: "Lets start from 24th as real night", the evenings before it unavailable on tonight's page and the run page, and "The calender filter should underline the dates for which we are making the list available".
+Was:
+> for an earlier one. A calendar beside the night drawn opens another, over the nights the store holds: its arrows open the stored night before and the stored night after, and a day picked on it opens the stored night on or before that day, or the first night where the day falls before them all.</p>
+> The same calendar as tonight's page sits beside the night drawn, and opens the run page of the night it picks.</p>
+Now:
+> for an earlier one. On a store the swing filter has listed, the page opens from the first night it listed: an earlier date draws one line saying the record starts on that night, with a link opening it (see: The dated screens open from the swing filter's first night, and an evening before it is not drawn). A calendar beside the night drawn opens another: its arrows open the night before and the night after among those the page draws, and its month grid, newest month first, underlines each day holding one of them and opens it on a click, marks the night drawn, and draws every other day as no link.</p>
+> The same calendar as tonight's page sits beside the night drawn and opens the run page of the night it picks, and like tonight's page it opens from the swing filter's first night.</p>
+Why: the record starts on the first night the list was drawn by the rule it is drawn by now, and a calendar is read by which days hold a night.
