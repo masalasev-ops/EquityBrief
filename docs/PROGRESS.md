@@ -26346,14 +26346,24 @@ Mutated:    the rule, stated before the run: each guard and each refusal removed
             F5 a session already holding results replayed over: red in the command test alone.
             F6 the night's own session replayed: red in the command test alone.
             F7 the replayed results stored under the open version: red in both tests.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, VT of VT tests ran with
-            none failed, migrations 0 to 42 with none pending, schema version 42, exit 0, against `data-ci`
-            and never `data`.
-            `tools/verify-phase.ps1` green at VTB tables, VC claims, VP PASS, 0 FAIL, 0 out of scope, 0
-            unexamined, VR placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
-            41 roster checks carried and all 41 run, VT of VT tests.
-            Both gates ran over the tree carrying this entry and the one before it, TREESHA, in the worktree
-            beside the repository, and the operator's store under `data/` was not touched by either.
+            Results: one run for each of the seven mutations in a detached worktree at 61f21fb, the tree
+            carrying this entry, filtered to the two tests on the operator's instruction of 2026-09-24, each
+            reverted with `git checkout -- .` and the tree read clean after. The whole suite ran green over
+            61f21fb in the gates, 1414 of 1414. F1, F2, F3 and F4 each turned the readers test red and left
+            the command test green. F5 and F6 each turned the command test red and left the readers test
+            green. F7 turned both red.
+Held:       all seven, in the tests each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1414 of 1414
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 556 claims, 556 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 566 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, 1414 of 1414 tests.
+            Both gates ran over the tree carrying this entry and the one before it, 61f21fb, in a worktree
+            beside the repository, and the operator's store under `data/` was not touched by either. The
+            first run, over 5b3e24a, stopped at `clock-usage`: the command's refusal and the command test
+            each formatted a date with the invariant culture named on the line before, which the check reads
+            as a date formatted against the machine's locale, and each was put on the one line in this
+            correction's commit, the only change between the two trees.
 Carried:    the command on the operator's store, on their word, before the night of 2026-09-25 starts:
             `filter-history --from 2026-09-21 --through 2026-09-23`, then the night of 2026-09-24 run again.
