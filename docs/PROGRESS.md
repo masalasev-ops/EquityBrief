@@ -26367,3 +26367,24 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             correction's commit, the only change between the two trees.
 Carried:    the command on the operator's store, on their word, before the night of 2026-09-25 starts:
             `filter-history --from 2026-09-21 --through 2026-09-23`, then the night of 2026-09-24 run again.
+
+### 12.6 ruling - the dated screens open from the swing filter's first night, and an evening before it is not drawn   2026-09-25
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-25, reading the evening of 2026-09-23 drawn with the 340 names its
+            reasons fired: "can we make them unavailable ... Lets start from 24th as real night", and, asked
+            which screens, "Tonight and the run page". Asked why the replayed answers mattered, the operator
+            was told that the old lists are drawn from each night's rows, which every record is read over and
+            a hard rule keeps, and that the replayed answers are read by the trigger's arrival alone, tonight
+            and on the night of 2026-09-28; nothing is deleted.
+Ruled:      on a store the swing filter has listed, tonight's page and the run page open from the first
+            night it listed, an earlier date drawing one line saying so with a link to that night (see: The
+            dated screens open from the swing filter's first night, and an evening before it is not drawn).
+Changed:    `DECISIONS.md` gains the decision beside the switch's own. No code changes here: the 12.6
+            correction that follows carries it.
+Consequences: on the operator's store the record starts on 2026-09-24; the evenings before it stay in the
+            store, on the name page's earlier evenings and in each name's listing history.
+Tests:      none added here; the 12.6 correction that follows adds the ones that hold it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 12.6 correction closing this batch records.
+Carried:    the replayed answers of 2026-09-21 to 2026-09-23 may be taken out on the operator's word once no
+            night reads them, from the night of 2026-09-29; no command takes them out yet.
