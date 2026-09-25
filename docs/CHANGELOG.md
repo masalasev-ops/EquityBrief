@@ -7662,3 +7662,11 @@ Was:
 Now:
 > <p data-phase="10">The level at Holm's first step is 0.05 over the candidates a window opened with, the three registered on 2026-09-23 and then the swing family's six (section 13.8), each spent across its own looks (see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read);
 Why: the graph divides the level over the candidates first evaluated on one night, which is three for the phase 10 candidates and six for the swing family, and the section said three for both.
+
+### 2026-09-25 - ARCHITECTURE.html - section 13.6 states the level a candidate no night has evaluated is read at, and that each candidate is read in the window it opened with
+Corrects: section 13.6 stated the first step's level over the candidates a window opened with and said nothing of a candidate no night has evaluated, which has opened no window, and the run page drew each of the swing family's six at the whole 0.05 until a night evaluated them. Found by the first phase 12 sign-off review over 4a7c7e0, reading the run page over a copy of the operator's store.
+Was:
+> (see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read); a graph in each register row
+Now:
+> (see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read); each candidate is read in the window it opened with and in no later one holding it beside a candidate registered since, and a candidate no night has evaluated has opened no window and is read over the candidates standing beside it, the ones the next night evaluates with it, or, where it was retired first, the ones standing when it was retired; a graph in each register row
+Why: the candidates a night evaluates are the ones standing at its start, so a candidate standing now opens its window with the ones standing beside it, and one retired before any night evaluated it would have opened with those standing when it was retired. A candidate is evaluated again beside every candidate registered after its window opened, and none of those was among the things tried over the evidence its window holds.

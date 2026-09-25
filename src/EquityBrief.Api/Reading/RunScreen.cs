@@ -333,25 +333,51 @@ public static class RunScreen
                 && row.Evidence is { } evidence
                 && evidence.StartsWith(CandidateFamily.PromotedBy, StringComparison.Ordinal));
 
+        // The instant of the last retirement naming a candidate by the page's instant, or the page's
+        // own where there is none.
+        DateTimeOffset RetiredAt(string candidate) =>
+            rows.Where(row => row.Event == CandidateFamily.Retired && row.Retires == candidate && row.RegisteredAt <= at)
+                .Select(row => row.RegisteredAt)
+                .DefaultIfEmpty(at)
+                .Max();
+
+        IReadOnlyList<GraphLevel> Graph(IEnumerable<string> candidates) =>
+            HolmGraph.Levels(
+                [
+                    .. candidates
+                        .Where(candidate => registered.Contains(candidate, StringComparer.Ordinal))
+                        .Distinct(StringComparer.Ordinal)
+                        .OrderBy(candidate => candidate, StringComparer.Ordinal)
+                        .Select(candidate => new GraphMember(
+                            candidate,
+                            Promoted(candidate),
+                            !standing.ContainsKey(candidate),
+                            level => Read(candidate, level).Verdict == CandidateRecord.Crossed)),
+                ],
+                ReasonVerdict.Significance);
+
         var levels = new Dictionary<string, GraphLevel>(StringComparer.Ordinal);
 
-        foreach (var family in registered.GroupBy(candidate => opened.GetValueOrDefault(candidate, night)))
+        // Each candidate reads the graph of the window it opened with, and never a later window that
+        // holds it beside a candidate registered since.
+        foreach (var family in registered.Where(opened.ContainsKey).GroupBy(candidate => opened[candidate]))
         {
-            var members = (evaluatedOn.GetValueOrDefault(family.Key, [.. family])
-                .Where(candidate => registered.Contains(candidate, StringComparer.Ordinal))
-                .Distinct(StringComparer.Ordinal)
-                .OrderBy(candidate => candidate, StringComparer.Ordinal)
-                .Select(candidate => new GraphMember(
-                    candidate,
-                    Promoted(candidate),
-                    !standing.ContainsKey(candidate),
-                    level => Read(candidate, level).Verdict == CandidateRecord.Crossed)))
-                .ToArray();
-
-            foreach (var level in HolmGraph.Levels(members, ReasonVerdict.Significance))
+            foreach (var level in Graph(evaluatedOn[family.Key]).Where(level => family.Contains(level.Candidate, StringComparer.Ordinal)))
             {
                 levels[level.Candidate] = level;
             }
+        }
+
+        // A candidate no night has evaluated has opened no window, and it reads the graph over the
+        // candidates standing beside it: while it stands, the ones the next night evaluates with it,
+        // and retired first, the ones standing when it was retired.
+        foreach (var candidate in registered.Where(candidate => !opened.ContainsKey(candidate)))
+        {
+            IEnumerable<string> beside = standing.ContainsKey(candidate)
+                ? standing.Keys
+                : CandidateFamily.StandingBefore(rows, RetiredAt(candidate)).Select(row => row.Candidate);
+
+            levels[candidate] = Graph(beside.Append(candidate)).Single(level => level.Candidate == candidate);
         }
 
         return new CandidateRegion(

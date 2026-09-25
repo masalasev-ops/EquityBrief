@@ -25851,3 +25851,65 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             place, in the worktree beside the repository, and they did not touch the operator's
             store under `data/`.
 Carried:    nothing.
+
+### 12.5 - correction: a candidate no night has evaluated reads the level over the candidates standing beside it, where each of the swing family's six read the whole 0.05, and each candidate reads the window it opened with and no later one   2026-09-25
+Corrects:   12.5, whose registration of the swing family's six beside the three it retired made 10.2's
+            reading of the candidates' records false. 10.2 keyed the window of a candidate no night had
+            evaluated on the page's night and read its members as the candidates evaluated that night: with
+            one set of candidates that night held none of their rows and the level came out right, and with
+            the three's rows on the page's night the six fell into no graph and took the whole 0.05 at step
+            1, where the ruled level is 0.05 over 6 and each of their register rows says a sixth of 0.05. The
+            shadow region on the same page divided by 6. Since 14:04:07Z the operator's store also holds
+            version 1's live candidate retired before any night evaluated it and version 2's registered in
+            its place, by the 12.4 ruling's acceptance, and each read 0.05 the same way. The fault holds from
+            a registration until the first night that evaluates the candidate, so it comes back with every
+            acceptance, and it reaches no verdict, none being readable for about two years.
+            The same reading took a candidate's level from the last window holding it rather than the one it
+            opened with, so a variant first evaluated beside a live candidate and evaluated again beside its
+            replacement read the replacement's window. The two levels differ only once a candidate crosses,
+            so nothing drawn has been wrong by it.
+Found:      the first by the first phase 12 sign-off review over 4a7c7e0 on 2026-09-25, on
+            /screens/run/2026-09-24 and /screens/run/2026-09-23 over a copy of the operator's store taken at
+            13:21Z; the second by this correction's builder, writing the repair.
+Repaired:   `RunScreen.Candidates`: each candidate reads the graph of the window it opened with and no
+            later one, and a candidate no night has evaluated reads the graph over the candidates standing
+            beside it at the page's instant, the ones the next night evaluates with it, or, retired first,
+            the ones standing when it was retired. Served over a copy of the operator's store taken at
+            14:39:40Z through SQLite's backup opened immutable, /screens/run/2026-09-24 drew version 2's live
+            candidate, the five variants and version 1's retired live candidate at 0.008333 and the three at
+            0.016667, each at step 1, where `main` at ecb1dc4 over the same copy drew the seven at 0.05.
+Guarded:    `read-surface`, one test added,
+            `ACandidateNoNightHasEvaluatedReadsTheLevelOverTheCandidatesStandingBesideIt`, each state worked
+            by hand from the register: the six before any night evaluated them while the page's night holds
+            the three's rows, the three at 0.05 over 3 and the six at 0.05 over 6, and each of the six's own
+            article, matched on the whole of its key and read to its close, drawing 0.00833 at step 1; the
+            six's first night moving no level; an acceptance retiring one of the six and registering its
+            replacement, before any night evaluated the six and after, the seven at 0.05 over 6 and the three
+            at 0.05 over 3; and a variant promoted after the six's first night, the four of that window still
+            standing at 0.05 over 6 and a quarter of it again at step 2, while the replacement, first
+            evaluated with those four, reads 0.05 over 5; and a candidate retired beside three, registered
+            again and retired beside four before any night evaluated it reads 0.05 over 4, the ones standing
+            at its last retirement, and one registered and retired in one second beside three reads 0.05
+            over 4, the three standing before that second and itself.
+Written:    section 13.6's sentence, its prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Pins:       the branch against `main` at ecb1dc4; this correction edits `RunScreen.cs`, a test and two
+            documents, in none of the twelve `RuleVersionScorer.CodeVersionSources`, the twenty-one
+            `CandidateEvaluator.EvaluationSources` with each evaluator's own source ahead of them, or the
+            sixteen `SwingFilter.CodeVersionSources`, each read from the tree being committed.
+Mutated:    the rule, stated before the run: each repair put back to what it replaced, one at a time. The
+            six's first night moving no level is left unmutated here, the windows test of 12.5's earlier
+            correction holding it.
+            Predicted:
+            C1 a candidate no night has evaluated read at the whole 0.05 at step 1: red in the test this
+            correction adds alone, the windows test staying green as the review found it.
+            C2 each candidate's level taken from every window holding it, the later overwriting the
+            earlier: red in the test this correction adds alone.
+            C7 a candidate retired before any night evaluated it read at its first retirement rather than
+            its last: red in the test this correction adds alone.
+            C8 that candidate left out of the graph it is read over: red in the test this correction adds
+            alone, the one registered and retired in one second finding no level.
+            Results: C1, C2, C7 and C8 in the 12.7 correction closing this batch.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 12.7 correction closing this batch records.
+Carried:    nothing.
