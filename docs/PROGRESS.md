@@ -26250,14 +26250,19 @@ Mutated:    the rule, stated before the run: each part of the calendar put back 
             both tests.
             N3 the nights the field lists left empty: red in both tests.
             N4 the run page handed no nights: red in the served test alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, VT of VT tests ran with
-            none failed, migrations 0 to 42 with none pending, schema version 42, exit 0, against `data-ci`
-            and never `data`.
-            `tools/verify-phase.ps1` green at VTB tables, VC claims, VP PASS, 0 FAIL, 0 out of scope, 0
-            unexamined, VR placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
-            41 roster checks carried and all 41 run, VT of VT tests.
-            Both gates ran over the tree carrying this entry, TREESHA, in the worktree beside the
+            Results: one run for each of the four mutations in a detached worktree at 803b0e0, the tree
+            carrying this entry, filtered to the two tests on the operator's instruction of 2026-09-24,
+            each reverted with `git checkout -- .` and the tree read clean after. The whole suite ran green
+            over 803b0e0 in the gates, 1412 of 1412. N1, N2 and N3 each turned both tests red. N4 turned
+            the served test red and left the calendar test green.
+Held:       all four, in the tests each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1412 of 1412
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 564 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, 1412 of 1412 tests.
+            Both gates ran over the tree carrying this entry, 803b0e0, in the worktree beside the
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    the calendar lists every night the listings hold, the two partial evenings of 2026-04-16 and
             2026-08-17 among them, as the pages' own newest-night reading does.
