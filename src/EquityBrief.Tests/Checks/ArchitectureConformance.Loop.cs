@@ -1151,6 +1151,37 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Range tightness windows"),
         CheckReach.Key(Scope.LimitsTable, "Breadth"),
         CheckReach.Key(Scope.FixtureTable, "swing readings"),
+
+        // 12.2's: the swing filter and the counts, their stores and step, the name's gates and the
+        // run page's funnel, section 17's nine proposed thresholds, section 18's two rows and the
+        // fixture's row.
+        CheckReach.Key("15.9 Name", "Gates, each of the five gates with whether it passed and why"),
+        CheckReach.Key("15.9 Name", "Gates, the setup's family and whether the trigger's event happened"),
+        CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from the swing trade's own plan"),
+        CheckReach.Key("15.9 Name", "Gates, the exclusions with a key saying how to read it"),
+        CheckReach.Key("15.10 Run", "Swing filter funnel, how many members each gate passed in order and how many it removed"),
+        CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's two families"),
+        CheckReach.Key("15.10 Run", "Swing filter funnel, what each exclusion removed and how many pass"),
+        CheckReach.Key("15.10 Run", "Swing filter funnel, the version the night ran under"),
+        CheckReach.Key(Scope.CatalogueTable, "Swing filter"),
+        CheckReach.Key(Scope.MatrixTable, "Swing filter"),
+        CheckReach.Key(Scope.CatalogueTable, "Filter counts"),
+        CheckReach.Key(Scope.MatrixTable, "Filter counts"),
+        CheckReach.Key(Scope.StoresTable, "Gate results"),
+        CheckReach.Key(Scope.StoresTable, "Filter versions"),
+        CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it did not fire on the session before, the trade read from the ladder's first tranche and from the swing trade's own plan, and the exclusions, storing every answer with the values that decided it and ranking the names passing; tonight's list is not read from it."),
+        CheckReach.Key(Scope.LimitsTable, "Market gate"),
+        CheckReach.Key(Scope.LimitsTable, "Strength gate"),
+        CheckReach.Key(Scope.LimitsTable, "Pullback depth"),
+        CheckReach.Key(Scope.LimitsTable, "Volume dry-up"),
+        CheckReach.Key(Scope.LimitsTable, "Base tightness"),
+        CheckReach.Key(Scope.LimitsTable, "Breakout volume"),
+        CheckReach.Key(Scope.LimitsTable, "Trade reward to risk"),
+        CheckReach.Key(Scope.LimitsTable, "Trade stop distance"),
+        CheckReach.Key(Scope.LimitsTable, "Earnings exclusion"),
+        CheckReach.Key(Scope.FailureTable, "Breadth not available on a night"),
+        CheckReach.Key(Scope.FailureTable, "A gate's reading is absent for a name"),
+        CheckReach.Key(Scope.FixtureTable, "gate results"),
     ];
 
     // Rows the document gained after the prediction, each one claim.

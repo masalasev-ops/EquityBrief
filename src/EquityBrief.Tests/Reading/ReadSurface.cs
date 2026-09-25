@@ -51,6 +51,16 @@ public partial class ReadSurface
         "read-surface",
         ["fixtures/membership-2026-09-05"],
         [
+            // 12.2, the name's gates and the run page's funnel.
+            CheckReach.Key("15.9 Name", "Gates, each of the five gates with whether it passed and why"),
+            CheckReach.Key("15.9 Name", "Gates, the setup's family and whether the trigger's event happened"),
+            CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from the swing trade's own plan"),
+            CheckReach.Key("15.9 Name", "Gates, the exclusions with a key saying how to read it"),
+            CheckReach.Key("15.10 Run", "Swing filter funnel, how many members each gate passed in order and how many it removed"),
+            CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's two families"),
+            CheckReach.Key("15.10 Run", "Swing filter funnel, what each exclusion removed and how many pass"),
+            CheckReach.Key("15.10 Run", "Swing filter funnel, the version the night ran under"),
+
             // 12.1, the readings drawn: tonight's breadth, the universe's columns, the name's
             // region and the run page's market row.
             CheckReach.Key("15.7 Tonight", "Night header, the night's breadth with the share above the 50-day average beside it as context"),

@@ -26,6 +26,12 @@ public partial class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 12.2, the swing filter and the counts.
+            CheckReach.Key(Scope.CatalogueTable, "Swing filter"),
+            CheckReach.Key(Scope.MatrixTable, "Swing filter"),
+            CheckReach.Key(Scope.CatalogueTable, "Filter counts"),
+            CheckReach.Key(Scope.MatrixTable, "Filter counts"),
+
             // 12.1, the swing reader.
             CheckReach.Key(Scope.CatalogueTable, "Swing reader"),
             CheckReach.Key(Scope.MatrixTable, "Swing reader"),
@@ -526,10 +532,11 @@ public partial class ComponentAccess
 
         Assert.Empty(faults);
 
-        // The four that write no store, stated in advance: the page, the renderer, the
-        // trend classifier, which hands its label to the ladder builder, and from 6.11 the
-        // report exporter, whose file is kept wherever the person exporting chooses.
-        Assert.Equal(["MarkRenderer", "ReportExporter", "SinglePageApp", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // The five that write no store, stated in advance: the page, the renderer, the
+        // trend classifier, which hands its label to the ladder builder, from 6.11 the
+        // report exporter, whose file is kept wherever the person exporting chooses, and
+        // from 12.2 the filter counts, which print the shape counts and open the store read-only.
+        Assert.Equal(["FilterCounts", "MarkRenderer", "ReportExporter", "SinglePageApp", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(

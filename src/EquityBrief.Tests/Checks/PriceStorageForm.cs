@@ -188,6 +188,10 @@ public class PriceStorageForm
         // crossed in the same way; moving it to one place both screens read is what made it a
         // signature this reader can see, which is the point of stating the set.
         // see: Distances are stated as typical days' moves
+        // `SwingGates.Moves` joined it at 12.2: an entry and a stop in, the stop's distance below the
+        // entry in typical moves out, which is what the trade gate reads, and `Statistic.FromPrice` one
+        // call in. It lives in a file of its own, the helpers the ladder rules' code version pins being
+        // edited by nothing in phase 12.
         Assert.Equal(
             [
                 "Distances.cs: InTypicalDays",
@@ -198,6 +202,7 @@ public class PriceStorageForm
                 "Statistic.cs: FromPrice",
                 "Statistic.cs: FromRatio",
                 "Statistic.cs: ToPrice",
+                "SwingGates.cs: Moves",
                 "UniverseScreen.cs: Distance",
             ],
             crossings);

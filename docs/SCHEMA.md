@@ -45,6 +45,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `earnings_reaction` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
 | `swing_reading` | SwingReader | none | SwingReader |
 | `market_reading` | SwingReader | SwingReader | SwingReader |
+| `gate_result` | SwingFilter | none | SwingFilter |
+| `filter_version` | none | none | none |
 | `listing` | ShortlistBuilder | ShortlistBuilder | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
@@ -357,6 +359,55 @@ Grain: one row per night.
 Primary key: `session_date`.
 
 **The swing reader writes it and is its own deleter** (see: Every computed table's writer is its own deleter), dropping a night one year back from the newest stored session as it drops the name rows. What a night's breadth decided is kept on the gate rows the filter writes from 12.2, which are kept forever.
+
+### gate_result
+Grain: one row per index member per night.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the night |
+| `version` | TEXT | the open filter version the night ran under, or `none` where none was open and it ran on section 17's proposed values |
+| `code` | TEXT | the pin of the filter's code the row was written by |
+| `market` | INTEGER | 1 where the market gate passed |
+| `trend` | INTEGER | 1 where the trend and strength gate passed |
+| `setup` | INTEGER | 1 where a setup passed |
+| `family` | TEXT | `pullback` or `breakout`, null where no setup passed |
+| `trigger_pass` | INTEGER | 1 where the trigger passed, which for a pullback is its event tonight with none on the session before |
+| `trigger_event` | INTEGER | 1 where the pullback's trigger event happened tonight, 0 where it did not, null where the night's bars cannot say |
+| `trade` | INTEGER | 1 where the trade gate passed on the plan the settings name |
+| `ladder_reward_to_risk` | REAL | the ladder's first tranche's reward to risk as the listing kept it, null where it computes none |
+| `ladder_stop_moves` | REAL | how far that tranche's stop sits below its entry in typical moves |
+| `swing_entry` | TEXT | the swing trade's entry, the night's close |
+| `swing_stop` | TEXT | its stop, the setup band's low edge |
+| `swing_target` | TEXT | its target, the lowest low edge of a band above the close |
+| `swing_reward_to_risk` | REAL | |
+| `swing_stop_moves` | REAL | |
+| `exclusions` | TEXT | JSON: the exclusions that apply, empty where none does |
+| `passed` | INTEGER | 1 where every gate passed and no exclusion applies |
+| `rank` | INTEGER | the place among the names passing, null for every other |
+| `strength` | REAL | the mean of the two places the ranking reads |
+| `band_strength` | INTEGER | the setup band's strength, the ranking's third key |
+| `gates` | TEXT | JSON: the five gates' answers, each with its reason and values, and the notes on what could not be counted |
+
+Primary key: `(ticker, session_date)`.
+
+**The swing filter writes it and is its own deleter** (see: Every computed table's writer is its own deleter), and the only delete is a night run again replacing its own rows. Nothing is dropped by age: a gate's near misses are read over the years the edge clock needs, and the readings behind a row are dropped after one.
+
+### filter_version
+Grain: one row per version of the swing filter's settings.
+
+| Column | Type | Notes |
+|---|---|---|
+| `version` | TEXT | the version's name |
+| `settings` | TEXT | JSON: every threshold the gates read and the trade gate's input, each named |
+| `opened_at` | TEXT | UTC instant |
+| `closed_at` | TEXT | UTC instant, null while the version is open |
+| `evidence` | TEXT | the figures it was opened on |
+
+Primary key: `version`.
+
+**Nothing writes it yet.** The verb that opens and closes a version is built at 12.4 and is its writer from then; the swing filter reads the open row and, where none is open, runs on section 17's proposed values and says so on every row.
 
 ### listing
 Grain: one row per ticker per night, **for every index member and not only the listed ones**.

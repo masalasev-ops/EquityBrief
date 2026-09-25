@@ -912,7 +912,8 @@ public static class NameScreen
         IReadOnlyList<PeerReadingRow>? peerReadings = null,
         IReadOnlyList<ReactionRow>? reactions = null,
         DateOnly? notAMemberOn = null,
-        SwingReadingRow? swing = null)
+        SwingReadingRow? swing = null,
+        GateResultRow? gates = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1039,7 +1040,39 @@ public static class NameScreen
             night,
             Peers(ticker, universe, peerReadings, night),
             reactions is null ? null : Reactions(reactions),
-            swing is null ? null : Swing(swing));
+            swing is null ? null : Swing(swing),
+            gates is null ? null : Gates(gates));
+    }
+
+    // A name's swing filter result as the page draws it, each gate's reason and the notes read off the
+    // row's own stored answers.
+    public static GatesView Gates(GateResultRow row)
+    {
+        using var document = JsonDocument.Parse(row.Gates);
+        var root = document.RootElement;
+
+        return new GatesView(
+            row.SessionDate,
+            row.Version,
+            [
+                .. root.GetProperty("gates").EnumerateArray().Select(gate => new GateLine(
+                    gate.GetProperty("gate").GetString()!,
+                    gate.GetProperty("passed").GetBoolean(),
+                    gate.GetProperty("reason").GetString()!)),
+            ],
+            row.Family,
+            row.TriggerEvent,
+            row.LadderRewardToRisk,
+            row.LadderStopMoves,
+            row.SwingEntry,
+            row.SwingStop,
+            row.SwingTarget,
+            row.SwingRewardToRisk,
+            row.SwingStopMoves,
+            row.Exclusions,
+            [.. root.GetProperty("notes").EnumerateArray().Select(note => note.GetString()!)],
+            row.Passed,
+            row.Rank);
     }
 
     // A name's swing readings as the page draws them, each as the swing reader stored it.

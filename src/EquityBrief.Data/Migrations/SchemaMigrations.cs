@@ -659,6 +659,7 @@ public static class SchemaMigrations
         new Migration(36, "create peer_reading", CreatePeerReading),
         new Migration(37, "create earnings_reaction", CreateEarningsReaction),
         new Migration(38, "create swing_reading and market_reading", CreateSwingReadings),
+        new Migration(39, "create gate_result and filter_version", CreateGateResults),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -934,6 +935,55 @@ public static class SchemaMigrations
             breadth_context           REAL,
             volume_counted       INTEGER NOT NULL,
             median_volume_ratio  REAL
+        ) STRICT;
+    ";
+
+    // Every member's swing filter result for every night, kept whole, because the near misses a gate
+    // is judged by are read over the years the edge clock needs and nothing can compute them again
+    // once the readings behind them have been dropped. The prices of the swing trade's own plan are
+    // `TEXT`; every ratio and distance is a statistic and `REAL`. `gates` is the five gates' answers
+    // with their reasons and values, and the notes on what the night could not count.
+    //
+    // And the filter's versions: each a set of the settings the gates read, opened by the operator's
+    // acceptance of a shape proposal and closed by the next. None is open until the first is accepted,
+    // and the filter reads section 17's proposed values until then.
+    // see: Every computed table's writer is its own deleter
+    // see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts
+    const string CreateGateResults = @"
+        CREATE TABLE gate_result (
+            ticker                 TEXT    NOT NULL,
+            session_date           TEXT    NOT NULL,
+            version                TEXT    NOT NULL,
+            code                   TEXT    NOT NULL,
+            market                 INTEGER NOT NULL,
+            trend                  INTEGER NOT NULL,
+            setup                  INTEGER NOT NULL,
+            family                 TEXT,
+            trigger_pass           INTEGER NOT NULL,
+            trigger_event          INTEGER,
+            trade                  INTEGER NOT NULL,
+            ladder_reward_to_risk  REAL,
+            ladder_stop_moves      REAL,
+            swing_entry            TEXT,
+            swing_stop             TEXT,
+            swing_target           TEXT,
+            swing_reward_to_risk   REAL,
+            swing_stop_moves       REAL,
+            exclusions             TEXT    NOT NULL,
+            passed                 INTEGER NOT NULL,
+            rank                   INTEGER,
+            strength               REAL,
+            band_strength          INTEGER,
+            gates                  TEXT    NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+
+        CREATE TABLE filter_version (
+            version    TEXT NOT NULL PRIMARY KEY,
+            settings   TEXT NOT NULL,
+            opened_at  TEXT NOT NULL,
+            closed_at  TEXT,
+            evidence   TEXT NOT NULL
         ) STRICT;
     ";
 

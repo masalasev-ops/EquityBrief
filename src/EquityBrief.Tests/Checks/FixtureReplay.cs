@@ -100,6 +100,7 @@ public class FixtureReplay
         await new FactsAssembler(night, store.DatabaseFile).RunAsync("replay-facts");
         await new ChangeDetector(night, store.DatabaseFile).RunAsync("replay-changes");
         await new ShortlistBuilder(night, store.DatabaseFile).RunAsync(Index, "replay-listings", Night);
+        await new SwingFilter(night, store.DatabaseFile).RunAsync(Index, "replay-swing-filter");
 
         // The detector again, in the order the night takes: the shortlist is
         // written before the facts file, and the detector's retention reads the

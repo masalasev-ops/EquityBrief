@@ -24455,3 +24455,178 @@ Carried:    tests for the three properties the sweep found no test naming, to 12
             registration. The live store takes migration 38 when the first night after the merge
             starts; until then every screen names the store as behind this checkout, as it does after
             any migration.
+
+### 12.2 - the swing filter's gates, stored for every member every night, and the shape counts the starting settings are ruled from   2026-09-25
+Built:      the swing filter, a new night step after the listings, evaluates every member of the index
+            through the five gates: the market on the night's breadth; an uptrend with a mean place
+            among the members' returns of at least two thirds; a pullback of 2 to 5 typical moves
+            into an anchored support band on a dry-up below 1.0, or a base tighter than 0.7 breaking
+            a band that sat at or above the previous close on 1.5 times its average volume; a
+            trigger, the break itself for a breakout and for a pullback a close above the previous
+            high or back into the band, where it did not happen on the session before, read off
+            that session's stored row, a session with none failing the gate; and the trade, a
+            reward to risk of at least 2 with the stop 1.0 to 2.5 typical moves below the entry,
+            read from the ladder's first tranche as tonight's listing kept it and from the swing
+            trade's own entry at the close, stop at the setup band's low edge and target at the
+            lowest band above. A print within 15 sessions, a suspect series and a gap exclude a
+            name. What passes is ranked by reward to risk, strength and band strength. Every answer
+            is stored in `gate_result`, created with `filter_version` by migration 39, the filter
+            reading the open version and, with none open, section 17's proposed values, naming
+            which on every row with the pin of the code it ran under. A gate reading an absent
+            value fails with the reason. The run page draws the funnel and a name's page its gates.
+            Tonight's list is unchanged: the shortlist builder is not edited and nothing tonight's
+            list reads is written. `filter-counts` prints the shape counts, opening the store
+            read-only and writing nothing, and `--year` replays the bands, trend and plan as of each
+            session of the stored year through the public functions the builders call, in new files.
+Written:    section 7 and the matrix for the filter and the counts; section 14's step, the arithmetic
+            now steps 1 to 19 and the queue step 20; section 15.9's Gates row and 15.10's Swing
+            filter funnel row; section 16's gate results and filter versions; section 17's nine
+            thresholds, each marked proposed; section 18's two rows; section 19.1's row. `SCHEMA.md`'s
+            two tables, `RUNBOOK.md`'s step and the counts verb, and the `fixture-expectations`,
+            `gap-refusal` and `read-surface` roster rows. Every spec line changed has its prior text
+            in `CHANGELOG.md`. No decision is added: the one the counts rest on was written at 12.0.
+            The hole on how much of the year the counts can replay closes here: every session of the
+            stored year on which the 200-day average is held by half the members, 53 of the operator's
+            store, in 33 seconds on the SSD; the 73 before them hold no breadth and no trend
+            classification and are named and not counted.
+Expected:   derived by hand outside the repository in the new `gate-results.json`: every member's
+            five gates, family, trigger event, trade read both ways and exclusions on both of the
+            two-night store's nights, 2026-09-03 and 2026-09-04. On 09-04 every input comes from the
+            captured bars and from `levels.json`, `ladder.json` and `listings.json`, all derived; on
+            09-03 the bands, the trend states and AAPL's and NFLX's plans are read from the store and
+            every gate over them worked by hand. No member passes on either night: AAPL and MSFT pass
+            the market and the trend and no setup; KEYS pulls back into its band 300.87 to 332.78
+            both nights, 3.78 and 3.48 typical moves deep, and fails the trend at a strength of 0.167
+            and 0.333, its trigger firing both nights so 09-04 is no arrival; NFLX passes the trade on
+            09-04 at 2.0653 and nothing before it. The gap stop expectation gains `gate_result` among
+            the four tables writing a gapped member's row.
+Measured:   the counts over a copy of the operator's store made at 2026-09-25T01:18Z after the night
+            of 2026-09-24 and its report pass had ended, on the SSD, read-only; nothing under `data/`
+            was touched. Shape only: no outcome was read. 53 sessions: the 12 the store keeps bands
+            and plans for, 2026-09-09 to 09-24, and 41 replayed, 2026-07-13 to 09-08, under four
+            settings, the market gate at 45% and at 50% each with the trade read from the ladder
+            and from the swing trade.
+            Whole filter: 0 names on the median session under every setting and never more than 1;
+            sessions with one name are 1 to 3 of the 53 depending on the setting.
+            Median funnel, stored nights: 504 members, 504 through the market, 62 through trend and
+            strength, 13 through a setup, 2 through the trigger, 0 through the trade. Replayed: 504,
+            504, 79, 9, 1, 0.
+            Each gate alone, median stored and replayed: trend and strength 60 and 79, setup 123 and
+            109, trigger 48 and 82, trade 24 and 20 from the ladder, 15 and 14 from the swing trade.
+            Each gate relaxed with every other held, most on any session: the market 1, trend and
+            strength 3, setup 3, trigger 2, trade 7; the trade gate is the tightest single gate.
+            Families: 3 breakouts in 53 sessions, every other setup a pullback.
+            The market gate: breadth 62.9 to 75.0% on the replayed sessions and 47.6 to 59.9% on the
+            stored ones; 45% and 50% differ only on 09-23 at 49.8% and 09-24 at 47.6%, closed at 50.
+            The replay reproduces what the store kept on its 12 nights, 6,032 member-nights: the
+            same bands for 5,688, the same trend for 6,028, the same first tranche and target for
+            5,755; over the fixture's two nights all 8 agree. The difference on the live store is
+            the stored rows having been computed over each night's own bars, before later
+            refetches moved adjusted history, where the replay reads the bars as they stand.
+            These counts are the operator's to rule the starting settings from after 12.4.
+Tests:      1357, from 1332: twenty-five added. Under `fixture-expectations` twenty-two: a member
+            passing every gate, each gate on both sides of its threshold and at it, the trigger's
+            arrival and its absent session before, the exclusions, the order on either plan, the
+            funnel and each gate relaxed alone, a version's settings written whole, the fixture's
+            two nights, the rank off a constructed store, a night with no breadth, the open version,
+            a night run again, the fixture's member read over nothing, tonight's list unchanged, the
+            code pin, the counts against the gates worked by hand with the store's bytes unchanged,
+            the year's replay against the stored nights, and the three properties carried from
+            12.1: the one-year drop of the readings, the volume ratio's population and a night run
+            again. Under `gap-refusal` one, and under `read-surface` two, a name's gates and the
+            funnel. Exact counts moved, each with its reason beside it: the screens' checked
+            elements 201 to 209, rows 67 to 69 and claims 208 to 216; the gap stop's writing tables 3
+            to 4; the components writing no store 4 to 5; the membership reads asking the join date
+            gain the filter; the crossing helpers gain `SwingGates.Moves`, in a new file as the plan
+            requires. Migrations 0 to 39 with one added, schema version 39.
+Claims:     507, from 480, with 507 PASS and 0 out of scope, and 514 placements and verdicts
+            reconciled against a floor of 34. Twenty-seven more where the plan predicted 24 at this
+            checkpoint: the counts are a component of their own with a catalogue and a matrix row, and
+            the filter versions a store row of their own. The pair after 12.9 becomes 553 and 553 on
+            the ladder's first tranche and 554 and 554 on the swing trade's plan, the ranges 550 to
+            562 and 551 to 563. The 27 are named in `ArchitectureConformance.Loop.PhaseTwelveRows`.
+Pins:       the branch against `main` at 7a04dce, read off `RuleVersionScorer.CodeVersionSources` and
+            `CandidateEvaluator.EvaluationSources` in this tree, 20 distinct files: the intersection
+            with the 44 paths this tree changes or adds is empty. The filter's own code pin,
+            `SwingFilter.CodeVersion`, covers 16 sources read off the compiled code, the ladder
+            rules' `LadderSeries.cs`, `LevelSeries.cs`, `Statistic.cs` and `Money.cs` among them as
+            read and not edited.
+Mutated:    the rule, stated before the run: one mutation for each property the 12.2 done condition
+            names, the four section H names for this phase that 12.2 can hold, being a gate threshold
+            moved by one step, the arrival comparison removed so presence passes, the ranking reversed
+            and an exclusion dropped, and one for each page, each the smallest edit that changes the
+            property's answer and still compiles, each run filtered to the tests this checkpoint added
+            and the gap stop's split, one at a time in a detached worktree at this entry's commit and
+            reverted after each. The fifth section H names, the event exclusion removed from the
+            shape sample, is 12.3's, where the classifier lands.
+            Predicted:
+            M1 the market gate's floor one step stricter (`>=` to `>`): red in the market gate test
+            alone.
+            M2 the arrival removed, a trigger that fired on the session before passing: red in the
+            trigger test, the fixture's two nights and the counts over them, three.
+            M3 the ranking reversed on reward to risk: red in the order test and the rank off the
+            constructed store, two.
+            M4 the suspect exclusion dropped: red in the exclusions test and the funnel test, two.
+            M5 the earnings window one session shorter (`<=` to `<`): red in the exclusions test alone.
+            M6 an absent strength passing the trend gate: red in the trend gate test and the
+            fixture's member read over nothing, two.
+            M7 a session before with no stored result passing the trigger: red in the trigger test,
+            the fixture's two nights and the counts over them, three.
+            M8 the funnel counting each gate without its own pass: red in the funnel test, the rank
+            test's run log line and the counts over the two nights, three.
+            M9 a night run again deleting every night's rows: red in the night run again, the rank
+            test and the fixture's two nights, three.
+            M10 the filter reading a closed version rather than the open one: red in the version
+            test alone.
+            M11 the name page drawing each gate's name where its reason goes: red in the gates page
+            test alone.
+            M12 the run page's funnel drawing what passed where what was removed goes: red in the
+            funnel page test alone.
+            M13 the gap exclusion dropped: red in the exclusions test and the gap refusal's gate row,
+            two.
+            M14 the row's code written as something other than the pin: red in the fixture's two
+            nights alone.
+            M15 the swing trade's target the highest band above the close rather than the lowest:
+            red in the fixture's two nights alone, the constructed members holding one band above.
+            Results: filtered runs of the 26 tests in a detached worktree at b585a1b, one at a time,
+            each mutation reverted with `git checkout -- .` and the tree read clean after it.
+            M1 2 red, the market gate test and the filter's code pin. M2 4 red, the trigger test,
+            the fixture's two nights, the counts and the code pin. M3 3 red, the order test, the
+            rank and the code pin. M4 3 red, the exclusions test, the funnel test and the code pin.
+            M5 2 red, the exclusions test and the code pin. M6 3 red, the trend gate test, the
+            fixture's member read over nothing and the code pin. M7 3 red, the fixture's two
+            nights, the counts and the code pin. M8 4 red, the funnel test, the rank, the counts and
+            the code pin. M9 4 red, the night run again, the rank, the fixture's two nights and the
+            code pin. M10 2 red, the version test and the code pin. M11 1 red, the gates page. M12 1
+            red, the funnel page. M13 3 red, the exclusions test, the gap refusal's gate row and the
+            code pin. M14 2 red, the fixture's two nights and the code pin. M15 2 red, the fixture's
+            two nights and the code pin.
+Held:       fourteen of the fifteen in every test each named. Two things the prediction did not
+            say. The filter's code pin went red for all thirteen mutations of a source it covers,
+            and not for M11 and M12, whose sources it does not: that is the pin reading every edit,
+            which is what it is for, and the prediction should have named it. And M7 went red in
+            two of the three tests it named and not in the trigger test, which asserts the reason a
+            session before with no stored result gives and not that the gate fails on it; the
+            fixture's two nights and the counts caught the mutation, and the assertion is carried
+            to 12.3's commit.
+Swept:      the four survivor classes over this checkpoint's own tests. A test asserting a thing
+            against itself: none; the pages are read against the stored rows and the counts against
+            the gates worked by hand. A property no test names: the trigger test's verdict for an
+            absent session before, found by M7 above. A boundary the fixture cannot reach: every
+            threshold, reached by the constructed members; the fixture's two nights pass nobody, so
+            the rank is read off a constructed store. A shape the data cannot produce: a breakout,
+            which no fixture night and 3 of the operator's 53 sessions hold, reached by the
+            constructed breakout.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1357 of 1357
+            tests ran with none failed, migrations 0 to 39 with one added and none pending, schema
+            version 39, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 507 claims, 507 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 514 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1357 of 1357 tests.
+            Both gates ran over the tree carrying this entry, b585a1b, in the worktree beside the
+            repository, and the operator's store under `data/` was not touched by either.
+Carried:    the trigger test's assertion that a session before with no stored result fails the
+            gate, to 12.3's commit; the operator's ruling on the starting settings, the trade gate's input and the five
+            variants after 12.4, from the counts above; and the operator's two commands against the
+            live store. The live store takes migration 39 when the first night after the merge
+            starts, and from that night stores a gate result for every member.

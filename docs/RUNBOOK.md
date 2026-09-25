@@ -10,7 +10,7 @@ Two jobs. Neither is part of the application, because scheduling lives outside i
 
 | Job | When | What it does | Costs |
 |---|---|---|---|
-| `tools/nightly` | after the US close | the arithmetic: membership, bars, corporate actions, indicators, swings, volume profile, levels, trend, ladder, moves, swing readings and the night's breadth, listings, facts, forward returns, news pulse | one bulk bar request, one news feed request, a handful of calendar and membership calls. No model call |
+| `tools/nightly` | after the US close | the arithmetic: membership, bars, corporate actions, indicators, swings, volume profile, levels, trend, ladder, moves, swing readings and the night's breadth, listings, the swing filter, facts, forward returns, news pulse | one bulk bar request, one news feed request, a handful of calendar and membership calls. No model call |
 | the overnight queue | after the arithmetic, same invocation | the local model writes the local lane's sections that rest on no document, for every name in the index whose research is missing or stale, the listed names first, starting no pass once the configured hours have passed | nothing, and no request |
 
 **Every schedule is expressed in UTC.** The research provider's peak and off-peak windows are fixed in UTC, and a schedule written in local time moves into peak when daylight saving changes with nothing to announce it. Convert for display only.
@@ -253,6 +253,15 @@ A request the drain has claimed is `writing` and cannot be taken out, because wh
 The name page carries a link, *Export this report as a file*, and the browser saves what it answers wherever the operator chooses. The read surface answers the same file at `/exports/name/<TICKER>`, which is the address the link asks for.
 
 The file is the name page's own region, drawn by the same code from the same store, in a document that needs nothing else to be read: its styles are inline, it carries no script and fetches nothing, every disclosure is open, and a link to another of the application's pages is kept as its words (see: A single report can still be exported as a self-contained file). It leaves out the research controls and the pause, which are the application asking the operator something rather than part of the report. It is named for the name and the newest session its figures are from, `EquityBrief-KEYS-2026-09-08.html`, so two exports on different nights are two files, and its opening line states that session. Nothing is written to the store by an export.
+
+### Counting the swing filter's shape
+
+```
+dotnet run --project src/EquityBrief.Worker -- filter-counts
+dotnet run --project src/EquityBrief.Worker -- filter-counts --year
+```
+
+`filter-counts` prints, for every night the store keeps bands, trends and plans for, how many members pass each of the swing filter's five gates in order with what each removed, each gate alone, each gate relaxed with every other held, and the setup's two families, under four settings: the market gate at 45% and at 50%, each with the trade gate read from the ladder's first tranche and from the swing trade's own plan. `--year` adds every session of the stored year on which breadth can be read, replaying the bands, the trend and the plan as of each session through the same functions the night calls, and says how many sessions it left out and how closely the replay reproduces what the store kept. It opens the store read-only and writes nothing, reads no outcome, and runs in under a minute; it is safe beside a night but reads the store as it stands, so a count taken while a night writes may land on half a night. It is what the operator rules the filter's starting settings from (see: The swing filter's starting settings are ruled from shape counts before tonight's list switches to it).
 
 ### Registering a candidate and versioning a ladder rule
 

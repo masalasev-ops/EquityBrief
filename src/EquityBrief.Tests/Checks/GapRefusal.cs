@@ -683,6 +683,33 @@ public class GapRefusal
     }
 
     [Fact]
+    public async Task TheGateResultRowIsStillWrittenAndExcludesTheGappedName()
+    {
+        // The filter writes a row for every member too, and a gapped member's row carries the gap as
+        // its exclusion and every gate reading its values fails on the reason the reader wrote.
+        using var store = await WithAHoleAsync();
+        var cut = CutSession(store);
+
+        await new IndicatorEngine(GapClock(), store.DatabaseFile).RunAsync("gap-indicators");
+        await new SwingFinder(GapClock(), store.DatabaseFile).RunAsync("gap-swings");
+        await new VolumeProfileBuilder(GapClock(), store.DatabaseFile).RunAsync("gap-profile");
+        await new LevelBuilder(GapClock(), store.DatabaseFile).RunAsync("gap-levels");
+        await new LadderBuilder(GapClock(), store.DatabaseFile).RunAsync(Index, "gap-ladders");
+        await new SwingReader(GapClock(), store.DatabaseFile).RunAsync(Index, "gap-swing-readings");
+        await new ShortlistBuilder(GapClock(), store.DatabaseFile).RunAsync(Index, "gap-listings", Instant);
+        await new SwingFilter(GapClock(), store.DatabaseFile).RunAsync(Index, "gap-swing-filter");
+
+        Assert.Equal(
+            "[\"gap\"]|0|0",
+            Assert.Single(GapRows(store, $"SELECT exclusions || '|' || setup || '|' || passed FROM gate_result WHERE ticker = '{GappedName}';")));
+        Assert.Contains(
+            $"the stored series has a gap at {cut}, so nothing is read across it",
+            System.Text.Json.JsonDocument.Parse(GapRows(store, $"SELECT gates FROM gate_result WHERE ticker = '{GappedName}';").Single())
+                .RootElement.GetProperty("gates").EnumerateArray().Select(gate => gate.GetProperty("reason").GetString()!));
+        Assert.Equal("[]", GapRows(store, $"SELECT exclusions FROM gate_result WHERE ticker = '{ControlName}';").Single());
+    }
+
+    [Fact]
     public async Task ACleanNameKeepsEveryComputedRowWhileAnotherNameIsStopped()
     {
         // The control. A hole in one name's series stops that name and nothing
@@ -832,7 +859,7 @@ public class GapRefusal
     public void TheSplitBetweenWithholdingAndWritingIsTheThingAsserted()
     {
         // Two opposite failures, so the split is asserted rather than a loop run
-        // over all ten. A stage computing a figure across the hole and a stage
+        // over all eleven. A stage computing a figure across the hole and a stage
         // leaving a member without the row every member gets are both defects,
         // and a test written as one loop catches neither: each table satisfies
         // whichever half the loop happens to assert.
@@ -841,7 +868,7 @@ public class GapRefusal
         var tables = Strings(Expected("gap-stop").GetProperty("tables"));
 
         Assert.Equal(7, withholds.Count);
-        Assert.Equal(3, writes.Count);
+        Assert.Equal(4, writes.Count);
         Assert.Equal(tables.Count, withholds.Count + writes.Count);
         Assert.Empty(withholds.Intersect(writes, StringComparer.Ordinal));
         Assert.Equal([.. tables.Order(StringComparer.Ordinal)], [.. withholds.Concat(writes).Order(StringComparer.Ordinal)]);

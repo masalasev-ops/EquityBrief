@@ -18,6 +18,51 @@ namespace EquityBrief.Api.Reading;
 // see: A screen reads and renders, and computes nothing
 public static class RunScreen
 {
+    // The swing filter's funnel for a night, counted off the flags each member's row stores: each gate
+    // in section 11's order passing that gate and every gate before it, the setup's two families, what
+    // each exclusion removed of the members passing every gate, and how many pass. None where the night
+    // stored no result.
+    public static FunnelView? Funnel(IReadOnlyList<GateResultRow> rows, DateOnly night)
+    {
+        if (rows.Count == 0)
+        {
+            return null;
+        }
+
+        var flags = new Func<GateResultRow, bool>[] { row => row.Market, row => row.Trend, row => row.Setup, row => row.Trigger, row => row.Trade };
+        var gates = new[] { "market", "trend and strength", "setup", "trigger", "trade" };
+        var steps = new List<FunnelStep>();
+        var before = rows.Count;
+
+        for (var at = 0; at < flags.Length; at++)
+        {
+            var through = at;
+            var passed = rows.Count(row => flags.Take(through + 1).All(flag => flag(row)));
+
+            steps.Add(new FunnelStep(gates[at], passed, before - passed));
+            before = passed;
+        }
+
+        var throughAll = rows.Where(row => flags.All(flag => flag(row))).ToArray();
+        var exclusions = throughAll
+            .SelectMany(row => row.Exclusions)
+            .GroupBy(exclusion => exclusion, StringComparer.Ordinal)
+            .Select(group => (group.Key, group.Count()))
+            .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+            .ToArray();
+
+        return new FunnelView(
+            night,
+            rows[0].Version,
+            rows.Count,
+            steps,
+            rows.Count(row => row.Market && row.Trend && row.Family == "pullback"),
+            rows.Count(row => row.Market && row.Trend && row.Family == "breakout"),
+            exclusions,
+            throughAll.Count(row => row.Exclusions.Count > 0),
+            rows.Count(row => row.Passed));
+    }
+
     // The night's market reading as the run page and tonight's header draw it, as the swing reader stored it.
     public static MarketView? Market(MarketReadingRow? row) =>
         row is null
