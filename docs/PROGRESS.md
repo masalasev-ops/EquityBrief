@@ -25758,3 +25758,52 @@ Carried:    the revisit of the per-window level, due since the count ever regist
             at 10:39:49Z on 2026-09-25, is the operator's ruling (see: Holm's level passes between
             the candidates by a graph fixed when they are registered, and every verdict shows the
             lifetime count).
+
+### 12.5 - correction: the family standing at the night's start and the level each window's candidates open with are asserted, where a mutation of either left every test of its rule green   2026-09-25
+Corrects:   12.5's tests, and no shipped code. Two rules 12.5 rests on were stated and not asserted.
+            Reading the family's shadow with every registration standing, whatever the night's
+            start, turned only the evaluators' pin test red, which reddens on any edit to a pinned
+            source and not on this rule. Reading the candidates' records as one window of nine,
+            every candidate at 0.05 over 9, turned no test red. The first keeps a night run again for
+            an earlier session from scoring a candidate registered after it, which the rehearsal's
+            run of 2026-09-24 relied on. The second is the level the operator's store has drawn since
+            10:39:49Z, the three at 0.05 over 3 and the six at 0.05 over 6, where every test held one
+            window.
+Found:      by the builder's mutations before the phase 12 sign-off handoff, H5 and H2 of six, each run
+            over the whole suite at d61f9db. H1, the trigger's arrival read with an unread session as
+            not fired, turned 9 red; H3, a second acceptance while the list is live taken without the
+            blocks, 1; H4, an evening read as listed by its reasons whatever its rule, 4; and H6, the
+            night's report asked for the first name by ticker, 2, each in the tests of its rule.
+Repaired:   nothing shipped changes: the correction is two assertions.
+Guarded:    `fixture-expectations`, in
+            `TheListingsStageLeavesTheFamilyToTheFiltersStageAndTheFiltersStageSkipsAMemberItHoldsNoBarFor`:
+            a night started in the second the family registered, or a day before it, holds none of it
+            and says so, and one started a second later holds it. `read-surface`, one test added,
+            `EachWindowsFirstStepIsTheLevelOverTheCandidatesItOpenedWith`: three candidates first
+            evaluated on one night and retired at the instant six more registered, and the six first
+            evaluated on a later night, the three at 0.05 over 3 and the six at 0.05 over 6.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Tests:      1407, from 1406: one added to `read-surface` and one test of `fixture-expectations`
+            widened, none removed. Migrations 0 to 42 with none added and none pending, schema
+            version 42.
+Claims:     VC, from 554, with VP PASS and 0 out of scope, and VR placements and verdicts
+            reconciled against a floor of 34.
+Pins:       the branch against `main` at 34f5ccd; this correction edits two tests, in none of the
+            twelve, twenty-one or sixteen pinned sources.
+Mutated:    the rule, stated before the run: the two mutations that found the gaps, run again.
+            Predicted:
+            H5 every registration standing whatever the night's start: red in the family test this
+            correction widens and the evaluators' pin test, two.
+            H2 the candidates' records read as one window: red in the test this correction adds
+            alone.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, VT of VT tests ran
+            with none failed, migrations 0 to 42 with none pending, schema version 42, exit 0,
+            against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at VTB tables, VC claims, VP PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, VR placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, VT of VT tests.
+            Both gates ran over the tree carrying this entry, in the worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    nothing.
