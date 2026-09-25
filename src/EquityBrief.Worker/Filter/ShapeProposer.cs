@@ -17,7 +17,7 @@ public sealed record ShapeProposalOutcome(string Version, int Ordinary, bool Cro
 // version's window and states the crossed trigger on its run log row, and after a rejection the next
 // waits on sixty more. It never opens a version: an acceptance is the operator's command.
 // see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes
-// see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out
+// see: The swing filter's shape is calibrated over its ordinary nights, a night one cause pushes past a quarter and twice its usual share is left out, and each band spans a third to three times what the ruled filter passes
 public sealed class ShapeProposer : IComponent
 {
     // see: Every computed table's writer is its own deleter
@@ -55,13 +55,13 @@ public sealed class ShapeProposer : IComponent
 
     const string ProposalsFor = "SELECT id, decision FROM shape_proposal WHERE version = $version ORDER BY id;";
 
-    // Every stored row, in each name's session order, so each night's trigger event can be read beside the
-    // one its name stored on the session before.
+    // Every row stored under the version.
     const string Rows = @"
-        SELECT ticker, session_date, version, trigger_event, ladder_reward_to_risk, ladder_stop_moves,
+        SELECT ticker, session_date, ladder_reward_to_risk, ladder_stop_moves,
                swing_reward_to_risk, swing_stop_moves, exclusions, gates
         FROM gate_result
-        ORDER BY ticker, session_date;
+        WHERE version = $version
+        ORDER BY session_date, ticker;
     ";
 
     const string Insert = @"
@@ -134,8 +134,9 @@ public sealed class ShapeProposer : IComponent
             var ordinary = stored.Where(one => !left.Contains(one.Session) && !unanswered.Contains(one.Session)).ToArray();
             var proposal = ShapeProposals.Propose(ordinary, settings);
 
-            // A night whose rows were stored before the setup kept its two band answers cannot be recounted:
-            // read as neither band, it would pass no setup under any setting. It is left out and named.
+            // A night whose rows were stored before the gates kept the answers a recount reads cannot be
+            // recounted: read as neither band and no arrival, it would pass no setup and no trigger under
+            // any setting. It is left out and named.
             var skipped = stored.Count(one => !left.Contains(one.Session) && unanswered.Contains(one.Session));
 
             if (skipped > 0)
@@ -144,7 +145,7 @@ public sealed class ShapeProposer : IComponent
                 {
                     Findings =
                     [
-                        FormattableString.Invariant($"{skipped} ordinary night(s) under filter version {version} were stored before the setup kept its band answers and were not recounted"),
+                        FormattableString.Invariant($"{skipped} ordinary night(s) under filter version {version} were stored before the gates kept the answers a recount reads and were not recounted"),
                         .. proposal.Findings,
                     ],
                 };
@@ -304,41 +305,32 @@ public sealed class ShapeProposer : IComponent
         return (standing, rejected);
     }
 
-    // Every night stored under the version, each member's stored answers read back, its trigger event
-    // beside the one it stored on its session before, and the nights holding a row whose setup was read
-    // with no band answers kept beside it.
+    // Every night stored under the version, each member's stored answers read back, and the nights
+    // holding a row stored before the gates kept the answers a recount reads: the setup's two band
+    // answers and the trigger's arrival.
     static async Task<(IReadOnlyList<StoredNight> Nights, IReadOnlySet<DateOnly> Unanswered)> StoredAsync(SqliteConnection connection, string version, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
         command.CommandText = Rows;
+        command.Parameters.AddWithValue("$version", version);
 
         var nights = new Dictionary<DateOnly, List<StoredMember>>();
         var unanswered = new HashSet<DateOnly>();
-        string? previousTicker = null;
-        bool? previousEvent = null;
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         while (await reader.ReadAsync(cancellation))
         {
-            var ticker = reader.GetString(0);
             var session = Date(reader.GetString(1));
-            bool? triggerEvent = reader.IsDBNull(3) ? null : reader.GetInt32(3) == 1;
-            bool? before = previousTicker == ticker ? previousEvent : null;
-
-            previousTicker = ticker;
-            previousEvent = triggerEvent;
-
-            if (reader.GetString(2) != version)
-            {
-                continue;
-            }
 
             double? Real(int at) => reader.IsDBNull(at) ? null : reader.GetDouble(at);
 
-            var gates = Values(reader.GetString(9));
+            var gates = Values(reader.GetString(7));
+            var setup = gates.GetValueOrDefault(SwingGates.Setup);
+            var trigger = gates.GetValueOrDefault(SwingGates.Trigger);
 
-            if (gates.TryGetValue(SwingGates.Setup, out var setup) && setup.ContainsKey("depth") && !setup.ContainsKey(SwingGates.PullbackBandValue))
+            if ((setup is not null && setup.ContainsKey("depth") && !setup.ContainsKey(SwingGates.PullbackBandValue))
+                || (trigger is not null && !trigger.ContainsKey(SwingGates.ArrivedValue)))
             {
                 unanswered.Add(session);
             }
@@ -349,7 +341,7 @@ public sealed class ShapeProposer : IComponent
             }
 
             members.Add(new StoredMember(
-                ticker,
+                reader.GetString(0),
                 Text(gates, SwingGates.Trend, "trend state"),
                 Number(gates, SwingGates.Trend, "strength"),
                 Number(gates, SwingGates.Setup, "depth"),
@@ -358,13 +350,12 @@ public sealed class ShapeProposer : IComponent
                 Number(gates, SwingGates.Setup, "volume multiple"),
                 Text(gates, SwingGates.Setup, SwingGates.PullbackBandValue) == "yes",
                 Text(gates, SwingGates.Setup, SwingGates.BreakoutBandValue) == "yes",
-                triggerEvent,
-                before,
+                trigger is not null && trigger.TryGetValue(SwingGates.ArrivedValue, out var arrived) ? arrived != "none" : null,
+                Real(2),
+                Real(3),
                 Real(4),
                 Real(5),
-                Real(6),
-                Real(7),
-                reader.GetString(8) != "[]"));
+                reader.GetString(6) != "[]"));
         }
 
         return ([.. nights.OrderBy(pair => pair.Key).Select(pair => new StoredNight(pair.Key, pair.Value))], unanswered);

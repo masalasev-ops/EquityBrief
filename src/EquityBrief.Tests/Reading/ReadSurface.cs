@@ -55,7 +55,7 @@ public partial class ReadSurface
             CheckReach.Key("15.10 Run", "The shape clock, the ordinary nights under the open filter version against the sixty the calibration waits on"),
             CheckReach.Key("15.10 Run", "The shape clock, every event night with what made it one"),
             CheckReach.Key("15.10 Run", "The shape clock, each gate's median count through it against its band"),
-            CheckReach.Key("15.10 Run", "The shape clock, the list's median size against its band of 5 to 30"),
+            CheckReach.Key("15.10 Run", "The shape clock, the list's median size against its band"),
             CheckReach.Key("15.10 Run", "The shape clock, drawn as not yet measured until the trigger"),
             CheckReach.Key("15.10 Run", "The shape clock, said at the top of the page once the trigger is crossed"),
             CheckReach.Key("15.10 Run", "The shape clock, each reason's share of the index as context"),

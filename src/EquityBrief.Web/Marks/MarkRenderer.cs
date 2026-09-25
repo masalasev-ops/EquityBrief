@@ -3320,7 +3320,7 @@ public sealed class MarkRenderer : IComponent
     // gate's median count and the list's against their bands, drawn as not yet measured until the
     // trigger, and each reason's share as context; and a line for each operating obligation no other
     // surface counts, its count against its trigger.
-    // see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out
+    // see: The swing filter's shape is calibrated over its ordinary nights, a night one cause pushes past a quarter and twice its usual share is left out, and each band spans a third to three times what the ruled filter passes
     public string Calibration(ShapeState shape, IReadOnlyList<TriggerLine> triggers)
     {
         var region = new StringBuilder();

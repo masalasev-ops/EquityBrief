@@ -273,7 +273,13 @@ The filter's settings move only through this command, run by the operator from t
 dotnet run --project src/EquityBrief.Worker -- shape --settings strengthFloor=0.6,rewardToRiskFloor=1.5 --trade swing --evidence "the ruling of the day, from filter-counts over the stored year"
 ```
 
-The settings are `breadthFloor`, `strengthFloor`, `depthLow`, `depthHigh`, `dryUpCeiling`, `tightnessCeiling`, `breakoutVolumeMultiple`, `rewardToRiskFloor`, `stopLow`, `stopHigh` and `earningsWindowSessions`, and `--trade` takes `ladder` or `swing`; every setting not named keeps the open version's value, or section 17's where none is open. It closes the open version and opens the next, named 1, 2 and so on in the order opened. A setting the filter does not hold, a value that is not a finite number, a range whose low end sits above its high and settings the open version already holds are each refused with nothing changed.
+The operator's ruling of 2026-09-25 opens version 1 with (see: The swing filter opens loose on the swing trade's own plan, and each of its five variants moves one setting to its other side):
+
+```
+dotnet run --project src/EquityBrief.Worker -- shape --settings strengthFloor=0.5,depthLow=1,depthHigh=5,dryUpCeiling=1.5,stopLow=0.5,stopHigh=4,rewardToRiskFloor=1.5,arrivalSessions=3 --trade swing --evidence "the operator's ruling of 2026-09-25 on 12.2's counts and the re-measure under the three-session arrival window"
+```
+
+The settings are `breadthFloor`, `strengthFloor`, `depthLow`, `depthHigh`, `dryUpCeiling`, `tightnessCeiling`, `breakoutVolumeMultiple`, `rewardToRiskFloor`, `stopLow`, `stopHigh`, `earningsWindowSessions` and `arrivalSessions`, and `--trade` takes `ladder` or `swing`; every setting not named keeps the open version's value, or section 17's where none is open. It closes the open version and opens the next, named 1, 2 and so on in the order opened. A setting the filter does not hold, a value that is not a finite number, a range whose low end sits above its high and settings the open version already holds are each refused with nothing changed.
 
 **A shape proposal** is written by the night once sixty ordinary nights are stored under the open version, and the run page's Calibration region draws it with each gate's setting held and proposed and, beside it, the non-empty blocks the live filter's clock has run (see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes). Accept it by its number, or reject it with the reason:
 

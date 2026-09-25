@@ -16,34 +16,32 @@ public partial class FixtureExpectations
 
     static readonly DateTimeOffset ProposalEvening = new(2026, 6, 1, 22, 0, 0, TimeSpan.Zero);
 
-    // Five hundred members, the same on every night. Member i is in an uptrend at strength i/500. The
-    // hundred from 400 hold a pullback three moves deep inside an anchored support band on a dry-up of
-    // (i - 400)/100; the first twenty of those have their trigger's event tonight and not on the session
-    // before; the first three of those carry a ladder plan at a reward to risk of 3 with its stop 1.5
-    // moves below, and the other seventeen a stop 3 moves below. No member is excluded.
+    // Five hundred members, the same on every night. Member i is in an uptrend at strength i/1000. The
+    // forty from 460 hold a pullback three moves deep inside an anchored support band, member 460 + j on a
+    // dry-up of (90 + j)/100; the first six of those have their trigger arrive inside its window and carry
+    // a ladder plan at a reward to risk of 3 with its stop 3 moves below. No member is excluded.
     internal static StoredNight KnownNight(int day) =>
         new(
             ProposalFirst.AddDays(day),
             [
                 .. Enumerable.Range(0, 500).Select(i =>
                 {
-                    var pulled = i >= 400;
-                    var arrived = i is >= 400 and < 420;
+                    var pulled = i >= 460;
+                    var arrived = i is >= 460 and < 466;
 
                     return new StoredMember(
                         "T" + i.ToString("000", CultureInfo.InvariantCulture),
                         SwingGates.Uptrend,
-                        i / 500.0,
+                        i / 1000.0,
                         pulled ? 3 : null,
-                        pulled ? (i - 400) / 100.0 : null,
+                        pulled ? (90 + i - 460) / 100.0 : null,
                         null,
                         null,
                         pulled,
                         false,
                         arrived,
-                        arrived ? false : null,
                         arrived ? 3 : null,
-                        arrived ? (i < 403 ? 1.5 : 3) : null,
+                        arrived ? 3 : null,
                         null,
                         null,
                         false);
@@ -55,44 +53,45 @@ public partial class FixtureExpectations
     {
         var proposal = ShapeProposals.Propose([.. Enumerable.Range(0, 60).Select(KnownNight)], FilterSettings.Proposed);
 
-        // Worked by hand. Trend and strength at the held floor of 2/3 passes i >= 334, 166 members, above
-        // its band of 50 to 100. Tried nearest the held value first, every floor below 0.80 passes more
-        // than 100: at 0.79 it passes i >= 395, 105; at 0.80 it passes i >= 400, exactly 100.
+        // Worked by hand. Strength i/1000 runs 0 to 0.499, so trend and strength at the held floor of 2/3
+        // passes none, below its band of 38 to 347, and every floor above 0.499 passes none. Tried nearest
+        // the held value first, 0.47 passes i >= 470, 30, and 0.46 passes i >= 460, 40, inside the band.
         var trend = proposal.Levers[0];
 
         Assert.Equal((SwingGates.Trend, ShapeProposals.StrengthFloor), (trend.Gate, trend.Setting));
         Assert.Equal(FilterSettings.ProposedStrengthFloor, trend.Current);
-        Assert.Equal(0.80, trend.Proposed);
-        Assert.Equal((166.0, 100.0), (trend.MedianNow, trend.MedianProposed));
+        Assert.Equal(0.46, trend.Proposed);
+        Assert.Equal((0.0, 40.0), (trend.MedianNow, trend.MedianProposed));
 
-        // Through the setup, under the floor just proposed: the hundred from 400 all pass at the held
-        // ceiling of 1, dry-ups 0.00 to 0.99, above the band of 20 to 60. A ceiling c passes the dry-ups
-        // strictly below it, 100c of them, so 0.60 passes 60, the value nearest 1 that reaches the band.
+        // Through the setup, under the floor just proposed: the forty from 460 hold dry-ups 0.90 to 1.29,
+        // and a ceiling c passes the ones strictly below it. At the held ceiling of 1 that is 10, below the
+        // band of 14 to 126. Nearest 1 first, 0.95 passes 5 and 1.05 passes 15, the first inside it; the two
+        // sit at one distance and the lower is tried first.
         var setup = proposal.Levers[1];
 
-        Assert.Equal(0.60, setup.Proposed);
-        Assert.Equal((100.0, 60.0), (setup.MedianNow, setup.MedianProposed));
+        Assert.Equal(1.05, setup.Proposed);
+        Assert.Equal((10.0, 15.0), (setup.MedianNow, setup.MedianProposed));
 
-        // The trigger has no threshold and passes its twenty, inside 8 to 40, so it is drawn and nothing
-        // is said about it.
+        // The trigger has no threshold and passes its six, at the low edge of 6 to 56 and inside it, so it
+        // is drawn and nothing is said about it.
         var trigger = proposal.Levers[2];
 
         Assert.Null(trigger.Setting);
-        Assert.Equal((20.0, 20.0), (trigger.MedianNow, trigger.MedianProposed));
+        Assert.Equal((6.0, 6.0), (trigger.MedianNow, trigger.MedianProposed));
 
-        // The trade passes the three whose stop sits inside 1 to 2.5 moves, at any floor up to 3, and no
-        // floor passes more, so none brings it to 5: a finding, and its setting is left where it is.
+        // Every one of the six carries its stop 3 moves below, outside 1 to 2.5, so no reward to risk floor
+        // passes any of them and none brings the trade to 1: a finding, and its setting is left where it is.
         var trade = proposal.Levers[3];
 
         Assert.Equal(FilterSettings.ProposedRewardToRiskFloor, trade.Current);
         Assert.Null(trade.Proposed);
-        Assert.Equal((3.0, 3.0), (trade.MedianNow, trade.MedianProposed));
+        Assert.Equal((0.0, 0.0), (trade.MedianNow, trade.MedianProposed));
         Assert.Equal(
-            "no rewardToRiskFloor between 1.00 and 4.00 brings the trade's median inside 5 to 35, and it stays 3",
+            "no rewardToRiskFloor between 1.00 and 4.00 brings the trade's median inside 1 to 12, and it stays 0",
             Assert.Single(proposal.Findings));
 
-        Assert.Equal(FilterSettings.Proposed with { StrengthFloor = 0.80, DryUpCeiling = 0.60 }, proposal.Settings);
-        Assert.Equal((3.0, 3.0), (proposal.ListNow, proposal.ListProposed));
+        Assert.Equal(FilterSettings.Proposed with { StrengthFloor = 0.46, DryUpCeiling = 1.05 }, proposal.Settings);
+        Assert.Equal((0.0, 0.0), (proposal.ListNow, proposal.ListProposed));
     }
 
     // Two hundred members a night under filter version 1, each in an uptrend at strength i/250, so the 33
@@ -209,15 +208,15 @@ public partial class FixtureExpectations
         Assert.Equal(("1", 60, true, (long?)1), (crossed.Version, crossed.Ordinary, crossed.Crossed, crossed.Proposal));
 
         // Worked by hand over the stored rows. Strength i/250 runs 0 to 0.796, so the held floor of 2/3
-        // passes i >= 167, 33, below the band of 50, and every floor above it passes fewer. Tried nearest
-        // 2/3 first, 0.61 passes i >= 153, 47, and 0.60 passes i >= 150, exactly 50, inside it. No member
-        // holds a depth, so no dry-up ceiling brings the setup to 20, the trigger has no threshold, and no
-        // floor brings the trade to 5: three findings.
+        // passes i >= 167, 33, below the band of 38, and every floor above it passes fewer. Tried nearest
+        // 2/3 first, 0.66 passes 35, 0.65 passes i >= 163, 37, and 0.64 passes i >= 160, 40, inside it. No
+        // member holds a depth, so no dry-up ceiling brings the setup to 14, the trigger has no threshold,
+        // and no floor brings the trade to 1: three findings.
         var settings = FilterSettings.Read(Text(store, "SELECT settings FROM shape_proposal WHERE id = 1;"));
         var levers = JsonSerializer.Deserialize<List<Lever>>(Text(store, "SELECT levers FROM shape_proposal WHERE id = 1;"))!;
 
-        Assert.Equal(FilterSettings.Proposed with { StrengthFloor = 0.60 }, settings);
-        Assert.Equal((0.60, 33.0, 50.0), (levers[0].Proposed!.Value, levers[0].MedianNow!.Value, levers[0].MedianProposed!.Value));
+        Assert.Equal(FilterSettings.Proposed with { StrengthFloor = 0.64 }, settings);
+        Assert.Equal((0.64, 33.0, 40.0), (levers[0].Proposed!.Value, levers[0].MedianNow!.Value, levers[0].MedianProposed!.Value));
         Assert.Equal(3, JsonSerializer.Deserialize<List<string>>(Text(store, "SELECT findings FROM shape_proposal WHERE id = 1;"))!.Count);
         Assert.Equal(60, Scalar(store, "SELECT ordinary FROM shape_proposal WHERE id = 1;"));
         Assert.Equal(1, Scalar(store, "SELECT COUNT(*) FROM shape_proposal WHERE decision IS NULL;"));
@@ -290,12 +289,82 @@ public partial class FixtureExpectations
 
         Assert.Equal((50, true, (long?)1), (outcome.Ordinary, outcome.Crossed, outcome.Proposal));
         Assert.Equal(50, Scalar(store, "SELECT ordinary FROM shape_proposal WHERE id = 1;"));
-        Assert.Equal(FilterSettings.Proposed with { StrengthFloor = 0.60 }, FilterSettings.Read(Text(store, "SELECT settings FROM shape_proposal WHERE id = 1;")));
+        Assert.Equal(FilterSettings.Proposed with { StrengthFloor = 0.64 }, FilterSettings.Read(Text(store, "SELECT settings FROM shape_proposal WHERE id = 1;")));
 
         var findings = JsonSerializer.Deserialize<List<string>>(Text(store, "SELECT findings FROM shape_proposal WHERE id = 1;"))!;
 
         Assert.Equal(4, findings.Count);
-        Assert.Equal("10 ordinary night(s) under filter version 1 were stored before the setup kept its band answers and were not recounted", findings[0]);
+        Assert.Equal("10 ordinary night(s) under filter version 1 were stored before the gates kept the answers a recount reads and were not recounted", findings[0]);
+    }
+
+    [Fact]
+    public async Task TheRecountReadsEachRowsStoredArrivalAndNotTheEventOnItsNight()
+    {
+        // A hundred members a night for sixty nights under version 1, every one in an uptrend at strength 0.9,
+        // in a pullback three moves deep on a dry-up of 0.5 inside an anchored support band, with its event
+        // on the night and none on the session before, and a ladder plan at a reward to risk of 3 with its
+        // stop 1.5 moves below; the first ten stored their trigger as arriving tonight and the other ninety
+        // stored no arrival. Worked by hand, 100 pass trend and strength, inside 38 to 347; 100 the setup,
+        // inside 14 to 126; 10 the trigger, inside 6 to 56, where the event on the night alone would count
+        // 100; and 10 the trade, inside 1 to 12. The proposal moves nothing and names nothing.
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute($"INSERT INTO filter_version (version, settings, opened_at, closed_at, evidence) VALUES ('1', '{FilterSettings.Proposed.Write()}', '2026-01-02T22:00:00Z', NULL, 'constructed');");
+
+        using (var connection = store.Open())
+        using (var transaction = connection.BeginTransaction())
+        {
+            using var row = connection.CreateCommand();
+            row.Transaction = transaction;
+            row.CommandText =
+                "INSERT INTO gate_result (ticker, session_date, version, code, market, trend, setup, family, trigger_pass, trigger_event, trade, ladder_reward_to_risk, ladder_stop_moves, exclusions, passed, gates) " +
+                "VALUES ($ticker, $session, '1', 'test', 1, 1, 1, 'pullback', $arrived, 1, $arrived, 3, 1.5, '[]', $arrived, $gates);";
+            var ticker = row.Parameters.Add("$ticker", Microsoft.Data.Sqlite.SqliteType.Text);
+            var session = row.Parameters.Add("$session", Microsoft.Data.Sqlite.SqliteType.Text);
+            var arrived = row.Parameters.Add("$arrived", Microsoft.Data.Sqlite.SqliteType.Integer);
+            var gates = row.Parameters.Add("$gates", Microsoft.Data.Sqlite.SqliteType.Text);
+
+            for (var day = 0; day < 60; day++)
+            {
+                var night = ProposalFirst.AddDays(day).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+                for (var i = 0; i < 100; i++)
+                {
+                    ticker.Value = "T" + i.ToString("000", CultureInfo.InvariantCulture);
+                    session.Value = night;
+                    arrived.Value = i < 10 ? 1 : 0;
+                    gates.Value = SwingFilter.GatesJson(new GateResult(
+                        (string)ticker.Value,
+                        [
+                            new Gate(SwingGates.Market, true, "constructed", new Dictionary<string, string>()),
+                            new Gate(SwingGates.Trend, true, "constructed", new Dictionary<string, string> { ["trend state"] = SwingGates.Uptrend, ["strength"] = "0.9" }),
+                            new Gate(SwingGates.Setup, true, "constructed", new Dictionary<string, string> { ["depth"] = "3", ["dry-up"] = "0.5", [SwingGates.PullbackBandValue] = "yes", [SwingGates.BreakoutBandValue] = "no" }),
+                            new Gate(SwingGates.Trigger, i < 10, "constructed", new Dictionary<string, string> { ["event tonight"] = "yes", ["event the session before"] = "no", [SwingGates.ArrivedValue] = i < 10 ? "tonight" : "none" }),
+                        ],
+                        SwingGates.Pullback,
+                        true,
+                        new TradeReading(null, null, null, 3m, 1.5, null),
+                        new TradeReading(null, null, null, null, null, "none"),
+                        [],
+                        [],
+                        0.9,
+                        null));
+                    row.ExecuteNonQuery();
+                }
+            }
+
+            transaction.Commit();
+        }
+
+        var outcome = await ProposeOver(store, "shape-arrival");
+
+        Assert.Equal((60, (long?)1), (outcome.Ordinary, outcome.Proposal));
+
+        var levers = JsonSerializer.Deserialize<List<Lever>>(Text(store, "SELECT levers FROM shape_proposal WHERE id = 1;"))!;
+
+        Assert.Equal([100.0, 100.0, 10.0, 10.0], levers.Select(lever => lever.MedianNow!.Value));
+        Assert.Empty(JsonSerializer.Deserialize<List<string>>(Text(store, "SELECT findings FROM shape_proposal WHERE id = 1;"))!);
+        Assert.Equal(FilterSettings.Proposed, FilterSettings.Read(Text(store, "SELECT settings FROM shape_proposal WHERE id = 1;")));
     }
 
     [Fact]

@@ -177,4 +177,61 @@ public partial class FixtureExpectations
 
         Assert.Equal(with, await client.GetStringAsync("/screens/tonight/2026-09-08"));
     }
+
+    [Fact]
+    public async Task TheFilterReadsEachNamesArrivalWindowOffTheResultsItStoredOnItsOwnEarlierSessions()
+    {
+        using var store = FilterStore();
+
+        // Two earlier sessions, 2026-09-02 and 09-03, before the session before of 09-04, and tonight's close
+        // at 101, the previous high, so no member's event happens tonight. Each name's events stored on the
+        // three sessions before, newest first: ZZA fired on 09-04 and not on 09-03, so it arrived one
+        // session back; ZZB fired on 09-04 and 09-03 and not on 09-02, arriving two back, the window's last
+        // session; ZZC fired on all three, arriving before the window; ZZD fired on 09-04 and 09-03 and
+        // stored nothing on 09-02, which the answer turns on. Worked by hand, the trigger passes ZZA and
+        // ZZB and fails ZZC and ZZD, naming 09-02 for ZZD.
+        (string Ticker, int On04, int On03, int? On02)[] fired =
+        [
+            ("ZZA", 1, 0, 0),
+            ("ZZB", 1, 1, 0),
+            ("ZZC", 1, 1, 1),
+            ("ZZD", 1, 1, null),
+        ];
+
+        foreach (var (ticker, on04, on03, on02) in fired)
+        {
+            store.Execute(
+                $"UPDATE bar SET close = '101', raw_close = '101' WHERE ticker = '{ticker}' AND session_date = '{FilterNight}';" +
+                $"UPDATE gate_result SET trigger_event = {on04} WHERE ticker = '{ticker}' AND session_date = '{FilterBefore}';" +
+                "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) VALUES " +
+                $"('{ticker}', '2026-09-02', '100', '101', '99', '100', 1000, 'test', '2026-09-02T21:00:00Z', '100')," +
+                $"('{ticker}', '2026-09-03', '100', '101', '99', '100', 1000, 'test', '2026-09-03T21:00:00Z', '100');" +
+                "INSERT INTO gate_result (ticker, session_date, version, code, market, trend, setup, family, trigger_pass, trigger_event, trade, exclusions, passed, gates) " +
+                $"VALUES ('{ticker}', '2026-09-03', 'none', 'earlier', 1, 1, 1, 'pullback', 0, {on03}, 1, '[]', 0, '{{\"gates\":[],\"notes\":[]}}');");
+
+            if (on02 is { } stored)
+            {
+                store.Execute(
+                    "INSERT INTO gate_result (ticker, session_date, version, code, market, trend, setup, family, trigger_pass, trigger_event, trade, exclusions, passed, gates) " +
+                    $"VALUES ('{ticker}', '2026-09-02', 'none', 'earlier', 1, 1, 1, 'pullback', 0, {stored}, 1, '[]', 0, '{{\"gates\":[],\"notes\":[]}}');");
+            }
+        }
+
+        await FilterAsync(store, "filter-window");
+
+        Assert.Equal(
+            ["ZZA|0|1", "ZZB|0|1", "ZZC|0|0", "ZZD|0|0"],
+            Query(store, $"SELECT ticker || '|' || trigger_event || '|' || trigger_pass FROM gate_result WHERE session_date = '{FilterNight}' ORDER BY ticker;"));
+
+        var trigger = Query(store, $"SELECT json_extract(gates, '$.gates[3].values.arrived') || '|' || json_extract(gates, '$.gates[3].reason') FROM gate_result WHERE session_date = '{FilterNight}' ORDER BY ticker;");
+
+        Assert.Equal(
+            [
+                "2026-09-04|the trigger first fired on 2026-09-04, 1 session(s) before tonight, inside the 3-session window",
+                "2026-09-03|the trigger first fired on 2026-09-03, 2 session(s) before tonight, inside the 3-session window",
+                "none|the trigger did not arrive in the last 3 sessions",
+                "none|no gate result is stored for 2026-09-02, so the trigger's arrival cannot be read",
+            ],
+            trigger);
+    }
 }

@@ -834,7 +834,7 @@ public static class RunScreen
 
     // The shape half of the calibration for the night the page is drawn for, over every night's stored
     // filter results and the listings' firing, in the window the open filter version names.
-    // see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out
+    // see: The swing filter's shape is calibrated over its ordinary nights, a night one cause pushes past a quarter and twice its usual share is left out, and each band spans a third to three times what the ruled filter passes
     public static ShapeState Calibration(
         IReadOnlyList<GateNightRow> nights,
         IReadOnlyDictionary<DateOnly, double?> ratios,

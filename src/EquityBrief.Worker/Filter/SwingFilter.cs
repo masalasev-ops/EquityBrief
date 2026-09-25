@@ -52,7 +52,7 @@ public sealed class SwingFilter : IComponent
     // the list from the compiled code and holds this to it.
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "8f629266f10c";
+    public const string CodeVersion = "6885c403890b";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
@@ -103,15 +103,15 @@ public sealed class SwingFilter : IComponent
         WHERE session_date = $session;
     ";
 
-    // The last two sessions each name holds, for tonight's close and volume and the session before's
-    // close and high.
+    // The last sessions each name holds, newest first: tonight's close and volume, the session before's
+    // close and high, and as many before that as the arrival window reads.
     const string LastTwoBars = @"
         SELECT ticker, session_date, high, close, volume
         FROM (
             SELECT ticker, session_date, high, close, volume,
                    ROW_NUMBER() OVER (PARTITION BY ticker ORDER BY session_date DESC) AS back
             FROM bar)
-        WHERE back <= 2
+        WHERE back <= $keep
         ORDER BY ticker, session_date DESC;
     ";
 
@@ -193,7 +193,7 @@ public sealed class SwingFilter : IComponent
         var members = await MembersAsync(connection, indexCode, Stamp(clock.SessionDateAt(clock.UtcNow)), cancellation);
         var market = await MarketAsync(connection, session, cancellation);
         var readings = await ReadingsAsync(connection, session, night, cancellation);
-        var bars = await LastTwoAsync(connection, cancellation);
+        var bars = await LastTwoAsync(connection, Math.Max(2, settings.ArrivalSessions + 1), cancellation);
         var indicators = await IndicatorsAsync(connection, session, cancellation);
         var trends = await TextsAsync(connection, LaddersOn, session, cancellation);
         var bands = await BandsAsync(connection, session, cancellation);
@@ -201,14 +201,17 @@ public sealed class SwingFilter : IComponent
         var prints = await TextsAsync(connection, NextPrints, session, cancellation);
         var suspects = await SuspectsAsync(connection, cancellation);
 
-        // Each name's session before is its own, the second newest it holds, and the events it stored
-        // are read once for each distinct one.
+        // Each name's sessions before are its own, the ones it holds behind tonight's, and the events
+        // stored for them are read once for each distinct session.
         var befores = new Dictionary<DateOnly, IReadOnlyDictionary<string, bool?>>();
 
-        foreach (var before in bars.Values.Where(pair => pair.Count > 1 && pair[0].Session == night).Select(pair => pair[1].Session).Distinct())
+        foreach (var before in bars.Values.Where(pair => pair.Count > 1 && pair[0].Session == night).SelectMany(pair => pair.Skip(1).Select(bar => bar.Session)).Distinct())
         {
             befores[before] = await EventsAsync(connection, Stamp(before), cancellation);
         }
+
+        bool? FiredOn(string ticker, DateOnly session) =>
+            befores.TryGetValue(session, out var stored) && stored.TryGetValue(ticker, out var happened) ? happened : null;
 
         var results = new List<GateResult>();
 
@@ -220,11 +223,10 @@ public sealed class SwingFilter : IComponent
             var before = tonight is not null && pair.Count > 1 ? pair[1] : null;
             var next = prints.TryGetValue(ticker, out var dated) ? Date(dated) : (DateOnly?)null;
 
-            bool? fired = before is not null
-                && befores.TryGetValue(before.Session, out var stored)
-                && stored.TryGetValue(ticker, out var happened)
-                    ? happened
-                    : null;
+            bool? fired = before is not null ? FiredOn(ticker, before.Session) : null;
+            IReadOnlyList<SessionEvent> earlier = tonight is not null
+                ? [.. pair.Skip(2).Select(bar => new SessionEvent(bar.Session, FiredOn(ticker, bar.Session)))]
+                : [];
 
             results.Add(SwingGates.Evaluate(
                 new GateInputs(
@@ -247,7 +249,8 @@ public sealed class SwingFilter : IComponent
                     suspects.Contains(ticker),
                     SwingReader.GapIn(read?.Note),
                     before?.Session,
-                    fired),
+                    fired,
+                    earlier),
                 settings));
         }
 
@@ -454,10 +457,11 @@ public sealed class SwingFilter : IComponent
         return readings;
     }
 
-    static async Task<IReadOnlyDictionary<string, IReadOnlyList<Bar>>> LastTwoAsync(SqliteConnection connection, CancellationToken cancellation)
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<Bar>>> LastTwoAsync(SqliteConnection connection, int keep, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
         command.CommandText = LastTwoBars;
+        command.Parameters.AddWithValue("$keep", keep);
 
         var bars = new Dictionary<string, List<Bar>>(StringComparer.Ordinal);
 

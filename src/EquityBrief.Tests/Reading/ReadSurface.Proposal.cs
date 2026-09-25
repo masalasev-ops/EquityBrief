@@ -17,13 +17,13 @@ public partial class ReadSurface
         using var store = new TemporaryStore().Migrated();
 
         // The proposal the known nights give, stored as the proposer stores it: trend and strength 2/3 to
-        // 0.80 with its median 166 to 100, the setup 1 to 0.60 with 100 to 60, the trigger's 20 drawn with
-        // no threshold, the trade's 3 with none bringing it inside and the finding naming it.
+        // 0.46 with its median 0 to 40, the setup 1 to 1.05 with 10 to 15, the trigger's 6 drawn with no
+        // threshold, the trade's 0 with none bringing it inside and the finding naming it, the list 0.
         var proposal = ShapeProposals.Propose([.. Enumerable.Range(0, 60).Select(FixtureExpectations.KnownNight)], FilterSettings.Proposed);
 
         store.Execute(
             "INSERT INTO shape_proposal (proposed_at, session_date, version, ordinary, current_settings, settings, levers, list_now, list_proposed, findings) " +
-            $"VALUES ('2026-03-31T22:00:00Z', '2026-03-31', 'none', 60, '{FilterSettings.Proposed.Write()}', '{proposal.Settings.Write()}', '{JsonSerializer.Serialize(proposal.Levers).Replace("'", "''", StringComparison.Ordinal)}', 3, 3, '{JsonSerializer.Serialize(proposal.Findings).Replace("'", "''", StringComparison.Ordinal)}');");
+            $"VALUES ('2026-03-31T22:00:00Z', '2026-03-31', 'none', 60, '{FilterSettings.Proposed.Write()}', '{proposal.Settings.Write()}', '{JsonSerializer.Serialize(proposal.Levers).Replace("'", "''", StringComparison.Ordinal)}', 0, 0, '{JsonSerializer.Serialize(proposal.Findings).Replace("'", "''", StringComparison.Ordinal)}');");
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
@@ -32,12 +32,12 @@ public partial class ReadSurface
         var region = Regex.Match(page, "<section class=\"shape-proposal\">(.*?)</section>", RegexOptions.Singleline).Groups[1].Value;
 
         Assert.Contains("<p class=\"proposal\" data-proposal=\"1\" data-version=\"none\" data-ordinary=\"60\" data-decision=\"none\">Proposal 1, written on the night of 2026-03-31 over 60 ordinary nights under filter version none, is waiting on your decision: shape --accept 1 opens it as the next filter version, and shape --reject 1 --reason records why not.</p>", region, StringComparison.Ordinal);
-        Assert.Contains("<td>trend and strength</td><td>strengthFloor</td><td class=\"num\">0.67</td><td class=\"num\">0.80</td><td class=\"num\">166</td><td class=\"num\">100</td><td class=\"num\">50 to 100</td>", region, StringComparison.Ordinal);
-        Assert.Contains("<td>setup</td><td>dryUpCeiling</td><td class=\"num\">1.00</td><td class=\"num\">0.60</td><td class=\"num\">100</td><td class=\"num\">60</td><td class=\"num\">20 to 60</td>", region, StringComparison.Ordinal);
-        Assert.Contains("<td>trigger</td><td>no threshold</td><td></td><td></td><td class=\"num\">20</td><td class=\"num\">20</td><td class=\"num\">8 to 40</td>", region, StringComparison.Ordinal);
-        Assert.Contains("<td>trade</td><td>rewardToRiskFloor</td><td class=\"num\">2.00</td><td class=\"num\">none brings it inside</td><td class=\"num\">3</td><td class=\"num\">3</td><td class=\"num\">5 to 35</td>", region, StringComparison.Ordinal);
-        Assert.Contains("<td>the list</td><td></td><td></td><td></td><td class=\"num\">3</td><td class=\"num\">3</td><td class=\"num\">5 to 30</td>", region, StringComparison.Ordinal);
-        Assert.Contains("<ul class=\"proposal-findings\" data-findings=\"1\"><li>no rewardToRiskFloor between 1.00 and 4.00 brings the trade's median inside 5 to 35, and it stays 3</li></ul>", region, StringComparison.Ordinal);
+        Assert.Contains("<td>trend and strength</td><td>strengthFloor</td><td class=\"num\">0.67</td><td class=\"num\">0.46</td><td class=\"num\">0</td><td class=\"num\">40</td><td class=\"num\">38 to 347</td>", region, StringComparison.Ordinal);
+        Assert.Contains("<td>setup</td><td>dryUpCeiling</td><td class=\"num\">1.00</td><td class=\"num\">1.05</td><td class=\"num\">10</td><td class=\"num\">15</td><td class=\"num\">14 to 126</td>", region, StringComparison.Ordinal);
+        Assert.Contains("<td>trigger</td><td>no threshold</td><td></td><td></td><td class=\"num\">6</td><td class=\"num\">6</td><td class=\"num\">6 to 56</td>", region, StringComparison.Ordinal);
+        Assert.Contains("<td>trade</td><td>rewardToRiskFloor</td><td class=\"num\">2.00</td><td class=\"num\">none brings it inside</td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">1 to 12</td>", region, StringComparison.Ordinal);
+        Assert.Contains("<td>the list</td><td></td><td></td><td></td><td class=\"num\">0</td><td class=\"num\">0</td><td class=\"num\">1 to 9</td>", region, StringComparison.Ordinal);
+        Assert.Contains("<ul class=\"proposal-findings\" data-findings=\"1\"><li>no rewardToRiskFloor between 1.00 and 4.00 brings the trade's median inside 1 to 12, and it stays 0</li></ul>", region, StringComparison.Ordinal);
         Assert.Contains("<p class=\"restarts\" data-live=\"none\" data-accepted-while-live=\"0\" data-blocks=\"0\">No live filter candidate is registered, so accepting restarts nothing.</p>", region, StringComparison.Ordinal);
     }
 

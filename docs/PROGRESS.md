@@ -24932,3 +24932,129 @@ Carried:    the operator's ruling on the starting settings, the trade gate's inp
             and the gate bands, asked for once this merges; the operator's two commands against the
             live store, the first version through this command and the family's registration at
             12.5.
+
+### 12.4 ruling - version 1 of the swing filter opens loose on the swing trade's own plan, the trigger's arrival counts inside three sessions, an event night must pass twice its measure's median, and the bands are fitted to what the ruled filter passes   2026-09-25
+Not a checkpoint entry. 12.4 has landed, and this is the ruling its plan asks for once it merges, with
+the code the ruling carries, which meets the done conditions a checkpoint's code meets.
+Ruled:      by the operator on 2026-09-25, in two rounds.
+            From 12.2's counts and the proposer's own arithmetic over the stored year: the loosest
+            thresholds measured as the starting point, confirmed after a re-measure under a wider
+            arrival window; the trade gate reading the swing trade's own plan; arrival widened to three
+            sessions now, before the family registers, since after it any change to the trigger's code
+            moves every candidate's pin and restarts about two years of clock, and the bands then fitted
+            to what the filter produces; and the five variants restated as the other side of each live
+            setting, with one-session arrival in place of the dry-up.
+            From the re-measure: the ruled values confirmed; each band a third to three times its
+            median; and an event night's gate or reason must also pass more than twice its own median
+            share, one rule for every measure rather than an exception for the broad gate.
+            The operator asked that this entry say it: the list will rarely approach the twenty the page
+            can draw, and that is the filter's selectivity rather than a fault, so a short list on the
+            first live nights reads as expected.
+Measured:   read-only, on the copy of the operator's store made at 2026-09-25T01:18Z, through the
+            counts verb's replay with measuring code in a scratch worktree that is not committed.
+            From section 17's values the proposer's arithmetic over the 52 ordinary sessions of the
+            stored year brought no gate after trend inside the bands then proposed: the setup's median
+            stayed 10, the trigger's 1 and the trade's 0, each a finding. A grid over the pullback's
+            depth, the dry-up, the stop's distance, the reward to risk and the strength floor, at its
+            loosest (strength 0.50, depth 1 to 5, dry-up 1.5, stop 0.5 to 4, reward to risk 1.5, the
+            swing trade's plan) listed a median of 1 name, 6 at most, and none on 21 of 52 sessions; with
+            arrival set aside, a median of 7 and 17 at most.
+            The re-measure under the three-session window, the ruled settings: 53 sessions, of which the
+            rule then standing marked 9 event nights, 2026-09-18 for volume and eight for trend and
+            strength passing 25 to 29% of the index against a median of about 23%, seven of them the July
+            rally; with twice the median required, 2026-09-18 alone, leaving 52 ordinary. Over those 52
+            the medians are 115.5 through trend and strength, 42 through the setup, 18.5 through the
+            trigger, 4 through the trade and 3 on the list, from none to 8, with 5 sessions empty. Under
+            the one-session window the trigger's median is 6, the trade's 1 and the list's 1, empty on 21.
+Built:      the arrival window: `FilterSettings.ArrivalSessions`, 3 proposed and named `arrivalSessions`
+            in a version's settings, and `SwingGates.Arrival`, the one statement of the window the gate
+            reads, the newest session back on which the event happened with none on the session before
+            it, or the first session an answer turned on that stored no result. The trigger's values name
+            the window and the session it arrived on. The swing filter reads each name's own last sessions
+            as far back as the window and the events stored for each; the counts verb reads each name's
+            earlier sessions off its bars and their events off the sessions the same run counted,
+            through `FilterCounts.EarlierOf` and `WithEvents`; and the shape proposer recounts from each
+            row's stored arrival, which no threshold moves, leaving out a night whose rows lack it as it
+            does one whose rows lack the band answers. The shape clock's event rule adds more than twice
+            the measure's median, `ShapeClock.EventMedianMultiple`, and the bands are 38 to 347 through
+            trend and strength, 14 to 126 through the setup, 6 to 56 through the trigger, 1 to 12 through
+            the trade and 1 to 9 on the list. The filter's code pin moves from 8f629266f10c to
+            6885c403890b.
+Written:    the decisions "Arrival is a trigger that first fired within the last three sessions, and the
+            trade is read from tonight's close" and "The swing filter's shape is calibrated over its
+            ordinary nights, a night one cause pushes past a quarter and twice its usual share is left
+            out, and each band spans a third to three times what the ruled filter passes", each
+            superseding the entry it replaces, which moves to Previously decided with what stands and
+            what changed, and "The swing filter opens loose on the swing trade's own plan, and each of
+            its five variants moves one setting to its other side", holding version 1's values, the
+            trade gate's input, the family and the selectivity. Section 11's event night, section 14's
+            filter step, section 15.10's list band, section 17's arrival window, event share, gate bands
+            and list band, `SCHEMA.md`'s trigger pass, `BUILD_PLAN.md`'s hole on the starting settings,
+            now discharged, and 12.2's and 12.3's text, `RUNBOOK.md`'s command for version 1, and the
+            `fixture-expectations` roster row. Every spec line changed has its prior text in
+            `CHANGELOG.md`. The fixture's gate expectation states the window in its derivation, and none
+            of its outcomes moves.
+Expected:   worked by hand. A trigger first fired one session back and two sessions back passes, one
+            that fired on every session of the window and the one before fails, and a session the answer
+            turns on that stored no result fails and is named, over constructed inputs and over a
+            constructed store whose names fired on 2026-09-02 to 09-04 before a night of 09-08. A broad
+            gate at 26% over a median of 23% marks no event, a narrow one at 26% over 10% does, and one
+            at 25.1% over 12.6% does not. 12.4's known answers worked again for the fitted bands: five
+            hundred members at strength i/1000 move the floor from 2/3, passing none, to 0.46, passing
+            40, where 0.47 passes 30; the forty from 460 at dry-ups 0.90 to 1.29 move the ceiling from 1,
+            passing 10, to 1.05, passing 15, where 0.95 passes 5; the trigger's 6 sits at the low edge of
+            its band; and the trade, every stop 3 moves below, is the finding. The stored members at
+            strength i/250 move the floor to 0.64, passing 40, where 0.65 passes 37. A hundred stored
+            members whose rows hold their event on the night and an arrival for ten recount 10 through the
+            trigger, where the event alone would count 100.
+Tests:      1376, from 1371: five added and none removed, all under `fixture-expectations`: the arrival
+            window, the filter reading it off the store, the counts reading it, the recount reading each
+            row's arrival, and the twice-median event night. The one-session trigger test reads the
+            variant's window by name. 12.3's and 12.4's band assertions and known answers are worked again
+            for the fitted bands, the drawn proposal's cells with them.
+Claims:     529 predicted, from 528, with 529 PASS and 0 out of scope, and 536 placements and verdicts
+            reconciled against a floor of 34. One more, section 17's arrival window. The trade gate
+            reading the swing trade's plan settles 12.0's pair on its second figure, so after 12.9 it is
+            555 and 555, the one more being the window.
+Pins:       the branch against `main` at 0ada252, read off `RuleVersionScorer.CodeVersionSources` and
+            `CandidateEvaluator.EvaluationSources` in this tree, 20 distinct files: none of them is
+            edited. Of the filter's own 16, `FilterSettings.cs`, `SwingGates.cs` and `SwingFilter.cs` are
+            edited, so its code pin moves to 6885c403890b. No filter version is open on the operator's
+            store, so the move closes no window.
+Mutated:    the rule, stated before the run: one mutation for each property the ruling's code changes,
+            each the smallest edit that changes the property's answer and still compiles, filtered to the
+            tests this entry names and the tests the property already reached, one at a time in a
+            detached worktree at this entry's commit and reverted after each.
+            Predicted:
+            W1 the window one session short: red in the arrival test and the filter's store test, two.
+            W2 a session that stored no result read as no event: red in the arrival test, the filter's
+            store test, the fixture's gate results and the counts over the two nights, four.
+            W3 the twice clause dropped from the event rule: red in the twice-median test alone.
+            W4 the twice clause at once the median: red in the twice-median test alone.
+            W5 the trend band's low end one name higher: red in the section 17 census, the medians test
+            and the Calibration region's page test, three.
+            W6 the recount reading the event on the night for the arrival: red in the recount test alone.
+            W7 the filter reading one earlier session fewer: red in the filter's store test alone.
+            W8 the counts reading no earlier session: red in the counts' window test alone.
+            Results: one run for each of the eight in a detached worktree at 91033ca, the tree carrying
+            this entry, filtered to the sixteen tests the entry names and the properties reached, each
+            reverted with `git checkout -- .` and the tree read clean after. All eight went red, five as
+            predicted and three turning one test more than predicted, each for a reason read off the run.
+            W1 turned three red, the two predicted and the one-session variant's trigger test, since a
+            loop one session short at a window of one reads no session at all. W2 turned five, the four
+            predicted and the same variant test, since an unread session read as no event makes an
+            arrival at any window. W3 and W4 each turned the twice-median test red alone. W5 turned four,
+            the three predicted and the drawn proposal, which draws the trend band. W6 turned the recount
+            test red alone, W7 the filter's store test alone, and W8 the counts' window test alone. The
+            whole suite ran green over 91033ca in the gates, 1376 of 1376.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1376 of 1376
+            tests ran with none failed, migrations 0 to 40 with none pending, schema version 40,
+            exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 529 claims, 529 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 536 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1376 of 1376 tests.
+            Both gates ran over the tree carrying this entry, in the worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    the operator's command opening version 1 on these settings, given in `RUNBOOK.md`, which
+            writes the live store and is theirs to run once this merges; and 12.5, the family's
+            registration, whose command is theirs too.

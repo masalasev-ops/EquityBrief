@@ -615,7 +615,7 @@ internal static class Scope
             Verdict.Pass,
             "each gate reading an absent value fails with the reason it is absent and none passes on an absence, over constructed members and the fixture's member the night read nothing for",
             ByExpectations),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it did not fire on the session before, the trade read from the ladder's first tranche and from the swing trade's own plan, and the exclusions, storing every answer with the values that decided it and ranking the names passing; tonight's list is not read from it.")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche and from the swing trade's own plan, and the exclusions, storing every answer with the values that decided it and ranking the names passing; tonight's list is not read from it.")] = new Scoped(
             Verdict.Pass,
             "the night runs the step after the listings and before the facts and writes a row for every member",
             ByNight),
@@ -631,9 +631,9 @@ internal static class Scope
             Verdict.Pass,
             "each gate's median count through the funnel over the ordinary nights is drawn whole beside its band, read back against a median worked by hand, an event night read by none",
             ByReadSurface),
-        [CheckReach.Key("15.10 Run", "The shape clock, the list's median size against its band of 5 to 30")] = new Scoped(
+        [CheckReach.Key("15.10 Run", "The shape clock, the list's median size against its band")] = new Scoped(
             Verdict.Pass,
-            "the list's median over the ordinary nights is drawn whole beside its band of 5 to 30, read back against a median worked by hand",
+            "the list's median over the ordinary nights is drawn whole beside its band, read back against a median worked by hand",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "The shape clock, drawn as not yet measured until the trigger")] = new Scoped(
             Verdict.Pass,
@@ -685,7 +685,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key(LimitsTable, "List band")] = new Scoped(
             Verdict.Pass,
-            "the list's row carries the band of 5 to 30 the constants hold, drawn beside its median on the run page",
+            "the list's row carries the band of 1 to 9 the constants hold, drawn beside its median on the run page",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "The shape proposal, each gate's setting held and proposed with its median count and the list's under each against their bands")] = new Scoped(
             Verdict.Pass,
@@ -735,6 +735,10 @@ internal static class Scope
             Verdict.Pass,
             "the night runs the step after the swing filter and before the facts, and it writes a proposal at the trigger and none before",
             ByNight),
+        [CheckReach.Key(LimitsTable, "Trigger arrival window")] = new Scoped(
+            Verdict.Pass,
+            "a trigger first fired tonight, one session back and two sessions back passes, one that fired on every session of the window and the one before fails, and a session the answer turns on that stored no result fails and is named, over constructed sessions, and the constant the row states is the one the gate reads",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "Peer return window")] = new Scoped(
             Verdict.Pass,
             "a return is taken over sixty sessions and a series one short of the window and the close it is measured from has none, over constructed bars, and the constant the row states is the one the reading uses",
@@ -2639,7 +2643,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "The shape clock, the ordinary nights under the open filter version against the sixty the calibration waits on")] = "12.3",
         [CheckReach.Key("15.10 Run", "The shape clock, every event night with what made it one")] = "12.3",
         [CheckReach.Key("15.10 Run", "The shape clock, each gate's median count through it against its band")] = "12.3",
-        [CheckReach.Key("15.10 Run", "The shape clock, the list's median size against its band of 5 to 30")] = "12.3",
+        [CheckReach.Key("15.10 Run", "The shape clock, the list's median size against its band")] = "12.3",
         [CheckReach.Key("15.10 Run", "The shape clock, drawn as not yet measured until the trigger")] = "12.3",
         [CheckReach.Key("15.10 Run", "The shape clock, said at the top of the page once the trigger is crossed")] = "12.3",
         [CheckReach.Key("15.10 Run", "The shape clock, each reason's share of the index as context")] = "12.3",
@@ -2830,7 +2834,7 @@ internal static class Scope
             ["the resolved count", "the never-entered count", "the share that reached target before stop", "one row per reason with the reason track mark", "the break-even those setups demanded"],
         // 12.3. The Calibration region's shape clock and its trigger lines, each read as the parts its row enumerates.
         [CheckReach.Key("15.10 Run", "The shape clock")] =
-            ["the ordinary nights under the open filter version against the sixty the calibration waits on", "every event night with what made it one", "each gate's median count through it against its band", "the list's median size against its band of 5 to 30", "drawn as not yet measured until the trigger", "said at the top of the page once the trigger is crossed", "each reason's share of the index as context"],
+            ["the ordinary nights under the open filter version against the sixty the calibration waits on", "every event night with what made it one", "each gate's median count through it against its band", "the list's median size against its band", "drawn as not yet measured until the trigger", "said at the top of the page once the trigger is crossed", "each reason's share of the index as context"],
         [CheckReach.Key("15.10 Run", "What else is waiting on a count")] =
             ["the nights run for the session the clock fell on against five", "the research passes carrying a recorded cost against twenty", "the nights the version step replayed both kinds against five", "the resolved event-book setups against 250", "the nights of trend labels under the third trend version against sixty"],
         // 12.4. The run page's shape proposal, read as the parts its row enumerates.
@@ -3231,6 +3235,7 @@ internal static class Scope
         ["Gate bands"] = "12.3",
         ["List band"] = "12.3",
         ["Shape lever ranges"] = "12.4",
+        ["Trigger arrival window"] = "12.4",
         ["Shape acceptance bound"] = "12.4",
     };
 

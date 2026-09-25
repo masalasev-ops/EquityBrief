@@ -61,6 +61,9 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.LimitsTable, "Event volume ratio"),
             CheckReach.Key(Scope.LimitsTable, "Shape calibration nights"),
 
+            // The 12.4 ruling, the trigger's arrival window.
+            CheckReach.Key(Scope.LimitsTable, "Trigger arrival window"),
+
             // 12.4, the shape proposer and the shape command: the proposals' store, the lever ranges,
             // the acceptance bound and a rejected proposal.
             CheckReach.Key(Scope.StoresTable, "Shape proposals"),
