@@ -449,7 +449,10 @@ public partial class ReadSurface
     // 0.05 over 3 and half of it again, and "c" at its third holding the whole 0.05, where the name
     // order drew "a" first. "q" registered before "p", both crossing on one read: "q" first and "p"
     // second, where the name order puts "p" first. And "p" promoted while "q", registered before it,
-    // crosses on the read: "p" first.
+    // crosses on the read: "p" first. A name steps by its first registration row and its first
+    // promotion, the one its level passed at: "k", registered, retired and registered again after "x",
+    // steps before "x"; and "a", promoted a year before "b" and, registered again, promoted again a year
+    // after, steps before "b".
     [Fact]
     public void PromotedCandidatesStepInTheOrderTheirPromotionsWereWrittenAndCandidatesCrossingOnOneReadInTheOrderTheyWereRegistered()
     {
@@ -521,6 +524,36 @@ public partial class ReadSurface
         RegisterRow[] promotedFirst = [.. both, Row(Promotion(4, "p", Registered.AddYears(1)))];
 
         Assert.Equal(["p", "q", "r"], RunScreen.StepOrder(promotedFirst, ["q", "r", "p"]));
+
+        // A name retired and registered again, and a name promoted, registered again and promoted again.
+        RegisterRow Written(long id, string candidate, string written, DateTimeOffset when, string? evidence = null) =>
+            Row(written == CandidateFamily.Retired
+                ? new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Retired, candidate, when, "{}", evidence ?? "retired")
+                : new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, when, "{\"level\": 30}", null));
+
+        RegisterRow[] registeredAgain =
+        [
+            Written(1, "k", CandidateFamily.Registered, Registered),
+            Written(2, "k", CandidateFamily.Retired, Registered.AddDays(1)),
+            Written(3, "x", CandidateFamily.Registered, Registered.AddDays(2)),
+            Written(4, "k", CandidateFamily.Registered, Registered.AddDays(3)),
+        ];
+
+        Assert.Equal(["k", "x"], RunScreen.StepOrder(registeredAgain, ["x", "k"]));
+
+        var promotion = CandidateFamily.PromotedBy + " at the look of 12 blocks";
+
+        RegisterRow[] promotedTwice =
+        [
+            Written(1, "a", CandidateFamily.Registered, Registered),
+            Written(2, "b", CandidateFamily.Registered, Registered),
+            Written(3, "a", CandidateFamily.Retired, Registered.AddYears(1), promotion),
+            Written(4, "b", CandidateFamily.Retired, Registered.AddYears(2), promotion),
+            Written(5, "a", CandidateFamily.Registered, Registered.AddYears(2).AddDays(1)),
+            Written(6, "a", CandidateFamily.Retired, Registered.AddYears(3), promotion),
+        ];
+
+        Assert.Equal(["a", "b"], RunScreen.StepOrder(promotedTwice, ["b", "a"]));
     }
 
     // Three candidates registered at one instant, which is the family the level is divided by.

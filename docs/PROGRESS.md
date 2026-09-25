@@ -26150,3 +26150,58 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry and the two before it, d1e4719, in the worktree
             beside the repository, and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
+
+### 10.2 - correction: a name steps by its first registration row and its first promotion, where taking the last of either left every test green   2026-09-25
+Corrects:   10.2's correction of 2026-09-25 (d1e4719), whose `RunScreen.StepOrder` orders the promoted by
+            their first promotion row and the rest by their first registration row, as the decision says,
+            and whose test held neither where a name has two. A name retired and registered again has two
+            registration rows (see: A candidate stands by the last row naming it, and a name retired and
+            registered again stands once), and a name registered again after its promotion and promoted
+            again has two promotion rows. Taking the last of either turned no test red.
+Found:      by the second pre-night pass of the second phase 12 sign-off review over d53bc22 on 2026-09-25,
+            its mutations P-last and R-last each surviving the 20 tests that reach the records and the
+            graph, and each shape worked in its scratch tests, green on the shipped code and red under its
+            mutant.
+Repaired:   nothing shipped changes: the correction is two assertions.
+Guarded:    `read-surface`, in
+            `PromotedCandidatesStepInTheOrderTheirPromotionsWereWrittenAndCandidatesCrossingOnOneReadInTheOrderTheyWereRegistered`:
+            "k", registered, retired and registered again after "x", steps before "x", by its first
+            registration row; and "a", promoted a year before "b", then registered again and promoted again
+            a year after "b", steps before "b", by its first promotion, the one its level passed at (see:
+            The graph steps promoted candidates in the order their promotions were written, and candidates
+            crossing on one read in the order they were registered).
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Tests:      1410, unchanged: one test of `read-surface` widened, none added or removed. Migrations 0 to 42
+            with none added and none pending, schema version 42.
+Claims:     554, from 554, with 554 PASS and 0 out of scope, and 564 placements and verdicts reconciled
+            against a floor of 34. No claim added: no table or figure changed.
+Pins:       the branch against `main` at d53bc22; this correction edits a test, in none of the twelve
+            `RuleVersionScorer.CodeVersionSources`, the twenty-one `CandidateEvaluator.EvaluationSources`
+            with each evaluator's own source ahead of them, or the sixteen `SwingFilter.CodeVersionSources`,
+            each read from the tree being committed.
+Mutated:    the rule, stated before the run: the two mutations that found the gaps, run again, filtered to
+            the twenty tests that reach the candidates' records and the graph.
+            Predicted:
+            E1 a promoted name ordered by its last promotion row (the review's P-last): red in the order
+            test alone.
+            E2 a name ordered by its last registration row (the review's R-last): red in the order test
+            alone.
+            Results: one run for each of the two mutations in a detached worktree at 5f042b9, the tree
+            carrying this entry, filtered to the twenty tests on the operator's instruction of
+            2026-09-24, each reverted with `git checkout -- .` and the tree read clean after. The whole
+            suite ran green over 5f042b9 in the gates, 1410 of 1410. E1 and E2 each turned 1 red of the
+            twenty, the order test.
+Held:       both, in the test each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1410 of 1410
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 564 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, 1410 of 1410 tests.
+            Both gates ran over the tree carrying this entry, 5f042b9, in the worktree beside the
+            repository, and the operator's store under `data/` was not touched by either.
+Carried:    the review's tie mutation, the promotion row's tie-break dropped, is an unproducible shape: it
+            differs only for two promotions written in one second, and each promotion is its own retirement
+            command, stamped at its start, so no command writes two. That invariant is left unasserted
+            here.
