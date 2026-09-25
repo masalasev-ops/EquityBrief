@@ -1,3 +1,5 @@
+using EquityBrief.Core.Filter;
+
 namespace EquityBrief.Core.Candidates;
 
 // One candidate's shadow result on one name-night: the candidate, whether it
@@ -64,7 +66,8 @@ public static class ShadowColumn
         var outcomes = new List<ShadowOutcome>();
         var skipped = new List<ShadowSkip>();
 
-        foreach (var row in standing)
+        // The candidates the swing filter's stage evaluates are left to it, and named in its shadow rather than here.
+        foreach (var row in standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is not GateEvaluator))
         {
             var evaluator = CandidateEvaluators.Find(row.Evaluator);
 
@@ -115,6 +118,72 @@ public static class ShadowColumn
             }
 
             var verdict = evaluator.Evaluate(night, CandidateEvaluator.Read(row.Parameters));
+
+            outcomes.Add(new ShadowOutcome(row.Candidate, verdict.Fired, verdict.Values));
+        }
+
+        return new ShadowResult(outcomes, skipped);
+    }
+
+    // The standing candidates the swing filter's stage evaluates, the gate kind alone.
+    public static IReadOnlyList<RegisterRow> ForTheFilter(IReadOnlyList<RegisterRow> standing) =>
+        [.. standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is GateEvaluator)];
+
+    // The longest arrival window the standing gate candidates read, so the filter's stage reads every
+    // session any of them needs.
+    public static int ArrivalReach(IReadOnlyList<RegisterRow> standing) =>
+        ForTheFilter(standing)
+            .Select(row => CandidateEvaluators.Find(row.Evaluator) is GateEvaluator gate && gate.Version == row.EvaluatorVersion
+                ? gate.ArrivalSessions(CandidateEvaluator.Read(row.Parameters))
+                : 0)
+            .DefaultIfEmpty(0)
+            .Max();
+
+    // Every standing gate candidate evaluated over one member's gate inputs in the filter's stage, or
+    // skipped with a reason, by the rules the listings stage applies to its own: a missing or moved
+    // evaluator is a fault, and a member the night holds no bar for, or holds across a gap, is a counted
+    // skip rather than a verdict computed over nothing.
+    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    public static ShadowResult EvaluateGates(IReadOnlyList<RegisterRow> standing, GateInputs inputs, NameWithheld? withheld = null)
+    {
+        var outcomes = new List<ShadowOutcome>();
+        var skipped = new List<ShadowSkip>();
+
+        foreach (var row in standing)
+        {
+            var found = CandidateEvaluators.Find(row.Evaluator);
+
+            if (found is null)
+            {
+                skipped.Add(new ShadowSkip(row.Candidate, $"the code carries no evaluator named '{row.Evaluator}'", ShadowSkipCause.NoEvaluator));
+
+                continue;
+            }
+
+            if (found is not GateEvaluator evaluator)
+            {
+                continue;
+            }
+
+            if (evaluator.Version != row.EvaluatorVersion)
+            {
+                skipped.Add(new ShadowSkip(
+                    row.Candidate,
+                    $"registered under {row.Evaluator} at {row.EvaluatorVersion} and the code carries " +
+                    $"{evaluator.Version}, so a score would be about a rule the register does not name",
+                    ShadowSkipCause.VersionMoved));
+
+                continue;
+            }
+
+            if (withheld is not null)
+            {
+                skipped.Add(new ShadowSkip(row.Candidate, withheld.Reason, withheld.Cause));
+
+                continue;
+            }
+
+            var verdict = evaluator.EvaluateGates(inputs, CandidateEvaluator.Read(row.Parameters));
 
             outcomes.Add(new ShadowOutcome(row.Candidate, verdict.Fired, verdict.Values));
         }

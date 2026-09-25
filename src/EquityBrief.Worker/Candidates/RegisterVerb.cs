@@ -22,11 +22,15 @@ public static class RegisterVerb
     // would be typed after it is written down in the set it names.
     public const string TheThree = "--the-three";
 
+    // The flag that retires phase 10's three and registers the swing family at one instant.
+    public const string TheFamily = "--the-family";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
         new("--retire", ["--retire", "--evidence"], [], []),
         new(TheThree, [], [], [TheThree]),
+        new(TheFamily, [], [], [TheFamily]),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -81,6 +85,11 @@ public static class RegisterVerb
         if (form.Flag == "--retire")
         {
             return await Said(await registrar.RetireAsync(Given("--retire"), Given("--evidence"), runId), output, error);
+        }
+
+        if (form.Flag == TheFamily)
+        {
+            return await Said(await registrar.RegisterTheFamilyAsync(runId), output, error);
         }
 
         if (form.Flag == TheThree)

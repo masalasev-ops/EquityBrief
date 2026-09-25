@@ -1,4 +1,5 @@
 using EquityBrief.Core.Bars;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
@@ -6,6 +7,7 @@ using EquityBrief.Core.Time;
 using EquityBrief.Data.Migrations;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Calendar;
+using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Ladders;
@@ -302,8 +304,10 @@ public static class Nightly
             // nothing the listings wrote and makes no request.
             new("swing-filter", async () =>
             {
+                // The swing family standing when the night started, evaluated in the filter's shadow.
+                var family = FamilyShadow.For(await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync(night.Token), nightStartedAt);
                 var outcome = await new SwingFilter(clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId, night.Token);
+                    .RunAsync(indexCode, runId, family, night.Token);
 
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
                     $"{outcome.Excluded} excluded, version {outcome.Version}";

@@ -1220,6 +1220,9 @@ public partial class ArchitectureConformance
 
         // The 12.4 ruling's: section 17's arrival window, set before the family registers.
         CheckReach.Key(Scope.LimitsTable, "Trigger arrival window"),
+
+        // 12.5's: section 17's family.
+        CheckReach.Key(Scope.LimitsTable, "The swing family"),
     ];
 
     // Rows phase 12 took out of the document: 11.9's region stating each reason's share against its

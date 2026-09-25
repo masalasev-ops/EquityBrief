@@ -18,6 +18,7 @@ using EquityBrief.Data;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.App;
 using EquityBrief.Worker.Bars;
+using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Research;
 using EquityBrief.Worker.Rules;
 
@@ -208,6 +209,12 @@ public class PinnedConstants
             new("Shape lever ranges", "1.00", (decimal)ShapeProposals.LeverRanges[3].From / 100, "ShapeProposals.LeverRanges[3].From in hundredths"),
             new("Shape lever ranges", "4.00", (decimal)ShapeProposals.LeverRanges[3].To / 100, "ShapeProposals.LeverRanges[3].To in hundredths"),
             new("Shape lever ranges", "0.10", (decimal)ShapeProposals.LeverRanges[3].Hundredths / 100, "ShapeProposals.LeverRanges[3].Hundredths in hundredths"),
+            new("The swing family", "2", (decimal)TheSwingFamily.VariantRewardToRisk, "TheSwingFamily.VariantRewardToRisk"),
+            new("The swing family", "1", (decimal)TheSwingFamily.VariantDepthLow, "TheSwingFamily.VariantDepthLow"),
+            new("The swing family", "3", (decimal)TheSwingFamily.VariantDepthHigh, "TheSwingFamily.VariantDepthHigh"),
+            new("The swing family", "6", TheSwingFamily.For("1", FilterSettings.Proposed).Count, "the registrations TheSwingFamily writes"),
+            new("The swing family", "0.05", (decimal)ReasonVerdict.Significance, "ReasonVerdict.Significance"),
+            new("The swing family", "6", TheSwingFamily.For("1", FilterSettings.Proposed).Count, "the divisor the family's six set"),
         ];
     }
 
