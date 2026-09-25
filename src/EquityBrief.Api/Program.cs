@@ -639,14 +639,17 @@ app.MapGet("/screens/tonight/{night?}", async (
     var asked = request.Query["name"].FirstOrDefault();
     var selection = TonightScreen.Selected(rows, asked);
 
+    var member = selection is { } picked ? universe.FirstOrDefault(row => row.Ticker == picked.Ticker) : null;
     var selected = selection is { } chosen
         ? NameScreen.PlanRegion(
             page,
             marks,
             chosen.Ticker,
             await read.LadderAsync(chosen.Ticker, dated),
-            universe.FirstOrDefault(row => row.Ticker == chosen.Ticker)?.Close ?? 0m,
-            await read.LevelsAsync(chosen.Ticker, dated))
+            member?.Close ?? 0m,
+            await read.LevelsAsync(chosen.Ticker, dated),
+            member?.TypicalMove,
+            member?.Close is not null)
         : string.Empty;
 
     // The record beside each reason and the evening's own totals, which are

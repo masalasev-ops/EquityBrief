@@ -160,7 +160,15 @@ public partial class FixtureExpectations
 
         // The night's shadow as the filter's stage runs it: the family standing at the night's start, a
         // member the night holds no bar for skipped with the reason and counted, and one it does evaluated.
+        // A night that started in the second the family registered, or before it, holds none of it, which is
+        // what keeps a night run again for an earlier session from scoring a candidate registered after it.
+        Assert.Equal(0, FamilyShadow.For(standing, at).Standing);
+        Assert.Equal(0, FamilyShadow.For(standing, at.AddDays(-1)).Standing);
+        Assert.Equal("; no swing family candidate stands registered, so nothing was evaluated in shadow", FamilyShadow.For(standing, at).Said);
+
         var night = FamilyShadow.For(standing, at.AddSeconds(1));
+
+        Assert.Equal(1, night.Standing);
 
         using (var skipped = JsonDocument.Parse(night.Evaluate(Passing(), stale: true, gap: null)))
         {

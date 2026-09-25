@@ -923,7 +923,7 @@ public sealed class SinglePageApp : IComponent
             ("Tranche", "One of several smaller purchases that together make up the whole position, each made at a different band."),
             ("Stop", "The price at which a purchase is sold to limit the loss. It is where you admit that part of the plan was wrong."),
             ("Invalidation", "The lowest stop. Below it the reason for owning the stock is gone, and everything is sold."),
-            ("Reason", "The specific thing that happened tonight to put a name on the list, such as reaching the price its plan buys at."),
+            ("Reason", "One of the six stated conditions, which chose tonight's list before the swing filter did and stand beside its names as context from it."),
             ("Break-even", "The share of setups that must reach their target, given how far away their targets and stops sit, for the whole set to neither make nor lose money.")) +
         "</details></section>";
 
@@ -1313,7 +1313,7 @@ public sealed class SinglePageApp : IComponent
             "Watch list",
             marks.WatchList(watched),
             title: "Shown every evening",
-            lede: "These names appear whether or not a reason fired for them.",
+            lede: "These names appear whether or not they are on the list.",
             region: "watch"));
 
         region.Append(Cards.Computed(
@@ -1321,7 +1321,10 @@ public sealed class SinglePageApp : IComponent
             marks.TonightList(rows, TonightDrawn, records, rule) + Cards.Key(
                 "How to read the list.",
                 "Each reason has its own column, always in the same place, so a night that is all one thing shows as one dark stripe running down one column. The one-word heads are short for at entry zone, crossed a level, breakout on volume, trend state changed, unusual volume and earnings soon; point at a head for its full name, and at a reason for the values that made it true and its record. The distance picture fixes the close at its centre line: the green block to its left is the nearest support and the orange block to its right the nearest resistance, one tick per typical day, so a block touching the centre is a name at an edge. The last line of each column is that reason's record across every name it has fired for, and a dashed one is not yet measured. Select a row to draw its plan just below the list; report opens the name's full page.",
-                "Every name here has reached a price its own chart made significant, and the reason says what kind of arrival it was. The distance picture counts in days of the stock's own ordinary movement, so a block one tick from the centre is a distance the price often covers in a single session."),
+                (byFilter
+                    ? "Every name here passed the swing filter's five gates at a price its own chart made significant, and its gates say whether it pulled back to support or broke out; the reasons beside it are context."
+                    : "Every name here has reached a price its own chart made significant, and the reason says what kind of arrival it was.")
+                    + " The distance picture counts in days of the stock's own ordinary movement, so a block one tick from the centre is a distance the price often covers in a single session."),
             title: byFilter ? "Names at a buy point tonight" : "Names that fired tonight",
             lede: byFilter
                 ? "Each passed every gate of the swing filter, its trigger arrived and nothing excluded it; in the filter's order, the trade's reward to risk first, then strength, then band strength. The reasons stand beside them as context."
@@ -1365,9 +1368,9 @@ public sealed class SinglePageApp : IComponent
                 "Reason totals",
                 marks.ReasonTotals(totals, fired) + Cards.Key(
                     "One long bar.",
-                    "Most of tonight's names arrived the same way, so the list holds fewer separate stories than its rows suggest. Several short bars mean different things happened to a few names each.",
+                    "Most of tonight's fired names carry the same reason, so the evening is one thing happening to many names. Several short bars mean different things happened to a few names each.",
                     "These are tonight's counts. How a reason's setups have ended over time is on the run page, read against the base rate."),
-                title: "Which reasons put tonight's names on the list",
+                title: byFilter ? "Which reasons fired tonight, as context" : "Which reasons put tonight's names on the list",
                 lede: Invariant($"How many of tonight's {fired} fired names carry each reason."),
                 stamp: Cards.Night(night),
                 region: "totals"));

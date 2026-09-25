@@ -15,5 +15,11 @@ public static class ListRules
 
     public const string ByFilter = "listed by the swing filter: every gate passed, the trigger arrived inside its window and no exclusion applied";
 
+    // An evening's rule, which has to hold on an evening that listed no name: the rule says what puts a
+    // name on the list, and never that a gate passed.
+    public const string EveningByFilter = "listed by the swing filter, which puts a name on the list where every gate passed, the trigger arrived inside its window and no exclusion applied";
+
+    public static string EveningSaid(string rule) => rule == Filter ? EveningByFilter : ByReasons;
+
     public static string Said(string rule) => rule == Filter ? ByFilter : ByReasons;
 }

@@ -25610,3 +25610,206 @@ Carried:    the merges of 12.6 to 12.9, in order, each on its own CI green and n
             live store, which at 07:03Z stood at schema 37 with no filter version and phase 10's three
             standing. Then the sign-off, owed on the phase as a whole by a session that committed none of
             its code: this session committed phase 12's code and signs nothing.
+
+### 12.6 - correction: an evening the swing filter listed says its reasons are context in every sentence the pages draw, where tonight's page, the name page's glossary and the exported report described the reasons choosing the list, and the gates cell draws the trade's figures to the hundredth   2026-09-25
+Corrects:   12.6, whose switch left six sentences on the pages describing the list the reasons chose
+            as the live one: the watch list's lede, its names shown whether or not a reason fired;
+            the list's key, the reason saying what kind of arrival a name was; the reason totals'
+            title, which reasons put tonight's names on the list, and its key, reading the fired
+            names' bars as the list's stories; the totals' note, every name listed tonight; and the
+            glossary of the name page and the exported report, a reason being the thing that put a
+            name on the list. The evening's rule line said every gate passed on a night the market
+            gate closed and listed no name, and each row's gates cell drew the trade's reward to
+            risk and stop as the gate stored them, 4.1698 and 0.5688612110382504 on CPAY, beside a
+            reward to risk column drawing 4.17.
+Found:      by the rehearsal before the phase 12 sign-off handoff on 2026-09-25, over copies of the
+            operator's store taken from 10:47Z through SQLite's backup opened immutable: the night
+            of 2026-09-24 run again on each, on one of them with the breadth floor at 45% and a
+            stored result for 2026-09-23 so that two names passed, and every screen fetched and
+            captured. 12.9's scan read the architecture's sentences and no page's.
+Repaired:   the watch list's names appear whether or not they are on the list. On an evening the
+            swing filter listed, the list's key says each name passed the five gates and its gates
+            say whether it pulled back or broke out, the reasons beside it context, and the totals
+            are titled which reasons fired tonight, as context. The totals' key reads the bars as
+            the evening's fired names and its note every name that fired. The glossary's reason is
+            section 3's row, word for word. The evening's rule line says the swing filter puts a
+            name on the list where every gate passed, and a name's own line keeps saying every gate
+            passed. The gates cell draws the reward to risk and the stop to the hundredth. An
+            evening the reasons listed reads as it did.
+Guarded:    `read-surface`, one test added,
+            `NoSentenceTheSwitchNightDrawsDescribesTheReasonsChoosingTheList`: every sentence of the
+            switch night's tonight page with a name selected, that name's page, its exported report
+            and the universe read by 12.9's predicate and none found, the evening before the switch
+            read the same way and its totals' title found, each repaired sentence read in its place
+            and the glossary's reason held to section 3's row. The forty-passing test reads the
+            gates cell's figures, the first row's worked by hand, and the evening's rule line, and
+            the closed-market test reads the rule line on a night that listed no name.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Pins:       the branch against `main` at 34f5ccd; this correction edits `ListRules.cs`,
+            `MarkRenderer.cs`, `SinglePageApp.cs` and a test, in none of the twelve, twenty-one or
+            sixteen pinned sources.
+Mutated:    the rule, stated before the run: each repair put back to what it replaced, one at a
+            time.
+            Predicted:
+            M1 the gates cell's figures as the gate stored them: red in the forty-passing test
+            alone.
+            M2 the evening's rule line in a name's words: red in the forty-passing and the
+            closed-market tests.
+            M3 the glossary's reason put back: red in the test this correction adds alone.
+            M4 the totals' title put back on every evening: red in the test this correction adds
+            alone.
+            M5 the watch list's lede put back: red in the test this correction adds alone.
+            Results: M1 to M5 in the 12.5 correction closing this batch.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the 12.5 correction closing this batch records.
+Carried:    nothing.
+
+### 5.8 - correction: tonight's selected name states each band's distance from the night's close in typical days' moves, as the name's own page does, where every band read not measured   2026-09-25
+Corrects:   5.8's correction of 2026-09-20 (df4f5f7), which gave each band on a name's page its
+            distance from the close in typical days' moves and left the level summary beside
+            tonight's selected plan without one, so every band there read not measured: CPAY's eight
+            on the rehearsal's copy, where the name's own page drew 6.6, 6.0, 4.2, 3.1, 2.4, 0.0, 2.4
+            and 3.0.
+Found:      by the rehearsal before the phase 12 sign-off handoff on 2026-09-25, in the capture of
+            tonight's page.
+Repaired:   the selected name's bands are measured from the night's close in the typical move the
+            universe row holds for the name that night, by the name page's own arithmetic, and a name
+            with no close stored that night has none.
+Guarded:    `read-surface`, one test added,
+            `TonightsSelectedNameStatesEachBandsDistanceAsTheNamesOwnPageDoes`: over the fixture's
+            newest night, every band's distance in the selected region worked by hand from the stored
+            close, band edges and fourteen-day true range, and held to the name page's own for the
+            same night.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Pins:       the branch against `main` at 34f5ccd; this correction edits `NameScreen.cs`, the read
+            surface's `Program.cs` and a test, in none of the twelve, twenty-one or sixteen pinned
+            sources.
+Mutated:    the rule, stated before the run: the repair put back to what it replaced.
+            Predicted:
+            M6 the selected region's bands drawn with no distance: red in the test this correction
+            adds alone.
+            Results: M6 in the 12.5 correction closing this batch.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the 12.5 correction closing this batch records.
+Carried:    nothing.
+
+### 12.5 - correction: the count of candidates ever registered is read against the count the per-window level is revisited at, where nine read of at most eight, and section 13.6 states the first step's level over the candidates each window opened with   2026-09-25
+Corrects:   12.5, whose registration of the swing family's six beside the three it retired took the
+            count ever registered to nine, past the eight 10.2's line was worded for. The run page's
+            candidates' records read nine candidate conditions ever registered, of at most eight,
+            which reads as a breach of the family's maximum standing at once rather than as the
+            revisit the lifetime count sets off. Section 13.6 still said the first step's level is
+            0.05 over the three candidates, where sections 13.8 and 17 state the swing family's 0.05
+            over 6. The level each candidate is tested at was right: over a copy with the family
+            standing before the night, the six read 0.00833 and the three 0.01667.
+Found:      by the rehearsal before the phase 12 sign-off handoff on 2026-09-25, reading the run
+            page over the store copies. The operator's store has held nine since 10:39:49Z.
+Repaired:   the line reads the count against the eight at which the per-window level is revisited,
+            and at eight or more says the revisit is due and is the operator's ruling. Section 13.6
+            states the level over the candidates a window opened with, the three registered on
+            2026-09-23 and then the swing family's six.
+Guarded:    `read-surface`, one test added, `TheLifetimeCountIsReadAgainstTheCountItsRevisitIsDueAt`:
+            the line drawn at seven, eight and nine, and section 13.6's sentence naming as many as
+            `TheThreeCandidates` and `TheSwingFamily` register.
+Written:    section 13.6's sentence, its prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      1406, from 1403: three added to `read-surface`, one for each correction of this batch,
+            none removed. Migrations 0 to 42 with none added and none pending, schema version 42.
+Claims:     554, from 554, with 554 PASS and 0 out of scope, and 564 placements and verdicts
+            reconciled against a floor of 34. No claim added: no table or figure changed, and section
+            13.6's sentence is no claim's.
+Pins:       the branch against `main` at 34f5ccd; this correction edits `MarkRenderer.cs`, a test and
+            two documents. The batch edits `ListRules.cs`, `MarkRenderer.cs`, `SinglePageApp.cs`,
+            `NameScreen.cs`, the read surface's `Program.cs`, three tests and two documents, none of
+            the twelve `RuleVersionScorer.CodeVersionSources`, the twenty-one
+            `CandidateEvaluator.EvaluationSources` or the sixteen `SwingFilter.CodeVersionSources`,
+            each read from the tree being committed. The trade gate's own reason, which states the
+            reward to risk as the gate stored it, 4.1698 on CPAY, is written in `SwingGates.cs`,
+            which the family's pin holds, and is left as it is: an edit there would skip every
+            family candidate as moved.
+Mutated:    the rule, stated before the run: each repair put back to what it replaced, one at a
+            time.
+            Predicted:
+            M7 the line put back to of at most eight: red in the test this correction adds alone.
+            M8 section 13.6's sentence put back: red in the test this correction adds alone.
+            Results: one run for each of this batch's eight mutations in a detached worktree at
+            d61f9db, the tree carrying this entry, filtered to the five tests they name on the
+            operator's instruction of 2026-09-24, each reverted with `git checkout -- .` and the tree
+            read clean after. The whole suite ran green over d61f9db in the gates, 1406 of 1406. M1
+            turned 1 red and 4 green, the forty-passing test. M2 turned 2 red, the forty-passing and
+            the closed-market tests. M3, M4 and M5 each turned 1 red, the test the 12.6 correction
+            adds. M6 as first written, the bands handed no distance, left the local function that
+            measures them unused, which the build refuses as a warning, so it ran as the distance
+            answering none for every band: 1 red, the test the 5.8 correction adds. M7 and M8 each
+            turned 1 red, the test this correction adds.
+Held:       all eight, in the test each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1406 of 1406
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 564 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1406 of 1406 tests.
+            Both gates ran over the tree carrying this entry and the two before it, d61f9db, in the
+            worktree beside the repository, and the operator's store under `data/` was not touched by
+            either.
+Carried:    the revisit of the per-window level, due since the count ever registered reached nine
+            at 10:39:49Z on 2026-09-25, is the operator's ruling (see: Holm's level passes between
+            the candidates by a graph fixed when they are registered, and every verdict shows the
+            lifetime count).
+
+### 12.5 - correction: the family standing at the night's start and the level each window's candidates open with are asserted, where a mutation of either left every test of its rule green   2026-09-25
+Corrects:   12.5's tests, and no shipped code. Two rules 12.5 rests on were stated and not asserted.
+            Reading the family's shadow with every registration standing, whatever the night's
+            start, turned only the evaluators' pin test red, which reddens on any edit to a pinned
+            source and not on this rule. Reading the candidates' records as one window of nine,
+            every candidate at 0.05 over 9, turned no test red. The first keeps a night run again for
+            an earlier session from scoring a candidate registered after it, which the rehearsal's
+            run of 2026-09-24 relied on. The second is the level the operator's store has drawn since
+            10:39:49Z, the three at 0.05 over 3 and the six at 0.05 over 6, where every test held one
+            window.
+Found:      by the builder's mutations before the phase 12 sign-off handoff, H5 and H2 of six, each run
+            over the whole suite at d61f9db. H1, the trigger's arrival read with an unread session as
+            not fired, turned 9 red; H3, a second acceptance while the list is live taken without the
+            blocks, 1; H4, an evening read as listed by its reasons whatever its rule, 4; and H6, the
+            night's report asked for the first name by ticker, 2, each in the tests of its rule.
+Repaired:   nothing shipped changes: the correction is two assertions.
+Guarded:    `fixture-expectations`, in
+            `TheListingsStageLeavesTheFamilyToTheFiltersStageAndTheFiltersStageSkipsAMemberItHoldsNoBarFor`:
+            a night started in the second the family registered, or a day before it, holds none of it
+            and says so, and one started a second later holds it. `read-surface`, one test added,
+            `EachWindowsFirstStepIsTheLevelOverTheCandidatesItOpenedWith`: three candidates first
+            evaluated on one night and retired at the instant six more registered, and the six first
+            evaluated on a later night, the three at 0.05 over 3 and the six at 0.05 over 6.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Tests:      1407, from 1406: one added to `read-surface` and one test of `fixture-expectations`
+            widened, none removed. Migrations 0 to 42 with none added and none pending, schema
+            version 42.
+Claims:     554, from 554, with 554 PASS and 0 out of scope, and 564 placements and verdicts
+            reconciled against a floor of 34. No claim added: no table or figure changed.
+Pins:       the branch against `main` at 34f5ccd; this correction edits two tests, in none of the
+            twelve, twenty-one or sixteen pinned sources.
+Mutated:    the rule, stated before the run: the two mutations that found the gaps, run again.
+            Predicted:
+            H5 every registration standing whatever the night's start: red in the family test this
+            correction widens and the evaluators' pin test, two.
+            H2 the candidates' records read as one window: red in the test this correction adds
+            alone.
+            Results: one run for each in a detached worktree at e23b843, the tree carrying this
+            entry, filtered to the family test, the test added and the evaluators' pin test, each
+            reverted with `git checkout -- .` and the tree read clean after. The whole suite ran green
+            over e23b843 in the gates, 1407 of 1407. H5 turned 2 red, the family test this correction
+            widens and the evaluators' pin test. H2 turned 1 red, the test this correction adds.
+Held:       both, in the tests each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1407 of 1407
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 564 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1407 of 1407 tests.
+            Both gates ran over the tree carrying this entry, e23b843, in the worktree beside the
+            repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    nothing.
