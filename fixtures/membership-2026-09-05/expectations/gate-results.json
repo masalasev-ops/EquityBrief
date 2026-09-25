@@ -21,7 +21,7 @@
    2.5
   ],
   "earningsWindowSessions": 15,
-    "arrivalSessions": 3,
+  "arrivalSessions": 3,
   "trade": "ladder"
  },
  "readFromTheStore": [
@@ -305,5 +305,15 @@
     }
    }
   }
+ },
+ "workedExample": {
+  "note": "12.8: figure 11.3's setup. The swing filter's counts replay every session of the two-night store's year at section 17's proposed values with the trade read from the swing trade's own plan, and the setup drawn is the latest one at least twenty sessions before 2026-09-04 whose plan passed the trade gate and resolved on the closes stored after it. The session, the name and the plan are read from that replay, the band being the anchored support band the replayed levels hold; the outcome is walked close by close over the captured bars in bars-KEYS.json, independently of the store: the adjusted closes after 2026-07-24 stay between the stop of 300.87 and the target of 355.49 until 2026-07-29 closes at 296.72, below the stop, so the setup lost on that session.",
+  "ticker": "KEYS",
+  "session": "2026-07-24",
+  "entry": "318.67",
+  "stop": "300.87",
+  "target": "355.49",
+  "outcome": "loss",
+  "resolvedOn": "2026-07-29"
  }
 }

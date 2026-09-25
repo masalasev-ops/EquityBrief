@@ -62,6 +62,12 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.LimitsTable, "Event volume ratio"),
             CheckReach.Key(Scope.LimitsTable, "Shape calibration nights"),
 
+            // 12.8, the worked example's three figures drawn from the fixture, each regenerated and held to
+            // the document.
+            "Figure 11.1",
+            "Figure 11.2",
+            "Figure 11.3",
+
             // 12.7, the swing plan's two outcomes.
             CheckReach.Key(Scope.LimitsTable, "Swing plan outcome"),
             CheckReach.Key(Scope.LimitsTable, "Twenty-session outcome"),

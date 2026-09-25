@@ -77,11 +77,14 @@ public sealed class FilterCounts : IComponent
 
     public IReadOnlyList<NightFiring> Firings { get; private set; } = [];
 
+    // Each counted session's results under each setting are handed to the caller that asks for them, which
+    // is how a figure drawn from a replayed session reads the answers the counts are made of.
     public async Task<IReadOnlyDictionary<string, IReadOnlyList<SessionCounts>>> CountAsync(
         string indexCode,
         bool year,
         Action<string>? progress = null,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        Action<DateOnly, string, IReadOnlyList<GateResult>>? evaluated = null)
     {
         // Read-only, so nothing the counts do can reach the store they count.
         var builder = StoreConnection.Builder(databaseFile);
@@ -175,6 +178,8 @@ public sealed class FilterCounts : IComponent
                 }
 
                 kept[session] = results.ToDictionary(result => result.Ticker, result => result.TriggerEvent, StringComparer.Ordinal);
+
+                evaluated?.Invoke(session, name, results);
             }
 
             progress?.Invoke(FormattableString.Invariant($"{session:yyyy-MM-dd} {(stored is null ? Replayed : Stored)} {inputs.Rows.Count} member(s)"));

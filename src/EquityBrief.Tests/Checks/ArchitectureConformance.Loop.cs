@@ -1272,6 +1272,35 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Any-reason share target"),
     ];
 
+    // The words phase 12 uses, each a row of section 3 whose meaning is one sentence: the words it added and
+    // the four it restated.
+    static readonly string[] PhaseTwelveWords =
+    [
+        "Swing filter", "Gate", "Breadth", "Relative strength", "Pullback, depth", "Dry-up", "Tight base, tightness", "Breakout",
+        "Trigger, arrival", "Swing plan", "Exclusion", "Filter version", "Shape clock", "Event night, ordinary night", "Gate band",
+        "Edge clock", "Swing family", "Near miss", "List rule", "Reward to risk", "Block", "Tonight's list", "Reason",
+    ];
+
+    [Fact]
+    public void SectionThreeCarriesEveryWordPhaseTwelveUsesInOneSentence()
+    {
+        var architecture = File.ReadAllText(Repository.Architecture);
+        var table = Assert.Single(ArchitectureTables.In(architecture), candidate => candidate.Heading == "3. Vocabulary");
+        var meanings = table.Body
+            .Where(row => row.Count > 1)
+            .ToDictionary(row => row[0], row => row[1], StringComparer.Ordinal);
+
+        foreach (var word in PhaseTwelveWords)
+        {
+            Assert.True(meanings.TryGetValue(word, out var meaning), $"Section 3 carries no row for '{word}'.");
+            Assert.EndsWith(".", meaning, StringComparison.Ordinal);
+            Assert.DoesNotMatch(@"\.\s+[A-Z]", meaning);
+        }
+
+        // The reader is shown to find what it looks for: a meaning of two sentences is caught.
+        Assert.Matches(@"\.\s+[A-Z]", "One sentence. Another sentence.");
+    }
+
     // Rows the document gained after the prediction, each one claim.
     static readonly string[] AddedAfterThePrediction =
     [

@@ -25450,3 +25450,74 @@ Carried:    12.6's merge gate, which this branch waits behind: the operator's `t
             version 1 and `register --the-family` on the live store. From the first night 12.7 runs, the
             filler scores every stored swing filter row carrying a plan, which on the live store is every
             such row from the first night the swing filter stored.
+
+### 12.8 - the worked example: one night's funnel, the name passing the most gates with its plan and a replayed setup resolving, drawn from the fixture by the code, with the two clocks and the near misses illustrated, section 1's goal and section 3's words   2026-09-25
+Built:      section 11.3's five figures. `WorkedExample` draws them in the document's own colour variables,
+            support green and resistance orange alone beside the neutral ink, each with a key closing on what
+            to take from it. The first three are drawn from what the code computes over the committed
+            fixture's two-night store: figure 11.1, 2026-09-04's four members through the gates in order, 4,
+            4, 2, 0, 0, 0 and 0 past the exclusions; figure 11.2, KEYS, which passed the most gates, market,
+            setup and trade, stopped at trend and strength, with its support band, the stop at 300.87 on the
+            band's low edge, the target at 366.41, the 20-session high, a pullback of 3.5 typical days and a
+            reward to risk of 1.4882 from the close of 327.21; and figure 11.3, the same band's setup read on
+            2026-07-24 by the counts replaying the stored year, entered at 318.67 and lost on 2026-07-29 at a
+            close of 296.72, three sessions later. The counts hand each replayed session's results to a
+            caller that asks for them, which is how the replayed setup is read. The last two figures, the
+            two clocks on one timeline and near-miss attribution with invented shares, say they are
+            illustrative in their drawing, caption and key. A check regenerates the first three from the
+            fixture, holds the document to each word for word, and writes each beside the phase report so
+            a figure the document has fallen behind is placed from the code rather than typed.
+Written:    section 1's purpose, stating the operator's goal and that the list is chosen by the swing
+            filter's gates, facts about the chart and the plan, while a listed name's success is measured
+            by the loop over time; section 3's reward to risk, block, tonight's list and reason restated, and
+            nineteen of the phase's words added, one sentence each; section 11.3; section 13.2's first row
+            waiting on the swing filter's gate counts, where it said fired counts; the five figures placed in
+            the phase report; `gate-results.json`'s worked example; and the `architecture-conformance` and
+            `fixture-expectations` roster rows. Every spec line changed has its prior text in `CHANGELOG.md`.
+Found:      the latest replayed setup that resolved won on the next session, and the next rule tried, at
+            least twenty sessions before the night, drew NFLX with its stop three cents below its entry and
+            two sessions to a win: neither shows a path. The rule the figure states takes the latest session
+            at least twenty sessions before the night whose plan passed the trade gate and resolved, which
+            is a plan a swing trade would take, and it is KEYS on the same support band figure 11.2 draws.
+            The 20-session high and the target are the same price on 2026-09-04, so their labels are drawn on
+            opposite sides of the chart. Section 1's breakdown of the six conditions is read by
+            `stated-counts` against section 11's table, and the first gate run failed on its removal, so it
+            stays, stated as context beside the list; the same run failed `clock-usage` on a date parsed
+            across two lines, which now sits on one. Figure 8.1 and section 8's worked example still say the shortlist
+            decides the list, which is 12.9's search to find and repair.
+Expected:   figure 11.1's counts and figure 11.2's name, gates, stop, target, reward to risk and depth are
+            held to `gate-results.json`, worked by hand at 12.2; figure 11.3's session, name and plan are
+            read from the replay and stated in the expectation, and its outcome is walked close by close over
+            `bars-KEYS.json` apart from the store: 313.68, 305.17, then 296.72 below the stop of 300.87.
+Tests:      1401, from 1399: two added and none removed. Under `fixture-expectations` the worked example,
+            and under `architecture-conformance` section 3 carrying every word phase 12 uses.
+Claims:     554, unchanged, as the plan predicted: the figures are placed with a reason and section 3's rows
+            are its placement's, so the report reads 41 tables where it read 36 and 564 placements and
+            verdicts where it read 561. The pair after 12.9 stays at 554.
+Pins:       the branch against the 12.7 branch at dbec5ad, which it is built on. The twelve
+            `RuleVersionScorer.CodeVersionSources`, the twenty-one `CandidateEvaluator.EvaluationSources` and
+            the sixteen `SwingFilter.CodeVersionSources`, each read from the tree being committed, and the
+            branch touches none of them; `FilterCounts.cs`, which it edits, is in none of the three.
+Mutated:    the rule, stated before the run: one mutation for each property the 12.8 done condition names,
+            each the smallest edit that changes the property's answer and still compiles, filtered to the
+            two tests this checkpoint added, one at a time in a detached worktree at this entry's commit and
+            reverted after each.
+            Predicted:
+            W1 the funnel's bars drawn in resistance orange, the document unchanged: red in the worked
+            example test alone.
+            W2 figure 11.2 drawing the member passing the fewest gates: red in the worked example test alone.
+            W3 figure 11.3's setup read without the trade gate: red in the worked example test alone.
+            W4 the funnel counting each gate without the gate itself: red in the worked example test alone.
+            W5 section 3's near miss given two sentences: red in the section 3 test alone.
+            W6 the counts handing no session to the caller: red in the worked example test alone.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1401 of 1401
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42,
+            exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 564 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1401 of 1401 tests.
+            Both gates ran over the tree carrying this entry, in the worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    12.6's merge gate, which this branch waits behind with 12.7: the operator's `tools/migrate`,
+            filter version 1 and `register --the-family` on the live store.
