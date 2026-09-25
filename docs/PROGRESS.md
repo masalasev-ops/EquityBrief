@@ -24728,14 +24728,29 @@ Mutated:    the rule, stated before the run: one mutation for each property the 
             M11 the due line drawn before the trigger: red in the region test and the due line test,
             two.
             M12 the medians drawn as measured before the trigger: red in the region test alone.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: filtered runs of the nine tests in a detached worktree at b8a27eb, one at a
+            time, each mutation reverted with `git checkout -- .` and the tree read clean after it.
+            M1 1 red, the classifier test. M2 3 red, the trigger test, the medians test and the region
+            test. M3 4 red, the volume ratio test, the stored nights, the trigger test and the region
+            test. M4 1 red, the trigger test. M5 2 red, the trigger test and the due line test. M6 1
+            red, the medians test. M7 1 red, the sentence and counts test. M8 1 red, the same. M9 1
+            red, the same. M10 1 red, the same. M11 2 red, the region test and the due line test. M12
+            1 red, the region test.
+Held:       all twelve exactly as written before the run, in the tests each named and in their number.
+Swept:      the four survivor classes over this checkpoint's own tests. A test asserting a thing
+            against itself: none; the region is read against the test's own arithmetic and the
+            sentence against section 13.8. A property no test names: none found; the carried trigger
+            assertion closes the one 12.2's sweep found. A boundary the fixture cannot reach: every
+            threshold of the classifier and the trigger, reached by constructed nights. A shape the
+            data cannot produce: a night crossing the trigger, which no store holds for months, reached
+            by the constructed run of sixty.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1362 of 1362
             tests ran with none failed, migrations 0 to 39 with none added and none pending, schema
             version 39, exit 0, against `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 36 tables, 516 claims, 516 PASS, 0 FAIL, 0 out of
             scope, 0 unexamined, 523 placements and verdicts reconciled against a floor of 34,
             fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1362 of 1362 tests.
-            Both gates ran over the tree carrying this entry, in the worktree beside the
+            Both gates ran over the tree carrying this entry, b8a27eb, in the worktree beside the
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    the operator's ruling on the starting settings, the trade gate's input, the five variants
             and the gate bands after 12.4; and the operator's two commands against the live store.
