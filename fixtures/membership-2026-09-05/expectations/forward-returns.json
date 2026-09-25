@@ -290,5 +290,17 @@
     }
    }
   ]
+ },
+ "swing": {
+  "note": "12.7: the swing filter's rows scored on their own plan, derived from section 17's two rows and the decision that the swing filter's setups are scored on the swing trade's own plan from the listing close. Every swing filter row carrying a plan, being every row whose setup found a band, gets one row on each swing horizon and a row carrying none gets none; on the fixture's night no session follows the night, so each is written not yet matured. How many rows carry a plan is read off the replay's gate rows and not stated here.",
+  "horizons": [
+   "swing",
+   "swing-20"
+  ],
+  "caps": {
+   "swing": 63,
+   "swing-20": 20
+  },
+  "rowsPerPlan": 2
  }
 }

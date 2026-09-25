@@ -9,7 +9,7 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Returns;
 
-public sealed record ForwardReturnOutcome(int ListingsExamined, int RowsWritten, int Matured, int Immature, int Kept);
+public sealed record ForwardReturnOutcome(int ListingsExamined, int RowsWritten, int Matured, int Immature, int Kept, int PlansExamined = 0, int PlansNotScorable = 0);
 
 // The forward return filler. Fills the five and twenty-one session outcomes of
 // past listings as those sessions mature, and computes the universe base rate
@@ -28,6 +28,7 @@ public sealed class ForwardReturnFiller : IComponent
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
+            new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -41,6 +42,18 @@ public sealed class ForwardReturnFiller : IComponent
         FROM listing l
         LEFT JOIN forward_return f ON f.ticker = l.ticker AND f.session_date = l.session_date
         ORDER BY l.session_date, l.ticker;
+    ";
+
+    // Every swing filter row carrying a plan of its own, with the swing horizons already written for it.
+    // A row whose setup found no band has no stop to score from and carries none.
+    // see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context
+    const string EveryPlannedGateRow = @"
+        SELECT g.ticker, g.session_date, g.swing_stop, g.swing_target, f.horizon, f.outcome
+        FROM gate_result g
+        LEFT JOIN forward_return f
+            ON f.ticker = g.ticker AND f.session_date = g.session_date AND f.horizon IN ('swing', 'swing-20')
+        WHERE g.swing_stop IS NOT NULL AND g.swing_target IS NOT NULL
+        ORDER BY g.session_date, g.ticker;
     ";
 
     // The sessions after a listing's own, in order, which is what a horizon is
@@ -129,6 +142,8 @@ public sealed class ForwardReturnFiller : IComponent
     }
 
     sealed record Listing(string Ticker, string SessionDate, string Plan, Dictionary<string, string?> Outcomes);
+
+    sealed record PlannedRow(string Ticker, string SessionDate, decimal Stop, decimal Target, Dictionary<string, string?> Outcomes);
 
     public async Task<ForwardReturnOutcome> RunAsync(string runId, CancellationToken cancellation = default)
     {
@@ -230,7 +245,7 @@ public sealed class ForwardReturnFiller : IComponent
                 // back while a record is read over four years of nights.
                 // see: A setup's null win probability is calibrated from its own plan, and its planned break-even is shown beside it
                 var calibrated = horizon == ForwardReturnSeries.Setup
-                    ? await CalibratedAsync(connection, listing, outcome, origin, stop, target, after, cancellation)
+                    ? await CalibratedAsync(connection, listing.Ticker, listing.SessionDate, outcome, origin, stop, target, after, cancellation)
                     : Calibration.None;
 
                 if (!listing.Outcomes.ContainsKey(horizon) || outcome.Outcome is not null)
@@ -249,6 +264,66 @@ public sealed class ForwardReturnFiller : IComponent
                 }
 
                 byHorizon[horizon].Add(outcome.Outcome);
+            }
+        }
+
+        // The swing filter's rows, each scored on its own plan from the night's close, over the setup's cap
+        // and, as context read by no verdict, over twenty sessions. The calibrated bar rides on the capped
+        // horizon alone, the one a candidate's record reads. A plan whose close the night's own raw close
+        // does not sit between its stop and its target was not one the night could enter at its close,
+        // and it is counted as not scorable rather than scored from a later fill.
+        // see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context
+        var planned = await PlannedRowsAsync(connection, transaction, cancellation);
+        var notScorable = 0;
+
+        foreach (var row in planned)
+        {
+            var open = ForwardReturnSeries.SwingHorizons
+                .Where(horizon => !(row.Outcomes.TryGetValue(horizon, out var stored) && Decided(stored)))
+                .ToArray();
+
+            kept += ForwardReturnSeries.SwingHorizons.Length - open.Length;
+
+            if (open.Length == 0)
+            {
+                continue;
+            }
+
+            var origin = await CloseOnAsync(connection, row.Ticker, row.SessionDate, cancellation);
+
+            if (row.Stop >= row.Target || origin is { RawClose: { } raw } && (raw < row.Stop || raw > row.Target))
+            {
+                notScorable++;
+
+                continue;
+            }
+
+            var after = origin is null ? [] : await SessionsAfterAsync(connection, row.Ticker, row.SessionDate, cancellation);
+            var rawClose = origin is null ? null : RawClose(row.Ticker, row.SessionDate, origin, row.Stop, row.Target);
+
+            foreach (var horizon in open)
+            {
+                var outcome = ForwardReturnSeries.OverSetup(
+                    after, row.Stop, row.Target, null, origin?.Close, rawClose, horizon, ForwardReturnSeries.CapOf(horizon));
+
+                var calibrated = horizon == ForwardReturnSeries.Swing
+                    ? await CalibratedAsync(connection, row.Ticker, row.SessionDate, outcome, origin, row.Stop, row.Target, after, cancellation)
+                    : Calibration.None;
+
+                if (!row.Outcomes.ContainsKey(horizon) || outcome.Outcome is not null)
+                {
+                    await WriteAsync(connection, transaction, row.Ticker, row.SessionDate, outcome, calibrated, cancellation);
+                    written++;
+                }
+
+                if (outcome.Outcome is null)
+                {
+                    immature++;
+                }
+                else
+                {
+                    matured++;
+                }
             }
         }
 
@@ -277,9 +352,9 @@ public sealed class ForwardReturnFiller : IComponent
 
         await transaction.CommitAsync(cancellation);
 
-        await RecordAsync(connection, runId, startedAt, listings.Count, written, matured, immature, kept, cancellation);
+        await RecordAsync(connection, runId, startedAt, listings.Count, written, matured, immature, kept, planned.Count, notScorable, cancellation);
 
-        return new ForwardReturnOutcome(listings.Count, written, matured, immature, kept);
+        return new ForwardReturnOutcome(listings.Count, written, matured, immature, kept, planned.Count, notScorable);
     }
 
     static bool Decided(string? outcome) => outcome is not null;
@@ -287,13 +362,45 @@ public sealed class ForwardReturnFiller : IComponent
     // Every writer stores a raw close beside the adjusted one, so a listing bar
     // without one is a fault in the store rather than a setup to score.
     static decimal? RawClose(Listing listing, (decimal Close, decimal? RawClose)? origin, decimal? stop, decimal? target) =>
+        RawClose(listing.Ticker, listing.SessionDate, origin, stop, target);
+
+    static decimal? RawClose(string ticker, string sessionDate, (decimal Close, decimal? RawClose)? origin, decimal? stop, decimal? target) =>
         origin is not { } bar || stop is null || target is null
             ? null
             : bar.RawClose is { } raw && raw > 0
                 ? raw
                 : throw new InvalidOperationException(
-                    $"{listing.Ticker}'s bar for the listing of {listing.SessionDate} carries no raw close above " +
+                    $"{ticker}'s bar for the listing of {sessionDate} carries no raw close above " +
                     "zero, so the adjustment its plan is scored at cannot be read.");
+
+    static async Task<IReadOnlyList<PlannedRow>> PlannedRowsAsync(SqliteConnection connection, System.Data.Common.DbTransaction transaction, CancellationToken cancellation)
+    {
+        var rows = new List<PlannedRow>();
+
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = (SqliteTransaction)transaction;
+        command.CommandText = EveryPlannedGateRow;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            var (ticker, session) = (reader.GetString(0), reader.GetString(1));
+
+            if (rows.Count == 0 || rows[^1].Ticker != ticker || rows[^1].SessionDate != session)
+            {
+                rows.Add(new PlannedRow(ticker, session, Money.FromStorage(reader.GetString(2)), Money.FromStorage(reader.GetString(3)), new Dictionary<string, string?>(StringComparer.Ordinal)));
+            }
+
+            if (!reader.IsDBNull(4))
+            {
+                rows[^1].Outcomes[reader.GetString(4)] = reader.IsDBNull(5) ? null : reader.GetString(5);
+            }
+        }
+
+        return rows;
+    }
 
     // The stop, the first traded target and the entry zone's top edge as they
     // stood the night of the listing. Bars can be replayed and the plan cannot,
@@ -327,7 +434,8 @@ public sealed class ForwardReturnFiller : IComponent
     // and an unfilled plan was never in the market.
     static async Task<Calibration> CalibratedAsync(
         SqliteConnection connection,
-        Listing listing,
+        string ticker,
+        string sessionDate,
         ForwardReturn outcome,
         (decimal Close, decimal? RawClose)? origin,
         decimal? stop,
@@ -350,19 +458,19 @@ public sealed class ForwardReturnFiller : IComponent
         var restated = bar.RawClose is { } raw && raw > 0 ? bar.Close / raw : 1m;
         var floor = storedStop * restated;
         var ceiling = storedTarget * restated;
-        var session = DateOnly.ParseExact(listing.SessionDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var session = DateOnly.ParseExact(sessionDate, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         var risk = floor < fill ? Statistic.FromRatio((fill - floor) / fill) * 100 : (double?)null;
-        var reported = OnEarnings(await PrintsAsync(connection, listing.Ticker, cancellation), after, outcome.ResolvedOn);
+        var reported = OnEarnings(await PrintsAsync(connection, ticker, cancellation), after, outcome.ResolvedOn);
 
-        var volatility = NullWin.Volatility(Changes(await ClosesToAsync(connection, listing.Ticker, listing.SessionDate, cancellation)));
+        var volatility = NullWin.Volatility(Changes(await ClosesToAsync(connection, ticker, sessionDate, cancellation)));
 
         if (volatility is not { } scatter || floor >= fill || ceiling <= fill)
         {
             return new Calibration(null, null, risk, reported);
         }
 
-        var seed = NullWin.SeedFor(listing.Ticker, session.DayNumber);
+        var seed = NullWin.SeedFor(ticker, session.DayNumber);
         var below = Statistic.FromRatio(floor / fill);
         var above = Statistic.FromRatio(ceiling / fill);
 
@@ -576,6 +684,8 @@ public sealed class ForwardReturnFiller : IComponent
         int matured,
         int immature,
         int kept,
+        int plans,
+        int notScorable,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -594,7 +704,8 @@ public sealed class ForwardReturnFiller : IComponent
         command.Parameters.AddWithValue(
             "$detail",
             $"{listings} listing(s), {written} row(s) written, {kept} kept as decided, " +
-            $"{matured} newly matured, {immature} not yet matured");
+            $"{matured} newly matured, {immature} not yet matured; " +
+            $"{plans} swing plan(s) read, {notScorable} not scorable from the night's close");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

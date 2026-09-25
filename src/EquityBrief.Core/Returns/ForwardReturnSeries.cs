@@ -49,6 +49,20 @@ public static class ForwardReturnSeries
 
     public static readonly string[] Horizons = [FiveSessions, TwentyOneSessions, Setup];
 
+    // A swing filter row's own plan, scored the setup's way from the listing close with no zone: entered
+    // at the close, stopped on a close below the setup band's low edge, won on a close at or above the
+    // nearest resistance band's low edge, over the setup's cap; and the same plan over twenty sessions,
+    // stored as context and read by no verdict.
+    // see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context
+    public const string Swing = "swing";
+    public const string SwingTwenty = "swing-20";
+
+    public const int SwingTwentySessions = 20;
+
+    public static readonly string[] SwingHorizons = [Swing, SwingTwenty];
+
+    public static int CapOf(string horizon) => horizon == SwingTwenty ? SwingTwentySessions : SetupSessionCap;
+
     // Section 17's cap: a listed setup resolves when its target is reached, its
     // stop is closed through, or 63 sessions pass.
     public const int SetupSessionCap = 63;
@@ -128,13 +142,15 @@ public static class ForwardReturnSeries
         decimal? target,
         decimal? entryHigh = null,
         decimal? closeAtListing = null,
-        decimal? rawCloseAtListing = null)
+        decimal? rawCloseAtListing = null,
+        string horizon = Setup,
+        int cap = SetupSessionCap)
     {
         // A listing with no plan has no setup to resolve. That is an absence
         // rather than an unresolved setup, and the two are counted differently.
         if (stop is not { } storedStop || target is not { } storedTarget)
         {
-            return new ForwardReturn(Setup, null, null, null);
+            return new ForwardReturn(horizon, null, null, null);
         }
 
         // The invariant the branch order below rests on, written down rather
@@ -179,7 +195,7 @@ public static class ForwardReturnSeries
         // first of them, so the sessions left after a fill are the cap less the sessions up to it.
         var filledAt = entry is null ? -1 : 0;
 
-        for (var session = 0; session < Math.Min(after.Count, SetupSessionCap); session++)
+        for (var session = 0; session < Math.Min(after.Count, cap); session++)
         {
             var bar = after[session];
             // The stop is tested first, because a session that closed through
@@ -204,11 +220,11 @@ public static class ForwardReturnSeries
                 // stop fell on one session.
                 return entry is { } at
                     ? new ForwardReturn(
-                        Setup, Loss, bar.SessionDate, ChangeFromEntry(at, bar.Close), BreakEven(at, floor, ceiling),
-                        at, SetupSessionCap - filledAt)
+                        horizon, Loss, bar.SessionDate, ChangeFromEntry(at, bar.Close), BreakEven(at, floor, ceiling),
+                        at, cap - filledAt)
                     : new ForwardReturn(
-                        Setup, Loss, bar.SessionDate, null, null,
-                        highestEntry, SetupSessionCap - (session + 1));
+                        horizon, Loss, bar.SessionDate, null, null,
+                        highestEntry, cap - (session + 1));
             }
 
             if (entry is null)
@@ -217,7 +233,7 @@ public static class ForwardReturnSeries
                 // move happening without the purchase the plan named.
                 if (bar.Close >= ceiling)
                 {
-                    return new ForwardReturn(Setup, NeverEntered, bar.SessionDate, null);
+                    return new ForwardReturn(horizon, NeverEntered, bar.SessionDate, null);
                 }
 
                 if (bar.Close <= highestEntry)
@@ -232,30 +248,30 @@ public static class ForwardReturnSeries
             if (bar.Close >= ceiling)
             {
                 return new ForwardReturn(
-                    Setup,
+                    horizon,
                     Win,
                     bar.SessionDate,
                     ChangeFromEntry(entry.Value, bar.Close),
                     BreakEven(entry.Value, floor, ceiling),
                     entry.Value,
-                    SetupSessionCap - filledAt);
+                    cap - filledAt);
             }
         }
 
         // Still open inside the cap is not yet matured; past the cap it is
         // unresolved where the setup was entered and never entered where it was
         // not, which are three different statements about one row.
-        if (after.Count < SetupSessionCap)
+        if (after.Count < cap)
         {
-            return new ForwardReturn(Setup, null, null, null);
+            return new ForwardReturn(horizon, null, null, null);
         }
 
-        var last = after[SetupSessionCap - 1];
+        var last = after[cap - 1];
 
         return entry is null
-            ? new ForwardReturn(Setup, NeverEntered, last.SessionDate, null)
+            ? new ForwardReturn(horizon, NeverEntered, last.SessionDate, null)
             : new ForwardReturn(
-                Setup,
+                horizon,
                 Unresolved,
                 last.SessionDate,
                 ChangeFromEntry(entry.Value, last.Close),

@@ -1374,7 +1374,8 @@ public partial class ArchitectureConformance
         // 71 at 12.3, the Calibration region's three rows where 11.9's region was one.
         // 72 at 12.4, the run page's shape proposal.
         // 74 at 12.6, tonight's evening before the switch and the run page's list from night to night.
-        Assert.Equal(74, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 76 at 12.7, the run page's edge clock and near misses.
+        Assert.Equal(76, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1435,7 +1436,8 @@ public partial class ArchitectureConformance
         // 226 at 12.4: the run page's shape proposal as its three parts.
         // 235 at 12.6: the night header's count the swing filter listed, the list's rule line and gates,
         // the evening before the switch as its three parts and the run page's overlap as its three.
-        Assert.Equal(235, inDocument.Length);
+        // 245 at 12.7: the edge clock as its six parts and the near misses as their four.
+        Assert.Equal(245, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1492,7 +1494,8 @@ public partial class ArchitectureConformance
         // 218 at 12.4: the run page's shape proposal as its three parts.
         // 227 at 12.6: the night header's count the swing filter listed, the list's rule line and gates,
         // the evening before the switch as its three parts and the run page's overlap as its three.
-        Assert.Equal(227, checkedElements);
+        // 237 at 12.7: the edge clock as its six parts and the near misses as their four.
+        Assert.Equal(237, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

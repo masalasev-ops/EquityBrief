@@ -364,6 +364,13 @@ public sealed record FilterWhy(DateOnly Evening, IReadOnlyList<FilterGate> Gates
 // The list from night to night: of the night's names, how many were on the list the evening before, and how
 // many at least once over the five and the twenty evenings before, each evening read by the rule that
 // listed it.
+// The Calibration region's edge half: each swing family candidate's record read over its own setups, with
+// the sessions its first look and its earliest promotion wait on.
+public sealed record EdgeView(DateOnly Night, IReadOnlyList<EdgeCandidate> Candidates, int FirstLookSessions, int PromotionSessions);
+
+// The near misses over the rows the open filter version stored, from the first night it stored.
+public sealed record NearMissView(DateOnly Night, string? Version, DateOnly? From, IReadOnlyList<NearMissGroup> Groups);
+
 public sealed record OverlapView(DateOnly Night, int Names, DateOnly? LastNight, int OnLastNight, int FiveHeld, int OnFive, int TwentyHeld, int OnTwenty);
 
 // The rule the night's list was drawn by, and on a night the swing filter drew it, whether the market gate
@@ -3521,6 +3528,105 @@ public sealed class MarkRenderer : IComponent
         }
 
         region.Append("</ul></section>");
+
+        return region.ToString();
+    }
+
+    // The Calibration region's edge half, section 15.10's row: each swing family candidate standing, the
+    // live filter first, with the filter version it was defined against and the settings the live filter
+    // has moved since, its non-empty blocks against the floor its first look is read at, its resolved
+    // setups, and, from the floor on, its share against its planned break-even and its calibrated null;
+    // below the floor no figure is drawn. What the first look can do and when a promotion can first come
+    // are stated once for all of them.
+    // owes: The swing family's first look
+    // see: A variant of the swing filter is registered as a whole rule and runs on unchanged when the live settings move
+    public string Edge(EdgeView? edge)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"edge-clock\" data-candidates=\"{edge?.Candidates.Count ?? 0}\">");
+        region.Append("<h4>The edge clock</h4>");
+
+        if (edge is null || edge.Candidates.Count == 0)
+        {
+            region.Append("<p class=\"degraded\" data-edge=\"none\">No swing family candidate stands registered, so the edge clock has not started.</p></section>");
+
+            return region.ToString();
+        }
+
+        region.Append(Invariant, $"<p class=\"looks\" data-first-look=\"{edge.FirstLookSessions}\" data-promotion=\"{edge.PromotionSessions}\">");
+        region.Append(Invariant, $"Each candidate's first look is read at {Looks.At[0]} non-empty blocks, no earlier than {edge.FirstLookSessions} sessions after its first night, and it can retire the candidate or leave it and cannot promote it; a promotion can come no earlier than the look at {Looks.At[1]} blocks, {edge.PromotionSessions} sessions after its first night.</p>");
+        region.Append("<div class=\"tbl-wrap\"><table class=\"edge-table\"><tr><th>Candidate</th><th>Defined against</th><th>Sessions run</th><th class=\"num\">Blocks</th><th class=\"num\">Resolved setups</th><th>Against its null</th></tr>");
+
+        foreach (var candidate in edge.Candidates)
+        {
+            var record = candidate.Record;
+            var resolved = record.Setups + record.NotYetInABlock;
+
+            region.Append(Invariant, $"<tr data-candidate=\"{Escaped(candidate.Candidate)}\" data-live=\"{(candidate.Live ? "true" : "false")}\" data-defined=\"{Escaped(candidate.DefinedAgainst)}\" data-moved=\"{Escaped(string.Join(",", candidate.Moved))}\" ");
+            region.Append(Invariant, $"data-sessions=\"{candidate.SessionsRun}\" data-blocks=\"{record.Blocks}\" data-floor=\"{record.Floor}\" data-resolved=\"{resolved}\" data-withheld=\"{(record.Blocks < record.Floor ? "true" : "false")}\">");
+            region.Append(Invariant, $"<td>{Escaped(candidate.Candidate)}</td>");
+            region.Append(candidate.Live
+                ? Formatted($"<td>version {Escaped(candidate.DefinedAgainst)}, the live settings</td>")
+                : candidate.Moved.Count == 0
+                    ? Formatted($"<td>version {Escaped(candidate.DefinedAgainst)}, and the live filter has not moved since</td>")
+                    : Formatted($"<td>version {Escaped(candidate.DefinedAgainst)}; the live filter has since moved {Escaped(string.Join(", ", candidate.Moved))}</td>"));
+            region.Append(candidate.First is { } first
+                ? "<td>" + candidate.SessionsRun.ToString(CultureInfo.InvariantCulture) + " since its first night, " + first.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "</td>"
+                : "<td>no night has evaluated it yet</td>");
+            region.Append(Invariant, $"<td class=\"num\">{record.Blocks} of {record.Floor}</td><td class=\"num\">{resolved}</td>");
+            region.Append(record.Blocks < record.Floor || record.Share is null
+                ? Formatted($"<td class=\"not-yet\">withheld until {record.Floor} non-empty blocks</td>")
+                : Formatted($"<td>{EdgeClock.Figure(record.Share.Value)}% reached target before stop, against a planned break-even of {(record.PlannedBreakEven is { } even ? EdgeClock.Figure(even) + "%" : "none stored")} and a calibrated null of {(record.NullShare is { } bar ? EdgeClock.Figure(bar) + "%" : "none stored")}</td>"));
+            region.Append("</tr>");
+        }
+
+        region.Append("</table></div></section>");
+
+        return region.ToString();
+    }
+
+    // The near misses, section 15.10's row: beside each gate and each exclusion the setups it alone
+    // rejected, every other gate passing, and the setups the filter admitted, each group read against its
+    // own planned break-even and calibrated null, and withheld below the block floor.
+    // see: A gate's near misses are the setups it alone rejected, each group read against its own break-even and null and withheld below the block floor
+    public string NearMisses(NearMissView? view)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"near-misses\" data-version=\"{Escaped(view?.Version ?? "none")}\" data-groups=\"{view?.Groups.Count ?? 0}\">");
+        region.Append("<h4>Near misses</h4>");
+
+        if (view is null || view.Version is null)
+        {
+            region.Append("<p class=\"degraded\">No filter version is open, so no near miss is read.</p></section>");
+
+            return region.ToString();
+        }
+
+        region.Append(Invariant, $"<p>Over the rows filter version {Escaped(view.Version)} has stored{(view.From is { } from ? " from " + from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : string.Empty)}: the setups the filter admitted, and beside each gate and each exclusion the setups it alone rejected, every other gate passing and no other exclusion applying. Each group is its own population, read against its own planned break-even and calibrated null, and no figure is drawn below {Blocks.Floor} non-empty blocks. A member the setup gate rejects has no band to stop below, so it has no plan to score.</p>");
+        region.Append("<div class=\"tbl-wrap\"><table class=\"near-miss-table\"><tr><th>Setups</th><th class=\"num\">Rows</th><th class=\"num\">Resolved</th><th class=\"num\">Blocks</th><th>Against its break-even and null</th></tr>");
+
+        foreach (var group in view.Groups)
+        {
+            var record = group.Record;
+            var resolved = record.Setups + record.NotYetInABlock;
+            var name = group.Kind switch
+            {
+                EdgeClock.Admitted => "admitted by the filter",
+                EdgeClock.Gate => "rejected by " + group.Group + " alone",
+                _ => "removed by " + group.Group + " alone",
+            };
+
+            region.Append(Invariant, $"<tr data-group=\"{Escaped(group.Group)}\" data-kind=\"{Escaped(group.Kind)}\" data-rows=\"{group.Rows}\" data-resolved=\"{resolved}\" data-blocks=\"{record.Blocks}\" data-withheld=\"{(record.Blocks < record.Floor ? "true" : "false")}\">");
+            region.Append(Invariant, $"<td>{Escaped(name)}</td><td class=\"num\">{group.Rows}</td><td class=\"num\">{resolved}</td><td class=\"num\">{record.Blocks} of {record.Floor}</td>");
+            region.Append(record.Blocks < record.Floor || record.Share is null
+                ? Formatted($"<td class=\"not-yet\">withheld until {record.Floor} non-empty blocks</td>")
+                : Formatted($"<td>{EdgeClock.Figure(record.Share.Value)}% reached target before stop, against a planned break-even of {(record.PlannedBreakEven is { } even ? EdgeClock.Figure(even) + "%" : "none stored")} and a calibrated null of {(record.NullShare is { } bar ? EdgeClock.Figure(bar) + "%" : "none stored")}</td>"));
+            region.Append("</tr>");
+        }
+
+        region.Append("</table></div></section>");
 
         return region.ToString();
     }

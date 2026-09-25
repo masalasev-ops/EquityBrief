@@ -7561,3 +7561,44 @@ Why: a superseded decision may not be cited from shipped source, and editing the
 Was: each row as it stood before this entry, fixture-expectations ending at "where no version is open or one of the three does not stand", nightly-run's night request reading "the first name its list draws, worked out by the test's own arithmetic off the listing rows", and read-surface ending at "reads six registered and a divisor of 6".
 Now: fixture-expectations adds the list rule recorded for the filter's session, the facts retention by each evening's rule, the queue's order and the closing count; nightly-run's request reads the first name the filter passed off the gate rows and none on a night no name passed or the market gate closed; read-surface adds tonight's list, the evening before the switch, the two empty lists, the name page, the walk, the universe and the overlap.
 Why: 12.6 builds each of them.
+
+### 2026-09-25 - ARCHITECTURE.html - the edge half, the near misses and the swing plan's two outcomes
+Authorised by: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context
+Was:
+> <tr><td><b>Forward return filler</b></td><td><span class="layer L-compute">compute</span></td><td>nightly, once</td><td>listings, bar store, calendar, forward returns</td><td>forward returns</td><td>fills the five and twenty-one session outcomes of past listings as those sessions mature, computes the universe base rate for the same windows, and on the night a setup resolves writes the bar a plan with no edge would have cleared beside what the trade came to</td></tr>
+
+> <tr><td>Forward return filler</td><td></td><td><span class="r">R</span></td><td><span class="r">R</span></td><td></td><td><span class="r">R</span></td>
+
+> <li>Fill forward returns for past listings that matured today, and recompute the universe base rate.</li>
+
+> <tr><td>What the two clocks can do</td>
+
+> <tr><td><b>Forward returns</b></td><td>ticker, listing date, five and twenty-one session outcomes, and the base rate for the same window</td><td>forever</td></tr>
+
+> <tr><td>The swing family</td><td>the live filter and five variants, each the same whole rule with one setting on its other side, a reward to risk of 2, a pullback 1 to 3 typical moves deep, the market gate off, strength in the top third and arrival on the night alone, 6 candidates tested at 0.05 over 6 (see: The swing filter opens loose on the swing trade's own plan, and each of its five variants moves one setting to its other side)</td><td>the operator's ruling of 2026-09-25: the live filter is the loose side and the tighter sides are the ones worth testing, and the one-session window took the dry-up's place because arrival moved the list more than any other setting</td><td>fixture-expectations, over constructed members on both sides of each setting a candidate moves</td></tr>
+Now: the forward return filler's row reads the gate results and scores every swing filter row carrying a plan, and its matrix row reads the computed tables; section 13.8 gains the edge half's paragraph; section 14's forward returns step scores the swing plans; section 15.10 gains the edge clock and the near misses; section 16's forward returns carry the swing plan's two outcomes; section 17 gains the swing plan's outcome and its twenty-session outcome.
+Why: 12.7 builds the edge half, and the family's records are read over the outcomes of the swing plans its candidates fired on (see: A gate's near misses are the setups it alone rejected, each group read against its own break-even and null and withheld below the block floor).
+
+### 2026-09-25 - ARCHITECTURE.html - the shape command reads the gate results
+Corrects: the shape command counted the live filter's non-empty blocks off the listings' shadow alone, and the swing family's live candidate fires on the swing filter's rows, so once those rows' plans are scored the command would hold an acceptance to one count while the run page drew another beside the proposal. No swing plan had an outcome before 12.7, so every count read zero on both sides until now. Found building 12.7.
+Was:
+> <tr><td><b>Shape command</b></td><td><span class="layer L-compute">compute</span></td><td>by hand, on the operator's command</td><td>listings, forward returns, candidate register, filter versions, shape proposals</td>
+Now: the row reads the gate results beside the listings.
+Why: the blocks the command holds an acceptance to are the blocks the page draws, read over the same rows.
+
+### 2026-09-25 - SCHEMA.md - the forward returns carry the swing plan's two horizons
+Was:
+> Grain: one row per listing per horizon.
+> 
+> | Column | Type | Notes |
+> |---|---|---|
+> | `ticker` | TEXT | |
+> | `session_date` | TEXT | the listing's date |
+> | `horizon` | TEXT | `5`, `21`, or `setup` |
+Now: the grain adds one row per swing filter row carrying a plan per swing horizon, and `horizon` names `swing` and `swing-20`.
+Why: 12.7 scores the swing plans (see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context).
+
+### 2026-09-25 - .claude/rules/checks.md - fixture-expectations and read-surface read the edge half
+Was: each row as it stood before this entry, fixture-expectations ending at "on its night and no other's" and read-surface ending at "worked by hand over constructed evenings".
+Now: fixture-expectations adds the swing plan scored by hand on both sides of both caps and through the filler, the fixture's plans carrying both horizons, the near misses' arithmetic and the edge half's sources naming no recount; read-surface adds the edge half and the near misses read off the page, below and above the floor, unmoved by the open version's settings, and the blocks beside a proposal agreeing with the shape command's.
+Why: 12.7 builds each of them.

@@ -215,6 +215,8 @@ public class PinnedConstants
             new("The swing family", "6", TheSwingFamily.For("1", FilterSettings.Proposed).Count, "the registrations TheSwingFamily writes"),
             new("The swing family", "0.05", (decimal)ReasonVerdict.Significance, "ReasonVerdict.Significance"),
             new("The swing family", "6", TheSwingFamily.For("1", FilterSettings.Proposed).Count, "the divisor the family's six set"),
+            new("Swing plan outcome", "63", ForwardReturnSeries.CapOf(ForwardReturnSeries.Swing), "ForwardReturnSeries.CapOf(ForwardReturnSeries.Swing)"),
+            new("Twenty-session outcome", "20", ForwardReturnSeries.CapOf(ForwardReturnSeries.SwingTwenty), "ForwardReturnSeries.CapOf(ForwardReturnSeries.SwingTwenty)"),
         ];
     }
 

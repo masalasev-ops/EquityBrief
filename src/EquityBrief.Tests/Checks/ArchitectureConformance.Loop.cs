@@ -1240,6 +1240,21 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.10 Run", "The list from night to night, how many over the twenty evenings before"),
         CheckReach.Key(Scope.FailureTable, "The market gate closed on a night"),
         CheckReach.Key(Scope.FailureTable, "No name passed the swing filter on a night"),
+
+        // 12.7's: the edge half as its six parts and the near misses as their four, and section 17's two
+        // outcomes of the swing plan.
+        CheckReach.Key("15.10 Run", "The edge clock, each swing family candidate's non-empty blocks against the 8 its first look is read at"),
+        CheckReach.Key("15.10 Run", "The edge clock, its resolved setups"),
+        CheckReach.Key("15.10 Run", "The edge clock, its share against its planned break-even and calibrated null from the floor on and nothing below it"),
+        CheckReach.Key("15.10 Run", "The edge clock, that the first look can retire or leave a candidate and never promote one"),
+        CheckReach.Key("15.10 Run", "The edge clock, when the earliest promotion can come"),
+        CheckReach.Key("15.10 Run", "The edge clock, each variant with the filter version it was defined against and the settings the live filter has since moved"),
+        CheckReach.Key("15.10 Run", "Near misses, the setups the filter admitted"),
+        CheckReach.Key("15.10 Run", "Near misses, beside each gate and each exclusion the setups it alone rejected with every other gate passing"),
+        CheckReach.Key("15.10 Run", "Near misses, each group against its own planned break-even and calibrated null"),
+        CheckReach.Key("15.10 Run", "Near misses, every figure withheld below the block floor"),
+        CheckReach.Key(Scope.LimitsTable, "Swing plan outcome"),
+        CheckReach.Key(Scope.LimitsTable, "Twenty-session outcome"),
     ];
 
     // Rows phase 12 took out of the document: 11.9's region stating each reason's share against its

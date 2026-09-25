@@ -25339,3 +25339,114 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             PRESENT, 41 of 41 roster checks carried and all 41 run, 1391 of 1391 tests.
             Both gates ran over the tree carrying this entry, in the worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
+
+### 12.7 - the edge half: each swing family candidate's record over the swing plans it fired on, the near misses beside the filter's gates, and the swing plan scored from the night's close with twenty sessions as context   2026-09-25
+Built:      the swing plan's outcomes. `ForwardReturnSeries.OverSetup` takes a horizon and a cap, and
+            the forward return filler scores every swing filter row carrying a plan, being every row
+            whose setup found a band, the setup's way with no zone: entered at the night's close,
+            stopped on a close below the setup band's low edge, won on a close at or above the nearest
+            resistance band's low edge, on `swing` over the setup's cap of 63 sessions with its planned
+            break-even and calibrated bar, and on `swing-20` over twenty sessions as context. A plan
+            whose night's raw close does not sit between its stop and its target is counted as not
+            scorable and not scored from a later fill. The candidates' setups and nights read the
+            swing filter rows' shadow beside the listings', each family candidate's setups being the
+            rows it fired on, scored on `swing`. `EdgeClock` states, for each swing family candidate
+            standing, the live filter first, the filter version it was defined against, read off the
+            live candidate registered at the same instant, the settings the live filter has moved
+            since, its non-empty blocks against the floor of 8, its resolved setups, and from the floor
+            on its share against its planned break-even and calibrated null; and the near misses over
+            the rows the open filter version stored, the setups admitted and, for each gate and each
+            exclusion, the setups it alone rejected, each read as a candidate's record is and withheld
+            below the floor. The run page's Calibration region draws both, with the first look's 566
+            sessions and the earliest promotion's 818. The shape command counts the live filter's
+            blocks off the gate rows' shadow as well as the listings', as the page does.
+Written:    the decisions **The swing filter's setups are scored on the swing trade's own plan from the
+            listing close, and their first twenty sessions are context** and **A gate's near misses are
+            the setups it alone rejected, each group read against its own break-even and null and
+            withheld below the block floor**; section 7's forward return filler and shape command rows
+            and the filler's matrix row; section 13.8's paragraph on the edge half, owing the swing
+            family's first look; section 14's forward returns step; section 15.10's edge clock and near
+            misses; section 16's forward returns; section 17's swing plan outcome and twenty-session
+            outcome; `SCHEMA.md`'s forward returns; `forward-returns.json`'s swing rules; and the
+            `fixture-expectations` and `read-surface` roster rows. Every spec line changed has its
+            prior text in `CHANGELOG.md`.
+Found:      the shape command counted the live filter's blocks off the listings' shadow alone, and the
+            family's live candidate fires on the swing filter's rows, so once 12.7 scores those rows'
+            plans the command would hold a later acceptance to one count while the run page drew
+            another beside the proposal. No swing plan had an outcome before this checkpoint, so both
+            read zero until now and no acceptance was held to a wrong count; the command reads both
+            shadows from here, and a test holds the page and the command to one count over the family's
+            own rows. The plan's twenty-session outcome is the swing plan's under the ruled input, the
+            setup the filter trades, and the listing's own setup keeps its one horizon. A member the
+            setup gate rejects has no band and so no plan, so its near-miss group counts rows and scores
+            none, which the page says.
+Expected:   worked by hand. The swing plan entered at 100 with its stop at 95 and target at 110 breaks
+            even a third of the time; reaching 110 on the twentieth session is a win on both horizons,
+            on the twenty-first a win over the cap and unresolved at the twentieth's close of 105, five
+            per cent; a close of 94 on the third session a loss on both; flat for 63 sessions unresolved
+            at the 63rd and at the 20th; flat for 19 neither matured, for 20 only the twenty-session
+            one. Through the filler, the four plans score as those cases, a plan whose raw close of 94
+            sits below its stop and a row with no plan write nothing, and a decided outcome is not
+            written again. The near misses over nine closed blocks: admitted 18 at 50% against 40% and
+            35%, the trigger alone 18 at 100% against 30% and 30%, suspect series alone 9 at 0% against
+            50% and 40%, the trade alone five blocks and withheld, the setup and trend gates rows with
+            nothing scored, a row failing two gates in no group. On the page over three constructed
+            nights: the live filter 2 resolved, its reward to risk variant 1, the rest 0, each two
+            sessions run, 0 of 8 blocks and withheld; after an acceptance to a strength floor of 0.6,
+            the variants name strengthFloor moved and version 2's candidate no night yet. Rendered over
+            nine closed blocks, the live filter draws 50% against 35% and 40%. The live filter's one
+            closed block is the count beside a proposal and the count the command refuses another at.
+Tests:      1399, from 1391: eight added and none removed. Under `fixture-expectations` five: the swing
+            plan's two horizons by hand, the filler's rows, the fixture's plans carrying both horizons,
+            the near misses' arithmetic and the edge half's sources. Under `read-surface` three: the
+            edge half and the near misses over a constructed store, the figures from the floor on, and
+            the blocks beside a proposal agreeing with the command's. Rewritten: the night's forward
+            returns line, and the filler's run log row, now stating the swing plans.
+Claims:     554 predicted, from 542, with 554 PASS and 0 out of scope. The plan predicted 11 at 12.7 on
+            the swing trade's plan and 12 landed: the near misses read as four parts and not three, the
+            withholding a part of its own. The pair after 12.9 moves from 553 to 554.
+Pins:       the branch against the 12.6 branch at 4c91dd3, which it is built on. The twelve
+            `RuleVersionScorer.CodeVersionSources`, the twenty-one `CandidateEvaluator.EvaluationSources`
+            and the sixteen `SwingFilter.CodeVersionSources`, each read from the tree being committed, and
+            the branch touches none of them.
+Mutated:    the rule, stated before the run: one mutation for each property the 12.7 done condition names
+            and one for the shape command's count, each the smallest edit that changes the property's
+            answer and still compiles, filtered to the eight tests this checkpoint added and the pinned
+            constants check, one at a time in a detached worktree at this entry's commit and reverted
+            after each.
+            Predicted:
+            E1 the edge half's source naming the shape proposer's recount: red in the source test alone.
+            E2 the edge half drawing a share below the floor: red in the from-the-floor test alone, since
+            below the floor a candidate over the page's nights holds no closed block and so no share.
+            E3 a gate's near misses taking any row that gate failed: red in the arithmetic test and the
+            edge page test.
+            E4 the twenty-session cap at 21: red in the horizons test, the filler test, the fixture's
+            swing test and the pinned constants check.
+            E5 a plan whose close sits outside its range scored: red in the filler test alone.
+            E6 the shape command counting off the listings' shadow alone: red in the command test alone.
+            E7 the candidates' setups read on the listing's horizon for the family: red in the edge page
+            test and the command test.
+            E8 the looks' sessions counted without the block's own last session: red in the edge page
+            test alone.
+            E9 the settings moved read against the defining candidate itself: red in the edge page test
+            alone.
+            Results: one run for each of the nine in a detached worktree at 7b6ebcd, the tree carrying
+            this entry, filtered to the eight tests named and the pinned constants check, each reverted
+            with `git checkout -- .` and the tree read clean after. All nine went red in the tests
+            predicted and in no other: E1 the source test; E2 the from-the-floor test; E3 the arithmetic
+            test and the edge page test; E4 the horizons test, the filler test, the fixture's swing test
+            and the pinned constants check; E5 the filler test; E6 the command test; E7 the edge page
+            test and the command test; E8 and E9 the edge page test. The whole suite ran green over
+            7b6ebcd in the gates, 1399 of 1399.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1399 of 1399
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42,
+            exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 561 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1399 of 1399 tests.
+            Both gates ran over the tree carrying this entry, in the worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    12.6's merge gate, which this branch waits behind: the operator's `tools/migrate`, filter
+            version 1 and `register --the-family` on the live store. From the first night 12.7 runs, the
+            filler scores every stored swing filter row carrying a plan, which on the live store is every
+            such row from the first night the swing filter stored.
