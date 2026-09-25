@@ -471,13 +471,13 @@ Primary key: `session_date`.
 **The night close writes it and is its only writer, from the swing filter's step** (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it). Once the swing filter has stored its rows for the night's session, the night records that session as listed by the filter, before any later step can stop the night, and only where the filter stored rows for it. A night run again over a session records it again, and the session is then listed by the rule of the night that drew it last. An evening holding no row was listed by any of the six reasons firing, which is every evening before the switch, so every surface reading a listing reads this table beside it and names the rule. Nothing deletes a row.
 
 ### forward_return
-Grain: one row per listing per horizon.
+Grain: one row per listing per horizon, and one per swing filter row carrying a plan per swing horizon.
 
 | Column | Type | Notes |
 |---|---|---|
 | `ticker` | TEXT | |
-| `session_date` | TEXT | the listing's date |
-| `horizon` | TEXT | `5`, `21`, or `setup` |
+| `session_date` | TEXT | the listing's date, which a swing filter row shares |
+| `horizon` | TEXT | `5`, `21` or `setup` for a listing; `swing` or `swing-20` for a swing filter row's own plan, over the setup's cap and over twenty sessions as context (see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context) |
 | `outcome` | TEXT | `win`, `loss`, `unresolved`, `never entered`, or null while immature. `never entered` is the setup horizon's alone: the price never closed at or below the entry zone's top edge, so there was no purchase to score (see: A setup is scored from its entry, and a target reached before the entry is never a win) |
 | `resolved_on` | TEXT | date: the session a horizon matured or a setup resolved on, the cap's own session for a setup timed out, and null while immature |
 | `return_pct` | REAL | for the two session horizons, the move from the listing's close; for the `setup` horizon, the move from the close the setup was entered at, and null where nothing was entered or the entry and the stop fell on one session (see: A setup is scored from its entry, and a target reached before the entry is never a win) |

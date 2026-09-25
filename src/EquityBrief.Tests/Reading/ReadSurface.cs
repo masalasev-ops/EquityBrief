@@ -68,6 +68,18 @@ public partial class ReadSurface
             CheckReach.Key(Scope.LimitsTable, "Gate bands"),
             CheckReach.Key(Scope.LimitsTable, "List band"),
 
+            // 12.7, the Calibration region's edge half and the near misses.
+            CheckReach.Key("15.10 Run", "The edge clock, each swing family candidate's non-empty blocks against the 8 its first look is read at"),
+            CheckReach.Key("15.10 Run", "The edge clock, its resolved setups"),
+            CheckReach.Key("15.10 Run", "The edge clock, its share against its planned break-even and calibrated null from the floor on and nothing below it"),
+            CheckReach.Key("15.10 Run", "The edge clock, that the first look can retire or leave a candidate and never promote one"),
+            CheckReach.Key("15.10 Run", "The edge clock, when the earliest promotion can come"),
+            CheckReach.Key("15.10 Run", "The edge clock, each variant with the filter version it was defined against and the settings the live filter has since moved"),
+            CheckReach.Key("15.10 Run", "Near misses, the setups the filter admitted"),
+            CheckReach.Key("15.10 Run", "Near misses, beside each gate and each exclusion the setups it alone rejected with every other gate passing"),
+            CheckReach.Key("15.10 Run", "Near misses, each group against its own planned break-even and calibrated null"),
+            CheckReach.Key("15.10 Run", "Near misses, every figure withheld below the block floor"),
+
             // 12.6, tonight's list switched to the filter, the evening before the switch, the run page's
             // overlap, and the two empty lists section 18 states.
             CheckReach.Key("15.7 Tonight", "Night header, names the swing filter listed"),

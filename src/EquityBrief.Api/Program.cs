@@ -897,7 +897,16 @@ app.MapGet("/screens/run/{night?}", async (
                 await read.CandidateSetupsAsync(),
                 everyListing,
                 clock.UtcNow),
-            RunScreen.Overlap(everyListing, dated)),
+            RunScreen.Overlap(everyListing, dated),
+            EdgeScreen.Edge(
+                await read.RegisteredCandidatesAsync(),
+                await read.CandidateNightsAsync(),
+                await read.CandidateSetupsAsync(),
+                dated,
+                clock.UtcNow),
+            await read.OpenFilterVersionAsync() is { } open
+                ? EdgeScreen.NearMisses(open, await read.NearMissRowsAsync(open), dated)
+                : EdgeScreen.NearMisses(null, [], dated)),
         "text/html; charset=utf-8");
 });
 

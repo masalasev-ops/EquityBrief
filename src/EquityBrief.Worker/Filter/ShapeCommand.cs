@@ -34,6 +34,7 @@ public sealed class ShapeCommand : IComponent
             new StoreTouch(Store.FilterVersion, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.CandidateRegister, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
+            new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -81,7 +82,9 @@ public sealed class ShapeCommand : IComponent
 
     // The live candidate's fired setups and the first night that evaluated it, read as the run page's
     // record region reads every candidate's, so the blocks the command holds an acceptance to are the
-    // blocks the page draws beside the proposal.
+    // blocks the page draws beside the proposal: a swing family candidate fires on the swing filter's
+    // rows, and its setup is the row's own plan.
+    // see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context
     const string LiveSetups = @"
         SELECT l.session_date, f.outcome,
                f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings
@@ -89,7 +92,14 @@ public sealed class ShapeCommand : IComponent
         LEFT JOIN forward_return f
             ON f.ticker = l.ticker AND f.session_date = l.session_date AND f.horizon = $horizon
         WHERE json_extract(c.value, '$.fired') = 1 AND json_extract(c.value, '$.candidate') = $candidate
-        ORDER BY l.session_date;
+        UNION ALL
+        SELECT g.session_date, f.outcome,
+               f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings
+        FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.candidates') c
+        LEFT JOIN forward_return f
+            ON f.ticker = g.ticker AND f.session_date = g.session_date AND f.horizon = $swing
+        WHERE json_extract(c.value, '$.fired') = 1 AND json_extract(c.value, '$.candidate') = $candidate
+        ORDER BY 1;
     ";
 
     const string LiveFirstNight = @"
@@ -100,6 +110,14 @@ public sealed class ShapeCommand : IComponent
             UNION
             SELECT l.session_date
             FROM listing l, json_each(COALESCE(l.shadow_reasons, '{}'), '$.skipped') s
+            WHERE json_extract(s.value, '$.candidate') = $candidate
+            UNION
+            SELECT g.session_date
+            FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.candidates') c
+            WHERE json_extract(c.value, '$.candidate') = $candidate
+            UNION
+            SELECT g.session_date
+            FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.skipped') s
             WHERE json_extract(s.value, '$.candidate') = $candidate);
     ";
 
@@ -468,6 +486,7 @@ public sealed class ShapeCommand : IComponent
             command.CommandText = LiveSetups;
             command.Parameters.AddWithValue("$candidate", candidate);
             command.Parameters.AddWithValue("$horizon", ForwardReturnSeries.Setup);
+            command.Parameters.AddWithValue("$swing", ForwardReturnSeries.Swing);
 
             await using var reader = await command.ExecuteReaderAsync(cancellation);
 

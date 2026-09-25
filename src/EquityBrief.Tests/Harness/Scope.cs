@@ -743,6 +743,55 @@ internal static class Scope
             Verdict.Pass,
             "each of the six fires on its own side of every setting it moves and not a step past it, over constructed members, the family's command writes the six at one instant, and the constants the row states are the ones the family is registered with",
             ByExpectations),
+        // 12.7's: the edge half, the near misses and section 17's two outcomes of the swing plan.
+        [CheckReach.Key("15.10 Run", "The edge clock, each swing family candidate's non-empty blocks against the 8 its first look is read at")] = new Scoped(
+            Verdict.Pass,
+            "each candidate's non-empty blocks are read back off the run page against a count worked by hand over constructed nights, and over nine constructed closed blocks the rendered region draws nine of 8",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The edge clock, its resolved setups")] = new Scoped(
+            Verdict.Pass,
+            "each candidate's resolved setups are read back off the run page against the stored outcomes of the rows it fired on, worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The edge clock, its share against its planned break-even and calibrated null from the floor on and nothing below it")] = new Scoped(
+            Verdict.Pass,
+            "below the floor the page draws no share and the words that it is withheld, and over nine constructed closed blocks the rendered region draws the share, the planned break-even and the calibrated null worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The edge clock, that the first look can retire or leave a candidate and never promote one")] = new Scoped(
+            Verdict.Pass,
+            "the sentence the region states is read off the page with the sessions of the first look and of the earliest promotion, which the arithmetic takes from the looks and the block and cap lengths",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The edge clock, when the earliest promotion can come")] = new Scoped(
+            Verdict.Pass,
+            "the earliest promotion's 818 sessions are read off the page, being the look at 12 whole blocks and the last one's outcome window",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The edge clock, each variant with the filter version it was defined against and the settings the live filter has since moved")] = new Scoped(
+            Verdict.Pass,
+            "each variant names version 1, and after an acceptance moves the strength floor it names the setting moved while the live filter's new candidate names version 2, read off the page; the open version's settings rewritten under the rows change no figure the half draws, which reads the stored rows and recounts nothing",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Near misses, the setups the filter admitted")] = new Scoped(
+            Verdict.Pass,
+            "the admitted rows are counted off the run page against a constructed night's rows, and over nine constructed closed blocks the rendered group draws its share worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Near misses, beside each gate and each exclusion the setups it alone rejected with every other gate passing")] = new Scoped(
+            Verdict.Pass,
+            "each gate's and each exclusion's group is counted off the run page, a row failing two gates in none of them",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Near misses, each group against its own planned break-even and calibrated null")] = new Scoped(
+            Verdict.Pass,
+            "the rendered groups draw their share against their own break-even and bar worked by hand over nine closed blocks; the arithmetic over a constructed population with known outcomes is `fixture-expectations`'",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Near misses, every figure withheld below the block floor")] = new Scoped(
+            Verdict.Pass,
+            "every group below the floor draws the words that it is withheld and no share, on the run page and in the rendered region",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Swing plan outcome")] = new Scoped(
+            Verdict.Pass,
+            "worked by hand over constructed bars, the plan entered at the night's close wins, loses and runs out at the cap on both sides of it, the filler writes both horizons for every row carrying a plan and none for a row with none or one whose close sits outside its range, and the constant the row states is the one the scorer caps at",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Twenty-session outcome")] = new Scoped(
+            Verdict.Pass,
+            "worked by hand over constructed bars, a target reached on the twentieth session is a win and one reached on the twenty-first is unresolved at the twentieth, and the constant the row states is the one the scorer caps at",
+            ByExpectations),
         // 12.6's: tonight's list switched to the filter, the evening before the switch drawn as it was listed,
         // the rule's store, the run page's overlap and section 18's two rows.
         [CheckReach.Key("15.7 Tonight", "Night header, names the swing filter listed")] = new Scoped(
@@ -1256,7 +1305,7 @@ internal static class Scope
             Verdict.Pass,
             "each reason's firings and its resolved count are recomputed in the suite from the stored listings and forward returns, and the state each record is drawn in follows from the count against the minimum rather than from a value the test supplies",
             ByReadSurface),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate.")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate, and score every swing filter row carrying a plan on that plan (see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context).")] = new Scoped(
             Verdict.Pass,
             "the night runs the stage once rather than per name, and its run log row records the listings, the rows written, the rows kept as decided, the newly matured and the ones not yet matured apart",
             ByNight),
@@ -2724,6 +2773,17 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "The list from night to night, how many of the night's names were on the list the evening before")] = "12.6",
         [CheckReach.Key("15.10 Run", "The list from night to night, how many at least once over the five evenings before")] = "12.6",
         [CheckReach.Key("15.10 Run", "The list from night to night, how many over the twenty evenings before")] = "12.6",
+        // 12.7's edge half and near misses, each part owed where it is drawn.
+        [CheckReach.Key("15.10 Run", "The edge clock, each swing family candidate's non-empty blocks against the 8 its first look is read at")] = "12.7",
+        [CheckReach.Key("15.10 Run", "The edge clock, its resolved setups")] = "12.7",
+        [CheckReach.Key("15.10 Run", "The edge clock, its share against its planned break-even and calibrated null from the floor on and nothing below it")] = "12.7",
+        [CheckReach.Key("15.10 Run", "The edge clock, that the first look can retire or leave a candidate and never promote one")] = "12.7",
+        [CheckReach.Key("15.10 Run", "The edge clock, when the earliest promotion can come")] = "12.7",
+        [CheckReach.Key("15.10 Run", "The edge clock, each variant with the filter version it was defined against and the settings the live filter has since moved")] = "12.7",
+        [CheckReach.Key("15.10 Run", "Near misses, the setups the filter admitted")] = "12.7",
+        [CheckReach.Key("15.10 Run", "Near misses, beside each gate and each exclusion the setups it alone rejected with every other gate passing")] = "12.7",
+        [CheckReach.Key("15.10 Run", "Near misses, each group against its own planned break-even and calibrated null")] = "12.7",
+        [CheckReach.Key("15.10 Run", "Near misses, every figure withheld below the block floor")] = "12.7",
         // 12.2's gates and funnel, each part owed where it is drawn.
         [CheckReach.Key("15.9 Name", "Gates, each of the five gates with whether it passed and why")] = "12.2",
         [CheckReach.Key("15.9 Name", "Gates, the setup's family and whether the trigger's event happened")] = "12.2",
@@ -2908,6 +2968,11 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "What else is waiting on a count")] =
             ["the nights run for the session the clock fell on against five", "the research passes carrying a recorded cost against twenty", "the nights the version step replayed both kinds against five", "the resolved event-book setups against 250", "the nights of trend labels under the third trend version against sixty"],
         // 12.4. The run page's shape proposal, read as the parts its row enumerates.
+        // 12.7. The edge half and the near misses, read as the parts their rows enumerate.
+        [CheckReach.Key("15.10 Run", "The edge clock")] =
+            ["each swing family candidate's non-empty blocks against the 8 its first look is read at", "its resolved setups", "its share against its planned break-even and calibrated null from the floor on and nothing below it", "that the first look can retire or leave a candidate and never promote one", "when the earliest promotion can come", "each variant with the filter version it was defined against and the settings the live filter has since moved"],
+        [CheckReach.Key("15.10 Run", "Near misses")] =
+            ["the setups the filter admitted", "beside each gate and each exclusion the setups it alone rejected with every other gate passing", "each group against its own planned break-even and calibrated null", "every figure withheld below the block floor"],
         // 12.6. The run page's overlap, read as the three counts its row enumerates.
         [CheckReach.Key("15.10 Run", "The list from night to night")] =
             ["how many of the night's names were on the list the evening before", "how many at least once over the five evenings before", "how many over the twenty evenings before"],

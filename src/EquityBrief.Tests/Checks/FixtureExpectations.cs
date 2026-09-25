@@ -62,6 +62,10 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.LimitsTable, "Event volume ratio"),
             CheckReach.Key(Scope.LimitsTable, "Shape calibration nights"),
 
+            // 12.7, the swing plan's two outcomes.
+            CheckReach.Key(Scope.LimitsTable, "Swing plan outcome"),
+            CheckReach.Key(Scope.LimitsTable, "Twenty-session outcome"),
+
             // 12.6, the rule each evening's list was drawn by.
             CheckReach.Key(Scope.StoresTable, "List rules"),
 
@@ -240,7 +244,15 @@ public partial class FixtureExpectations
             CheckReach.Key("Figure 10.1", "Build the earnings trade"),
             CheckReach.Key("Figure 10.1", "Apply the earnings rule"),
             CheckReach.Key("Figure 10.1", "Ladders"),
-        ]);
+        ])
+    {
+        // The near misses' share against their own break-even and bar, whose verdict is read-surface's:
+        // the arithmetic over a constructed population with known outcomes is held here.
+        Held = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            [CheckReach.Key("15.10 Run", "Near misses, each group against its own planned break-even and calibrated null")] = nameof(TheNearMissesGiveTheArithmeticTheirConstructedOutcomesPredict),
+        },
+    };
 
     const string Fixture = "membership-2026-09-05";
     const string Index = "GSPC";

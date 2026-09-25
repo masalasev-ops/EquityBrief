@@ -213,9 +213,9 @@ public partial class FixtureExpectations
             Assert.Equal(["50", "50"], Query(store, $"SELECT base_rate FROM forward_return WHERE horizon = '{horizon}' ORDER BY ticker;"));
         }
 
-        Assert.Equal(new ForwardReturnOutcome(2, 3, 3, 0, 3), outcome);
+        Assert.Equal(new ForwardReturnOutcome(2, 3, 3, 0, 3, 0, 0), outcome);
         Assert.Equal(
-            ["3|2 listing(s), 3 row(s) written, 3 kept as decided, 3 newly matured, 0 not yet matured"],
+            ["3|2 listing(s), 3 row(s) written, 3 kept as decided, 3 newly matured, 0 not yet matured; 0 swing plan(s) read, 0 not scorable from the night's close"],
             Query(store, "SELECT rows_written, detail FROM run_log WHERE run_id = 'kept';"));
     }
 

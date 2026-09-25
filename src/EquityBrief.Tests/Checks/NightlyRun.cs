@@ -44,7 +44,7 @@ public partial class NightlyRun
             CheckReach.Key(Scope.LimitsTable, "Frozen measurement windows, a rule"),
 
             // 5.5, the forward returns and the news pulse.
-            CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate, and score every swing filter row carrying a plan on that plan (see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Count today's articles per name from one dated news query, paged until the day is covered and every page counted, fanned out to names in code rather than asked for per name. The page count follows the day's news volume and not the size of the universe (see: News is one dated query, paged to cover the day, and attributed to names locally)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Close the arithmetic and record its counts: names computed, names on the list, reasons fired, stale names, duration."),
 
@@ -1504,11 +1504,14 @@ public partial class NightlyRun
         Assert.Contains("1 request(s)", first, StringComparison.Ordinal);
 
         // Every listing is new and none has a session after it, so each of its three
-        // horizons is written and none has matured.
+        // horizons is written and none has matured, and so are both horizons of every
+        // swing filter row carrying a plan of its own.
         var listings = Scalar(store, "SELECT COUNT(*) FROM listing;");
+        var plans = Scalar(store, "SELECT COUNT(*) FROM gate_result WHERE swing_stop IS NOT NULL AND swing_target IS NOT NULL;");
+        var rows = (3 * listings) + (2 * plans);
 
         Assert.Contains(
-            $"forward-returns: {3 * listings} row(s) written over {listings} listing(s), 0 kept as decided, 0 newly matured, {3 * listings} not yet matured",
+            $"forward-returns: {rows} row(s) written over {listings} listing(s) and {plans} swing plan(s), 0 kept as decided, 0 newly matured, {rows} not yet matured, 0 swing plan(s) not scorable from the night's close",
             first,
             StringComparison.Ordinal);
 
@@ -1528,7 +1531,7 @@ public partial class NightlyRun
         // The same session again: nothing has matured, so a row still not yet matured
         // is not written a second time.
         Assert.Contains(
-            $"forward-returns: 0 row(s) written over {listings} listing(s), 0 kept as decided, 0 newly matured, {3 * listings} not yet matured",
+            $"forward-returns: 0 row(s) written over {listings} listing(s) and {plans} swing plan(s), 0 kept as decided, 0 newly matured, {rows} not yet matured, 0 swing plan(s) not scorable from the night's close",
             second,
             StringComparison.Ordinal);
     }

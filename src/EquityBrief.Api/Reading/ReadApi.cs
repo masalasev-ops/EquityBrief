@@ -983,6 +983,19 @@ public sealed class ReadApi : IComponent
 
     const string ListRuleOn = "SELECT rule FROM list_rule WHERE session_date = $on;";
 
+    // Every row a filter version stored, each gate's answer, its exclusions and whether it passed, with
+    // what its own plan came to where one was scored: the population the near misses are read over.
+    // see: A gate's near misses are the setups it alone rejected, each group read against its own break-even and null and withheld below the block floor
+    const string NearMissRows = @"
+        SELECT g.session_date, g.market, g.trend, g.setup, g.trigger_pass, g.trade, g.exclusions, g.passed,
+               f.outcome, f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings
+        FROM gate_result g
+        LEFT JOIN forward_return f
+            ON f.ticker = g.ticker AND f.session_date = g.session_date AND f.horizon = $swing
+        WHERE g.version = $version
+        ORDER BY g.session_date, g.ticker;
+    ";
+
     // Every current member of the index, with what the night computed for it.
     //
     // Each figure is the newest at or before `$on`, so a page about an earlier
@@ -1192,6 +1205,13 @@ public sealed class ReadApi : IComponent
         LEFT JOIN forward_return f
             ON f.ticker = l.ticker AND f.session_date = l.session_date AND f.horizon = $horizon
         WHERE json_extract(c.value, '$.fired') = 1
+        UNION ALL
+        SELECT json_extract(c.value, '$.candidate'), g.session_date, f.outcome,
+               f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings
+        FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.candidates') c
+        LEFT JOIN forward_return f
+            ON f.ticker = g.ticker AND f.session_date = g.session_date AND f.horizon = $swing
+        WHERE json_extract(c.value, '$.fired') = 1
         ORDER BY 1, 2;
     ";
 
@@ -1204,6 +1224,12 @@ public sealed class ReadApi : IComponent
         UNION
         SELECT DISTINCT l.session_date, json_extract(s.value, '$.candidate')
         FROM listing l, json_each(COALESCE(l.shadow_reasons, '{}'), '$.skipped') s
+        UNION
+        SELECT DISTINCT g.session_date, json_extract(c.value, '$.candidate')
+        FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.candidates') c
+        UNION
+        SELECT DISTINCT g.session_date, json_extract(s.value, '$.candidate')
+        FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.skipped') s
         ORDER BY 1, 2;
     ";
 
@@ -1846,6 +1872,48 @@ public sealed class ReadApi : IComponent
     }
 
     // The rule the evening's list was drawn by, the reasons where the store records none.
+    public async Task<IReadOnlyList<EquityBrief.Core.Filter.NearMissRow>> NearMissRowsAsync(string version)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NearMissRows;
+        command.Parameters.AddWithValue("$version", version);
+        command.Parameters.AddWithValue("$swing", EquityBrief.Core.Returns.ForwardReturnSeries.Swing);
+
+        var rows = new List<EquityBrief.Core.Filter.NearMissRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            var session = DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            rows.Add(new EquityBrief.Core.Filter.NearMissRow(
+                session,
+                reader.GetInt64(1) == 1,
+                reader.GetInt64(2) == 1,
+                reader.GetInt64(3) == 1,
+                reader.GetInt64(4) == 1,
+                reader.GetInt64(5) == 1,
+                JsonSerializer.Deserialize<string[]>(reader.GetString(6)) ?? [],
+                reader.GetInt64(7) == 1,
+                reader.IsDBNull(8)
+                    ? null
+                    : new EquityBrief.Core.Candidates.CandidateSetup(
+                        session,
+                        reader.GetString(8),
+                        reader.IsDBNull(9) ? null : reader.GetDouble(9),
+                        reader.IsDBNull(10) ? null : reader.GetDouble(10),
+                        reader.IsDBNull(11) ? null : reader.GetDouble(11),
+                        reader.IsDBNull(12) ? null : reader.GetDouble(12),
+                        reader.IsDBNull(13) ? null : reader.GetDouble(13),
+                        !reader.IsDBNull(14) && reader.GetInt64(14) == 1)));
+        }
+
+        return rows;
+    }
+
     public async Task<string> ListRuleAsync(DateOnly on)
     {
         await using var connection = Open();
@@ -3103,6 +3171,10 @@ public sealed class ReadApi : IComponent
 
         command.CommandText = CandidateSetups;
         command.Parameters.AddWithValue("$horizon", EquityBrief.Core.Returns.ForwardReturnSeries.Setup);
+
+        // A swing family candidate fires on a swing filter row, and its setup is that row's own plan.
+        // see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context
+        command.Parameters.AddWithValue("$swing", EquityBrief.Core.Returns.ForwardReturnSeries.Swing);
 
         var rows = new List<CandidateSetupRow>();
 
