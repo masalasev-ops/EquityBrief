@@ -129,16 +129,19 @@ public partial class FixtureExpectations
         Bars("YOUNG", 100m, [.. Enumerable.Repeat(100m, 19)]);
         Gate("YOUNG", "95", "110");
 
-        // A plan whose night's raw close of 94 sits below its stop could not be entered at the close, and a
-        // row whose setup found no band has no plan: neither is scored.
+        // A plan whose night's raw close of 94 sits below its stop, or of 111 above its target, could not be
+        // entered at the close, and a row whose setup found no band has no plan: none of the three is scored,
+        // and the two plans are counted as not scorable.
         Bars("BELOW", 94m, 100m);
         Gate("BELOW", "95", "110");
+        Bars("ABOVE", 111m, 100m);
+        Gate("ABOVE", "95", "110");
         Bars("NOPLAN", 100m, 100m);
         Gate("NOPLAN", null, null);
 
         var filled = await new ForwardReturnFiller(FixedClock.At(new DateTimeOffset(2026, 6, 1, 22, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile).RunAsync("swing-fill");
 
-        Assert.Equal((5, 1), (filled.PlansExamined, filled.PlansNotScorable));
+        Assert.Equal((6, 2), (filled.PlansExamined, filled.PlansNotScorable));
         Assert.Equal(
             [
                 $"FLAT|swing|unresolved|{Day(sessions[63])}|0.0|33.3",
@@ -151,7 +154,7 @@ public partial class FixtureExpectations
                 "YOUNG|swing-20|none|none|none|none",
             ],
             Query(store, "SELECT ticker, horizon, IFNULL(outcome, 'none'), IFNULL(resolved_on, 'none'), CASE WHEN return_pct IS NULL THEN 'none' ELSE printf('%.1f', return_pct) END, CASE WHEN break_even IS NULL THEN 'none' ELSE printf('%.1f', break_even) END FROM forward_return ORDER BY ticker, horizon;"));
-        Assert.Contains("5 swing plan(s) read, 1 not scorable from the night's close", Query(store, "SELECT detail FROM run_log WHERE run_id = 'swing-fill';").Single(), StringComparison.Ordinal);
+        Assert.Contains("6 swing plan(s) read, 2 not scorable from the night's close", Query(store, "SELECT detail FROM run_log WHERE run_id = 'swing-fill';").Single(), StringComparison.Ordinal);
 
         // A decided outcome is not written again, and a young one is written once it matures.
         store.Execute("DELETE FROM bar WHERE ticker = 'LOSS' AND session_date > '" + Day(night) + "';");
@@ -200,7 +203,10 @@ public partial class FixtureExpectations
         // five blocks, withheld below the floor of 8; the setup alone, nine rows and no plan, nothing
         // scored; trend and strength alone, nine rows unresolved, nothing scored; suspect series alone, a
         // loss a block against 50% and 40%: 0%. A row failing the trigger and the trade, winning, belongs to
-        // no group.
+        // no group, and so do a row failing the trigger alone with the earnings exclusion, losing, and a row
+        // passing every gate with the earnings and suspect series exclusions both, winning: a gate's group
+        // takes a row carrying no exclusion, and an exclusion's group a row every gate passed carrying that
+        // exclusion and no other, so the earnings and gap groups hold none.
         var sessions = SessionsFrom(new DateOnly(2025, 1, 2), 630);
         var night = sessions[629];
         var rows = new List<NearMissRow>();
@@ -231,6 +237,8 @@ public partial class FixtureExpectations
             rows.Add(Row(on, Failing(1), [], ForwardReturnSeries.Unresolved));
             rows.Add(Row(on, All(), [SwingGates.SuspectExclusion], ForwardReturnSeries.Loss, 0.5, 40));
             rows.Add(Row(on, Failing(3, 4), [], ForwardReturnSeries.Win));
+            rows.Add(Row(on, Failing(3), [SwingGates.EarningsExclusion], ForwardReturnSeries.Loss));
+            rows.Add(Row(on, All(), [SwingGates.EarningsExclusion, SwingGates.SuspectExclusion], ForwardReturnSeries.Win));
         }
 
         var groups = EdgeClock.NearMisses(rows, night).ToDictionary(group => group.Group, StringComparer.Ordinal);
@@ -255,6 +263,8 @@ public partial class FixtureExpectations
         Read(SwingGates.Setup, 9, 0, 0, null, null, null);
         Read(SwingGates.Trend, 9, 0, 0, null, null, null);
         Read(SwingGates.Market, 0, 0, 0, null, null, null);
+        Read(SwingGates.EarningsExclusion, 0, 0, 0, null, null, null);
+        Read(SwingGates.GapExclusion, 0, 0, 0, null, null, null);
 
         var trade = groups[SwingGates.Trade];
 

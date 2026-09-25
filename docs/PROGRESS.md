@@ -25943,3 +25943,63 @@ Mutated:    the rule, stated before the run: the mutation that found the gap, ru
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
             the figures the 12.7 correction closing this batch records.
 Carried:    nothing.
+
+### 12.7 - correction: a gate's near miss carries no exclusion and an exclusion's carries that exclusion alone, and a swing plan whose night's raw close sits above its target is not scored, where each rule was asserted on one side   2026-09-25
+Corrects:   12.7's tests, and no shipped code. Three conditions 12.7 wrote were stated and asserted on one
+            side. A gate's near misses in `EdgeClock.NearMisses` take a row that gate alone rejected and no
+            exclusion applied to, and dropping the exclusion condition left every test green, every
+            constructed row failing one gate carrying none; about a quarter of the index sits inside the
+            fifteen-session earnings window on any night, so on live rows the gate groups would take setups
+            an exclusion kept off the list. An exclusion's near misses take a row every gate passed carrying
+            that exclusion and no other, and reading any row carrying it left every test green. The filler
+            counts a swing plan as not scorable where the night's raw close sits below its stop or above its
+            target, and the test held the stop's side alone, so dropping the target's left every test green;
+            either side can be the one a price adjustment trips.
+Found:      by the first phase 12 sign-off review over 4a7c7e0 on 2026-09-25, each mutation leaving all 1407
+            tests green, and reproduced on `main` at ecb1dc4 before any assertion was written, each test this
+            correction widens staying green.
+Repaired:   nothing shipped changes: the correction is three assertions.
+Guarded:    `fixture-expectations`, in `TheNearMissesGiveTheArithmeticTheirConstructedOutcomesPredict`:
+            two rows a block that belong to no group, beside the one failing two gates, one failing the
+            trigger alone with the earnings exclusion, losing, and one passing every gate with the earnings
+            and suspect series exclusions both, winning, so the trigger still reads 18 setups at 100%, the
+            suspect series 9 at 0%, and the earnings and gap groups none. In
+            `TheFillerScoresEverySwingFilterRowCarryingAPlanAndNoOther`: a plan whose night's raw close of 111
+            sits above its target of 110, not scored, so the stage reads 6 plans and 2 not scorable, on its
+            run log row as well.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Tests:      1408, from 1407: one added to `read-surface` by the 12.5 correction of this batch, one test of
+            `fixture-expectations` widened by the 12.4 correction and two by this one, none removed.
+            Migrations 0 to 42 with none added and none pending, schema version 42.
+Claims:     554, from 554, with 554 PASS and 0 out of scope, and 564 placements and verdicts reconciled
+            against a floor of 34. No claim added: no table or figure changed, and section 13.6's sentence is
+            no claim's.
+Pins:       the branch against `main` at ecb1dc4; this correction edits two tests. The batch edits
+            `RunScreen.cs`, three tests and two documents. `RunScreen.cs`, `ShapeClock.cs`, `EdgeClock.cs`
+            and `ForwardReturnFiller.cs`, which hold the four rules, are in none of the twelve
+            `RuleVersionScorer.CodeVersionSources`, the twenty-one `CandidateEvaluator.EvaluationSources`
+            with each evaluator's own source ahead of them, or the sixteen `SwingFilter.CodeVersionSources`,
+            each read from the tree being committed, and only the first is edited.
+Mutated:    the rule, stated before the run: the three mutations that found the gaps, run again.
+            Predicted:
+            C4 a gate's near misses taking a row an exclusion applied to (`row.Exclusions.Count == 0 &&`
+            removed): red in the near misses test alone.
+            C5 an exclusion's near misses taking any row carrying it (`row.Exclusions.Count == 1 &&
+            row.Exclusions[0] == exclusion` to `row.Exclusions.Contains(exclusion)`): red in the near misses
+            test alone.
+            C6 the target's side of the not-scorable guard dropped (`(raw < row.Stop || raw > row.Target)` to
+            `(raw < row.Stop)`): red in the filler test alone.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, VT of VT tests ran with
+            none failed, migrations 0 to 42 with none pending, schema version 42, exit 0, against `data-ci`
+            and never `data`.
+            `tools/verify-phase.ps1` green at VTB tables, VC claims, VP PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, VR placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, VT of VT tests.
+            Both gates ran over the tree carrying this entry and the two before it, TREESHA, in the worktree
+            beside the repository, and the operator's store under `data/` was not touched by either.
+Carried:    nothing new. The per-window level's revisit stays the operator's ruling, the count of candidates
+            ever registered standing at ten since 14:04:07Z against the eight it is due at (see: Holm's level
+            passes between the candidates by a graph fixed when they are registered, and every verdict shows
+            the lifetime count).
