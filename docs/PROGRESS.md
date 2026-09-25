@@ -26439,13 +26439,20 @@ Mutated:    the rule, stated before the run: each check and each part of the gri
             G2 the night drawn not marked: red in the grid test alone.
             G3 the months oldest first: red in the grid test alone.
             G4 the week read from Sunday: red in the grid test alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, VT of VT tests ran with
-            none failed, migrations 0 to 42 with none pending, schema version 42, exit 0, against `data-ci`
-            and never `data`.
-            `tools/verify-phase.ps1` green at VTB tables, VC claims, VP PASS, 0 FAIL, 0 out of scope, 0
-            unexamined, VR placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
-            41 roster checks carried and all 41 run, VT of VT tests.
-            Both gates ran over the tree carrying this entry and the one before it, TREESHA, in a worktree
+            Results: one run for each of the seven mutations in a detached worktree at cc0dd2e, the tree
+            carrying this entry, filtered to the five tests on the operator's instruction of 2026-09-24,
+            each reverted with `git checkout -- .` and the tree read clean after. The whole suite ran green
+            over cc0dd2e in the gates, 1415 of 1415. H1 turned the first-night test and the
+            evening-before-the-switch test red. H2 turned the first-night test and the run page's overlap
+            test red. H3 turned the first-night test red alone. G1 turned the three calendar tests red. G2,
+            G3 and G4 each turned the grid test red alone.
+Held:       all seven, in the tests each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1415 of 1415
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 556 claims, 556 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 566 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, 1415 of 1415 tests.
+            Both gates ran over the tree carrying this entry and the one before it, cc0dd2e, in a worktree
             beside the repository, and the operator's store under `data/` was not touched by either.
 Carried:    nothing new.
