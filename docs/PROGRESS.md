@@ -25510,7 +25510,10 @@ Mutated:    the rule, stated before the run: one mutation for each property the 
             W4 the funnel counting each gate without the gate itself: red in the worked example test alone.
             W5 section 3's near miss given two sentences: red in the section 3 test alone.
             W6 the counts handing no session to the caller: red in the worked example test alone.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run for each of the six in a detached worktree at a8e6abd, the tree carrying this
+            entry, filtered to the two tests, each reverted with `git checkout -- .` and the tree read clean
+            after. All six went red in the test predicted and no other: W1 to W4 and W6 the worked example
+            test, W5 the section 3 test. The whole suite ran green over a8e6abd in the gates, 1401 of 1401.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1401 of 1401
             tests ran with none failed, migrations 0 to 42 with none pending, schema version 42,
             exit 0, against `data-ci` and never `data`.
