@@ -43,6 +43,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `move` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
 | `peer_reading` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
 | `earnings_reaction` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
+| `swing_reading` | SwingReader | none | SwingReader |
+| `market_reading` | SwingReader | SwingReader | SwingReader |
 | `listing` | ShortlistBuilder | ShortlistBuilder | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
@@ -310,6 +312,51 @@ Grain: one row per ticker and print over the calendar's year behind.
 Primary key: `ticker`, `report_date`.
 
 **The move annotator writes it from the calendar and the stored bars, and is its own deleter** (see: Every computed table's writer is its own deleter) (see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan). A print's session is the one the earnings rule takes for it, read by calling the rule's own function one print at a time, so no source a rule version pins is edited to share the reading. A print whose session the stored bars do not reach, or whose session has no stored close before it, is left out and counted on the run log rather than read off a session the store does not hold, which is how the retention drops a print with its bars. The annotator writes the whole set again every night and deletes the prints a name no longer holds, and the rows of a name the gap stop withheld or that holds no bars. A print with no filed estimate keeps its actual and carries no surprise, so it is never read as having met an estimate. Nothing reads it but the name page: no reason, gate, plan or candidate evaluator.
+
+### swing_reading
+Grain: one row per ticker and night, **for every index member on the night and not only the names it could read**.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the night, being the newest session any name holds |
+| `bars` | INTEGER | how many bars the readings were read over |
+| `return_short` | REAL | tonight's close against the close 63 sessions before it, in per cent; null where the name holds too few bars |
+| `return_long` | REAL | the same over 126 sessions |
+| `place_short` | REAL | the share of the other members read tonight whose 63-session return is strictly lower, one sharing it counting half; null where the name has no such return or no other member has one |
+| `place_long` | REAL | the same over 126 sessions |
+| `strength` | REAL | the mean of the two places, and null where either is |
+| `recent_high` | TEXT | decimal in code: the highest high of the 20 sessions ending tonight; null where the name holds fewer |
+| `high_session` | TEXT | the newest of those sessions making that high |
+| `pullback_sessions` | INTEGER | how many sessions have traded since the high's session, 0 where it was made tonight |
+| `depth` | REAL | how far tonight's close sits below `recent_high`, in tonight's typical daily moves; null where the night holds no typical move |
+| `dry_up` | REAL | the median volume of the sessions since the high's session against the fifty-day average; null where the high was made tonight or the night holds no average |
+| `tightness` | REAL | the mean true range of the last 10 sessions against the mean of the last 50; null where the name holds too few sessions |
+| `note` | TEXT | why a member was read over nothing: no bar stored, no bar for the night with the last session it holds, or a gap in its stored series with the gap's date; null where it was read |
+
+Primary key: `ticker`, `session_date`.
+
+**The swing reader writes it for every member every night and is its own deleter** (see: Every computed table's writer is its own deleter). A night run again replaces its own set whole, and the rows fall out one year back from the newest stored session as every computed table's do. A member the night reads nothing for keeps its row with the reason, for the reason the listing row does: a gate whose reading is absent says why rather than finding no row. The places are read among the members read that night, so a name with no return and a name the night could not read are in no one's population.
+
+### market_reading
+Grain: one row per night.
+
+| Column | Type | Notes |
+|---|---|---|
+| `session_date` | TEXT | the night |
+| `members` | INTEGER | the index's members on the night |
+| `counted` | INTEGER | the members read that night holding a 200-day average |
+| `above` | INTEGER | how many of them close above it |
+| `breadth` | REAL | `above` over `counted`; null where `counted` is under half of `members` |
+| `counted_context` | INTEGER | the same over the 50-day average |
+| `above_context` | INTEGER | |
+| `breadth_context` | REAL | context only, and nothing reads it for a decision |
+| `volume_counted` | INTEGER | the members read that night trading some volume and holding a fifty-day average above nought |
+| `median_volume_ratio` | REAL | the median of their volume against that average, and null over none |
+
+Primary key: `session_date`.
+
+**The swing reader writes it and is its own deleter** (see: Every computed table's writer is its own deleter), dropping a night one year back from the newest stored session as it drops the name rows. What a night's breadth decided is kept on the gate rows the filter writes from 12.2, which are kept forever.
 
 ### listing
 Grain: one row per ticker per night, **for every index member and not only the listed ones**.

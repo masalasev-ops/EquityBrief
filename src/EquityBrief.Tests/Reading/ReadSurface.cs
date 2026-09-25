@@ -51,6 +51,22 @@ public partial class ReadSurface
         "read-surface",
         ["fixtures/membership-2026-09-05"],
         [
+            // 12.1, the readings drawn: tonight's breadth, the universe's columns, the name's
+            // region and the run page's market row.
+            CheckReach.Key("15.7 Tonight", "Night header, the night's breadth with the share above the 50-day average beside it as context"),
+            CheckReach.Key("15.8 Universe", "The table, relative strength"),
+            CheckReach.Key("15.8 Universe", "The table, the pullback from the recent high in typical days"),
+            CheckReach.Key("15.8 Universe", "The table, the volume while it came down"),
+            CheckReach.Key("15.8 Universe", "The table, the tightness of the range"),
+            CheckReach.Key("15.9 Name", "Swing readings, the return over 63 sessions and over 126 sessions with each one's place among the members' returns"),
+            CheckReach.Key("15.9 Name", "Swing readings, the highest high of the last 20 sessions and how far the close sits below it in typical days' moves"),
+            CheckReach.Key("15.9 Name", "Swing readings, the median volume of the sessions since that high against the fifty-day average"),
+            CheckReach.Key("15.9 Name", "Swing readings, the mean true range of the last ten sessions against the last fifty"),
+            CheckReach.Key("15.9 Name", "Swing readings, a key saying how to read it"),
+            CheckReach.Key("15.10 Run", "Market reading, the night's breadth with how many members it was counted over"),
+            CheckReach.Key("15.10 Run", "Market reading, the share above the 50-day average beside it as context"),
+            CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
+
             // 6.11, the exported report, read off the file the export route offers.
             CheckReach.Key("15.4 The two surfaces", "The exported report"),
 

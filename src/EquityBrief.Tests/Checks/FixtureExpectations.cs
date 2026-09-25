@@ -56,6 +56,16 @@ public partial class FixtureExpectations
         "fixture-expectations",
         ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
+            // 12.1, the swing readings: the four limits they are read under, their two stores
+            // and their fixture row.
+            CheckReach.Key(Scope.LimitsTable, "Relative strength windows"),
+            CheckReach.Key(Scope.LimitsTable, "Recent high window"),
+            CheckReach.Key(Scope.LimitsTable, "Range tightness windows"),
+            CheckReach.Key(Scope.LimitsTable, "Breadth"),
+            CheckReach.Key(Scope.StoresTable, "Swing readings"),
+            CheckReach.Key(Scope.StoresTable, "Market readings"),
+            CheckReach.Key(Scope.FixtureTable, "swing readings"),
+
             // 11.5, the floor a name's industry has to reach before it is the name's group.
             CheckReach.Key(Scope.LimitsTable, "Group floor"),
 

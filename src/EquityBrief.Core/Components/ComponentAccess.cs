@@ -34,6 +34,8 @@ public enum Store
     Move,
     PeerReading,
     EarningsReaction,
+    SwingReading,
+    MarketReading,
     Listing,
     ForwardReturn,
     Facts,

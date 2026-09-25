@@ -24277,3 +24277,181 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    the operator's ruling on the starting settings after 12.4, and the operator's two
             commands against the live store, the filter's first version and the family's
             registration.
+
+### 12.1 - the swing readings, each member's returns with their places, its pullback, the volume while it came down and its range's tightness, and the night's breadth, stored every night and drawn on four pages   2026-09-25
+Built:      the swing reader, a new night step after the moves, writes for every member of the index
+            on the night a row holding the bars it read, each return over 63 and 126 sessions with
+            its place among the members' returns and the mean of the two, the highest high of the
+            20 sessions ending tonight with the session making it and the sessions since, how far
+            the close sits below it in tonight's typical daily moves, the median volume of the
+            sessions since the high against the fifty-day average, and the mean true range of the
+            last 10 sessions against the last 50; a member the night read nothing for keeps its row
+            with the reason, being no bar stored, no bar for the session with the last one it holds,
+            or the gap its series holds. For the night it writes the members, the share of those
+            read closing above their own 200-day average with how many it was counted over, not
+            available below half the members, the same over the 50-day average as context, and the
+            median of volume against the fifty-day average. Migration 38 creates both tables. The
+            arithmetic is pure functions in `SwingReadings`, new files under `Filter` in Core and the
+            worker. The name page draws the readings as a card beneath the night's figures, the
+            universe table four columns, tonight's header the breadth line and the run page a market
+            card; the name page's refusal to rank is held once in code, `SinglePageApp.RankRefusal`.
+Written:    section 7 and the matrix, section 14's step with the arithmetic now steps 1 to 18 and the
+            queue step 19, section 15.7's header, 15.8's table, 15.9's Swing readings row and its
+            refusal paragraph, 15.10's Market reading row, 15.14's refusal in the same words, section
+            16's two stores, section 17's four rows and section 19.1's row, with the gap stop row
+            saying three tables write a gapped member's row; `SCHEMA.md`'s two tables and ownership
+            rows; `RUNBOOK.md`'s list of the night's arithmetic; the `fixture-expectations`,
+            `gap-refusal` and `read-surface` roster rows. Every spec line changed has its prior text
+            in `CHANGELOG.md`. The hole "Where breadth stops being a reading" closes here: breadth is
+            not available where fewer than half the night's members hold both a close and a 200-day
+            average, and the header and the run page say how many held it of how many. No decision
+            is added; the one the refusal rests on was written at 12.0 and now describes running
+            code.
+Expected:   derived by hand, outside the repository, from the captured payloads, in the new
+            `swing-readings.json`: on the night of 2026-09-08 AAPL holds no bar for the session, its
+            year ending on 2026-08-10 after the corporate action check, and keeps its row with that
+            reason; KEYS, MSFT and NFLX are read over 252 bars each, KEYS +0.55% over 63 sessions and
+            +18.23% over 126, placed 0.5 and 0.5, its recent high 366.41 on 2026-08-17 fifteen
+            sessions back, 2.99 typical moves below it, a dry-up of 0.90 and a tightness of 0.63;
+            MSFT +20.19% and +21.14%, placed 1 and 1; NFLX -7.10% and -21.92%, placed 0 and 0; the
+            breadth 2 of 3 read, 0.667, the 50-day share 3 of 3 and the median volume ratio 0.763.
+            The gap stop expectation gains `swing_reading` among the tables writing a gapped member's
+            row. Beside the fixture, constructed series at each window's edge, one bar short of each,
+            a tie among the returns, a high made twice and one made on the night, a session trading
+            nothing, breadth at exactly half the members and one short, and a constructed store whose
+            two spans order the members differently, which the fixture's three do not, with one
+            member holding no bar and one a session behind.
+Measured:   the readings over every full night the operator's store holds, 2026-09-09 to 2026-09-24,
+            twelve nights, computed by the code's own functions over a copy made at 2026-09-25T01:18Z,
+            after the night of 2026-09-24 and its report pass had ended (the run log's last row
+            00:26:37Z, the request for GM written), on the SSD, each night read over the bars and
+            that night's stored indicators the copy holds. The copy was opened read-only and `data/`
+            was not written.
+            Night       members  read  breadth         50-day context   median volume
+            2026-09-09  504      503   59.9% of 501    37.8% of 503     0.87
+            2026-09-10  504      503   57.9% of 501    33.6% of 503     0.89
+            2026-09-11  504      503   59.5% of 501    39.6% of 503     0.81
+            2026-09-14  504      503   59.7% of 501    38.6% of 503     0.92
+            2026-09-15  504      503   57.1% of 501    35.4% of 503     0.95
+            2026-09-16  504      503   53.5% of 501    32.2% of 503     0.96
+            2026-09-17  504      503   53.7% of 501    31.4% of 503     0.94
+            2026-09-18  503      503   52.5% of 501    28.6% of 503     2.00
+            2026-09-21  504      502   52.8% of 500    31.1% of 502     0.95
+            2026-09-22  504      502   51.0% of 500    31.3% of 502     0.98
+            2026-09-23  503      502   49.8% of 500    29.1% of 502     0.94
+            2026-09-24  503      502   47.6% of 500    26.1% of 502     0.90
+            Every absence by its cause. A member read over nothing: EQR on 2026-09-09 to 09-17, its
+            bars ending on 08-17 before it left on 09-18, no bar for the session; P on 09-21 and
+            09-22, no bar for the session, and from 09-23 stopped at its gap of 2026-09-18 as every
+            other stage stops it; `P_old`, a membership row joined 09-21 and left 09-23 under a
+            ticker holding no bars, no bar stored on 09-21 and 09-22. A reading absent for a member
+            read: the return over 63 sessions for HONA on 09-09 to 09-14, holding 60 to 63 bars; the
+            return over 126 sessions for FDXF and HONA on every night, holding 74 to 85 and 60 to 71,
+            which are also the two members read and holding no 200-day average, so breadth is
+            counted over 501 or 500; the volume since the high on 18 to 40 members a night, each one
+            whose high was made on the night; and no high, pullback or tightness absent anywhere.
+            Breadth falls from 59.9% to 47.6%, below 50% on 09-23 and 09-24 and above 45% on both,
+            and equals the planning estimate on nine of the eleven nights the estimate read, 0.4 and
+            0.2 points under it on 09-09 and 09-10, the estimate having counted each night's listing
+            rows rather than the members read. The median volume ratio is 2.00 on 09-18 and 0.81 to
+            0.98 on every other night. Pooled over the 6,032 member-nights read, as minimum, tenth
+            percentile, median, ninetieth and maximum: the return over 63 sessions -45.48, -17.05,
+            0.13, 20.67, 226.06 per cent; over 126 -49.82, -16.10, 5.83, 37.42, 296.22; the mean
+            place 0.00, 0.16, 0.51, 0.85, 1.00; the pullback 0.00, 0.89, 3.24, 5.56, 10.55 typical
+            moves; the sessions since the high 0, 3, 14, 19, 19; the volume since it 0.43, 0.72, 0.88,
+            1.10, 4.12 of the fifty-day average; and the tightness 0.46, 0.74, 0.89, 1.09, 2.07.
+Tests:      1332, from 1316: sixteen added, nine under `fixture-expectations` (each window's edge,
+            the tie, the high made twice, the high made on the night, the tightness, breadth at
+            half, the averages read, the constructed store and the fixture's readings), one under
+            `gap-refusal` and six under `read-surface` (the name page, the universe table, the
+            header and the run page against the replayed store, breadth held by too few, a reading
+            short of its window, and each return beside its own place). Exact counts moved, each
+            with its reason beside it: the screens' checked elements 188 to 201, their rows 65 to
+            67 and their claims to 208, and the gap stop's writing tables 2 to 3. Migrations 0 to 38
+            with one added, schema version 38.
+Claims:     480, from 457, with 480 PASS and 0 out of scope, and 487 placements and verdicts
+            reconciled against a floor of 34. Twenty-three more where the plan predicted 22 at this
+            checkpoint: the run page's Market reading row reads as three parts, the breadth, the
+            50-day share and the median volume, where the plan counted two. The pair after 12.9
+            becomes 550 and 550 on the ladder's first tranche and 551 and 551 on the swing trade's
+            own plan, the ranges 547 to 559 and 548 to 560. The 23 are named in
+            `ArchitectureConformance.Loop.PhaseTwelveRows` and asserted to be in the report.
+Pins:       the branch against `main`, read off `RuleVersionScorer.CodeVersionSources` and
+            `CandidateEvaluator.EvaluationSources` in this tree, 20 distinct files across the two
+            lists of 12 and 14: the intersection with the files this tree changes or adds is empty.
+            `ShortlistBuilder.cs` is unchanged and so are the six reasons.
+Mutated:    the rule, stated before the run: one mutation for each property the 12.1 done condition
+            names and one for each page the readings are drawn on, each the smallest edit that
+            changes that property's answer and still compiles, each run filtered to the sixteen
+            tests this checkpoint added, one run at a time in a detached worktree at this entry's
+            commit and reverted after each.
+            Predicted:
+            M1 a return read one bar short of its span (`bars.Count <= sessions` to `<`): red in
+            `AReturnIsReadAtItsWindowsEdgeAndNotOneBarShortOfIt` alone.
+            M2 the high read over nineteen bars (`>= HighWindow` to `>= HighWindow - 1`): red in
+            `TheRecentHighIsTheNewestSessionMakingItAndThePullbackIsMeasuredFromIt` alone.
+            M3 the tightness read over fifty bars (`<= TightLongSessions` to `<`): red in
+            `TightnessIsTheLastTenSessionsRangeAgainstTheLastFiftyAndNeedsOneBarBeforeThem` alone.
+            M4 a tie counted whole (`tied / 2.0` to `tied / 1.0`): red in
+            `APlaceIsTheShareOfTheOtherMembersStrictlyLowerAndATieCountsHalf` alone.
+            M5 a high made twice read from the older making (`FindLastIndex` to `FindIndex`): red in
+            the recent high test alone, none of the fixture's three making its high twice.
+            M6 a session trading nothing left out of the volume since the high: red in the recent
+            high test alone.
+            M7 breadth at exactly half not read (`>=` to `>`): red in
+            `BreadthIsReadAtExactlyHalfTheMembersAndNotOneShortOfIt` alone.
+            M8 a member read over nothing written no row: red in the constructed store's test, the
+            fixture's readings, the gap refusal's, the name page's and the universe table's, five.
+            M9 the reader writing each span's place under the other's column: red in the
+            constructed store's test alone, the fixture's places being equal across the spans.
+            M10 the name page drawing the shorter return beside the longer one's place: red in
+            `EachReturnIsDrawnBesideItsOwnPlace` alone, for the same reason.
+            M11 the universe table's tightness column drawing the pullback: red in the universe
+            table's test alone.
+            M12 tonight's header carrying the 50-day share as the breadth: red in the breadth test
+            over the replayed store alone, the too-few test holding neither share.
+            M13 the run page's context row carrying the breadth: red in the same test alone.
+            M14 the gap stop left out of the reader: red in the gap refusal's test alone, the
+            fixture holding no gap.
+            Results: filtered runs of the sixteen tests in a detached worktree at 0742f07, one at a
+            time, each mutation reverted with `git checkout -- .` and the tree read clean after it.
+            M1 turned 1 red, `AReturnIsReadAtItsWindowsEdgeAndNotOneBarShortOfIt`, 15 green. M2 1
+            red, the recent high test, 15 green. M3 1 red, the tightness test, 15 green. M4 1 red,
+            the place test, 15 green. M5 1 red, the recent high test, 15 green. M6 1 red, the same,
+            15 green. M7 1 red, the breadth test, 15 green. M8 5 red, the constructed store's, the
+            fixture's readings, the gap refusal's, the name page's and the universe table's, 11
+            green. M9 1 red, the constructed store's, 15 green. M10 1 red,
+            `EachReturnIsDrawnBesideItsOwnPlace`, 15 green. M11 1 red, the universe table's, 15
+            green. M12 1 red, the breadth test over the replayed store, 15 green. M13 1 red, the
+            same, 15 green. M14 1 red, the gap refusal's, 15 green. The sweep's script stopped once
+            after M8 on printing a character to the console, with M8's result recorded and its edit
+            still in the tree; the tree was reverted by hand, read clean, and M9 to M14 run from
+            there.
+Held:       all fourteen exactly as written before the run, in the tests each named and in their
+            number. M9 and M10 are the two the fixture alone would have let through, its three
+            names placing equally over both spans, which is why the constructed store and the
+            render test were written before the run.
+Swept:      the four survivor classes over this checkpoint's own tests. A shape the data cannot
+            produce: the fixture's places equal across the spans, found while stating M9 and M10
+            and closed by the two tests above. A boundary the fixture cannot reach: each window's
+            edge, reached by the constructed series. A test asserting a thing against itself: none;
+            the page tests read the store and the page apart. A property no test names: three, each
+            added here and asserted by nothing, so none was mutated: the one-year drop of both
+            stores, the median volume ratio leaving out a member trading nothing or holding no
+            average, and a night run again replacing its own set whole. Carried to 12.2's commit.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1332 of 1332
+            tests ran with none failed, migrations 0 to 38 with one added and none pending, schema
+            version 38, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 480 claims, 480 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 487 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1332 of 1332 tests.
+            Both gates ran over the tree carrying this entry, 0742f07, in the worktree beside the
+            repository, and the operator's store under `data/` was not touched by either. The
+            entry written before the run predicted 38 tables; the report counts the architecture's
+            tables, which this checkpoint adds none of, and reads 36.
+Carried:    tests for the three properties the sweep found no test naming, to 12.2's commit; the
+            operator's ruling on the starting settings after 12.4, and the operator's two
+            commands against the live store, the filter's first version and the family's
+            registration. The live store takes migration 38 when the first night after the merge
+            starts; until then every screen names the store as behind this checkout, as it does after
+            any migration.

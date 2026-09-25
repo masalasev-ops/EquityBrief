@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Candidates;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Moves;
 using EquityBrief.Core.Providers;
@@ -164,6 +165,13 @@ public class PinnedConstants
             new("Reports the night asks for", "1", RequestDrain.NightAsksFor, "RequestDrain.NightAsksFor"),
             new("Group floor", "5", Groups.Floor, "Groups.Floor"),
             new("Peer return window", "60", PeerReadings.ReturnWindow, "PeerReadings.ReturnWindow"),
+            new("Relative strength windows", "63", SwingReadings.ReturnShortSessions, "SwingReadings.ReturnShortSessions"),
+            new("Relative strength windows", "126", SwingReadings.ReturnLongSessions, "SwingReadings.ReturnLongSessions"),
+            new("Recent high window", "20", SwingReadings.HighWindow, "SwingReadings.HighWindow"),
+            new("Range tightness windows", "10", SwingReadings.TightShortSessions, "SwingReadings.TightShortSessions"),
+            new("Range tightness windows", "50", SwingReadings.TightLongSessions, "SwingReadings.TightLongSessions"),
+            new("Breadth", "200", SwingReadings.BreadthAverageSessions, "SwingReadings.BreadthAverageSessions"),
+            new("Breadth", "50", SwingReadings.ContextAverageSessions, "SwingReadings.ContextAverageSessions"),
             new("Reason share target", "2", (decimal)TargetShares.ReasonTarget * 100, "TargetShares.ReasonTarget as a percentage"),
             new("Any-reason share target", "6", (decimal)TargetShares.AnyReasonTarget * 100, "TargetShares.AnyReasonTarget as a percentage"),
             new("Event session share", "25", (decimal)TargetShares.EventShare * 100, "TargetShares.EventShare as a percentage"),

@@ -54,6 +54,9 @@ public partial class NightlyRun
             // 5.3, the facts file.
             CheckReach.Key(NightlyRunSteps.Heading, "Write the facts file for every name."),
 
+            // 12.1, the swing reader.
+            CheckReach.Key(NightlyRunSteps.Heading, "Compute the swing readings for every member and the night's breadth: each return over 63 and over 126 sessions with its place among the members' returns, the highest high of the last 20 sessions and the pullback from it in typical days' moves, the volume while it came down, the tightness of the range, and the share of the members closing above their own 200-day average, a member read over nothing keeping its row with the reason."),
+
             // 5.2, the move annotator.
             CheckReach.Key(NightlyRunSteps.Heading, "Annotate the largest moves for every name."),
 
@@ -2093,7 +2096,7 @@ public partial class NightlyRun
         // site added under either form moves one of the two. The universe reads
         // it twice: for its rows and for the one span a ticker is drawn from.
         Assert.Equal(
-            ["CalendarFetcher", "LadderBuilder", "MoveAnnotator", "NewsPulseCounter", "NightClose", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder"],
+            ["CalendarFetcher", "LadderBuilder", "MoveAnnotator", "NewsPulseCounter", "NightClose", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingReader"],
             member.Order(StringComparer.Ordinal));
     }
 

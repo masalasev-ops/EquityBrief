@@ -322,7 +322,9 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         on is null ? await read.PeerReadingsAsync() : [],
         // The name's earnings reaction record as of the page's night.
         await read.ReactionsAsync(ticker, on),
-        NameScreen.NotAMemberOn(ticker, groupsReadOn, membersThen));
+        NameScreen.NotAMemberOn(ticker, groupsReadOn, membersThen),
+        // The name's swing readings for the page's night, or its newest where the page is tonight's.
+        await read.SwingReadingAsync(ticker, on));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -660,7 +662,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             RunScreen.Tracks(TonightScreen.Totals(listings)),
             TonightScreen.Spend(dated, await SpentOn(read, dated), caps),
             TonightScreen.Prose(dated, await read.WrittenOnOrBeforeAsync(dated)),
-            TonightScreen.WrittenBeforeTheCorrection(listings)),
+            TonightScreen.WrittenBeforeTheCorrection(listings),
+            RunScreen.Market(await read.MarketReadingAsync(dated))),
         "text/html; charset=utf-8");
 });
 
@@ -700,7 +703,12 @@ app.MapGet("/screens/universe", async (
     var events = (await read.NextEventsAsync(night ?? DateOnly.MinValue))
         .ToDictionary(row => row.Ticker, row => row.EventDate, StringComparer.Ordinal);
 
-    var cells = UniverseScreen.Rows(members, history, events, night);
+    // Every member's swing readings for the night, which the table's four swing columns draw.
+    var readings = night is { } readOn
+        ? (await read.SwingReadingsAsync(readOn)).ToDictionary(row => row.Ticker, StringComparer.Ordinal)
+        : new Dictionary<string, SwingReadingRow>(StringComparer.Ordinal);
+
+    var cells = UniverseScreen.Rows(members, history, events, night, readings);
 
     var trend = request.Query["trend"].FirstOrDefault();
     var sector = request.Query["sector"].FirstOrDefault();
@@ -855,7 +863,8 @@ app.MapGet("/screens/run/{night?}", async (
                 flips.Returns,
                 flips.Nights,
                 dated),
-            RunScreen.Shares(everyListing, dated)),
+            RunScreen.Shares(everyListing, dated),
+            RunScreen.Market(await read.MarketReadingAsync(dated))),
         "text/html; charset=utf-8");
 });
 

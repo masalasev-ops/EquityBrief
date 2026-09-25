@@ -419,6 +419,98 @@ internal static class Scope
             Verdict.Pass,
             "each fixture print's session and move and the provider's figures are diffed against an expectation worked by hand from the captured calendar and bars through the replay's own rules rather than frozen from a run",
             ByExpectations),
+        [CheckReach.Key("15.7 Tonight", "Night header, the night's breadth with the share above the 50-day average beside it as context")] = new Scoped(
+            Verdict.Pass,
+            "the night's breadth and the members it was counted over are drawn in the header whole as the store holds them, with the share above the 50-day average beside it, and a night holding none says so",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, relative strength")] = new Scoped(
+            Verdict.Pass,
+            "each row's relative strength is the mean of the two places the store holds, drawn whole on the row, read back off the table against the stored rows",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, the pullback from the recent high in typical days")] = new Scoped(
+            Verdict.Pass,
+            "each row's pullback in typical days is drawn whole as the store holds it",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, the volume while it came down")] = new Scoped(
+            Verdict.Pass,
+            "each row's volume while it came down is drawn whole as the store holds it",
+            ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, the tightness of the range")] = new Scoped(
+            Verdict.Pass,
+            "each row's range tightness is drawn whole as the store holds it",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Swing readings, the return over 63 sessions and over 126 sessions with each one's place among the members' returns")] = new Scoped(
+            Verdict.Pass,
+            "both returns and each one's place are drawn whole on their elements as the store holds them, read back off the name's page against the stored row, a return the name holds too few bars for saying not available with the bars it holds",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Swing readings, the highest high of the last 20 sessions and how far the close sits below it in typical days' moves")] = new Scoped(
+            Verdict.Pass,
+            "the recent high, the session making it and the pullback in typical days' moves are drawn whole as the store holds them, read back off the page against the stored row",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Swing readings, the median volume of the sessions since that high against the fifty-day average")] = new Scoped(
+            Verdict.Pass,
+            "the median volume since the high against the fifty-day average is drawn whole as the store holds it, and a high made tonight says no session has come down from it",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Swing readings, the mean true range of the last ten sessions against the last fifty")] = new Scoped(
+            Verdict.Pass,
+            "the ten-session true range against the fifty-session one is drawn whole as the store holds it, read back off the page against the stored row",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Swing readings, a key saying how to read it")] = new Scoped(
+            Verdict.Pass,
+            "the card closes on a key saying how to read the readings and what to take from them",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Market reading, the night's breadth with how many members it was counted over")] = new Scoped(
+            Verdict.Pass,
+            "the breadth and the members it was counted over are drawn whole as the store holds them, and a night the store holds no breadth for says it is not available",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Market reading, the share above the 50-day average beside it as context")] = new Scoped(
+            Verdict.Pass,
+            "the share above the 50-day average is drawn beside the breadth and said to be context",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average")] = new Scoped(
+            Verdict.Pass,
+            "the median of volume against the fifty-day average is drawn whole as the store holds it",
+            ByReadSurface),
+        [CheckReach.Key(CatalogueTable, "Swing reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, bars and indicators it reads and the stores it writes and deletes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Swing reader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Swing readings")] = new Scoped(
+            Verdict.Pass,
+            "one row per member per night carrying the readings or the reason there are none, each read back off the store the fixture's replay wrote against readings worked by hand from the captured bars",
+            ByExpectations),
+        [CheckReach.Key(StoresTable, "Market readings")] = new Scoped(
+            Verdict.Pass,
+            "one row per night carrying the members, the breadth over the members read, the same over the 50-day average and the median volume ratio, read back off the store the fixture's replay wrote against a night worked by hand",
+            ByExpectations),
+        [CheckReach.Key(FixtureTable, "swing readings")] = new Scoped(
+            Verdict.Pass,
+            "each fixture member's readings and the night's breadth are diffed against an expectation worked by hand from the captured bars through the replay's own rules rather than frozen from a run",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Relative strength windows")] = new Scoped(
+            Verdict.Pass,
+            "a return is taken over each span and a series one bar short of it has none and no place, a tie counts half, over constructed series, and the constants the row states are the ones the reading uses",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Recent high window")] = new Scoped(
+            Verdict.Pass,
+            "the high is taken over the sessions the row states, a high made tonight leaves no session to have come down, and a high made twice is measured from the later, over constructed series",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Range tightness windows")] = new Scoped(
+            Verdict.Pass,
+            "the shorter mean true range against the longer is read over constructed series one session either side of the longer span, and a series too short for it has none",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Breadth")] = new Scoped(
+            Verdict.Pass,
+            "breadth is counted over the members read holding a close and the average, available at exactly half the night's members and not one short of it, over constructed nights, and the averages are selected by the constants the row states",
+            ByExpectations),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Compute the swing readings for every member and the night's breadth: each return over 63 and over 126 sessions with its place among the members' returns, the highest high of the last 20 sessions and the pullback from it in typical days' moves, the volume while it came down, the tightness of the range, and the share of the members closing above their own 200-day average, a member read over nothing keeping its row with the reason.")] = new Scoped(
+            Verdict.Pass,
+            "the night runs the step after the moves and before the listings and writes a row for every member and one for the night",
+            ByNight),
         [CheckReach.Key(LimitsTable, "Peer return window")] = new Scoped(
             Verdict.Pass,
             "a return is taken over sixty sessions and a series one short of the window and the close it is measured from has none, over constructed bars, and the constant the row states is the one the reading uses",
@@ -2134,6 +2226,10 @@ internal static class Scope
 
         // And 11.7's, one row per name and print over the calendar's year behind.
         ["Earnings reactions"] = "11.7",
+
+        // 12.1's two, one row per member per night and one per night.
+        ["Swing readings"] = "12.1",
+        ["Market readings"] = "12.1",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -2336,6 +2432,20 @@ internal static class Scope
         // The four parts phase 11's document pass wrote before any of them is drawn, each
         // owed at the checkpoint that builds it and out of scope until that one lands.
         [CheckReach.Key("15.9 Name", "Each move beside its group")] = "11.5",
+        // 12.1's readings, each part owed where it is drawn.
+        [CheckReach.Key("15.7 Tonight", "Night header, the night's breadth with the share above the 50-day average beside it as context")] = "12.1",
+        [CheckReach.Key("15.8 Universe", "The table, relative strength")] = "12.1",
+        [CheckReach.Key("15.8 Universe", "The table, the pullback from the recent high in typical days")] = "12.1",
+        [CheckReach.Key("15.8 Universe", "The table, the volume while it came down")] = "12.1",
+        [CheckReach.Key("15.8 Universe", "The table, the tightness of the range")] = "12.1",
+        [CheckReach.Key("15.9 Name", "Swing readings, the return over 63 sessions and over 126 sessions with each one's place among the members' returns")] = "12.1",
+        [CheckReach.Key("15.9 Name", "Swing readings, the highest high of the last 20 sessions and how far the close sits below it in typical days' moves")] = "12.1",
+        [CheckReach.Key("15.9 Name", "Swing readings, the median volume of the sessions since that high against the fifty-day average")] = "12.1",
+        [CheckReach.Key("15.9 Name", "Swing readings, the mean true range of the last ten sessions against the last fifty")] = "12.1",
+        [CheckReach.Key("15.9 Name", "Swing readings, a key saying how to read it")] = "12.1",
+        [CheckReach.Key("15.10 Run", "Market reading, the night's breadth with how many members it was counted over")] = "12.1",
+        [CheckReach.Key("15.10 Run", "Market reading, the share above the 50-day average beside it as context")] = "12.1",
+        [CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average")] = "12.1",
         // 11.6 read the Peers row as its parts, each owed where the table is drawn.
         [CheckReach.Key("15.9 Name", "Peers, beneath the table of the biggest moves")] = "11.6",
         [CheckReach.Key("15.9 Name", "Peers, every member of the name's group by price alone")] = "11.6",
@@ -2459,7 +2569,7 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Reason track")] =
             ["setups resolved as a win", "resolved as a loss", "unresolved"],
         [CheckReach.Key("15.7 Tonight", "Night header")] =
-            ["names in the index", "names that fired", "reports carrying fresh prose against reused", "spend", "run duration", "the harness verdict"],
+            ["names in the index", "names that fired", "the night's breadth with the share above the 50-day average beside it as context", "reports carrying fresh prose against reused", "spend", "run duration", "the harness verdict"],
         [CheckReach.Key("15.7 Tonight", "The list")] =
             ["one row per name that fired", "ordered by how many fired then by the plan's reward to risk", "at most twenty drawn", "each numbered by its place in that order", "a line above them stating how many are drawn of how many fired", "name", "close", "day change", "trend state in a word", "the distance row mark", "the reward to risk or the plan's reason for none", "the reasons", "beside the name a line saying so where its prices may not reflect a dividend or split"],
         [CheckReach.Key("15.7 Tonight", "Selected name")] =
@@ -2467,7 +2577,7 @@ internal static class Scope
         [CheckReach.Key("15.8 Universe", "Sector strip")] =
             ["one line per sector", "how many are on tonight's list", "names", "how many are in an uptrend"],
         [CheckReach.Key("15.8 Universe", "The table")] =
-            ["every name in the index", "the listing strip over sixty sessions", "sorted by distance to the nearest level ascending", "paged", "name", "sector", "close", "trend state", "the distance row mark", "sessions until earnings", "the evening last on the list"],
+            ["every name in the index", "the listing strip over sixty sessions", "sorted by distance to the nearest level ascending", "paged", "name", "sector", "close", "trend state", "the distance row mark", "sessions until earnings", "relative strength", "the pullback from the recent high in typical days", "the volume while it came down", "the tightness of the range", "the evening last on the list"],
         [CheckReach.Key("15.9 Name", "Prices may be out of date")] =
             ["one line saying its prices may not reflect a recent dividend or split", "when the refetch was last tried and why it failed", "above everything the page draws from those prices"],
         [CheckReach.Key("15.9 Name", "Fact strip")] =
@@ -2499,6 +2609,11 @@ internal static class Scope
         // pass with one of them undrawn.
         [CheckReach.Key("15.10 Run", "Reasons against their targets")] =
             ["each reason's share of the index tonight", "its median share over the ordinary nights", "its target", "the share firing any reason with its median and its target", "the ordinary nights counted against the sixty the calibration waits on", "every event session marked with the reason that made it one"],
+        // 12.1. The name page's readings and the run page's market row, each read as the parts its row enumerates.
+        [CheckReach.Key("15.9 Name", "Swing readings")] =
+            ["the return over 63 sessions and over 126 sessions with each one's place among the members' returns", "the highest high of the last 20 sessions and how far the close sits below it in typical days' moves", "the median volume of the sessions since that high against the fifty-day average", "the mean true range of the last ten sessions against the last fifty", "a key saying how to read it"],
+        [CheckReach.Key("15.10 Run", "Market reading")] =
+            ["the night's breadth with how many members it was counted over", "the share above the 50-day average beside it as context", "the index's median volume against its fifty-day average"],
         [CheckReach.Key("15.10 Run", "Harness")] =
             ["passed", "failed", "unexamined"],
 
@@ -2787,6 +2902,7 @@ internal static class Scope
         ["ladder"] = "4.4",
         ["moves"] = "5.2",
         ["peers"] = "11.6",
+        ["swing readings"] = "12.1",
         ["reactions"] = "11.7",
         ["listings"] = "5.4",
         ["facts"] = "5.3",
@@ -2861,6 +2977,9 @@ internal static class Scope
         ["Reports the night asks for"] = "11.4",
         ["Group floor"] = "11.5",
         ["Peer return window"] = "11.6",
+        ["Relative strength windows"] = "12.1",
+        ["Recent high window"] = "12.1",
+        ["Range tightness windows"] = "12.1",
         ["Reason share target"] = "11.9",
         ["Any-reason share target"] = "11.9",
         ["Event session share"] = "11.9",
@@ -2894,6 +3013,7 @@ internal static class Scope
         ["Build the levels"] = "4.1",
         ["Classify the trend state and build the ladder"] = "4.1",
         ["Annotate the largest moves"] = "5.2",
+        ["Compute the swing readings"] = "12.1",
         ["Evaluate the list reasons"] = "5.4",
         ["Run the overnight queue"] = "6.10",
         ["Ask for a report on the first name"] = "11.4",

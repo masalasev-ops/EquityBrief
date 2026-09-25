@@ -911,7 +911,8 @@ public static class NameScreen
         IReadOnlyList<UniverseRow>? universe = null,
         IReadOnlyList<PeerReadingRow>? peerReadings = null,
         IReadOnlyList<ReactionRow>? reactions = null,
-        DateOnly? notAMemberOn = null)
+        DateOnly? notAMemberOn = null,
+        SwingReadingRow? swing = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1037,8 +1038,14 @@ public static class NameScreen
             history is null ? null : History(history, outcomes ?? [], bars),
             night,
             Peers(ticker, universe, peerReadings, night),
-            reactions is null ? null : Reactions(reactions));
+            reactions is null ? null : Reactions(reactions),
+            swing is null ? null : Swing(swing));
     }
+
+    // A name's swing readings as the page draws them, each as the swing reader stored it.
+    public static SwingReadingsView Swing(SwingReadingRow row) =>
+        new(row.SessionDate, row.Bars, row.ReturnShort, row.ReturnLong, row.PlaceShort, row.PlaceLong, row.RecentHigh,
+            row.HighSession, row.PullbackSessions, row.Depth, row.DryUp, row.Tightness, row.Note);
 
     // The night a name's moves' groups were read on, where the index did not hold the name on it,
     // or none. The annotator reads every move's group off the membership on the night it runs and

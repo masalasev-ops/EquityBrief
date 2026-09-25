@@ -10,7 +10,7 @@ Two jobs. Neither is part of the application, because scheduling lives outside i
 
 | Job | When | What it does | Costs |
 |---|---|---|---|
-| `tools/nightly` | after the US close | the arithmetic: membership, bars, corporate actions, indicators, swings, volume profile, levels, trend, ladder, moves, listings, facts, forward returns, news pulse | one bulk bar request, one news feed request, a handful of calendar and membership calls. No model call |
+| `tools/nightly` | after the US close | the arithmetic: membership, bars, corporate actions, indicators, swings, volume profile, levels, trend, ladder, moves, swing readings and the night's breadth, listings, facts, forward returns, news pulse | one bulk bar request, one news feed request, a handful of calendar and membership calls. No model call |
 | the overnight queue | after the arithmetic, same invocation | the local model writes the local lane's sections that rest on no document, for every name in the index whose research is missing or stale, the listed names first, starting no pass once the configured hours have passed | nothing, and no request |
 
 **Every schedule is expressed in UTC.** The research provider's peak and off-peak windows are fixed in UTC, and a schedule written in local time moves into peak when daylight saving changes with nothing to announce it. Convert for display only.

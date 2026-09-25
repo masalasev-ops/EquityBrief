@@ -303,6 +303,38 @@ public sealed record PeerReadingRow(
     double? ReturnPct,
     int Bars);
 
+// One name's swing readings on a night as the swing reader stored them, and the reason it read
+// nothing where it did.
+public sealed record SwingReadingRow(
+    string Ticker,
+    DateOnly SessionDate,
+    int Bars,
+    double? ReturnShort,
+    double? ReturnLong,
+    double? PlaceShort,
+    double? PlaceLong,
+    double? Strength,
+    decimal? RecentHigh,
+    DateOnly? HighSession,
+    int? PullbackSessions,
+    double? Depth,
+    double? DryUp,
+    double? Tightness,
+    string? Note);
+
+// The night's market reading as the swing reader stored it.
+public sealed record MarketReadingRow(
+    DateOnly SessionDate,
+    int Members,
+    int Counted,
+    int Above,
+    double? Breadth,
+    int CountedContext,
+    int AboveContext,
+    double? BreadthContext,
+    int VolumeCounted,
+    double? MedianVolumeRatio);
+
 // One print's earnings reaction as the annotator stored it: the report date, when in the session,
 // the session it moved on, the estimate and the actual as the provider filed them, null where it
 // filed none, the provider's surprise, null beside no estimate, and the session's move.
@@ -402,6 +434,8 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.Ladder, Touch.Read),
             new StoreTouch(Store.Move, Touch.Read),
             new StoreTouch(Store.PeerReading, Touch.Read),
+            new StoreTouch(Store.SwingReading, Touch.Read),
+            new StoreTouch(Store.MarketReading, Touch.Read),
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
@@ -1787,6 +1821,112 @@ public sealed class ReadApi : IComponent
         }
 
         return rows;
+    }
+
+    // The swing readings' columns, in the order every read of them takes them.
+    const string SwingColumns = @"
+        ticker, session_date, bars, return_short, return_long, place_short, place_long, strength,
+        recent_high, high_session, pullback_sessions, depth, dry_up, tightness, note";
+
+    // A name's swing readings for the night a page is drawn for, or its newest where the page is tonight's.
+    const string SwingReadingOn = "SELECT " + SwingColumns + " FROM swing_reading WHERE ticker = $ticker AND session_date = $on;";
+
+    const string NewestSwingReading = "SELECT " + SwingColumns + " FROM swing_reading WHERE ticker = $ticker ORDER BY session_date DESC LIMIT 1;";
+
+    // Every member's swing readings for one night, which the universe table draws.
+    const string SwingReadingsOn = "SELECT " + SwingColumns + " FROM swing_reading WHERE session_date = $on;";
+
+    // The night's market reading, for that night and no other: a night that stored none says so.
+    const string MarketReadingOn = @"
+        SELECT session_date, members, counted, above, breadth, counted_context, above_context, breadth_context,
+               volume_counted, median_volume_ratio
+        FROM market_reading
+        WHERE session_date = $on;
+    ";
+
+    // A name's swing readings for a night, or its newest where no night is named, and none where the
+    // swing reader stored none.
+    public async Task<SwingReadingRow?> SwingReadingAsync(string ticker, DateOnly? on = null)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = on is null ? NewestSwingReading : SwingReadingOn;
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        if (on is { } night)
+        {
+            command.Parameters.AddWithValue("$on", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync() ? SwingRow(reader) : null;
+    }
+
+    // Every member's swing readings for one night.
+    public async Task<IReadOnlyList<SwingReadingRow>> SwingReadingsAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = SwingReadingsOn;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<SwingReadingRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(SwingRow(reader));
+        }
+
+        return rows;
+    }
+
+    static SwingReadingRow SwingRow(Microsoft.Data.Sqlite.SqliteDataReader reader) =>
+        new(
+            reader.GetString(0),
+            DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            reader.GetInt32(2),
+            reader.IsDBNull(3) ? null : reader.GetDouble(3),
+            reader.IsDBNull(4) ? null : reader.GetDouble(4),
+            reader.IsDBNull(5) ? null : reader.GetDouble(5),
+            reader.IsDBNull(6) ? null : reader.GetDouble(6),
+            reader.IsDBNull(7) ? null : reader.GetDouble(7),
+            reader.IsDBNull(8) ? null : Money.FromStorage(reader.GetString(8)),
+            reader.IsDBNull(9) ? null : DateOnly.ParseExact(reader.GetString(9), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            reader.IsDBNull(10) ? null : reader.GetInt32(10),
+            reader.IsDBNull(11) ? null : reader.GetDouble(11),
+            reader.IsDBNull(12) ? null : reader.GetDouble(12),
+            reader.IsDBNull(13) ? null : reader.GetDouble(13),
+            reader.IsDBNull(14) ? null : reader.GetString(14));
+
+    // The night's market reading, and none where the night stored none.
+    public async Task<MarketReadingRow?> MarketReadingAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = MarketReadingOn;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync()
+            ? new MarketReadingRow(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetInt32(1),
+                reader.GetInt32(2),
+                reader.GetInt32(3),
+                reader.IsDBNull(4) ? null : reader.GetDouble(4),
+                reader.GetInt32(5),
+                reader.GetInt32(6),
+                reader.IsDBNull(7) ? null : reader.GetDouble(7),
+                reader.GetInt32(8),
+                reader.IsDBNull(9) ? null : reader.GetDouble(9))
+            : null;
     }
 
     // Every name's two readings for the peers table, one row per name, as the annotator last

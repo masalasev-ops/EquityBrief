@@ -516,7 +516,8 @@ public sealed class SinglePageApp : IComponent
         ListingHistoryCard? history = null,
         DateOnly? night = null,
         PeersView? peers = null,
-        IReadOnlyList<ReactionCell>? reactions = null)
+        IReadOnlyList<ReactionCell>? reactions = null,
+        SwingReadingsView? swing = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -677,6 +678,24 @@ public sealed class SinglePageApp : IComponent
             stamp: Cards.Night(session),
             id: "facts",
             region: "facts"));
+
+        // The swing readings, beneath the night's figures: each return with its place among the
+        // members' returns, the recent high and the pullback from it, the volume while it came down
+        // and the range's tightness, as the swing reader stored them for the night.
+        // see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns
+        if (swing is not null)
+        {
+            Card("swing", "Its swing readings", Cards.Computed(
+                "Swing readings",
+                marks.SwingTable(ticker, swing) + Cards.Key(
+                    "How to read it.",
+                    Invariant($"Each return is the close against the close {EquityBrief.Core.Filter.SwingReadings.ReturnShortSessions} and {EquityBrief.Core.Filter.SwingReadings.ReturnLongSessions} sessions before it, beside the share of the index's other members whose return over the same span is lower. The pullback is how far the close sits below the highest high of the last {EquityBrief.Core.Filter.SwingReadings.HighWindow} sessions, counted in the moves {Escaped(ticker)} usually makes in a session; the volume beneath it is the median session's volume since that high against its fifty-day average, and the tightness is the last {EquityBrief.Core.Filter.SwingReadings.TightShortSessions} sessions' true range against the last {EquityBrief.Core.Filter.SwingReadings.TightLongSessions}'s. All of it is computed from the stored daily bars."),
+                    "These are facts about the chart. A high place is a strong return behind the name and not a forecast in front of it, and none of it ranks the company as an investment."),
+                title: "Where it stands for a swing trade",
+                stamp: Cards.Night(swing.Session),
+                id: "swing",
+                region: "swing"));
+        }
 
         // The short version, the first written region section 4 lists, with its date beside it.
         Draw(AtTheTop);
@@ -868,7 +887,7 @@ public sealed class SinglePageApp : IComponent
         $"<section class=\"intro\" aria-label=\"About this page\"><p class=\"intro-p\">This page finds the prices {Escaped(company)} has repeatedly stopped falling or rising at, and sets out what to do if it reaches one of them again. " +
         "The chart, the levels and the plan are recomputed every evening; the written sections further down carry their own dates. " +
         $"It carries no forecast, no view on whether {Escaped(company)} is a good business, and no opinion on how much of your money to put in.</p>" +
-        $"<ul class=\"refuse\"><li>It does not predict where the price will go.</li><li>It does not rank {Escaped(ticker)} against any other name.</li>" +
+        $"<ul class=\"refuse\"><li>It does not predict where the price will go.</li><li>It {RankRefusal}.</li>" +
         "<li>It does not say how much to buy: the sizing near the end only divides the amount you choose to risk.</li></ul>" +
         "<details class=\"gloss\"><summary>Words used on this page</summary>" +
         Cards.Words(
@@ -1244,7 +1263,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<ReasonTrackRow>? totals = null,
         NightSpend? spend = null,
         NightProse? prose = null,
-        IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null)
+        IReadOnlyList<DateOnly>? writtenBeforeTheCorrection = null,
+        MarketView? market = null)
     {
         var region = new StringBuilder();
 
@@ -1255,7 +1275,7 @@ public sealed class SinglePageApp : IComponent
 
         region.Append(Cards.Computed(
             Invariant($"Night of {night:yyyy-MM-dd} · computed after the close"),
-            marks.NightHeader(night, index, fired, duration, harness, spend, prose)
+            marks.NightHeader(night, index, fired, duration, harness, spend, prose, market)
                 + Invariant($"<p class=\"oneline\"><a href=\"{RunRoute}{night:yyyy-MM-dd}\">What ran tonight, and what it cost</a></p>"),
             stamp: Cards.Night(night),
             region: "night"));
@@ -1329,6 +1349,11 @@ public sealed class SinglePageApp : IComponent
         return region.ToString();
     }
 
+    // The refusal to rank, held once: the name page draws it, and sections 15.9 and 15.14 state it in these words.
+    // see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns
+    public const string RankRefusal =
+        "ranks no company as an investment, and the one rank it draws is a return's place among the members' returns, a fact about the chart";
+
     // Section 17's list display count, held here so the app and the projection
     // agree about it rather than each stating it.
     public const int TonightDrawn = 20;
@@ -1385,7 +1410,8 @@ public sealed class SinglePageApp : IComponent
         OrderComparison? orders = null,
         CandidateRegion? candidates = null,
         TrendVersionRegion? versions = null,
-        SharesAgainstTargets? shares = null)
+        SharesAgainstTargets? shares = null,
+        MarketView? market = null)
     {
         var region = new StringBuilder();
 
@@ -1400,6 +1426,16 @@ public sealed class SinglePageApp : IComponent
             lede: "Each stage with the instant it started in UTC, how long it took, what it wrote and what it said about itself.",
             stamp: Cards.Night(night),
             region: "operational"));
+
+        // The market on the night: the breadth, the share above the shorter average as context, and how
+        // heavily the index traded.
+        region.Append(Cards.Computed(
+            Invariant($"Market of {night:yyyy-MM-dd}"),
+            marks.MarketReading(market),
+            title: "The market on the night",
+            lede: "How much of the index closed above its own long average, the same above the shorter one, and how heavily the index traded against its own fifty-day average, each read off the stored bars and averages.",
+            stamp: Cards.Night(night),
+            region: "market"));
 
         region.Append(WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection));
 
