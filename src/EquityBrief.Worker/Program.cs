@@ -34,13 +34,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "version" => await VersionWindows(args),
     "filter-counts" => await FilterCountsReport(args),
     "shape" => await Shape(args),
+    "filter-history" => await FilterHistoryRun(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. Nine are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. Ten are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
         "'research --ticker <TICKER>' writes the sections of one name's research that are not written or have gone " +
@@ -59,7 +60,9 @@ static int NoVerb()
         "with '--year' to replay every session of the stored year as well, reading the store and writing nothing, and " +
         "'shape --accept <proposal>' opens a shape proposal's settings as the next filter version, '--settings <name=value,...> " +
         "--evidence <text>' with '--trade ladder' or '--trade swing' opens settings the operator ruled, '--restarts <blocks>' states " +
-        "the live filter's blocks an acceptance restarts, and '--reject <proposal> --reason <text>' records a proposal's rejection. '--live' " +
+        "the live filter's blocks an acceptance restarts, and '--reject <proposal> --reason <text>' records a proposal's rejection, and " +
+        "'filter-history --from <yyyy-MM-dd> --through <yyyy-MM-dd>' replays the swing filter's results for sessions before its " +
+        "first stored night, for the trigger's arrival alone. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -119,6 +122,22 @@ static async Task<int> Shape(string[] args)
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
 
     return await ShapeCommand.RunAsync(
+        args,
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        Console.Out,
+        Console.Error);
+}
+
+// The swing filter's results replayed for sessions before its first stored night, by hand and never from
+// the night. The verb's work is in `FilterHistory`, so a test runs the verb a person runs.
+// see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone
+static async Task<int> FilterHistoryRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await FilterHistory.RunAsync(
         args,
         SystemClock.ForUnitedStatesSessions(),
         store.DatabaseFile,

@@ -302,6 +302,17 @@ dotnet run --project src/EquityBrief.Worker -- shape --accept 2 --restarts 3
 
 Each attempt, refused or not, is one row on the run log under `shape` and a run id beginning `shape-`, and an acceptance that retires and registers adds the registrar's own row under the same run id.
 
+### Replaying the swing filter's results for the sessions before its first stored night
+
+A pullback's trigger arrives where it first fired within the arrival window, read off the stored results of the sessions before the night. The sessions before the filter's first stored night hold none, so on its first nights every pullback fails its trigger for want of them. Replay them, then run the newest night again so it reads them:
+
+```
+dotnet run --project src/EquityBrief.Worker -- filter-history --from 2026-09-21 --through 2026-09-23
+tools/nightly.ps1 --session 2026-09-24
+```
+
+Each session is replayed under the open version's settings and stored under the version `replayed`, which the trigger's arrival reads and no clock, page or scored setup does (see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone). A session already holding results, the night's own session and a range holding no session are each refused with nothing written. Each run is one row on the run log under `filter history` and a run id beginning `filter-history-`, which the run page draws as run by hand. Run it when no night is running.
+
 ### Registering a candidate and versioning a ladder rule
 
 Both are decisions a person takes, from the repository root, and a night never takes either. Nothing is registered and no window is open until someone runs one of these.

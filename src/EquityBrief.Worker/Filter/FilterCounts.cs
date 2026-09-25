@@ -78,13 +78,17 @@ public sealed class FilterCounts : IComponent
     public IReadOnlyList<NightFiring> Firings { get; private set; } = [];
 
     // Each counted session's results under each setting are handed to the caller that asks for them, which
-    // is how a figure drawn from a replayed session reads the answers the counts are made of.
+    // is how a figure drawn from a replayed session reads the answers the counts are made of. The settings
+    // counted under are section 17's two unless others are handed in, and the sessions are every one the
+    // counts reach unless some are named.
     public async Task<IReadOnlyDictionary<string, IReadOnlyList<SessionCounts>>> CountAsync(
         string indexCode,
         bool year,
         Action<string>? progress = null,
         CancellationToken cancellation = default,
-        Action<DateOnly, string, IReadOnlyList<GateResult>>? evaluated = null)
+        Action<DateOnly, string, IReadOnlyList<GateResult>>? evaluated = null,
+        IReadOnlyDictionary<string, FilterSettings>? under = null,
+        IReadOnlyCollection<DateOnly>? only = null)
     {
         // Read-only, so nothing the counts do can reach the store they count.
         var builder = StoreConnection.Builder(databaseFile);
@@ -104,9 +108,10 @@ public sealed class FilterCounts : IComponent
         var sessions = TradingCalendar.Sessions([.. bars.Values.Select(series => (IReadOnlyCollection<DateOnly>)[.. series.Select(bar => bar.SessionDate)])]);
         // The year from the first session a return over the longer span can be read on, since before it no
         // member has a place and the trend gate passes nobody.
-        var counted = year ? sessions.Skip(SwingReadings.ReturnLongSessions).ToArray() : [.. storedNights.Order()];
+        var reached = year ? sessions.Skip(SwingReadings.ReturnLongSessions).ToArray() : [.. storedNights.Order()];
+        var counted = only is null ? reached : [.. reached.Where(only.Contains)];
 
-        var settings = Settings();
+        var settings = under ?? Settings();
         var counts = settings.Keys.ToDictionary(name => name, _ => new List<SessionCounts>(), StringComparer.Ordinal);
         var eventsOn = settings.Keys.ToDictionary(name => name, _ => new Dictionary<DateOnly, IReadOnlyDictionary<string, bool?>>(), StringComparer.Ordinal);
         var earlierKept = settings.Values.Max(setting => setting.ArrivalSessions) - 1;

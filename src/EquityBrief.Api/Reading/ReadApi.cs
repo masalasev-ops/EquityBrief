@@ -2295,12 +2295,12 @@ public sealed class ReadApi : IComponent
         ladder_reward_to_risk, ladder_stop_moves, swing_entry, swing_stop, swing_target, swing_reward_to_risk,
         swing_stop_moves, exclusions, passed, rank, strength, band_strength, gates";
 
-    const string GateResultOn = "SELECT " + GateColumns + " FROM gate_result WHERE ticker = $ticker AND session_date = $on;";
+    const string GateResultOn = "SELECT " + GateColumns + " FROM gate_result WHERE version <> '" + EquityBrief.Core.Filter.ReplayedResults.Version + "' AND ticker = $ticker AND session_date = $on;";
 
-    const string NewestGateResult = "SELECT " + GateColumns + " FROM gate_result WHERE ticker = $ticker ORDER BY session_date DESC LIMIT 1;";
+    const string NewestGateResult = "SELECT " + GateColumns + " FROM gate_result WHERE version <> '" + EquityBrief.Core.Filter.ReplayedResults.Version + "' AND ticker = $ticker ORDER BY session_date DESC LIMIT 1;";
 
     // Every member's result for one night, which the run page's funnel counts.
-    const string GateResultsOn = "SELECT " + GateColumns + " FROM gate_result WHERE session_date = $on ORDER BY ticker;";
+    const string GateResultsOn = "SELECT " + GateColumns + " FROM gate_result WHERE version <> '" + EquityBrief.Core.Filter.ReplayedResults.Version + "' AND session_date = $on ORDER BY ticker;";
 
     // A name's swing filter result for a night, or its newest where no night is named, and none where
     // the filter stored none.

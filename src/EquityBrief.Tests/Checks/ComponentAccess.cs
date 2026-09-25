@@ -38,6 +38,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Filter counts"),
             CheckReach.Key(Scope.MatrixTable, "Filter counts"),
 
+            // 12.6's correction, the filter history.
+            CheckReach.Key(Scope.CatalogueTable, "Filter history"),
+            CheckReach.Key(Scope.MatrixTable, "Filter history"),
+
             // 12.1, the swing reader.
             CheckReach.Key(Scope.CatalogueTable, "Swing reader"),
             CheckReach.Key(Scope.MatrixTable, "Swing reader"),

@@ -1255,6 +1255,8 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.10 Run", "Near misses, every figure withheld below the block floor"),
         CheckReach.Key(Scope.LimitsTable, "Swing plan outcome"),
         CheckReach.Key(Scope.LimitsTable, "Twenty-session outcome"),
+        CheckReach.Key(Scope.CatalogueTable, "Filter history"),
+        CheckReach.Key(Scope.MatrixTable, "Filter history"),
     ];
 
     // Rows phase 12 took out of the document: 11.9's region stating each reason's share against its
@@ -1274,8 +1276,9 @@ public partial class ArchitectureConformance
 
     // The claims phase 12 landed beyond each checkpoint's prediction, each named: 12.1's market reading read as
     // three parts where the plan counted two, 12.2's counts as a component with its catalogue and matrix rows
-    // and the filter versions as a store of their own, the 12.4 ruling's arrival window, 12.6's list rules, and
-    // 12.7's near misses read as four parts where the plan counted three.
+    // and the filter versions as a store of their own, the 12.4 ruling's arrival window, 12.6's list rules,
+    // 12.7's near misses read as four parts where the plan counted three, and the filter history 12.6's
+    // correction built on the operator's ruling of 2026-09-25, a component with its catalogue and matrix rows.
     static readonly string[] PhaseTwelveBeyondThePrediction =
     [
         CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
@@ -1285,6 +1288,8 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Trigger arrival window"),
         CheckReach.Key(Scope.StoresTable, "List rules"),
         CheckReach.Key("15.10 Run", "Near misses, every figure withheld below the block floor"),
+        CheckReach.Key(Scope.CatalogueTable, "Filter history"),
+        CheckReach.Key(Scope.MatrixTable, "Filter history"),
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1315,7 +1320,7 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((550, 554), (predicted, actual));
+        Assert.Equal((550, 556), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before
