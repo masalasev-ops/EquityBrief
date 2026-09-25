@@ -24588,16 +24588,45 @@ Mutated:    the rule, stated before the run: one mutation for each property the 
             nights alone.
             M15 the swing trade's target the highest band above the close rather than the lowest:
             red in the fixture's two nights alone, the constructed members holding one band above.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: filtered runs of the 26 tests in a detached worktree at b585a1b, one at a time,
+            each mutation reverted with `git checkout -- .` and the tree read clean after it.
+            M1 2 red, the market gate test and the filter's code pin. M2 4 red, the trigger test,
+            the fixture's two nights, the counts and the code pin. M3 3 red, the order test, the
+            rank and the code pin. M4 3 red, the exclusions test, the funnel test and the code pin.
+            M5 2 red, the exclusions test and the code pin. M6 3 red, the trend gate test, the
+            fixture's member read over nothing and the code pin. M7 3 red, the fixture's two
+            nights, the counts and the code pin. M8 4 red, the funnel test, the rank, the counts and
+            the code pin. M9 4 red, the night run again, the rank, the fixture's two nights and the
+            code pin. M10 2 red, the version test and the code pin. M11 1 red, the gates page. M12 1
+            red, the funnel page. M13 3 red, the exclusions test, the gap refusal's gate row and the
+            code pin. M14 2 red, the fixture's two nights and the code pin. M15 2 red, the fixture's
+            two nights and the code pin.
+Held:       fourteen of the fifteen in every test each named. Two things the prediction did not
+            say. The filter's code pin went red for all thirteen mutations of a source it covers,
+            and not for M11 and M12, whose sources it does not: that is the pin reading every edit,
+            which is what it is for, and the prediction should have named it. And M7 went red in
+            two of the three tests it named and not in the trigger test, which asserts the reason a
+            session before with no stored result gives and not that the gate fails on it; the
+            fixture's two nights and the counts caught the mutation, and the assertion is carried
+            to 12.3's commit.
+Swept:      the four survivor classes over this checkpoint's own tests. A test asserting a thing
+            against itself: none; the pages are read against the stored rows and the counts against
+            the gates worked by hand. A property no test names: the trigger test's verdict for an
+            absent session before, found by M7 above. A boundary the fixture cannot reach: every
+            threshold, reached by the constructed members; the fixture's two nights pass nobody, so
+            the rank is read off a constructed store. A shape the data cannot produce: a breakout,
+            which no fixture night and 3 of the operator's 53 sessions hold, reached by the
+            constructed breakout.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1357 of 1357
             tests ran with none failed, migrations 0 to 39 with one added and none pending, schema
             version 39, exit 0, against `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 36 tables, 507 claims, 507 PASS, 0 FAIL, 0 out of
             scope, 0 unexamined, 514 placements and verdicts reconciled against a floor of 34,
             fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1357 of 1357 tests.
-            Both gates ran over the tree carrying this entry, in the worktree beside the
+            Both gates ran over the tree carrying this entry, b585a1b, in the worktree beside the
             repository, and the operator's store under `data/` was not touched by either.
-Carried:    the operator's ruling on the starting settings, the trade gate's input and the five
+Carried:    the trigger test's assertion that a session before with no stored result fails the
+            gate, to 12.3's commit; the operator's ruling on the starting settings, the trade gate's input and the five
             variants after 12.4, from the counts above; and the operator's two commands against the
             live store. The live store takes migration 39 when the first night after the merge
             starts, and from that night stores a gate result for every member.
