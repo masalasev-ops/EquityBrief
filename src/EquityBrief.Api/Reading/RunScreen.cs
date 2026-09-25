@@ -855,6 +855,65 @@ public static class RunScreen
             openVersion ?? ShapeClock.NoVersion,
             night);
 
+    // The newest shape proposal as the page draws it, with what accepting it would restart now: the live
+    // filter's candidate standing as the page is read, the acceptances already taken while one stood,
+    // and the non-empty blocks its clock has run by the newest night the listings hold, counted by the
+    // arithmetic the shape command holds an acceptance to.
+    // see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts
+    public static ProposalView? Proposal(
+        ShapeProposalRow? latest,
+        IReadOnlyList<CandidateRow> register,
+        IReadOnlyList<CandidateNightRow> nights,
+        IReadOnlyList<CandidateSetupRow> setups,
+        IReadOnlyList<ListingRow> listings,
+        DateTimeOffset at)
+    {
+        if (latest is null)
+        {
+            return null;
+        }
+
+        var rows = register
+            .Select(row => new RegisterRow(
+                row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
+                row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence))
+            .ToArray();
+
+        var live = SwingFamily.Standing(rows, at);
+        DateOnly? newest = listings.Count == 0 ? null : listings.Max(listing => listing.SessionDate);
+
+        var blocks = live is null || newest is not { } night
+            ? 0
+            : SwingFamily.Blocks(
+                [
+                    .. setups
+                        .Where(setup => string.Equals(setup.Candidate, live.Candidate, StringComparison.Ordinal))
+                        .Select(setup => new CandidateSetup(
+                            setup.SessionDate, setup.Outcome ?? string.Empty, setup.Null, setup.NullAtSensitivity,
+                            setup.BreakEven, setup.ReturnPct, setup.PlannedRisk, setup.OnEarnings)),
+                ],
+                nights.Where(evaluated => string.Equals(evaluated.Candidate, live.Candidate, StringComparison.Ordinal))
+                    .Select(evaluated => (DateOnly?)evaluated.SessionDate)
+                    .Min(),
+                night);
+
+        return new ProposalView(
+            latest.Id,
+            latest.Session,
+            latest.Version,
+            latest.Ordinary,
+            latest.Levers,
+            latest.ListNow,
+            latest.ListProposed,
+            latest.Findings,
+            latest.Decision,
+            latest.Reason,
+            latest.Opened,
+            live?.Candidate,
+            SwingFamily.AcceptedWhileLive(rows),
+            blocks);
+    }
+
     // The count each of five operating obligations waits on, against its trigger, where no other surface
     // draws one: the nights the clock chose the session for, the research passes carrying a recorded
     // cost, the nights the version step replayed both kinds of version, the event book's resolved

@@ -24754,3 +24754,181 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    the operator's ruling on the starting settings, the trade gate's input, the five variants
             and the gate bands after 12.4; and the operator's two commands against the live store.
+
+### 12.1 - correction: the refusal to rank is read inside sections 15.9 and 15.14 between their headings, and the name page states it in no other words, where the test searched the whole document and the swing readings' key carried a second wording   2026-09-25
+Corrects:   12.1 (0742f07), which placed the refusal to rank as one sentence held once in code,
+            `SinglePageApp.RankRefusal`, drawn on the name page and stated in sections 15.9 and
+            15.14 in the same words, with a test reading all three.
+Found:      by the operator on 2026-09-25, reading section 15.9 as holding no sentence saying the
+            page does not rank the company as an investment and none naming the rank it shows as a
+            return's place among the members' returns.
+Cause:      of the three causes the operator named, the third, in part, and neither of the other
+            two. The wording landed at 12.1 in the constant's words: 15.9's paragraph on the page's
+            three refusals says "that it ranks no company as an investment, and the one rank it
+            draws is a return's place among the members' returns, a fact about the chart", and
+            15.14's list says "A screen" and the same sentence. So no checkpoint recorded work it
+            did not do, and the sentence did not land under other words; a reading for "does not
+            rank the company" finds neither, because the held sentence says "ranks no company". The
+            test exists and reads the surfaces it names, the constant, the name page the surface
+            serves and the architecture, but it searched the whole of ARCHITECTURE.html for each
+            sentence rather than 15.9 and 15.14, so either could have left its section with the
+            test green. And the name page drew the refusal a second time in other words, the swing
+            readings' key saying "none of it ranks the company as an investment", which nothing
+            asserted: a second wording on the page the one wording was held to prevent.
+Repaired:   the swing readings' key draws the held sentence, "this page" and the constant. No
+            document changes: 15.9 and 15.14 already state the constant's words.
+Guarded:    `read-surface`, two tests extended and none added.
+            `EveryScreenIsLaidOutInCardsAndEveryKeyClosesOnWhatToTakeFromTheFigure` reads 15.9
+            between its heading and 15.10's, and 15.14 between its heading and 15.15's, each for the
+            held sentence, and holds the fixture's name page to stating the refusal in no other
+            words: every "as an investment" on it is inside the held sentence.
+            `EachNamesSwingReadingsAreDrawnOnItsPageAsTheStoreHoldsThem` holds every page drawing
+            the swing readings to the held sentence in the key and to two statements of the refusal
+            on the page, its opening and the key, and no third in any wording.
+Written:    `.claude/rules/checks.md`'s `read-surface` row, prior text in `CHANGELOG.md`.
+Tests:      no test added or removed; the count is 12.4's, below, whose tree this rides in.
+Mutated:    the rule, stated before the run: change each of the three places the one wording lives
+            by the smallest edit that changes what it says, and move each section's sentence out
+            of its section, filtered to the two extended tests, one at a time in a detached worktree
+            at the commit carrying this entry, reverted after each.
+            Predicted:
+            MC1 the constant says "ranks no company as a holding": red in both tests, the first at
+            15.9 and the second at the key's count of the refusal.
+            MC2 15.14's sentence moved into 15.13's list, word for word: red in the first test
+            alone, at 15.14; before this correction the test read the whole document and passed it.
+            MC3 15.9's sentence reworded as "that it does not rank any company as an investment":
+            red in the first test alone, at 15.9.
+            MC4 the swing readings' key given back its own wording: red in the second test alone.
+            Results: recorded in 12.4's entry, which follows this one, from the one sweep run over the
+            tree carrying both.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry and 12.4's, with the figures from
+            that run recorded in 12.4's entry.
+
+### 12.4 - the shape proposer and the shape command: a proposal written at the shape clock's trigger and never applied, and the operator's command that opens a filter version, accepts or rejects a proposal, and states what an acceptance restarts   2026-09-25
+Built:      the shape proposer, a night step after the swing filter, section 14's fifteenth. Once
+            sixty ordinary nights are stored under the open filter version it recounts every
+            ordinary night's stored gate readings under other settings, through `ShapeProposals`,
+            pure, and proposes for each gate in the funnel's order the one setting nearest the value
+            held that brings the gate's median count inside its band: trend and strength's floor
+            from 0.40 to 0.95 by 0.01, the setup's dry-up ceiling from 0.50 to 2.00 by 0.05, and
+            the trade's reward to risk floor from 1.00 to 4.00 by 0.10. A gate no value in its
+            range reaches, and the trigger, which has no threshold, are findings. It writes one
+            proposal a version to `shape_proposal`, migration 40, states the crossed trigger on its
+            run log row, writes the next only sixty ordinary nights after a rejection, leaves out
+            and names a night whose rows hold no band answers, and never writes a version or the
+            register. The setup gate now stores its two band answers, whether the close sat inside
+            an anchored support band and whether it cleared a band above the previous close, which
+            no threshold moves, so a recount keeps them as the night found them.
+            The shape command, the worker's `shape` verb: `--settings` with `--evidence` and
+            `--trade` opens settings the operator rules, `--accept` a proposal's, and `--reject`
+            with `--reason` records a rejection and nothing else. An acceptance closes the open
+            version and opens the next, named by its place in the order opened. Where the live
+            filter's candidate stands registered, named from `SwingFamily.LivePrefix`, the same
+            transaction retires it and registers the accepted settings through the registrar's new
+            `ReplaceAsync`; the first such acceptance states nothing, and each later one states the
+            live candidate's non-empty blocks with `--restarts`, counted by `SwingFamily.Blocks`,
+            the candidates' own arithmetic, and is refused with nothing changed at any other count
+            or none.
+            The run page's Calibration region draws the newest proposal beneath the shape clock:
+            each gate's setting held and proposed with its median count and the list's under each
+            against their bands, the findings, the decision, and beside it the blocks accepting it
+            would restart with what the command must state.
+Written:    the decision "The shape proposer moves one setting a gate, nearest first, and never
+            applies what it proposes". Section 7's and the matrix's rows for the proposer and the
+            command, 13.8's closing sentence on both, section 14's step with the arithmetic now
+            steps 1 to 20 and the queue step 21, section 15.10's The shape proposal row, section
+            16's shape proposals and the filter versions' retention naming the command, section
+            17's lever ranges and acceptance bound, and section 18's rejected proposal. `SCHEMA.md`'s
+            `filter_version` writer and `shape_proposal`; `RUNBOOK.md`'s command and the night's
+            arithmetic; the `fixture-expectations` and `read-surface` roster rows. Every spec line
+            changed has its prior text in `CHANGELOG.md`.
+Found:      three things while building it, each settled here. The command first read the live
+            candidate's parameters through `CandidateEvaluator.Read`, which the candidates' pin
+            reads as a call on the evaluation path and would have grown the fourteen; it reads them
+            itself, as the flat object of numbers the register holds, since it carries them into a
+            registration and runs no evaluation. A rejection left its version with a proposal and
+            no route to another, so the next waits on sixty more ordinary nights. And a gate row
+            stored before this build holds no band answers, so a recount would read its setup as
+            inside no band and passing under no setting; such a night is left out of the recount
+            and named as a finding. No version is open on the operator's store, so every night the
+            first version counts will be written by this build.
+Expected:   worked by hand over constructed nights. Five hundred members, member i at strength
+            i/500, the hundred from 400 holding a pullback at dry-ups 0.00 to 0.99, twenty of them
+            arriving, three with a stop inside the band: under the held settings 166 pass trend and
+            strength, 100 the setup, 20 the trigger and 3 the trade, so the proposal moves the floor
+            from 2/3 to 0.80 (0.79 passes 105) and the ceiling from 1 to 0.60, holds the trigger's
+            20, and names the trade, which no floor brings to 5. Two hundred stored members at
+            strength i/250: 33 pass the held floor, 0.61 passes 47 and 0.60 passes 50, so the
+            proposal is 0.60 with three findings; fifty-nine nights propose nothing, sixty with ten
+            events wait at fifty, seventy with the same ten propose over sixty, a rejection waits
+            for 120, and ten nights with no band answers leave fifty recounted and a fourth
+            finding. A live candidate first evaluated on 2025-03-04 whose scored setups sit in
+            blocks 0, 1 and 2 has run 2 non-empty blocks by 2025-12-01, session 208, the third
+            block closing only at 251.
+Tests:      1371, from 1362: nine added and none removed, seven under `fixture-expectations`, the
+            proposer's settings, its trigger, the night with no band answers, that it never applies,
+            the first version, the rejection and the first live acceptance, and two under
+            `read-surface`, the drawn proposal and the blocks held to the command. Exact counts
+            moved, each with its reason beside it: the screens' rows 71 to 72, checked elements 215
+            to 218 and claims 223 to 226. The tables the screens draw stay 33, the fixture's run
+            page holding no proposal.
+Claims:     528 predicted, from 516, with 528 PASS and 0 out of scope, and 535 placements and
+            verdicts reconciled against a floor of 34. Twelve more, as the plan predicted for this
+            checkpoint: the proposer's and the command's catalogue and matrix rows, the proposals'
+            store, the night step, the proposal's three parts, section 17's lever ranges and
+            acceptance bound, and section 18's rejected proposal. The pair after 12.9 stays at 553
+            and 553 on the ladder's first tranche and 554 and 554 on the swing trade's plan.
+Pins:       the branch against `main` at b2027ad, read off `RuleVersionScorer.CodeVersionSources`
+            and `CandidateEvaluator.EvaluationSources` in this tree, 20 distinct files: none of them
+            is edited. The filter's own `SwingFilter.CodeVersionSources`, 16: `SwingGates.cs` is
+            edited for the two band answers, so the filter's code pin moves from 786919e5c608 to
+            8f629266f10c, and every gate row from this build names it. No filter version is open on
+            the operator's store, so the move closes no window.
+Mutated:    the rule, stated before the run: one mutation for each property the 12.4 done condition
+            names, and section H's threshold moved one step, each the smallest edit that changes the
+            property's answer and still compiles, filtered to the tests this checkpoint added, one at
+            a time in a detached worktree at this entry's commit and reverted after each.
+            Predicted:
+            M1 the proposer's trigger one night early: red in the trigger test alone, at fifty-nine.
+            M2 event nights read by the recount: red in the trigger test alone, at seventy.
+            M3 the proposed value one step past the nearest: red in the settings test, the trigger
+            test, the band answers test and the drawn proposal, four.
+            M4 the proposer writing its proposal's settings onto the open version: red in the never
+            applies test alone, over the run and over the source.
+            M5 a rejection closing the open version as well: red in the rejection test and the
+            trigger test, two.
+            M6 a later live acceptance stating no count accepted: red in the blocks test alone.
+            M7 a count below the live blocks accepted: red in the blocks test alone.
+            M8 the page drawing one block more than the arithmetic: red in the blocks test alone.
+            M9 the live acceptance's version write left out of the registrar's transaction: red in
+            the first live acceptance test and the blocks test, two.
+            M10 the night with no band answers recounted: red in the band answers test alone.
+            M11 a rejected version proposed again at once: red in the trigger test alone.
+            And the 12.1 correction's MC1 to MC4, stated in its entry above, in the same sweep.
+            Results: one run for each of the fifteen, M1 to M11 and MC1 to MC4, in a detached
+            worktree at b8fbaf4, the tree carrying both entries, filtered to the eleven tests the
+            two entries name, on the operator's instruction of 2026-09-24, each reverted with
+            `git checkout -- .` and the tree read clean after. Every one went red as predicted and
+            every other test of the eleven stayed green. M1, M2 and M11 each turned the trigger test
+            red alone. M3 turned four red, the settings test, the trigger test, the band answers
+            test and the drawn proposal. M4 turned the never applies test red alone; M5 the
+            rejection test and the trigger test; M6, M7 and M8 each the blocks test alone; M9 the
+            first live acceptance test and the blocks test; M10 the band answers test alone. MC1
+            turned both of the correction's tests red, MC2 and MC3 the first alone, and MC4 the
+            second alone. MC2 was run once more over b2027ad, the tree before the correction, and
+            the test as it stood there passed with 15.14's sentence moved into 15.13: the gap the
+            correction closes, shown rather than said. The whole suite ran green over b8fbaf4 in the
+            gates, 1371 of 1371.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1371 of 1371
+            tests ran with none failed, migrations 0 to 40 with none pending, schema version 40,
+            exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 528 claims, 528 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 535 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1371 of 1371 tests.
+            Both gates ran over the tree carrying this entry and the 12.1 correction's, in the
+            worktree beside the repository, and the operator's store under `data/` was not touched
+            by either.
+Carried:    the operator's ruling on the starting settings, the trade gate's input, the five variants
+            and the gate bands, asked for once this merges; the operator's two commands against the
+            live store, the first version through this command and the family's registration at
+            12.5.

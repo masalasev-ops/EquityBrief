@@ -692,7 +692,7 @@ public sealed class SinglePageApp : IComponent
                 marks.SwingTable(ticker, swing) + Cards.Key(
                     "How to read it.",
                     Invariant($"Each return is the close against the close {EquityBrief.Core.Filter.SwingReadings.ReturnShortSessions} and {EquityBrief.Core.Filter.SwingReadings.ReturnLongSessions} sessions before it, beside the share of the index's other members whose return over the same span is lower. The pullback is how far the close sits below the highest high of the last {EquityBrief.Core.Filter.SwingReadings.HighWindow} sessions, counted in the moves {Escaped(ticker)} usually makes in a session; the volume beneath it is the median session's volume since that high against its fifty-day average, and the tightness is the last {EquityBrief.Core.Filter.SwingReadings.TightShortSessions} sessions' true range against the last {EquityBrief.Core.Filter.SwingReadings.TightLongSessions}'s. All of it is computed from the stored daily bars."),
-                    "These are facts about the chart. A high place is a strong return behind the name and not a forecast in front of it, and none of it ranks the company as an investment."),
+                    "These are facts about the chart. A high place is a strong return behind the name and not a forecast in front of it, and this page " + RankRefusal + "."),
                 title: "Where it stands for a swing trade",
                 stamp: Cards.Night(swing.Session),
                 id: "swing",
@@ -1431,7 +1431,8 @@ public sealed class SinglePageApp : IComponent
         ShapeState? shape = null,
         MarketView? market = null,
         FunnelView? funnel = null,
-        IReadOnlyList<TriggerLine>? triggers = null)
+        IReadOnlyList<TriggerLine>? triggers = null,
+        ProposalView? proposal = null)
     {
         var region = new StringBuilder();
 
@@ -1486,7 +1487,7 @@ public sealed class SinglePageApp : IComponent
         {
             region.Append(Cards.Computed(
                 "Calibration",
-                marks.Calibration(clock, triggers ?? []) + Cards.Key(
+                marks.Calibration(clock, triggers ?? []) + marks.Proposal(proposal) + Cards.Key(
                     "How to read it.",
                     "The shape clock counts, over the ordinary nights under the open filter version, how many members pass each gate after the market and every gate before it, the market held open, and how many reach the list, against the bands each is calibrated to. An event night, one on which a usually quiet gate or reason passes more than a quarter of the index or the index trades at 1.8 times its fifty-day volume, is counted and read by no median. The lines beneath count what five other settings are waiting on.",
                     "A median outside its band is what the shape calibration moves a threshold for, once sixty ordinary nights are stored; until then the figures are drawn as not yet measured and decide nothing."),

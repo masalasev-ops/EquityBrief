@@ -10,7 +10,7 @@ Two jobs. Neither is part of the application, because scheduling lives outside i
 
 | Job | When | What it does | Costs |
 |---|---|---|---|
-| `tools/nightly` | after the US close | the arithmetic: membership, bars, corporate actions, indicators, swings, volume profile, levels, trend, ladder, moves, swing readings and the night's breadth, listings, the swing filter, facts, forward returns, news pulse | one bulk bar request, one news feed request, a handful of calendar and membership calls. No model call |
+| `tools/nightly` | after the US close | the arithmetic: membership, bars, corporate actions, indicators, swings, volume profile, levels, trend, ladder, moves, swing readings and the night's breadth, listings, the swing filter, the shape proposal, facts, forward returns, news pulse | one bulk bar request, one news feed request, a handful of calendar and membership calls. No model call |
 | the overnight queue | after the arithmetic, same invocation | the local model writes the local lane's sections that rest on no document, for every name in the index whose research is missing or stale, the listed names first, starting no pass once the configured hours have passed | nothing, and no request |
 
 **Every schedule is expressed in UTC.** The research provider's peak and off-peak windows are fixed in UTC, and a schedule written in local time moves into peak when daylight saving changes with nothing to announce it. Convert for display only.
@@ -262,6 +262,33 @@ dotnet run --project src/EquityBrief.Worker -- filter-counts --year
 ```
 
 `filter-counts` prints, for every night the store keeps bands, trends and plans for, how many members pass each of the swing filter's five gates in order with what each removed, each gate alone, each gate relaxed with every other held, and the setup's two families, under four settings: the market gate at 45% and at 50%, each with the trade gate read from the ladder's first tranche and from the swing trade's own plan. `--year` adds every session of the stored year on which breadth can be read, replaying the bands, the trend and the plan as of each session through the same functions the night calls, and says how many sessions it left out and how closely the replay reproduces what the store kept. It opens the store read-only and writes nothing, reads no outcome, and runs in under a minute; it is safe beside a night but reads the store as it stands, so a count taken while a night writes may land on half a night. It is what the operator rules the filter's starting settings from (see: The swing filter's starting settings are ruled from shape counts before tonight's list switches to it).
+
+### Opening the swing filter's version, and a shape proposal accepted or rejected
+
+The filter's settings move only through this command, run by the operator from the repository root, and a night never runs it (see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts). Until a version is open the filter runs on section 17's proposed values and no night counts toward the shape clock's sixty.
+
+**The first version** is opened on the settings the operator rules from the counts, naming each setting that differs from section 17's proposed value, the trade gate's reading, and the evidence:
+
+```
+dotnet run --project src/EquityBrief.Worker -- shape --settings strengthFloor=0.6,rewardToRiskFloor=1.5 --trade swing --evidence "the ruling of the day, from filter-counts over the stored year"
+```
+
+The settings are `breadthFloor`, `strengthFloor`, `depthLow`, `depthHigh`, `dryUpCeiling`, `tightnessCeiling`, `breakoutVolumeMultiple`, `rewardToRiskFloor`, `stopLow`, `stopHigh` and `earningsWindowSessions`, and `--trade` takes `ladder` or `swing`; every setting not named keeps the open version's value, or section 17's where none is open. It closes the open version and opens the next, named 1, 2 and so on in the order opened. A setting the filter does not hold, a value that is not a finite number, a range whose low end sits above its high and settings the open version already holds are each refused with nothing changed.
+
+**A shape proposal** is written by the night once sixty ordinary nights are stored under the open version, and the run page's Calibration region draws it with each gate's setting held and proposed and, beside it, the non-empty blocks the live filter's clock has run (see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes). Accept it by its number, or reject it with the reason:
+
+```
+dotnet run --project src/EquityBrief.Worker -- shape --accept 1
+dotnet run --project src/EquityBrief.Worker -- shape --reject 1 --reason "the window held the index's quarterly rebalance"
+```
+
+A rejection writes the reason on the proposal's row and changes nothing else, and the next proposal for the version waits on sixty more ordinary nights. An acceptance opens the proposal's settings as the next version; a proposal written for a version no longer open is refused. Before the swing family registers, an acceptance restarts nothing. Once the live filter's candidate stands registered, an acceptance also retires it and registers the accepted settings in the same write, which restarts its edge clock: the first such acceptance states nothing more, and every later one must state the blocks the run page draws beside the proposal, and is refused with nothing changed without them or at any other count:
+
+```
+dotnet run --project src/EquityBrief.Worker -- shape --accept 2 --restarts 3
+```
+
+Each attempt, refused or not, is one row on the run log under `shape` and a run id beginning `shape-`, and an acceptance that retires and registers adds the registrar's own row under the same run id.
 
 ### Registering a candidate and versioning a ladder rule
 

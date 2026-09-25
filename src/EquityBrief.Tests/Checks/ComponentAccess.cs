@@ -26,6 +26,12 @@ public partial class ComponentAccess
         "component-access",
         ["docs/ARCHITECTURE.html", "docs/SCHEMA.md"],
         [
+            // 12.4, the shape proposer and the shape command.
+            CheckReach.Key(Scope.CatalogueTable, "Shape proposer"),
+            CheckReach.Key(Scope.MatrixTable, "Shape proposer"),
+            CheckReach.Key(Scope.CatalogueTable, "Shape command"),
+            CheckReach.Key(Scope.MatrixTable, "Shape command"),
+
             // 12.2, the swing filter and the counts.
             CheckReach.Key(Scope.CatalogueTable, "Swing filter"),
             CheckReach.Key(Scope.MatrixTable, "Swing filter"),

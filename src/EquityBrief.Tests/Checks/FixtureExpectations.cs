@@ -61,6 +61,13 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.LimitsTable, "Event volume ratio"),
             CheckReach.Key(Scope.LimitsTable, "Shape calibration nights"),
 
+            // 12.4, the shape proposer and the shape command: the proposals' store, the lever ranges,
+            // the acceptance bound and a rejected proposal.
+            CheckReach.Key(Scope.StoresTable, "Shape proposals"),
+            CheckReach.Key(Scope.LimitsTable, "Shape lever ranges"),
+            CheckReach.Key(Scope.LimitsTable, "Shape acceptance bound"),
+            CheckReach.Key(Scope.FailureTable, "A shape proposal rejected"),
+
             // 12.2, the swing filter: the nine thresholds it is proposed at, its two stores, its
             // fixture row and the two failures its gates answer.
             CheckReach.Key(Scope.LimitsTable, "Market gate"),

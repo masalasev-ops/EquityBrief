@@ -1202,6 +1202,21 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Shape calibration nights"),
         CheckReach.Key(Scope.LimitsTable, "Gate bands"),
         CheckReach.Key(Scope.LimitsTable, "List band"),
+
+        // 12.4's: the proposer and the command, their store and step, the run page's proposal as its three
+        // parts, section 17's lever ranges and acceptance bound, and section 18's rejected proposal.
+        CheckReach.Key("15.10 Run", "The shape proposal, each gate's setting held and proposed with its median count and the list's under each against their bands"),
+        CheckReach.Key("15.10 Run", "The shape proposal, every gate no value in its range brings inside its band named as a finding"),
+        CheckReach.Key("15.10 Run", "The shape proposal, beside it the non-empty blocks accepting it would restart"),
+        CheckReach.Key(Scope.CatalogueTable, "Shape proposer"),
+        CheckReach.Key(Scope.MatrixTable, "Shape proposer"),
+        CheckReach.Key(Scope.CatalogueTable, "Shape command"),
+        CheckReach.Key(Scope.MatrixTable, "Shape command"),
+        CheckReach.Key(Scope.StoresTable, "Shape proposals"),
+        CheckReach.Key(NightlyRunSteps.Heading, "Count the ordinary nights stored under the open filter version and, once they reach sixty, propose for each gate the one setting that brings its median count inside its band, writing one proposal for the version and stating the crossed trigger on the night's run log; nothing proposed is applied until the operator's command accepts it."),
+        CheckReach.Key(Scope.LimitsTable, "Shape lever ranges"),
+        CheckReach.Key(Scope.LimitsTable, "Shape acceptance bound"),
+        CheckReach.Key(Scope.FailureTable, "A shape proposal rejected"),
     ];
 
     // Rows phase 12 took out of the document: 11.9's region stating each reason's share against its

@@ -331,6 +331,20 @@ public sealed record GateNightRow(DateOnly Session, string Version, int Members,
 // run for the session the clock fell on that closed, the version step's line on each of them, and the
 // nights of trend labels since the version holding a new label for more than one night opened, with
 // its name, none where no such version is open.
+// The newest shape proposal as the proposer stored it, with its decision where one was taken.
+public sealed record ShapeProposalRow(
+    long Id,
+    DateOnly Session,
+    string Version,
+    int Ordinary,
+    IReadOnlyList<EquityBrief.Core.Filter.Lever> Levers,
+    double? ListNow,
+    double? ListProposed,
+    IReadOnlyList<string> Findings,
+    string? Decision,
+    string? Reason,
+    string? Opened);
+
 public sealed record TriggerReads(int ClockNights, IReadOnlyList<string> VersionSteps, int? ConfirmationNights, string? ConfirmationVersion);
 
 // One member's swing filter result on a night as the filter stored it: each gate's pass, the family
@@ -477,6 +491,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.MarketReading, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FilterVersion, Touch.Read),
+            new StoreTouch(Store.ShapeProposal, Touch.Read),
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
@@ -1961,6 +1976,13 @@ public sealed class ReadApi : IComponent
 
     const string OpenFilterVersion = "SELECT version FROM filter_version WHERE closed_at IS NULL ORDER BY opened_at DESC LIMIT 1;";
 
+    const string LatestShapeProposal = @"
+        SELECT id, session_date, version, ordinary, levers, list_now, list_proposed, findings, decision, reason, opened
+        FROM shape_proposal
+        ORDER BY id DESC
+        LIMIT 1;
+    ";
+
     // A night run for the session the clock fell on carries no named session in its run id, and one
     // run by hand for a named session does.
     const string ClockNightCloses = @"
@@ -2031,6 +2053,35 @@ public sealed class ReadApi : IComponent
         }
 
         return ratios;
+    }
+
+    // The newest shape proposal, or none where the proposer has written none.
+    public async Task<ShapeProposalRow?> LatestShapeProposalAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LatestShapeProposal;
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        return new ShapeProposalRow(
+            reader.GetInt64(0),
+            DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            reader.GetString(2),
+            reader.GetInt32(3),
+            JsonSerializer.Deserialize<List<EquityBrief.Core.Filter.Lever>>(reader.GetString(4)) ?? [],
+            reader.IsDBNull(5) ? null : reader.GetDouble(5),
+            reader.IsDBNull(6) ? null : reader.GetDouble(6),
+            JsonSerializer.Deserialize<List<string>>(reader.GetString(7)) ?? [],
+            reader.IsDBNull(8) ? null : reader.GetString(8),
+            reader.IsDBNull(9) ? null : reader.GetString(9),
+            reader.IsDBNull(10) ? null : reader.GetString(10));
     }
 
     // The open filter version's name, and none where none is open.

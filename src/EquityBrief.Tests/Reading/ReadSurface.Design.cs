@@ -512,13 +512,34 @@ public partial class ReadSurface
         Assert.Contains($"<li>It {SinglePageApp.RankRefusal}.</li>", page, StringComparison.Ordinal);
 
         // The refusal to rank is one sentence held once in code, and sections 15.9 and 15.14 state it in the
-        // same words, so the page and the two sections cannot come to say different things.
+        // same words, so the page and the two sections cannot come to say different things. Each section is
+        // read between its own heading and the next, so the sentence standing elsewhere in the document
+        // does not stand for either of them.
         // see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns
         var document = WebUtility.HtmlDecode(File.ReadAllText(Repository.Architecture));
 
-        Assert.Contains("its three refusals, being that it does not predict where the price will go, that it " + SinglePageApp.RankRefusal + ", and that it does not say how much to buy", document, StringComparison.Ordinal);
-        Assert.Contains("<li>A screen " + SinglePageApp.RankRefusal + " (see:", document, StringComparison.Ordinal);
+        string Section(string heading, string next)
+        {
+            var from = document.IndexOf($"<h3>{heading}</h3>", StringComparison.Ordinal);
+            var to = document.IndexOf($"<h3>{next}</h3>", StringComparison.Ordinal);
+
+            Assert.True(from >= 0 && to > from, $"section {heading} is not found before {next}");
+
+            return document[from..to];
+        }
+
+        Assert.Contains("its three refusals, being that it does not predict where the price will go, that it " + SinglePageApp.RankRefusal + ", and that it does not say how much to buy", Section("15.9 Name", "15.10 Run"), StringComparison.Ordinal);
+        Assert.Contains("<li>A screen " + SinglePageApp.RankRefusal + " (see:", Section("15.14 What no screen does", "15.15 Queue"), StringComparison.Ordinal);
         Assert.DoesNotContain("does not rank the name against any other", document, StringComparison.Ordinal);
+
+        // And the page states the refusal in no other words: every sentence on it saying what the page does
+        // not rank is the held one. The swing readings' key, which this page does not draw, is read on the
+        // pages that draw it.
+        var read = WebUtility.HtmlDecode(page);
+
+        Assert.Equal(
+            Regex.Matches(read, "as an investment").Count,
+            Regex.Matches(read, Regex.Escape(SinglePageApp.RankRefusal)).Count);
         Assert.Contains("<li>It does not say how much to buy: the sizing near the end only divides the amount you choose to risk.</li>", page, StringComparison.Ordinal);
 
         var glossary = Regex.Match(page, "<details class=\"gloss\"><summary>Words used on this page</summary>(.*?)</details>", RegexOptions.Singleline);

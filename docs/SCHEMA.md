@@ -46,7 +46,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `swing_reading` | SwingReader | none | SwingReader |
 | `market_reading` | SwingReader | SwingReader | SwingReader |
 | `gate_result` | SwingFilter | none | SwingFilter |
-| `filter_version` | none | none | none |
+| `filter_version` | ShapeCommand | ShapeCommand | none |
+| `shape_proposal` | ShapeProposer | ShapeCommand | none |
 | `listing` | ShortlistBuilder | ShortlistBuilder | none |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
@@ -399,7 +400,7 @@ Grain: one row per version of the swing filter's settings.
 
 | Column | Type | Notes |
 |---|---|---|
-| `version` | TEXT | the version's name |
+| `version` | TEXT | the version's name, its place in the order the versions were opened, 1 for the first |
 | `settings` | TEXT | JSON: every threshold the gates read and the trade gate's input, each named |
 | `opened_at` | TEXT | UTC instant |
 | `closed_at` | TEXT | UTC instant, null while the version is open |
@@ -407,7 +408,32 @@ Grain: one row per version of the swing filter's settings.
 
 Primary key: `version`.
 
-**Nothing writes it yet.** The verb that opens and closes a version is built at 12.4 and is its writer from then; the swing filter reads the open row and, where none is open, runs on section 17's proposed values and says so on every row.
+**The shape command writes it and is its only writer** (see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts): an acceptance, of a proposal or of settings the operator rules, closes the open row and inserts the next at one instant, and nothing deletes a version. The swing filter reads the open row and, where none is open, runs on section 17's proposed values and says so on every row.
+
+### shape_proposal
+Grain: one row per proposal the shape proposer writes.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | INTEGER | the proposal's number, which the command takes |
+| `proposed_at` | TEXT | UTC instant |
+| `session_date` | TEXT | the night whose run crossed the trigger |
+| `version` | TEXT | the filter version whose ordinary nights it read |
+| `ordinary` | INTEGER | how many ordinary nights it read |
+| `current_settings` | TEXT | JSON: the settings the version held, each named |
+| `settings` | TEXT | JSON: the settings proposed, each named |
+| `levers` | TEXT | JSON: each gate's setting, the value held and the one proposed, none where no value in the range reaches the band or the gate has no threshold, its median count under each, and its band |
+| `list_now` | REAL | the list's median over the ordinary nights under the settings held, null over none |
+| `list_proposed` | REAL | the same under the settings proposed |
+| `findings` | TEXT | JSON: each gate no value in its range brings inside its band, in words |
+| `decision` | TEXT | `accepted` or `rejected`, null until the command takes one |
+| `decided_at` | TEXT | UTC instant, null until then |
+| `reason` | TEXT | a rejection's reason, null otherwise |
+| `opened` | TEXT | the version an acceptance opened, null otherwise |
+
+Primary key: `id`.
+
+**The shape proposer inserts it and the shape command writes its decision** (see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes). The proposer writes one row a version once sixty ordinary nights are stored under it, and after a rejection the next once sixty more are; the command writes `decision`, `decided_at`, `reason` and `opened` on a row with no decision and nothing else on it, and nothing deletes one.
 
 ### listing
 Grain: one row per ticker per night, **for every index member and not only the listed ones**.

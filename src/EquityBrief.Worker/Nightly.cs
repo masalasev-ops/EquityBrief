@@ -308,7 +308,19 @@ public static class Nightly
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
                     $"{outcome.Excluded} excluded, version {outcome.Version}";
             }),
-            // Section 14's step 15. The facts file and the change list are one
+            // Section 14's step 15. The shape proposer, after the swing filter, since it counts the
+            // gate results the filter has just stored. It writes a proposal once the open version's
+            // ordinary nights reach the trigger, and never a version: an acceptance is the operator's.
+            new("shape-proposal", async () =>
+            {
+                var outcome = await new ShapeProposer(clock, store.DatabaseFile)
+                    .RunAsync(runId, night.Token);
+
+                return outcome.Proposal is { } written
+                    ? $"proposal {written} written for filter version {outcome.Version} over {outcome.Ordinary} ordinary night(s)"
+                    : $"{outcome.Ordinary} ordinary night(s) under filter version {outcome.Version}, {(outcome.Crossed ? "a proposal already stands" : "nothing proposed")}";
+            }),
+            // Section 14's step 16. The facts file and the change list are one
             // stage rather than two, because the detector compares tonight's
             // payload against the last stored one and there is nothing for it
             // to read until the assembler has written tonight's.
@@ -325,7 +337,7 @@ public static class Nightly
                     $"{assembled.FactsWritten} fact(s), {changes.ChangesRecorded} material change(s), " +
                     $"{(changes.NotCompared ?? []).Count} not compared, {changes.PayloadsEmptied} payload(s) emptied";
             }, [FactsAssembler.Stage, ChangeDetector.Stage]),
-            // Section 14's step 16. Once per night rather than per name,
+            // Section 14's step 17. Once per night rather than per name,
             // because the base rate is a figure over the whole population and a
             // per-name pass would compute it once per name from the same rows.
             new("forward-returns", async () =>
@@ -336,7 +348,7 @@ public static class Nightly
                 return $"{outcome.RowsWritten} row(s) written over {outcome.ListingsExamined} listing(s), {outcome.Kept} kept as decided, " +
                     $"{outcome.Matured} newly matured, {outcome.Immature} not yet matured";
             }),
-            // Section 14's step 17. One dated query, paged until the day is
+            // Section 14's step 18. One dated query, paged until the day is
             // covered, fanned out to names in code.
             new("news-pulse", async () =>
             {
@@ -347,7 +359,7 @@ public static class Nightly
                     $"{outcome.RowsWritten} row(s), {outcome.NamesCounted} name(s) with news, " +
                     $"{outcome.RowsDropped} dropped";
             }),
-            // Section 14's step 18, from 8.6. Counterfactual and free: the bars
+            // Section 14's step 19, from 8.6. Counterfactual and free: the bars
             // are already stored, so scoring a version costs the ladder stage run
             // again per version and the level stage as well for a version of the
             // merge distance, and never a request. It runs after the arithmetic
@@ -366,7 +378,7 @@ public static class Nightly
                 return $"{outcome.Versions} open version(s), {outcome.Replayed} replayed with {outcome.ReplayedMergeDistance} of the merge distance, " +
                     $"{outcome.RowsWritten} score(s) over {outcome.NamesScored} name(s), {outcome.NamesNotComputed} left out, {outcome.RowsDropped} dropped";
             }),
-            // Section 14's step 19, which closes the arithmetic and records its
+            // Section 14's step 20, which closes the arithmetic and records its
             // counts. It computes nothing: every figure is counted off the
             // store the night has just written, which is what makes it a record
             // of what happened rather than of what each stage intended.
@@ -379,7 +391,7 @@ public static class Nightly
                     $"{outcome.ReasonsFired} reason(s) fired, {outcome.NamesStale} stale, " +
                     $"{outcome.Duration}";
             }),
-            // Section 14's step 20, after the arithmetic has closed and recorded its
+            // Section 14's step 21, after the arithmetic has closed and recorded its
             // counts. It calls the local model and nothing else, and no figure above it
             // moves whether it ran. It is handed no token from the night's deadline: that
             // deadline bounds the arithmetic, and the queue is bounded by its own limit,
@@ -405,7 +417,7 @@ public static class Nightly
                     $"{outcome.Left.Count} left for the next night, {outcome.ModelCalls} local model call(s), " +
                     $"{outcome.Outcome}, {outcome.Awake}";
             }, [OvernightQueue.Stage]),
-            // Section 14's step 21, after the overnight queue, which writes the first name's key
+            // Section 14's step 22, after the overnight queue, which writes the first name's key
             // before any other name's, so a pass started earlier would meet the queue on that
             // name. The night asks for a report on the first name drawn on its list and starts
             // the drain as a press does: it writes one row and starts one process, and the pass

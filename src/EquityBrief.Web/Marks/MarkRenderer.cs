@@ -172,6 +172,26 @@ public sealed record SwingReadingsView(
 // One operating obligation's count against its trigger, as the Calibration region states it.
 public sealed record TriggerLine(string Obligation, int Count, int Trigger, string Says);
 
+// The newest shape proposal as the run page draws it: its number, the night and version it was written
+// for, the ordinary nights it read, each gate's lever, the list's median held and proposed, the gates no
+// threshold brings inside their bands, its decision, and what accepting it restarts, being the live
+// filter's candidate, the acceptances already taken while one stood and the blocks its clock has run.
+public sealed record ProposalView(
+    long Id,
+    DateOnly Session,
+    string Version,
+    int Ordinary,
+    IReadOnlyList<Lever> Levers,
+    double? ListNow,
+    double? ListProposed,
+    IReadOnlyList<string> Findings,
+    string? Decision,
+    string? Reason,
+    string? Opened,
+    string? Live,
+    int AcceptedWhileLive,
+    int Blocks);
+
 // One step of the swing filter's funnel: the gate, how many members passed it and every gate before it,
 // and how many it removed.
 public sealed record FunnelStep(string Gate, int Passed, int Removed);
@@ -3386,6 +3406,84 @@ public sealed class MarkRenderer : IComponent
 
         return region.ToString();
     }
+
+    // The newest shape proposal beneath the shape clock: what it proposes gate by gate, the list's median
+    // held and proposed, the gates it names as findings rather than forcing, its decision, and beside it
+    // the blocks accepting it would restart, the count the shape command holds a later acceptance to.
+    // see: The shape proposer moves one setting a gate, nearest first, and never applies what it proposes
+    // see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts
+    public string Proposal(ProposalView? proposal)
+    {
+        var region = new StringBuilder();
+
+        region.Append("<section class=\"shape-proposal\"><h4>The shape proposal</h4>");
+
+        if (proposal is null)
+        {
+            region.Append("<p class=\"proposal\" data-proposal=\"none\">No shape proposal is stored. The proposer writes one once the shape clock's trigger is crossed, and nothing moves until you accept it.</p></section>");
+
+            return region.ToString();
+        }
+
+        var decided = proposal.Decision switch
+        {
+            null => Formatted($"waiting on your decision: shape --accept {proposal.Id} opens it as the next filter version, and shape --reject {proposal.Id} --reason records why not"),
+            "accepted" => $"accepted, opening filter version {Escaped(proposal.Opened ?? "none")}",
+            _ => $"rejected: {Escaped(proposal.Reason ?? string.Empty)}",
+        };
+
+        region.Append(Invariant, $"<p class=\"proposal\" data-proposal=\"{proposal.Id}\" data-version=\"{Escaped(proposal.Version)}\" data-ordinary=\"{proposal.Ordinary}\" data-decision=\"{Escaped(proposal.Decision ?? "none")}\">");
+        region.Append(Invariant, $"Proposal {proposal.Id}, written on the night of {proposal.Session:yyyy-MM-dd} over {proposal.Ordinary} ordinary nights under filter version {Escaped(proposal.Version)}, is {decided}.</p>");
+
+        region.Append("<div class=\"tbl-wrap\"><table class=\"proposal-levers\"><tr><th>Through</th><th>Setting</th><th>Held</th><th>Proposed</th><th>Median held</th><th>Median proposed</th><th>Band</th></tr>");
+
+        foreach (var lever in proposal.Levers)
+        {
+            region.Append(Invariant, $"<tr data-gate=\"{Escaped(lever.Gate)}\" data-setting=\"{Escaped(lever.Setting ?? "none")}\" data-current=\"{Raw(lever.Current)}\" data-proposed=\"{Raw(lever.Proposed)}\" data-median-now=\"{Raw(lever.MedianNow)}\" data-median-proposed=\"{Raw(lever.MedianProposed)}\">");
+            region.Append(Invariant, $"<td>{Escaped(lever.Gate)}</td>");
+            region.Append(lever.Setting is { } setting
+                ? $"<td>{Escaped(setting)}</td><td class=\"num\">{Setting(lever.Current)}</td><td class=\"num\">{(lever.Proposed is { } moved ? Setting(moved) : "none brings it inside")}</td>"
+                : "<td>no threshold</td><td></td><td></td>");
+            region.Append(Invariant, $"<td class=\"num\">{Median(lever.MedianNow)}</td><td class=\"num\">{Median(lever.MedianProposed)}</td><td class=\"num\">{lever.Low} to {lever.High}</td></tr>");
+        }
+
+        region.Append(Invariant, $"<tr data-gate=\"the list\" data-median-now=\"{Raw(proposal.ListNow)}\" data-median-proposed=\"{Raw(proposal.ListProposed)}\"><td>the list</td><td></td><td></td><td></td>");
+        region.Append(Invariant, $"<td class=\"num\">{Median(proposal.ListNow)}</td><td class=\"num\">{Median(proposal.ListProposed)}</td><td class=\"num\">{ShapeClock.ListLow} to {ShapeClock.ListHigh}</td></tr>");
+        region.Append("</table></div>");
+
+        if (proposal.Findings.Count == 0)
+        {
+            region.Append("<p class=\"proposal-findings\" data-findings=\"0\">No finding: every gate with a threshold has a value in its range that brings its median inside its band.</p>");
+        }
+        else
+        {
+            region.Append(Invariant, $"<ul class=\"proposal-findings\" data-findings=\"{proposal.Findings.Count}\">");
+
+            foreach (var finding in proposal.Findings)
+            {
+                region.Append(Invariant, $"<li>{Escaped(finding)}</li>");
+            }
+
+            region.Append("</ul>");
+        }
+
+        region.Append(Invariant, $"<p class=\"restarts\" data-live=\"{Escaped(proposal.Live ?? "none")}\" data-accepted-while-live=\"{proposal.AcceptedWhileLive}\" data-blocks=\"{proposal.Blocks}\">");
+        region.Append(proposal switch
+        {
+            { Live: null } => "No live filter candidate is registered, so accepting restarts nothing.",
+            { Live: { } live, AcceptedWhileLive: 0 } => Formatted($"Accepting it restarts '{Escaped(live)}', which has run {proposal.Blocks} non-empty block(s) of the {Blocks.Floor} its first look reads. It is the first acceptance while the list is live, which costs its restart and states nothing more."),
+            { Live: { } live } => Formatted($"Accepting it restarts the {proposal.Blocks} non-empty block(s) '{Escaped(live)}' has run, of the {Blocks.Floor} its first look reads. Shape is frozen after one acceptance while the list is live, so the command states them: shape --accept {proposal.Id} --restarts {proposal.Blocks}."),
+        });
+        region.Append("</p></section>");
+
+        return region.ToString();
+    }
+
+    static string Raw(double? value) => value is { } some ? some.ToString("R", Invariant) : "none";
+
+    static string Setting(double? value) => value is { } some ? some.ToString("0.00", Invariant) : "none";
+
+    static string Median(double? value) => value is { } some ? some.ToString("0.#", Invariant) : "no ordinary night";
 
     // The line at the top of the run page once the shape clock's trigger is crossed.
     public string ShapeDue(ShapeState shape) =>

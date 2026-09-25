@@ -687,6 +687,54 @@ internal static class Scope
             Verdict.Pass,
             "the list's row carries the band of 5 to 30 the constants hold, drawn beside its median on the run page",
             ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The shape proposal, each gate's setting held and proposed with its median count and the list's under each against their bands")] = new Scoped(
+            Verdict.Pass,
+            "each gate's setting held and proposed, its median count under each, its band, and the list's two medians and band are read back off the run page against a proposal worked out by hand over constructed nights",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The shape proposal, every gate no value in its range brings inside its band named as a finding")] = new Scoped(
+            Verdict.Pass,
+            "the gate no value in its range brings inside its band is drawn as a finding in the proposer's own words, read back against the constructed nights' answer",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The shape proposal, beside it the non-empty blocks accepting it would restart")] = new Scoped(
+            Verdict.Pass,
+            "the live filter's non-empty blocks are drawn beside the proposal against a count worked by hand, and read off the page they are the count a later acceptance must state, refused without it and at another",
+            ByReadSurface),
+        [CheckReach.Key(CatalogueTable, "Shape proposer")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the stores it reads and the proposals it inserts, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Shape proposer")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Shape command")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the stores it reads and the versions and decisions it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Shape command")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Shape proposals")] = new Scoped(
+            Verdict.Pass,
+            "one row per proposal carrying the settings held and proposed, each lever, the list's medians and the findings, written at the trigger and not before, and its decision written by the command alone, over constructed stores",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Shape lever ranges")] = new Scoped(
+            Verdict.Pass,
+            "over constructed nights whose right settings are worked out by hand, the proposer moves each gate to the value in its range nearest the one held that reaches the band and names the gate its range cannot reach, and the ranges the row states are the ones the proposer holds",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Shape acceptance bound")] = new Scoped(
+            Verdict.Pass,
+            "the ruled settings open the first version restarting nothing, the first acceptance while a live candidate stands states nothing, and a later one is refused without the page's count and at another with nothing changed and accepted at it; and `read-surface` reads that count off the run page beside the proposal and holds the command's refusals and its acceptance to it",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A shape proposal rejected")] = new Scoped(
+            Verdict.Pass,
+            "a rejection writes the decision, when and why on the proposal's row and nothing else, a second decision is refused, and the next proposal for the version waits on sixty more ordinary nights, over constructed stores",
+            ByExpectations),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Count the ordinary nights stored under the open filter version and, once they reach sixty, propose for each gate the one setting that brings its median count inside its band, writing one proposal for the version and stating the crossed trigger on the night's run log; nothing proposed is applied until the operator's command accepts it.")] = new Scoped(
+            Verdict.Pass,
+            "the night runs the step after the swing filter and before the facts, and it writes a proposal at the trigger and none before",
+            ByNight),
         [CheckReach.Key(LimitsTable, "Peer return window")] = new Scoped(
             Verdict.Pass,
             "a return is taken over sixty sessions and a series one short of the window and the close it is measured from has none, over constructed bars, and the constant the row states is the one the reading uses",
@@ -2358,6 +2406,9 @@ internal static class Scope
         ["Ladder builder"] = "4.4",
         // 12.2's verb, which the plan calls the counts rather than by the component's name.
         ["Filter counts"] = "12.2",
+        // 12.4's two, which the plan calls the proposer and the command.
+        ["Shape proposer"] = "12.4",
+        ["Shape command"] = "12.4",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -2375,6 +2426,9 @@ internal static class Scope
 
         // 12.2's versions, which the plan names by the table rather than the store.
         ["Filter versions"] = "12.2",
+
+        // 12.4's proposals, which the plan names by the table.
+        ["Shape proposals"] = "12.4",
 
         // 12.1's two, one row per member per night and one per night.
         ["Swing readings"] = "12.1",
@@ -2595,6 +2649,10 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "What else is waiting on a count, the nights the version step replayed both kinds against five")] = "12.3",
         [CheckReach.Key("15.10 Run", "What else is waiting on a count, the resolved event-book setups against 250")] = "12.3",
         [CheckReach.Key("15.10 Run", "What else is waiting on a count, the nights of trend labels under the third trend version against sixty")] = "12.3",
+        // 12.4's proposal, each part owed where it is drawn.
+        [CheckReach.Key("15.10 Run", "The shape proposal, each gate's setting held and proposed with its median count and the list's under each against their bands")] = "12.4",
+        [CheckReach.Key("15.10 Run", "The shape proposal, every gate no value in its range brings inside its band named as a finding")] = "12.4",
+        [CheckReach.Key("15.10 Run", "The shape proposal, beside it the non-empty blocks accepting it would restart")] = "12.4",
         // 12.2's gates and funnel, each part owed where it is drawn.
         [CheckReach.Key("15.9 Name", "Gates, each of the five gates with whether it passed and why")] = "12.2",
         [CheckReach.Key("15.9 Name", "Gates, the setup's family and whether the trigger's event happened")] = "12.2",
@@ -2775,6 +2833,9 @@ internal static class Scope
             ["the ordinary nights under the open filter version against the sixty the calibration waits on", "every event night with what made it one", "each gate's median count through it against its band", "the list's median size against its band of 5 to 30", "drawn as not yet measured until the trigger", "said at the top of the page once the trigger is crossed", "each reason's share of the index as context"],
         [CheckReach.Key("15.10 Run", "What else is waiting on a count")] =
             ["the nights run for the session the clock fell on against five", "the research passes carrying a recorded cost against twenty", "the nights the version step replayed both kinds against five", "the resolved event-book setups against 250", "the nights of trend labels under the third trend version against sixty"],
+        // 12.4. The run page's shape proposal, read as the parts its row enumerates.
+        [CheckReach.Key("15.10 Run", "The shape proposal")] =
+            ["each gate's setting held and proposed with its median count and the list's under each against their bands", "every gate no value in its range brings inside its band named as a finding", "beside it the non-empty blocks accepting it would restart"],
         // 12.1. The name page's readings and the run page's market row, each read as the parts its row enumerates.
         [CheckReach.Key("15.9 Name", "Swing readings")] =
             ["the return over 63 sessions and over 126 sessions with each one's place among the members' returns", "the highest high of the last 20 sessions and how far the close sits below it in typical days' moves", "the median volume of the sessions since that high against the fifty-day average", "the mean true range of the last ten sessions against the last fifty", "a key saying how to read it"],
@@ -3119,6 +3180,8 @@ internal static class Scope
         // 12.2's two, each answered by the gate that reads the absent value.
         ["Breadth not available on a night"] = "12.2",
         ["A gate's reading is absent for a name"] = "12.2",
+        // 12.4's, answered by the command's rejection.
+        ["A shape proposal rejected"] = "12.4",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -3167,6 +3230,8 @@ internal static class Scope
         ["Shape calibration nights"] = "12.3",
         ["Gate bands"] = "12.3",
         ["List band"] = "12.3",
+        ["Shape lever ranges"] = "12.4",
+        ["Shape acceptance bound"] = "12.4",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)
@@ -3199,6 +3264,7 @@ internal static class Scope
         ["Annotate the largest moves"] = "5.2",
         ["Compute the swing readings"] = "12.1",
         ["Evaluate every member through the swing filter"] = "12.2",
+        ["Count the ordinary nights stored under the open filter version"] = "12.4",
         ["Evaluate the list reasons"] = "5.4",
         ["Run the overnight queue"] = "6.10",
         ["Ask for a report on the first name"] = "11.4",
