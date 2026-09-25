@@ -26018,3 +26018,135 @@ Carried:    nothing new. The per-window level's revisit stays the operator's rul
             ever registered standing at ten since 14:04:07Z against the eight it is due at (see: Holm's level
             passes between the candidates by a graph fixed when they are registered, and every verdict shows
             the lifetime count).
+
+### 12.5 - correction: a standing candidate no night has evaluated is asserted to read the candidates standing at the page's instant, where reading it over those standing before a retirement or before the page's second left every test green   2026-09-25
+Corrects:   12.5's correction of 2026-09-25 (99cc48d), whose tests held a standing candidate no night has
+            evaluated only where the candidates standing at the page's instant and those standing in the
+            second before it, or before its last retirement, are one set. Section 13.6 says such a
+            candidate reads the ones the next night evaluates with it, which is the page's own instant,
+            and the code reads them so; reading it as a retired candidate is read turned no test red. The
+            two differ in two shapes. A candidate retired before any night evaluated it and registered
+            again, which the register allows (see: A candidate stands by the last row naming it, and a
+            name retired and registered again stands once), would read the candidates standing before its
+            earlier retirement until its first night. A page read in the second a candidate registered
+            would leave that candidate out of the others' graphs.
+Found:      by the pre-night half of the second phase 12 sign-off review over bdf6acb on 2026-09-25, its
+            mutation b surviving all 18 tests that reach the candidates' records and the graph, and both
+            shapes worked in its scratch tests, green on the shipped code and red under b.
+Repaired:   nothing shipped changes: the correction is one test.
+Guarded:    `read-surface`, one test added,
+            `AStandingCandidateNoNightHasEvaluatedReadsTheCandidatesStandingAtThePagesInstant`, worked by
+            hand from the register: "k", retired before any night evaluated it and registered again
+            beside "x", "y" and "z", reads 0.05 over 4 with them, where three stood before its retirement;
+            and a page read half a second after "z" registered reads "z" standing and each of the three at
+            0.05 over 3, where two stood before that second. Each is at the graph's first step.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Pins:       the branch against `main` at bdf6acb; this correction edits a test, in none of the twelve
+            `RuleVersionScorer.CodeVersionSources`, the twenty-one `CandidateEvaluator.EvaluationSources`
+            with each evaluator's own source ahead of them, or the sixteen `SwingFilter.CodeVersionSources`,
+            each read from the tree being committed.
+Mutated:    the rule, stated before the run: the mutation that found the gap, run again, filtered to the
+            twenty tests that reach the candidates' records and the graph, the review's eighteen and the
+            two this batch adds.
+            Predicted:
+            D1 a standing candidate no night has evaluated read over the candidates standing before the
+            second of its last retirement, or of the page where it has none (the review's b): red in the
+            test this correction adds alone.
+            Results: D1 in the 10.2 correction closing this batch.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 10.2 correction closing this batch records.
+Carried:    the review's mutation a, `RetiredAt` taking a retirement written after the page's instant, is
+            an unproducible shape: the page reads its instant after its register, so no register row lies
+            after it. That invariant is left unasserted here.
+
+### 10.2 ruling - the graph steps candidates crossing on one read in the order they were registered, after the promoted in the order their promotions were written   2026-09-25
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-25, on the pre-night half of the second phase 12 sign-off review's
+            finding that the run page stepped the graph in the candidates' name order, and that the order
+            in which two candidates crossing on one read step is stated nowhere: which of the two is drawn
+            at the graph's first step, the promoted stepping first in the order their promotions were
+            written. Offered: register order, recommended, fixed when they are registered; the smaller
+            sign-flip p-value first, Holm's own order, which moves with the results; and the name order
+            kept.
+Ruled:      register order (see: The graph steps promoted candidates in the order their promotions were
+            written, and candidates crossing on one read in the order they were registered).
+Changed:    `DECISIONS.md` gains the decision beside the graph's own, and section 13.6 states the order,
+            its prior text in `CHANGELOG.md`. No code changes here: the 10.2 correction that follows
+            carries it.
+Consequences: no verdict moves, and no stored figure, the page computing the graph on each read. Two
+            candidates crossing at once are drawn in the order they were registered, which on the
+            operator's store is the order of the register's ids: the five variants, then the live filter's
+            version 2.
+Tests:      none added here; the 10.2 correction that follows adds the one that holds it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 10.2 correction closing this batch records.
+Carried:    nothing.
+
+### 10.2 - correction: the run page's graph steps the promoted in the order their promotions were written and the rest in the order they were registered, where it stepped every candidate in name order   2026-09-25
+Corrects:   10.2 (687bad4), whose reading of the candidates' records built each window's graph in the
+            candidates' name order, while the graph steps the first member that is promoted or crosses. A
+            promoted candidate always steps, so once two were promoted the page drew them in name order
+            whatever order their promotions were written in: with "b" promoted a year before "a", "a" was
+            drawn at the graph's first step at 0.05 over 3 and "b" at its second at 0.025, where "b"'s
+            level had passed to "a" when "b" was promoted (see: Holm's level passes between the
+            candidates by a graph fixed when they are registered, and every verdict shows the lifetime
+            count). Each record is read at the level drawn, so "a"'s was read below the level it was
+            promoted at. PR 241 carried the order into the graph's one builder unchanged. It takes two
+            promotions, each at a look of at least 8 non-empty blocks, so nothing on the operator's store
+            reaches it, and no stored figure depends on it.
+Found:      by the pre-night half of the second phase 12 sign-off review over bdf6acb on 2026-09-25, its
+            mutation c, the name order reversed, surviving all 18 tests that reach the records and the
+            graph, and the worked case above red on the shipped code in its scratch test.
+Repaired:   `RunScreen.StepOrder`, which the graph's builder now reads: the promoted first, in the order
+            their promotion rows were written, instant then row, and then the rest in the order their
+            first registration rows were written, the order the 10.2 ruling of this batch sets for
+            candidates crossing on one read. `HolmGraph`'s comment states that it steps its members in the
+            order it is given.
+Guarded:    `read-surface`, one test added,
+            `PromotedCandidatesStepInTheOrderTheirPromotionsWereWrittenAndCandidatesCrossingOnOneReadInTheOrderTheyWereRegistered`,
+            worked by hand: "b" promoted a year before "a", beside "c", all three first evaluated on one
+            night, draws "b" at the graph's first step at 0.016667, "a" at its second at 0.025 and "c" at
+            its third at 0.05, and "b" and "a" so in each one's own article. A record crosses no earlier
+            than its second look, at twelve blocks, and twelve blocks run past the exchange closure table
+            the tests place sessions by, so two crossing on one read are held on the order itself: "q",
+            registered before "p", steps first, and the graph over that order with both crossing draws
+            "q" at 0.016667 and "p" at 0.025; and "p", promoted, steps before "q", registered before it,
+            in whatever order the two are handed in.
+Written:    no spec here: the ruling of this batch wrote section 13.6's sentence.
+Expected:   derived: no expectation file moves.
+Tests:      1410, from 1408: one added to `read-surface` by the 12.5 correction of this batch and one by
+            this one, none removed. Migrations 0 to 42 with none added and none pending, schema version 42.
+Claims:     554, from 554, with 554 PASS and 0 out of scope, and 564 placements and verdicts reconciled
+            against a floor of 34. No claim added: no table or figure changed, and section 13.6's sentence
+            is no claim's.
+Pins:       the branch against `main` at bdf6acb; this correction edits `RunScreen.cs`, `HolmGraph.cs` and a
+            test, and the batch also a test and `DECISIONS.md`, `ARCHITECTURE.html` and `CHANGELOG.md`.
+            Neither source is in the twelve `RuleVersionScorer.CodeVersionSources`, the twenty-one
+            `CandidateEvaluator.EvaluationSources` with each evaluator's own source ahead of them, or the
+            sixteen `SwingFilter.CodeVersionSources`, each read from the tree being committed.
+Mutated:    the rule, stated before the run: the name order put back, and each of the new order's two
+            parts broken alone, filtered to the twenty tests.
+            Predicted:
+            D2 the graph built in the candidates' name order, as before (the review's c): red in the test
+            this correction adds alone.
+            D3 the promotion keys dropped, every member in the order it was first registered: red in the
+            test this correction adds alone.
+            D4 the rest in name order rather than the order they were first registered: red in the test
+            this correction adds alone.
+            Results: one run for each of this batch's four mutations in a detached worktree at d1e4719,
+            the tree carrying this entry, filtered to the twenty tests on the operator's instruction of
+            2026-09-24, each reverted with `git checkout -- .` and the tree read clean after. The whole
+            suite ran green over d1e4719 in the gates, 1410 of 1410. D1 turned 1 red of the twenty, the
+            test the 12.5 correction of this batch adds. D2, D3 and D4 each turned 1 red of the twenty,
+            the test this correction adds.
+Held:       all four, in the test each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1410 of 1410
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 564 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, 1410 of 1410 tests.
+            Both gates ran over the tree carrying this entry and the two before it, d1e4719, in the worktree
+            beside the repository, and the operator's store under `data/` was not touched by either.
+Carried:    nothing.

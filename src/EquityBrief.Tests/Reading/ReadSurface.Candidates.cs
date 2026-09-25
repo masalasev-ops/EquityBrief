@@ -405,6 +405,124 @@ public partial class ReadSurface
         Assert.False(again["k"].Standing || again["m"].Standing);
     }
 
+    // A standing candidate no night has evaluated reads the candidates standing at the page's instant,
+    // which is not the reading a retired one takes. "k", retired before any night evaluated it and
+    // registered again beside "x", "y" and "z", reads 0.05 over 4 with them, where the candidates
+    // standing before its retirement were three. And a page read half a second after "z" registered
+    // reads "z" standing and each of the three at 0.05 over 3, where the candidates standing before
+    // that second were two. Each is at the graph's first step.
+    [Fact]
+    public void AStandingCandidateNoNightHasEvaluatedReadsTheCandidatesStandingAtThePagesInstant()
+    {
+        DateOnly night = Nights(EquityBrief.Core.Returns.Blocks.Sessions * 9);
+
+        CandidateRow Registration(long id, string candidate, DateTimeOffset when) =>
+            new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, when, "{\"level\": 30}", null);
+
+        CandidateRow[] back =
+        [
+            Registration(1, "x", Registered),
+            Registration(2, "y", Registered),
+            Registration(3, "k", Registered),
+            new(4, "k", MomentumIndexReading.EvaluatorName, CandidateFamily.Retired, "k", Registered.AddDays(1), "{}", "retired"),
+            Registration(5, "z", Registered.AddDays(2)),
+            Registration(6, "k", Registered.AddDays(3)),
+        ];
+
+        var again = RunScreen.Candidates(back, [], [], night, Registered.AddYears(3)).Candidates;
+
+        Assert.Equal(["k", "x", "y", "z"], again.Where(candidate => candidate.Standing).Select(candidate => candidate.Candidate));
+        Assert.All(again, candidate => Assert.Equal((Math.Round(0.05 / 4, 12), 1), (Math.Round(candidate.Level, 12), candidate.Step)));
+
+        CandidateRow[] justRegistered = [Registration(1, "x", Registered), Registration(2, "y", Registered), Registration(3, "z", Registered.AddDays(2))];
+
+        var read = RunScreen.Candidates(justRegistered, [], [], night, Registered.AddDays(2).AddMilliseconds(500)).Candidates;
+
+        Assert.Equal(["x", "y", "z"], read.Where(candidate => candidate.Standing).Select(candidate => candidate.Candidate));
+        Assert.All(read, candidate => Assert.Equal((Math.Round(0.05 / 3, 12), 1), (Math.Round(candidate.Level, 12), candidate.Step)));
+    }
+
+    // The graph steps the promoted first, in the order their promotions were written, and then the
+    // candidates whose records cross on one read, in the order they were registered, each case worked
+    // by hand over three candidates registered together and first evaluated on one night. "b"
+    // promoted a year before "a": "b" at the graph's first step at 0.05 over 3, "a" at its second at
+    // 0.05 over 3 and half of it again, and "c" at its third holding the whole 0.05, where the name
+    // order drew "a" first. "q" registered before "p", both crossing on one read: "q" first and "p"
+    // second, where the name order puts "p" first. And "p" promoted while "q", registered before it,
+    // crosses on the read: "p" first.
+    [Fact]
+    public void PromotedCandidatesStepInTheOrderTheirPromotionsWereWrittenAndCandidatesCrossingOnOneReadInTheOrderTheyWereRegistered()
+    {
+        DateOnly night = Nights(EquityBrief.Core.Returns.Blocks.Sessions * 9);
+
+        CandidateRow Registration(long id, string candidate) =>
+            new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, Registered, "{\"level\": 30}", null);
+
+        CandidateRow Promotion(long id, string candidate, DateTimeOffset when) =>
+            new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Retired, candidate, when, "{}", CandidateFamily.PromotedBy + " at the look of 12 blocks");
+
+        void Stepped(CandidateRegion region, string candidate, double level, int step, bool crossed)
+        {
+            var read = region.Candidates.Single(row => row.Candidate == candidate);
+
+            Assert.Equal((Math.Round(level, 12), step, crossed), (Math.Round(read.Level, 12), read.Step, read.Crossed));
+        }
+
+        CandidateRow[] register = [Registration(1, "a"), Registration(2, "b"), Registration(3, "c"), Promotion(4, "b", Registered.AddYears(1)), Promotion(5, "a", Registered.AddYears(2))];
+
+        var promoted = RunScreen.Candidates(
+            register,
+            [.. register.Where(row => row.Event == CandidateFamily.Registered).Select(row => new CandidateNightRow(FirstNight, row.Candidate))],
+            [],
+            night,
+            Registered.AddYears(3));
+
+        Stepped(promoted, "b", 0.05 / 3, 1, true);
+        Stepped(promoted, "a", 0.05 / 3 + (0.05 / 3 / 2), 2, true);
+        Stepped(promoted, "c", 0.05, 3, false);
+
+        // Drawn on the page, each article matched on the whole of its key and read to its close.
+        var drawn = new MarkRenderer().CandidateRecords(promoted);
+
+        string Article(string candidate)
+        {
+            var opening = $"<article class=\"candidate\" data-candidate=\"{candidate}\" ";
+            var start = drawn.IndexOf(opening, StringComparison.Ordinal);
+
+            Assert.True(start >= 0 && drawn.IndexOf(opening, start + 1, StringComparison.Ordinal) < 0, candidate);
+
+            return drawn[start..drawn.IndexOf("</article>", start, StringComparison.Ordinal)];
+        }
+
+        Assert.Contains("data-level=\"0.016667\" data-step=\"1\"", Article("b"), StringComparison.Ordinal);
+        Assert.Contains("data-level=\"0.025\" data-step=\"2\"", Article("a"), StringComparison.Ordinal);
+
+        // Two crossing on one read. A record crosses no earlier than its second look, at twelve blocks,
+        // and twelve blocks run past the exchange closure table the tests place sessions by, so the order
+        // is read off the order the page steps in, and the graph stepped over it with "q" and "p" each
+        // crossing at a third of 0.05 or more.
+        RegisterRow Row(CandidateRow row) =>
+            new(row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator, row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence);
+
+        RegisterRow[] both = [Row(Registration(1, "q")), Row(Registration(2, "p")), Row(Registration(3, "r"))];
+
+        Assert.Equal(["q", "p", "r"], RunScreen.StepOrder(both, ["p", "q", "r"]));
+
+        var onOneRead = HolmGraph.Levels(
+                [.. RunScreen.StepOrder(both, ["p", "q", "r"]).Select(candidate => new GraphMember(candidate, false, false, level => candidate != "r" && level >= (0.05 / 3) - 1e-12))],
+                0.05)
+            .ToDictionary(level => level.Candidate, StringComparer.Ordinal);
+
+        Assert.Equal((Math.Round(0.05 / 3, 12), 1, true), (Math.Round(onOneRead["q"].Level, 12), onOneRead["q"].Step, onOneRead["q"].Crossed));
+        Assert.Equal((Math.Round(0.025, 12), 2, true), (Math.Round(onOneRead["p"].Level, 12), onOneRead["p"].Step, onOneRead["p"].Crossed));
+
+        // "p" promoted while "q", registered before it, crosses on the read, whatever order they are
+        // handed in.
+        RegisterRow[] promotedFirst = [.. both, Row(Promotion(4, "p", Registered.AddYears(1)))];
+
+        Assert.Equal(["p", "q", "r"], RunScreen.StepOrder(promotedFirst, ["q", "r", "p"]));
+    }
+
     // Three candidates registered at one instant, which is the family the level is divided by.
     static CandidateRow[] Family() =>
     [

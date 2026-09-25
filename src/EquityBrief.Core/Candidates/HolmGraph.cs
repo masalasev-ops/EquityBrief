@@ -16,7 +16,9 @@ public sealed record GraphLevel(string Candidate, double Level, int Step, bool C
 // to those still standing and each is tested again at the level it now has. A
 // candidate that is retired takes its share out of the family: it passes to no
 // one, because a level released by evidence and a level released by giving up are
-// different things and only the first was earned.
+// different things and only the first was earned. The members step in the order
+// they are given: at each step, the first not yet stepped that is promoted or
+// crosses at the level it holds.
 // see: Holm's level passes between the candidates by a graph fixed when they are registered, and every verdict shows the lifetime count
 public static class HolmGraph
 {
