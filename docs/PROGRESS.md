@@ -25327,7 +25327,10 @@ Mutated:    the rule, stated before the run: each lede put back to the words it 
             Predicted:
             L1 the funnel's lede put back: red in the overlap test alone.
             L2 the reasons card's lede put back: red in the evening before the switch alone.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run for each in a detached worktree at 3fad0a7, the tree carrying this entry,
+            filtered to the two tests, each reverted with `git checkout -- .` and the tree read clean
+            after. Both went red in the test predicted and no other: L1 in the overlap test, L2 in the
+            evening before the switch. The whole suite ran green over 3fad0a7 in the gates, 1391 of 1391.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1391 of 1391
             tests ran with none failed, migrations 0 to 42 with none pending, schema version 42,
             exit 0, against `data-ci` and never `data`.
