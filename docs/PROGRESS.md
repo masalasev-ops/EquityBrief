@@ -25282,7 +25282,16 @@ Mutated:    the rule, stated before the run: one mutation for each property the 
             S9 an evening read as listed by its reasons whatever its rule: red in the forty-passing test
             and the surfaces test.
             S10 the closing count reading the fired listings: red in the closing count test alone.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run for each of the ten in a detached worktree at e331a36, the tree carrying
+            this entry, filtered to the fifteen tests named, each reverted with `git checkout -- .` and
+            the tree read clean after. All ten went red. S3, S4, S6, S7, S8 and S10 went red in the test
+            predicted alone, and S2 and S5 in the two predicted. S1 went red in the forty-passing test
+            and the surfaces test and not in the closed-market test, which the prediction named: a night
+            the market gate closed draws its line before any row, so where its rows come from never
+            reaches the page. S9 went red in the two predicted and in two more the prediction did not
+            name, the closed-market test and the overlap test, each reading an evening's listed count
+            through the query the mutation changed: the header's count and the overlap's names. The
+            whole suite ran green over e331a36 in the gates, 1391 of 1391.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1391 of 1391
             tests ran with none failed, migrations 0 to 42 with none pending, schema version 42,
             exit 0, against `data-ci` and never `data`.
