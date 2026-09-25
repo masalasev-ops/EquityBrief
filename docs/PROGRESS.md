@@ -25524,3 +25524,86 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             and the operator's store under `data/` was not touched by either.
 Carried:    12.6's merge gate, which this branch waits behind with 12.7: the operator's `tools/migrate`,
             filter version 1 and `register --the-family` on the live store.
+
+### 12.9 - phase 12 report: every claim the phase added reached, the pair checked against the actual with every claim that moved named, the store evaluations run again, and no sentence describing the list chosen by a reason firing as the live one   2026-09-25
+Built:      two checks under `architecture-conformance`. The first reads the pair the plan states for the
+            swing trade's plan, 550, off `BUILD_PLAN.md` and checks it against the report: 550, plus the
+            seven claims that landed beyond a checkpoint's prediction, less the three predicted that did
+            not land, is 554, every one of them PASS, none out of scope and none unexamined. The second reads
+            every sentence of the architecture, each table cell and paragraph its own boundary and each
+            citation taken out, for one that names a reason or a condition, the list, and a word of choosing,
+            with nothing saying it is about the evenings before the switch, the reasons as context, the gates
+            or a candidate before its record crosses a look; it finds none, and it is shown to find section
+            8.1's sentence as it stood before the switch.
+Written:    the sentences the search found: section 4's why it is here, which read each reason the name
+            fired; section 3's listing, which read a record that a stock appeared on tonight's list, one row
+            per night it was listed, when a listing row is written for every member every night; figure
+            8.1's description, its shortlist builder box and its list box, which read the third builder
+            deciding the list and the list as the names a reason fired for; section 8.1's worked example,
+            which read two reasons putting the name on the list and a name nothing fired for off it; and
+            section 15.7's watch list, shown whether or not a reason fired. Each now says the swing filter
+            chooses the list and the reasons stand beside it as context. The `architecture-conformance`
+            roster row. Every spec line changed has its prior text in `CHANGELOG.md`.
+Pair:       predicted after 12.9, on the swing trade's plan the 12.4 ruling chose, 550; actual 554.
+            Beyond the prediction, seven, each named in
+            `ArchitectureConformance.Loop.PhaseTwelveBeyondThePrediction`: at 12.1, the run page's market
+            reading read as three parts where the plan counted two, the third being the median volume; at
+            12.2, the counts as a component with a catalogue row and a matrix row, and the filter versions as
+            a store row of their own; at the 12.4 ruling, section 17's trigger arrival window; at 12.6,
+            section 16's list rules; at 12.7, the near misses read as four parts where the plan counted
+            three, the fourth being the withholding. Predicted and not landed, three, all at 12.6: tonight's
+            list's new parts six where the plan counted eight, the order and the count line changing their
+            words and the reasons' own order moving to the evening before the switch, and the name page's
+            why read as the one claim it was where the plan counted a second part.
+Evaluated:  every evaluation against the operator's store run again over a copy taken at 2026-09-25T07:03Z
+            through SQLite's backup opened immutable, never through the harness and never writing `data/`.
+            The store then held its twelve nights, 2026-09-09 to 2026-09-24, at schema 37, and no night after
+            them: each evaluation was first run over a copy holding the same twelve, so no night is new.
+            The readings over the twelve nights reproduce 12.1's table figure for figure, breadth from 59.9%
+            on 2026-09-09 to 47.6% on 2026-09-24, below the market gate's floor of 50% on 2026-09-23 and
+            2026-09-24, so on nights like those the list is empty and says so. The event classifier marks
+            2026-09-18 alone of the twelve. The counts at section 17's proposed values move where the code
+            moved and not the nights: with the three-session arrival window the 12.4 ruling set, the median
+            through the trigger over the stored nights is 4.5 where 12.2 counted 2 on the ladder's first
+            tranche at a floor of 45%, over the replayed sessions 3 where it counted 1, and the trigger alone
+            passes a median of 193 stored and 243 replayed where it passed 48 and 82; the list stays 0 at
+            the proposed values. The replay preview of 12.6, over the same copy, is unchanged: 31 names over
+            the twelve nights, 4 of 29 on the list the evening before, all 31 holding a reason.
+Operating:  the two rows phase 12 opened, with their triggers. **The swing filter's shape calibrated from its
+            ordinary nights**: 60 ordinary nights under one filter version, read on the run page's
+            Calibration region; it stood at 0 on the copy, no version being open there yet. **The swing
+            family's first look**: 8 non-empty blocks of 63 sessions of the live filter's closed-window
+            setups, read on the Calibration region's edge half, no earlier than 566 sessions after the live
+            candidate's first night; it stood at 0, the family not yet registered there.
+Tests:      1403, from 1401: two added and none removed, both under `architecture-conformance`.
+Claims:     554, unchanged, with 554 PASS and 0 out of scope; the pair is 554 and 554.
+Pins:       the branch against the 12.8 branch at edd3ff9, which it is built on. The twelve
+            `RuleVersionScorer.CodeVersionSources`, the twenty-one `CandidateEvaluator.EvaluationSources` and
+            the sixteen `SwingFilter.CodeVersionSources`, each read from the tree being committed, and the
+            branch touches none of them.
+Mutated:    the rule, stated before the run: one mutation for each check this checkpoint added and one for
+            each of its two lists, each the smallest edit that changes the answer and still compiles,
+            filtered to the two tests, one at a time in a detached worktree at this entry's commit and
+            reverted after each.
+            Predicted:
+            P1 the list rules taken out of the claims named beyond the prediction: red in the pair test
+            alone.
+            P2 the claims predicted and not landed counted as two: red in the pair test alone.
+            P3 section 8.1's sentence as it stood before the switch put back in the architecture: red in the
+            sentence test alone.
+            P4 the words that say a sentence is not about the live rule widened to any mention of the list:
+            red in the sentence test alone, the scan no longer finding section 8.1's old sentence.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1403 of 1403
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42,
+            exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 564 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1403 of 1403 tests.
+            Both gates ran over the tree carrying this entry, in the worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    the merges of 12.6 to 12.9, in order, each on its own CI green and none while a night runs,
+            waiting on the operator's `tools/migrate`, filter version 1 and `register --the-family` on the
+            live store, which at 07:03Z stood at schema 37 with no filter version and phase 10's three
+            standing. Then the sign-off, owed on the phase as a whole by a session that committed none of
+            its code: this session committed phase 12's code and signs nothing.

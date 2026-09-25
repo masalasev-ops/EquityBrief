@@ -1272,6 +1272,88 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Any-reason share target"),
     ];
 
+    // The claims phase 12 landed beyond each checkpoint's prediction, each named: 12.1's market reading read as
+    // three parts where the plan counted two, 12.2's counts as a component with its catalogue and matrix rows
+    // and the filter versions as a store of their own, the 12.4 ruling's arrival window, 12.6's list rules, and
+    // 12.7's near misses read as four parts where the plan counted three.
+    static readonly string[] PhaseTwelveBeyondThePrediction =
+    [
+        CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
+        CheckReach.Key(Scope.CatalogueTable, "Filter counts"),
+        CheckReach.Key(Scope.MatrixTable, "Filter counts"),
+        CheckReach.Key(Scope.StoresTable, "Filter versions"),
+        CheckReach.Key(Scope.LimitsTable, "Trigger arrival window"),
+        CheckReach.Key(Scope.StoresTable, "List rules"),
+        CheckReach.Key("15.10 Run", "Near misses, every figure withheld below the block floor"),
+    ];
+
+    // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
+    // where the plan counted eight, and the name page's why read as the one claim it was where the plan counted
+    // a second part.
+    const int PhaseTwelveNotLanded = 3;
+
+    [Fact]
+    public void ThePhaseTwelvePairIsCheckedAgainstTheActualWithEveryClaimThatMovedNamed()
+    {
+        // The pair the plan states for the swing trade's plan, which the 12.4 ruling chose, read off the plan so
+        // the figure checked is the one the plan carries.
+        var plan = Corpus.Read("docs/BUILD_PLAN.md");
+        var stated = Regex.Match(plan, @"(\d+) and \1 if it reads the swing trade's own plan");
+
+        Assert.True(stated.Success, "The plan states no pair for the swing trade's plan.");
+
+        var predicted = int.Parse(stated.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+        var report = Report();
+
+        Assert.All(PhaseTwelveBeyondThePrediction, key => Assert.Contains(key, PhaseTwelveRows));
+        Assert.All(PhaseTwelveBeyondThePrediction, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+
+        var actual = predicted + PhaseTwelveBeyondThePrediction.Length - PhaseTwelveNotLanded;
+
+        Assert.Equal(
+            (actual, 0, 0, actual),
+            (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
+
+        // Stated, so a claim added or lost without being named here moves this rather than the sum.
+        Assert.Equal((550, 554), (predicted, actual));
+    }
+
+    // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before
+    // phase 12, and the words that say a sentence is about the evenings before the switch, the reasons as
+    // context, the gates choosing, or a candidate condition before its record crosses a look.
+    static readonly Regex AReason = new(@"\b(fir(e|es|ed|ing)|reasons?|conditions?)\b", RegexOptions.IgnoreCase);
+    static readonly Regex TheList = new(@"(tonight's list|on the list|the list)", RegexOptions.IgnoreCase);
+    static readonly Regex Choosing = new(@"\b(appears?|is on|are on|reach(es)?|puts?|decides?|chooses?|selects?|listed when|a name is|so the name)\b", RegexOptions.IgnoreCase);
+    static readonly Regex NotLive = new(@"(before the switch|before the swing filter|as context|reasons listed|chose tonight's list before|stopped choosing|evening the reasons|the reasons chose|swing filter|\bgates?\b|record has crossed|promot|candidate)", RegexOptions.IgnoreCase);
+
+    internal static bool DescribesTheReasonsChoosing(string sentence) =>
+        AReason.IsMatch(sentence) && TheList.IsMatch(sentence) && Choosing.IsMatch(sentence) && !NotLive.IsMatch(sentence);
+
+    [Fact]
+    public void NoSentenceDescribesAListChosenByAReasonFiringAsTheLiveOne()
+    {
+        var document = File.ReadAllText(Repository.Architecture);
+        var body = document[document.IndexOf("<body", StringComparison.Ordinal)..];
+
+        body = Regex.Replace(body, "<svg.*?</svg>", " ", RegexOptions.Singleline);
+        body = Regex.Replace(body, "</(td|th|p|li|figcaption|div|h[1-4])>", " |. ");
+
+        var text = System.Net.WebUtility.HtmlDecode(Regex.Replace(body, "<[^>]+>", " "));
+
+        text = Regex.Replace(text, @"\((see|owes): [^)]*\)", " ");
+        text = Regex.Replace(text, @"\s+", " ");
+
+        var sentences = Regex.Split(text, @"(?<=[.;])\s+");
+
+        Assert.True(sentences.Length > 1000, $"Read {sentences.Length} sentences, expected more than 1000.");
+        Assert.DoesNotContain(sentences, DescribesTheReasonsChoosing);
+
+        // The scan is shown to find what it looks for: section 8.1's sentence as it stood before the switch
+        // is caught, and the sentence that replaced it is not.
+        Assert.True(DescribesTheReasonsChoosing("Two reasons, so the name appears on tonight's list, and the list row shows both."));
+        Assert.False(DescribesTheReasonsChoosing("Whether the name is on tonight's list is the swing filter's answer, and where it is, its row shows the two reasons beside the name as context."));
+    }
+
     // The words phase 12 uses, each a row of section 3 whose meaning is one sentence: the words it added and
     // the four it restated.
     static readonly string[] PhaseTwelveWords =
