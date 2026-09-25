@@ -26367,3 +26367,92 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             correction's commit, the only change between the two trees.
 Carried:    the command on the operator's store, on their word, before the night of 2026-09-25 starts:
             `filter-history --from 2026-09-21 --through 2026-09-23`, then the night of 2026-09-24 run again.
+
+### 12.6 ruling - the dated screens open from the swing filter's first night, and an evening before it is not drawn   2026-09-25
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-25, reading the evening of 2026-09-23 drawn with the 340 names its
+            reasons fired: "can we make them unavailable ... Lets start from 24th as real night", and, asked
+            which screens, "Tonight and the run page". Asked why the replayed answers mattered, the operator
+            was told that the old lists are drawn from each night's rows, which every record is read over and
+            a hard rule keeps, and that the replayed answers are read by the trigger's arrival alone, tonight
+            and on the night of 2026-09-28; nothing is deleted.
+Ruled:      on a store the swing filter has listed, tonight's page and the run page open from the first
+            night it listed, an earlier date drawing one line saying so with a link to that night (see: The
+            dated screens open from the swing filter's first night, and an evening before it is not drawn).
+Changed:    `DECISIONS.md` gains the decision beside the switch's own. No code changes here: the 12.6
+            correction that follows carries it.
+Consequences: on the operator's store the record starts on 2026-09-24; the evenings before it stay in the
+            store, on the name page's earlier evenings and in each name's listing history.
+Tests:      none added here; the 12.6 correction that follows adds the ones that hold it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 12.6 correction closing this batch records.
+Carried:    the replayed answers of 2026-09-21 to 2026-09-23 may be taken out on the operator's word once no
+            night reads them, from the night of 2026-09-29; no command takes them out yet.
+
+### 12.6 - correction: tonight's page and the run page open from the swing filter's first night, and their calendar underlines each night they draw, where both drew every evening the store held and the calendar could not tell a day holding a night from one holding none   2026-09-25
+Corrects:   12.6, whose switch left tonight's page and the run page drawing the evenings before the swing
+            filter's first night, listed by the reasons, beside the filter's own, and 5.8's calendar of
+            2026-09-25, a date field over every night held that marked no day. On the operator's store the
+            evening of 2026-09-23 drew 340 names its reasons fired.
+Found:      by the operator on 2026-09-25, on the rulings of this batch and "The calender filter should
+            underline the dates for which we are making the list available".
+Repaired:   `ReadApi.FirstFilterNightAsync` reads the first night the filter listed. Both routes draw a date
+            before it as `SinglePageApp.BeforeTheRecord`, one line saying the record starts on that night with
+            a link opening it under the screen's own header and calendar, and hand both calendars the nights
+            from it on. The calendar's date field is a month grid, newest month first and seven columns from
+            Monday, in which each night the screen draws is an underlined link to it, the night drawn is
+            marked, and every other day is no link; the page's script that read the date field is gone. A
+            store the filter never listed draws every evening as before.
+Guarded:    `read-surface`, one test added and three changed.
+            `TheDatedScreensOpenFromTheSwingFiltersFirstNight`: over two nights, the newest listed by the
+            filter, the night before draws on either screen the line and the link and no page, the newest
+            draws its page with a calendar holding it alone, and with the filter's night taken out the night
+            before draws its page again.
+            `ADatedScreensCalendarOffersTheStoredNightsAndTheNightsEitherSide`, worked by hand over five
+            nights across August and September 2026: September first, one empty cell before its Tuesday the
+            1st and five before August's Saturday the 1st, each night a link to its route, the night drawn
+            marked once, and the weekend between no link.
+            `TonightsPageAndTheRunPageDrawTheCalendarOverTheNightsTheStoreHolds` reads the calendar's links
+            against the store's nights. `AnEveningBeforeTheSwitchIsNotDrawnAndOnAStoreTheFilterNeverListedIsDrawnAsItWasListed`,
+            renamed, and the run page's overlap test each assert the line before reading the evening over the
+            store with the filter's nights taken out, as the sentence test's own finding check now does.
+Written:    sections 15.7 and 15.10 in `ARCHITECTURE.html`, their prior text in `CHANGELOG.md`; the decision
+            by the ruling of this batch.
+Expected:   derived: no expectation file moves.
+Tests:      1415, from 1414: one added to `read-surface`, none removed. Migrations 0 to 42 with none added and
+            none pending, schema version 42.
+Claims:     556, from 556, with 556 PASS and 0 out of scope. No claim added: the sentences are prose.
+Pins:       the branch against `main` at 3fceb2d; this correction edits `ReadApi.cs`, the read surface's
+            `Program.cs`, `Cards.cs`, `SinglePageApp.cs`, `Stylesheet.cs`, tests and two documents, none of
+            them in the twelve `RuleVersionScorer.CodeVersionSources`, the twenty-one
+            `CandidateEvaluator.EvaluationSources` with each evaluator's own source ahead of them, or the
+            sixteen `SwingFilter.CodeVersionSources`, each read from the tree being committed.
+Mutated:    the rule, stated before the run: each check and each part of the grid put back to its plainest
+            form, one at a time, filtered to the three calendar tests and the two switch tests changed.
+            Predicted:
+            H1 tonight's page drawing an evening before the first night: red in the first-night test and the
+            evening-before-the-switch test.
+            H2 the run page drawing a night before the first night: red in the first-night test and the run
+            page's overlap test.
+            H3 both calendars handed every night held: red in the first-night test alone.
+            G1 every day a link: red in the three calendar tests.
+            G2 the night drawn not marked: red in the grid test alone.
+            G3 the months oldest first: red in the grid test alone.
+            G4 the week read from Sunday: red in the grid test alone.
+            Results: one run for each of the seven mutations in a detached worktree at cc0dd2e, the tree
+            carrying this entry, filtered to the five tests on the operator's instruction of 2026-09-24,
+            each reverted with `git checkout -- .` and the tree read clean after. The whole suite ran green
+            over cc0dd2e in the gates, 1415 of 1415. H1 turned the first-night test and the
+            evening-before-the-switch test red. H2 turned the first-night test and the run page's overlap
+            test red. H3 turned the first-night test red alone. G1 turned the three calendar tests red. G2,
+            G3 and G4 each turned the grid test red alone.
+Held:       all seven, in the tests each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1415 of 1415
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 556 claims, 556 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 566 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, 1415 of 1415 tests.
+            Both gates ran over the tree carrying this entry and the one before it, cc0dd2e, in a worktree
+            beside the repository, and the operator's store under `data/` was not touched by either.
+Carried:    nothing new.

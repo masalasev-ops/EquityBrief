@@ -985,6 +985,8 @@ public sealed class ReadApi : IComponent
 
     const string ListRuleOn = "SELECT rule FROM list_rule WHERE session_date = $on;";
 
+    const string FirstFilterNight = "SELECT MIN(session_date) FROM list_rule WHERE rule = $filter;";
+
     // Every row a filter version stored, each gate's answer, its exclusions and whether it passed, with
     // what its own plan came to where one was scored: the population the near misses are read over.
     // see: A gate's near misses are the setups it alone rejected, each group read against its own break-even and null and withheld below the block floor
@@ -1934,6 +1936,22 @@ public sealed class ReadApi : IComponent
         }
 
         return rows;
+    }
+
+    // The first night the swing filter listed, from which the dated screens open, or none on a store it
+    // has never listed.
+    // see: The dated screens open from the swing filter's first night, and an evening before it is not drawn
+    public async Task<DateOnly?> FirstFilterNightAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FirstFilterNight;
+        command.Parameters.AddWithValue("$filter", EquityBrief.Core.Shortlist.ListRules.Filter);
+
+        return await command.ExecuteScalarAsync() is string first
+            ? DateOnly.ParseExact(first, "yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : null;
     }
 
     public async Task<string> ListRuleAsync(DateOnly on)

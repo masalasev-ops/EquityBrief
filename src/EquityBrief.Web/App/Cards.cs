@@ -94,10 +94,9 @@ public static class Cards
 
     public static string Day(DateOnly day) => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-    // A dated screen's calendar: the night drawn, the stored nights either side of it, and a date
-    // field over the nights the store holds. A day the store holds no night for opens the night
-    // before it, or the first night where the day falls before them all, which the page's script
-    // reads off the nights listed here.
+    // A dated screen's calendar: the night drawn, the stored nights either side of it, and a month
+    // grid over the nights the screen draws, newest month first, in which a day holding a night is
+    // underlined and opens it, the night drawn is marked, and every other day is no link at all.
     public static string NightPicker(DateOnly night, IReadOnlyList<DateOnly> held, string route, string newest)
     {
         if (held.Count == 0)
@@ -114,11 +113,41 @@ public static class Cards
 
         return $"<span class=\"night-picker\" data-route=\"{route}\" data-night=\"{Day(night)}\">"
             + Move("earlier", "The night before", "&#8249;", before)
-            + $"<input class=\"np-date\" type=\"date\" value=\"{Day(night)}\" min=\"{Day(held.Min())}\" max=\"{Day(held.Max())}\" "
-            + $"data-nights=\"{string.Join(' ', held.Order().Select(Day))}\" aria-label=\"Choose a night to view\">"
+            + $"<details class=\"np-cal\"><summary class=\"np-date\" aria-label=\"Choose a night to view\">{Day(night)}</summary>"
+            + $"<div class=\"np-months\">{Months(night, held, route)}</div></details>"
             + Move("later", "The night after", "&#8250;", after)
             + (after is null ? string.Empty : $"<a class=\"np-newest\" href=\"{newest}\">newest</a>")
             + "</span>";
+    }
+
+    // One grid a month, from the month of the newest night held back to the oldest's, seven columns from
+    // Monday.
+    static string Months(DateOnly night, IReadOnlyList<DateOnly> held, string route)
+    {
+        var nights = held.ToHashSet();
+        var drawn = new StringBuilder();
+        var month = new DateOnly(held.Max().Year, held.Max().Month, 1);
+        var oldest = new DateOnly(held.Min().Year, held.Min().Month, 1);
+
+        for (; month >= oldest; month = month.AddMonths(-1))
+        {
+            drawn.Append("<div class=\"np-month\" data-month=\"").Append(month.ToString("yyyy-MM", CultureInfo.InvariantCulture)).Append("\">");
+            drawn.Append("<div class=\"np-caption\">").Append(month.ToString("MMMM yyyy", CultureInfo.InvariantCulture)).Append("</div>");
+            drawn.Append("<div class=\"np-grid\"><span class=\"np-wd\">Mo</span><span class=\"np-wd\">Tu</span><span class=\"np-wd\">We</span>");
+            drawn.Append("<span class=\"np-wd\">Th</span><span class=\"np-wd\">Fr</span><span class=\"np-wd\">Sa</span><span class=\"np-wd\">Su</span>");
+            drawn.Append(string.Concat(Enumerable.Repeat("<span class=\"np-pad\"></span>", ((int)month.DayOfWeek + 6) % 7)));
+
+            for (var day = month; day.Month == month.Month; day = day.AddDays(1))
+            {
+                drawn.Append(nights.Contains(day)
+                    ? $"<a class=\"np-day\" href=\"{route}{Day(day)}\" data-night=\"{Day(day)}\"{(day == night ? " aria-current=\"date\"" : string.Empty)}>{day.Day}</a>"
+                    : $"<span class=\"np-off\">{day.Day}</span>");
+            }
+
+            drawn.Append("</div></div>");
+        }
+
+        return drawn.ToString();
     }
 
     public static string Escaped(string text) =>
