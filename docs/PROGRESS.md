@@ -26187,14 +26187,19 @@ Mutated:    the rule, stated before the run: the two mutations that found the ga
             test alone.
             E2 a name ordered by its last registration row (the review's R-last): red in the order test
             alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, VT of VT tests ran with
-            none failed, migrations 0 to 42 with none pending, schema version 42, exit 0, against `data-ci`
-            and never `data`.
-            `tools/verify-phase.ps1` green at VTB tables, VC claims, VP PASS, 0 FAIL, 0 out of scope, 0
-            unexamined, VR placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
-            41 roster checks carried and all 41 run, VT of VT tests.
-            Both gates ran over the tree carrying this entry, TREESHA, in the worktree beside the
+            Results: one run for each of the two mutations in a detached worktree at 5f042b9, the tree
+            carrying this entry, filtered to the twenty tests on the operator's instruction of
+            2026-09-24, each reverted with `git checkout -- .` and the tree read clean after. The whole
+            suite ran green over 5f042b9 in the gates, 1410 of 1410. E1 and E2 each turned 1 red of the
+            twenty, the order test.
+Held:       both, in the test each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1410 of 1410
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 564 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, 1410 of 1410 tests.
+            Both gates ran over the tree carrying this entry, 5f042b9, in the worktree beside the
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    the review's tie mutation, the promotion row's tie-break dropped, is an unproducible shape: it
             differs only for two promotions written in one second, and each promotion is its own retirement
