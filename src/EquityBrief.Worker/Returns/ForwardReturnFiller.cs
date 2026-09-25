@@ -45,14 +45,16 @@ public sealed class ForwardReturnFiller : IComponent
     ";
 
     // Every swing filter row carrying a plan of its own, with the swing horizons already written for it.
-    // A row whose setup found no band has no stop to score from and carries none.
+    // A row whose setup found no band has no stop to score from and carries none, and a replayed row is no
+    // setup a night drew.
     // see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context
+    // see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone
     const string EveryPlannedGateRow = @"
         SELECT g.ticker, g.session_date, g.swing_stop, g.swing_target, f.horizon, f.outcome
         FROM gate_result g
         LEFT JOIN forward_return f
             ON f.ticker = g.ticker AND f.session_date = g.session_date AND f.horizon IN ('swing', 'swing-20')
-        WHERE g.swing_stop IS NOT NULL AND g.swing_target IS NOT NULL
+        WHERE g.swing_stop IS NOT NULL AND g.swing_target IS NOT NULL AND g.version <> '" + EquityBrief.Core.Filter.ReplayedResults.Version + @"'
         ORDER BY g.session_date, g.ticker;
     ";
 

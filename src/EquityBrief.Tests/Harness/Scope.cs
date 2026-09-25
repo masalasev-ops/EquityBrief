@@ -559,6 +559,14 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
+        [CheckReach.Key(CatalogueTable, "Filter history")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the stores it reads and the gate results it writes, and the declaration matches this row, its matrix row and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Filter history")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
         [CheckReach.Key(StoresTable, "Gate results")] = new Scoped(
             Verdict.Pass,
             "one row per member per night carrying each gate's answer, the trade read both ways and the exclusions, read back off the two-night store against results worked by hand, and a night run again replacing its own rows",
@@ -2516,6 +2524,8 @@ internal static class Scope
         // 12.4's two, which the plan calls the proposer and the command.
         ["Shape proposer"] = "12.4",
         ["Shape command"] = "12.4",
+        // The operator's ruling of 2026-09-25, built as 12.6's correction.
+        ["Filter history"] = "12.6",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)

@@ -26266,3 +26266,104 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    the calendar lists every night the listings hold, the two partial evenings of 2026-04-16 and
             2026-08-17 among them, as the pages' own newest-night reading does.
+
+### 12.6 ruling - the swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone   2026-09-25
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-25, on finding the store's evening of 2026-09-24 listing no name, which
+            its night had drawn under version 1's 50% floor before version 2 opened at 45%, where the 45%
+            trial copy listed CPAY, DVN and KO: "Make it official", and then "ok can we at least rerun with
+            the filter and leave everything as is". The night refuses a session older than the store's
+            newest, its corporate action refetch cutting a refetched name's later bars, and the night of
+            2026-09-24 run again alone would fail every pullback whose trigger turned on an earlier session,
+            the sessions before it holding no result of the filter's.
+Ruled:      the filter's results are replayed for the sessions before its first stored night and stored for
+            the trigger's arrival alone, and every other record is left as it is (see: The swing filter's
+            results are replayed for the sessions before its first stored night, for the trigger's arrival
+            alone).
+Changed:    `DECISIONS.md` gains the decision beside the arrival's own. No code changes here: the 12.6
+            correction that follows builds the command.
+Consequences: once the command has replayed 2026-09-21 to 2026-09-23 on the operator's store, the night of
+            2026-09-24 run again reads their results, and the night of 2026-09-25 reads a full window from
+            its first run. No clock counts a replayed session and no page draws one, and the evenings of
+            2026-09-21 to 2026-09-23 keep the lists their own nights drew.
+Tests:      none added here; the 12.6 correction that follows adds the ones that hold it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 12.6 correction closing this batch records.
+Carried:    nothing.
+
+### 12.6 - correction: the swing filter's results are replayed for the sessions before its first stored night and read by the trigger's arrival alone, where the list's first nights failed every pullback for want of them   2026-09-25
+Corrects:   12.6, whose switch put tonight's list on the swing filter while the trigger's arrival reads the
+            stored results of the sessions before a night, and the sessions before the filter's first stored
+            night hold none. On the operator's store the filter first stored 2026-09-24, so on that night and
+            the next every pullback whose answer turned on an earlier session failed its trigger saying no
+            result was stored for it, and the night refuses to run the older sessions again.
+Found:      by the operator on 2026-09-25, reading the evening of 2026-09-24 beside the 45% trial copy.
+Repaired:   the `filter-history` verb, `FilterHistory`. For sessions before the filter's first stored night it
+            replays the filter through the counts' replay as of each session, under the open version's
+            settings, and stores each member's result under the version `replayed`, with the night's code
+            and no rank or shadow, and one run log row under `filter history` that the run page draws as run
+            by hand. A session already holding results, the night's own session, a range holding no session,
+            no open version and an unnamed range are each refused with nothing written.
+            `FilterCounts.CountAsync` takes the settings to count under and the sessions to count. The
+            filler scores no replayed plan, and the three reads the pages draw a filter result from pass a
+            replayed one by; the shape clock, the near misses and the edge clock key on a filter version and
+            never meet one. The night's filter, whose arrival reads the replayed results, is not edited.
+            Over a copy of the operator's store taken at 19:13Z through SQLite's backup opened immutable, the
+            command replayed 2026-09-21, 2026-09-22 and 2026-09-23, 1511 results, and the night of 2026-09-24
+            run again on the copy listed CPAY, DVN and KO under version 2, as the trial did, with no swing
+            outcome written for a replayed session and one ordinary night counted under version 2.
+Guarded:    `fixture-expectations`, two tests added.
+            `TheFilterHistoryStoresEachReplayedSessionsResultsAndRefusesWhatANightDrew`: over the two-night
+            fixture, run as a person runs it, 2026-09-01 and 2026-09-02 each store the results the counts
+            give for them under the same settings, under the replayed version with the night's code, no rank
+            and no shadow, the nights' own rows untouched and the run log row by hand; each refusal writes
+            nothing, and a session replayed once is refused again.
+            `NoReaderButTheTriggersArrivalReadsAReplayedResult`: the night run again under an open version
+            fails some members' trigger for want of 2026-09-02 before the replay and none after; the pages
+            read no replayed result for a session, a name on it or a name's newest; and the filler scores no
+            replayed plan where the nights' own are scored.
+Written:    the component catalogue, the read and write matrix and section 11.1 in `ARCHITECTURE.html`, the
+            gate results' writer and version in `SCHEMA.md`, and the command in `RUNBOOK.md`, each spec's
+            prior text in `CHANGELOG.md`; the decision by the ruling of this batch.
+Expected:   derived: no expectation file moves.
+Tests:      1414, from 1412: two added to `fixture-expectations`, none removed. Migrations 0 to 42 with none
+            added and none pending, schema version 42.
+Claims:     556, from 554, the component's catalogue and matrix rows, each named among the claims phase 12
+            landed beyond its prediction, so the pair reads 550 and 556, with 556 PASS and 0 out of scope.
+Pins:       the branch against `main` at ed4daa8; this correction adds `FilterHistory.cs` and
+            `ReplayedResults.cs` and edits `FilterCounts.cs`, `ForwardReturnFiller.cs`, the worker's
+            `Program.cs`, `ReadApi.cs`, `RunScreen.cs`, tests and four documents, none of them in the twelve
+            `RuleVersionScorer.CodeVersionSources`, the twenty-one `CandidateEvaluator.EvaluationSources` with
+            each evaluator's own source ahead of them, or the sixteen `SwingFilter.CodeVersionSources`, each
+            read from the tree being committed.
+Mutated:    the rule, stated before the run: each guard and each refusal removed alone, and the replayed
+            results stored under the open version, filtered to the two tests this correction adds.
+            Predicted:
+            F1 the filler scoring replayed plans: red in the readers test alone.
+            F2 a session's results read with replayed ones: red in the readers test alone.
+            F3 a name's result on a session read with replayed ones: red in the readers test alone.
+            F4 a name's newest result read with replayed ones: red in the readers test alone.
+            F5 a session already holding results replayed over: red in the command test alone.
+            F6 the night's own session replayed: red in the command test alone.
+            F7 the replayed results stored under the open version: red in both tests.
+            Results: one run for each of the seven mutations in a detached worktree at 61f21fb, the tree
+            carrying this entry, filtered to the two tests on the operator's instruction of 2026-09-24, each
+            reverted with `git checkout -- .` and the tree read clean after. The whole suite ran green over
+            61f21fb in the gates, 1414 of 1414. F1, F2, F3 and F4 each turned the readers test red and left
+            the command test green. F5 and F6 each turned the command test red and left the readers test
+            green. F7 turned both red.
+Held:       all seven, in the tests each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1414 of 1414
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 556 claims, 556 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 566 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, 1414 of 1414 tests.
+            Both gates ran over the tree carrying this entry and the one before it, 61f21fb, in a worktree
+            beside the repository, and the operator's store under `data/` was not touched by either. The
+            first run, over 5b3e24a, stopped at `clock-usage`: the command's refusal and the command test
+            each formatted a date with the invariant culture named on the line before, which the check reads
+            as a date formatted against the machine's locale, and each was put on the one line in this
+            correction's commit, the only change between the two trees.
+Carried:    the command on the operator's store, on their word, before the night of 2026-09-25 starts:
+            `filter-history --from 2026-09-21 --through 2026-09-23`, then the night of 2026-09-24 run again.

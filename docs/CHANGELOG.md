@@ -7688,3 +7688,23 @@ Now:
 > <p><b>Route:</b> <code>#/</code>, resolving to the newest night, and <code>#/night/&lt;date&gt;</code> for an earlier one. A calendar beside the night drawn opens another, over the nights the store holds: its arrows open the stored night before and the stored night after, and a day picked on it opens the stored night on or before that day, or the first night where the day falls before them all.</p>
 > apart from the night's own stage time and never among the stages that failed. The same calendar as tonight's page sits beside the night drawn, and opens the run page of the night it picks.</p>
 Why: the store holds a night for each session the nightly ran, and a person reading an earlier one should reach it from the page rather than from its route.
+
+### 2026-09-25 - ARCHITECTURE.html - the filter history, a component that replays the swing filter's results for the sessions before its first stored night
+Corrects: the trigger's arrival is read off the stored results of the sessions before a night, and the sessions before the filter's first stored night held none, so every pullback on the list's first nights failed its trigger for want of them. The operator's ruling of 2026-09-25.
+Was: the component catalogue and the read and write matrix held no row for it, and section 11.1's paragraph on the list ended its trigger sentence at "(see: Arrival is a trigger that first fired within the last three sessions, and the trade is read from tonight's close)."
+Now: a catalogue row and a matrix row for the Filter history, which reads the bar store, the filter versions and the gate results and writes the gate results; and section 11.1's paragraph adds "The sessions before the filter's first stored night hold no results of their own, and theirs can be replayed and stored for the arrival alone (see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone)."
+Why: a component is catalogued in the commit that introduces it.
+
+### 2026-09-25 - SCHEMA.md - the gate results' second writer and the replayed version
+Was:
+> | `gate_result` | SwingFilter | none | SwingFilter |
+> | `version` | TEXT | the open filter version the night ran under, or `none` where none was open and it ran on section 17's proposed values |
+Now:
+> | `gate_result` | SwingFilter, FilterHistory | none | SwingFilter |
+> | `version` | TEXT | the open filter version the night ran under, or `none` where none was open and it ran on section 17's proposed values, or `replayed` on a session before the filter's first stored night whose results `FilterHistory` replayed under the open version's settings, which the trigger's arrival reads and nothing else does |
+Why: the operator's ruling of 2026-09-25 that the filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone.
+
+### 2026-09-25 - RUNBOOK.md - replaying the swing filter's results for the sessions before its first stored night
+Was: no section; the command did not exist.
+Now: a section before "Registering a candidate and versioning a ladder rule" giving the `filter-history` command, the night run again after it, what it refuses and its run log row.
+Why: the operator runs the command, and the runbook is where a command is given.

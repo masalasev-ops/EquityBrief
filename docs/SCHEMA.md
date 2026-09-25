@@ -45,7 +45,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `earnings_reaction` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
 | `swing_reading` | SwingReader | none | SwingReader |
 | `market_reading` | SwingReader | SwingReader | SwingReader |
-| `gate_result` | SwingFilter | none | SwingFilter |
+| `gate_result` | SwingFilter, FilterHistory | none | SwingFilter |
 | `filter_version` | ShapeCommand | ShapeCommand | none |
 | `shape_proposal` | ShapeProposer | ShapeCommand | none |
 | `listing` | ShortlistBuilder | ShortlistBuilder | none |
@@ -369,7 +369,7 @@ Grain: one row per index member per night.
 |---|---|---|
 | `ticker` | TEXT | |
 | `session_date` | TEXT | the night |
-| `version` | TEXT | the open filter version the night ran under, or `none` where none was open and it ran on section 17's proposed values |
+| `version` | TEXT | the open filter version the night ran under, or `none` where none was open and it ran on section 17's proposed values, or `replayed` on a session before the filter's first stored night whose results `FilterHistory` replayed under the open version's settings, which the trigger's arrival reads and nothing else does |
 | `code` | TEXT | the pin of the filter's code the row was written by |
 | `market` | INTEGER | 1 where the market gate passed |
 | `trend` | INTEGER | 1 where the trend and strength gate passed |
