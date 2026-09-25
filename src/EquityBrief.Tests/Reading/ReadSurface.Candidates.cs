@@ -405,6 +405,43 @@ public partial class ReadSurface
         Assert.False(again["k"].Standing || again["m"].Standing);
     }
 
+    // A standing candidate no night has evaluated reads the candidates standing at the page's instant,
+    // which is not the reading a retired one takes. "k", retired before any night evaluated it and
+    // registered again beside "x", "y" and "z", reads 0.05 over 4 with them, where the candidates
+    // standing before its retirement were three. And a page read half a second after "z" registered
+    // reads "z" standing and each of the three at 0.05 over 3, where the candidates standing before
+    // that second were two. Each is at the graph's first step.
+    [Fact]
+    public void AStandingCandidateNoNightHasEvaluatedReadsTheCandidatesStandingAtThePagesInstant()
+    {
+        DateOnly night = Nights(EquityBrief.Core.Returns.Blocks.Sessions * 9);
+
+        CandidateRow Registration(long id, string candidate, DateTimeOffset when) =>
+            new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, when, "{\"level\": 30}", null);
+
+        CandidateRow[] back =
+        [
+            Registration(1, "x", Registered),
+            Registration(2, "y", Registered),
+            Registration(3, "k", Registered),
+            new(4, "k", MomentumIndexReading.EvaluatorName, CandidateFamily.Retired, "k", Registered.AddDays(1), "{}", "retired"),
+            Registration(5, "z", Registered.AddDays(2)),
+            Registration(6, "k", Registered.AddDays(3)),
+        ];
+
+        var again = RunScreen.Candidates(back, [], [], night, Registered.AddYears(3)).Candidates;
+
+        Assert.Equal(["k", "x", "y", "z"], again.Where(candidate => candidate.Standing).Select(candidate => candidate.Candidate));
+        Assert.All(again, candidate => Assert.Equal((Math.Round(0.05 / 4, 12), 1), (Math.Round(candidate.Level, 12), candidate.Step)));
+
+        CandidateRow[] justRegistered = [Registration(1, "x", Registered), Registration(2, "y", Registered), Registration(3, "z", Registered.AddDays(2))];
+
+        var read = RunScreen.Candidates(justRegistered, [], [], night, Registered.AddDays(2).AddMilliseconds(500)).Candidates;
+
+        Assert.Equal(["x", "y", "z"], read.Where(candidate => candidate.Standing).Select(candidate => candidate.Candidate));
+        Assert.All(read, candidate => Assert.Equal((Math.Round(0.05 / 3, 12), 1), (Math.Round(candidate.Level, 12), candidate.Step)));
+    }
+
     // Three candidates registered at one instant, which is the family the level is divided by.
     static CandidateRow[] Family() =>
     [

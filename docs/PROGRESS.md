@@ -26018,3 +26018,44 @@ Carried:    nothing new. The per-window level's revisit stays the operator's rul
             ever registered standing at ten since 14:04:07Z against the eight it is due at (see: Holm's level
             passes between the candidates by a graph fixed when they are registered, and every verdict shows
             the lifetime count).
+
+### 12.5 - correction: a standing candidate no night has evaluated is asserted to read the candidates standing at the page's instant, where reading it over those standing before a retirement or before the page's second left every test green   2026-09-25
+Corrects:   12.5's correction of 2026-09-25 (99cc48d), whose tests held a standing candidate no night has
+            evaluated only where the candidates standing at the page's instant and those standing in the
+            second before it, or before its last retirement, are one set. Section 13.6 says such a
+            candidate reads the ones the next night evaluates with it, which is the page's own instant,
+            and the code reads them so; reading it as a retired candidate is read turned no test red. The
+            two differ in two shapes. A candidate retired before any night evaluated it and registered
+            again, which the register allows (see: A candidate stands by the last row naming it, and a
+            name retired and registered again stands once), would read the candidates standing before its
+            earlier retirement until its first night. A page read in the second a candidate registered
+            would leave that candidate out of the others' graphs.
+Found:      by the pre-night half of the second phase 12 sign-off review over bdf6acb on 2026-09-25, its
+            mutation b surviving all 18 tests that reach the candidates' records and the graph, and both
+            shapes worked in its scratch tests, green on the shipped code and red under b.
+Repaired:   nothing shipped changes: the correction is one test.
+Guarded:    `read-surface`, one test added,
+            `AStandingCandidateNoNightHasEvaluatedReadsTheCandidatesStandingAtThePagesInstant`, worked by
+            hand from the register: "k", retired before any night evaluated it and registered again
+            beside "x", "y" and "z", reads 0.05 over 4 with them, where three stood before its retirement;
+            and a page read half a second after "z" registered reads "z" standing and each of the three at
+            0.05 over 3, where two stood before that second. Each is at the graph's first step.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Pins:       the branch against `main` at bdf6acb; this correction edits a test, in none of the twelve
+            `RuleVersionScorer.CodeVersionSources`, the twenty-one `CandidateEvaluator.EvaluationSources`
+            with each evaluator's own source ahead of them, or the sixteen `SwingFilter.CodeVersionSources`,
+            each read from the tree being committed.
+Mutated:    the rule, stated before the run: the mutation that found the gap, run again, filtered to the
+            twenty tests that reach the candidates' records and the graph, the review's eighteen and the
+            two this batch adds.
+            Predicted:
+            D1 a standing candidate no night has evaluated read over the candidates standing before the
+            second of its last retirement, or of the page where it has none (the review's b): red in the
+            test this correction adds alone.
+            Results: D1 in the 10.2 correction closing this batch.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 10.2 correction closing this batch records.
+Carried:    the review's mutation a, `RetiredAt` taking a retirement written after the page's instant, is
+            an unproducible shape: the page reads its instant after its register, so no register row lies
+            after it. That invariant is left unasserted here.
