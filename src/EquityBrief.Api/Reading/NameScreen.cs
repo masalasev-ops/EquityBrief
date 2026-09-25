@@ -1641,9 +1641,19 @@ public static class NameScreen
         string ticker,
         LadderRow? ladder,
         decimal close,
-        IReadOnlyList<LevelRow> levels)
+        IReadOnlyList<LevelRow> levels,
+        double? typicalMove = null,
+        bool closeStored = true)
     {
         var rows = PlanRows(ladder);
+
+        // Each band's distance from the night's close is the name page's, counted in the
+        // name's typical daily move of that night, so the two tables state one distance:
+        // none inside the band, and otherwise the nearer edge's distance.
+        double? Away(LevelRow level) =>
+            !closeStored ? null
+            : close >= level.LowEdge && close <= level.HighEdge ? 0
+            : Distances.InTypicalDays(close, close < level.LowEdge ? level.LowEdge : level.HighEdge, typicalMove);
 
         // The level summary beside the plan column, which is the other half of
         // what section 15.7 states this region holds and which stood undrawn
@@ -1670,7 +1680,8 @@ public static class NameScreen
                     level.Immediate,
                     level.Strength,
                     level.HasNonAverageAnchor,
-                    Members(level.Members)))],
+                    Members(level.Members),
+                    Away(level)))],
                 [])
             + "</div></div></section>";
     }

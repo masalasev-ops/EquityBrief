@@ -25664,3 +25664,33 @@ Mutated:    the rule, stated before the run: each repair put back to what it rep
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
             entry, with the figures the 12.5 correction closing this batch records.
 Carried:    nothing.
+
+### 5.8 - correction: tonight's selected name states each band's distance from the night's close in typical days' moves, as the name's own page does, where every band read not measured   2026-09-25
+Corrects:   5.8's correction of 2026-09-20 (df4f5f7), which gave each band on a name's page its
+            distance from the close in typical days' moves and left the level summary beside
+            tonight's selected plan without one, so every band there read not measured: CPAY's eight
+            on the rehearsal's copy, where the name's own page drew 6.6, 6.0, 4.2, 3.1, 2.4, 0.0, 2.4
+            and 3.0.
+Found:      by the rehearsal before the phase 12 sign-off handoff on 2026-09-25, in the capture of
+            tonight's page.
+Repaired:   the selected name's bands are measured from the night's close in the typical move the
+            universe row holds for the name that night, by the name page's own arithmetic, and a name
+            with no close stored that night has none.
+Guarded:    `read-surface`, one test added,
+            `TonightsSelectedNameStatesEachBandsDistanceAsTheNamesOwnPageDoes`: over the fixture's
+            newest night, every band's distance in the selected region worked by hand from the stored
+            close, band edges and fourteen-day true range, and held to the name page's own for the
+            same night.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Pins:       the branch against `main` at 34f5ccd; this correction edits `NameScreen.cs`, the read
+            surface's `Program.cs` and a test, in none of the twelve, twenty-one or sixteen pinned
+            sources.
+Mutated:    the rule, stated before the run: the repair put back to what it replaced.
+            Predicted:
+            M6 the selected region's bands drawn with no distance: red in the test this correction
+            adds alone.
+            Results: M6 in the 12.5 correction closing this batch.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
+            entry, with the figures the 12.5 correction closing this batch records.
+Carried:    nothing.

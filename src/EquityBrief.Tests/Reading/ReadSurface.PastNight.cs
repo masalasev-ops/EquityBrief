@@ -292,6 +292,57 @@ public partial class ReadSurface
     // An earlier session the store holds bars for, listed with the newest night's listings and
     // carrying a copy of the newest night's bands as its own, so each night has a band set of
     // its own to be read from.
+    // Tonight's selected name states each band's distance from the night's close in the name's typical
+    // daily moves, as the name's own page states it, each worked here from the stored close, band edges
+    // and fourteen-day true range.
+    [Fact]
+    public async Task TonightsSelectedNameStatesEachBandsDistanceAsTheNamesOwnPageDoes()
+    {
+        using var store = await FixtureExpectations.WithListings();
+
+        var (_, newest) = await TwoNights(store);
+        var on = Stamp(newest);
+        var banded = Strings(
+            store,
+            "SELECT l.ticker FROM listing l " +
+            $"WHERE l.session_date = '{on}' AND l.fired_count > 0 " +
+            $"AND (SELECT COUNT(*) FROM level v WHERE v.ticker = l.ticker AND v.as_of = '{on}') >= 2 " +
+            $"AND EXISTS (SELECT 1 FROM indicator i WHERE i.ticker = l.ticker AND i.session_date = '{on}' AND i.name = '{IndicatorSeries.Atr14}' AND i.value > 0) " +
+            "ORDER BY l.ticker;");
+
+        Assert.NotEmpty(banded);
+
+        var ticker = banded[0];
+        var close = decimal.Parse(Strings(store, $"SELECT close FROM bar WHERE ticker = '{ticker}' AND session_date = '{on}';")[0], CultureInfo.InvariantCulture);
+        var move = double.Parse(Strings(store, $"SELECT CAST(value AS TEXT) FROM indicator WHERE ticker = '{ticker}' AND session_date = '{on}' AND name = '{IndicatorSeries.Atr14}';")[0], CultureInfo.InvariantCulture);
+
+        // By hand: a close inside a band is no distance from it, and otherwise the distance to the nearer
+        // edge, over the typical move, to one decimal.
+        var worked = Strings(store, $"SELECT low_edge || ' ' || high_edge FROM level WHERE ticker = '{ticker}' AND as_of = '{on}';")
+            .Select(edges => edges.Split(' ').Select(edge => decimal.Parse(edge, CultureInfo.InvariantCulture)).ToArray())
+            .Select(edges => close >= edges[0] && close <= edges[1] ? 0d : (double)Math.Abs(close - (close < edges[0] ? edges[0] : edges[1])) / move)
+            .Select(days => days.ToString("0.0", CultureInfo.InvariantCulture) + " typical days")
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var tonight = await client.GetStringAsync($"/screens/tonight/{on}?name={ticker}");
+        var page = await client.GetStringAsync($"/screens/name/{ticker}/{on}");
+
+        var selected = Regex.Match(tonight, $"<section class=\"selected-name\" data-ticker=\"{ticker}\".*?</section>", RegexOptions.Singleline).Value;
+        var own = Regex.Match(page, "<table class=\"level-summary\".*?</table>", RegexOptions.Singleline).Value;
+
+        string[] Away(string drawn) =>
+            [.. Regex.Matches(drawn, "<td class=\"away\" data-away=\"[^\"]*\">([^<]*)</td>").Select(match => match.Groups[1].Value).Order(StringComparer.Ordinal)];
+
+        Assert.Equal(worked.Length, Away(selected).Length);
+        Assert.Equal(worked, Away(selected));
+        Assert.Equal(Away(own), Away(selected));
+        Assert.DoesNotContain("not measured", Away(selected));
+    }
+
     static async Task<(DateOnly Earlier, DateOnly Newest)> TwoNights(TemporaryStore store)
     {
         var api = Api(store);
