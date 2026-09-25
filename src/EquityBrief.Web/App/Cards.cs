@@ -94,6 +94,33 @@ public static class Cards
 
     public static string Day(DateOnly day) => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
+    // A dated screen's calendar: the night drawn, the stored nights either side of it, and a date
+    // field over the nights the store holds. A day the store holds no night for opens the night
+    // before it, or the first night where the day falls before them all, which the page's script
+    // reads off the nights listed here.
+    public static string NightPicker(DateOnly night, IReadOnlyList<DateOnly> held, string route, string newest)
+    {
+        if (held.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var before = held.Where(one => one < night).Select(one => (DateOnly?)one).Max();
+        var after = held.Where(one => one > night).Select(one => (DateOnly?)one).Min();
+
+        string Move(string move, string said, string mark, DateOnly? to) => to is { } day
+            ? $"<a class=\"np-move\" data-move=\"{move}\" href=\"{route}{Day(day)}\" title=\"{said}, {Day(day)}\" aria-label=\"{said}, {Day(day)}\">{mark}</a>"
+            : $"<span class=\"np-move\" data-move=\"{move}\" aria-disabled=\"true\">{mark}</span>";
+
+        return $"<span class=\"night-picker\" data-route=\"{route}\" data-night=\"{Day(night)}\">"
+            + Move("earlier", "The night before", "&#8249;", before)
+            + $"<input class=\"np-date\" type=\"date\" value=\"{Day(night)}\" min=\"{Day(held.Min())}\" max=\"{Day(held.Max())}\" "
+            + $"data-nights=\"{string.Join(' ', held.Order().Select(Day))}\" aria-label=\"Choose a night to view\">"
+            + Move("later", "The night after", "&#8250;", after)
+            + (after is null ? string.Empty : $"<a class=\"np-newest\" href=\"{newest}\">newest</a>")
+            + "</span>";
+    }
+
     public static string Escaped(string text) =>
         text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
 }

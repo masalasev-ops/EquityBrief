@@ -7678,3 +7678,13 @@ Was:
 Now:
 > a graph in each register row passes a promoted candidate's level in equal shares to those standing and a retired one's to no one, the promoted stepping first in the order their promotions were written and candidates crossing on one read after them in the order they were registered (see: The graph steps promoted candidates in the order their promotions were written, and candidates crossing on one read in the order they were registered), only the sign-flip p-value is corrected,
 Why: a promoted candidate's level passed when its promotion was written, so the order promotions were written in is the order the graph steps them in; the operator ruled register order for the ones crossing on one read, fixed when they are registered and never moved by their results.
+
+### 2026-09-25 - ARCHITECTURE.html - tonight's page and the run page carry a calendar over the nights the store holds
+Corrects: sections 15.7 and 15.10 named each page's dated route and nothing on the page that reached it, so an earlier night was reached only by typing its route. Asked for by the operator on 2026-09-25: "i need a calender picker of some sort in order to view older days".
+Was:
+> <p><b>Route:</b> <code>#/</code>, resolving to the newest night, and <code>#/night/&lt;date&gt;</code> for an earlier one.</p>
+> apart from the night's own stage time and never among the stages that failed.</p>
+Now:
+> <p><b>Route:</b> <code>#/</code>, resolving to the newest night, and <code>#/night/&lt;date&gt;</code> for an earlier one. A calendar beside the night drawn opens another, over the nights the store holds: its arrows open the stored night before and the stored night after, and a day picked on it opens the stored night on or before that day, or the first night where the day falls before them all.</p>
+> apart from the night's own stage time and never among the stages that failed. The same calendar as tonight's page sits beside the night drawn, and opens the run page of the night it picks.</p>
+Why: the store holds a night for each session the nightly ran, and a person reading an earlier one should reach it from the page rather than from its route.

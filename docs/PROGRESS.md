@@ -26205,3 +26205,64 @@ Carried:    the review's tie mutation, the promotion row's tie-break dropped, is
             differs only for two promotions written in one second, and each promotion is its own retirement
             command, stamped at its start, so no command writes two. That invariant is left unasserted
             here.
+
+### 5.8 - correction: tonight's page and the run page carry a calendar over the nights the store holds, with the stored night before and after beside it, where an earlier night was reached only by typing its route   2026-09-25
+Corrects:   5.8, whose screens' stated parts gave tonight's page and the run page a dated route each,
+            `#/night/<date>` and `#/run/<date>`, and nothing on either page that reached another night,
+            so an earlier night was read only by typing its route. Asked for by the operator on
+            2026-09-25: "i need a calender picker of some sort in order to view older days".
+Repaired:   both pages' headers draw a calendar beside the night drawn, over the nights the listings
+            hold, read by a new `ReadApi.NightsAsync`: an arrow to the stored night before and one to the
+            stored night after, each drawn inert at the end of the nights, a date field from the first
+            stored night to the last, and a link to the newest where a later night is stored. A day
+            picked on the field opens the stored night on or before it, or the first night where the day
+            falls before them all, read by the page's script off the nights the calendar lists, so a
+            weekend opens the Friday before it.
+Guarded:    `read-surface`, two tests added.
+            `ADatedScreensCalendarOffersTheStoredNightsAndTheNightsEitherSide`, worked by hand over four
+            stored nights, a Thursday, a Friday and the Monday and Tuesday after: the Monday's night before
+            is the Friday, across the weekend, and its night after the Tuesday; the field runs from the
+            first to the last and lists all four, in any order handed in; the first has no night before
+            it, the last none after it and no link to the newest, and a store holding no night draws no
+            calendar.
+            `TonightsPageAndTheRunPageDrawTheCalendarOverTheNightsTheStoreHolds`, served over a store
+            holding two nights: both pages draw the calendar on their own route over the nights read off
+            the store, the night before pointing at the stored night before the newest. The script's
+            reading of a picked day is held by a scan of the served shell alone, which states the
+            expression rather than exercising it, since no test here runs the page's script.
+Written:    sections 15.7 and 15.10, their prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      1412, from 1410: two added to `read-surface`, none removed. Migrations 0 to 42 with none
+            added and none pending, schema version 42.
+Claims:     554, from 554, with 554 PASS and 0 out of scope, and 564 placements and verdicts reconciled
+            against a floor of 34. No claim added: the two sentences are prose and no table row.
+Pins:       the branch against `main` at 5e780db; this correction edits `ReadApi.cs`, the read surface's
+            `Program.cs`, `Cards.cs`, `SinglePageApp.cs`, `Stylesheet.cs`, a test and two documents, in
+            none of the twelve `RuleVersionScorer.CodeVersionSources`, the twenty-one
+            `CandidateEvaluator.EvaluationSources` with each evaluator's own source ahead of them, or the
+            sixteen `SwingFilter.CodeVersionSources`, each read from the tree being committed.
+Mutated:    the rule, stated before the run: each part of the calendar put back to the plainest form it
+            could take, one at a time, filtered to the two tests this correction adds.
+            Predicted:
+            N1 the night before read as the calendar day before rather than the stored night before: red
+            in both tests.
+            N2 the field's range starting at the night drawn rather than at the first stored night: red in
+            both tests.
+            N3 the nights the field lists left empty: red in both tests.
+            N4 the run page handed no nights: red in the served test alone.
+            Results: one run for each of the four mutations in a detached worktree at 803b0e0, the tree
+            carrying this entry, filtered to the two tests on the operator's instruction of 2026-09-24,
+            each reverted with `git checkout -- .` and the tree read clean after. The whole suite ran green
+            over 803b0e0 in the gates, 1412 of 1412. N1, N2 and N3 each turned both tests red. N4 turned
+            the served test red and left the calendar test green.
+Held:       all four, in the tests each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1412 of 1412
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 564 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, 1412 of 1412 tests.
+            Both gates ran over the tree carrying this entry, 803b0e0, in the worktree beside the
+            repository, and the operator's store under `data/` was not touched by either.
+Carried:    the calendar lists every night the listings hold, the two partial evenings of 2026-04-16 and
+            2026-08-17 among them, as the pages' own newest-night reading does.

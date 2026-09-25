@@ -913,6 +913,8 @@ public sealed class ReadApi : IComponent
     // without a date being asked for.
     const string NewestNight = "SELECT MAX(session_date) FROM listing WHERE session_date <= $on;";
 
+    const string HeldNights = "SELECT DISTINCT session_date FROM listing ORDER BY session_date;";
+
     // The newest run the log carries a stage for, which is the night the run
     // page opens on. The read surface's own row and a night on a day with no
     // session are not nights that ran: the first is this process starting and
@@ -1813,6 +1815,26 @@ public sealed class ReadApi : IComponent
         return await command.ExecuteScalarAsync() is string newest
             ? DateOnly.ParseExact(newest, "yyyy-MM-dd", CultureInfo.InvariantCulture)
             : null;
+    }
+
+    // Every night the listings hold, oldest first, which is what a dated screen's calendar offers.
+    public async Task<IReadOnlyList<DateOnly>> NightsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = HeldNights;
+
+        var nights = new List<DateOnly>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            nights.Add(DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture));
+        }
+
+        return nights;
     }
 
     public async Task<IReadOnlyList<ListingRow>> ListingsAsync(DateOnly sessionDate)

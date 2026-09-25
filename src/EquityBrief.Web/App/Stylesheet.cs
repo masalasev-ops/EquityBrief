@@ -78,6 +78,12 @@ code{font-size:.92em}
 .m-chg{font:500 14px var(--sans);font-variant-numeric:tabular-nums;color:var(--ink-2)}
 .m-asof{font-size:12.5px;color:var(--soft);flex-basis:100%;margin-top:-4px}
 .m-asof a{color:var(--soft)}
+.night-picker{display:inline-flex;align-items:center;gap:4px;margin-left:10px;vertical-align:middle}
+.night-picker .np-move{display:inline-block;min-width:22px;text-align:center;line-height:20px;border:1px solid var(--hair);border-radius:4px;color:var(--ink);text-decoration:none}
+.night-picker a.np-move:hover{border-color:var(--ink)}
+.night-picker span.np-move{opacity:.35}
+.night-picker .np-date{font:inherit;font-size:12.5px;line-height:18px;padding:0 4px;border:1px solid var(--hair);border-radius:4px;background:var(--surface);color:var(--ink)}
+.night-picker .np-newest{margin-left:4px;color:var(--ink)}
 .m-right{display:flex;align-items:center;gap:16px}
 .m-nav{display:flex;gap:14px;font-size:13.5px}
 .m-nav a{text-decoration:none;color:var(--soft);padding-block:10px}
