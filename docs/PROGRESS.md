@@ -24158,3 +24158,122 @@ Carried:    not phase failures. The 15 operating obligations, each on its numeri
             for.
 Signed:     phase 11, 11.0 through 11.9, with the corrections through PR 226. Phases 0 to 11 are
             signed, and the build plan holds no phase after 11.
+### 12.0 planning - tonight's list as a swing filter of five gates, its starting settings ruled from counts before it switches, and the two clocks that calibrate it   2026-09-25
+Not a checkpoint entry. It plans phase 12 and builds none of it: no reading, gate, event session,
+            proposal or registration exists, and tonight's list is chosen exactly as it was.
+Asked:      the operator's planning prompt of 2026-09-24, which asked that tonight's twenty be "the
+            best stocks at a buy point that day, with the highest probability of rising over the
+            next few weeks: swing trading", proposed a filter of five gates with exclusions, a
+            ranking, a shape clock and an edge clock, and asked that the codebase and the store be
+            read and the answers tabled before any ruling. Then four answers the same day, each
+            given after the reading below was put to them:
+            Q1 counts first: the filter is built and every gate result stored while tonight's list
+            stays as it is, and the code's own counts come back, each night in gate order with the
+            attrition at each step, each gate relaxed alone with every other held, the trade gate
+            read two ways, and the stored year wherever the bars give the readings as of each
+            session with the market gate at 45 and at 50 percent; the operator rules the starting
+            settings from them.
+            Q2 arrival is the trigger not having fired the night before.
+            Q3 the three phase 10 candidates are retired when the swing family registers, each row
+            stating that no result of theirs was read.
+            Q4 the name page draws the rank and its refusal is narrowed, with section 15.14's in
+            one wording.
+            Then three reviews of the plan. The first returned five corrections, one blocking: a
+            bound on shape acceptances so the edge clock can answer; building in a worktree with
+            the production checkout left on `main`; the twelve pinned files named and the new
+            scoring kept out of them; the timeline said in plain words where it is read; and a
+            count against its trigger for the five operating rows whose surface drew none. The
+            second returned three: the event rule's median taken over every night rather than over
+            the ordinary ones, which made it circular; the pin check reading the grown list off the
+            code's own declarations from 12.5; and the worktree rule written into `CLAUDE.md` as a
+            standing practice. The third asked that nothing be checked into `main` while a night
+            runs, that the build go on without waiting to be told, and that the architecture be
+            kept current at every checkpoint.
+Found:      the prompt's section A, answered from the code at 65e4adf and from the operator's store,
+            `data/equitybrief.db`, opened read-only and immutable at user_version 34, before any
+            ruling. What was expected before looking is the second column.
+
+| # | Question | Expected | Found |
+|---|---|---|---|
+| 1 | Is a listing row written for every member every night, and `plan_at_listing` for every member with a ladder? | yes, yes | Yes to both. `ShortlistBuilder.cs` writes a row for every member in its loop, lines 299 to 431, and writes the plan from the newest ladder row, lines 368 to 372 and 651 to 673, or a note where the name has no ladder row or no bar for the session. The store holds 5,542 rows over 13 sessions. |
+| 2 | Is the setup horizon scored for every name-night carrying a plan? | yes | Yes. `ForwardReturnFiller.cs` reads every listing row, lines 39 to 44, and scores the setup wherever the plan holds a stop and a first traded target, lines 204 to 215. The store holds a setup row for all 5,542, 915 of them on rows no reason fired on; 2,912 carry a stop and a target, 971 have resolved and 4,571 have not. Near-miss attribution needs no change to the store first. |
+| 3 | What does the shadow machinery support: a compound candidate, and parameters of its own? | one condition | A registration names one evaluator the code carries, with flat numeric parameters, `CandidateEvaluator.cs` lines 31 to 49, and an evaluator may read as many values as it declares, so a compound rule is one evaluator. Five exist, `CandidateEvaluators.cs` lines 17 to 24, evaluated inside the listings stage over the values it builds, `ShortlistBuilder.cs` lines 384 to 398 and 944 to 1016. Each evaluator's version is the pin of 14 sources, `CandidateEvaluator.cs` lines 69 to 85, held to the code by `RegisterAppendOnly.cs` lines 557 to 590. Three candidates stand, registered at 2026-09-23T15:52:25Z and evaluated on 502 rows of the night of 2026-09-23. |
+| 4 | Can the rule version scorer recompute outcomes for a gate threshold nobody registered? | no | No. It replays open windows of the five ladder rules alone, `RuleVersions.cs` lines 38 to 57, refuses any other rule, lines 167 to 216, and counts a score only for a session after its window opened, lines 148 to 149. Its code version pins 12 sources, `RuleVersionScorer.cs` lines 80 to 96, and 8 windows are open, so an edit to any of the 12 stops the night. |
+| 5 | What triggers a verdict? | nothing, it is computed when read | A verdict is computed when the run page is read, `RunScreen.cs` lines 214 to 331 for the candidates and 27 to 165 for the reasons, over blocks of 63 sessions with a floor of 8, `Blocks.cs` lines 18 to 21, at looks at 8, 12 and 16, `Looks.cs` line 14. The first look cannot promote, lines 37 to 41. Nothing announces that a look has become due. |
+| 6 | Which operating obligations carry a numeric trigger, and does their surface show progress? | few do | 15 operating rows. A count against the trigger is drawn for the six reason thresholds, the three reason records, the three orders and the two candidate rows, `MarkRenderer.cs` lines 3341 and 3484 to 3489, the paid call at peak and the start bound. The trigger is itself the thing shown for the night's instant, the closure table and the next report dates. No count is drawn toward the wall clock's 5 nights, the spend cap's 20 passes, the version bound's 5 nights, the event setups' 250 or the trend confirmation's 60. No page says a calibration is due, and the run log records no trigger crossed. |
+| 7 | Are the readings the gates need stored, derivable or absent? | mixed | Stored: the trend state, the 50 and 200-day averages, the typical daily move as `atr14`, volume with its 20 and 50-day averages, each band's role, strength and `has_non_average_anchor`, the plan's entry zone, stop and first target, the next earnings date, series state, and the group and peer readings. Derivable from the stored bars: the gap state, the returns over 63 and 126 sessions from the 252 sessions held, the highest high of 20 sessions, the true range over 10 and 50 sessions, and breadth. Absent: any index or market series. |
+| 8 | Where is list membership read as any reason having fired? | a few places | Code: `TonightScreen.cs` lines 135, 246 and 304, `NightClose.cs` lines 46 and 50, `RequestDrain.cs` lines 97 to 100, `OvernightQueue.cs` lines 99 to 101, `ChangeDetector.cs` lines 100 to 110 and `DrawnOrder.cs`. Tests: `ListingsCoverage`, `FixtureExpectations` for the listings, the queue, the returns and the break-even, `NightlyRun.NightRequest`, and the read surface's past night, report state, suspect, earlier night, listing history and target share suites. Decisions: tonight's list built from stated conditions, the tiebreak, twenty drawn with the true count, the reason threshold's target share, the reason totals, the three orders and a name's listing history. |
+| 9 | What do sections 1, 11, 13, 15.7, 15.10, 15.14 and 17 say about selection and order? | as the prompt reads them | Section 1 and section 2 select on chart state and build the list from the reasons; section 11 lists a name where any of six fires, with 11.9's target paragraph and 11.1's order by fired count then reward to risk; section 13 carries 13.2's thresholds row, the guardrails and 13.6 and 13.7; section 15.7 draws one row per name that fired; section 15.10 carries the target region and the three orders; section 15.14 orders by reasons fired then reward to risk; section 17 carries the 2, 6 and 25 percent rows. Each cites the decisions in row 8. |
+| 10 | What does the store hold: nights, nights before the 5.4 corrections, event sessions, each reason's nightly share? | about ten nights | 11 whole nights, 2026-09-09 to 2026-09-23, and two single stale rows on 2026-04-16 and 2026-08-17. The five to 2026-09-15 were written before the 5.4 corrections, and earnings soon counts on no night yet, the calendar reading each member's own listing from 2026-09-24. Breadth, the share of members closing above their own 200-day average: 60.3, 58.1, 59.5, 59.7, 57.1, 53.5, 53.7, 52.5, 52.8, 51.0 and 49.8 percent. The median of volume against the 50-day average: 0.81 to 0.98 on every night but 2026-09-18, at 2.00. Uptrend labels: 109 names falling to 66. Each reason's share over the six nights from 2026-09-16: at entry zone 34 to 44 percent, crossed a level 22 to 33, breakout on volume 1.0 to 3.2, trend state changed 3.2 to 6.5 and unusual volume 1.0 to 3.8 with 50.1 on 2026-09-18. 2026-09-18 is the one event session by the rule 11.9 ruled; by the rule as first proposed, any reason or gate above a quarter, every night is one. |
+
+Measured:   a planning estimate by independent arithmetic over the same store, read-only, which the
+            code's own counts at 12.2 replace. The filter as proposed lists 0, 0, 0, 1, 1, 0, 0,
+            0, 0, 0 and 0 names over the eleven nights. Uptrend with relative strength in the top
+            third passes 47 to 90 names a night, the pullback setup 9 to 20 of those, the trigger 0
+            to 5 and the trade gate 0 to 1; a tight base breaking a band on 1.5 times its average
+            volume passes 0 or 1 over the whole index; a reward to risk of 2 or more on the
+            ladder's first tranche holds for 41 to 52 members a night and, with the stop 1 to 2.5
+            typical moves away, for 20 to 32. Looser settings, the reward to risk at 1.5, the
+            relative strength in the top half, the pullback 1 to 5 moves and the stop 0.75 to 3,
+            take the median night to 1. No forward return and no setup outcome was read for this.
+Ruled:      what the reading settles, each written into `DECISIONS.md` at the checkpoint whose code
+            it describes: the event rule of 11.9 with its median over every night and the index's
+            median volume at 1.8 beside it; the first look retiring or leaving and never promoting;
+            the cap of 63 kept, with a twenty-session outcome as context; no source a ladder rule's
+            version pins edited in this phase; the facts file unchanged; the six reasons unchanged
+            and context; a night listed by the rule that listed it; the three orders kept as
+            declared; the trade gate stored both ways with its scoring following the ruled input;
+            the readings' definitions; the thresholds held in the store's open filter version; the
+            first name the filter draws asked for; the queue's order; and the bound on shape
+            acceptances with the variants' standing after one.
+Written:    `BUILD_PLAN.md`'s phase 12 section, 12.0 to 12.9, six rows in the holes table and the
+            two operating rows the phase opens; six decisions that describe no running code, the
+            starting settings ruled from counts, arrival, the three candidates retired, the bound
+            on shape acceptances, the variants as whole rules and the narrowed refusal; section
+            20's rows for phase 11, which it never gained, and phase 12; the merge section of
+            `CLAUDE.md`; and `done-condition-producible` reading section 20's rows off the plan's
+            phases rather than off a count kept beside it, with its roster row, since that count is
+            how phase 11's absence went unseen. `pinned-constants` counts the family maximum's
+            restatements in `DECISIONS.md` at 6 from 5, the retirement decision citing the family
+            decision by its name, which states the maximum. `CHANGELOG.md` carries the prior text of
+            both spec edits.
+Pinned:     the twelve sources the ladder rules' code version pins, none edited in this phase:
+            `LadderSeries.cs`, `TrendSeries.cs`, `LevelSeries.cs`, `PriceForm.cs`, `Statistic.cs`,
+            `RuleVersions.cs` and `SwingSeries.cs` in Core, `Money.cs` and `StoredSwings.cs` in
+            Data, and `LadderBuilder.cs`, `LevelBuilder.cs` and `RuleVersionScorer.cs` in the
+            worker. The fourteen every candidate evaluator's version pins, none edited before 12.5:
+            `Money`, `Statistic`, `IndicatorSeries`, `IndicatorEngine`, `LevelSeries`,
+            `LevelBuilder`, `LadderSeries`, `LadderBuilder`, `ShortlistBuilder`, `NightValues`,
+            `NightReading`, `ShadowColumn`, `CandidateEvaluators` and `CandidateEvaluator`. The
+            twenty-session outcome and the swing trade's own horizons land in
+            `ForwardReturnSeries.cs` and `ForwardReturnFiller.cs`, which neither list names, and
+            the horizon column carries no check, so no migration is needed for them. This tree
+            edits none of the twenty-four.
+Not settled: the six holes the table carries, each at the checkpoint that settles it: the starting
+            settings, the trade gate's reading and the variants at 12.4's ruling; the worked
+            example's second and third figures at 12.8; the market gate's near misses and a variant
+            crossing beside the live filter at 12.7; where breadth stops being a reading at 12.1;
+            and how much of the year the counts can replay at 12.2.
+Claims:     457, from 457, with 457 PASS and 0 out of scope, and 464 placements and verdicts
+            reconciled against a floor of 34. A planning pass that writes no row of the
+            architecture's claim tables adds none; section 20 is placed rather than claimed.
+Tests:      1316, from 1315: one added, `APhaseThePlanHoldsAndSectionTwentyLacksIsFound`, none
+            removed. Migrations 0 to 37 with none added and none pending, schema version 37.
+Mutated:    the rule, stated before the run: break the one property this pass adds, that section
+            20 carries a row for every phase the plan holds. Predicted: phase 11's row taken out of
+            section 20 turns `NoDoneConditionWaitsOnTheCalendar` red and nothing else in the
+            filter, being `DoneConditionProducible`, run in a detached worktree and reverted.
+            Results: one filtered run in a detached worktree at e6518ed, phase 11's row taken out of
+            section 20, reverted by removing the worktree: `NoDoneConditionWaitsOnTheCalendar` red and
+            the filter's other 3 tests green. As predicted.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1316 of 1316
+            tests ran with none failed, migrations 0 to 37 with none added and none pending,
+            schema version 37, exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 457 claims, 457 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 464 placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1316 of 1316 tests.
+            Both gates ran over the tree carrying this entry, e6518ed, in the worktree beside the
+            repository, and the operator's store under `data/` was not touched by either.
+Carried:    the operator's ruling on the starting settings after 12.4, and the operator's two
+            commands against the live store, the filter's first version and the family's
+            registration.
