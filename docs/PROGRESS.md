@@ -25141,7 +25141,16 @@ Mutated:    the rule, stated before the run: one mutation for each property the 
             F8 a member with no bar evaluated rather than skipped: red in the stage split test alone.
             F9 an evaluator's source moved without its version: red in the pin check alone.
             F10 the filter's file dropped from the evaluation sources: red in the pin check alone.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run for each of the ten in a detached worktree at 2e7e100, the tree carrying
+            this entry, filtered to the six tests named, each reverted with `git checkout -- .` and the
+            tree read clean after. All ten went red in the test predicted. Five of them also turned the
+            pin check red, which the prediction did not say: F1, F2, F3, F7 and F8 each edit a file the
+            evaluators' pin is taken over, the rule's own, the shadow column, the swing filter or the
+            family's shadow, and any edit to one of those moves every evaluator's pin, as the check
+            exists to make it do. F4 turned the command test and the shadow region's page test red, the
+            page reading seven standing with one of the three not retired; F5 and F6 the command test
+            alone; F9 and F10 the pin check alone. The whole suite ran green over 2e7e100 in the gates,
+            1381 of 1381.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1381 of 1381
             tests ran with none failed, migrations 0 to 41 with none pending, schema version 41,
             exit 0, against `data-ci` and never `data`.
