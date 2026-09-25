@@ -25430,7 +25430,14 @@ Mutated:    the rule, stated before the run: one mutation for each property the 
             test alone.
             E9 the settings moved read against the defining candidate itself: red in the edge page test
             alone.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: one run for each of the nine in a detached worktree at 7b6ebcd, the tree carrying
+            this entry, filtered to the eight tests named and the pinned constants check, each reverted
+            with `git checkout -- .` and the tree read clean after. All nine went red in the tests
+            predicted and in no other: E1 the source test; E2 the from-the-floor test; E3 the arithmetic
+            test and the edge page test; E4 the horizons test, the filler test, the fixture's swing test
+            and the pinned constants check; E5 the filler test; E6 the command test; E7 the edge page
+            test and the command test; E8 and E9 the edge page test. The whole suite ran green over
+            7b6ebcd in the gates, 1399 of 1399.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1399 of 1399
             tests ran with none failed, migrations 0 to 42 with none pending, schema version 42,
             exit 0, against `data-ci` and never `data`.
