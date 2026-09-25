@@ -7626,3 +7626,31 @@ Why: 12.8 writes the worked example, and the words and the purpose it rests on.
 Was: each row as it stood before this entry, architecture-conformance ending at "the version scored on every one" and fixture-expectations ending at "none of the recount the shape clock may make".
 Now: architecture-conformance adds section 3 carrying every word phase 12 uses in one sentence each; fixture-expectations adds the worked example's figures regenerated from the fixture and held to the document and the fixture's expectations.
 Why: 12.8 builds both.
+
+### 2026-09-25 - ARCHITECTURE.html - no sentence describes the list chosen by a reason firing as the live one
+Authorised by: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+Was:
+> <tr><td>Why it is here</td><td>Each reason the name fired, in a sentence with the values that made it true; drawn only when the name is on the night's list</td><td>Computed by the shortlist builder from the night's figures</td>
+
+> <tr><td><b>Listing</b></td><td>The record that a named stock appeared on tonight's list, holding which reasons fired and the plan as it stood that night. One row per name per night it was listed, kept forever (see: Your own listing history is kept forever).</td></tr>
+
+> The first two leave a plan stored for every name; the third decides which names reach tonight's list.
+
+> font-size="12.5">whether tonight needs a look</text>
+
+> font-size="12.5">only where a reason fired</text>
+
+> The orange box is the only one that asks a question about today. At the bottom, the blue-topped box on the left is what every name gets regardless, and the orange-topped box on the right is the small set you actually read.</p>
+
+> <p>The <b>Shortlist builder</b> is the only one of the three that asks about today. It takes the plan and tonight's close and tests six conditions. With the close at 933, the price is inside a tranche zone, which here is the first, so the reason named at entry zone fires. The next earnings date is inside the twenty-session horizon, so earnings soon fires as well. Two reasons, so the name appears on tonight's list, and the list row shows both.</p>
+
+> <p>Now take a name whose close sits in the middle of its range, far from every band, with no earnings near and ordinary volume. Nothing fires and it does not appear on the list. Its bands and its plan were still computed and stored,
+
+> <tr><td>Watch list</td><td>the two or three names shown every evening whether or not a reason fired, above the list rather than inside it</td></tr>
+Now: section 4's why reads the rule and the gates where the filter listed the name and the reasons where they did; section 3's listing is one member's night, written for every member; figure 8.1's description, its shortlist box and its list box, and its key, say the shortlist builder records the reasons as context and the swing filter chooses the list; section 8.1's worked example says whether the name is listed is the swing filter's answer, its two reasons context; section 15.7's watch list shows its names whether or not they are on the list.
+Why: 12.9 searches the architecture for any sentence still describing selection by fired reasons as live, and a check now reads every sentence for it. The listing's "one row per name per night it was listed" had been wrong since listings became every member's every night.
+
+### 2026-09-25 - .claude/rules/checks.md - architecture-conformance checks phase 12's pair and reads every sentence for the old selection
+Was: the row as it stood before this entry, ending at "each a row whose meaning is one sentence".
+Now: the row adds phase 12's pair checked against the actual with every claim that moved named, and no sentence describing the list chosen by a reason firing as the live rule.
+Why: 12.9 builds both.
