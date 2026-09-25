@@ -3897,7 +3897,14 @@ public sealed class MarkRenderer : IComponent
             return drawn.ToString();
         }
 
-        drawn.Append(Invariant, $"<p data-lifetime=\"{region.Registered}\">{region.Registered} candidate condition(s) have ever been registered, of at most {region.Maximum}. ");
+        // The lifetime count against the count the per-window level is revisited at, which is a different
+        // rule from the family's maximum standing at once and is reached by retirements as well as
+        // registrations, so a count past it says the revisit is due rather than reading as a breach.
+        // see: Holm's level passes between the candidates by a graph fixed when they are registered, and every verdict shows the lifetime count
+        drawn.Append(Invariant, $"<p data-lifetime=\"{region.Registered}\" data-revisit=\"{region.Maximum}\">{region.Registered} candidate condition(s) have ever been registered, against the {region.Maximum} at which the per-window level is revisited");
+        drawn.Append(region.Registered >= region.Maximum
+            ? ": the count has reached it, so the revisit is due and is the operator's ruling. "
+            : ". ");
         drawn.Append(Invariant, $"A verdict is read at {looks} non-empty blocks of {region.BlockSessions} sessions and at no other time, ");
         drawn.Append(Invariant, $"over the setups whose whole outcome window has closed, against a bar simulated from each setup's own plan at a round trip of {region.Cost:0.#} basis points, with {region.Sensitivity:0.#} shown beside it.</p>");
 

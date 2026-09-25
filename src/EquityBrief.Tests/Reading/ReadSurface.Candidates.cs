@@ -1,9 +1,12 @@
+using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Candidates;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Returns;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Web.Marks;
+using EquityBrief.Worker.Candidates;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -68,6 +71,33 @@ public partial class ReadSurface
         Assert.Contains("Reported and tested nowhere", drawn, StringComparison.Ordinal);
         Assert.Contains("data-same-session=\"0\"", drawn, StringComparison.Ordinal);
         Assert.Contains("data-earnings=\"0\"", drawn, StringComparison.Ordinal);
+    }
+
+    // The count ever registered is read against the count the per-window level is revisited at: below it
+    // the line says when the revisit comes, and at it or past it, which the swing family's registration took
+    // the store to with the three it retired, the line says the revisit is due and is the operator's, where
+    // it read nine of at most eight. Section 13.6 names the candidates each window opened with, as many as
+    // the code registers in each.
+    [Fact]
+    public void TheLifetimeCountIsReadAgainstTheCountItsRevisitIsDueAt()
+    {
+        var region = Region(WonInEachBlock(3), Nights(EquityBrief.Core.Returns.Blocks.Sessions * 9));
+
+        foreach (var (registered, due) in new[] { (7, false), (8, true), (9, true) })
+        {
+            var drawn = new MarkRenderer().CandidateRecords(region with { Registered = registered });
+            var line = FormattableString.Invariant($"{registered} candidate condition(s) have ever been registered, against the 8 at which the per-window level is revisited");
+
+            Assert.Contains(line + (due ? ": the count has reached it, so the revisit is due and is the operator's ruling. " : ". "), drawn, StringComparison.Ordinal);
+            Assert.DoesNotContain("of at most", drawn, StringComparison.Ordinal);
+        }
+
+        string[] words = ["none", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+        var architecture = File.ReadAllText(Repository.Architecture);
+        var first = Regex.Match(architecture, "<p data-phase=\"10\">The level at Holm's first step is (.*?);", RegexOptions.Singleline).Groups[1].Value;
+
+        Assert.Contains($"the {words[TheThreeCandidates.All.Count]} registered on 2026-09-23", first, StringComparison.Ordinal);
+        Assert.Contains($"the swing family's {words[TheSwingFamily.For("1", FilterSettings.Proposed).Count]}", first, StringComparison.Ordinal);
     }
 
     [Fact]

@@ -7654,3 +7654,11 @@ Why: 12.9 searches the architecture for any sentence still describing selection 
 Was: the row as it stood before this entry, ending at "each a row whose meaning is one sentence".
 Now: the row adds phase 12's pair checked against the actual with every claim that moved named, and no sentence describing the list chosen by a reason firing as the live rule.
 Why: 12.9 builds both.
+
+### 2026-09-25 - ARCHITECTURE.html - section 13.6 states the first step's level over the candidates each window opened with
+Corrects: section 13.6 said the level at Holm's first step is 0.05 over the three candidates, which stopped being the family's level when 12.5 registered the swing family's six, tested at 0.05 over 6 as sections 13.8 and 17 state. Found by the rehearsal before the phase 12 sign-off handoff, reading the run page's candidates' records over a store copy.
+Was:
+> <p data-phase="10">The level at Holm's first step is 0.05 over the three candidates, each spent across its own looks;
+Now:
+> <p data-phase="10">The level at Holm's first step is 0.05 over the candidates a window opened with, the three registered on 2026-09-23 and then the swing family's six (section 13.8), each spent across its own looks (see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read);
+Why: the graph divides the level over the candidates first evaluated on one night, which is three for the phase 10 candidates and six for the swing family, and the section said three for both.

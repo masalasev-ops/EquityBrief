@@ -25694,3 +25694,56 @@ Mutated:    the rule, stated before the run: the repair put back to what it repl
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this
             entry, with the figures the 12.5 correction closing this batch records.
 Carried:    nothing.
+
+### 12.5 - correction: the count of candidates ever registered is read against the count the per-window level is revisited at, where nine read of at most eight, and section 13.6 states the first step's level over the candidates each window opened with   2026-09-25
+Corrects:   12.5, whose registration of the swing family's six beside the three it retired took the
+            count ever registered to nine, past the eight 10.2's line was worded for. The run page's
+            candidates' records read nine candidate conditions ever registered, of at most eight,
+            which reads as a breach of the family's maximum standing at once rather than as the
+            revisit the lifetime count sets off. Section 13.6 still said the first step's level is
+            0.05 over the three candidates, where sections 13.8 and 17 state the swing family's 0.05
+            over 6. The level each candidate is tested at was right: over a copy with the family
+            standing before the night, the six read 0.00833 and the three 0.01667.
+Found:      by the rehearsal before the phase 12 sign-off handoff on 2026-09-25, reading the run
+            page over the store copies. The operator's store has held nine since 10:39:49Z.
+Repaired:   the line reads the count against the eight at which the per-window level is revisited,
+            and at eight or more says the revisit is due and is the operator's ruling. Section 13.6
+            states the level over the candidates a window opened with, the three registered on
+            2026-09-23 and then the swing family's six.
+Guarded:    `read-surface`, one test added, `TheLifetimeCountIsReadAgainstTheCountItsRevisitIsDueAt`:
+            the line drawn at seven, eight and nine, and section 13.6's sentence naming as many as
+            `TheThreeCandidates` and `TheSwingFamily` register.
+Written:    section 13.6's sentence, its prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      1406, from 1403: three added to `read-surface`, one for each correction of this batch,
+            none removed. Migrations 0 to 42 with none added and none pending, schema version 42.
+Claims:     VC, from 554, with VP PASS and 0 out of scope, and VR placements and verdicts
+            reconciled against a floor of 34.
+Pins:       the branch against `main` at 34f5ccd; this correction edits `MarkRenderer.cs`, a test and
+            two documents. The batch edits `ListRules.cs`, `MarkRenderer.cs`, `SinglePageApp.cs`,
+            `NameScreen.cs`, the read surface's `Program.cs`, three tests and two documents, none of
+            the twelve `RuleVersionScorer.CodeVersionSources`, the twenty-one
+            `CandidateEvaluator.EvaluationSources` or the sixteen `SwingFilter.CodeVersionSources`,
+            each read from the tree being committed. The trade gate's own reason, which states the
+            reward to risk as the gate stored it, 4.1698 on CPAY, is written in `SwingGates.cs`,
+            which the family's pin holds, and is left as it is: an edit there would skip every
+            family candidate as moved.
+Mutated:    the rule, stated before the run: each repair put back to what it replaced, one at a
+            time.
+            Predicted:
+            M7 the line put back to of at most eight: red in the test this correction adds alone.
+            M8 section 13.6's sentence put back: red in the test this correction adds alone.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, VT of VT tests ran
+            with none failed, migrations 0 to 42 with none pending, schema version 42, exit 0,
+            against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at VTB tables, VC claims, VP PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, VR placements and verdicts reconciled against a floor of 34,
+            fixture PRESENT, 41 of 41 roster checks carried and all 41 run, VT of VT tests.
+            Both gates ran over the tree carrying this entry and the two before it, in the worktree
+            beside the repository, and the operator's store under `data/` was not touched by
+            either.
+Carried:    the revisit of the per-window level, due since the count ever registered reached nine
+            at 10:39:49Z on 2026-09-25, is the operator's ruling (see: Holm's level passes between
+            the candidates by a graph fixed when they are registered, and every verdict shows the
+            lifetime count).
