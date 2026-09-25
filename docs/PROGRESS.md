@@ -24413,16 +24413,44 @@ Mutated:    the rule, stated before the run: one mutation for each property the 
             M13 the run page's context row carrying the breadth: red in the same test alone.
             M14 the gap stop left out of the reader: red in the gap refusal's test alone, the
             fixture holding no gap.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: filtered runs of the sixteen tests in a detached worktree at 0742f07, one at a
+            time, each mutation reverted with `git checkout -- .` and the tree read clean after it.
+            M1 turned 1 red, `AReturnIsReadAtItsWindowsEdgeAndNotOneBarShortOfIt`, 15 green. M2 1
+            red, the recent high test, 15 green. M3 1 red, the tightness test, 15 green. M4 1 red,
+            the place test, 15 green. M5 1 red, the recent high test, 15 green. M6 1 red, the same,
+            15 green. M7 1 red, the breadth test, 15 green. M8 5 red, the constructed store's, the
+            fixture's readings, the gap refusal's, the name page's and the universe table's, 11
+            green. M9 1 red, the constructed store's, 15 green. M10 1 red,
+            `EachReturnIsDrawnBesideItsOwnPlace`, 15 green. M11 1 red, the universe table's, 15
+            green. M12 1 red, the breadth test over the replayed store, 15 green. M13 1 red, the
+            same, 15 green. M14 1 red, the gap refusal's, 15 green. The sweep's script stopped once
+            after M8 on printing a character to the console, with M8's result recorded and its edit
+            still in the tree; the tree was reverted by hand, read clean, and M9 to M14 run from
+            there.
+Held:       all fourteen exactly as written before the run, in the tests each named and in their
+            number. M9 and M10 are the two the fixture alone would have let through, its three
+            names placing equally over both spans, which is why the constructed store and the
+            render test were written before the run.
+Swept:      the four survivor classes over this checkpoint's own tests. A shape the data cannot
+            produce: the fixture's places equal across the spans, found while stating M9 and M10
+            and closed by the two tests above. A boundary the fixture cannot reach: each window's
+            edge, reached by the constructed series. A test asserting a thing against itself: none;
+            the page tests read the store and the page apart. A property no test names: three, each
+            added here and asserted by nothing, so none was mutated: the one-year drop of both
+            stores, the median volume ratio leaving out a member trading nothing or holding no
+            average, and a night run again replacing its own set whole. Carried to 12.2's commit.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1332 of 1332
             tests ran with none failed, migrations 0 to 38 with one added and none pending, schema
             version 38, exit 0, against `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 38 tables, 480 claims, 480 PASS, 0 FAIL, 0 out of
+            `tools/verify-phase.ps1` green at 36 tables, 480 claims, 480 PASS, 0 FAIL, 0 out of
             scope, 0 unexamined, 487 placements and verdicts reconciled against a floor of 34,
             fixture PRESENT, 41 of 41 roster checks carried and all 41 run, 1332 of 1332 tests.
-            Both gates ran over the tree carrying this entry, in the worktree beside the
-            repository, and the operator's store under `data/` was not touched by either.
-Carried:    the operator's ruling on the starting settings after 12.4, and the operator's two
+            Both gates ran over the tree carrying this entry, 0742f07, in the worktree beside the
+            repository, and the operator's store under `data/` was not touched by either. The
+            entry written before the run predicted 38 tables; the report counts the architecture's
+            tables, which this checkpoint adds none of, and reads 36.
+Carried:    tests for the three properties the sweep found no test naming, to 12.2's commit; the
+            operator's ruling on the starting settings after 12.4, and the operator's two
             commands against the live store, the filter's first version and the family's
             registration. The live store takes migration 38 when the first night after the merge
             starts; until then every screen names the store as behind this checkout, as it does after
