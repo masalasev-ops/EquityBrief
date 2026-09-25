@@ -105,8 +105,8 @@ public sealed class FilterCounts : IComponent
 
         var settings = Settings();
         var counts = settings.Keys.ToDictionary(name => name, _ => new List<SessionCounts>(), StringComparer.Ordinal);
-        var previous = settings.Keys.ToDictionary(name => name, _ => (DateOnly?)null, StringComparer.Ordinal);
-        var lastEvents = settings.Keys.ToDictionary(name => name, _ => new Dictionary<string, bool?>(StringComparer.Ordinal), StringComparer.Ordinal);
+        var eventsOn = settings.Keys.ToDictionary(name => name, _ => new Dictionary<DateOnly, IReadOnlyDictionary<string, bool?>>(), StringComparer.Ordinal);
+        var earlierKept = settings.Values.Max(setting => setting.ArrivalSessions) - 1;
 
         var shapes = new List<NightShape>();
         var unreadable = 0;
@@ -126,7 +126,7 @@ public sealed class FilterCounts : IComponent
                 .ToArray();
 
             var stored = storedNights.Contains(session) ? await StoredAsync(connection, session, cancellation) : null;
-            var inputs = await InputsAsync(connection, session, members, bars, indicators, prints, events, suspects, stored, cancellation);
+            var inputs = await InputsAsync(connection, session, members, bars, indicators, prints, events, suspects, stored, earlierKept, cancellation);
 
             // A session no breadth can be read on is one the market gate and the trend classifier, which
             // both read the 200-day average, cannot answer for, so it is named and not counted.
@@ -151,15 +151,10 @@ public sealed class FilterCounts : IComponent
 
             foreach (var (name, setting) in settings)
             {
-                var before = previous[name];
+                var kept = eventsOn[name];
+
                 var results = inputs.Rows
-                    .Select(row => SwingGates.Evaluate(
-                        row.Inputs with
-                        {
-                            Breadth = inputs.Breadth,
-                            TriggerFiredTheSessionBefore = before is { } day && row.Inputs.SessionBefore == day && lastEvents[name].TryGetValue(row.Inputs.Ticker, out var fired) ? fired : null,
-                        },
-                        setting))
+                    .Select(row => SwingGates.Evaluate(WithEvents(row.Inputs, kept) with { Breadth = inputs.Breadth }, setting))
                     .ToArray();
 
                 counts[name].Add(new SessionCounts(
@@ -179,8 +174,7 @@ public sealed class FilterCounts : IComponent
                     shapes.Add(ShapeOf(session, inputs, results));
                 }
 
-                lastEvents[name] = results.ToDictionary(result => result.Ticker, result => result.TriggerEvent, StringComparer.Ordinal);
-                previous[name] = session;
+                kept[session] = results.ToDictionary(result => result.Ticker, result => result.TriggerEvent, StringComparer.Ordinal);
             }
 
             progress?.Invoke(FormattableString.Invariant($"{session:yyyy-MM-dd} {(stored is null ? Replayed : Stored)} {inputs.Rows.Count} member(s)"));
@@ -349,6 +343,7 @@ public sealed class FilterCounts : IComponent
         IReadOnlyDictionary<string, List<DateOnly>> events,
         IReadOnlySet<string> suspects,
         Night? stored,
+        int earlierKept,
         CancellationToken cancellation)
     {
         var readings = new Dictionary<string, SwingReading>(StringComparer.Ordinal);
@@ -456,10 +451,30 @@ public sealed class FilterCounts : IComponent
                 suspects.Contains(ticker),
                 gaps.TryGetValue(ticker, out var gap) ? gap : null,
                 held is { Count: > 1 } ? held[^2].SessionDate : null,
-                null)));
+                null,
+                held is null ? [] : EarlierOf([.. held.Select(bar => bar.SessionDate)], earlierKept))));
         }
 
         return new SessionInputs(breadth, rows);
+    }
+
+    // The sessions a name's arrival window reads before its session before, newest first, off its own
+    // bars up to the session counted, the newest of them being that session.
+    public static IReadOnlyList<SessionEvent> EarlierOf(IReadOnlyList<DateOnly> held, int kept) =>
+        held.Count > 2 ? [.. held.SkipLast(2).TakeLast(kept).Reverse().Select(day => new SessionEvent(day, null))] : [];
+
+    // A row with the trigger's event on each session before it that this run counted, read by the session
+    // and the name, and none where the run counted no such session.
+    public static GateInputs WithEvents(GateInputs row, IReadOnlyDictionary<DateOnly, IReadOnlyDictionary<string, bool?>> kept)
+    {
+        bool? FiredOn(DateOnly? day) =>
+            day is { } on && kept.TryGetValue(on, out var stored) && stored.TryGetValue(row.Ticker, out var fired) ? fired : null;
+
+        return row with
+        {
+            TriggerFiredTheSessionBefore = FiredOn(row.SessionBefore),
+            Earlier = [.. (row.Earlier ?? []).Select(earlier => earlier with { Fired = FiredOn(earlier.Session) })],
+        };
     }
 
     // The counts as the operator reads them: one line per session per setting, then each setting's

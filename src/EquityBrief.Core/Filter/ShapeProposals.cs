@@ -3,8 +3,8 @@ using System.Globalization;
 namespace EquityBrief.Core.Filter;
 
 // One member's stored answers on one night, as the shape proposer recounts them: the readings each
-// threshold is compared with, the two band tests no threshold moves, the trigger's event that night
-// and on the session before, the trade read both ways, and whether an exclusion removed it.
+// threshold is compared with, the two band tests and the trigger's arrival inside its window, which no
+// threshold moves, the trade read both ways, and whether an exclusion removed it.
 public sealed record StoredMember(
     string Ticker,
     string? TrendState,
@@ -15,8 +15,7 @@ public sealed record StoredMember(
     double? VolumeMultiple,
     bool PullbackBand,
     bool BreakoutBand,
-    bool? TriggerEvent,
-    bool? EventBefore,
+    bool? Arrived,
     double? LadderRewardToRisk,
     double? LadderStopMoves,
     double? SwingRewardToRisk,
@@ -87,7 +86,7 @@ public static class ShapeProposals
                 && member.VolumeMultiple is { } multiple && multiple >= settings.BreakoutVolumeMultiple
                 && member.BreakoutBand;
             var setup = pullback || breakout;
-            var trigger = (!pullback && breakout) || (member.TriggerEvent == true && member.EventBefore == false);
+            var trigger = (!pullback && breakout) || member.Arrived == true;
 
             var (ratio, moves) = settings.Trade == TradeInput.Ladder
                 ? (member.LadderRewardToRisk, member.LadderStopMoves)

@@ -54,11 +54,12 @@ public sealed record ShapeState(
 // The shape clock. It tunes how many names each gate passes and how many reach the list, and never
 // judges whether the list makes money. A night on which a gate or a reason whose own median share
 // over every night in the window is below a quarter passes or fires for more than a quarter of the
-// index, or on which the index's median volume is at 1.8 times its fifty-day average or more, is an
-// event: its setups share one cause, so it is counted, shown, and read by no median. The market gate
+// index and more than twice that median, or on which the index's median volume is at 1.8 times its
+// fifty-day average or more, is an event: its setups share one cause, so it is counted, shown, and
+// read by no median. The market gate
 // is never read for it. The medians are over every night in the window, event or not, so a night's
 // classification never depends on the classification it decides.
-// see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out
+// see: The swing filter's shape is calibrated over its ordinary nights, a night one cause pushes past a quarter and twice its usual share is left out, and each band spans a third to three times what the ruled filter passes
 // owes: The swing filter's shape calibrated from its ordinary nights
 public static class ShapeClock
 {
@@ -68,24 +69,30 @@ public static class ShapeClock
     // The share of the index a usually quiet gate or reason passes or fires for that makes a night an event.
     public const double EventShare = 0.25;
 
+    // How many times its own median share a gate or reason must also reach, so a broad gate's ordinary
+    // movement is not read as one cause flooding it.
+    public const double EventMedianMultiple = 2;
+
     // The index's median volume against its fifty-day average that makes a night an event.
     public const double EventVolumeRatio = 1.8;
 
     public const string NoVersion = "none";
 
-    // Each gate's band, the count through it and every gate before it after the market, proposed.
+    // Each gate's band, the count through it and every gate before it after the market: a third to three
+    // times the median the ruled filter passed over the ordinary sessions it was measured on, the low end
+    // rounded down and the high end up.
     public static IReadOnlyList<(string Gate, int Low, int High)> GateBands { get; } =
     [
-        (SwingGates.Trend, 50, 100),
-        (SwingGates.Setup, 20, 60),
-        (SwingGates.Trigger, 8, 40),
-        (SwingGates.Trade, 5, 35),
+        (SwingGates.Trend, 38, 347),
+        (SwingGates.Setup, 14, 126),
+        (SwingGates.Trigger, 6, 56),
+        (SwingGates.Trade, 1, 12),
     ];
 
-    // The list's band, the names passing every gate and no exclusion on an ordinary night, proposed.
-    public const int ListLow = 5;
+    // The list's band, the names passing every gate and no exclusion on an ordinary night, fitted the same way.
+    public const int ListLow = 1;
 
-    public const int ListHigh = 30;
+    public const int ListHigh = 9;
 
     public const string ListMeasure = "the list";
 
@@ -130,8 +137,8 @@ public static class ShapeClock
     }
 
     // The event nights among the nights given: a gate or reason whose median share over every one of
-    // them is below a quarter passing or firing for more than a quarter of the index, or the index's
-    // median volume at the event ratio or more.
+    // them is below a quarter passing or firing for more than a quarter of the index and more than twice
+    // that median, or the index's median volume at the event ratio or more.
     public static IReadOnlyList<EventNight> Events(IReadOnlyList<NightShape> nights, IReadOnlyList<NightFiring> firings)
     {
         var measures = new List<(string Measure, IReadOnlyList<(DateOnly Session, double Share)> Shares)>();
@@ -152,7 +159,7 @@ public static class ShapeClock
             .Select(measure => (measure.Measure, measure.Shares, Median: SwingReadings.Median([.. measure.Shares.Select(one => one.Share)])))
             .Where(measure => measure.Median is < EventShare)
             .SelectMany(measure => measure.Shares
-                .Where(one => one.Share > EventShare)
+                .Where(one => one.Share > EventShare && one.Share > EventMedianMultiple * measure.Median!.Value)
                 .Select(one => (one.Session, Flood: new Flood(measure.Measure, one.Share, measure.Median!.Value))))
             .ToArray();
 

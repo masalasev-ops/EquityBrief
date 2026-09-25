@@ -7383,3 +7383,59 @@ Why: 12.4 builds the proposer and the command, and a proposal nothing works by h
 Was: the row as it stood before this entry, ending at "a night the filter stored nothing for saying so".
 Now: the row adds the shape proposal read back off the run page against settings worked by hand, and the blocks beside it read off the page and held against the command's refusals and its acceptance.
 Why: 12.4 draws the proposal, and the count a later acceptance must state is the one the page draws.
+
+### 2026-09-25 - DECISIONS.md - the 12.4 ruling: the arrival window, the event rule and the bands, and version 1's settings
+Was: **Arrival is the first night a name's trigger fires, and a setup it has held for several nights does not stop it** and **The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out**, each in How the picks improve and The list.
+Now: **Arrival is a trigger that first fired within the last three sessions, and the trade is read from tonight's close** and **The swing filter's shape is calibrated over its ordinary nights, a night one cause pushes past a quarter and twice its usual share is left out, and each band spans a third to three times what the ruled filter passes** in their places, each earlier entry under Previously decided with what stands and what changed, and **The swing filter opens loose on the swing trade's own plan, and each of its five variants moves one setting to its other side** beside the entry on ruling the starting settings.
+Why: the operator's ruling of 2026-09-25 on 12.2's counts and the re-measure under the three-session window.
+
+### 2026-09-25 - ARCHITECTURE.html - the 12.4 ruling: arrival inside three sessions, the event rule and the fitted bands
+Was:
+> whose own median share over every night in the window is below a quarter passes or fires for more than a quarter of the index, or on which the index's median volume is 1.8 times its fifty-day average or more, is an event night
+
+> the trigger where it did not fire on the session before,
+
+> the list's median size against its band of 5 to 30
+
+> | Event session share | 25% of the index, the share a gate counted through the funnel or a reason, whose own median nightly share over every night in the window is below it, passes or fires for on a night that makes it an event night,
+
+> | Gate bands | the median count of members through each gate after the market and every gate before it, the market held open, over the ordinary nights: trend and strength 50 to 100, setup 20 to 60, trigger 8 to 40, trade 5 to 35, proposed | each step keeps between about a fifth and two thirds of what reaches it, so the list can land inside its band whichever gate binds; a gate above its band has stopped filtering and one below it starves every gate after it |
+
+> | List band | 5 to 30 names passing every gate and no exclusion on an ordinary night, the market held open, proposed | the operator's target: fewer than five is a list with nothing to choose between, and more than thirty is more than the twenty drawn and chosen by the order |
+
+> (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out)
+Now: section 11's event night adds "and for more than twice that median"; section 14's filter step reads "the trigger where it first fired within the arrival window"; section 15.10's shape clock reads "the list's median size against its band"; section 17 gains the trigger arrival window after the earnings exclusion, the event share adds "and more than twice its own median share", the gate bands read 38 to 347, 14 to 126, 6 to 56 and 1 to 12, each a third to three times what the ruled filter passed, and the list band 1 to 9; and every citation of the superseded shape entry names the one that superseded it.
+Why: the operator's ruling of 2026-09-25 (see: Arrival is a trigger that first fired within the last three sessions, and the trade is read from tonight's close) (see: The swing filter's shape is calibrated over its ordinary nights, a night one cause pushes past a quarter and twice its usual share is left out, and each band spans a third to three times what the ruled filter passes).
+
+### 2026-09-25 - SCHEMA.md - the trigger's pass reads the arrival window
+Was:
+> | `trigger_pass` | INTEGER | 1 where the trigger passed, which for a pullback is its event tonight with none on the session before |
+Now: the note names the window the settings carry, tonight or a session before whose own stored result shows the event with none on the session before that one.
+Why: the 12.4 ruling widens arrival to three sessions (see: Arrival is a trigger that first fired within the last three sessions, and the trade is read from tonight's close).
+
+### 2026-09-25 - BUILD_PLAN.md - the 12.4 ruling in the hole it closes and the text of 12.2 and 12.3
+Was:
+> | 12.4, by the operator's ruling from 12.2's counts, which the operator's acceptance through 12.4's command makes the first version |
+
+> the trigger, which fires only where it did not fire the night before (see: Arrival is the first night a name's trigger fires, and a setup it has held for several nights does not stop it)
+
+> the list's median size against its band of 5 to 30, drawn as not yet measured
+
+> passes or fires for more than a quarter of the index, or on which
+
+> (see: The swing filter's shape is calibrated over its ordinary nights, and a night one cause floods is left out)
+
+> The operator ruled that arrival is the trigger's (see: Arrival is the first night a name's trigger fires, and a setup it has held for several nights does not stop it).
+Now: the finding on arrival adds the window of three sessions and cites its successor; the hole reads discharged by the ruling of 2026-09-25, citing **The swing filter opens loose on the swing trade's own plan, and each of its five variants moves one setting to its other side**; 12.2's trigger fires where its event first happened within the arrival window; 12.3's list band is its band, and its event session adds "and for more than twice that median"; the shape entry's citations name its successor.
+Why: the operator's ruling of 2026-09-25, and a citation of a superseded decision is refused.
+
+### 2026-09-25 - RUNBOOK.md - version 1's command
+Was:
+> The settings are `breadthFloor`, `strengthFloor`, `depthLow`, `depthHigh`, `dryUpCeiling`, `tightnessCeiling`, `breakoutVolumeMultiple`, `rewardToRiskFloor`, `stopLow`, `stopHigh` and `earningsWindowSessions`, and `--trade` takes `ladder` or `swing`;
+Now: the command the ruling opens version 1 with stands before it, and the settings name `arrivalSessions` as well.
+Why: the operator's ruling of 2026-09-25 (see: The swing filter opens loose on the swing trade's own plan, and each of its five variants moves one setting to its other side).
+
+### 2026-09-25 - .claude/rules/checks.md - fixture-expectations works the arrival window and the event rule's median by hand
+Was: the row as it stood before this entry, ending at "and accepted at the count the page draws" in the 12.4 clause.
+Now: the row adds the trigger's arrival window worked by hand on both sides of it and at its edge, and a broad gate within twice its median marking no event where a narrow one past a quarter and twice its median does.
+Why: the 12.4 ruling changes both rules, and a rule nothing works by hand at its edge is one nothing has shown to be the rule's.

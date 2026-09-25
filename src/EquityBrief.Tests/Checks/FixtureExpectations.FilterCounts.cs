@@ -79,4 +79,31 @@ public partial class FixtureExpectations
             one => Assert.Equal(FilterCounts.Replayed, one.Source));
         Assert.Contains("left out: fewer than half the members hold a 200-day average", FilterCounts.Report(counts, counter.Notes), StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void TheCountsReadEachNamesArrivalWindowOffItsOwnBarsAndTheEventsThisRunCounted()
+    {
+        // A name holding bars on 2026-09-01, 02, 03, 04 and 08, counted on 09-08: its session before is
+        // 09-04 and the two before that, newest first, are 09-03 and 09-02; one kept gives 09-03 alone, and
+        // a name holding two bars has none.
+        DateOnly[] held = [new(2026, 9, 1), new(2026, 9, 2), new(2026, 9, 3), new(2026, 9, 4), new(2026, 9, 8)];
+
+        Assert.Equal([new DateOnly(2026, 9, 3), new DateOnly(2026, 9, 2)], FilterCounts.EarlierOf(held, 2).Select(one => one.Session));
+        Assert.Equal([new DateOnly(2026, 9, 3)], FilterCounts.EarlierOf(held, 1).Select(one => one.Session));
+        Assert.Empty(FilterCounts.EarlierOf([new DateOnly(2026, 9, 4), new DateOnly(2026, 9, 8)], 2));
+
+        // The run counted 09-04 and 09-03 and not 09-02: ZZA's events there are read by session, and 09-02
+        // stays unread. Another name's events are not ZZA's.
+        var row = Passing() with { SessionBefore = new DateOnly(2026, 9, 4), Earlier = FilterCounts.EarlierOf(held, 2) };
+        var kept = new Dictionary<DateOnly, IReadOnlyDictionary<string, bool?>>
+        {
+            [new DateOnly(2026, 9, 4)] = new Dictionary<string, bool?> { ["ZZA"] = true, ["ZZB"] = false },
+            [new DateOnly(2026, 9, 3)] = new Dictionary<string, bool?> { ["ZZA"] = false, ["ZZB"] = true },
+        };
+
+        var read = FilterCounts.WithEvents(row, kept);
+
+        Assert.True(read.TriggerFiredTheSessionBefore);
+        Assert.Equal([(new DateOnly(2026, 9, 3), (bool?)false), (new DateOnly(2026, 9, 2), (bool?)null)], read.Earlier!.Select(one => (one.Session, one.Fired)));
+    }
 }

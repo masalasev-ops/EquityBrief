@@ -178,13 +178,43 @@ public partial class FixtureExpectations
         Assert.Equal([95.0, 30.0, 13.0, 5.0], state.Gates.Select(gate => gate.Median!.Value));
         Assert.Equal(7.0, state.List.Median!.Value);
         Assert.Equal(
-            [(SwingGates.Trend, 50, 100), (SwingGates.Setup, 20, 60), (SwingGates.Trigger, 8, 40), (SwingGates.Trade, 5, 35)],
+            [(SwingGates.Trend, 38, 347), (SwingGates.Setup, 14, 126), (SwingGates.Trigger, 6, 56), (SwingGates.Trade, 1, 12)],
             state.Gates.Select(gate => (gate.Measure, gate.Low, gate.High)));
-        Assert.Equal((5, 30), (state.List.Low, state.List.High));
+        Assert.Equal((1, 9), (state.List.Low, state.List.High));
 
         var unusual = state.Reasons.Single(reason => reason.Reason == ShortlistSeries.UnusualVolume);
 
         Assert.Equal((0.6, 0.01), (unusual.Tonight!.Value, unusual.Median!.Value));
         Assert.NotNull(state.Tonight);
+    }
+
+    [Fact]
+    public void ABroadGateRisingWithinTwiceItsMedianIsNoEventAndANarrowOneCrossingAQuarterAndTwiceItsMedianIs()
+    {
+        // Seven nights of a thousand members. Trend and strength passes 230 on five and 260 on two, a
+        // median of 23%: 26% is above a quarter and inside twice 23%, so neither of its high nights is an
+        // event. Unusual volume fires for 20% on six and 26% on one, a median of 20%: above a quarter,
+        // inside twice 20%, no event. The setup passes 100 on six and 260 on the seventh, a median of 10%:
+        // 26% is above a quarter and above twice 10%, so worked by hand the seventh night alone is an event,
+        // for the setup.
+        var nights = new[]
+        {
+            ShapeNight(0, [230, 100, 50, 5], reasons: [(ShortlistSeries.UnusualVolume, 200)]),
+            ShapeNight(1, [230, 100, 50, 5], reasons: [(ShortlistSeries.UnusualVolume, 200)]),
+            ShapeNight(2, [230, 100, 50, 5], reasons: [(ShortlistSeries.UnusualVolume, 200)]),
+            ShapeNight(3, [230, 100, 50, 5], reasons: [(ShortlistSeries.UnusualVolume, 200)]),
+            ShapeNight(4, [260, 100, 50, 5], reasons: [(ShortlistSeries.UnusualVolume, 200)]),
+            ShapeNight(5, [230, 100, 50, 5], reasons: [(ShortlistSeries.UnusualVolume, 260)]),
+            ShapeNight(6, [260, 260, 50, 5], reasons: [(ShortlistSeries.UnusualVolume, 200)]),
+        };
+
+        var events = EventsOf(nights);
+
+        Assert.Equal(ShapeFirst.AddDays(6), Assert.Single(events).Session);
+        Assert.Equal(new Flood(SwingGates.Setup, 0.26, 0.1), Assert.Single(events[0].Floods));
+
+        // At 25.1% over a median of 12.6% a gate is above a quarter and not above twice its median, so it
+        // marks nothing.
+        Assert.Empty(EventsOf(Enumerable.Range(0, 5).Select(day => ShapeNight(day, [230, day == 4 ? 251 : 126, 50, 5]))));
     }
 }

@@ -166,22 +166,89 @@ public partial class FixtureExpectations
     [Fact]
     public void TheTriggerIsTheEventTonightWithNoneOnTheSessionBeforeAndFailsWhereTheSessionBeforeCannotSay()
     {
+        // The one-session window, the family's variant: arrival is the event tonight with none on the
+        // session before.
+        var one = FilterSettings.Proposed with { ArrivalSessions = 1 };
+
         // A close at the previous high is not above it; back into the band after a close below its low edge is.
-        Assert.False(Gates(Passing() with { Close = 101m }).TriggerEvent);
-        Assert.True(Gates(Passing() with { Close = 100.5m, PreviousClose = 99m }).TriggerEvent);
-        Assert.True(Passed(Gates(Passing() with { Close = 100.5m, PreviousClose = 99m }), SwingGates.Trigger));
+        Assert.False(Gates(Passing() with { Close = 101m }, one).TriggerEvent);
+        Assert.True(Gates(Passing() with { Close = 100.5m, PreviousClose = 99m }, one).TriggerEvent);
+        Assert.True(Passed(Gates(Passing() with { Close = 100.5m, PreviousClose = 99m }, one), SwingGates.Trigger));
 
         // The same event on the session before is not an arrival, and a session before that stored no result
         // cannot say, so the gate fails rather than passing on the absence.
-        var again = Gates(Passing() with { TriggerFiredTheSessionBefore = true });
+        var again = Gates(Passing() with { TriggerFiredTheSessionBefore = true }, one);
 
         Assert.False(Passed(again, SwingGates.Trigger));
         Assert.Equal("the trigger fired on 2026-09-04 too, so tonight is not its arrival", Reason(again, SwingGates.Trigger));
-        Assert.False(Passed(Gates(Passing() with { TriggerFiredTheSessionBefore = null }), SwingGates.Trigger));
+        Assert.False(Passed(Gates(Passing() with { TriggerFiredTheSessionBefore = null }, one), SwingGates.Trigger));
         Assert.Equal(
             "no gate result is stored for 2026-09-04, so the trigger's arrival cannot be read",
-            Reason(Gates(Passing() with { TriggerFiredTheSessionBefore = null }), SwingGates.Trigger));
-        Assert.Equal("no previous session's high to read the trigger against", Reason(Gates(Passing() with { PreviousHigh = null }), SwingGates.Trigger));
+            Reason(Gates(Passing() with { TriggerFiredTheSessionBefore = null }, one), SwingGates.Trigger));
+        Assert.Equal("no previous session's high to read the trigger against", Reason(Gates(Passing() with { PreviousHigh = null }, one), SwingGates.Trigger));
+    }
+
+    [Fact]
+    public void TheTriggerPassesWhereItFirstFiredWithinTheLastThreeSessionsAndFailsWhereItArrivedEarlierOrCannotBeRead()
+    {
+        // Section 17's window of 3: tonight, 2026-09-04 and 2026-09-03, each read against the session before
+        // it, 2026-09-02 the last one read. Tonight's close of 101 is at the previous high and not above it,
+        // so tonight's event did not happen.
+        var quiet = Passing() with { Close = 101m };
+
+        GateInputs Before(bool? on04, bool? on03, bool? on02) => quiet with
+        {
+            TriggerFiredTheSessionBefore = on04,
+            Earlier = [new SessionEvent(new DateOnly(2026, 9, 3), on03), new SessionEvent(new DateOnly(2026, 9, 2), on02)],
+        };
+
+        Assert.Equal(3, FilterSettings.Proposed.ArrivalSessions);
+
+        // Worked by hand. Fired on 09-04 and not on 09-03: arrived one session back, inside the window.
+        var yesterday = Gates(Before(true, false, null));
+
+        Assert.True(Passed(yesterday, SwingGates.Trigger));
+        Assert.Equal("the trigger first fired on 2026-09-04, 1 session(s) before tonight, inside the 3-session window", Reason(yesterday, SwingGates.Trigger));
+        Assert.Equal("2026-09-04", yesterday.Gates[3].Values[SwingGates.ArrivedValue]);
+
+        // Fired on 09-03 and 09-04 and not on 09-02: arrived two sessions back, the window's last session.
+        Assert.True(Passed(Gates(Before(true, true, false)), SwingGates.Trigger));
+
+        // Fired on each of 09-02, 09-03 and 09-04: it arrived before the window, and the gate fails.
+        var early = Gates(Before(true, true, true));
+
+        Assert.False(Passed(early, SwingGates.Trigger));
+        Assert.Equal("the trigger did not arrive in the last 3 sessions", Reason(early, SwingGates.Trigger));
+        Assert.Equal("none", early.Gates[3].Values[SwingGates.ArrivedValue]);
+
+        // Fired on none of them: no arrival.
+        Assert.False(Passed(Gates(Before(false, false, false)), SwingGates.Trigger));
+
+        // Fired on 09-03 and 09-04 with 09-02 not stored: the arrival turns on 09-02, which cannot say, so the
+        // gate fails and names it rather than passing on the absence.
+        var unread = Gates(Before(true, true, null));
+
+        Assert.False(Passed(unread, SwingGates.Trigger));
+        Assert.Equal("no gate result is stored for 2026-09-02, so the trigger's arrival cannot be read", Reason(unread, SwingGates.Trigger));
+
+        // An arrival tonight passes whatever the sessions before it held, and tonight firing on every session
+        // of the window and the one before it fails.
+        Assert.True(Passed(Gates(Passing() with { TriggerFiredTheSessionBefore = false, Earlier = [] }), SwingGates.Trigger));
+
+        var always = Gates(Passing() with
+        {
+            TriggerFiredTheSessionBefore = true,
+            Earlier = [new SessionEvent(new DateOnly(2026, 9, 3), true), new SessionEvent(new DateOnly(2026, 9, 2), true)],
+        });
+
+        Assert.False(Passed(always, SwingGates.Trigger));
+        Assert.Equal("the trigger fired on every session back to 2026-09-02, so it did not arrive in the last 3 sessions", Reason(always, SwingGates.Trigger));
+
+        // The arithmetic alone: newest arrival first, and the first unread session where none is found.
+        Assert.Equal(((int?)1, (int?)null), SwingGates.Arrival(false, [true, false, null], 3));
+        Assert.Equal(((int?)null, (int?)3), SwingGates.Arrival(false, [true, true, null], 3));
+        Assert.Equal(((int?)null, (int?)null), SwingGates.Arrival(true, [true, true, true], 3));
+        Assert.Equal(((int?)2, (int?)null), SwingGates.Arrival(null, [true, true, false], 3));
     }
 
     [Fact]

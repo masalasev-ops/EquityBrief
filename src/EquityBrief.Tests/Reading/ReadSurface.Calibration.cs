@@ -89,11 +89,11 @@ public partial class ReadSurface
 
         (string Measure, double Median, int Low, int High)[] expected =
         [
-            (SwingGates.Trend, 10, 50, 100),
-            (SwingGates.Setup, 6, 20, 60),
-            (SwingGates.Trigger, 3, 8, 40),
-            (SwingGates.Trade, 2, 5, 35),
-            (ShapeClock.ListMeasure, 2, 5, 30),
+            (SwingGates.Trend, 10, 38, 347),
+            (SwingGates.Setup, 6, 14, 126),
+            (SwingGates.Trigger, 3, 6, 56),
+            (SwingGates.Trade, 2, 1, 12),
+            (ShapeClock.ListMeasure, 2, 1, 9),
         ];
 
         foreach (var (measure, median, low, high) in expected)

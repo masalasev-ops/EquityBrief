@@ -1169,7 +1169,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.MatrixTable, "Filter counts"),
         CheckReach.Key(Scope.StoresTable, "Gate results"),
         CheckReach.Key(Scope.StoresTable, "Filter versions"),
-        CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it did not fire on the session before, the trade read from the ladder's first tranche and from the swing trade's own plan, and the exclusions, storing every answer with the values that decided it and ranking the names passing; tonight's list is not read from it."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche and from the swing trade's own plan, and the exclusions, storing every answer with the values that decided it and ranking the names passing; tonight's list is not read from it."),
         CheckReach.Key(Scope.LimitsTable, "Market gate"),
         CheckReach.Key(Scope.LimitsTable, "Strength gate"),
         CheckReach.Key(Scope.LimitsTable, "Pullback depth"),
@@ -1188,7 +1188,7 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.10 Run", "The shape clock, the ordinary nights under the open filter version against the sixty the calibration waits on"),
         CheckReach.Key("15.10 Run", "The shape clock, every event night with what made it one"),
         CheckReach.Key("15.10 Run", "The shape clock, each gate's median count through it against its band"),
-        CheckReach.Key("15.10 Run", "The shape clock, the list's median size against its band of 5 to 30"),
+        CheckReach.Key("15.10 Run", "The shape clock, the list's median size against its band"),
         CheckReach.Key("15.10 Run", "The shape clock, drawn as not yet measured until the trigger"),
         CheckReach.Key("15.10 Run", "The shape clock, said at the top of the page once the trigger is crossed"),
         CheckReach.Key("15.10 Run", "The shape clock, each reason's share of the index as context"),
@@ -1217,6 +1217,9 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Shape lever ranges"),
         CheckReach.Key(Scope.LimitsTable, "Shape acceptance bound"),
         CheckReach.Key(Scope.FailureTable, "A shape proposal rejected"),
+
+        // The 12.4 ruling's: section 17's arrival window, set before the family registers.
+        CheckReach.Key(Scope.LimitsTable, "Trigger arrival window"),
     ];
 
     // Rows phase 12 took out of the document: 11.9's region stating each reason's share against its

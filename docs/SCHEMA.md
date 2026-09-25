@@ -374,7 +374,7 @@ Grain: one row per index member per night.
 | `trend` | INTEGER | 1 where the trend and strength gate passed |
 | `setup` | INTEGER | 1 where a setup passed |
 | `family` | TEXT | `pullback` or `breakout`, null where no setup passed |
-| `trigger_pass` | INTEGER | 1 where the trigger passed, which for a pullback is its event tonight with none on the session before |
+| `trigger_pass` | INTEGER | 1 where the trigger passed, which for a pullback is its event arriving inside the window the settings name: tonight or a session before whose own stored result shows the event, with none on the session before that one |
 | `trigger_event` | INTEGER | 1 where the pullback's trigger event happened tonight, 0 where it did not, null where the night's bars cannot say |
 | `trade` | INTEGER | 1 where the trade gate passed on the plan the settings name |
 | `ladder_reward_to_risk` | REAL | the ladder's first tranche's reward to risk as the listing kept it, null where it computes none |

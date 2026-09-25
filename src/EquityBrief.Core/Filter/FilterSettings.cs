@@ -27,6 +27,7 @@ public sealed record FilterSettings(
     double StopLow,
     double StopHigh,
     int EarningsWindowSessions,
+    int ArrivalSessions,
     TradeInput Trade)
 {
     // Section 17's proposed values, which the filter runs on until a version is opened.
@@ -52,6 +53,10 @@ public sealed record FilterSettings(
 
     public const int ProposedEarningsWindowSessions = 15;
 
+    // The sessions back from tonight, tonight among them, inside which the trigger's first firing counts.
+    // see: Arrival is a trigger that first fired within the last three sessions, and the trade is read from tonight's close
+    public const int ProposedArrivalSessions = 3;
+
     public static FilterSettings Proposed { get; } = new(
         ProposedBreadthFloor,
         ProposedStrengthFloor,
@@ -64,6 +69,7 @@ public sealed record FilterSettings(
         ProposedStopLow,
         ProposedStopHigh,
         ProposedEarningsWindowSessions,
+        ProposedArrivalSessions,
         TradeInput.Ladder);
 
     // The settings as a version stores them, each threshold under its own name and the trade gate's
@@ -82,6 +88,7 @@ public sealed record FilterSettings(
             ["stopLow"] = StopLow,
             ["stopHigh"] = StopHigh,
             ["earningsWindowSessions"] = EarningsWindowSessions,
+            ["arrivalSessions"] = ArrivalSessions,
             ["trade"] = Trade == TradeInput.Ladder ? "ladder" : "swing",
         });
 
@@ -112,6 +119,7 @@ public sealed record FilterSettings(
             Number("stopLow"),
             Number("stopHigh"),
             (int)Number("earningsWindowSessions"),
+            (int)Number("arrivalSessions"),
             trade switch
             {
                 "ladder" => TradeInput.Ladder,

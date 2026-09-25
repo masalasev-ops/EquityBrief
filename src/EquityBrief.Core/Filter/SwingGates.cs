@@ -11,8 +11,13 @@ public sealed record FilterBand(decimal LowEdge, decimal HighEdge, string Role, 
 // the first traded target, their reward to risk, and the arithmetic's own words where it computes none.
 public sealed record FirstTranche(decimal? Entry, decimal? Stop, decimal? Target, decimal? RewardToRisk, string? Absent);
 
+// A session before tonight and whether the trigger's event happened on it, as that session's stored
+// result says; null where no result is stored for it.
+public readonly record struct SessionEvent(DateOnly Session, bool? Fired);
+
 // Everything one member's gates are evaluated against on one night, already read. Nullable throughout,
-// because every member is evaluated and a gate reading an absent value fails and says why.
+// because every member is evaluated and a gate reading an absent value fails and says why. The sessions
+// before the session before, newest first, carry the trigger's events the arrival window reads.
 public sealed record GateInputs(
     string Ticker,
     Breadth? Breadth,
@@ -33,7 +38,8 @@ public sealed record GateInputs(
     bool Suspect,
     DateOnly? Gap,
     DateOnly? SessionBefore,
-    bool? TriggerFiredTheSessionBefore);
+    bool? TriggerFiredTheSessionBefore,
+    IReadOnlyList<SessionEvent>? Earlier = null);
 
 // One gate's answer: whether it passed, the sentence saying why, and the values that decided it.
 public sealed record Gate(string Name, bool Passed, string Reason, IReadOnlyDictionary<string, string> Values);
@@ -90,6 +96,10 @@ public static class SwingGates
     public const string PullbackBandValue = "inside an anchored support band";
 
     public const string BreakoutBandValue = "cleared a band above the previous close";
+
+    // The trigger's value naming the session its event arrived on inside the window, or none, which the
+    // shape proposer recounts from: no threshold moves it.
+    public const string ArrivedValue = "arrived";
     public const string SupportRole = "support";
 
     public static GateResult Evaluate(GateInputs inputs, FilterSettings settings)
@@ -100,7 +110,7 @@ public static class SwingGates
         var market = MarketGate(inputs, settings);
         var trend = TrendGate(inputs, settings);
         var (setup, family) = SetupGate(inputs, settings, pullbackBand, breakoutBand);
-        var (trigger, triggerEvent) = TriggerGate(inputs, family, pullbackBand, breakoutBand);
+        var (trigger, triggerEvent) = TriggerGate(inputs, settings, family, pullbackBand, breakoutBand);
 
         var setupBand = family == Breakout ? breakoutBand : pullbackBand ?? breakoutBand;
         var ladder = LadderTrade(inputs);
@@ -267,41 +277,102 @@ public static class SwingGates
             || (band is not null && inputs.PreviousClose is { } before && before < band.LowEdge && close >= band.LowEdge);
     }
 
+    // The trigger's arrival inside the window: the newest session back from tonight, tonight being 0, on
+    // which its event happened where it had not on the session before it, or none. Where none is found
+    // and the answer turned on a session whose event cannot be read, the first such session back. The
+    // events before tonight are newest first, the session before at 0.
+    // see: Arrival is a trigger that first fired within the last three sessions, and the trade is read from tonight's close
+    public static (int? At, int? Unread) Arrival(bool? tonight, IReadOnlyList<bool?> before, int window)
+    {
+        bool? Fired(int back) => back == 0 ? tonight : back - 1 < before.Count ? before[back - 1] : null;
+
+        int? unread = null;
+
+        for (var back = 0; back < window; back++)
+        {
+            var on = Fired(back);
+            var prior = Fired(back + 1);
+
+            if (on == true && prior == false)
+            {
+                return (back, null);
+            }
+
+            if (on is null)
+            {
+                unread ??= back;
+            }
+            else if (on == true && prior is null)
+            {
+                unread ??= back + 1;
+            }
+        }
+
+        return (null, unread);
+    }
+
     // The trigger: for a breakout, the first close above the band, which the band test already is; for a
-    // pullback, and for a name with no setup so its near misses can be read, the event tonight where it
-    // did not happen on the session before, read off that session's stored result. A session before
-    // with no stored result cannot say, and the gate fails rather than passing on the absence.
-    // see: Arrival is the first night a name's trigger fires, and a setup it has held for several nights does not stop it
-    static (Gate Gate, bool? Event) TriggerGate(GateInputs inputs, string? family, FilterBand? pullbackBand, FilterBand? breakoutBand)
+    // pullback, and for a name with no setup so its near misses can be read, the event's arrival inside
+    // the window, read off the stored results of the sessions before. A session with no stored result
+    // the answer turns on cannot say, and the gate fails rather than passing on the absence.
+    // see: Arrival is a trigger that first fired within the last three sessions, and the trade is read from tonight's close
+    static (Gate Gate, bool? Event) TriggerGate(GateInputs inputs, FilterSettings settings, string? family, FilterBand? pullbackBand, FilterBand? breakoutBand)
     {
         var tonight = PullbackEvent(inputs, pullbackBand);
-        var before = inputs.SessionBefore is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "the session before";
+        var window = settings.ArrivalSessions;
+
+        List<DateOnly?> sessions = [inputs.SessionBefore, .. (inputs.Earlier ?? []).Select(earlier => (DateOnly?)earlier.Session)];
+        List<bool?> fired = [inputs.TriggerFiredTheSessionBefore, .. (inputs.Earlier ?? []).Select(earlier => earlier.Fired)];
+
+        string On(int back) =>
+            back == 0 ? "tonight"
+            : back - 1 < sessions.Count && sessions[back - 1] is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+            : back == 1 ? "the session before"
+            : Invariant($"the session {back} before tonight");
+
+        var (at, unread) = Arrival(tonight, fired, window);
         var values = Values(
             ("event tonight", tonight is { } happened ? (happened ? "yes" : "no") : "none"),
             ("event the session before", inputs.TriggerFiredTheSessionBefore is { } earlier ? (earlier ? "yes" : "no") : "none"),
-            ("previous high", Price(inputs.PreviousHigh)));
+            ("previous high", Price(inputs.PreviousHigh)),
+            ("arrival window", Whole(window)),
+            (ArrivedValue, at is { } back ? On(back) : "none"));
 
         if (family == Breakout)
         {
             return (new Gate(Trigger, true, "the first close above the band it cleared", values), tonight);
         }
 
-        if (tonight is not { } fired)
+        if (at is 0)
+        {
+            return (new Gate(Trigger, true, $"the trigger fired tonight and not on {On(1)}", values), tonight);
+        }
+
+        if (at is { } arrived)
+        {
+            return (new Gate(Trigger, true, Invariant($"the trigger first fired on {On(arrived)}, {arrived} session(s) before tonight, inside the {window}-session window"), values), tonight);
+        }
+
+        if (unread is 0)
         {
             return (new Gate(Trigger, false, "no previous session's high to read the trigger against", values), null);
         }
 
-        if (!fired)
+        if (unread is { } missing)
         {
-            return (new Gate(Trigger, false, "the close is not above the previous session's high and did not come back into the band", values), false);
+            return (new Gate(Trigger, false, $"no gate result is stored for {On(missing)}, so the trigger's arrival cannot be read", values), tonight);
         }
 
-        return inputs.TriggerFiredTheSessionBefore switch
+        if (window == 1)
         {
-            null => (new Gate(Trigger, false, $"no gate result is stored for {before}, so the trigger's arrival cannot be read", values), true),
-            true => (new Gate(Trigger, false, $"the trigger fired on {before} too, so tonight is not its arrival", values), true),
-            false => (new Gate(Trigger, true, $"the trigger fired tonight and not on {before}", values), true),
-        };
+            return tonight == true
+                ? (new Gate(Trigger, false, $"the trigger fired on {On(1)} too, so tonight is not its arrival", values), true)
+                : (new Gate(Trigger, false, "the close is not above the previous session's high and did not come back into the band", values), tonight);
+        }
+
+        return tonight == true
+            ? (new Gate(Trigger, false, Invariant($"the trigger fired on every session back to {On(window)}, so it did not arrive in the last {window} sessions"), values), true)
+            : (new Gate(Trigger, false, Invariant($"the trigger did not arrive in the last {window} sessions"), values), tonight);
     }
 
     // The ladder's first tranche, as the listing kept it, with the stop's distance in typical moves.
