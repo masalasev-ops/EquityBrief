@@ -25851,3 +25851,170 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             place, in the worktree beside the repository, and they did not touch the operator's
             store under `data/`.
 Carried:    nothing.
+
+### 12.5 - correction: a candidate no night has evaluated reads the level over the candidates standing beside it, where each of the swing family's six read the whole 0.05, and each candidate reads the window it opened with and no later one   2026-09-25
+Corrects:   12.5, whose registration of the swing family's six beside the three it retired made 10.2's
+            reading of the candidates' records false. 10.2 keyed the window of a candidate no night had
+            evaluated on the page's night and read its members as the candidates evaluated that night: with
+            one set of candidates that night held none of their rows and the level came out right, and with
+            the three's rows on the page's night the six fell into no graph and took the whole 0.05 at step
+            1, where the ruled level is 0.05 over 6 and each of their register rows says a sixth of 0.05. The
+            shadow region on the same page divided by 6. Since 14:04:07Z the operator's store also holds
+            version 1's live candidate retired before any night evaluated it and version 2's registered in
+            its place, by the 12.4 ruling's acceptance, and each read 0.05 the same way. The fault holds from
+            a registration until the first night that evaluates the candidate, so it comes back with every
+            acceptance, and it reaches no verdict, none being readable for about two years.
+            The same reading took a candidate's level from the last window holding it rather than the one it
+            opened with, so a variant first evaluated beside a live candidate and evaluated again beside its
+            replacement read the replacement's window. The two levels differ only once a candidate crosses,
+            so nothing drawn has been wrong by it.
+Found:      the first by the first phase 12 sign-off review over 4a7c7e0 on 2026-09-25, on
+            /screens/run/2026-09-24 and /screens/run/2026-09-23 over a copy of the operator's store taken at
+            13:21Z; the second by this correction's builder, writing the repair.
+Repaired:   `RunScreen.Candidates`: each candidate reads the graph of the window it opened with and no
+            later one, and a candidate no night has evaluated reads the graph over the candidates standing
+            beside it at the page's instant, the ones the next night evaluates with it, or, retired first,
+            the ones standing when it was retired. Served over a copy of the operator's store taken at
+            14:39:40Z through SQLite's backup opened immutable, /screens/run/2026-09-24 drew version 2's live
+            candidate, the five variants and version 1's retired live candidate at 0.008333 and the three at
+            0.016667, each at step 1, where `main` at ecb1dc4 over the same copy drew the seven at 0.05.
+Guarded:    `read-surface`, one test added,
+            `ACandidateNoNightHasEvaluatedReadsTheLevelOverTheCandidatesStandingBesideIt`, each state worked
+            by hand from the register: the six before any night evaluated them while the page's night holds
+            the three's rows, the three at 0.05 over 3 and the six at 0.05 over 6, and each of the six's own
+            article, matched on the whole of its key and read to its close, drawing 0.00833 at step 1; the
+            six's first night moving no level; an acceptance retiring one of the six and registering its
+            replacement, before any night evaluated the six and after, the seven at 0.05 over 6 and the three
+            at 0.05 over 3; and a variant promoted after the six's first night, the four of that window still
+            standing at 0.05 over 6 and a quarter of it again at step 2, while the replacement, first
+            evaluated with those four, reads 0.05 over 5; and a candidate retired beside three, registered
+            again and retired beside four before any night evaluated it reads 0.05 over 4, the ones standing
+            at its last retirement, and one registered and retired in one second beside three reads 0.05
+            over 4, the three standing before that second and itself.
+Written:    section 13.6's sentence, its prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Pins:       the branch against `main` at ecb1dc4; this correction edits `RunScreen.cs`, a test and two
+            documents, in none of the twelve `RuleVersionScorer.CodeVersionSources`, the twenty-one
+            `CandidateEvaluator.EvaluationSources` with each evaluator's own source ahead of them, or the
+            sixteen `SwingFilter.CodeVersionSources`, each read from the tree being committed.
+Mutated:    the rule, stated before the run: each repair put back to what it replaced, one at a time. The
+            six's first night moving no level is left unmutated here, the windows test of 12.5's earlier
+            correction holding it.
+            Predicted:
+            C1 a candidate no night has evaluated read at the whole 0.05 at step 1: red in the test this
+            correction adds alone, the windows test staying green as the review found it.
+            C2 each candidate's level taken from every window holding it, the later overwriting the
+            earlier: red in the test this correction adds alone.
+            C7 a candidate retired before any night evaluated it read at its first retirement rather than
+            its last: red in the test this correction adds alone.
+            C8 that candidate left out of the graph it is read over: red in the test this correction adds
+            alone, the one registered and retired in one second finding no level.
+            Results: C1, C2, C7 and C8 in the 12.7 correction closing this batch.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 12.7 correction closing this batch records.
+Carried:    nothing.
+
+### 12.4 - correction: a gate or reason at exactly twice its median share marks no event night and one member more marks it, where no constructed night sat at twice its median and at least twice read as more than twice   2026-09-25
+Corrects:   12.4's tests, and no shipped code. The 12.4 ruling's event rule, carried into
+            `ShapeClock.Events`, marks a night where a usually quiet gate or reason passes more than a
+            quarter of the index and more than twice its own median share. The tests held the twice clause
+            well inside it and well past it, and no constructed night sat at exactly twice its median, so the
+            clause read as at least twice turned no test red.
+Found:      by the first phase 12 sign-off review over 4a7c7e0 on 2026-09-25, the comparison made at least
+            twice leaving all 1407 tests green, and reproduced on `main` at ecb1dc4 before the assertion was
+            written, the test this correction widens staying green.
+Repaired:   nothing shipped changes: the correction is two assertions.
+Guarded:    `fixture-expectations`, in
+            `ABroadGateRisingWithinTwiceItsMedianIsNoEventAndANarrowOneCrossingAQuarterAndTwiceItsMedianIs`:
+            over a thousand members, the setup at 130 on six nights and 260 on the seventh, a median of 13%
+            and a seventh night at exactly twice it, doubling being exact in binary floating point, marks no
+            night; at 261 the seventh night is marked for the setup alone, trend and strength rising with it
+            to 26.1% and staying inside twice its median of 23%.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Pins:       the branch against `main` at ecb1dc4; this correction edits a test, in none of the twelve,
+            twenty-one or sixteen pinned sources. `ShapeClock.cs`, which holds the rule, is in none of the
+            three lists and is not edited.
+Mutated:    the rule, stated before the run: the mutation that found the gap, run again.
+            Predicted:
+            C3 more than twice read as at least twice (`>` to `>=` on the twice clause): red in the test this
+            correction widens alone.
+            Results: C3 in the 12.7 correction closing this batch.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 12.7 correction closing this batch records.
+Carried:    nothing.
+
+### 12.7 - correction: a gate's near miss carries no exclusion and an exclusion's carries that exclusion alone, and a swing plan whose night's raw close sits above its target is not scored, where each rule was asserted on one side   2026-09-25
+Corrects:   12.7's tests, and no shipped code. Three conditions 12.7 wrote were stated and asserted on one
+            side. A gate's near misses in `EdgeClock.NearMisses` take a row that gate alone rejected and no
+            exclusion applied to, and dropping the exclusion condition left every test green, every
+            constructed row failing one gate carrying none; about a quarter of the index sits inside the
+            fifteen-session earnings window on any night, so on live rows the gate groups would take setups
+            an exclusion kept off the list. An exclusion's near misses take a row every gate passed carrying
+            that exclusion and no other, and reading any row carrying it left every test green. The filler
+            counts a swing plan as not scorable where the night's raw close sits below its stop or above its
+            target, and the test held the stop's side alone, so dropping the target's left every test green;
+            either side can be the one a price adjustment trips.
+Found:      by the first phase 12 sign-off review over 4a7c7e0 on 2026-09-25, each mutation leaving all 1407
+            tests green, and reproduced on `main` at ecb1dc4 before any assertion was written, each test this
+            correction widens staying green.
+Repaired:   nothing shipped changes: the correction is three assertions.
+Guarded:    `fixture-expectations`, in `TheNearMissesGiveTheArithmeticTheirConstructedOutcomesPredict`:
+            two rows a block that belong to no group, beside the one failing two gates, one failing the
+            trigger alone with the earnings exclusion, losing, and one passing every gate with the earnings
+            and suspect series exclusions both, winning, so the trigger still reads 18 setups at 100%, the
+            suspect series 9 at 0%, and the earnings and gap groups none. In
+            `TheFillerScoresEverySwingFilterRowCarryingAPlanAndNoOther`: a plan whose night's raw close of 111
+            sits above its target of 110, not scored, so the stage reads 6 plans and 2 not scorable, on its
+            run log row as well.
+Written:    no spec.
+Expected:   derived: no expectation file moves.
+Tests:      1408, from 1407: one added to `read-surface` by the 12.5 correction of this batch, one test of
+            `fixture-expectations` widened by the 12.4 correction and two by this one, none removed.
+            Migrations 0 to 42 with none added and none pending, schema version 42.
+Claims:     554, from 554, with 554 PASS and 0 out of scope, and 564 placements and verdicts reconciled
+            against a floor of 34. No claim added: no table or figure changed, and section 13.6's sentence is
+            no claim's.
+Pins:       the branch against `main` at ecb1dc4; this correction edits two tests. The batch edits
+            `RunScreen.cs`, three tests and two documents. `RunScreen.cs`, `ShapeClock.cs`, `EdgeClock.cs`
+            and `ForwardReturnFiller.cs`, which hold the four rules, are in none of the twelve
+            `RuleVersionScorer.CodeVersionSources`, the twenty-one `CandidateEvaluator.EvaluationSources`
+            with each evaluator's own source ahead of them, or the sixteen `SwingFilter.CodeVersionSources`,
+            each read from the tree being committed, and only the first is edited.
+Mutated:    the rule, stated before the run: the three mutations that found the gaps, run again.
+            Predicted:
+            C4 a gate's near misses taking a row an exclusion applied to (`row.Exclusions.Count == 0 &&`
+            removed): red in the near misses test alone.
+            C5 an exclusion's near misses taking any row carrying it (`row.Exclusions.Count == 1 &&
+            row.Exclusions[0] == exclusion` to `row.Exclusions.Contains(exclusion)`): red in the near misses
+            test alone.
+            C6 the target's side of the not-scorable guard dropped (`(raw < row.Stop || raw > row.Target)` to
+            `(raw < row.Stop)`): red in the filler test alone.
+            Results: one run for each of this batch's eight mutations in a detached worktree at ef946b7,
+            the tree carrying this entry, filtered to the tests they name on the operator's instruction of
+            2026-09-24, each reverted with `git checkout -- .` and the tree read clean after. The whole
+            suite ran green over ef946b7 in the gates, 1408 of 1408. C1, C2, C7 and C8 each turned 1 red,
+            the test the 12.5 correction adds, and left the windows test green. C3 turned 1 red, the
+            twice-median test. C4 and C5 each turned 1 red, the near misses test. C6 turned 1 red, the
+            filler test.
+Held:       all eight, in the test each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1408 of 1408
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42, exit
+            0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 41 tables, 554 claims, 554 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 564 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, 1408 of 1408 tests.
+            Both gates ran over the tree carrying this entry and the two before it, ef946b7, in the worktree
+            beside the repository, and the operator's store under `data/` was not touched by either. The
+            first run of the gates, over 9128e04, stopped at `nightly-run`: the test the 12.5 correction
+            adds named the graph's steps by number in its comment and one assertion, which the check
+            refuses outside section 14 and the night's own list, and they were reworded in that
+            correction's commit. Both gates then ran green over 8de2414, and the builder's read of the
+            repair found two edits its tests left green there, shown by a run filtered to the windows test
+            and the test the 12.5 correction adds: a retired candidate read at its first retirement, and
+            the candidate left out of its own graph. The 12.5 correction's test and entry gained them as
+            C7 and C8 before both gates ran again over this tree.
+Carried:    nothing new. The per-window level's revisit stays the operator's ruling, the count of candidates
+            ever registered standing at ten since 14:04:07Z against the eight it is due at (see: Holm's level
+            passes between the candidates by a graph fixed when they are registered, and every verdict shows
+            the lifetime count).

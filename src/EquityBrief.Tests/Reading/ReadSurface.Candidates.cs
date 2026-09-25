@@ -269,6 +269,142 @@ public partial class ReadSurface
         Assert.All(six, candidate => Assert.Equal(0.05 / 6, levels[candidate], 12));
     }
 
+    // A candidate no night has evaluated has opened no window yet, and it reads the level over the
+    // candidates standing beside it, the ones the next night evaluates with it, or, retired first, the
+    // ones standing when it was retired. Each state below is worked by hand from the register.
+    // The six registered at the instant the three retired, before any night evaluates them, while the
+    // page's night holds the three's rows: the three at 0.05 over 3 and the six at 0.05 over 6, drawn
+    // at the graph's first step. The six's first night moves no level. An acceptance retiring "d" and
+    // registering "j": before either's first night all six read 0.05 over 6, "d" over the six standing
+    // when it was retired; after the five and "d" were first evaluated on one night, "j" reads 0.05
+    // over the six standing beside it and no level of the window before it moves. Each candidate reads
+    // the window it opened with and no other: "e" promoted after the six's first night passes its 0.05
+    // over 6 to the four of that window still standing, each then at 0.05 over 6 and a quarter of it
+    // again at the graph's second, while "j", first evaluated with those four and not "e", reads 0.05
+    // over 5. And a candidate retired, registered again and retired again reads the ones standing at
+    // its last retirement, and one registered and retired in one second the ones standing before that
+    // second, and itself.
+    [Fact]
+    public void ACandidateNoNightHasEvaluatedReadsTheLevelOverTheCandidatesStandingBesideIt()
+    {
+        var retiredAt = Registered.AddDays(21);
+        var acceptedAt = Registered.AddDays(60);
+        string[] six = ["d", "e", "f", "g", "h", "i"];
+        string[] variants = ["e", "f", "g", "h", "i"];
+        DateOnly night = Nights(EquityBrief.Core.Returns.Blocks.Sessions * 9);
+        var sixFirst = FirstNight.AddDays(22);
+        var jFirst = FirstNight.AddDays(70);
+
+        CandidateRow[] family =
+        [
+            .. Family(),
+            .. Family().Select((row, at) => row with { Id = 4 + at, Event = CandidateFamily.Retired, Retires = row.Candidate, RegisteredAt = retiredAt, Evidence = "retired when six more registered" }),
+            .. six.Select((candidate, at) => new CandidateRow(7 + at, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, retiredAt, "{\"level\": 30}", null)),
+        ];
+
+        CandidateRow[] accepted =
+        [
+            .. family,
+            new(13, "d", MomentumIndexReading.EvaluatorName, CandidateFamily.Retired, "d", acceptedAt, "{}", "retired by a shape acceptance"),
+            new(14, "j", MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, acceptedAt, "{\"level\": 35}", null),
+        ];
+
+        CandidateNightRow[] threeRead = [.. Family().SelectMany(row => new[] { new CandidateNightRow(FirstNight, row.Candidate), new CandidateNightRow(night, row.Candidate) })];
+        CandidateNightRow[] sixRead = [.. threeRead, .. six.Select(candidate => new CandidateNightRow(sixFirst, candidate))];
+
+        Dictionary<string, CandidateRecordRow> Read(CandidateRow[] register, CandidateNightRow[] nights) =>
+            RunScreen.Candidates(register, nights, [], night, Registered.AddYears(3))
+                .Candidates.ToDictionary(candidate => candidate.Candidate, StringComparer.Ordinal);
+
+        void Levels(Dictionary<string, CandidateRecordRow> read, IEnumerable<string> candidates, double level, int step = 1) =>
+            Assert.All(candidates, candidate => Assert.Equal((Math.Round(level, 12), step), (Math.Round(read[candidate].Level, 12), read[candidate].Step)));
+
+        // The six before any night evaluated them, the three's rows on the page's night.
+        var unread = RunScreen.Candidates(family, threeRead, [], night, Registered.AddYears(3));
+        var before = unread.Candidates.ToDictionary(candidate => candidate.Candidate, StringComparer.Ordinal);
+
+        Levels(before, ["a", "b", "c"], 0.05 / 3);
+        Levels(before, six, 0.05 / 6);
+
+        // Drawn on the page, each of the six's own article reads the same level, matched on the whole
+        // of its key and read up to the article's close.
+        var drawn = new MarkRenderer().CandidateRecords(unread);
+
+        Assert.All(six, candidate =>
+        {
+            var opening = $"<article class=\"candidate\" data-candidate=\"{candidate}\" ";
+            var start = drawn.IndexOf(opening, StringComparison.Ordinal);
+
+            Assert.True(start >= 0 && drawn.IndexOf(opening, start + 1, StringComparison.Ordinal) < 0, candidate);
+
+            var article = drawn[start..drawn.IndexOf("</article>", start, StringComparison.Ordinal)];
+
+            Assert.Contains("data-level=\"0.008333\" data-step=\"1\"", article, StringComparison.Ordinal);
+            Assert.Contains($"Step {before[candidate].Step} of the graph, at a level of 0.00833 of the 0.05 the family is tested at.", article, StringComparison.Ordinal);
+        });
+
+        // The six's first night moves nothing.
+        var after = Read(family, sixRead);
+
+        Levels(after, ["a", "b", "c"], 0.05 / 3);
+        Levels(after, six, 0.05 / 6);
+
+        // An acceptance before any night evaluated the six: "d" retired, over the six standing when it
+        // was, and "j" over the six standing beside it now.
+        var acceptedUnread = Read(accepted, threeRead);
+
+        Assert.False(acceptedUnread["d"].Standing);
+        Levels(acceptedUnread, ["a", "b", "c"], 0.05 / 3);
+        Levels(acceptedUnread, [.. six, "j"], 0.05 / 6);
+
+        // An acceptance after the six's first night, "j" not yet evaluated.
+        var acceptedAfter = Read(accepted, sixRead);
+
+        Levels(acceptedAfter, ["a", "b", "c"], 0.05 / 3);
+        Levels(acceptedAfter, [.. six, "j"], 0.05 / 6);
+
+        // "e" promoted after the six's first night, and "j" first evaluated with the four of the six
+        // still standing.
+        CandidateRow[] promoted =
+        [
+            .. accepted,
+            new(15, "e", MomentumIndexReading.EvaluatorName, CandidateFamily.Retired, "e", acceptedAt.AddDays(1), "{}", CandidateFamily.PromotedBy + " at the look of 12 blocks"),
+        ];
+
+        var ownWindows = Read(promoted, [.. sixRead, .. variants.Skip(1).Append("j").Select(candidate => new CandidateNightRow(jFirst, candidate))]);
+
+        Assert.True(ownWindows["e"].Crossed);
+        Levels(ownWindows, variants.Skip(1), 0.05 / 6 + (0.05 / 6 / 4), step: 2);
+        Levels(ownWindows, ["d"], 0.05 / 6, step: 2);
+        Levels(ownWindows, ["j"], 0.05 / 5);
+
+        // "k" retired beside three and registered again, then retired beside four, before any night
+        // evaluated it; "m" registered and retired in one second beside three.
+        CandidateRow Written(long id, string candidate, string written, DateTimeOffset when) =>
+            written == CandidateFamily.Retired
+                ? new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Retired, candidate, when, "{}", "retired")
+                : new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, when, "{\"level\": 30}", null);
+
+        CandidateRow[] rejoined =
+        [
+            Written(1, "x", CandidateFamily.Registered, Registered),
+            Written(2, "y", CandidateFamily.Registered, Registered),
+            Written(3, "k", CandidateFamily.Registered, Registered),
+            Written(4, "k", CandidateFamily.Retired, Registered.AddDays(1)),
+            Written(5, "z", CandidateFamily.Registered, Registered.AddDays(2)),
+            Written(6, "k", CandidateFamily.Registered, Registered.AddDays(3)),
+            Written(7, "k", CandidateFamily.Retired, Registered.AddDays(4)),
+            Written(8, "m", CandidateFamily.Registered, Registered.AddDays(5)),
+            Written(9, "m", CandidateFamily.Retired, Registered.AddDays(5)),
+        ];
+
+        var again = Read(rejoined, []);
+
+        Levels(again, ["x", "y", "z"], 0.05 / 3);
+        Levels(again, ["k", "m"], 0.05 / 4);
+        Assert.False(again["k"].Standing || again["m"].Standing);
+    }
+
     // Three candidates registered at one instant, which is the family the level is divided by.
     static CandidateRow[] Family() =>
     [

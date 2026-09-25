@@ -216,5 +216,19 @@ public partial class FixtureExpectations
         // At 25.1% over a median of 12.6% a gate is above a quarter and not above twice its median, so it
         // marks nothing.
         Assert.Empty(EventsOf(Enumerable.Range(0, 5).Select(day => ShapeNight(day, [230, day == 4 ? 251 : 126, 50, 5]))));
+
+        // More than twice, and not twice. The setup at 130 on six nights and 260 on the seventh has a median
+        // of 13%, and 26% is above a quarter and exactly twice 13%, doubling being exact in binary floating
+        // point, so it is not more than twice its median and marks nothing. One member more, 261, is, and
+        // marks the seventh night for the setup alone: trend and strength rising with it to 26.1% sits
+        // inside twice its median of 23%.
+        int[] Usual() => [230, 130, 50, 5];
+
+        Assert.Empty(EventsOf(Enumerable.Range(0, 7).Select(day => ShapeNight(day, day == 6 ? [260, 260, 50, 5] : Usual()))));
+
+        var over = EventsOf(Enumerable.Range(0, 7).Select(day => ShapeNight(day, day == 6 ? [261, 261, 50, 5] : Usual())));
+
+        Assert.Equal(ShapeFirst.AddDays(6), Assert.Single(over).Session);
+        Assert.Equal(new Flood(SwingGates.Setup, 0.261, 0.13), Assert.Single(over[0].Floods));
     }
 }
