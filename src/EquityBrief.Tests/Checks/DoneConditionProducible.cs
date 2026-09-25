@@ -105,6 +105,45 @@ public class DoneConditionProducible
         return found;
     }
 
+    // The phases the build plan holds, by the number each `## Phase N:` heading carries, in order.
+    internal static IReadOnlyList<int> PlannedPhases() => PlannedPhases(Corpus.Read("docs/BUILD_PLAN.md"));
+
+    internal static IReadOnlyList<int> PlannedPhases(string plan) =>
+    [
+        .. Regex.Matches(plan, @"^## Phase (\d+):", RegexOptions.Multiline)
+            .Select(match => int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture)),
+    ];
+
+    // The phases section 20's table carries a row for, by the number opening each row, in order.
+    internal static IReadOnlyList<int> SectionTwentyPhases() => SectionTwentyPhases(Corpus.Read("docs/ARCHITECTURE.html"));
+
+    internal static IReadOnlyList<int> SectionTwentyPhases(string architecture)
+    {
+        var section = architecture.IndexOf("<h2>20. Build phases", StringComparison.Ordinal);
+
+        Assert.True(section >= 0, "ARCHITECTURE.html has no section 20 to read the phase table from.");
+
+        var end = architecture.IndexOf("<h2>21.", section, StringComparison.Ordinal);
+
+        return
+        [
+            .. Regex.Matches(architecture[section..(end > 0 ? end : architecture.Length)], @"<tr><td><b>(\d+)\.")
+                .Select(match => int.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture)),
+        ];
+    }
+
+    [Fact]
+    public void APhaseThePlanHoldsAndSectionTwentyLacksIsFound()
+    {
+        const string Plan = "## Phase 0: a\n\n## Phase 1: b\n\n## Phase 2: c\n";
+        const string Table = "<h2>20. Build phases</h2><table><tr><td><b>0. a</b></td></tr><tr><td><b>2. c</b></td></tr></table><h2>21. Decisions</h2>";
+        const string Whole = "<h2>20. Build phases</h2><table><tr><td><b>0. a</b></td></tr><tr><td><b>1. b</b></td></tr><tr><td><b>2. c</b></td></tr></table><h2>21. Decisions</h2>";
+
+        Assert.Equal([0, 1, 2], PlannedPhases(Plan));
+        Assert.NotEqual(PlannedPhases(Plan), SectionTwentyPhases(Table));
+        Assert.Equal(PlannedPhases(Plan), SectionTwentyPhases(Whole));
+    }
+
     // Section 20's Done when column, which is the same fact stated per phase.
     // The column is last in each row, and the rows are the phases.
     internal static IReadOnlyList<CorpusFinding> PhaseTableConditions()
@@ -162,10 +201,16 @@ public class DoneConditionProducible
         // The scope carrying the property is the done conditions themselves, so
         // the floor sits on them and not on the files opened. 55 was the count
         // at 5.7, one per checkpoint across all eight phases, and it only rises
-        // as checkpoints are added. 11 is exact because section 20 has one row
-        // per phase, phases 0 to 10.
+        // as checkpoints are added. Section 20 has one row per phase the build
+        // plan holds, so its count is read off the plan's own phase headings: a
+        // figure kept here stood at 11 through phase 11, which section 20 never
+        // gained a row for, and nothing went red.
+        var planned = PlannedPhases();
+
         Assert.True(plan.Count >= 55, $"Read {plan.Count} done conditions in BUILD_PLAN, expected at least 55.");
-        Assert.Equal(11, phases.Count);
+        Assert.True(planned.Count >= 13, $"Read {planned.Count} phases in BUILD_PLAN, expected at least 13.");
+        Assert.Equal(planned, SectionTwentyPhases());
+        Assert.Equal(planned.Count, phases.Count);
 
         var findings = Findings();
 
