@@ -7670,3 +7670,11 @@ Was:
 Now:
 > (see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read); each candidate is read in the window it opened with and in no later one holding it beside a candidate registered since, and a candidate no night has evaluated has opened no window and is read over the candidates standing beside it, the ones the next night evaluates with it, or, where it was retired first, the ones standing when it was retired; a graph in each register row
 Why: the candidates a night evaluates are the ones standing at its start, so a candidate standing now opens its window with the ones standing beside it, and one retired before any night evaluated it would have opened with those standing when it was retired. A candidate is evaluated again beside every candidate registered after its window opened, and none of those was among the things tried over the evidence its window holds.
+
+### 2026-09-25 - ARCHITECTURE.html - section 13.6 states the order the graph steps its candidates in
+Corrects: section 13.6 said how a promoted candidate's level passes and not in which order candidates step, and the run page stepped them in name order. Found by the second phase 12 sign-off review's pre-night half over bdf6acb; the order of candidates crossing on one read is the operator's ruling of 2026-09-25.
+Was:
+> a graph in each register row passes a promoted candidate's level in equal shares to those standing and a retired one's to no one, only the sign-flip p-value is corrected,
+Now:
+> a graph in each register row passes a promoted candidate's level in equal shares to those standing and a retired one's to no one, the promoted stepping first in the order their promotions were written and candidates crossing on one read after them in the order they were registered (see: The graph steps promoted candidates in the order their promotions were written, and candidates crossing on one read in the order they were registered), only the sign-flip p-value is corrected,
+Why: a promoted candidate's level passed when its promotion was written, so the order promotions were written in is the order the graph steps them in; the operator ruled register order for the ones crossing on one read, fixed when they are registered and never moved by their results.

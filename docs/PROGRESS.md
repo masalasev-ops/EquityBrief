@@ -26059,3 +26059,26 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the review's mutation a, `RetiredAt` taking a retirement written after the page's instant, is
             an unproducible shape: the page reads its instant after its register, so no register row lies
             after it. That invariant is left unasserted here.
+
+### 10.2 ruling - the graph steps candidates crossing on one read in the order they were registered, after the promoted in the order their promotions were written   2026-09-25
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-25, on the pre-night half of the second phase 12 sign-off review's
+            finding that the run page stepped the graph in the candidates' name order, and that the order
+            in which two candidates crossing on one read step is stated nowhere: which of the two is drawn
+            at the graph's first step, the promoted stepping first in the order their promotions were
+            written. Offered: register order, recommended, fixed when they are registered; the smaller
+            sign-flip p-value first, Holm's own order, which moves with the results; and the name order
+            kept.
+Ruled:      register order (see: The graph steps promoted candidates in the order their promotions were
+            written, and candidates crossing on one read in the order they were registered).
+Changed:    `DECISIONS.md` gains the decision beside the graph's own, and section 13.6 states the order,
+            its prior text in `CHANGELOG.md`. No code changes here: the 10.2 correction that follows
+            carries it.
+Consequences: no verdict moves, and no stored figure, the page computing the graph on each read. Two
+            candidates crossing at once are drawn in the order they were registered, which on the
+            operator's store is the order of the register's ids: the five variants, then the live filter's
+            version 2.
+Tests:      none added here; the 10.2 correction that follows adds the one that holds it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 10.2 correction closing this batch records.
+Carried:    nothing.
