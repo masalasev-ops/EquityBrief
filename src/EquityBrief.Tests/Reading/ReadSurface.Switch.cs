@@ -167,6 +167,10 @@ public partial class ReadSurface
         Assert.Contains("data-rule=\"filter\">This evening was " + ListRules.ByFilter + ".</p>", list, StringComparison.Ordinal);
         Assert.StartsWith("Showing 20 of the 40 names the swing filter listed.", WordsOf(Regex.Match(list, "<p class=\"list-count\"[^>]*>.*?</p>", RegexOptions.Singleline).Value), StringComparison.Ordinal);
 
+        // The card names the swing filter's list and the order it is drawn in.
+        Assert.Contains("Names at a buy point tonight", page, StringComparison.Ordinal);
+        Assert.Contains("in the filter's order, the trade's reward to risk first, then strength, then band strength", page, StringComparison.Ordinal);
+
         // Both directions: the rows drawn are the twenty first in the order worked by hand, in it, and
         // every one of them passed on the store; no name the filter did not pass is drawn, whatever it
         // fired.
@@ -211,6 +215,10 @@ public partial class ReadSurface
         Assert.StartsWith("Showing all 6 names that fired.", WordsOf(Regex.Match(list, "<p class=\"list-count\"[^>]*>.*?</p>", RegexOptions.Singleline).Value), StringComparison.Ordinal);
         Assert.DoesNotContain("<th>Gates</th>", list, StringComparison.Ordinal);
         Assert.Contains("data-listed=\"none\"", page, StringComparison.Ordinal);
+
+        // The card says the order it was drawn in, and says it of this evening's rule.
+        Assert.Contains("Names that fired tonight", page, StringComparison.Ordinal);
+        Assert.Contains("Most reasons first, then the plan's reward to risk.", page, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -352,6 +360,10 @@ public partial class ReadSurface
         var overlap = Assert.Single(Blocks(page, "<section class=\"overlap\".*?</section>"));
 
         Assert.Contains("data-names=\"3\" data-last-night=\"1\" data-five=\"2\" data-twenty=\"3\"", overlap, StringComparison.Ordinal);
+
+        // The funnel says the evening's passes are its list, on an evening the filter listed.
+        Assert.Contains("on an evening the swing filter listed, the names passing are the list.", page, StringComparison.Ordinal);
+        Assert.Contains("The names passing are this evening's list.", page, StringComparison.Ordinal);
         Assert.Contains($"Of the 3 name(s) on the list on {On(0)}: on the list the evening before, {On(1)}, 1; on it at least once over the last 5 evening(s) before it, 2; over the last 20, 3.", overlap, StringComparison.Ordinal);
 
         // With fewer than twenty evenings before it, the line says how many the store holds: six back the

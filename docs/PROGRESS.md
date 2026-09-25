@@ -25305,3 +25305,34 @@ Carried:    the operator's three commands against the live store, which at 07:03
             command, and `register --the-family`. 12.6 does not merge until the register shows the
             family standing and no night is running. From the first night after it merges, tonight's
             list is the swing filter's, and every evening before it reads as the reasons listed it.
+
+### 12.6 - correction: the run page's funnel card and tonight's card on an evening the reasons listed say what drew that evening's list, where one said the filter decided nothing yet and the other named band strength as the tiebreak   2026-09-25
+Found:      after 12.6's first commit, reading the run page's cards for the edge half: the funnel card's
+            lede still said the gate results decide nothing on tonight's list yet, which 12.6 made
+            false, and tonight's card on an evening the reasons listed said most reasons first, then the
+            strongest band, which has been false since 10.1 made the plan's reward to risk the tiebreak.
+            Neither lede was read by any test, so both stayed green.
+Fixed:      the funnel card says that on an evening the swing filter listed, the names passing are the
+            list, and tonight's card on an evening the reasons listed says most reasons first, then the
+            plan's reward to risk.
+Tests:      1391, unchanged: the forty-passing test reads the filter card's title and order, the evening
+            before the switch reads the reasons card's title and order, and the overlap test reads the
+            funnel card's lede and its line on the evening's list.
+Claims:     542, unchanged: the ledes are cards' words and no claim's.
+Pins:       the branch against `main` at dbf2ca5; the correction edits `SinglePageApp.cs` and a test, in
+            none of the twelve, twenty-one or sixteen pinned sources.
+Mutated:    the rule, stated before the run: each lede put back to the words it replaced, one at a
+            time, filtered to the two tests that read them, in a detached worktree at this entry's
+            commit and reverted after each.
+            Predicted:
+            L1 the funnel's lede put back: red in the overlap test alone.
+            L2 the reasons card's lede put back: red in the evening before the switch alone.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1391 of 1391
+            tests ran with none failed, migrations 0 to 42 with none pending, schema version 42,
+            exit 0, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 36 tables, 542 claims, 542 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 549 placements and verdicts reconciled against a floor of 34, fixture
+            PRESENT, 41 of 41 roster checks carried and all 41 run, 1391 of 1391 tests.
+            Both gates ran over the tree carrying this entry, in the worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.

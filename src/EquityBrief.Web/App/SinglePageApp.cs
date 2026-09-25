@@ -1325,7 +1325,7 @@ public sealed class SinglePageApp : IComponent
             title: byFilter ? "Names at a buy point tonight" : "Names that fired tonight",
             lede: byFilter
                 ? "Each passed every gate of the swing filter, its trigger arrived and nothing excluded it; in the filter's order, the trade's reward to risk first, then strength, then band strength. The reasons stand beside them as context."
-                : "Each one has reached a price its own chart made significant. Most reasons first, then the strongest band.",
+                : "Each one has reached a price its own chart made significant. Most reasons first, then the plan's reward to risk.",
             stamp: Cards.Night(night),
             region: "list"));
 
@@ -1478,7 +1478,7 @@ public sealed class SinglePageApp : IComponent
             Invariant($"Swing filter of {night:yyyy-MM-dd}"),
             marks.Funnel(funnel),
             title: "The swing filter's funnel",
-            lede: "Every member through the five gates in order, how many each passed and removed, and how many the exclusions removed of the rest. It is stored for every member every night and decides nothing on tonight's list yet.",
+            lede: "Every member through the five gates in order, how many each passed and removed, and how many the exclusions removed of the rest. It is stored for every member every night, and on an evening the swing filter listed, the names passing are the list.",
             stamp: Cards.Night(night),
             region: "funnel"));
 
