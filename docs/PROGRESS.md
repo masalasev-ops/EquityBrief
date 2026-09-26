@@ -27393,3 +27393,114 @@ Tests:      none added here; the 12.2 correction that follows adds the ones that
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
             the figures the 12.2 correction closing this batch records.
 Carried:    nothing.
+
+### 12.2 - correction: history before the store's year is pulled into tables of its own and marked by the pull that wrote it, where the counts could read the store's year alone, about fifty sessions, and the store had nowhere to hold older bars   2026-09-26
+Corrects:   12.2's year replay, `filter-counts --year`, which reads the store's own bars, kept for a
+            rolling year, so the first session whose breadth and trend can be read stands two hundred into
+            it and the counts the operator rules the filter from reach about fifty sessions; and the store,
+            which had no table older history could be written to without the night's gap check losing
+            every name, the fetcher dropping it the next night, or a later removal deleting stored bars.
+Found:      by the operator on 2026-09-26, asking for the trade gate's candidate rules to be measured over
+            more than one year gives, on the ruling of this batch.
+Repaired:   migration 46 creates `pulled_bar` and `pulled_earnings`. `HistoryPull`, run by hand as
+            `history-pull --from <date>`, reads the names the index held on any session from the date to
+            tonight, asks the historical feed once for each over the whole span and the earnings calendar
+            once for each calendar month of it, and in one transaction stores every bar and every print of
+            a name it asked for, each row carrying the pull's run id, a session or print an earlier pull
+            holds keeping that pull's row. A name the provider refuses or sends no session for is named and
+            nothing is stored for it; a session one name misses against the others, between its own first
+            and last, is stored as sent and named. `history-pull --purge <pull>` removes one pull's rows
+            from both tables and nothing else, and refuses a pull no row carries with nothing written. Each
+            is one run log row, under `history-pull` or `history-purge`, whose run ids the run page draws as
+            runs by hand, and a date on or after tonight's session is refused before any request. A print's
+            timing is stored in the calendar's own words, through `CalendarFetcher.Filed`.
+            `ComponentAccess.Store` gains `PulledBar` and `PulledEarnings`, the worker's help names the verb,
+            and the read API's declaration, which reads neither, says so. Nothing that reads the pulled
+            history ships here: the measurement the ruling plans reads it read-only, and its code is not
+            part of the build.
+Guarded:    six tests in `HistoryPullTests`, each over constructed feeds and a membership of four names
+            stated beside them, or over the fixture's night.
+            `APullAsksEveryNameTheIndexHeldOverTheSpanOnceAndStoresEachRowMarkedByItsRunAndNothingElse`: a
+            member throughout, one leaving and one joining inside the span are each asked once for the whole
+            span, and one that left before it is not; three calendar windows cut to the span; 47 sessions a
+            name, the first and last stored as sent with the unadjusted close; three of four prints kept, the
+            fourth a name the index never held; `bar` and `calendar` byte for byte as they were; and the run
+            log row with 144 rows and 6 requests.
+            `ANameTheProviderDoesNotAnswerAndASessionOneNameMissesAreNamedAndEverythingElseIsStoredAsSent`:
+            a refusal and an empty answer each named and stored nothing for, a missing session stored as a
+            hole and named on the row and at the prompt, and the stage partial.
+            `ASecondPullAddsOnlyTheSessionsNoPullHoldsAndAPurgeRemovesItsOwnPullWholeAndNothingElse`: a pull
+            from 2026-08-17 stores 30 bars and one print, one from 2026-07-01 adds 111 and two, a purge of
+            the first removes its 30 and one and leaves every row of the second, and a second purge of it is
+            refused with nothing written.
+            `APullFromTonightOrLaterAnUnknownPullAndAMissingDateAreEachRefusedWithNothingAskedOrWritten`: each
+            refused through the verb a person runs, with no request made, no row written and the feeds asked
+            for only by a pull; and a pull through the verb printing its run id first.
+            `TheCalendarIsAskedForEachMonthTheSpanTouchesCutToTheSpanAtBothEnds`: three spans, one crossing
+            a year.
+            `ANightOverAStoreHoldingPulledHistoryComputesExactlyWhatItComputesWithoutIt`: the fixture's night
+            over a store already holding pulled bars for every captured name, the years before the fixture's
+            at a price of one and every session of its year again at 99999, and a print every tenth weekday,
+            writes every table but the run log exactly as the same night over a store holding none, and
+            leaves the pulled rows as it found them. `component-access` and `schema-columns` reach the three
+            new rows; `FixtureReplay.NightAsync` takes a hook run over the migrated store before the night.
+            `nightly-run`'s check that every membership read takes one of the two forms over a session holds
+            a third, a span of sessions, whose leaving is read against the span's first session and its
+            joining against its last, and names the history pull as its one reader.
+            `architecture-conformance`'s three pairs name the three rows among those phase 12 landed beyond
+            its prediction, and the stated pair reads 550 and 578.
+Expected:   every count the pull's tests hold is derived from the exchange's calendar over the span rather
+            than read back: 47 sessions from 2026-07-01 to 2026-09-04, being 48 weekdays less Independence Day
+            observed on 2026-07-03, and 15 from 2026-08-17. The night's expectation is the fixture's own
+            night over a store holding no pulled history, so nothing is frozen from a run of the code under
+            test. No fixture file is added: no fixture night writes either pulled table, so `fixture-replay`
+            has none to name.
+Written:    section 7's History pull row and the read API's reads, section 16's Pulled history row, and the
+            read and write matrix's pulled history column, its History pull row and a sentence of its key in
+            `ARCHITECTURE.html`; the two ownership rows and the two table sections in `SCHEMA.md`; the history
+            pull's section in `RUNBOOK.md`; each with its prior text in `CHANGELOG.md`. The decision and
+            `CLAUDE.md`'s sentence by the ruling of this batch.
+Tests:      1442, from 1436: six added, none removed. Migrations 0 to 46 with none pending, schema version
+            46.
+Claims:     578, from 575: section 7's History pull row, the matrix's History pull row and section 16's
+            Pulled history row, each PASS; the read API's row keeps its key.
+Pins:       the branch against `main` at 80bcb64; this correction edits `ComponentAccess.cs`,
+            `SchemaMigrations.cs`, the worker's `Program.cs`, `RunScreen.cs` and a comment in `ReadApi.cs`,
+            and adds `HistoryPull.cs`, none of them in the twelve `RuleVersionScorer.CodeVersionSources`, the
+            twenty-one `CandidateEvaluator.EvaluationSources` or the sixteen `SwingFilter.CodeVersionSources`,
+            each read from the tree being committed.
+Mutated:    the rule, stated before the run: each property this correction lands broken one at a time,
+            each run filtered to the six tests in `HistoryPullTests`.
+            Predicted:
+            H1 the prints written into `calendar` rather than `pulled_earnings`: red in the first, the third
+            and the fourth test.
+            H2 the names held read without the clause keeping out a name that left before the span: red in
+            the first, the second, the third and the fourth test.
+            H3 the purge removing every pulled row rather than its pull's: red in the third test alone.
+            H4 a second pull taking over the rows an earlier pull holds: red in the third test alone.
+            H5 the last calendar window running to the month's end rather than tonight: red in the first and
+            the fifth test.
+            H6 a night reader, the indicator engine, reading the pulled bars before the store's first
+            session as part of a name's series: red in the sixth test alone.
+            H7 a name with a missing session left unstored rather than stored as sent: red in the second
+            test alone.
+            H8 a purge of a pull no row carries written as a removal of nothing rather than refused: red in
+            the third and the fourth test.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 122T of 122T tests ran
+            with none failed, migrations 0 to 46 with none pending, schema version 46, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 122B tables, 122C claims, 122P PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 122R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 122T of 122T tests.
+            Both gates ran over the tree carrying this entry and the ruling before it, 122TREESHA, in a
+            worktree beside the repository, and the operator's store under `data/` was not touched by
+            either. A first run of `tools/ci.ps1` over 18b086a went red on five tests and was stopped before
+            its phase report: `NothingInterpolatesADateAgainstTheMachinesLocale`, for the pull's summary
+            line formatting its dates under an invariant call written on the line above;
+            `EveryMembershipReadIsOneOfTheTwoFormsOverTheSession`, for the pull's span read, which the check
+            did not know; and the three pairs, for the three rows this correction adds, which they did not
+            name. The second run over 122TREESHA is the one recorded here.
+Carried:    the operator's store needs migration 46 before the pull: `tools/migrate.ps1`, or the next
+            night's own first step, which applies it. The pull itself is `history-pull --from 2018-01-01
+            --live`, run when no night is running, on the operator's command or their word.

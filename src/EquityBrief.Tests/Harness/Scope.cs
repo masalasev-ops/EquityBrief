@@ -567,6 +567,18 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
+        [CheckReach.Key(CatalogueTable, "History pull")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the feeds it asks and the pulled tables it reads, inserts and deletes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "History pull")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Pulled history")] = new Scoped(
+            Verdict.Pass,
+            "both tables' columns and types are asserted against SCHEMA.md",
+            ByMigration),
         [CheckReach.Key(StoresTable, "Gate results")] = new Scoped(
             Verdict.Pass,
             "one row per member per night carrying each gate's answer, the trade read both ways and the exclusions, read back off the two-night store against results worked by hand, and a night run again replacing its own rows",
@@ -2602,6 +2614,8 @@ internal static class Scope
         ["Shape command"] = "12.4",
         // The operator's ruling of 2026-09-25, built as 12.6's correction.
         ["Filter history"] = "12.6",
+        // The operator's ruling of 2026-09-26, built as 12.2's correction.
+        ["History pull"] = "12.2",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -2619,6 +2633,9 @@ internal static class Scope
 
         // 12.2's versions, which the plan names by the table rather than the store.
         ["Filter versions"] = "12.2",
+
+        // The history pull's two tables, built as 12.2's correction.
+        ["Pulled history"] = "12.2",
 
         // 12.4's proposals, which the plan names by the table.
         ["Shape proposals"] = "12.4",

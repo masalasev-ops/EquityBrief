@@ -23,20 +23,22 @@ internal static class ComponentVocabulary
     internal static string TableName(DataStore store) =>
         Regex.Replace(store.ToString(), "(?<!^)([A-Z])", "_$1").ToLowerInvariant();
 
-    // The columns of the read and write matrix, and what each holds. Five
+    // The columns of the read and write matrix, and what each holds. Six
     // aggregate, which section 16 states of itself: computed tables is the row
     // naming six stores, listings is the listings beside the rule each evening's
     // list was drawn by, research and theme is the two research rows, sources is
     // source documents, version scores and blocks is the scores a night writes
     // beside the blocks frozen from them, which no component touches one of
-    // without the other, and fundamentals is the filings beside the copy each
+    // without the other, fundamentals is the filings beside the copy each
     // fetch stores of what is as of the fetch, which every reader of the one reads
-    // with the other.
+    // with the other, and pulled history is the pulled bars beside the pulled
+    // earnings, which one pull writes and one purge removes together.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
         ("Bars", [DataStore.Bar]),
         ("Calendar", [DataStore.Calendar]),
+        ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings]),
         ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal]),
         ("Listings", [DataStore.Listing, DataStore.ListRule]),
         ("Forward returns", [DataStore.ForwardReturn]),
@@ -91,7 +93,7 @@ internal static class ComponentVocabulary
     // splitting them produces fragments that resolve to nothing.
     static readonly Dictionary<string, DataStore[]> WholeCells = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["every store"] = [.. Columns.SelectMany(column => column.Stores)],
+        ["every store but the pulled history"] = [.. Columns.SelectMany(column => column.Stores).Except([DataStore.PulledBar, DataStore.PulledEarnings])],
         ["none"] = [],
         ["read API"] = [],
         ["a file the user chooses"] = [],
@@ -159,6 +161,8 @@ internal static class ComponentVocabulary
         ["fundamentals snapshots"] = DataStore.FundamentalsSnapshot,
         ["membership"] = DataStore.Membership,
         ["calendar"] = DataStore.Calendar,
+        ["pulled bars"] = DataStore.PulledBar,
+        ["pulled earnings"] = DataStore.PulledEarnings,
         ["candidate register"] = DataStore.CandidateRegister,
         ["rule versions"] = DataStore.RuleVersion,
         ["version scores"] = DataStore.VersionScore,

@@ -35,6 +35,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `membership` | MembershipLoader | MembershipLoader | none |
 | `bar` | Backfill, BarFetcher, CorporateActionChecker | none | BarFetcher, CorporateActionChecker |
 | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
+| `pulled_bar` | HistoryPull | none | HistoryPull |
+| `pulled_earnings` | HistoryPull | none | HistoryPull |
 | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
 | `swing` | SwingFinder | SwingFinder | SwingFinder |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
@@ -179,6 +181,40 @@ One writer for all three operations. The fetcher inserts tonight's events and up
 **The window is a quarter ahead and a year behind.** Ahead, because every name reports once a quarter, so ninety days holds every member's next print, and a window equal to the twenty-session horizon would mean a date arrives already inside it: the earnings-soon condition would fire on the day the provider published the date rather than on the name approaching it. Measured on the fixture's own capture, the two names with a print ahead report six and seven weeks out, which is outside a horizon-sized window and inside this one.
 
 Behind, because the earnings rule states the last two prints' one-day moves and needs the dates those moves happened on. The endpoint answers with historical and upcoming events over whatever range it is asked for, so one request carries both. A year and no further: the moves are read off the bars, which are kept for a year, so a calendar reaching further back would name a print whose session the store does not hold.
+
+### pulled_bar
+Grain: one row per ticker per session a pull reached.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | date |
+| `open`, `high`, `low`, `close` | TEXT | decimal in code, and one adjusted price set, as the provider sent it on the pull's day |
+| `raw_close` | TEXT | decimal in code, the provider's unadjusted close |
+| `volume` | INTEGER | |
+| `pull` | TEXT | the run id of the pull that wrote the row |
+
+Primary key: `ticker`, `session_date`.
+
+**This is not the bar table, and no night reads it** (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull). The operator's history pull asks every name the index held on any session from a date to tonight for its daily bars over that whole span, in the adjusted form `bar` holds, and stores them here. It reaches tonight rather than stopping where `bar` begins, because the fetcher drops `bar`'s oldest session every night, so a pull that stopped there would leave a hole between the two within a week; a reader holding both reads `bar` where `bar` holds the session.
+
+**`pull` is what removes a pull whole.** The pull's purge deletes every row one pull wrote and nothing else. No stored bar may be removed that way, and these rows may because no night, listing, score or page ever read one. A second pull inserts only the sessions no earlier pull holds, so each row belongs to exactly one pull.
+
+**A session missing from one name's pulled series is kept as a hole rather than refused.** The pull names it on its run log row, read against the sessions the other pulled names hold, and the reader of the series decides what a hole stops, because nothing is computed from this table on its own.
+
+### pulled_earnings
+Grain: one row per ticker per earnings report date a pull reached.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `event_date` | TEXT | the report date the provider files |
+| `timing` | TEXT | `before`, `after`, or `unstated`, as `calendar` holds it |
+| `pull` | TEXT | the run id of the pull that wrote the row |
+
+Primary key: `ticker`, `event_date`.
+
+The earnings prints of the names a pull asked for, over the same span, from the earnings calendar asked once a calendar month and read for the index's own listing as `calendar` is. Kept apart from `calendar` for the reason `pulled_bar` is kept apart from `bar`, and removed with it by the same pull.
 
 ### indicator
 Grain: one row per ticker, session and indicator name.

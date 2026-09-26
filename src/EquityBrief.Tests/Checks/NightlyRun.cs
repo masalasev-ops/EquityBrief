@@ -2053,12 +2053,17 @@ public partial class NightlyRun
         // Comments are stripped first, because the sites that were corrected
         // say what they read before, and a sentence naming a pattern is not a
         // use of it.
+        //
+        // A third form reads a span of sessions rather than one: a name the index held on any session of
+        // it leaves after the span's first and joins by its last. The history pull alone reads it.
         var leftIsNull = new Regex(@"(?:\w\.)?""*left""*\s+IS\s+NULL", RegexOptions.IgnoreCase);
-        var notLeft = new Regex(@"^\s+OR\s+(?:\w\.)?""*left""*\s*>\s*\$(session|on)\b", RegexOptions.IgnoreCase);
+        var notLeft = new Regex(@"^\s+OR\s+(?:\w\.)?""*left""*\s*>\s*\$(session|on|from)\b", RegexOptions.IgnoreCase);
         var joinedBy = new Regex(@"\(\s*(?:\w\.)?joined\s+IS\s+NULL\s+OR\s+(?:\w\.)?joined\s*<=\s*\$session\s*\)", RegexOptions.IgnoreCase);
+        var joinedThrough = new Regex(@"\(\s*(?:\w\.)?joined\s+IS\s+NULL\s+OR\s+(?:\w\.)?joined\s*<=\s*\$through\s*\)", RegexOptions.IgnoreCase);
 
         var stored = new List<string>();
         var member = new List<string>();
+        var spanned = new List<string>();
         var bare = new List<string>();
 
         foreach (var file in Directory.GetFiles(Path.Combine(Repository.Root, "src"), "*.cs", SearchOption.AllDirectories))
@@ -2081,7 +2086,9 @@ public partial class NightlyRun
                 var name = Path.GetFileNameWithoutExtension(file);
                 var after = code[(site.Index + site.Length)..];
 
-                if (!notLeft.IsMatch(after))
+                var leaving = notLeft.Match(after);
+
+                if (!leaving.Success)
                 {
                     bare.Add(name);
 
@@ -2092,6 +2099,13 @@ public partial class NightlyRun
                 // quote, is what says whether the join date is asked too.
                 var opening = code.LastIndexOf("@\"", site.Index, StringComparison.Ordinal);
                 var statement = code[opening..(site.Index + site.Length)];
+
+                if (leaving.Groups[1].Value.Equals("from", StringComparison.OrdinalIgnoreCase))
+                {
+                    (joinedThrough.IsMatch(statement) ? spanned : bare).Add(name);
+
+                    continue;
+                }
 
                 (joinedBy.IsMatch(statement) ? member : stored).Add(name);
             }
@@ -2116,6 +2130,9 @@ public partial class NightlyRun
         Assert.Equal(
             ["CalendarFetcher", "LadderBuilder", "MoveAnnotator", "NewsPulseCounter", "NightClose", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader"],
             member.Order(StringComparer.Ordinal));
+
+        // And the span form, read by nothing a night runs.
+        Assert.Equal(["HistoryPull"], spanned);
     }
 
     [Theory]

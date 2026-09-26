@@ -313,6 +313,24 @@ tools/nightly.ps1 --session 2026-09-24
 
 Each session is replayed under the open version's settings and stored under the version `replayed`, which the trigger's arrival reads and no clock, page or scored setup does (see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone). A session already holding results, the night's own session and a range holding no session are each refused with nothing written. Each run is one row on the run log under `filter history` and a run id beginning `filter-history-`, which the run page draws as run by hand. Run it when no night is running.
 
+### Pulling history before the store's year
+
+The store keeps a year of bars, and a session can be read only once two hundred sessions stand before it, so a replay over the store alone reaches about fifty sessions. The history pull stores older history apart from the store's own bars, for a measurement to read, and nothing a night runs reads it (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull):
+
+```
+dotnet run --project src/EquityBrief.Worker -- history-pull --from 2018-01-01 --live
+```
+
+It asks every name the index held on any session from that date to tonight, the members that have left since among them, for its daily bars over the whole span, one request a name, and the earnings calendar once for each calendar month of the span, and stores what comes back in `pulled_bar` and `pulled_earnings`, every row carrying the pull's run id, which begins `history-pull-` and is printed first. A pull from 2018 asks about seven hundred names and about a hundred months, so it costs about eight hundred weighted calls. A name the provider does not answer, and a session one name misses against the others, are each named on its run log row and printed. Run it when no night is running.
+
+Remove a pull whole by its run id:
+
+```
+dotnet run --project src/EquityBrief.Worker -- history-pull --purge <the pull's run id>
+```
+
+A purge removes every row that pull wrote from both tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull` and `history-purge`, and the run page draws both as run by hand.
+
 ### Registering a candidate and versioning a ladder rule
 
 Both are decisions a person takes, from the repository root, and a night never takes either. Nothing is registered and no window is open until someone runs one of these.

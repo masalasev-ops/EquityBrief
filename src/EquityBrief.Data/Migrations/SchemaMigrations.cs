@@ -666,6 +666,7 @@ public static class SchemaMigrations
         new Migration(43, "create watch_list", CreateWatchList),
         new Migration(44, "add research_request.refresh", AddResearchRequestRefresh),
         new Migration(45, "create fundamentals_snapshot", CreateFundamentalsSnapshot),
+        new Migration(46, "create pulled_bar and pulled_earnings", CreatePulledHistory),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -1062,6 +1063,33 @@ public static class SchemaMigrations
             fetched_at TEXT NOT NULL,
             payload    TEXT NOT NULL,
             PRIMARY KEY (ticker, fetched_at)
+        ) STRICT;
+    ";
+
+    // The history pulled on the operator's command for the sessions before the store's rolling year,
+    // held apart from the bar and calendar tables every night reads. Every row carries the run id of
+    // the pull that wrote it, which is what removes a pull whole.
+    // see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+    const string CreatePulledHistory = @"
+        CREATE TABLE pulled_bar (
+            ticker       TEXT    NOT NULL,
+            session_date TEXT    NOT NULL,
+            open         TEXT    NOT NULL,
+            high         TEXT    NOT NULL,
+            low          TEXT    NOT NULL,
+            close        TEXT    NOT NULL,
+            raw_close    TEXT    NOT NULL,
+            volume       INTEGER NOT NULL,
+            pull         TEXT    NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+
+        CREATE TABLE pulled_earnings (
+            ticker     TEXT NOT NULL,
+            event_date TEXT NOT NULL,
+            timing     TEXT NOT NULL,
+            pull       TEXT NOT NULL,
+            PRIMARY KEY (ticker, event_date)
         ) STRICT;
     ";
 

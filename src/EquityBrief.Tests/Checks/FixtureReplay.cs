@@ -188,12 +188,21 @@ public class FixtureReplay
     // prose pass does not, so the tables the replay populates are the same with or without it.
     internal const string NightRunId = "fixture-night";
 
+    // A test handing `before` has it run over the migrated store before the night starts, which is how
+    // a store already holding rows no night writes is set up.
     internal static async Task<(TemporaryStore Store, int Code, string Output, string Error)> NightAsync(
         NightQueue? queue = null,
         IClock? clock = null,
-        string runId = NightRunId)
+        string runId = NightRunId,
+        Action<TemporaryStore>? before = null)
     {
         var store = new TemporaryStore();
+
+        if (before is not null)
+        {
+            before(store.Migrated());
+        }
+
         var output = new StringWriter();
         var error = new StringWriter();
 

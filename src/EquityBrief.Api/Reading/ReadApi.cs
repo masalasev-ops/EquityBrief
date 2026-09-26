@@ -476,8 +476,10 @@ public sealed record ResearchedRow(string Ticker, string? Name, string? Sector, 
 // see: A screen reads and renders, and computes nothing
 public sealed class ReadApi : IComponent
 {
-    // Reads every store and appends to the run log, which is section 7's row
-    // for this component and the R cells plus one W in its matrix row.
+    // Reads every store but the pulled history and appends to the run log, which
+    // is section 7's row for this component and the R cells plus one W in its
+    // matrix row. The pulled history is the one column it leaves blank, because
+    // no screen draws a pulled row and a pull is removed whole by its id.
     //
     // Every store means every store the matrix has a column for, and from 8.4
     // that includes the candidate register: the run page states how many

@@ -55,6 +55,9 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Bar store"),
             CheckReach.Key(Scope.StoresTable, "Series state"),
             CheckReach.Key(Scope.StoresTable, "Calendar"),
+
+            // 12.2's correction, the history pull's two tables.
+            CheckReach.Key(Scope.StoresTable, "Pulled history"),
         ]);
 
     const string Sample =
