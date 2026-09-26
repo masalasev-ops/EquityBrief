@@ -27244,16 +27244,30 @@ Mutated:    the rule, stated before the run: each rule this batch lands put back
             R9 the drain handing a regenerate the lane its request names, as before: red in the press test
             alone.
             R10 the copy leaving out the ratings: red in the fetcher test and the fundamentals store test.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 58RT of 58RT tests ran
+            Results: one run for each of the ten in a detached worktree at 0e533a5, the tree carrying this
+            entry, each filtered on the operator's instruction of 2026-09-24 to the six tests named, each
+            edit made there and reverted with `git checkout -- .` and the tree read clean after. The whole
+            suite ran green over 0e533a5 in the gates, 1436 of 1436. R1, whose first form compared the ask
+            with itself and was replaced before any build since the compiler refuses that comparison, turned
+            the fetcher test and the figures test red. R2 turned the fetcher test, the figures test and the
+            fundamentals store test red, and the dividend test stayed green. R3 turned the figures test red
+            and the fetcher test stayed green. R4, R5, R6 and R8 each turned the figures test red alone. R7
+            turned the runner test red alone. R9 turned the press test red alone. R10 turned the fetcher test
+            and the fundamentals store test red. No test outside those named for a mutation went red under
+            it.
+Held:       all ten, each in the tests predicted and in no other of the six.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1436 of 1436 tests ran
             with none failed, migrations 0 to 45 with none pending, schema version 45, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 58RTB tables, 58RC claims, 58RP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 58RR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 58RT of 58RT tests.
-            Both gates ran over the tree carrying this entry and the ruling before it, 58RTREESHA, in a
+            `tools/verify-phase.ps1` green at 42 tables, 575 claims, 575 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 585 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41
+            of 41 roster checks carried and all 41 run, 1436 of 1436 tests.
+            Both gates ran over the tree carrying this entry and the ruling before it, 0e533a5, in a
             worktree beside the repository, and the operator's store under `data/` was not touched by
-            either.
+            either. A first run of both over 19b9313 went red on one test,
+            `EveryKeyInEveryExpectationIsReadBySomeTest`, for a key of `stored-filings.json` no test read,
+            which turned 111 claims red with it; the key's words moved into the file's own derivation and
+            the key went, and the second run over 0e533a5 is the one recorded here.
 Carried:    the operator's store needs migration 45 before the app is started on this build, since the
             name page reads the new store: `tools/migrate.ps1`, or the next night's own first step, which
             applies it. The command is the operator's to run.
