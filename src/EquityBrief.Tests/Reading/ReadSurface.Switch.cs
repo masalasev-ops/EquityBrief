@@ -72,20 +72,26 @@ public partial class ReadSurface
             store.Execute(
                 "INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons, band_strength) " +
                 $"VALUES ('{member.Ticker}', '{session}', '{ReasonsJson(member.Fired)}', {member.Fired}, '{member.Plan ?? "{}"}', '{{\"candidates\":[],\"skipped\":[]}}', {member.Band});");
-            store.Execute(
-                "INSERT INTO gate_result (ticker, session_date, version, code, market, trend, setup, family, trigger_pass, trigger_event, trade, " +
-                "ladder_reward_to_risk, ladder_stop_moves, swing_entry, swing_stop, swing_target, swing_reward_to_risk, swing_stop_moves, exclusions, " +
-                "passed, rank, strength, band_strength, gates) " +
-                $"VALUES ('{member.Ticker}', '{session}', '1', 'code', {Bit(member.Market)}, {Bit(member.Trend)}, {Bit(member.Setup)}, {(member.Setup ? "'pullback'" : "NULL")}, " +
-                $"{Bit(member.Trigger)}, 1, {Bit(member.Trade)}, NULL, NULL, '100', '96', '110', {member.RewardToRisk.ToString("R", CultureInfo.InvariantCulture)}, 1.2, " +
-                $"'{JsonSerializer.Serialize(member.Exclusions ?? [])}', {Bit(member.Passed)}, {(member.Rank is { } rank ? rank.ToString(CultureInfo.InvariantCulture) : "NULL")}, " +
-                $"{member.Strength.ToString("R", CultureInfo.InvariantCulture)}, {member.Band}, '{GatesJson(member)}');");
+            GateRow(store, session, member);
         }
 
         if (filter)
         {
             store.Execute($"INSERT INTO list_rule (session_date, rule) VALUES ('{session}', 'filter');");
         }
+    }
+
+    // A member's gate row on a session, as the swing filter stores it.
+    static void GateRow(TemporaryStore store, string session, Member member)
+    {
+        store.Execute(
+            "INSERT INTO gate_result (ticker, session_date, version, code, market, trend, setup, family, trigger_pass, trigger_event, trade, " +
+            "ladder_reward_to_risk, ladder_stop_moves, swing_entry, swing_stop, swing_target, swing_reward_to_risk, swing_stop_moves, exclusions, " +
+            "passed, rank, strength, band_strength, gates) " +
+            $"VALUES ('{member.Ticker}', '{session}', '1', 'code', {Bit(member.Market)}, {Bit(member.Trend)}, {Bit(member.Setup)}, {(member.Setup ? "'pullback'" : "NULL")}, " +
+            $"{Bit(member.Trigger)}, 1, {Bit(member.Trade)}, NULL, NULL, '100', '96', '110', {member.RewardToRisk.ToString("R", CultureInfo.InvariantCulture)}, 1.2, " +
+            $"'{JsonSerializer.Serialize(member.Exclusions ?? [])}', {Bit(member.Passed)}, {(member.Rank is { } rank ? rank.ToString(CultureInfo.InvariantCulture) : "NULL")}, " +
+            $"{member.Strength.ToString("R", CultureInfo.InvariantCulture)}, {member.Band}, '{GatesJson(member)}');");
 
         static string Bit(bool value) => value ? "1" : "0";
     }

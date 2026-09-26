@@ -431,6 +431,9 @@ public sealed record CloseRow(string Ticker, DateOnly SessionDate, decimal Close
 // no bars has no close, a name with no ladder row has no trend state, and a name
 // whose chart has no band on one side has no edge there. Each is drawn as an
 // absence rather than as a zero.
+// A name the operator watches, and the day it was added.
+public sealed record WatchedRow(string Ticker, DateOnly AddedOn);
+
 public sealed record UniverseRow(
     string Ticker,
     string? Sector,
@@ -518,6 +521,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.VersionBlock, Touch.Read),
             new StoreTouch(Store.SeriesState, Touch.Read),
             new StoreTouch(Store.ResearchRequest, Touch.Read | Touch.Insert | Touch.Update),
+            new StoreTouch(Store.WatchList, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
         ],
         Feeds: []);
@@ -986,6 +990,14 @@ public sealed class ReadApi : IComponent
     const string ListRuleOn = "SELECT rule FROM list_rule WHERE session_date = $on;";
 
     const string FirstFilterNight = "SELECT MIN(session_date) FROM list_rule WHERE rule = $filter;";
+
+    const string Watched = "SELECT ticker, added_at FROM watch_list ORDER BY added_at, ticker;";
+
+    const string WatchedCount = "SELECT COUNT(*) FROM watch_list;";
+
+    const string WatchName = "INSERT INTO watch_list (ticker, added_at) VALUES ($ticker, $added_at) ON CONFLICT (ticker) DO NOTHING;";
+
+    const string UnwatchName = "DELETE FROM watch_list WHERE ticker = $ticker;";
 
     // Every row a filter version stored, each gate's answer, its exclusions and whether it passed, with
     // what its own plan came to where one was scored: the population the near misses are read over.
@@ -1936,6 +1948,89 @@ public sealed class ReadApi : IComponent
         }
 
         return rows;
+    }
+
+    // The most names the watch list holds.
+    public const int WatchLimit = 20;
+
+    // The names the operator watches, oldest first.
+    // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+    public async Task<IReadOnlyList<WatchedRow>> WatchedAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = Watched;
+
+        var rows = new List<WatchedRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new WatchedRow(
+                reader.GetString(0),
+                DateOnly.FromDateTime(DateTimeOffset.Parse(reader.GetString(1), CultureInfo.InvariantCulture).UtcDateTime)));
+        }
+
+        return rows;
+    }
+
+    // A name put on the watch list by the operator's press: a current member of the index, not already on
+    // it, while the list holds fewer than its limit, and otherwise nothing written and the line says why.
+    // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+    public async Task<RequestWritten> WatchAsync(string ticker, IReadOnlySet<string> members)
+    {
+        var asked = ticker.Trim().ToUpperInvariant();
+
+        if (!members.Contains(asked))
+        {
+            return new RequestWritten(false, $"{asked} was not added: it is not a member of the index tonight.");
+        }
+
+        await using var connection = Open();
+        await using var transaction = (Microsoft.Data.Sqlite.SqliteTransaction)await connection.BeginTransactionAsync();
+        await using var counting = connection.CreateCommand();
+
+        counting.Transaction = transaction;
+        counting.CommandText = WatchedCount;
+
+        if (Convert.ToInt32(await counting.ExecuteScalarAsync(), CultureInfo.InvariantCulture) >= WatchLimit)
+        {
+            return new RequestWritten(false, $"{asked} was not added: the watch list holds {WatchLimit}, its limit, so take one out first.");
+        }
+
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = transaction;
+        command.CommandText = WatchName;
+        command.Parameters.AddWithValue("$ticker", asked);
+        command.Parameters.AddWithValue("$added_at", clock.UtcNow.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
+
+        var written = await command.ExecuteNonQueryAsync() == 1;
+
+        await transaction.CommitAsync();
+
+        return written
+            ? new RequestWritten(true, $"{asked} is on the watch list.")
+            : new RequestWritten(false, $"{asked} was already on the watch list.");
+    }
+
+    // A name taken off the watch list by the operator's press.
+    // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+    public async Task<RequestWritten> UnwatchAsync(string ticker)
+    {
+        var asked = ticker.Trim().ToUpperInvariant();
+
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = UnwatchName;
+        command.Parameters.AddWithValue("$ticker", asked);
+
+        return await command.ExecuteNonQueryAsync() == 1
+            ? new RequestWritten(true, $"{asked} is off the watch list.")
+            : new RequestWritten(false, $"{asked} was not on the watch list.");
     }
 
     // The first night the swing filter listed, from which the dated screens open, or none on a store it

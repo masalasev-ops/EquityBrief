@@ -357,6 +357,10 @@ public sealed record FilterRow(int Rank, string? Family, string Arrived, string 
 
 public sealed record FilterGate(string Name, bool Passed, string Reason);
 
+// A name the operator watches as its page draws it: the night's row for it, its company, the day it was
+// added, what the swing filter said of it that night, and whether that was a place on the list.
+public sealed record WatchCell(ListingCell Row, string? Company, DateOnly Added, string Filter, bool Listed);
+
 // Why a name the swing filter listed is on the list: the evening, each gate with why it passed, and the
 // reasons that fired on it, as context.
 public sealed record FilterWhy(DateOnly Evening, IReadOnlyList<FilterGate> Gates, IReadOnlyList<string> Reasons);
@@ -4150,33 +4154,6 @@ public sealed class MarkRenderer : IComponent
         header.Append("</div></div></header>");
 
         return header.ToString();
-    }
-
-    // The watch list, section 15.7's second region: the two or three names shown
-    // every evening whether or not they are on the list, above the list rather
-    // than inside it.
-    //
-    // No store holds a watch list, and none is invented here. The region states
-    // that rather than being absent, because a region a reader cannot find is
-    // indistinguishable from one that is empty.
-    public string WatchList(IReadOnlyList<ListingCell> watched)
-    {
-        var watch = new StringBuilder();
-
-        watch.Append(Invariant, $"<section class=\"watch-list\" data-watched=\"{watched.Count}\">");
-
-        watch.Append(watched.Count == 0
-            ? "<p class=\"degraded\" data-watch=\"none\">no watch list is on file, so none is shown</p>"
-            : string.Empty);
-
-        foreach (var name in watched)
-        {
-            watch.Append(Invariant, $"<span class=\"watched\" data-ticker=\"{Escaped(name.Ticker)}\">{Escaped(name.Ticker)}</span>");
-        }
-
-        watch.Append("</section>");
-
-        return watch.ToString();
     }
 
     // The how-it-got-here table's rows, section 15.9's second region.

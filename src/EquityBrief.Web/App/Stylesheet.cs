@@ -93,6 +93,16 @@ code{font-size:.92em}
 .np-grid .np-day{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
 .np-grid .np-day[aria-current]{background:var(--ink);color:var(--surface);border-radius:3px;text-decoration:none}
 .np-grid .np-off{color:var(--soft);opacity:.45}
+.name-watch{display:inline-block;margin-left:10px;vertical-align:middle}
+.name-watch .btn-2{font-size:12px;line-height:18px;padding:0 10px}
+.watch-add{display:flex;gap:8px;align-items:center;margin:0 0 14px}
+.watch-add input{font:inherit;font-size:14px;padding:6px 10px;min-width:240px;border:1px solid var(--hair);border-radius:6px;background:var(--surface);color:var(--ink)}
+.watch-said:empty{display:none}
+.watch-said{margin:0 0 10px}
+.watch-table .co{display:block;color:var(--soft);font-size:12px}
+.watch-table td.listed{color:var(--support);font-weight:600}
+.watch-table td.stopped{color:var(--soft)}
+.watch-table .btn-2{padding:0 8px;line-height:20px}
 .night-picker .np-newest{margin-left:4px;color:var(--ink)}
 .m-right{display:flex;align-items:center;gap:16px}
 .m-nav{display:flex;gap:14px;font-size:13.5px}

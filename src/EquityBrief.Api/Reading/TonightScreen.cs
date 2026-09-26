@@ -168,6 +168,61 @@ public static class TonightScreen
         return Ordered(listings.Where(listing => listing.FiredCount > 0).Select(Drawn), Order.FiredThenRewardToRisk);
     }
 
+    // The names the operator watches, in the order they were added, each drawn from the night's own rows
+    // as the list draws a name whether or not the list holds it, with what the swing filter said of it that
+    // night: listed and where, the gate that stopped it and why, what excluded it, or no answer stored.
+    // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+    public static IReadOnlyList<WatchCell> Watched(
+        DateOnly night,
+        IReadOnlyList<WatchedRow> watched,
+        IReadOnlyList<ListingRow> listings,
+        IReadOnlyDictionary<string, UniverseCell> cellByTicker,
+        IReadOnlyList<CloseRow> closesToTheNight,
+        IReadOnlyList<UniverseRow> universe,
+        IReadOnlyList<GateResultRow>? gates,
+        IReadOnlyList<ResearchedRow>? researched = null)
+    {
+        var byTicker = listings.ToDictionary(listing => listing.Ticker, StringComparer.Ordinal);
+        var gateByTicker = (gates ?? []).ToDictionary(gate => gate.Ticker, StringComparer.Ordinal);
+        var nameByTicker = universe.ToDictionary(row => row.Ticker, row => row.Name, StringComparer.Ordinal);
+        var researchedByTicker = (researched ?? []).ToDictionary(row => row.Ticker, row => row.Written, StringComparer.Ordinal);
+        var sessions = closesToTheNight
+            .GroupBy(row => row.Ticker, StringComparer.Ordinal)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<CloseRow>)[.. group.OrderByDescending(row => row.SessionDate)],
+                StringComparer.Ordinal);
+
+        return
+        [
+            .. watched.Select(one =>
+            {
+                var gate = gateByTicker.GetValueOrDefault(one.Ticker);
+                var filter = gate is null ? null : FilterRowOf(gate);
+                var row = (byTicker.TryGetValue(one.Ticker, out var listing)
+                        ? Cell(listing, night, cellByTicker, sessions)
+                        : new ListingCell(one.Ticker, night, 0, 0, null, []))
+                    with
+                    {
+                        Filter = filter,
+                        RewardToRisk = filter is not null && decimal.TryParse(filter.RewardToRisk, NumberStyles.Float, CultureInfo.InvariantCulture, out var ratio) ? ratio : null,
+                        NoRewardToRisk = null,
+                        ResearchedOn = researchedByTicker.TryGetValue(one.Ticker, out var written) ? written : null,
+                    };
+
+                var said = gate switch
+                {
+                    null => "no filter answer is stored for this night",
+                    { Passed: true } => $"listed, number {gate.Rank}",
+                    _ when filter!.Gates.FirstOrDefault(each => !each.Passed) is { } stopped => $"stopped at {stopped.Name}: {stopped.Reason}",
+                    _ => $"excluded: {string.Join(", ", gate.Exclusions)}",
+                };
+
+                return new WatchCell(row, nameByTicker.GetValueOrDefault(one.Ticker), one.AddedOn, said, gate is { Passed: true });
+            }),
+        ];
+    }
+
     // A gate row as the list draws it: its rank, the setup's family, the session its trigger arrived on,
     // the plan its trade gate read with the reward to risk and the stop's distance, and each gate with why.
     public static FilterRow FilterRowOf(GateResultRow gate)

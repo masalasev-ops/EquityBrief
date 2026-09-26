@@ -100,6 +100,7 @@ internal static class PhaseReport
         "15.9 Name",
         "15.10 Run",
         "15.15 Queue",
+        "15.16 Watch list",
         "15.11 How a reason's record is displayed",
         "16. Data stores and the read and write matrix",
         "Read and write matrix",
