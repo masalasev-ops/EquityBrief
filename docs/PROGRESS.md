@@ -26456,3 +26456,26 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry and the one before it, cc0dd2e, in a worktree
             beside the repository, and the operator's store under `data/` was not touched by either.
 Carried:    nothing new.
+
+### 5.8 ruling - the watch list is the operator's own, up to twenty names of the index, on a page of its own   2026-09-25
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-25, reading tonight's page, whose watch list region said none was on
+            file: "Who makes this watch list. Does somebody select stocks to watch ? If so then please provide
+            ability to do so or else explain. I think it would be a good idea to have a watchlist section
+            where users can add stocks from sp500." Asked how many and where: "Up to 20" and "I am thinking
+            watchlist should be an entire new page", and asked what tonight's page should draw with none
+            watched: "Why does it matter until someone actually adds stocks to the watchlist ?"
+Ruled:      the watch list is a store of its own, holding up to twenty names of the index, which the read
+            surface writes on the operator's press alone, from the watch list page or beside a name on its own
+            page, each press refused without the page's own header. The page draws each name for the newest
+            night with what the swing filter said of it, and tonight's page draws one line counting the names
+            with a link to it (see: The watch list is the operator's own, up to twenty names of the index, on a page of its own).
+Changed:    `DECISIONS.md` gains the decision after the header decision. No code changes here: the 5.8
+            correction that follows carries it.
+Consequences: the night, the list, the queue, the report the night asks for and every record read no row of
+            the watch list, so a name watched is followed and never promoted.
+Tests:      none added here; the 5.8 correction that follows adds the ones that hold it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 5.8 correction closing this batch records.
+Carried:    nothing.
+
