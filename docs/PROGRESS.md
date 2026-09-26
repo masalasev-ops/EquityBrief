@@ -27271,3 +27271,125 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    the operator's store needs migration 45 before the app is started on this build, since the
             name page reads the new store: `tools/migrate.ps1`, or the next night's own first step, which
             applies it. The command is the operator's to run.
+
+### 12.2 ruling - history before the store's year is pulled into tables of its own on the operator's command, each row marked by the pull that wrote it and removed whole by it, and the trade gate's stop and target rules are measured over it   2026-09-26
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-26, told that the swing filter's replay reads 53 sessions because
+            the store keeps a year and a session needs two hundred before it, asked for candidate stop and
+            target rules for the trade gate to be measured read-only over the replayed sessions, with four
+            additions: section 10's pair in the table beside the others; how often each stop lands inside
+            a support band rather than below one; what every pair does for a breakout as well as a
+            pullback; and the reconciliation below, recorded in the entry. Then: "If you need to pull in
+            more history since you said it would only take 500 then do so first", "Why cant we do it on
+            the live store ?", and "i dont want hundreds of throwaway dbs. Do it on live store with a
+            marker of some sort that will let us purge the older rows later on".
+Ruled:      the history before the store's year is pulled on the operator's command into two tables of
+            its own, `pulled_bar` and `pulled_earnings`: every name the index held on any session from a
+            date to tonight, the members since departed among them, over that whole span, and the earnings
+            prints of each calendar month of it, each row carrying the run id of the pull that wrote it.
+            No night, listing, score or page reads either table, and a purge naming a pull removes its rows
+            whole (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull).
+            Not in `bar`, for three reasons each a failure: the night's gap check reads each name's whole
+            series against the exchange closure table, which begins at 2025 and refuses a weekday outside
+            its range, so every name would go unchecked, and extending the table back moves the swing
+            filter's code pin; the fetcher drops the bar store's oldest session every night; and a purge is
+            a delete no stored bar may take. The first pull is to run from 2018-01-01, about seven hundred
+            names and a hundred months, some eight hundred of the provider's 100,000 daily weighted calls.
+Reconciled: the band width ruling's figures, 38 names listed at no limit and 34 at two typical moves, and
+            the "one night in forty" this session gave the operator on 2026-09-26 are counts over different
+            sessions, under different settings, from bands of different sources, and the second was not the
+            live filter's.
+            The 38 and the 34, in 3.4's entry and in the decision **A band is no wider than two typical
+            days' moves, and a chain that would be wider splits at its widest gap**, are the names the swing
+            filter listed over the thirteen sessions from 2026-09-09 to 2026-09-25, 6,535 name-nights, on a
+            copy of the store taken after the 2026-09-25 night at schema 42, under filter version 2 as the
+            store held it: breadth 45%, strength 0.5, depth 1 to 5 typical moves, dry-up 1.5, reward to risk
+            1.5, the stop 0.5 to 4 typical moves, arrival within 3 sessions. `FilterCounts` counted them
+            restricted to those sessions, the 38 with the build before the 3.4 correction and the 34 with
+            the correction's at a width of two. The copy's ladder table held no row, so the counter found no
+            stored night and recomputed every session's bands, trend and plan with the build measured, from
+            the stored bars, indicators and swings. At two moves a name was listed on 12 of the 13 sessions;
+            2026-09-09, the first counted, read no trigger arrival, having no counted session before it.
+            The one night in forty is `filter-counts --year` run on 2026-09-26 over a copy of the store
+            after the 3.4 correction, main at 80bcb64: 53 sessions, the 40 from 2026-07-14 to 2026-09-08
+            replayed with the corrected code, and the 13 from 2026-09-09 read from the store, whose bands for
+            2026-09-09 to 2026-09-24 the build before the correction had written. The verb counts under
+            settings of its own, section 17's proposed values with the market floor at 45%: strength two
+            thirds, depth 2 to 5, dry-up 1.0, reward to risk 2, the stop 1 to 2.5. So it counted a stricter
+            filter than the live one, and this session reported it to the operator as the live filter's,
+            which it was not: over the same run the 13 stored sessions listed a name on 4, where the ruling's
+            count found 12. The sample the session gave the same day, 3,967 member-nights through the trend
+            gate, 475 through the setup and 184 through the trigger, is the stricter filter's too. Neither
+            figure says how often the live filter lists a name over July and August; the measurement below
+            counts version 2 over every session.
+Planned:    measured read-only over the operator's store once the pull has run, over every session from
+            the first a two-hundred-session average can be read on to 2026-09-25, the members being those
+            the index held that session. Each member's indicators, swings, trend, bands, readings and first
+            tranche are recomputed from its bars by the functions the night calls, the stored bars where the
+            store holds the session and the pulled where it does not, the pulled scaled to the stored over
+            the sessions both hold so the join carries no step; the gates and exclusions are version 2's.
+            Six pairs, each read for a pullback, whose setup band is the anchored support band holding the
+            close, and for a breakout, whose setup band is the band the close cleared, the entry at tonight's
+            close unless stated:
+            A, the live rule: the stop at the setup band's low edge, the target at the lowest low edge of a
+            band above the close.
+            B, section 10 as the operator stated it: the stop at the setup band's low edge, or at the low
+            edge of the next support band beneath it where that edge is less than one typical move below the
+            entry; the target at the lowest low edge of a band at least two typical moves above the entry.
+            C, the report's plan as the ladder computes it, which is the trade gate's ladder input: the entry
+            at the first tranche's midpoint, the stop that tranche's, the low edge of the next support band
+            beneath it or, in an uptrend, the higher of that and the last swing low beneath the tranche, and
+            the target the first traded exit, the first band at least two typical moves above the entry. A
+            breakout's first tranche is the band it cleared, beneath the close, so its entry is a retest.
+            D, the band stop and back to the high: A's stop; the target, for a pullback, the highest high of
+            the twenty sessions it pulled back from, and for a breakout, which stands above that high
+            already, a measured move, the cleared band's high edge plus the height of the twenty sessions
+            before tonight, their highest high less their lowest low.
+            E, a stop one typical move below the entry, with A's target.
+            F, a stop one typical move below the entry, with D's target.
+            A pair passes where its reward to risk is at least 1.5 and its stop between 0.5 and 4 typical
+            moves below the entry, as version 2's trade gate reads its own. For each pair, over every session
+            and apart over the 40 sessions of July and August and the 13 of September: the sessions listing a
+            name; names a session, the median and the range; members passing the trade gate alone, over the
+            members with a setup band to read it from, and for C a plan, the median a session; the reward to
+            risk of the names listed and their stops' distance in typical moves, each the median with the
+            tenth and ninetieth percentiles; and the share of stops strictly above a support band's low edge
+            and at or below its high edge, over the names listed and over every trade the gate reads. The
+            recomputed A must equal the trade gate's own answer on every member-night, or nothing else is
+            read from the run.
+Expected:   stated before any run. The market gate closes on about a quarter of the sessions since late
+            2018, most of them in the autumn of 2018, the spring of 2020, most of 2022, the autumn of 2023
+            and the spring of 2025, and no pair lists a name on those.
+            A: over the 13 September sessions, 34 names give or take 5, on 12 or 13 of them, the difference
+            being arrival read from the sessions before 2026-09-09 and averages read over the longer series;
+            over every session a name on about 55 to 65%, a median of 1 and at most about 10; the trade gate
+            alone a median of about 40; the reward to risk of those listed a median near 2; the stop a median
+            near 1 move; no stop inside a band, since a band's low edge is not inside it and no two bands
+            overlap.
+            B: more names than A, a target at least two moves away being what A's lacks: a name on about 60%
+            of sessions, a median of 2 or 3; reward to risk near 2.5; the stop near 1.4 moves; none inside a
+            band; and a name at a new high with no band two moves above it fails for want of a target.
+            C: the most members through the trade gate alone, about 100, as 12.2's counts found 36 against 1
+            at section 17's stricter values; a name on about 60% of sessions, a median of 2 or 3; reward to
+            risk near 2.5 to 3, its entry below the close; the stop near 1.5 moves; about a third of its stops
+            inside a band, where the trailing stop sits at a swing low that is one of a band's members and not
+            its lowest.
+            D: a name on about 60% of sessions, a median of 2 or 3; reward to risk near 2.2; the stop near 1
+            move; none inside a band.
+            E: close to A, the nearest band above limiting both: a name on about half the sessions, a median
+            of 1; the stop exactly 1 move; a third to a half of its stops inside a band, as HUM's at 384.27
+            sat inside the band from 382.11 to 407.31 on 2026-09-25.
+            F: the most names of the six: a name on about 65% of sessions, a median of 4, a pullback of one
+            and a half moves or more passing on reward to risk alone; the stop exactly 1 move; a third to a
+            half inside a band.
+            Counts decide how many names a list shows and say nothing about whether a rule makes money.
+Changed:    `DECISIONS.md` gains the decision, which leaves **One year of bars, and no more** standing for
+            the bar store; `CLAUDE.md`'s rule that bars are append-only says the pulled history is not a
+            stored bar, with its prior text in `CHANGELOG.md`. No code changes here: the 12.2 correction that
+            follows carries it.
+Consequences: the operator's store takes migration 46 and the pull once the correction merges; the pull
+            costs about eight hundred weighted calls; nothing a night computes moves.
+Tests:      none added here; the 12.2 correction that follows adds the ones that hold it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 12.2 correction closing this batch records.
+Carried:    nothing.
