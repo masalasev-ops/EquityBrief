@@ -27486,21 +27486,32 @@ Mutated:    the rule, stated before the run: each property this correction lands
             test alone.
             H8 a purge of a pull no row carries written as a removal of nothing rather than refused: red in
             the third and the fourth test.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 122T of 122T tests ran
+            Results: one run for each of the eight in a detached worktree at 8814c1f, the tree carrying
+            this entry, each filtered on the operator's instruction of 2026-09-24 to the six tests named,
+            each edit made there and reverted with `git checkout -- .` and the tree read clean after. The
+            whole suite ran green over 8814c1f in the gates, 1442 of 1442. H1 turned the first, the third
+            and the fourth test red. H2 turned the first four red. H3 and H4 each turned the third red
+            alone. H5 turned the first and the fifth red. H6 turned the sixth red alone, the night over the
+            store holding pulled history writing `facts` differently from the night without it. H7 turned
+            the second red alone. H8 turned the third and the fourth red. No test outside those named for a
+            mutation went red under it.
+Held:       all eight, each in the tests predicted and in no other of the six.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1442 of 1442 tests ran
             with none failed, migrations 0 to 46 with none pending, schema version 46, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 122B tables, 122C claims, 122P PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 122R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 122T of 122T tests.
-            Both gates ran over the tree carrying this entry and the ruling before it, 122TREESHA, in a
+            `tools/verify-phase.ps1` green at 42 tables, 578 claims, 578 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 588 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41
+            of 41 roster checks carried and all 41 run, 1442 of 1442 tests.
+            Both gates ran over the tree carrying this entry and the ruling before it, 8814c1f, in a
             worktree beside the repository, and the operator's store under `data/` was not touched by
             either. A first run of `tools/ci.ps1` over 18b086a went red on five tests and was stopped before
             its phase report: `NothingInterpolatesADateAgainstTheMachinesLocale`, for the pull's summary
             line formatting its dates under an invariant call written on the line above;
             `EveryMembershipReadIsOneOfTheTwoFormsOverTheSession`, for the pull's span read, which the check
             did not know; and the three pairs, for the three rows this correction adds, which they did not
-            name. The second run over 122TREESHA is the one recorded here.
+            name. The second run over 8814c1f is the one recorded here.
 Carried:    the operator's store needs migration 46 before the pull: `tools/migrate.ps1`, or the next
             night's own first step, which applies it. The pull itself is `history-pull --from 2018-01-01
-            --live`, run when no night is running, on the operator's command or their word.
+            --live`, run when no night is running, on the operator's command or their word. The operator
+            ruled the same day that the pulled history stays on the store after the pull, and whether it is
+            ever purged is theirs to decide later: nothing runs `history-pull --purge` until they say so.
