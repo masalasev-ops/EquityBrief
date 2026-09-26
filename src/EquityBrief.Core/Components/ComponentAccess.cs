@@ -26,6 +26,8 @@ public enum Store
     Membership,
     Bar,
     Calendar,
+    PulledBar,
+    PulledEarnings,
     Indicator,
     Swing,
     VolumeProfile,

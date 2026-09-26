@@ -27271,3 +27271,247 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    the operator's store needs migration 45 before the app is started on this build, since the
             name page reads the new store: `tools/migrate.ps1`, or the next night's own first step, which
             applies it. The command is the operator's to run.
+
+### 12.2 ruling - history before the store's year is pulled into tables of its own on the operator's command, each row marked by the pull that wrote it and removed whole by it, and the trade gate's stop and target rules are measured over it   2026-09-26
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-26, told that the swing filter's replay reads 53 sessions because
+            the store keeps a year and a session needs two hundred before it, asked for candidate stop and
+            target rules for the trade gate to be measured read-only over the replayed sessions, with four
+            additions: section 10's pair in the table beside the others; how often each stop lands inside
+            a support band rather than below one; what every pair does for a breakout as well as a
+            pullback; and the reconciliation below, recorded in the entry. Then: "If you need to pull in
+            more history since you said it would only take 500 then do so first", "Why cant we do it on
+            the live store ?", and "i dont want hundreds of throwaway dbs. Do it on live store with a
+            marker of some sort that will let us purge the older rows later on".
+Ruled:      the history before the store's year is pulled on the operator's command into two tables of
+            its own, `pulled_bar` and `pulled_earnings`: every name the index held on any session from a
+            date to tonight, the members since departed among them, over that whole span, and the earnings
+            prints of each calendar month of it, each row carrying the run id of the pull that wrote it.
+            No night, listing, score or page reads either table, and a purge naming a pull removes its rows
+            whole (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull).
+            Not in `bar`, for three reasons each a failure: the night's gap check reads each name's whole
+            series against the exchange closure table, which begins at 2025 and refuses a weekday outside
+            its range, so every name would go unchecked, and extending the table back moves the swing
+            filter's code pin; the fetcher drops the bar store's oldest session every night; and a purge is
+            a delete no stored bar may take. The first pull is to run from 2018-01-01, about seven hundred
+            names and a hundred months, some eight hundred of the provider's 100,000 daily weighted calls.
+Reconciled: the band width ruling's figures, 38 names listed at no limit and 34 at two typical moves, and
+            the "one night in forty" this session gave the operator on 2026-09-26 are counts over different
+            sessions, under different settings, from bands of different sources, and the second was not the
+            live filter's.
+            The 38 and the 34, in 3.4's entry and in the decision **A band is no wider than two typical
+            days' moves, and a chain that would be wider splits at its widest gap**, are the names the swing
+            filter listed over the thirteen sessions from 2026-09-09 to 2026-09-25, 6,535 name-nights, on a
+            copy of the store taken after the 2026-09-25 night at schema 42, under filter version 2 as the
+            store held it: breadth 45%, strength 0.5, depth 1 to 5 typical moves, dry-up 1.5, reward to risk
+            1.5, the stop 0.5 to 4 typical moves, arrival within 3 sessions. `FilterCounts` counted them
+            restricted to those sessions, the 38 with the build before the 3.4 correction and the 34 with
+            the correction's at a width of two. The copy's ladder table held no row, so the counter found no
+            stored night and recomputed every session's bands, trend and plan with the build measured, from
+            the stored bars, indicators and swings. At two moves a name was listed on 12 of the 13 sessions;
+            2026-09-09, the first counted, read no trigger arrival, having no counted session before it.
+            The one night in forty is `filter-counts --year` run on 2026-09-26 over a copy of the store
+            after the 3.4 correction, main at 80bcb64: 53 sessions, the 40 from 2026-07-14 to 2026-09-08
+            replayed with the corrected code, and the 13 from 2026-09-09 read from the store, whose bands for
+            2026-09-09 to 2026-09-24 the build before the correction had written. The verb counts under
+            settings of its own, section 17's proposed values with the market floor at 45%: strength two
+            thirds, depth 2 to 5, dry-up 1.0, reward to risk 2, the stop 1 to 2.5. So it counted a stricter
+            filter than the live one, and this session reported it to the operator as the live filter's,
+            which it was not: over the same run the 13 stored sessions listed a name on 4, where the ruling's
+            count found 12. The sample the session gave the same day, 3,967 member-nights through the trend
+            gate, 475 through the setup and 184 through the trigger, is the stricter filter's too. Neither
+            figure says how often the live filter lists a name over July and August; the measurement below
+            counts version 2 over every session.
+Planned:    measured read-only over the operator's store once the pull has run, over every session from
+            the first a two-hundred-session average can be read on to 2026-09-25, the members being those
+            the index held that session. Each member's indicators, swings, trend, bands, readings and first
+            tranche are recomputed from its bars by the functions the night calls, the stored bars where the
+            store holds the session and the pulled where it does not, the pulled scaled to the stored over
+            the sessions both hold so the join carries no step; the gates and exclusions are version 2's.
+            Six pairs, each read for a pullback, whose setup band is the anchored support band holding the
+            close, and for a breakout, whose setup band is the band the close cleared, the entry at tonight's
+            close unless stated:
+            A, the live rule: the stop at the setup band's low edge, the target at the lowest low edge of a
+            band above the close.
+            B, section 10 as the operator stated it: the stop at the setup band's low edge, or at the low
+            edge of the next support band beneath it where that edge is less than one typical move below the
+            entry; the target at the lowest low edge of a band at least two typical moves above the entry.
+            C, the report's plan as the ladder computes it, which is the trade gate's ladder input: the entry
+            at the first tranche's midpoint, the stop that tranche's, the low edge of the next support band
+            beneath it or, in an uptrend, the higher of that and the last swing low beneath the tranche, and
+            the target the first traded exit, the first band at least two typical moves above the entry. A
+            breakout's first tranche is the band it cleared, beneath the close, so its entry is a retest.
+            D, the band stop and back to the high: A's stop; the target, for a pullback, the highest high of
+            the twenty sessions it pulled back from, and for a breakout, which stands above that high
+            already, a measured move, the cleared band's high edge plus the height of the twenty sessions
+            before tonight, their highest high less their lowest low.
+            E, a stop one typical move below the entry, with A's target.
+            F, a stop one typical move below the entry, with D's target.
+            A pair passes where its reward to risk is at least 1.5 and its stop between 0.5 and 4 typical
+            moves below the entry, as version 2's trade gate reads its own. For each pair, over every session
+            and apart over the 40 sessions of July and August and the 13 of September: the sessions listing a
+            name; names a session, the median and the range; members passing the trade gate alone, over the
+            members with a setup band to read it from, and for C a plan, the median a session; the reward to
+            risk of the names listed and their stops' distance in typical moves, each the median with the
+            tenth and ninetieth percentiles; and the share of stops strictly above a support band's low edge
+            and at or below its high edge, over the names listed and over every trade the gate reads. The
+            recomputed A must equal the trade gate's own answer on every member-night, or nothing else is
+            read from the run.
+Expected:   stated before any run. The market gate closes on about a quarter of the sessions since late
+            2018, most of them in the autumn of 2018, the spring of 2020, most of 2022, the autumn of 2023
+            and the spring of 2025, and no pair lists a name on those.
+            A: over the 13 September sessions, 34 names give or take 5, on 12 or 13 of them, the difference
+            being arrival read from the sessions before 2026-09-09 and averages read over the longer series;
+            over every session a name on about 55 to 65%, a median of 1 and at most about 10; the trade gate
+            alone a median of about 40; the reward to risk of those listed a median near 2; the stop a median
+            near 1 move; no stop inside a band, since a band's low edge is not inside it and no two bands
+            overlap.
+            B: more names than A, a target at least two moves away being what A's lacks: a name on about 60%
+            of sessions, a median of 2 or 3; reward to risk near 2.5; the stop near 1.4 moves; none inside a
+            band; and a name at a new high with no band two moves above it fails for want of a target.
+            C: the most members through the trade gate alone, about 100, as 12.2's counts found 36 against 1
+            at section 17's stricter values; a name on about 60% of sessions, a median of 2 or 3; reward to
+            risk near 2.5 to 3, its entry below the close; the stop near 1.5 moves; about a third of its stops
+            inside a band, where the trailing stop sits at a swing low that is one of a band's members and not
+            its lowest.
+            D: a name on about 60% of sessions, a median of 2 or 3; reward to risk near 2.2; the stop near 1
+            move; none inside a band.
+            E: close to A, the nearest band above limiting both: a name on about half the sessions, a median
+            of 1; the stop exactly 1 move; a third to a half of its stops inside a band, as HUM's at 384.27
+            sat inside the band from 382.11 to 407.31 on 2026-09-25.
+            F: the most names of the six: a name on about 65% of sessions, a median of 4, a pullback of one
+            and a half moves or more passing on reward to risk alone; the stop exactly 1 move; a third to a
+            half inside a band.
+            Counts decide how many names a list shows and say nothing about whether a rule makes money.
+Changed:    `DECISIONS.md` gains the decision, which leaves **One year of bars, and no more** standing for
+            the bar store; `CLAUDE.md`'s rule that bars are append-only says the pulled history is not a
+            stored bar, with its prior text in `CHANGELOG.md`. No code changes here: the 12.2 correction that
+            follows carries it.
+Consequences: the operator's store takes migration 46 and the pull once the correction merges; the pull
+            costs about eight hundred weighted calls; nothing a night computes moves.
+Tests:      none added here; the 12.2 correction that follows adds the ones that hold it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 12.2 correction closing this batch records.
+Carried:    nothing.
+
+### 12.2 - correction: history before the store's year is pulled into tables of its own and marked by the pull that wrote it, where the counts could read the store's year alone, about fifty sessions, and the store had nowhere to hold older bars   2026-09-26
+Corrects:   12.2's year replay, `filter-counts --year`, which reads the store's own bars, kept for a
+            rolling year, so the first session whose breadth and trend can be read stands two hundred into
+            it and the counts the operator rules the filter from reach about fifty sessions; and the store,
+            which had no table older history could be written to without the night's gap check losing
+            every name, the fetcher dropping it the next night, or a later removal deleting stored bars.
+Found:      by the operator on 2026-09-26, asking for the trade gate's candidate rules to be measured over
+            more than one year gives, on the ruling of this batch.
+Repaired:   migration 46 creates `pulled_bar` and `pulled_earnings`. `HistoryPull`, run by hand as
+            `history-pull --from <date>`, reads the names the index held on any session from the date to
+            tonight, asks the historical feed once for each over the whole span and the earnings calendar
+            once for each calendar month of it, and in one transaction stores every bar and every print of
+            a name it asked for, each row carrying the pull's run id, a session or print an earlier pull
+            holds keeping that pull's row. A name the provider refuses or sends no session for is named and
+            nothing is stored for it; a session one name misses against the others, between its own first
+            and last, is stored as sent and named. `history-pull --purge <pull>` removes one pull's rows
+            from both tables and nothing else, and refuses a pull no row carries with nothing written. Each
+            is one run log row, under `history-pull` or `history-purge`, whose run ids the run page draws as
+            runs by hand, and a date on or after tonight's session is refused before any request. A print's
+            timing is stored in the calendar's own words, through `CalendarFetcher.Filed`.
+            `ComponentAccess.Store` gains `PulledBar` and `PulledEarnings`, the worker's help names the verb,
+            and the read API's declaration, which reads neither, says so. Nothing that reads the pulled
+            history ships here: the measurement the ruling plans reads it read-only, and its code is not
+            part of the build.
+Guarded:    six tests in `HistoryPullTests`, each over constructed feeds and a membership of four names
+            stated beside them, or over the fixture's night.
+            `APullAsksEveryNameTheIndexHeldOverTheSpanOnceAndStoresEachRowMarkedByItsRunAndNothingElse`: a
+            member throughout, one leaving and one joining inside the span are each asked once for the whole
+            span, and one that left before it is not; three calendar windows cut to the span; 47 sessions a
+            name, the first and last stored as sent with the unadjusted close; three of four prints kept, the
+            fourth a name the index never held; `bar` and `calendar` byte for byte as they were; and the run
+            log row with 144 rows and 6 requests.
+            `ANameTheProviderDoesNotAnswerAndASessionOneNameMissesAreNamedAndEverythingElseIsStoredAsSent`:
+            a refusal and an empty answer each named and stored nothing for, a missing session stored as a
+            hole and named on the row and at the prompt, and the stage partial.
+            `ASecondPullAddsOnlyTheSessionsNoPullHoldsAndAPurgeRemovesItsOwnPullWholeAndNothingElse`: a pull
+            from 2026-08-17 stores 30 bars and one print, one from 2026-07-01 adds 111 and two, a purge of
+            the first removes its 30 and one and leaves every row of the second, and a second purge of it is
+            refused with nothing written.
+            `APullFromTonightOrLaterAnUnknownPullAndAMissingDateAreEachRefusedWithNothingAskedOrWritten`: each
+            refused through the verb a person runs, with no request made, no row written and the feeds asked
+            for only by a pull; and a pull through the verb printing its run id first.
+            `TheCalendarIsAskedForEachMonthTheSpanTouchesCutToTheSpanAtBothEnds`: three spans, one crossing
+            a year.
+            `ANightOverAStoreHoldingPulledHistoryComputesExactlyWhatItComputesWithoutIt`: the fixture's night
+            over a store already holding pulled bars for every captured name, the years before the fixture's
+            at a price of one and every session of its year again at 99999, and a print every tenth weekday,
+            writes every table but the run log exactly as the same night over a store holding none, and
+            leaves the pulled rows as it found them. `component-access` and `schema-columns` reach the three
+            new rows; `FixtureReplay.NightAsync` takes a hook run over the migrated store before the night.
+            `nightly-run`'s check that every membership read takes one of the two forms over a session holds
+            a third, a span of sessions, whose leaving is read against the span's first session and its
+            joining against its last, and names the history pull as its one reader.
+            `architecture-conformance`'s three pairs name the three rows among those phase 12 landed beyond
+            its prediction, and the stated pair reads 550 and 578.
+Expected:   every count the pull's tests hold is derived from the exchange's calendar over the span rather
+            than read back: 47 sessions from 2026-07-01 to 2026-09-04, being 48 weekdays less Independence Day
+            observed on 2026-07-03, and 15 from 2026-08-17. The night's expectation is the fixture's own
+            night over a store holding no pulled history, so nothing is frozen from a run of the code under
+            test. No fixture file is added: no fixture night writes either pulled table, so `fixture-replay`
+            has none to name.
+Written:    section 7's History pull row and the read API's reads, section 16's Pulled history row, and the
+            read and write matrix's pulled history column, its History pull row and a sentence of its key in
+            `ARCHITECTURE.html`; the two ownership rows and the two table sections in `SCHEMA.md`; the history
+            pull's section in `RUNBOOK.md`; each with its prior text in `CHANGELOG.md`. The decision and
+            `CLAUDE.md`'s sentence by the ruling of this batch.
+Tests:      1442, from 1436: six added, none removed. Migrations 0 to 46 with none pending, schema version
+            46.
+Claims:     578, from 575: section 7's History pull row, the matrix's History pull row and section 16's
+            Pulled history row, each PASS; the read API's row keeps its key.
+Pins:       the branch against `main` at 80bcb64; this correction edits `ComponentAccess.cs`,
+            `SchemaMigrations.cs`, the worker's `Program.cs`, `RunScreen.cs` and a comment in `ReadApi.cs`,
+            and adds `HistoryPull.cs`, none of them in the twelve `RuleVersionScorer.CodeVersionSources`, the
+            twenty-one `CandidateEvaluator.EvaluationSources` or the sixteen `SwingFilter.CodeVersionSources`,
+            each read from the tree being committed.
+Mutated:    the rule, stated before the run: each property this correction lands broken one at a time,
+            each run filtered to the six tests in `HistoryPullTests`.
+            Predicted:
+            H1 the prints written into `calendar` rather than `pulled_earnings`: red in the first, the third
+            and the fourth test.
+            H2 the names held read without the clause keeping out a name that left before the span: red in
+            the first, the second, the third and the fourth test.
+            H3 the purge removing every pulled row rather than its pull's: red in the third test alone.
+            H4 a second pull taking over the rows an earlier pull holds: red in the third test alone.
+            H5 the last calendar window running to the month's end rather than tonight: red in the first and
+            the fifth test.
+            H6 a night reader, the indicator engine, reading the pulled bars before the store's first
+            session as part of a name's series: red in the sixth test alone.
+            H7 a name with a missing session left unstored rather than stored as sent: red in the second
+            test alone.
+            H8 a purge of a pull no row carries written as a removal of nothing rather than refused: red in
+            the third and the fourth test.
+            Results: one run for each of the eight in a detached worktree at 8814c1f, the tree carrying
+            this entry, each filtered on the operator's instruction of 2026-09-24 to the six tests named,
+            each edit made there and reverted with `git checkout -- .` and the tree read clean after. The
+            whole suite ran green over 8814c1f in the gates, 1442 of 1442. H1 turned the first, the third
+            and the fourth test red. H2 turned the first four red. H3 and H4 each turned the third red
+            alone. H5 turned the first and the fifth red. H6 turned the sixth red alone, the night over the
+            store holding pulled history writing `facts` differently from the night without it. H7 turned
+            the second red alone. H8 turned the third and the fourth red. No test outside those named for a
+            mutation went red under it.
+Held:       all eight, each in the tests predicted and in no other of the six.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1442 of 1442 tests ran
+            with none failed, migrations 0 to 46 with none pending, schema version 46, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 42 tables, 578 claims, 578 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 588 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41
+            of 41 roster checks carried and all 41 run, 1442 of 1442 tests.
+            Both gates ran over the tree carrying this entry and the ruling before it, 8814c1f, in a
+            worktree beside the repository, and the operator's store under `data/` was not touched by
+            either. A first run of `tools/ci.ps1` over 18b086a went red on five tests and was stopped before
+            its phase report: `NothingInterpolatesADateAgainstTheMachinesLocale`, for the pull's summary
+            line formatting its dates under an invariant call written on the line above;
+            `EveryMembershipReadIsOneOfTheTwoFormsOverTheSession`, for the pull's span read, which the check
+            did not know; and the three pairs, for the three rows this correction adds, which they did not
+            name. The second run over 8814c1f is the one recorded here.
+Carried:    the operator's store needs migration 46 before the pull: `tools/migrate.ps1`, or the next
+            night's own first step, which applies it. The pull itself is `history-pull --from 2018-01-01
+            --live`, run when no night is running, on the operator's command or their word. The operator
+            ruled the same day that the pulled history stays on the store after the pull, and whether it is
+            ever purged is theirs to decide later: nothing runs `history-pull --purge` until they say so.

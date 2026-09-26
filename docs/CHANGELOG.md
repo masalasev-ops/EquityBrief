@@ -7979,3 +7979,47 @@ Now:
 > `--refresh` is a regenerate: it fetches the company's figures again whatever the store holds, assembles the night's facts file again from them and writes every section again, and it starts nothing and fetches nothing on a day a pass for the name already ran. `--paid-for-local` ..., and which the drain adds to every regenerate a press asks for.
 > Once the day a report was written has passed, the page offers Regenerate Report, which fetches the company's figures again, ... and has the paid model write every section again from them whether or not a trigger has fired. Over the fixture's KEYS a pass with every section paid cost $0.0330, and the fetch weighs ten of the provider's daily 100,000 calls. It runs once a name a day: ... (see: ...).
 Why: the operator's ruling of 2026-09-26 on what a regenerate writes from, who writes it and how often.
+
+### 2026-09-26 - CLAUDE.md - the rule that bars are append-only says pulled history is not a stored bar
+Authorised by: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+Was:
+> **Bars are append-only and never interpolated.** Never delete or update a stored bar. A gap stops computation for that name and is reported as a gap; a corporate action arrives as a full refetch of that name's year. `bar-append-only` greps for delete and update statements against bar tables. (see: Bars are never interpolated)
+Now:
+> **Bars are append-only and never interpolated.** Never delete or update a stored bar. ... (see: Bars are never interpolated) History the operator pulls for the years before the store's own is not a stored bar: it sits in tables of its own that no night reads, and is removed whole by the pull that wrote it (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull).
+Why: the operator's ruling of 2026-09-26 that older history is pulled onto the store marked so it can be purged later; without the sentence a purge would read as a deleted stored bar.
+
+### 2026-09-26 - ARCHITECTURE.html - section 7's History pull row and the read API's reads, section 16's Pulled history store, the matrix's pulled history column and History pull row, and the matrix key
+Authorised by: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+Was:
+> no History pull row in section 7, and the Read API's row reading `every store`;
+> no Pulled history row in section 16;
+> the read and write matrix's columns running Membership, Bars, Calendar, Computed tables, ... with no pulled history column and no History pull row;
+> the matrix key: Only the bar fetcher and the corporate action checker write bars, so price history cannot be altered by anything downstream.
+Now:
+> section 7's History pull row, by hand on the operator's command, reading the historical price feed, the earnings calendar feed, membership, pulled bars and pulled earnings and writing the two pulled tables, and the Read API's row reading `every store but the pulled history`;
+> section 16's Pulled history row: one row per name and session a pull reached and one per name and earnings print, each carrying the pull's run id, kept until the operator removes the pull whole;
+> a Pulled history column after Calendar, a blank cell in every row but History pull's, which reads membership, reads and writes the pulled history and writes the run log;
+> the matrix key's added sentence: the pulled history column holds bars the operator pulled for the years before the store's own, and no component but the history pull touches it, which is what lets a pull be removed whole without moving any figure a night computed.
+Why: the history pull is a component and its tables are stores, each placed where the corpus places one; the read API reads no pulled row, so its row says so rather than `every store`.
+
+### 2026-09-26 - SCHEMA.md - pulled_bar and pulled_earnings
+Authorised by: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+Was:
+> | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
+> | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
+> and no `pulled_bar` or `pulled_earnings` section.
+Now:
+> | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
+> | `pulled_bar` | HistoryPull | none | HistoryPull |
+> | `pulled_earnings` | HistoryPull | none | HistoryPull |
+> | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
+> and a `pulled_bar` section after `calendar`, one row per ticker per session a pull reached with the adjusted prices, the unadjusted close, the volume and the pull's run id, and a `pulled_earnings` section, one row per ticker per report date with its timing and the pull's run id.
+Why: migration 46 creates the two tables, which the history pull alone writes and removes.
+
+### 2026-09-26 - RUNBOOK.md - pulling history before the store's year
+Authorised by: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+Was:
+> no section on pulling history.
+Now:
+> a section after the filter history's: `history-pull --from 2018-01-01 --live`, what it asks for and stores, what it costs, when to run it, and `history-pull --purge <the pull's run id>`, which removes one pull whole.
+Why: the operator's ruling of 2026-09-26; the command is theirs or run on their word.

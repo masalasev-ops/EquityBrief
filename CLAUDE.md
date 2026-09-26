@@ -122,7 +122,7 @@ Named, and cited by name. A violation is a defect regardless of what else is tru
 
 **One writer per store per operation.** Declared in `SCHEMA.md`, asserted by `writer-ownership` in both directions: every declared writer exists in code, and every writer in code is declared.
 
-**Bars are append-only and never interpolated.** Never delete or update a stored bar. A gap stops computation for that name and is reported as a gap; a corporate action arrives as a full refetch of that name's year. `bar-append-only` greps for delete and update statements against bar tables. (see: Bars are never interpolated)
+**Bars are append-only and never interpolated.** Never delete or update a stored bar. A gap stops computation for that name and is reported as a gap; a corporate action arrives as a full refetch of that name's year. `bar-append-only` greps for delete and update statements against bar tables. (see: Bars are never interpolated) History the operator pulls for the years before the store's own is not a stored bar: it sits in tables of its own that no night reads, and is removed whole by the pull that wrote it (see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull).
 
 **Prices are decimal in code and TEXT in storage. Statistics are double.** Never `REAL` for a price or a money value, and no implicit conversion between the two worlds. A helper that crosses the boundary does so explicitly and is named for it. This rule can be satisfied in code while still writing a `REAL` column, which is why the storage form is stated here rather than only in SCHEMA.
 

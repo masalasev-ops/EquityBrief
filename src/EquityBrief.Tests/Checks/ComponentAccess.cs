@@ -42,6 +42,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Filter history"),
             CheckReach.Key(Scope.MatrixTable, "Filter history"),
 
+            // 12.2's correction, the history pull.
+            CheckReach.Key(Scope.CatalogueTable, "History pull"),
+            CheckReach.Key(Scope.MatrixTable, "History pull"),
+
             // 12.1, the swing reader.
             CheckReach.Key(Scope.CatalogueTable, "Swing reader"),
             CheckReach.Key(Scope.MatrixTable, "Swing reader"),
@@ -815,6 +819,7 @@ public partial class ComponentAccess
         count switch
         {
             2 => "Two", 3 => "Three", 4 => "Four", 5 => "Five", 6 => "Six", 7 => "Seven", 8 => "Eight", 9 => "Nine", 10 => "Ten",
+            11 => "Eleven", 12 => "Twelve",
             _ => count.ToString(System.Globalization.CultureInfo.InvariantCulture),
         };
 }

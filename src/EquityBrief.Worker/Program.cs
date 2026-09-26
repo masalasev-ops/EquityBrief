@@ -35,13 +35,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "filter-counts" => await FilterCountsReport(args),
     "shape" => await Shape(args),
     "filter-history" => await FilterHistoryRun(args),
+    "history-pull" => await HistoryPullRun(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. Ten are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. Eleven are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
         "'research --ticker <TICKER>' writes the sections of one name's research that are not written or have gone " +
@@ -62,7 +63,9 @@ static int NoVerb()
         "--evidence <text>' with '--trade ladder' or '--trade swing' opens settings the operator ruled, '--restarts <blocks>' states " +
         "the live filter's blocks an acceptance restarts, and '--reject <proposal> --reason <text>' records a proposal's rejection, and " +
         "'filter-history --from <yyyy-MM-dd> --through <yyyy-MM-dd>' replays the swing filter's results for sessions before its " +
-        "first stored night, for the trigger's arrival alone. '--live' " +
+        "first stored night, for the trigger's arrival alone, and " +
+        "'history-pull --from <yyyy-MM-dd>' stores the daily bars and earnings prints of every name the index held from that " +
+        "date to tonight apart from the store's own, each row marked by its pull, with '--purge <pull>' removing a pull whole. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -139,6 +142,29 @@ static async Task<int> FilterHistoryRun(string[] args)
 
     return await FilterHistory.RunAsync(
         args,
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        Console.Out,
+        Console.Error);
+}
+
+// History before the store's rolling year, pulled by hand and never from the night, and removed whole
+// by the pull that wrote it. The verb's work is in `HistoryPull`, so a test runs the verb a person runs.
+// see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+static async Task<int> HistoryPullRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await EquityBrief.Worker.Bars.HistoryPull.RunAsync(
+        args,
+        () => NightFeeds.Resolve(
+            args.Contains("--live") ? NightFeeds.LiveSource
+                : Argument(args, "--fixture") is not null ? NightFeeds.FixtureSource
+                : configuration[NightFeeds.SourceKey],
+            Argument(args, "--fixture") ?? configuration[NightFeeds.FixtureKey],
+            configuration[EodhdBulkPriceFeed.BaseAddressKey],
+            configuration[ProviderCredentials.ApiKeyName]),
         SystemClock.ForUnitedStatesSessions(),
         store.DatabaseFile,
         Console.Out,
