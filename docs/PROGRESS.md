@@ -26544,14 +26544,21 @@ Mutated:    the rule, stated before the run: each refusal and each state the pag
             W5 tonight's line handed no count: red in the page test alone.
             W6 the no-store header removed: red in the press test alone.
             W7 the name page's press drawn for the opposite state: red in the page test alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, VT of VT tests ran with
-            none failed, migrations 0 to 43 with none pending, schema version 43, exit 0, against `data-ci`
-            and never `data`.
-            `tools/verify-phase.ps1` green at VTB tables, VC claims, VP PASS, 0 FAIL, 0 out of scope, 0
-            unexamined, VR placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
-            41 roster checks carried and all 41 run, VT of VT tests.
-            Both gates ran over the tree carrying this entry and the one before it, TREESHA, in a worktree
+            Results: one run for each of the seven mutations in a detached worktree at 37a823c, the tree
+            carrying this entry, filtered to the four tests on the operator's instruction of 2026-09-24,
+            each reverted with `git checkout -- .` and the tree read clean after. A first run for W1, whose
+            edit was refused before it was made, ran over the unmutated tree and all four passed. The whole
+            suite ran green over 37a823c in the gates, 1418 of 1418. W1, W2 and W6 each turned the press
+            test red alone. W3 turned the twenty test red alone. W4, W5 and W7 each turned the page test red
+            alone. The exported report's test stayed green under all seven.
+Held:       all seven, in the tests each named and in their number, within the filtered scope.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1418 of 1418 tests ran
+            with none failed, migrations 0 to 43 with none pending, schema version 43, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 42 tables, 572 claims, 572 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 582 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, 1418 of 1418 tests.
+            Both gates ran over the tree carrying this entry and the one before it, 37a823c, in a worktree
             beside the repository, and the operator's store under `data/` was not touched by either.
 Carried:    the operator's store needs migration 43 before the real app draws the watch list page:
             `tools/migrate.ps1`, or the next night's own first step, which applies it.
