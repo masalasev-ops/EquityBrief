@@ -91,10 +91,18 @@ public static class SectionPrompt
         ["The dated calendar items"] =
             "List, one sentence each, the dated events of the company named in the facts that the documents name and that fall after the session stated below, each with the date a listed document gives for it and ending with that document's marker. "
             + "Write no event dated on or before that session, and no date no listed document states.",
+        // The two cases and the risks are asked for in the shape the name page reads its parts by:
+        // each case a paragraph opening on its own name, a point to a sentence, and each risk a
+        // paragraph opening on its ordinal with what would confirm it in a sentence of its own. A
+        // writer that answers in another shape is still drawn, a claim to a row, since the page
+        // cuts only where the prose says a part ends.
+        // see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws
         ["The two cases"] =
-            "Write the bull case and the bear case side by side, each ending in what it needs to see at the next report.",
+            "Write the bull case as one paragraph that begins \"The bull case\", then the bear case as a second paragraph that begins \"The bear case\". "
+            + "Give each point its own sentence, and end each case with a sentence saying what it needs to see at the next report.",
         ["The risks, each with what would confirm it"] =
-            "Name each risk to the company that the documents support, with the figure or event that would confirm it.",
+            "Name each risk to the company that the documents support, each in a paragraph of its own. Begin each with its ordinal and the word risk, as \"The first risk is\", "
+            + "and follow it with one sentence that begins \"That risk would be confirmed by\" and names the figure or event that would confirm it.",
         ["The short version"] =
             "In three or four paragraphs, say what is true, what the market is arguing about, and what the plan therefore is.",
     };

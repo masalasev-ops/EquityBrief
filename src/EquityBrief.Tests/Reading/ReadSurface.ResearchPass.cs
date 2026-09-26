@@ -204,11 +204,30 @@ public partial class ReadSurface
         Assert.Contains("data-state=\"missing\"", none, StringComparison.Ordinal);
     }
 
-    // The case for a name and the case against it are drawn as two labelled halves where the
-    // writer answered in the shape it was asked for, and as the prose was written where it did
-    // not, because a section is what the checker accepted and never a shape this page hoped for.
+    // The two cases the page drew, each as its label, or none, and the rows beneath it, read off the
+    // markup rather than off the renderer.
+    static IReadOnlyList<(string? Label, IReadOnlyList<string> Rows)> CasesDrawn(string section) =>
+    [
+        .. Regex.Matches(section, "(?:<div class=\"case\" data-case=\"([^\"]+)\"><h4>[^<]+</h4>)?<ul class=\"claim-rows\" data-rows=\"(\\d+)\">(.*?)</ul>", RegexOptions.Singleline)
+            .Select(match =>
+            {
+                string[] rows = [.. Regex.Matches(match.Groups[3].Value, "<li><p class=\"prose\">([^<]*)</p></li>").Select(row => WebUtility.HtmlDecode(row.Groups[1].Value))];
+
+                Assert.Equal(match.Groups[2].Value, rows.Length.ToString(CultureInfo.InvariantCulture));
+
+                return (match.Groups[1].Success ? match.Groups[1].Value : null, (IReadOnlyList<string>)rows);
+            }),
+    ];
+
+    static WrittenCell CasesCell(string prose) =>
+        new(MarkRenderer.TheTwoCases, prose, new DateOnly(2026, 9, 8), "a/model", []);
+
+    // The case for a name and the case against it are drawn a claim to a row under their labels
+    // where the prose opens on the bull case, and a claim to a row with no label where it opens on
+    // neither, because a section is what the checker accepted and never a shape this page hoped for.
+    // see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws
     [Fact]
-    public async Task TheTwoCasesAreDrawnAsTwoLabelledHalvesAndAsWrittenWhereTheyAreNot()
+    public async Task TheTwoCasesAreDrawnAClaimToARowUnderTheirLabelsAndUnlabelledWhereTheProseOpensOnNeither()
     {
         using var store = await FixtureReplay.ResearchedAsync();
 
@@ -217,14 +236,9 @@ public partial class ReadSurface
 
         Assert.True(written.Success, "KEYS draws no two cases, and this is what reads them.");
 
-        var halves = Regex.Matches(written.Value, "<div class=\"case\" data-case=\"([^\"]+)\"><h4>[^<]+</h4><p class=\"prose\">([^<]*)</p></div>")
-            .Select(match => (Label: match.Groups[1].Value, Prose: WebUtility.HtmlDecode(match.Groups[2].Value)))
-            .ToArray();
-
-        Assert.Equal(["The case for", "The case against"], [.. halves.Select(half => half.Label)]);
-
-        // Each half is one of the section's own paragraphs, unchanged and in the order it was
-        // written, so the labels are put beside the prose rather than over it.
+        // The fixture's two cases as the recorded writer answered the ask: two paragraphs, the
+        // first opening on the bull case and the second on the bear case, each of eight sentences
+        // counted by hand off the recording, every one ending on the marker of its document.
         var stored = Rows(store, "SELECT prose FROM research_section r WHERE ticker = 'KEYS' AND section = 'The two cases' AND status = 'accepted' " +
             "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted');")
             .Single()[0];
@@ -232,36 +246,54 @@ public partial class ReadSurface
         var paragraphs = stored.Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         Assert.Equal(2, paragraphs.Length);
-        Assert.Equal([.. paragraphs], [.. halves.Select(half => half.Prose)]);
+        Assert.StartsWith("The bull case", paragraphs[0], StringComparison.Ordinal);
+        Assert.StartsWith("The bear case", paragraphs[1], StringComparison.Ordinal);
 
-        // A section of the same name written in another shape is drawn as it was written, with
-        // no half and no label, which is the case every name that has never had a pass is in.
+        var cases = CasesDrawn(written.Value);
+
+        Assert.Equal(["The case for", "The case against"], [.. cases.Select(one => one.Label ?? "no label")]);
+        Assert.Equal([8, 8], [.. cases.Select(one => one.Rows.Count)]);
+
+        // Each case is its own paragraph cut at its sentences, unchanged and in the order written.
+        Assert.Equal([.. paragraphs], [.. cases.Select(one => string.Join(" ", one.Rows))]);
+        Assert.All(cases.SelectMany(one => one.Rows), row => Assert.Matches(@"\[D\d+\]\.$", row));
+
         var marks = new MarkRenderer();
-        var other = marks.WrittenSection(
+
+        // One paragraph holding both, the case against opening mid-way, the shape the operator's
+        // store held HUM's in, is cut where the case against opens.
+        const string OneParagraph =
+            "The bull case is that orders doubled [D1]. It needs the next report to hold them [D1]. The bear case is that supply governs revenue [D2]. It needs supply to loosen [D2].";
+
+        var one = CasesDrawn(marks.WrittenSection("KEYS", CasesCell(OneParagraph), []));
+
+        Assert.Equal(["The case for", "The case against"], [.. one.Select(half => half.Label ?? "no label")]);
+        Assert.Equal(
+            ["The bull case is that orders doubled [D1].", "It needs the next report to hold them [D1]."],
+            one[0].Rows);
+        Assert.Equal(
+            ["The bear case is that supply governs revenue [D2].", "It needs supply to loosen [D2]."],
+            one[1].Rows);
+
+        // What the writer set after the case against is read in the case it was set in, and nothing
+        // is dropped.
+        var third = CasesDrawn(marks.WrittenSection(
             "KEYS",
-            new WrittenCell(MarkRenderer.TheTwoCases, "One paragraph holding both cases at once.", new DateOnly(2026, 9, 8), "a/model", []),
-            []);
+            CasesCell("The bull case is the first paragraph.\n\nThe bear case is the second.\n\nAnd a third paragraph the writer added."),
+            []));
+
+        Assert.Equal(["The bull case is the first paragraph."], third[0].Rows);
+        Assert.Equal(["The bear case is the second.", "And a third paragraph the writer added."], third[1].Rows);
+
+        // Prose opening on neither case is drawn a claim to a row with no label, since a boundary
+        // guessed at would put one case's words under the other's.
+        var other = marks.WrittenSection("KEYS", CasesCell("One paragraph holding both cases at once. A second sentence of it."), []);
+
+        var unlabelled = Assert.Single(CasesDrawn(other));
 
         Assert.DoesNotContain("class=\"case\"", other, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"prose\">One paragraph holding both cases at once.</p>", other, StringComparison.Ordinal);
-
-        // And a section whose first two paragraphs open the right way and which carries a third
-        // is drawn whole rather than as two halves, because two halves have nowhere to put the
-        // rest of it: a shape recognised on its opening alone loses every paragraph after the
-        // second without saying so.
-        var third = marks.WrittenSection(
-            "KEYS",
-            new WrittenCell(
-                MarkRenderer.TheTwoCases,
-                "The bull case is the first paragraph.\n\nThe bear case is the second.\n\nAnd a third paragraph the writer added.",
-                new DateOnly(2026, 9, 8),
-                "a/model",
-                []),
-            []);
-
-        Assert.DoesNotContain("class=\"case\"", third, StringComparison.Ordinal);
-        Assert.Equal(3, Regex.Matches(third, "<p class=\"prose\">").Count);
-        Assert.Contains("<p class=\"prose\">And a third paragraph the writer added.</p>", third, StringComparison.Ordinal);
+        Assert.Null(unlabelled.Label);
+        Assert.Equal(["One paragraph holding both cases at once.", "A second sentence of it."], unlabelled.Rows);
     }
 
     // The risks the page drew, each as the risk and what would confirm it, read off the markup
@@ -279,8 +311,18 @@ public partial class ReadSurface
     static WrittenCell RisksCell(string prose) =>
         new(MarkRenderer.TheRisks, prose, new DateOnly(2026, 9, 8), "a/model", []);
 
+    // The risks the page drew as its table, each risk beside what would confirm it, read off the markup.
+    static IReadOnlyList<(string Risk, string Confirmation)> RiskRows(string section) =>
+        [.. Regex.Matches(section, "<tr class=\"risk\"><td><p class=\"prose\">([^<]*)</p></td><td><p class=\"prose confirms\">([^<]*)</p></td></tr>")
+            .Select(row => (WebUtility.HtmlDecode(row.Groups[1].Value), WebUtility.HtmlDecode(row.Groups[2].Value)))];
+
+    // The rows of a section drawn a claim to a row, read off the markup.
+    static IReadOnlyList<string> ClaimRowsDrawn(string section) =>
+        [.. Regex.Matches(section, "<li><p class=\"prose\">([^<]*)</p></li>").Select(row => WebUtility.HtmlDecode(row.Groups[1].Value))];
+
+    // see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws
     [Fact]
-    public async Task EachRiskIsDrawnAsItsOwnPartWithWhatWouldConfirmItAndAsWrittenWhereThePartsAreNotStated()
+    public async Task EachRiskIsDrawnBesideWhatWouldConfirmItAsAPartOrAClaimToARowWhereThePartsAreNotStated()
     {
         using var store = await FixtureReplay.ResearchedAsync();
 
@@ -295,23 +337,37 @@ public partial class ReadSurface
             "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted');")
             .Single()[0];
 
-        // The fixture's risks are one paragraph of seven, each opening on an ordinal from the first,
-        // so each is a part, cut where the prose says it starts. A sentence opening "A related risk"
-        // names no ordinal and stays inside the part before it. The writer opened no confirmation in
-        // the words it is asked for, so none is set apart and each part is drawn as written. The
-        // parts joined back up are the prose as it was stored.
-        var drawn = RisksDrawn(written.Value);
+        // The fixture's risks as the recorded writer answered the ask: four paragraphs, each opening
+        // on its ordinal and followed by a sentence opening its confirmation in the words asked for,
+        // counted by hand off the recording. So every part states its confirmation apart and the
+        // section is a table, a risk to a row beside what would confirm it, each row its paragraph
+        // cut and never edited.
+        var paragraphs = stored.Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var table = RiskRows(written.Value);
 
-        Assert.DoesNotContain("\n\n", stored.Trim(), StringComparison.Ordinal);
-        Assert.Equal(7, drawn.Count);
-        Assert.Equal(stored.Trim(), string.Join(" ", drawn.Select(RiskWhole)));
+        Assert.Equal(4, paragraphs.Length);
+        Assert.Contains("<table class=\"risks-table\" data-parts=\"4\"><tr><th>Risk</th><th>What would confirm it</th></tr>", written.Value, StringComparison.Ordinal);
+        Assert.Equal(4, table.Count);
+        Assert.Equal([.. paragraphs], [.. table.Select(row => row.Risk + " " + row.Confirmation)]);
         Assert.Equal(
-            ["The first risk", "The second risk", "The third risk", "The fourth risk", "The fifth risk", "The sixth risk", "The seventh risk"],
-            [.. drawn.Select(part => string.Join(' ', part.Risk.Split(' ').Take(3)))]);
-        Assert.Contains(". A related risk", drawn[2].Risk, StringComparison.Ordinal);
-        Assert.All(drawn, part => Assert.Null(part.Confirmation));
+            ["The first risk", "The second risk", "The third risk", "The fourth risk"],
+            [.. table.Select(row => string.Join(' ', row.Risk.Split(' ').Take(3)))]);
+        Assert.All(table, row => Assert.StartsWith("That risk would be confirmed by", row.Confirmation, StringComparison.Ordinal));
+        Assert.DoesNotContain("class=\"risks\"", written.Value, StringComparison.Ordinal);
 
         var marks = new MarkRenderer();
+
+        // Every part stating its confirmation apart makes a table however the parts are cut.
+        const string EveryOneConfirmed =
+            "The first risk is that supply is short [D1]. That risk would be confirmed by a fall in units [D1]. " +
+            "The second risk is that the price is high [D2]. That risk would be confirmed by a lower multiple [D2].";
+
+        Assert.Equal(
+            [
+                ("The first risk is that supply is short [D1].", "That risk would be confirmed by a fall in units [D1]."),
+                ("The second risk is that the price is high [D2].", "That risk would be confirmed by a lower multiple [D2]."),
+            ],
+            RiskRows(marks.WrittenSection("KEYS", RisksCell(EveryOneConfirmed), [])));
 
         // Prose the writer broke into paragraphs is a part to a paragraph, unchanged and in the
         // order it was written.
@@ -341,15 +397,16 @@ public partial class ReadSurface
         Assert.Equal("That risk would be confirmed by a fall in units [D1].", together[0].Confirmation);
         Assert.Null(together[2].Confirmation);
 
-        // A section that says nowhere a risk starts is drawn as it was written, because a part
-        // boundary this page guessed at would put one risk's words under another's.
-        const string OneRun = "The company faces the risk that supply is short, which would be confirmed by a fall in units [D1].";
+        // A section that says nowhere a risk starts is drawn a claim to a row rather than a risk to a
+        // row, because a part boundary this page guessed at would put one risk's words under another's.
+        const string OneRun = "The company faces the risk that supply is short [D1]. That would show as a fall in units [D1].";
 
         var run = marks.WrittenSection("KEYS", RisksCell(OneRun), []);
 
         Assert.Empty(RisksDrawn(run));
+        Assert.Empty(RiskRows(run));
         Assert.DoesNotContain("class=\"risks\"", run, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"prose\">{OneRun}</p>", run, StringComparison.Ordinal);
+        Assert.Equal(["The company faces the risk that supply is short [D1].", "That would show as a fall in units [D1]."], ClaimRowsDrawn(run));
 
         // And a section of another name written in the same shape is drawn as prose: the parts
         // are this section's and not every section's.
@@ -394,7 +451,7 @@ public partial class ReadSurface
             [.. RisksDrawn(marks.WrittenSection("KEYS", RisksCell(OneNumbered), [])).Select(RiskWhole)]);
 
         // Numbered from the third: two risks stand before it and the prose says nowhere where the
-        // first ends, so the section is drawn as it was written.
+        // first ends, so the section is drawn a claim to a row rather than a risk to a row.
         const string FromTheThird =
             "Supply is short [D1]. The price is high [D2]. A third risk is concentration [D1]. A fourth risk is the cycle [D2].";
 
@@ -402,7 +459,9 @@ public partial class ReadSurface
 
         Assert.Empty(RisksDrawn(third));
         Assert.DoesNotContain("class=\"risks\"", third, StringComparison.Ordinal);
-        Assert.Contains($"<p class=\"prose\">{FromTheThird}</p>", third, StringComparison.Ordinal);
+        Assert.Equal(
+            ["Supply is short [D1].", "The price is high [D2].", "A third risk is concentration [D1].", "A fourth risk is the cycle [D2]."],
+            ClaimRowsDrawn(third));
     }
 
     [Fact]

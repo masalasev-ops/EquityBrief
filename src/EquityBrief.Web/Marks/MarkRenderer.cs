@@ -84,13 +84,17 @@ public sealed record SummaryBand(
 // `Kind` is what the reader is being told at that price, and the mark draws each
 // kind differently: a purchase below the marker, a sale above it, a stop as a
 // horizontal rule and the invalidation as the lowest rule of all. `Detail` is
-// what the row says in words, because hue is never the only channel.
+// what the row says in words, because hue is never the only channel. A tranche
+// also carries its condition in words and its stop apart, which is what the
+// tranche table draws a column each.
 public sealed record PlanRow(
     decimal LowEdge,
     decimal HighEdge,
     string Kind,
     string Detail,
-    bool Traded);
+    bool Traded,
+    string? BuyOn = null,
+    decimal? Stop = null);
 
 // The kinds a plan row takes, named once so the mark and the tables agree.
 public static class PlanKind
@@ -403,19 +407,6 @@ public sealed record NoYear(int Nights, DateOnly? Last, DateOnly? Next);
 
 // One reason that fired for a name, with the values that made it true.
 public sealed record FiredReason(string Name, IReadOnlyDictionary<string, string> Values);
-
-// One horizon's result for one evening a name was on the list, as the store holds it: the
-// outcome, null while the horizon has not matured, the move from that night's close, and the
-// universe base rate the row carries.
-public sealed record HorizonResult(string? Outcome, double? ReturnPct, double? BaseRate);
-
-// One evening a name was on the list: the rule that listed that evening, the reasons that fired, the
-// stored close that night, and what the two session horizons came to.
-public sealed record ListingEvening(DateOnly Evening, string Rule, IReadOnlyList<string> Reasons, decimal? Close, HorizonResult Five, HorizonResult TwentyOne);
-
-// A name's listing history: whether it was on the list on each stored evening of the window,
-// oldest first, and the evenings it was, newest first.
-public sealed record ListingHistoryCard(IReadOnlyList<bool> Strip, IReadOnlyList<ListingEvening> Evenings);
 
 // One reason and how many of tonight's names it fired on.
 public sealed record ReasonTotal(string Reason, int Names);
@@ -908,12 +899,14 @@ public sealed class MarkRenderer : IComponent
 
             // A stop and the invalidation are rules rather than zones, because
             // each is one price a close is measured against. A tranche and an
-            // exit are the band they sit on, which has width.
+            // exit are the band they sit on, which has width. A rule runs from its
+            // label across the column and stops there, so it never runs under the
+            // words set to the right of the column.
             if (row.Kind is PlanKind.Stop or PlanKind.Invalidation)
             {
                 var heavy = row.Kind == PlanKind.Invalidation;
 
-                svg.Append(Invariant, $"<line class=\"{row.Kind}-rule\" x1=\"{PlanAxis - 10}\" y1=\"{Number(bottom)}\" x2=\"{PlanWidth - 2}\" y2=\"{Number(bottom)}\" ");
+                svg.Append(Invariant, $"<line class=\"{row.Kind}-rule\" x1=\"{PlanAxis - 10}\" y1=\"{Number(bottom)}\" x2=\"{PlanRuleEnd}\" y2=\"{Number(bottom)}\" ");
                 svg.Append(Invariant, $"stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"{(heavy ? "2.5" : "1")}\"{(heavy ? string.Empty : " stroke-dasharray=\"4 3\"")}/>");
             }
             else if (row.Kind == PlanKind.Tranche)
@@ -967,9 +960,10 @@ public sealed class MarkRenderer : IComponent
         }
 
         // The price marker last, so it is drawn over the zones rather than under
-        // them: it is the one thing the whole figure is read against.
+        // them: it is the one thing the whole figure is read against. Its line ends
+        // where the rules do, clear of the words beside the column.
         svg.Append(Invariant, $"<g class=\"price-marker\" data-close=\"{close}\">");
-        svg.Append(Invariant, $"<line class=\"m-nowline\" x1=\"0\" y1=\"{Number(middle)}\" x2=\"{PlanWidth - 2}\" y2=\"{Number(middle)}\"/>");
+        svg.Append(Invariant, $"<line class=\"m-nowline\" x1=\"0\" y1=\"{Number(middle)}\" x2=\"{PlanRuleEnd}\" y2=\"{Number(middle)}\"/>");
         svg.Append(Invariant, $"<rect class=\"m-nowtag\" x=\"0\" y=\"{Number(middle - 11)}\" width=\"{PlanAxis - 24}\" height=\"22\" rx=\"2\"/>");
         svg.Append(Invariant, $"<text class=\"m-nowtag-t\" x=\"7\" y=\"{Number(middle + 4)}\">Price now {Price(close)}</text>");
         svg.Append("</g>");
@@ -984,6 +978,10 @@ public sealed class MarkRenderer : IComponent
     const int PlanHeight = 440;
     const int PlanEdge = 40;
     const int PlanAxis = 150;
+
+    // Where a rule across the column ends: past the zones drawn on it and short of the
+    // words set to its right, which start at the axis and 28.
+    const int PlanRuleEnd = PlanAxis + 24;
 
     // A zone's prices as its label says them, and a zone of one price as that price.
     static string Zone(PlanRow row) =>
@@ -1034,28 +1032,43 @@ public sealed class MarkRenderer : IComponent
     }
 
     // The tranche table and the exit table, which are what the plan column's
-    // figure is read beside. Every cell is a stored value, drawn at the places it
-    // is read at with the stored edges on its row.
+    // figure is read beside, each under its own heading. A tranche's zone, what it
+    // is bought on and its stop are a column each, and the stop the invalidation
+    // sits at says so. Every cell is a stored value, drawn at the places it is read
+    // at with the stored edges on its row.
     public string PlanTables(string ticker, IReadOnlyList<PlanRow> rows)
     {
         var tranches = rows.Where(row => row.Kind == PlanKind.Tranche).ToArray();
         var exits = rows.Where(row => row.Kind == PlanKind.Exit).ToArray();
+        var invalidation = rows.FirstOrDefault(row => row.Kind == PlanKind.Invalidation)?.LowEdge;
 
         var html = new StringBuilder();
 
-        html.Append("<div class=\"tbl-wrap\">");
+        html.Append("<div class=\"sub plan-sub\">Entries</div><div class=\"tbl-wrap\">");
         html.Append(Invariant, $"<table class=\"tranche-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{tranches.Length}\">");
-        html.Append("<tr><th>Zone</th><th>Condition and stop</th></tr>");
+        html.Append("<tr><th>Zone</th><th>Buy on</th><th>Stop on</th></tr>");
 
         foreach (var row in tranches)
         {
             html.Append(Invariant, $"<tr data-low-edge=\"{row.LowEdge}\" data-high-edge=\"{row.HighEdge}\"><td class=\"num\">{Zone(row)}</td>");
-            html.Append(Invariant, $"<td>{Escaped(row.Detail)}</td></tr>");
+
+            if (row.BuyOn is { } buyOn)
+            {
+                var stop = row.Stop is { } at
+                    ? Formatted($"a daily close below {Price(at)}") + (at == invalidation ? ", where the whole position is wrong" : string.Empty)
+                    : "no stop beneath";
+
+                html.Append(Invariant, $"<td>{Escaped(buyOn)}</td><td>{Escaped(stop)}</td></tr>");
+            }
+            else
+            {
+                html.Append(Invariant, $"<td colspan=\"2\">{Escaped(row.Detail)}</td></tr>");
+            }
         }
 
         html.Append("</table></div>");
 
-        html.Append("<div class=\"tbl-wrap\">");
+        html.Append("<div class=\"sub plan-sub\">Exits</div><div class=\"tbl-wrap\">");
         html.Append(Invariant, $"<table class=\"exit-table\" data-ticker=\"{Escaped(ticker)}\" data-rows=\"{exits.Length}\">");
         html.Append("<tr><th>Zone</th><th>Action</th></tr>");
 
@@ -2208,71 +2221,6 @@ public sealed class MarkRenderer : IComponent
         return walk.ToString();
     }
 
-    // A name's listing history, section 15.9's region: the strip over the window, then one row
-    // per evening the name was on the list with the reasons that fired, the close that night and
-    // what followed five and twenty-one sessions on. Each result stands beside the universe base
-    // rate its row carries, and an evening too recent to have matured says so. No rate is formed
-    // for the name, because a record is a reason's and is measured across every name it fired on.
-    // see: Every forward-return figure is shown against the universe base rate
-    // see: A name's listing history states what followed each evening it was listed and forms no rate for the name
-    public string ListingHistory(string ticker, ListingHistoryCard history)
-    {
-        var drawn = new StringBuilder();
-
-        drawn.Append(Invariant, $"<section class=\"listing-history\" data-ticker=\"{Escaped(ticker)}\" data-sessions=\"{history.Strip.Count}\" data-evenings=\"{history.Evenings.Count}\">");
-        drawn.Append(Invariant, $"<div class=\"sub\" style=\"margin-top:0\">The last {history.Strip.Count} stored sessions</div>");
-        drawn.Append(ListingStrip(ticker, history.Strip));
-
-        if (history.Evenings.Count == 0)
-        {
-            drawn.Append(Invariant, $"<p class=\"listing-none\">{Escaped(ticker)} was not on the list on any of these sessions.</p></section>");
-
-            return drawn.ToString();
-        }
-
-        drawn.Append("<div class=\"tbl-wrap\"><table class=\"listing-evenings\">");
-        drawn.Append("<tr><th>Evening</th><th>Why it was listed</th><th class=\"num\">Close that night</th><th>5 sessions on</th><th>21 sessions on</th></tr>");
-
-        foreach (var evening in history.Evenings)
-        {
-            drawn.Append(Invariant, $"<tr data-evening=\"{evening.Evening:yyyy-MM-dd}\" data-rule=\"{Escaped(evening.Rule)}\" data-close=\"{(evening.Close is { } stored ? stored.ToString(CultureInfo.InvariantCulture) : "none")}\"{Horizon("5", evening.Five)}{Horizon("21", evening.TwentyOne)}>");
-            // The evening is a link to the page for it, which is the one place a reader
-            // reaches an earlier night's page from.
-            // see: A name's page for an earlier night is what the store held that night
-            drawn.Append(Invariant, $"<td><a href=\"#/name/{Escaped(ticker)}/{evening.Evening:yyyy-MM-dd}\">{evening.Evening:yyyy-MM-dd}</a></td>");
-            // Each evening names the rule that listed it; on an evening the swing filter listed, the reasons
-            // stand after it as context.
-            // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
-            drawn.Append(evening.Rule == ListRules.Filter
-                ? "<td>the swing filter passed it" + (evening.Reasons.Count == 0 ? string.Empty : "; as context, " + Escaped(string.Join(", ", evening.Reasons))) + "</td>"
-                : "<td>" + Escaped(string.Join(", ", evening.Reasons)) + "</td>");
-            drawn.Append(Invariant, $"<td class=\"num\">{(evening.Close is { } close ? Figures.Price(close) : "not stored")}</td>");
-            drawn.Append(Invariant, $"<td>{Result(evening.Five)}</td><td>{Result(evening.TwentyOne)}</td></tr>");
-        }
-
-        drawn.Append("</table></div></section>");
-
-        return drawn.ToString();
-
-        static string Horizon(string window, HorizonResult result) =>
-            FormattableString.Invariant(
-                $" data-outcome-{window}=\"{result.Outcome ?? "none"}\" data-return-{window}=\"{(result.ReturnPct is { } move ? move.ToString("R", CultureInfo.InvariantCulture) : "none")}\" data-base-rate-{window}=\"{(result.BaseRate is { } rate ? rate.ToString("R", CultureInfo.InvariantCulture) : "none")}\"");
-
-        static string Result(HorizonResult result)
-        {
-            if (result.Outcome is null)
-            {
-                return "not yet matured";
-            }
-
-            var move = result.ReturnPct is { } change ? change.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + "%, " : string.Empty;
-            var rate = result.BaseRate is { } shared
-                ? "base rate " + shared.ToString("0.0", CultureInfo.InvariantCulture) + "%"
-                : "base rate not yet measured";
-
-            return Escaped($"{move}a {result.Outcome}; {rate}");
-        }
-    }
 
     // The listing strip, section 15.5's mark: the evenings a name was on the
     // list over a window.
@@ -3204,11 +3152,34 @@ public sealed class MarkRenderer : IComponent
 
         if (TwoCases(section.Section, paragraphs) is { } cases)
         {
-            foreach (var (label, prose) in cases)
+            foreach (var (label, rows) in cases)
             {
-                drawn.Append(Invariant, $"<div class=\"case\" data-case=\"{Escaped(label)}\"><h4>{Escaped(label)}</h4>");
-                drawn.Append("<p class=\"prose\">").Append(Escaped(prose)).Append("</p></div>");
+                if (label is not null)
+                {
+                    drawn.Append(Invariant, $"<div class=\"case\" data-case=\"{Escaped(label)}\"><h4>{Escaped(label)}</h4>");
+                }
+
+                ClaimRows(drawn, rows);
+
+                if (label is not null)
+                {
+                    drawn.Append("</div>");
+                }
             }
+        }
+        else if (RiskParts(section.Section, paragraphs) is { } parts && parts.Select(RiskAndWhatWouldConfirmIt).ToArray() is var split && split.All(part => part.Confirmation is not null))
+        {
+            // Every risk states what would confirm it apart, so each is a row of two columns: the
+            // risk, and what would confirm it.
+            drawn.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"risks-table\" data-parts=\"{split.Length}\"><tr><th>Risk</th><th>What would confirm it</th></tr>");
+
+            foreach (var (risk, confirmation) in split)
+            {
+                drawn.Append("<tr class=\"risk\"><td><p class=\"prose\">").Append(Escaped(risk)).Append("</p></td>");
+                drawn.Append("<td><p class=\"prose confirms\">").Append(Escaped(confirmation!)).Append("</p></td></tr>");
+            }
+
+            drawn.Append("</table></div>");
         }
         else if (RiskParts(section.Section, paragraphs) is { } risks)
         {
@@ -3229,6 +3200,10 @@ public sealed class MarkRenderer : IComponent
             }
 
             drawn.Append("</ul>");
+        }
+        else if (string.Equals(section.Section, TheRisks, StringComparison.Ordinal) && paragraphs.Length > 0)
+        {
+            ClaimRows(drawn, Claims(paragraphs));
         }
         else
         {
@@ -3262,29 +3237,58 @@ public sealed class MarkRenderer : IComponent
         return drawn.ToString();
     }
 
-    // The section holding the case for a name and the case against it, which the writer is
-    // asked for as two paragraphs and which every recorded answer over the fixture and every
-    // stored section on the operator's machine has been written as.
+    // The section holding the case for a name and the case against it.
     public const string TheTwoCases = "The two cases";
 
     const string CaseFor = "The bull case";
     const string CaseAgainst = "The bear case";
 
-    // The two cases as two labelled halves, where the prose is the shape the writer was asked
-    // for, and nothing where it is not. A reader looking for the case against a name should not
-    // have to find where one paragraph stops being the case for it.
+    // The two cases a claim to a row, under the case each belongs to. A row is a sentence as the
+    // claim checker reads it, which is the unit the checker accepted and ends on the marker of the
+    // document it rests on, and each paragraph is read on its own so a paragraph's end is always
+    // a row's. A reader looking for the case against a name should not have to find where a run
+    // of prose stops being the case for it.
     //
-    // Read off the prose rather than assumed, and the section is drawn as it was written
-    // wherever it is not recognised: what a model wrote and the checker accepted is the
-    // section, and a shape this file hoped for is no reason to draw any of it differently.
-    // see: A written section is broken into parts only where its own prose says where each part ends
-    static IReadOnlyList<(string Label, string Prose)>? TwoCases(string section, IReadOnlyList<string> paragraphs) =>
-        string.Equals(section, TheTwoCases, StringComparison.Ordinal)
-            && paragraphs.Count == 2
-            && paragraphs[0].StartsWith(CaseFor, StringComparison.Ordinal)
-            && paragraphs[1].StartsWith(CaseAgainst, StringComparison.Ordinal)
-                ? [("The case for", paragraphs[0]), ("The case against", paragraphs[1])]
-                : null;
+    // The labels are read off the prose: where it opens on the bull case, the case against starts
+    // at the first sentence opening on the bear case, whichever paragraph that sentence is in, and
+    // runs to the end, so what the writer set after it is read in the case it was set in. Where
+    // the prose says neither, the rows are drawn with no label, because a boundary this file
+    // guessed at would put one case's words under the other's.
+    // see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws
+    static IReadOnlyList<(string? Label, IReadOnlyList<string> Rows)>? TwoCases(string section, IReadOnlyList<string> paragraphs)
+    {
+        if (!string.Equals(section, TheTwoCases, StringComparison.Ordinal) || paragraphs.Count == 0)
+        {
+            return null;
+        }
+
+        var rows = Claims(paragraphs);
+        var against = Array.FindIndex(rows, row => row.StartsWith(CaseAgainst, StringComparison.Ordinal));
+
+        return rows[0].StartsWith(CaseFor, StringComparison.Ordinal) && against > 0
+            ? [("The case for", rows[..against]), ("The case against", rows[against..])]
+            : [(null, rows)];
+    }
+
+    // A section's claims in the order they were written: each sentence as the claim checker reads
+    // it, which ends on the marker of the document it rests on, each paragraph read on its own so a
+    // paragraph's end is always a claim's. Cut and never edited, so joined back up they are the
+    // section as it was written.
+    static string[] Claims(IReadOnlyList<string> paragraphs) =>
+        [.. paragraphs.SelectMany(paragraph => EquityBrief.Core.Research.ClaimRules.Sentences(paragraph)).Select(sentence => sentence.Text)];
+
+    // Claims drawn a claim to a row, the rows ruled apart as a table's are.
+    static void ClaimRows(StringBuilder drawn, IReadOnlyList<string> rows)
+    {
+        drawn.Append(Invariant, $"<ul class=\"claim-rows\" data-rows=\"{rows.Count}\">");
+
+        foreach (var row in rows)
+        {
+            drawn.Append("<li><p class=\"prose\">").Append(Escaped(row)).Append("</p></li>");
+        }
+
+        drawn.Append("</ul>");
+    }
 
     // The section holding the risks, which the writer is asked for as a risk and then what
     // would confirm that risk, one risk after another.
@@ -3303,8 +3307,9 @@ public sealed class MarkRenderer : IComponent
     // The risks as one part each, where the prose says where the parts are, and nothing where
     // it does not. Two shapes are read: a paragraph per risk, which is what a writer that broke
     // them up gives, and a sentence opening on an ordinal risk, which is what one that ran them
-    // together gives. Where neither is there the section is drawn as it was written, because a
-    // boundary this file guessed at would put one risk's words under another's.
+    // together gives. Where neither is there the section is drawn a claim to a row rather than a
+    // risk to a row, because a boundary this file guessed at would put one risk's words under
+    // another's.
     //
     // The parts are the prose cut and never edited, so joined back up they are the section as it
     // was written, which is the property the surface reads them against. What stands before the
@@ -3313,11 +3318,11 @@ public sealed class MarkRenderer : IComponent
     // the second, what stands before it is the first risk, a part of its own, since reading it as
     // an introduction would set the second risk beneath the first one's confirmation. Where it
     // numbers any later one, the risks before it are stated without saying where they part, so
-    // the section is drawn as it was written.
+    // the section is drawn a claim to a row.
     //
     // The order is the order they were written in. Ordering them by how severe each one is would
     // rank them on a judgement no model stated and no code computed.
-    // see: A written section is broken into parts only where its own prose says where each part ends
+    // see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws
     // see: Code owns every number
     static IReadOnlyList<string>? RiskParts(string section, IReadOnlyList<string> paragraphs)
     {

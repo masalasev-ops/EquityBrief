@@ -8,7 +8,7 @@ namespace EquityBrief.Tests.Reading;
 // read-surface, the 5.8 correction: a name's page for an earlier night, section 15.9's second
 // route. Every read the page makes is bounded by that night, the evening drawn is the newest the
 // listings hold on or before the date asked for, and the page says which evening it drew.
-// see: A name's page for an earlier night is what the store held that night
+// see: A name's page for an earlier night draws what the store held that night and nothing it learned after
 public partial class ReadSurface
 {
     // A session the store holds a bar for and no listing on, so an evening can be written on it
@@ -87,9 +87,10 @@ public partial class ReadSurface
         Assert.DoesNotContain("research-cost", page, StringComparison.Ordinal);
         Assert.Contains("research-control", tonight, StringComparison.Ordinal);
 
-        // And the evening is reached from the listing history on tonight's page, which is
-        // where a reader finds an earlier night at all.
-        Assert.Contains($"<td><a href=\"#/name/{name}/{earlier}\">{earlier}</a></td>", tonight, StringComparison.Ordinal);
+        // And tonight's page names no earlier evening, the listing history that linked one being
+        // off the page, so the evening is reached by its own address, as it is here.
+        // see: A name's page states no listing history, since what an earlier evening's list said is not what the page is read for
+        Assert.DoesNotContain($"href=\"#/name/{name}/{earlier}\"", tonight, StringComparison.Ordinal);
 
         // The walk stays in the evening, so a pass through that evening's list is one pass.
         // The neighbour is what makes this an assertion rather than an empty loop, and the

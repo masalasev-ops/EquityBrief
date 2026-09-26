@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Research;
@@ -59,7 +60,9 @@ public static class NameScreen
                 stop is { } below
                     ? $"buy on {Words(condition)}, stop on a daily close below {Figures.Price(below)}"
                     : $"buy on {Words(condition)}, no stop beneath",
-                Traded: true));
+                Traded: true,
+                BuyOn: Words(condition),
+                Stop: stop));
 
             // The stop is its own row, because it is a price a close is measured
             // against rather than a zone anything is bought in.
@@ -390,7 +393,9 @@ public static class NameScreen
                 $"{filings.Count} filing(s), fewer than the {QuartersShown} quarters this section states.</p>");
         }
 
-        html.Append("<div class=\"tbl-wrap\">");
+        html.Append(Snapshot(newest.RootElement, currency));
+
+        html.Append(Invariant($"<div class=\"sub\">The last {shown} quarters</div><div class=\"tbl-wrap\">"));
         html.Append("<table class=\"numbers-quarters\"><tr><th>Quarter</th><th>Revenue</th>");
         html.Append("<th>Gross margin</th><th>Net margin</th><th>Net income</th><th>Filed</th></tr>");
 
@@ -414,6 +419,10 @@ public static class NameScreen
 
         html.Append(Guidance(newest.RootElement, Attribution(filings[0].Source)));
 
+        // Every other figure the filing carries, closed beneath the snapshot, which states the
+        // ones a reader wants first.
+        html.Append("<details class=\"numbers-detail\"><summary>Every figure from the filing</summary>");
+
         if (newest.RootElement.TryGetProperty("estimated", out var estimated)
             && estimated.ValueKind == JsonValueKind.Object)
         {
@@ -430,15 +439,129 @@ public static class NameScreen
                 "next quarter, so no expected figure is shown.</p>");
         }
 
-        html.Append(Sheet(newest.RootElement, filings[0].FilingDate, currency));
-        html.Append(Valuation(newest.RootElement));
-        html.Append(Dividend(filings[0].Ticker, newest.RootElement, Attribution(filings[0].Source)));
-        html.Append(Segments(newest.RootElement, Attribution(filings[0].Source), currency));
+        html.Append("<div class=\"sub\">Balance sheet</div>").Append(Sheet(newest.RootElement, filings[0].FilingDate, currency));
+        html.Append("<div class=\"sub\">Valuation</div>").Append(Valuation(newest.RootElement));
 
-        html.Append("</section>");
+        var dividend = Dividend(filings[0].Ticker, newest.RootElement, Attribution(filings[0].Source));
+
+        if (dividend.Length > 0)
+        {
+            html.Append("<div class=\"sub\">Dividend</div>").Append(dividend);
+        }
+
+        html.Append("<div class=\"sub\">Segments</div>").Append(Segments(newest.RootElement, Attribution(filings[0].Source), currency));
+
+        html.Append(FoldHide).Append("</details></section>");
 
         return html.ToString();
     }
+
+    // The figures a reader wants first, a figure to a row in two columns: the newest quarter's
+    // results with their change on a year earlier and the estimate they were measured against,
+    // the next report, the margins, what the market pays, the dividend and the balance sheet's
+    // cash and debt. Every value is the newest filing's as stored, the change on a year earlier
+    // being the fetcher's, and each row's element carries the stored value whole. The analysts'
+    // target price is not among them, for the reason the facts file does not carry it: set
+    // beside the company's own figures, an analyst's estimate reads as one of them.
+    // see: A screen reads and renders, and computes nothing
+    // see: A figure is drawn at the places it is read at, and its element carries the stored value whole
+    // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+    static string Snapshot(JsonElement payload, string currency)
+    {
+        JsonElement Part(string name) =>
+            payload.TryGetProperty(name, out var part) && part.ValueKind == JsonValueKind.Object ? part : default;
+
+        var quarter = Part("quarter");
+        var growth = Part("growth");
+        var earnings = Part("earnings");
+        var bases = Part("epsBases");
+        var valuation = Part("valuation");
+        var sheet = Part("balanceSheet");
+        var dividend = Part("dividend");
+        var estimated = Part("estimated");
+        var ended = Text(payload, "periodEnd");
+
+        string Money(decimal value) => Figures.Money(value, currency);
+
+        string? OnAYearEarlier(string name) =>
+            Text(growth, name) is { } change ? Drawn(change, Signed) + " on a year earlier" : null;
+
+        var html = new System.Text.StringBuilder();
+
+        void Row(string label, string key, string? stored, Func<decimal, string> read, string? beneath = null)
+        {
+            html.Append(Invariant($"<div><dt>{Escaped(label)}</dt>"));
+            html.Append(stored is null
+                ? Invariant($"<dd class=\"degraded\" data-{key}=\"absent\">not filed</dd></div>")
+                : Invariant($"<dd data-{key}=\"{stored}\"><b>{Drawn(stored, read)}</b>")
+                    + (beneath is null ? string.Empty : "<small>" + Escaped(beneath) + "</small>")
+                    + "</dd></div>");
+        }
+
+        html.Append(Invariant($"<dl class=\"snapshot\" data-snapshot-of=\"{ended ?? "absent"}\">"));
+
+        Row(ended is null ? "Revenue, newest quarter" : "Revenue, quarter to " + ended, "revenue", Text(quarter, "revenue"), Money, OnAYearEarlier("revenue"));
+        Row("Net income, that quarter", "netIncome", Text(quarter, "netIncome"), Money, OnAYearEarlier("netIncome"));
+        Row(
+            "Earnings per share, that quarter",
+            "epsActual",
+            Text(earnings, "epsActual"),
+            Figures.PerShare,
+            Text(earnings, "epsEstimate") is { } expected ? "against an estimate of " + Drawn(expected, Figures.PerShare) : null);
+        Row(
+            "Next report",
+            "reportDate",
+            Text(estimated, "reportDate"),
+            _ => Text(estimated, "reportDate")!,
+            Text(estimated, "epsEstimate") is { } consensus
+                ? "consensus " + Drawn(consensus, Figures.PerShare) + " a share" + (Text(estimated, "periodEnd") is { } next ? ", for the quarter to " + next : string.Empty)
+                : null);
+        Row("Gross margin, that quarter", "grossMargin", Text(quarter, "grossMargin"), Figures.Percent);
+        Row("Net margin, that quarter", "netMargin", Text(quarter, "netMargin"), Figures.Percent);
+        Row("Market value", "marketCapitalisation", Text(payload, "marketCapitalisation"), Money);
+
+        // A company paying none files a rate of zero, which is said as none rather than drawn as a
+        // dividend of nothing.
+        if (Text(dividend, "forwardAnnualRate") is { } rate && decimal.Parse(rate, NumberStyles.Float, CultureInfo.InvariantCulture) == 0)
+        {
+            html.Append(Invariant($"<div><dt>Dividend, a share a year</dt><dd data-forwardAnnualRate=\"{rate}\"><b>none paid</b></dd></div>"));
+        }
+        else
+        {
+            Row(
+                "Dividend, a share a year",
+                "forwardAnnualRate",
+                Text(dividend, "forwardAnnualRate"),
+                Figures.PerShare,
+                Text(dividend, "forwardYield") is { } yield ? "a yield of " + Drawn(yield, Figures.Percent) + ", as the provider states it" : null);
+        }
+
+        Row(
+            "Price to earnings, trailing",
+            "trailingPe",
+            Text(valuation, "trailingPe"),
+            Figures.Multiple,
+            Text(bases, "trailing") is { } trailing ? "trailing earnings of " + Drawn(trailing, Figures.PerShare) + " a share" : null);
+        Row(
+            "Price to earnings, forward",
+            "forwardPe",
+            Text(valuation, "forwardPe"),
+            Figures.Multiple,
+            Text(bases, "nextYear") is { } nextYear ? "next year's estimate " + Drawn(nextYear, Figures.PerShare) + " a share" : null);
+        Row("Cash", "cash", Text(sheet, "cash"), Money);
+        Row("Net debt", "netDebt", Text(sheet, "netDebt"), Money);
+
+        html.Append("</dl>");
+
+        return html.ToString();
+    }
+
+    // The control at the foot of a long fold, which closes it and returns the reader to its
+    // heading, since the heading that would close it is out of sight by the time it is read.
+    const string FoldHide = "<button type=\"button\" class=\"fold-hide\">Hide</button>";
+
+    // A change as a signed percentage: 0.261794 is +26.2%, and a fall keeps its own sign.
+    static string Signed(decimal fraction) => (fraction > 0 ? "+" : string.Empty) + Figures.Percent(fraction);
 
     // Which provider each part of the row came from, read off the stored source
     // column. A screen that guessed would be a screen deciding what an absence
@@ -505,7 +628,9 @@ public static class NameScreen
         }
 
         html.Append("</tr></table></div>");
-        html.Append(Invariant($"<p class=\"dividend-source\">From {Escaped(from)}, as of the newest filing's fetch.</p></div>"));
+        // The provider stays on the element and out of the words: a reader is told when the figures
+        // were fetched, and whose feed they came from is the store's record rather than the report's.
+        html.Append("<p class=\"dividend-source\">As of the newest filing's fetch.</p></div>");
 
         return html.ToString();
     }
@@ -540,14 +665,52 @@ public static class NameScreen
         var heading = Text(guidance, "heading") ?? string.Empty;
         var passage = Text(guidance, "passage") ?? string.Empty;
 
-        return "<blockquote class=\"guidance\" data-guidance=\"located\""
+        return "<details class=\"guidance-fold\"><summary>What management said with its results, in its own words</summary>"
+            + "<blockquote class=\"guidance\" data-guidance=\"located\""
             + FormattableString.Invariant($" data-exhibit=\"{document}\" data-filed=\"{filedOn}\"")
             + FormattableString.Invariant($" data-heading=\"{heading}\">")
             + "<p class=\"guidance-heading\">" + heading + ", as management filed it on " + filedOn + "</p>"
-            + "<p class=\"guidance-passage\">" + Escaped(passage) + "</p>"
+            + Passage(passage)
             + "<p class=\"guidance-source\">From " + document + ", the exhibit to that day's results "
-            + "announcement. Management's own words, not a figure this report computed.</p></blockquote>";
+            + "announcement. Management's own words, not a figure this report computed.</p></blockquote>"
+            + FoldHide + "</details>";
     }
+
+    // Management's passage as a list where the release marks its points with bullets, a point to
+    // an item and a point it marks as beneath another set in, and as one paragraph where it marks
+    // none. The items are the passage cut at its own marks and never edited, and what stands before
+    // the first mark opens the list as a paragraph of its own.
+    static string Passage(string passage)
+    {
+        var points = BulletMarks.Matches(passage);
+
+        if (points.Count == 0)
+        {
+            return "<p class=\"guidance-passage\">" + Escaped(passage) + "</p>";
+        }
+
+        var html = new System.Text.StringBuilder();
+        var before = passage[..points[0].Index].Trim();
+
+        if (before.Length > 0)
+        {
+            html.Append("<p class=\"guidance-passage\">").Append(Escaped(before)).Append("</p>");
+        }
+
+        html.Append("<ul class=\"guidance-passage\">");
+
+        foreach (Match point in points)
+        {
+            html.Append(point.Groups["mark"].Value == "◦" ? "<li class=\"beneath\">" : "<li>")
+                .Append(Escaped(point.Groups["point"].Value.Trim()))
+                .Append("</li>");
+        }
+
+        return html.Append("</ul>").ToString();
+    }
+
+    // A bullet a release marks a point with, and a hollow one it marks a point beneath another with.
+    static readonly Regex BulletMarks = new("(?<mark>[•◦])(?<point>[^•◦]+)", RegexOptions.CultureInvariant);
 
     // The segment table, as the archive rendered it, for the newest period the
     // table states.
@@ -585,29 +748,46 @@ public static class NameScreen
             .Append(FormattableString.Invariant($" data-report=\"{report}\" data-months=\"{shortest}\""))
             .Append(FormattableString.Invariant($" data-period-end=\"{ended}\">"));
 
-        html.Append("<tr><th>Segment</th><th>Line</th><th>Figure</th></tr>");
+        html.Append("<tr><th>Line</th><th>Figure</th></tr>");
 
         var rows = 0;
 
+        // A group's label once, as a row heading the lines beneath it, rather than on every line.
+        // Grouped by the table's own groups rather than by label, since two of them can share one.
+        // A line the table files with a colon and no figure heads the lines after it in the filing,
+        // so it is drawn as the heading it is rather than as a figure not filed.
         foreach (var (label, figures) in Grouped(segments))
         {
-            foreach (var figure in figures)
+            var quarter = figures
+                .Where(figure => figure.GetProperty("months").GetInt32() == shortest
+                    && (figure.GetProperty("ended").GetString() ?? string.Empty) == ended)
+                .ToArray();
+
+            if (quarter.Length == 0)
             {
-                if (figure.GetProperty("months").GetInt32() != shortest
-                    || (figure.GetProperty("ended").GetString() ?? string.Empty) != ended)
-                {
-                    continue;
-                }
+                continue;
+            }
 
+            html.Append(FormattableString.Invariant($"<tr class=\"segment-group\" data-segment=\"{label}\"><th colspan=\"2\">{label}</th></tr>"));
+
+            foreach (var figure in quarter)
+            {
                 var value = figure.GetProperty("value");
+                var line = figure.GetProperty("lineItem").GetString() ?? string.Empty;
 
-                html.Append(FormattableString.Invariant($"<tr data-segment=\"{label}\">"))
-                    .Append("<td>").Append(label).Append("</td>")
-                    .Append("<td>").Append(figure.GetProperty("lineItem").GetString()).Append("</td>")
-                    .Append(value.ValueKind == JsonValueKind.String
-                        ? "<td class=\"num\" data-segment-figure=\"" + value.GetString() + "\">" + SegmentFigure(value.GetString()!, figure, currency) + "</td>"
-                        : "<td class=\"degraded\" data-segment-figure=\"absent\">not filed</td>")
-                    .Append("</tr>");
+                if (value.ValueKind != JsonValueKind.String && line.EndsWith(':'))
+                {
+                    html.Append(FormattableString.Invariant($"<tr class=\"segment-heading\" data-segment=\"{label}\"><td colspan=\"2\">{line}</td></tr>"));
+                }
+                else
+                {
+                    html.Append(FormattableString.Invariant($"<tr data-segment=\"{label}\">"))
+                        .Append("<td>").Append(line).Append("</td>")
+                        .Append(value.ValueKind == JsonValueKind.String
+                            ? "<td class=\"num\" data-segment-figure=\"" + value.GetString() + "\">" + SegmentFigure(value.GetString()!, figure, currency) + "</td>"
+                            : "<td class=\"degraded\" data-segment-figure=\"absent\">not filed</td>")
+                        .Append("</tr>");
+                }
 
                 rows++;
             }
@@ -812,7 +992,7 @@ public static class NameScreen
 
         if (prints.Length > 0)
         {
-            html.Append("<div class=\"tbl-wrap\">");
+            html.Append("<div class=\"sub\">Earnings moves against the first tranche's stop</div><div class=\"tbl-wrap\">");
             html.Append("<table class=\"earnings-rule\"><tr><th>Print</th><th>Session</th><th>One-day move</th><th>Against the stop</th></tr>");
 
             foreach (var print in prints)
@@ -906,8 +1086,6 @@ public static class NameScreen
         SuspectSeriesRow? suspect = null,
         NoYearRow? noYear = null,
         UniverseRow? member = null,
-        IReadOnlyList<ListingRow>? history = null,
-        IReadOnlyList<ForwardReturnRow>? outcomes = null,
         DateOnly? night = null,
         IReadOnlyList<UniverseRow>? universe = null,
         IReadOnlyList<PeerReadingRow>? peerReadings = null,
@@ -1038,7 +1216,6 @@ public static class NameScreen
             noYear is null ? null : new NoYear(noYear.Nights, noYear.Last, noYear.Next),
             new NameMast(member?.Name, member?.Sector, member?.Industry, DayChange(ticker, bars)),
             filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null,
-            history is null ? null : History(history, outcomes ?? [], bars),
             night,
             Peers(ticker, universe, peerReadings, night),
             reactions is null ? null : Reactions(reactions),
@@ -1173,39 +1350,6 @@ public static class NameScreen
         ];
 
         return new PeersView(own.GroupKind, own.GroupName, rows);
-    }
-
-    // A name's listing history over the evenings the store holds its listings for: whether it was
-    // on the list each evening, oldest first, and each evening it was, newest first, with the
-    // reasons that fired, the stored close that night and what the two session horizons came to.
-    // It forms no rate for the name.
-    // see: A name's listing history states what followed each evening it was listed and forms no rate for the name
-    public static ListingHistoryCard History(IReadOnlyList<ListingRow> listings, IReadOnlyList<ForwardReturnRow> outcomes, IReadOnlyList<BarRow> bars)
-    {
-        HorizonResult Result(DateOnly evening, string horizon) =>
-            outcomes.FirstOrDefault(row => row.SessionDate == evening && row.Horizon == horizon) is { } row
-                ? new HorizonResult(row.Outcome, row.ReturnPct, row.BaseRate)
-                : new HorizonResult(null, null, null);
-
-        return new ListingHistoryCard(
-            [.. listings.OrderBy(listing => listing.SessionDate).Select(listing => listing.IsListed)],
-            [
-                .. listings
-                    .Where(listing => listing.IsListed)
-                    .OrderByDescending(listing => listing.SessionDate)
-                    .Select(listing =>
-                    {
-                        var fired = FiredReasons(listing);
-
-                        return new ListingEvening(
-                            listing.SessionDate,
-                            listing.ListedBy,
-                            [.. fired.Select(reason => reason.Name)],
-                            bars.FirstOrDefault(bar => bar.SessionDate == listing.SessionDate)?.Close,
-                            Result(listing.SessionDate, ForwardReturnSeries.FiveSessions),
-                            Result(listing.SessionDate, ForwardReturnSeries.TwentyOneSessions));
-                    }),
-            ]);
     }
 
     // The change on the day the masthead states, off the two newest stored closes, by the
@@ -1351,8 +1495,9 @@ public static class NameScreen
     }
 
     // The controls a page offers, each asking for what a press would do: write the
-    // research where none stands, rewrite what went stale, and have the paid model write
-    // the local lane's sections where the local model could not. None while the cap has
+    // research where none stands, rewrite what went stale, rewrite every section where
+    // research stands, and have the paid model write the local lane's sections where the
+    // local model could not. None while the cap has
     // paused research, since a press would be refused, and none that write or rewrite on
     // the day a pass ran, since a second plain pass that day writes nothing. None at all
     // where the page holds no cost to state beside them.
@@ -1381,6 +1526,15 @@ public static class NameScreen
         if (!ranToday && staleness?.State == Core.Research.ResearchState.Stale)
         {
             controls.Add(new ResearchControl("rewrite", "Rewrite the stale sections", Refresh: false, PaidForLocal: false));
+        }
+
+        // The operator's own ask, which the rule that nothing expires on a timer names beside the
+        // three triggers: once a name's research stands and no pass has run for it today, every
+        // section can be written again, whether or not a trigger has fired.
+        // see: Nothing expires on a timer
+        if (!ranToday && staleness?.State is Core.Research.ResearchState.Stands or Core.Research.ResearchState.Stale)
+        {
+            controls.Add(new ResearchControl("refresh", "Regenerate Report", Refresh: true, PaidForLocal: false));
         }
 
         if (notWritten.Any(line => line.Reason.StartsWith(LocalUnavailable, StringComparison.Ordinal) || line.Reason.StartsWith(CannotHold, StringComparison.Ordinal)))

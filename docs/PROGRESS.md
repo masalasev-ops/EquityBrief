@@ -26904,3 +26904,181 @@ Tests:      none added here; the 5.8 correction that follows adds the ones that 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
             the figures the 5.8 correction closing this batch records.
 Carried:    nothing.
+
+### 5.8 - correction: the report reads at a glance, where the two cases and the risks ran as blocks of prose, the plan's rules struck through its words, a contents link drew tonight's page, and a report could not be written again once its day had passed   2026-09-26
+Corrects:   5.8, whose name page drew the two cases as two labelled halves each one run of prose, and HUM's,
+            which its writer set as one paragraph, as one block; drew the risks one part to a risk only
+            where the writer had cut them, and as written where it had not; drew the plan's stop rules,
+            its invalidation and the price line across the whole column and through the words set to its
+            right, under the heading "Where it is bought, sold, and wrong", with its tranches and exits
+            as sentences in one table; drew a listing history of the evenings the name was on the list
+            with each evening's entry zones, which a reader reading today has no use for; opened the
+            numbers on every filed table in full, named the fundamentals provider in the dividend's
+            source line, and set each segment line beside its group's label, the label repeated on every
+            line; and offered no way to have a report written again once the day it was written had
+            passed and no trigger had fired. And whose page script read every change of the address's
+            hash as a screen to draw, so a link to a place on the page, each entry of the contents and
+            each circle on the twelve-month picture, drew tonight's page in place of the place it named.
+Found:      by the operator on 2026-09-26, reading HUM's report on the preview page, on the ruling of
+            this batch; the contents link by pressing The numbers in it.
+Repaired:   `MarkRenderer.WrittenSection` draws a written section a claim to a row, each row one of the
+            claim checker's own sentences read by `ClaimRules.Sentences`, as a list whose rows are ruled
+            apart. The two cases are drawn under The case for and The case against where the prose opens
+            on the bull case, the case against starting at the first sentence opening "The bear case",
+            and unlabelled where it opens on neither. The risks are a table of each risk beside what
+            would confirm it where every part states its confirmation apart, a part to a row where only
+            some do, and a claim to a row where the prose says nowhere a risk starts. `SectionPrompt`
+            asks the writer for those parts: the bull case and the bear case as a paragraph each, a point
+            to a sentence, and each risk as a paragraph of its own followed by a sentence opening "That
+            risk would be confirmed by".
+            The plan card is headed Entry and exit plan. Every rule across the column, the price line
+            among them, ends at `PlanRuleEnd`, short of the words set to its right. `PlanTables` draws
+            the tranches under Entries as a table of zone, what each is bought on and the close it is
+            stopped on, the invalidation's stop saying the whole position is wrong there, and the exits
+            under Exits; `PlanRow` carries what a tranche is bought on and its stop apart, which
+            `NameScreen.PlanRows` hands it. The sizing arithmetic's earnings moves stand under a heading
+            of their own.
+            The listing history card, `MarkRenderer.ListingHistory` and the history the name route read
+            for it are gone; `ListingStrip` stays, since the universe draws it.
+            `NameScreen.Numbers` opens on `Snapshot`, twelve figures of the newest filing a figure to a
+            row, each element carrying the stored value whole: the quarter's revenue and net income
+            with their change on a year earlier, earnings per share against its estimate, the next
+            report with its consensus, both margins, the market value, the dividend or "none paid", both
+            price to earnings multiples with the earnings each is read against, the cash and the net
+            debt, a part the filing does not carry said to be not filed. The last five quarters follow
+            under a heading, then management's passage folded, cut at its own bullets into a list with
+            a point marked beneath another set in, then every other filed table folded beneath "Every
+            figure from the filing", each under its own heading. The segments name each group once, as a
+            row heading its lines, and a line the table files with a colon and no figure heads the lines
+            after it. The dividend's source line says when the figures were fetched and names no provider,
+            which its element still carries. Both folds close from a Hide control at their foot, which
+            brings the fold's heading back into view.
+            The page script takes a link whose hash does not open "#/" as a place on the page, scrolls
+            to it below the masthead measured as it stands, and never reads it as an address.
+            `NameScreen.Controls` offers Regenerate Report beside the cost of research so far where the
+            research stands or is stale and the day the pass ran has passed, and not while the cap has
+            paused research. Its press carries `refresh` on the request, which migration 44 adds to
+            `research_request` as 0 or 1; `ReadApi.AskAsync` writes it and answers that every section
+            will be written again, and the drain hands the pass `--refresh` for that request alone.
+Guarded:    `read-surface`, eight tests added and four replaced.
+            `TheTwoCasesAreDrawnAClaimToARowUnderTheirLabelsAndUnlabelledWhereTheProseOpensOnNeither`:
+            the fixture's two cases as the recorded writer answered, two paragraphs of eight sentences
+            counted by hand, drawn eight rows under each label, each row a sentence of the prose unchanged;
+            HUM's shape, one paragraph with the case against opening mid-way, cut where it opens; a third
+            paragraph kept in the case it was set in; and prose opening on neither drawn with no label.
+            `EachRiskIsDrawnBesideWhatWouldConfirmItAsAPartOrAClaimToARowWhereThePartsAreNotStated`: the
+            fixture's four risks as a table of four rows each beside its confirmation, joined back into
+            the prose unchanged; a part to a row where only some parts state a confirmation; and a claim
+            to a row where none says a risk starts. Each replaces the test of the halves and the parts it
+            corrects.
+            `ThePlanIsHeadedEntryAndExitPlanAndNoRuleOfItsColumnRunsUnderTheWordsBesideIt`: the heading on
+            the card and in the contents, and every rule's end read off the drawing against the first
+            word to its right, on the fixture's page and over a plan worked by hand with two stops, an
+            invalidation and an exit. `TheStopTheInvalidationSitsAtSaysSoAndTheEarningsMovesStandUnderAHeadingOfTheirOwn`
+            and `TheLastTwoPrintsMovesAgainstTheStopStandUnderAHeadingOfTheirOwn`: the entries table's
+            cells over constructed tranches, and the earnings moves' heading.
+            `ALinkToAPlaceOnAPageIsFollowedToItAndNeverReadAsAScreensAddress`: every screen's address opens
+            "#/", the script's handler as served, every place a name's page links drawn on that page, and
+            the folds' controls.
+            `TheNumbersOpenOnTwelveFiguresOfTheNewestFilingAndFoldEveryOtherFiledFigureBeneathIt`: over
+            AAPL's filing, each row's key, stored value, drawn figure and what it is measured against read
+            back against the stored payload; the quarters under their heading; the fold and its tables;
+            the segments' groups counted off the payload; and no provider in the section's words.
+            `AFilingsOwnMarksAreReadWhereItStatesThemAndAPartItDoesNotCarryIsSaidToBeNotFiled`: a filing
+            constructed with a colon line, a passage marking its points and one beneath another, a
+            dividend of zero and no cash.
+            `AReportIsOfferedRegenerateReportOnceTheDayItWasWrittenHasPassedAndNotOnThatDay`: offered a
+            week later with the cost before it, not on the day, beside the rewrite when stale, not while
+            the cap has paused research, and not where nothing is written.
+            `APressAskingToRegenerateAReportWritesARequestCarryingTheAskAndTheDrainHandsItsPassTheRewrite`:
+            the row written with the ask, a plain press without it, and the drain's verbs read off.
+            `ANamesPageDrawsNoListingHistoryThoughTheEveningsItWasListedOnAreStored` replaces the two tests
+            of the listing history. Tests reading the page's counts, the export, the design's regions, the
+            switch, the earlier night, the dividend, the plan's sentences and the recordings asked for are
+            moved to what the page now draws.
+Recorded:   the fixture's answers to the two cases, the risks and the short version written from them,
+            recorded again from the requests the suite makes, since each is keyed on the prompt that asked
+            for it: 2 from the local model, LM Studio serving qwen/qwen3.5-9b, and 5 from the paid model,
+            deepseek-flash, all on 2026-09-26 between 14:36Z and 14:46Z, a Saturday and so off-peak, the 5
+            priced at $0.0278 together by the configured rates. The key was read at run time from the
+            checkout's secrets file and printed nowhere. The 9 recordings no request asks for any more are
+            removed. The manifest names each of the 47 with its request, its usage and, for a paid one,
+            its price.
+Expected:   `research-record.json` and the local recordings' count are readings of the recordings, each
+            verdict frozen as it was reached. The pass now writes the two cases, the risks and the short
+            version each on its first draft, the risks as four parts each followed by its confirmation in
+            the words asked for, so its paid calls fall from 7 to 6 and its spend from $0.031171572 to
+            $0.022637208, each worked from the recordings' usage at the configured rates. With every
+            section paid the short version is refused once and written on its second draft, 11 calls for
+            $0.033021216. With every section local the risks are written on their first draft, and the two
+            cases run to the local model's budget of 1024 tokens, are asked again and run to it again, and
+            are not written, so no row is stored for them; the lane boundary's check of one evidence set
+            reads the risks, which both lanes write, where it read the two cases. The independently derived
+            expectation is the sentence count: the two cases' eight and eight and the risks' four parts
+            were counted by hand off the recordings before the tests that read them ran.
+Written:    section 4's regions, section 12.2's lane asks and section 15.9's Contents, The plan, The two
+            cases, The risks and Research rows, its Listing history row removed and The numbers snapshot and
+            Regenerate Report rows added, in `ARCHITECTURE.html`; the `refresh` column in `SCHEMA.md`; the
+            pass's cost and Regenerate Report in `RUNBOOK.md`; each with its prior text in `CHANGELOG.md`.
+            The decisions by the ruling of this batch.
+Tests:      1433, from 1426: eleven added and four removed, all in `read-surface`. Migrations 0 to 44 with
+            none pending, schema version 44.
+Claims:     575, from 574, with 575 PASS and 0 out of scope. Section 15.9's Listing history row leaves, and
+            The numbers snapshot and Regenerate Report arrive, each due at 5.8 and each in phase 12's pair
+            beyond the prediction, which reads (550, 575), the listing history named as taken out after it.
+Pins:       the branch against `main` at 759058a; this correction edits `MarkRenderer.cs`, `Stylesheet.cs`,
+            `SinglePageApp.cs`, `NameScreen.cs`, the read surface's `Program.cs`, `ReadApi.cs`,
+            `RequestDrain.cs`, `SchemaMigrations.cs`, `SectionPrompt.cs`, tests, the fixture and six
+            documents, none of them in the twelve `RuleVersionScorer.CodeVersionSources`, the twenty-one
+            `CandidateEvaluator.EvaluationSources` or the sixteen `SwingFilter.CodeVersionSources`, each
+            read from the tree being committed.
+Mutated:    the rule, stated before the run: each rule this batch lands put back to the behaviour it
+            corrects, and each surface it draws to its plainest wrong form, one at a time, each filtered to
+            the tests named against it.
+            Predicted:
+            C1 every claim of a section drawn in one row: red in the two cases test and the risks test.
+            C2 the case against's opening never found: red in the two cases test, green in the risks test.
+            C3 the risks drawn as a table where any part states its confirmation rather than every part:
+            red in the risks test, green in the two cases test.
+            C4 the two cases asked for in the words this batch replaced: the recorded answer is asked for
+            by no request and refused by name, red in the two cases test, green in the risks test, whose
+            request is unchanged.
+            P1 the rules ending at the column's edge as before: red in the plan heading test alone of the
+            three plan tests.
+            P2 the invalidation's words dropped from its stop's cell: red in the entries table test alone.
+            P3 the card headed "Where it is bought, sold, and wrong" again: red in the plan heading test
+            alone.
+            J1 the link handler taking every hash, a screen's "#/" among them: red in the link test, green
+            in the plan heading test.
+            F1 the numbers' fold drawn with no Hide control: red in the fixture snapshot test, green in the
+            constructed one, whose passage keeps its own.
+            N1 the change on a year earlier drawn with no sign: red in the fixture snapshot test, AAPL's
+            revenue having risen, green in the constructed one, which files no change.
+            N2 a colon line drawn as a figure not filed, as before: red in the constructed snapshot test
+            alone.
+            N3 the dividend's source line naming the provider, as before: red in the dividend test and the
+            fixture snapshot test, AAPL paying one, green in the constructed one, which pays none.
+            G1 Regenerate Report offered on the day the pass ran: red in the offer test alone of the two
+            regenerate tests.
+            G2 the press's refresh read as never asked: red in the press test alone.
+            G3 the drain's verb never carrying `--refresh`: red in the press test alone.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 58VT of 58VT tests ran
+            with none failed, migrations 0 to 44 with none pending, schema version 44, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 58VTB tables, 58VC claims, 58VP PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 58VR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 58VT of 58VT tests.
+            Both gates ran over the tree carrying this entry and the ruling before it, 58TREESHA, in a
+            worktree beside the repository, and the operator's store under `data/` was not touched by
+            either.
+Carried:    the operator's store needs migration 44 before a press of Regenerate Report can write its
+            request: `tools/migrate.ps1`, or the next night's own first step, which applies it. The command
+            is the operator's to run.
+            Section 4's list of the name page's regions names neither the swing readings nor the gates,
+            which the page has drawn since 12.1 and 12.2; found while this batch counted the regions, and
+            carried to the next pass over section 4 rather than repaired here, since no check reads that
+            list against the page.
+            A name's page for an earlier night is reached by its address alone, and from there by the walk
+            through that evening's list, since the listing history was the one link any page drew to it:
+            an earlier evening's list links each name to its page for tonight.

@@ -200,9 +200,10 @@ public partial class ReadSurface
             Assert.True(stretched.Length == 0, $"On {screen}, {string.Join(", ", stretched)} is drawn at the width of what holds it.");
         }
 
-        // The population the loop above ran over: 37 pictures over the five surfaces, and 43 from
-        // 11.6, the peers table's distance row marks on the name page and in the exported report.
-        Assert.Equal(43, pictures);
+        // The population the loop above ran over: 37 pictures over the five surfaces, 43 from 11.6,
+        // the peers table's distance row marks on the name page and in the exported report, and 41
+        // from the 5.8 correction that took the listing history's strip off both.
+        Assert.Equal(41, pictures);
 
         var page = screens[3].Item2;
 
@@ -280,9 +281,11 @@ public partial class ReadSurface
         // not a screen on which every table is boxed: 27 over the five surfaces, the run page's
         // measure of tonight's order the latest, 29 from 11.6's peers table on the name page and
         // in the exported report, and 31 from 11.7's earnings reaction record in both. 32 from
-        // 11.9's region on the run page stating each reason's share against its target, and 33 from
-        // 12.3's Calibration region, which draws two where that region drew one.
-        Assert.Equal(33, tables);
+        // 11.9's region on the run page stating each reason's share against its target, 33 from
+        // 12.3's Calibration region, which draws two where that region drew one, and 31 from the 5.8
+        // correction that took the listing history's evenings off the name page and the exported
+        // report. The fixture's name holds no research, so the risks' table is not among them.
+        Assert.Equal(31, tables);
 
         // What makes the box a box. Without this the wrapper is a div and every table pushes
         // the page as it did before.

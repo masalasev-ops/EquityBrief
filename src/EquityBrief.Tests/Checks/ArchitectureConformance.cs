@@ -1377,7 +1377,9 @@ public partial class ArchitectureConformance
         // 76 at 12.7, the run page's edge clock and near misses.
         // 80 at 5.8's correction that drew the watch list page's four rows.
         // 81 at 3.4's correction, the name page's level evidence.
-        Assert.Equal(81, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 82 at 5.8's correction that took the name page's listing history off it and drew the numbers'
+        // snapshot and Regenerate Report.
+        Assert.Equal(82, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1441,7 +1443,9 @@ public partial class ArchitectureConformance
         // 245 at 12.7: the edge clock as its six parts and the near misses as their four.
         // 261 at 5.8's correction: the watch list page's four rows as the sixteen parts they state.
         // 262 at 3.4's correction, the name page's level evidence.
-        Assert.Equal(262, inDocument.Length);
+        // 263 at the 5.8 correction that laid the report out to read at a glance: the listing
+        // history leaves and the numbers' snapshot and the Regenerate Report control arrive.
+        Assert.Equal(263, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 

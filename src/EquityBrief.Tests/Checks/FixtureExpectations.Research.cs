@@ -827,10 +827,11 @@ public partial class FixtureExpectations
                 Query(store, $"SELECT spend FROM run_log WHERE run_id = 'replay-research' AND stage NOT LIKE 'research call: {ClaimRules.CycleSection}%';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
 
             // One evidence set: every section in both runs was handed what the default pass
-            // hands it, whichever model asked.
+            // hands it, whichever model asked, read off the risks, which both runs write. The two
+            // cases in the local lane came back cut short twice and stored no row to read.
             Assert.Equal(
                 Listed(Expected("research-record").GetProperty("handed").GetProperty("acrossTheEvidence")).Length,
-                JsonDocument.Parse(Query(store, "SELECT source_ids FROM research_section WHERE ticker = 'KEYS' AND section = 'The two cases' AND version = 1;").Single()).RootElement.GetArrayLength());
+                JsonDocument.Parse(Query(store, "SELECT source_ids FROM research_section WHERE ticker = 'KEYS' AND section = 'The risks, each with what would confirm it' AND version = 1;").Single()).RootElement.GetArrayLength());
         }
     }
 

@@ -385,15 +385,13 @@ public partial class ReadSurface
         var order = Passers().Select(member => member.Ticker).ToArray();
 
         // The name page on the switch night: Z00 passed, so it says why with the rule, its five gates
-        // and the reason it fired as context, and its listing history names the rule of each evening.
+        // and the reason it fired as context.
         var z00 = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/Z00/{TheSwitch}"));
         var why = Assert.Single(Blocks(z00, "<section class=\"why-it-is-here\".*?</section>"));
 
         Assert.Contains("data-rule=\"filter\" data-gates=\"5\"", why, StringComparison.Ordinal);
         Assert.Contains($"Z00 was {ListRules.ByFilter} on {TheSwitch}.", why, StringComparison.Ordinal);
         Assert.Contains($"As context, the reasons that fired on it that evening: {ShortlistSeries.Reasons[0]}.", why, StringComparison.Ordinal);
-        Assert.Contains($"<tr data-evening=\"{TheSwitch}\" data-rule=\"filter\"", z00, StringComparison.Ordinal);
-        Assert.Contains($"<tr data-evening=\"{BeforeTheSwitch}\" data-rule=\"reasons\"", z00, StringComparison.Ordinal);
 
         // Z41 fired three on the switch night and the filter did not pass it, so its page there says it is
         // not on the list, its reasons drawn nowhere as a why; the evening before, the reasons listed it,

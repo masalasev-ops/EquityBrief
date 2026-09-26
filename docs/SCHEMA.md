@@ -757,14 +757,15 @@ Grain: one row per request.
 | `lane` | TEXT | `local` or `paid`, carried from the press so a queue drained later writes under the lane it meant, and `paid` on the night's own request; on the insert |
 | `state` | TEXT | `outstanding`, `writing`, `written`, `refused` or `withdrawn` |
 | `settled_at` | TEXT | UTC instant the request settled or was withdrawn, written by RequestDrain when it moves the request to `written` or `refused` and by ReadApi when it moves it to `withdrawn`; null while it is `outstanding` or `writing`, because a claim writes `state` alone |
-| `run_id` | TEXT | the pass's run, written by RequestDrain when it settles the request, null before; last but one because SQLite appends |
-| `reason` | TEXT | why, in words, for `refused` and `withdrawn` and null otherwise; last because SQLite appends |
+| `run_id` | TEXT | the pass's run, written by RequestDrain when it settles the request, null before; last but two because SQLite appends |
+| `reason` | TEXT | why, in words, for `refused` and `withdrawn` and null otherwise; last but one because SQLite appends |
+| `refresh` | INTEGER | 1 where the press asked for every section to be written again, which the drain hands the pass as the operator's own ask, and 0 otherwise, constrained in the table; 0 on every row written before the column and on the night's own request; written by ReadApi on the insert; last because SQLite appends |
 
 Primary key: `ticker`, `asked_at`.
 
 At most one row per ticker in state `outstanding`, which is what a second press is refused against. SQLite cannot state a partial uniqueness in a table constraint, so it is a unique index over `ticker` filtered to that state.
 
-Declared column sets, stated per operation because that is the grain the rule is written at: ReadApi inserts `ticker`, `asked_at`, `asked_from`, `lane` and `state` for a press, RequestDrain inserts the same five for the night's own request, and ReadApi updates `state`, `settled_at` and `reason` when it withdraws one. RequestDrain updates `state` when it claims a request, and `state`, `settled_at`, `reason` and `run_id` when it finishes with one. Both write `state` and never in one operation: a claim moves it off `outstanding`, and a withdrawal names `outstanding` in its own statement and moves nothing once a claim has.
+Declared column sets, stated per operation because that is the grain the rule is written at: ReadApi inserts `ticker`, `asked_at`, `asked_from`, `lane`, `state` and `refresh` for a press, RequestDrain inserts the first five for the night's own request, which asks for no rewrite and takes the column's 0, and ReadApi updates `state`, `settled_at` and `reason` when it withdraws one. RequestDrain updates `state` when it claims a request, and `state`, `settled_at`, `reason` and `run_id` when it finishes with one. Both write `state` and never in one operation: a claim moves it off `outstanding`, and a withdrawal names `outstanding` in its own statement and moves nothing once a claim has.
 
 **A withdrawal races a claim, and the store settles it rather than the reader.** The queue screen is read before a press and the drain may claim the request between the two, so the withdrawal states the state it expects and moves nothing where the row has left it. The reader is told which state refused them, which is the answer to what was asked: a report already being written is not one that has not been generated.
 

@@ -192,7 +192,7 @@ app.MapGet("/screens/name/{ticker}", async (string ticker, ReadApi read, MarkRen
 // linked: a pass writes about the company now and the file is tonight's report. A date that
 // cannot be read is tonight's page with a line saying what was asked for, as an unknown route
 // is tonight's list with one.
-// see: A name's page for an earlier night is what the store held that night
+// see: A name's page for an earlier night draws what the store held that night and nothing it learned after
 app.MapGet("/screens/name/{ticker}/{date}", async (string ticker, string date, ReadApi read, MarkRenderer marks, SinglePageApp page, SpendCaps caps, IClock clock) =>
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
@@ -319,13 +319,6 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         bars.Count == 0 ? await read.NoYearAsync(ticker) : null,
         // The membership row the masthead names the company, its sector and industry from.
         universe.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
-        // The name's listings over the strip's window and its forward returns, which its listing
-        // history draws.
-        await read.ListingsAsync(ticker, UniverseScreen.StripSessions, on),
-        // What followed each evening the name was listed, as the store has it now: the page
-        // draws the figures the night computed, and how a setup ended is something the store
-        // learned after it.
-        await read.ForwardReturnsAsync(ticker),
         on,
         // The index on the page's night and every name's two readings, which the peers table
         // draws for the members of the name's group.
@@ -413,7 +406,11 @@ app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequ
         ? ResearchRequests.FromList
         : ResearchRequests.FromName;
 
-    var started = await read.AskAsync(ticker, from, Lane(builder.Configuration));
+    // A press asking for every section to be written again, which the page offers once a name's
+    // research stands and no pass has run for it today.
+    var refresh = string.Equals(form?["refresh"].FirstOrDefault(), "true", StringComparison.Ordinal);
+
+    var started = await read.AskAsync(ticker, from, Lane(builder.Configuration), refresh);
     var drain = started.Written ? launcher.Start() : null;
     var line = drain is null ? started.Line : started.Line + " " + drain.Line;
 
