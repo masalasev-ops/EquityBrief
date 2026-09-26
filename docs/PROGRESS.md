@@ -27062,14 +27062,35 @@ Mutated:    the rule, stated before the run: each rule this batch lands put back
             regenerate tests.
             G2 the press's refresh read as never asked: red in the press test alone.
             G3 the drain's verb never carrying `--refresh`: red in the press test alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 58VT of 58VT tests ran
+            Results: one run for each of the fifteen in a detached worktree at a120dc1, the tree carrying
+            this entry, filtered on the operator's instruction of 2026-09-24 to the tests named against
+            each, each edit made there and reverted with `git checkout -- .` and the tree read clean after.
+            The whole suite ran green over a120dc1 in the gates, 1433 of 1433.
+            C1 turned the two cases test and the risks test red. C2 turned the two cases test red and the
+            risks test stayed green. C3 turned the risks test red and the two cases test stayed green. C4
+            turned the two cases test red and, not predicted, the risks test: the replay refuses the
+            unrecorded request by throwing, which stops the whole pass rather than leaving the two cases
+            unwritten, so the risks test's own setup fails; the key refused, e9a8b2f5, is the recording of
+            the old ask this batch removed. P1 turned the plan heading test red alone of the three, a rule
+            ending at 438 over words set from 178. P2 turned the entries table test red alone. P3 turned
+            the plan heading test red alone. J1 turned the link test red and the plan heading test stayed
+            green; it went red on the served handler's text, since the test reads the script rather than
+            running it. F1 turned the fixture snapshot test red and the constructed one stayed green. N1
+            turned the fixture snapshot test red at the missing sign and the constructed one stayed
+            green. N2's first edit, the heading branch made unreachable, was refused by the build as
+            unreachable code and ran no test; made as a colon rule no line meets, it turned the
+            constructed snapshot test red alone. N3 turned the dividend test and the fixture snapshot
+            test red and the constructed one stayed green. G1 turned the offer test red alone. G2 and G3
+            each turned the press test red alone.
+Held:       all fifteen, in the tests each named; C4 in one more than predicted, the risks test, whose
+            setup runs the same pass the refused request stops.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1433 of 1433 tests ran
             with none failed, migrations 0 to 44 with none pending, schema version 44, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 58VTB tables, 58VC claims, 58VP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 58VR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 58VT of 58VT tests.
-            Both gates ran over the tree carrying this entry and the ruling before it, 58TREESHA, in a
+            `tools/verify-phase.ps1` green at 42 tables, 575 claims, 575 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 585 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41
+            of 41 roster checks carried and all 41 run, 1433 of 1433 tests.
+            Both gates ran over the tree carrying this entry and the ruling before it, a120dc1, in a
             worktree beside the repository, and the operator's store under `data/` was not touched by
             either.
 Carried:    the operator's store needs migration 44 before a press of Regenerate Report can write its
