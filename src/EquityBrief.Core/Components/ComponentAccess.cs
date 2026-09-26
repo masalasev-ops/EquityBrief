@@ -44,6 +44,7 @@ public enum Store
     ForwardReturn,
     Facts,
     Fundamentals,
+    FundamentalsSnapshot,
     NewsPulse,
     ResearchSection,
     ThemeSection,

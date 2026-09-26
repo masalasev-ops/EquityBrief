@@ -27,9 +27,11 @@ internal static class ComponentVocabulary
     // aggregate, which section 16 states of itself: computed tables is the row
     // naming six stores, listings is the listings beside the rule each evening's
     // list was drawn by, research and theme is the two research rows, sources is
-    // source documents, and version scores and blocks is the scores a night
-    // writes beside the blocks frozen from them, which no component touches one
-    // of without the other.
+    // source documents, version scores and blocks is the scores a night writes
+    // beside the blocks frozen from them, which no component touches one of
+    // without the other, and fundamentals is the filings beside the copy each
+    // fetch stores of what is as of the fetch, which every reader of the one reads
+    // with the other.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
@@ -39,7 +41,7 @@ internal static class ComponentVocabulary
         ("Listings", [DataStore.Listing, DataStore.ListRule]),
         ("Forward returns", [DataStore.ForwardReturn]),
         ("Facts", [DataStore.Facts]),
-        ("Fundamentals", [DataStore.Fundamentals]),
+        ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot]),
         ("News pulse", [DataStore.NewsPulse]),
         ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection]),
         ("Sources", [DataStore.SourceDocument]),
@@ -154,6 +156,7 @@ internal static class ComponentVocabulary
         ["shape proposals"] = DataStore.ShapeProposal,
         ["facts"] = DataStore.Facts,
         ["fundamentals"] = DataStore.Fundamentals,
+        ["fundamentals snapshots"] = DataStore.FundamentalsSnapshot,
         ["membership"] = DataStore.Membership,
         ["calendar"] = DataStore.Calendar,
         ["candidate register"] = DataStore.CandidateRegister,

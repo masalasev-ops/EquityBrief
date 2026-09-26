@@ -53,6 +53,10 @@ public sealed class FactsAssembler : IComponent
             // facts rather than carrying them as nulls, because this table fills
             // on demand and most names on most nights hold nothing.
             new StoreTouch(Store.Fundamentals, Touch.Read),
+            // The newest copy of the parts that are as of a fetch, read over the
+            // newest filing's own, so a figure with a price in it is the newest
+            // fetch's rather than the one made when the filing was first stored.
+            new StoreTouch(Store.FundamentalsSnapshot, Touch.Read),
             // Delete as well as Insert: a stored file for tonight that differs
             // from what the store now computes is removed and written again.
             new StoreTouch(Store.Facts, Touch.Insert | Touch.Delete),
@@ -92,11 +96,18 @@ public sealed class FactsAssembler : IComponent
     // The newest filing this name has stored, and the figures on it. Newest by
     // filing date rather than by period end, because a restatement is filed later
     // than the quarter it restates and the later filing is what is now known.
+    // Beside it the newest copy of the parts that are as of a fetch, where a
+    // fetch has stored one.
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
     const string LatestFilingFor = @"
-        SELECT filing_date, payload
-        FROM fundamentals
-        WHERE ticker = $ticker
-        ORDER BY filing_date DESC
+        SELECT f.filing_date, f.payload,
+               (SELECT s.payload FROM fundamentals_snapshot s
+                WHERE s.ticker = f.ticker
+                ORDER BY s.fetched_at DESC
+                LIMIT 1)
+        FROM fundamentals f
+        WHERE f.ticker = $ticker
+        ORDER BY f.filing_date DESC
         LIMIT 1;
     ";
 
@@ -547,7 +558,9 @@ public sealed class FactsAssembler : IComponent
         });
 
         await ReadAsync(connection, LatestFilingFor, ticker, cancellation, reader =>
-            facts.AddRange(Filed(reader.GetString(0), reader.GetString(1))));
+            facts.AddRange(Filed(
+                reader.GetString(0),
+                FundamentalsSnapshot.Over(reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2)))));
 
         return new Assembled(sessionDate, facts);
     }

@@ -45,7 +45,7 @@ static int NoVerb()
         "'nightly --fixture <folder>' runs the night's steps in order, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
         "'research --ticker <TICKER>' writes the sections of one name's research that are not written or have gone " +
-        "stale, with '--refresh' to write every section again and '--paid-for-local' to have the paid model write the " +
+        "stale, with '--refresh' to fetch its figures again and write every section again, once a day, and '--paid-for-local' to have the paid model write the " +
         "local lane's sections as well, " +
         "'drain' works through the reports a screen asked for, oldest first, running the research verb for each, and " +
         "'register --candidate <name> --rule <rule> --test <test> --evaluator <evaluator> --parameters <name=value,...>' " +
@@ -314,22 +314,17 @@ static async Task<int> ResearchPass(string[] args)
     var runId = PassRun.IdFor(clock.UtcNow, ticker);
     var database = store.DatabaseFile;
 
-    // The name's fundamentals first, where the store holds none, because the archive is
-    // addressed by the identifier that fetch stores and the pass reads the company's own
-    // release from there. Held fundamentals are left as they are.
-    var fundamentals = await new FundamentalsFetcher(feeds.Fundamentals, clock, database, feeds.Archive).RunAsync(ticker, null, runId);
+    // The company's figures first, and the night's facts file again where they moved, so the
+    // sections are written from them.
+    var regenerate = args.Contains("--refresh");
 
-    // Where that fetch stored a filing the night had not seen, the night's facts file is
-    // assembled again and its changes read again before the pass, so the sections are
-    // written from the quarter just fetched rather than from a file that carries none of
-    // it. A re-run replaces only the files that now differ, which is this name's.
-    // see: A re-run replaces a night's facts file where the store now computes a different one
-    // see: A name's facts file is assembled again for its night when an open fetches its fundamentals
-    if (fundamentals.RowsWritten > 0)
-    {
-        await new FactsAssembler(clock, database).RunAsync(runId);
-        await new ChangeDetector(clock, database).RunAsync(runId);
-    }
+    await PassFigures.FetchAsync(
+        new FundamentalsFetcher(feeds.Fundamentals, clock, database, feeds.Archive),
+        clock,
+        database,
+        ticker,
+        regenerate,
+        runId);
 
     var cap = new SpendCap(feeds.ResearchModel, caps, clock, database);
     var checker = new ClaimChecker(clock, database);
@@ -344,7 +339,7 @@ static async Task<int> ResearchPass(string[] args)
         feeds.NameNews,
         lane,
         clock,
-        database).RunAsync(ticker, runId, new ResearchPassRequest(args.Contains("--refresh"), args.Contains("--paid-for-local")));
+        database).RunAsync(ticker, runId, new ResearchPassRequest(regenerate, args.Contains("--paid-for-local")));
 
     Console.WriteLine(
         FormattableString.Invariant($"research: {ticker} {outcome.Outcome}, {outcome.Written.Count} section(s) written, ")

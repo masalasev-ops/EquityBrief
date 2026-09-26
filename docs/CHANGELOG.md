@@ -7924,3 +7924,58 @@ Now:
 > three on the local model and four through the spend cap for $0.0226, a sum that includes the cause of each large move, ...
 > ... still start one (see: ...). Once the day a report was written has passed, the page offers Regenerate Report, which has every section written again whether or not a trigger has fired, and costs what a pass costs (see: A report is regenerated whole on the operator's ask once the day it was written has passed).
 Why: the two cases and the risks are asked for in the parts the page draws, so the fixture's answers to both and to the short version written from them were recorded again, off-peak, and the short version was accepted on its first draft where it had needed a second; and the operator asked for a way to regenerate a report once the day it was written has passed.
+
+### 2026-09-26 - ARCHITECTURE.html - section 5's fundamentals fetcher box, and section 7's fundamentals fetcher and facts assembler rows
+Authorised by: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+Was:
+> <div class="box compute"><b>Fundamentals fetcher</b>fetches this name's quarters and balance sheet if the stored copy predates its latest filing</div>
+> <td>company financials feed, filings archive, fundamentals</td><td>fundamentals</td><td>fetches the quarters, the balance sheet and the analysts' ratings when the stored copy predates the name's latest filing (see: ...), and reads the filings archive ...
+> <td>membership, bar store, indicators, swings, volume profile, levels, ladders, moves, earnings reactions, calendar, fundamentals</td><td>facts</td><td>writes tonight's facts file ... and the newest filing a name holds gives the quarter's figures, ...
+Now:
+> <div class="box compute"><b>Fundamentals fetcher</b>fetches this name's quarters and balance sheet if the stored copy predates its latest filing, and again whenever its report is regenerated</div>
+> <td>company financials feed, filings archive, fundamentals</td><td>fundamentals, fundamentals snapshots</td><td>fetches the quarters, the balance sheet and the analysts' ratings when the stored copy predates the name's latest filing (see: ...), and whatever is held when the operator regenerates the name's report, storing on every fetch a copy of the parts that are as of the fetch rather than a filing, which is read over the newest filing's own (see: ...), and reads the filings archive ...
+> <td>membership, bar store, indicators, swings, volume profile, levels, ladders, moves, earnings reactions, calendar, fundamentals, fundamentals snapshots</td><td>facts</td><td>writes tonight's facts file ... and the newest filing a name holds, with the parts that are as of a fetch read from the newest fetch's copy over the filing's own (see: ...), gives the quarter's figures, ...
+Why: the operator ruled on 2026-09-26 that a regenerated report is written from the company's figures as they stand on the day it runs, and chose that each fetch stores a fresh copy of the figures that move with the price, since a filing's row is never updated.
+
+### 2026-09-26 - ARCHITECTURE.html - section 4's numbers, section 15.9's dividend, numbers snapshot and Regenerate Report rows, section 15.12's numbers step and section 16's fundamentals store
+Authorised by: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+Was:
+> ... the dividend from the provider's own part on the newest filing alone (see: ...)</td><td>free after the fetch</td><td>quarterly</td></tr>
+> <tr><td>Dividend</td><td>in the numbers section, from the newest filing alone: the forward annual rate, ...
+> <tr><td>The numbers snapshot</td><td>at the head of the numbers: twelve figures of the newest filing a figure to a row in two columns, ...
+> <tr><td>Regenerate Report</td><td>where a record stands or has gone stale and no pass has run for the name on the day in New York the page is read on: the control that has every section written again with its cost stated before it is pressed; a press writing a request that carries the ask, and the drain answering it with a pass that rewrites every section (see: A report is regenerated whole on the operator's ask once the day it was written has passed)</td></tr>
+> <li>The numbers section renders from the filings the store holds, the dividend from the newest filing alone. Opening a name fetches nothing: where a name holds none, the research pass fetches them before it writes and assembles that night's facts file again where it stored a filing the night had not seen.</li>
+> <tr><td><b>Fundamentals</b></td><td>ticker, the quarters, balance sheet, segments, guidance, with the filing date each came from</td><td>forever, because providers restate and this is what you knew at the time</td></tr>
+Now:
+> ... the dividend from the provider's own part on the newest filing alone (see: ...); the market value, the multiples and their earnings, the dividend, the ratings and the next report as the newest fetch stored them, which a regenerated report fetches again (see: ...)</td><td>free after the fetch</td><td>quarterly, and on a regenerate</td></tr>
+> <tr><td>Dividend</td><td>in the numbers section, from the newest filing alone as the newest fetch of the company's figures states it: the forward annual rate, ...
+> <tr><td>The numbers snapshot</td><td>at the head of the numbers: twelve figures of the newest filing and the newest fetch a figure to a row in two columns, ...
+> <tr><td>Regenerate Report</td><td>where a record stands or has gone stale and no pass has run for the name on the day in New York the page is read on: the control that has the paid model write every section again from the company's figures fetched again that day, its cost stated before it is pressed; a press writing a request that carries the ask; and the drain answering it with such a pass at most once a name a day, a request reaching it for a name a pass already wrote that day starting nothing and fetching nothing (see: ...)</td></tr>
+> <li>The numbers section renders from the filings the store holds, the dividend from the newest filing alone, and the parts that are as of a fetch from the newest fetch's copy. Opening a name fetches nothing: ... where it stored a filing the night had not seen, and a regenerate fetches them again whatever is held and assembles the facts file again after it (see: ...).</li>
+> <tr><td><b>Fundamentals</b></td><td>ticker, the quarters, balance sheet, segments, guidance, with the filing date each came from; and beside the filings one copy a fetch of the parts that are as of the fetch rather than a filing, the newest of which is read over the newest filing's own</td><td>forever, because providers restate and this is what you knew at the time, and a copy is what a price-dependent figure was on the day it was fetched (see: ...)</td></tr>
+Why: the operator ruled on 2026-09-26 that a regenerated report is a full paid report written from the day's figures, once a name a day, where it had rewritten every section from the figures as they were first fetched.
+
+### 2026-09-26 - SCHEMA.md - fundamentals_snapshot
+Authorised by: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+Was:
+> | `fundamentals` | FundamentalsFetcher | none | none |
+> | `news_pulse` | NewsPulseCounter | none | NewsPulseCounter |
+> ... and the next print's consensus estimate sit on the newest filing's row alone, because a ratio has a price in it and a price moves every session.
+> and no `fundamentals_snapshot` section.
+Now:
+> | `fundamentals` | FundamentalsFetcher | none | none |
+> | `fundamentals_snapshot` | FundamentalsFetcher | none | none |
+> | `news_pulse` | NewsPulseCounter | none | NewsPulseCounter |
+> ... and the next print's consensus estimate sit on the newest filing's row alone, because a ratio has a price in it and a price moves every session, and every fetch stores them again as its own copy in `fundamentals_snapshot`, which readers take over the row's.
+> and a `fundamentals_snapshot` section after `fundamentals`: one row per ticker per fetch, keyed on the ticker and the fetch's instant, holding the six parts that are as of the fetch.
+Why: a `fundamentals` row is never updated, so a fetch finding no new filing had nowhere to put a price that has moved. Migration 45 creates the table.
+
+### 2026-09-26 - RUNBOOK.md - what `--refresh` does, and what Regenerate Report fetches and costs
+Authorised by: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+Was:
+> `--refresh` writes every section again, and `--paid-for-local` has the research model write the local lane's sections as well, which is the page's option where the local model is unavailable or cannot hold one.
+> Once the day a report was written has passed, the page offers Regenerate Report, which has every section written again whether or not a trigger has fired, and costs what a pass costs (see: A report is regenerated whole on the operator's ask once the day it was written has passed).
+Now:
+> `--refresh` is a regenerate: it fetches the company's figures again whatever the store holds, assembles the night's facts file again from them and writes every section again, and it starts nothing and fetches nothing on a day a pass for the name already ran. `--paid-for-local` ..., and which the drain adds to every regenerate a press asks for.
+> Once the day a report was written has passed, the page offers Regenerate Report, which fetches the company's figures again, ... and has the paid model write every section again from them whether or not a trigger has fired. Over the fixture's KEYS a pass with every section paid cost $0.0330, and the fetch weighs ten of the provider's daily 100,000 calls. It runs once a name a day: ... (see: ...).
+Why: the operator's ruling of 2026-09-26 on what a regenerate writes from, who writes it and how often.

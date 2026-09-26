@@ -27103,3 +27103,171 @@ Carried:    the operator's store needs migration 44 before a press of Regenerate
             A name's page for an earlier night is reached by its address alone, and from there by the walk
             through that evening's list, since the listing history was the one link any page drew to it:
             an earlier evening's list links each name to its page for tonight.
+
+### 5.8 ruling - a regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day   2026-09-26
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-26, after PR 249 landed Regenerate Report: "Did you make it so that the
+            report regeneration uses the latest data as of current date when it is asked for ?". Told that
+            it did not for the company's figures, which a pass fetches only where the store holds none, so
+            a regenerate after a new quarter would write from the old one and the claim checker would
+            refuse any sentence quoting the new: "Merge this PR now so i can see the latest pages. But
+            regenerate report should do a full paid report with current date. There is no point in
+            regenerating a report from 30 days ago using stale data. However, the condition is that it
+            regenerates only once per day". Asked how the figures that move with the price, the multiples,
+            the market value, the dividend yield, the analysts' ratings and the next report, should be
+            made current where the company has filed nothing new, since they sit on the newest filing's
+            row as first fetched and a row is never updated, they chose a fresh copy each fetch.
+Ruled:      a regenerate has the paid model write every section, the local lane's among them, whatever
+            lane its request names; it fetches the company's figures again whatever the store holds before
+            it writes, storing a filing made since as a row of its own and each fetch's copy of the parts
+            that are as of the fetch in a store of their own, which the facts file and the numbers read in
+            place of the newest row's; the night's facts file is assembled again after the fetch; and it
+            runs at most once a name a day in New York, the drain as well as the page refusing a second
+            (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day).
+Changed:    `DECISIONS.md` gains the decision, which supersedes **A report is regenerated whole on the
+            operator's ask once the day it was written has passed**, moved to "Previously decided" with its
+            reasoning. No code changes here: the 5.8 correction that follows carries it.
+Consequences: a regenerate costs a pass with every section paid, $0.0330 over the fixture's KEYS, and a
+            fetch of ten of the provider's 100,000 daily calls; the prices, bands and plan are the newest
+            night's, since the night is what fetches bars; the facts file of the fixture holds what it held,
+            since each fetch's copy of the parts states what the newest row states, so no recording is
+            invalidated; and the operator's store takes migration 45 once the correction merges.
+Tests:      none added here; the 5.8 correction that follows adds the ones that hold it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 5.8 correction closing this batch records.
+Carried:    nothing.
+
+### 5.8 - correction: a regenerated report is written from the company's figures as they stand that day and at most once a name a day, where it rewrote every section from the figures as first fetched and only the page held it to the day   2026-09-26
+Corrects:   5.8's Regenerate Report, landed by PR 249 the same day, whose pass fetched the company's
+            figures only where the store held none, so a regenerate wrote from the quarter and the price
+            the name's figures were first fetched with, and a sentence quoting a quarter filed since was
+            refused for a figure the facts file does not hold; whose multiples, market value, dividend,
+            ratings and next report sat on the newest filing's row as that fetch stated them, with no
+            place a later fetch could put them, since a row is never updated; whose pass skipped its rule
+            for a pass that already ran that day whenever a rewrite was asked for, so the page's refusal
+            to offer the control a second time was the only thing holding a regenerate to one a day; and
+            whose drain handed a regenerate the paid model for every section only because every request
+            names the paid lane.
+Found:      by the operator on 2026-09-26, asking whether a regenerate used the latest data, on the ruling
+            of this batch.
+Repaired:   migration 45 creates `fundamentals_snapshot`, one row a fetch keyed on the ticker and the
+            fetch's instant, holding the six parts that are as of the fetch. `FundamentalsFetcher` builds
+            the earnings bases, the valuation, the market value, the ratings, the dividend and the next
+            report in one place each, which the newest filing's row and the copy both use, and writes the
+            copy in the same transaction as the filings on every fetch it makes; `RefetchAsync` fetches
+            whatever is held, where `RunAsync` fetches only where the store predates a filing.
+            `FundamentalsSnapshot.Over` lays a copy's six parts over a filing's payload and leaves every
+            other part as it was. `FactsAssembler` reads the newest copy over the newest filing, and
+            `ReadApi.FundamentalsAsync` does the same for the newest copy fetched on or before the night a
+            page is about, by the session date in New York of the instant it was fetched, so tonight's page
+            draws the day's figures and an earlier night's what the store held that night.
+            `PassFigures.FetchAsync`, which the research verb calls, fetches as before for a plain pass,
+            and for a regenerate asks `ResearchRunner.WrittenTodayAsync` first and fetches nothing where a
+            pass for the name ran to the end that day, then refetches and assembles the facts file and the
+            night's changes again after any fetch. `ResearchRunner` holds a regenerate to its rule for a
+            pass that ran today, saying `RegeneratedToday` on its row, while the option to have the paid
+            model write the local lane's sections alone still starts one. `RequestDrain` hands every
+            regenerate `--paid-for-local` whatever lane its request names. The dividend's source line says
+            it is as of the newest fetch of the company's figures.
+Guarded:    the fetcher's own tests, one added in `FundamentalsFetcherTests`.
+            `ARegenerateFetchesWhateverIsHeldAndEveryFetchStoresItsOwnCopyOfThePartsAsOfTheFetch`: the first
+            fetch's copy holds the newest row's six parts; a plain open three days later knowing of no newer
+            filing fetches nothing; a regenerate over a provider answer constructed with one more filing,
+            dated 2026-09-14, a trailing multiple of 31.25 and a market value of 4,100,000,000,000 stores
+            that filing as a row of its own, leaves the twelve held rows byte for byte, and stores the day's
+            copy, whose six parts are the new row's; and a second regenerate that day with nothing new filed
+            writes no filing and a copy of its own.
+            `read-surface`, one test added in `ReadSurface.RegenerateFigures.cs` and two changed.
+            `ARegenerateWritesFromTheDaysFiguresOnceADayAndThePageReadsTheNewestCopyFetchedByItsNight`: over
+            AAPL's fetched figures, a regenerate on 2026-09-08, the day a pass for the name ran, fetches
+            nothing; one at 01:00 UTC on 2026-09-10, the evening of the 9th in New York, fetches, and the
+            facts file assembled again states the trailing multiple of 31.25, as does what tonight's page
+            hands the numbers and the snapshot it draws, while the filing's row is as it was; the page for
+            2026-09-09 reads that copy, whose UTC date is the 10th, and the page for 2026-09-08 the first
+            fetch's; and a plain pass fetches nothing. The press test gains two requests naming the local
+            lane, a regenerate handed `--paid-for-local` and a plain one not. The dividend test's row
+            standing for one fetched before the dividend part existed has its copies removed too, since a
+            fetch that old stored none.
+            `fixture-expectations`, one test added in `FixtureExpectations.Regenerate.cs` and two changed.
+            `APassIsWarrantedForTheSectionsItsNewestVersionsLeaveUnwrittenOrStaleAndForNoOther` asked for
+            its same-day rewrite, a pass carrying `Refresh`, after a pass had run to the end, and read that
+            it wrote only what went stale; `Refresh` is the regenerate, which the ruling holds to the day,
+            so the test asks it while no pass has run to the end, where it still warrants what went stale
+            and nothing accepted that day, and asks it again after one has, where it starts nothing.
+            `ARegenerateOnADayAPassForTheNameRanStartsNothingFetchesNothingAndSaysWhy`: over the fixture's
+            research replay, a regenerate asking the paid model for every section on the day a pass for
+            KEYS ran fetches nothing and asks no model, its row saying why and counting no request, and the
+            check a regenerate asks before it fetches lets the next day through.
+            `TheFundamentalsStoreHoldsTheWindowTheRulingStatesAndTheFiguresTheRulesProduce` reads each
+            name's one copy: exactly the six parts the expectation states, each as the newest row states it.
+Expected:   `stored-filings.json` names `fundamentals_snapshot` beside `fundamentals`, which the replay now
+            populates, and states the six parts as of a fetch and one copy a fetch, derived from the ruling
+            and the provider's parts rather than read off a run. Every copy the fixture's fetches store
+            states what the newest row states, so every facts file and every recording's request is what it
+            was.
+Written:    section 5's fundamentals fetcher box, section 7's fundamentals fetcher and facts assembler
+            rows, section 4's numbers row, section 15.9's Dividend, The numbers snapshot and Regenerate
+            Report rows, section 15.12's numbers step and section 16's Fundamentals store in
+            `ARCHITECTURE.html`; the `fundamentals_snapshot` writer row and section, and the fundamentals
+            section's pointer to it, in `SCHEMA.md`; what `--refresh` does and what Regenerate Report
+            fetches and costs in `RUNBOOK.md`; each with its prior text in `CHANGELOG.md`. The decision by
+            the ruling of this batch.
+Tests:      1436, from 1433: three added, none removed. Migrations 0 to 45 with none pending, schema
+            version 45.
+Claims:     575, from 575, with 575 PASS and 0 out of scope. The reworded rows keep their keys, and
+            section 15.9's rows are worded so that none reads as a list of three.
+Pins:       the branch against `main` at 753a2a3; this correction edits `ComponentAccess.cs`,
+            `SchemaMigrations.cs`, `FundamentalsFetcher.cs`, `FactsAssembler.cs`, `ResearchRunner.cs`,
+            `RequestDrain.cs`, the worker's `Program.cs`, `ReadApi.cs`, `NameScreen.cs`, and adds
+            `FundamentalsSnapshot.cs` and `PassFigures.cs`, none of them in the twelve
+            `RuleVersionScorer.CodeVersionSources`, the twenty-one `CandidateEvaluator.EvaluationSources` or
+            the sixteen `SwingFilter.CodeVersionSources`, each read from the tree being committed.
+Mutated:    the rule, stated before the run: each rule this batch lands put back to the behaviour it
+            corrects, one at a time, each filtered to the tests named against it, the fetcher test, the
+            figures test, the runner test, the press test, the dividend test and the fundamentals store
+            test.
+            Predicted:
+            R1 a regenerate's fetch deciding as a plain open's does: red in the fetcher test and the figures
+            test.
+            R2 no copy written: red in the fetcher test, the figures test and the fundamentals store test,
+            green in the dividend test.
+            R3 the readers taking the filing row's parts over the copy's: red in the figures test, green in
+            the fetcher test, which reads the store.
+            R4 the facts file assembled again only where a filing was stored, as before: red in the figures
+            test alone.
+            R5 an earlier night's copy chosen by the UTC date of its fetch: red in the figures test alone.
+            R6 an earlier night reading the newest copy whatever it was fetched: red in the figures test
+            alone.
+            R7 a regenerate exempt from the rule for a pass that ran today, as before: red in the runner
+            test alone.
+            R8 a regenerate fetching before it asks whether a pass ran today: red in the figures test alone.
+            R9 the drain handing a regenerate the lane its request names, as before: red in the press test
+            alone.
+            R10 the copy leaving out the ratings: red in the fetcher test and the fundamentals store test.
+            Results: one run for each of the ten in a detached worktree at 0e533a5, the tree carrying this
+            entry, each filtered on the operator's instruction of 2026-09-24 to the six tests named, each
+            edit made there and reverted with `git checkout -- .` and the tree read clean after. The whole
+            suite ran green over 0e533a5 in the gates, 1436 of 1436. R1, whose first form compared the ask
+            with itself and was replaced before any build since the compiler refuses that comparison, turned
+            the fetcher test and the figures test red. R2 turned the fetcher test, the figures test and the
+            fundamentals store test red, and the dividend test stayed green. R3 turned the figures test red
+            and the fetcher test stayed green. R4, R5, R6 and R8 each turned the figures test red alone. R7
+            turned the runner test red alone. R9 turned the press test red alone. R10 turned the fetcher test
+            and the fundamentals store test red. No test outside those named for a mutation went red under
+            it.
+Held:       all ten, each in the tests predicted and in no other of the six.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1436 of 1436 tests ran
+            with none failed, migrations 0 to 45 with none pending, schema version 45, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 42 tables, 575 claims, 575 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 585 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41
+            of 41 roster checks carried and all 41 run, 1436 of 1436 tests.
+            Both gates ran over the tree carrying this entry and the ruling before it, 0e533a5, in a
+            worktree beside the repository, and the operator's store under `data/` was not touched by
+            either. A first run of both over 19b9313 went red on one test,
+            `EveryKeyInEveryExpectationIsReadBySomeTest`, for a key of `stored-filings.json` no test read,
+            which turned 111 claims red with it; the key's words moved into the file's own derivation and
+            the key went, and the second run over 0e533a5 is the one recorded here.
+Carried:    the operator's store needs migration 45 before the app is started on this build, since the
+            name page reads the new store: `tools/migrate.ps1`, or the next night's own first step, which
+            applies it. The command is the operator's to run.

@@ -29,7 +29,8 @@ public sealed record FundamentalsOutcome(
     bool GuidanceLocated);
 
 // The fundamentals fetcher. One name's quarters and balance sheet, fetched when
-// the stored copy predates a filing and not otherwise.
+// the stored copy predates a filing, and when the operator regenerates the name's
+// report, and not otherwise.
 //
 // On demand and per name, which is the whole reason it is not a nightly step. The
 // endpoint weighs 10 a name, so the index would cost 5,030 weighted calls a night
@@ -57,6 +58,7 @@ public sealed class FundamentalsFetcher : IComponent
             // a filing is new, and a fetcher that wrote every quarter it was
             // handed would rewrite eight rows on every open.
             new StoreTouch(Store.Fundamentals, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.FundamentalsSnapshot, Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.CompanyFinancials, Feed.FilingsArchive]);
@@ -126,6 +128,14 @@ public sealed class FundamentalsFetcher : IComponent
         ON CONFLICT (ticker, filing_date) DO NOTHING;
     ";
 
+    // One copy a fetch, of the parts that are as of the fetch. Two fetches in one second are one
+    // fetch's figures, so the second is ignored rather than refused.
+    const string InsertSnapshot = @"
+        INSERT INTO fundamentals_snapshot (ticker, fetched_at, payload)
+        VALUES ($ticker, $fetched_at, $payload)
+        ON CONFLICT (ticker, fetched_at) DO NOTHING;
+    ";
+
     const string AppendRun = @"
         INSERT INTO run_log (
             run_id, stage, started_at, ended_at, outcome,
@@ -173,11 +183,28 @@ public sealed class FundamentalsFetcher : IComponent
     // name has made, which is null where the caller knows of none. A name whose
     // store already holds that filing is not fetched, and neither is a name the
     // caller knows nothing new about and the store already holds something.
-    public async Task<FundamentalsOutcome> RunAsync(
+    public Task<FundamentalsOutcome> RunAsync(
         string ticker,
         DateOnly? latestKnownFiling,
         string runId,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default) =>
+        FetchAsync(ticker, latestKnownFiling, asked: false, runId, cancellation);
+
+    // A fetch the operator asked for by regenerating a report, made whatever the store holds, so a
+    // filing made since is stored and the parts as of the fetch are stored again as the day's copy.
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+    public Task<FundamentalsOutcome> RefetchAsync(
+        string ticker,
+        string runId,
+        CancellationToken cancellation = default) =>
+        FetchAsync(ticker, latestKnownFiling: null, asked: true, runId, cancellation);
+
+    async Task<FundamentalsOutcome> FetchAsync(
+        string ticker,
+        DateOnly? latestKnownFiling,
+        bool asked,
+        string runId,
+        CancellationToken cancellation)
     {
         var startedAt = clock.UtcNow;
 
@@ -186,7 +213,7 @@ public sealed class FundamentalsFetcher : IComponent
 
         var held = await LatestAsync(connection, ticker, cancellation);
 
-        if (!NeedsFetching(held, latestKnownFiling))
+        if (!asked && !NeedsFetching(held, latestKnownFiling))
         {
             var nothing = new FundamentalsOutcome(
                 ticker, false, held, 0, 0, 0, 0,
@@ -244,6 +271,17 @@ public sealed class FundamentalsFetcher : IComponent
                 await command.ExecuteNonQueryAsync(cancellation);
 
                 written++;
+            }
+
+            await using (var copy = connection.CreateCommand())
+            {
+                copy.Transaction = (SqliteTransaction)transaction;
+                copy.CommandText = InsertSnapshot;
+                copy.Parameters.AddWithValue("$ticker", ticker);
+                copy.Parameters.AddWithValue("$fetched_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+                copy.Parameters.AddWithValue("$payload", Snapshot(fetched));
+
+                await copy.ExecuteNonQueryAsync(cancellation);
             }
 
             await transaction.CommitAsync(cancellation);
@@ -421,61 +459,14 @@ public sealed class FundamentalsFetcher : IComponent
                 epsActual = Money(quarter.Earnings.EpsActual),
                 epsEstimate = Money(quarter.Earnings.EpsEstimate),
             },
-            epsBases = newest ? new
-            {
-                trailing = Money(fetched.Bases.Trailing),
-                currentYear = Money(fetched.Bases.CurrentYear),
-                nextYear = Money(fetched.Bases.NextYear),
-            } : null,
-            // The valuation on each earnings basis, copied from the payload with
-            // the basis beside it, so a reader can see which earnings figure a
-            // ratio was struck on. A ratio has a price in it and a price moves
-            // every session, which is why it sits on the newest row alone and why
-            // the row carries the instant it was fetched at.
-            valuation = newest ? new
-            {
-                trailingPe = Money(fetched.Valuation.TrailingPe),
-                forwardPe = Money(fetched.Valuation.ForwardPe),
-            } : null,
-            // What the market says the company is worth, which section 15.9's fact
-            // strip states beside the close. As of the fetch for the reason the
-            // ratios are, so it sits on the newest filing's row with them.
-            marketCapitalisation = newest ? Money(fetched.Market.Capitalisation) : null,
-            // What the analysts following the company say of it, copied as the provider files it and
-            // on the newest filing's row for the reason the ratios are.
-            // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
-            ratings = newest && !fetched.PartsNotCarried.Contains(RatingsPart, StringComparer.Ordinal) ? new
-            {
-                rating = Money(fetched.Ratings.Rating),
-                targetPrice = Money(fetched.Ratings.TargetPrice),
-                strongBuy = fetched.Ratings.StrongBuy,
-                buy = fetched.Ratings.Buy,
-                hold = fetched.Ratings.Hold,
-                sell = fetched.Ratings.Sell,
-                strongSell = fetched.Ratings.StrongSell,
-            } : null,
-            // The dividend the provider files, copied as it files it and on the newest filing's row
-            // for the reason the ratios are.
-            // see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none
-            dividend = newest && fetched.Dividend is { } paid ? new
-            {
-                forwardAnnualRate = Money(paid.ForwardAnnualRate),
-                forwardYield = Money(paid.ForwardYield),
-                payoutRatio = Money(paid.PayoutRatio),
-                exDividendDate = paid.ExDividendDate is { } ex ? Stored(ex) : null,
-                payDate = paid.PayDate is { } pay ? Stored(pay) : null,
-            } : null,
-            // The next print as the provider has it, and named for what it is: an
-            // analysts' estimate. Section 4 places the guided quarter at the
-            // earnings release exhibit, which is management stating what it
-            // expects, and this endpoint files no such thing.
-            estimated = newest && fetched.Estimated is { } next ? new
-            {
-                periodEnd = Stored(next.PeriodEnd),
-                reportDate = next.ReportDate is { } expected ? Stored(expected) : null,
-                timing = Filed(next.Timing),
-                epsEstimate = Money(next.EpsEstimate),
-            } : null,
+            // The six parts as of the fetch, on the newest row alone, each built where the copy of
+            // them a fetch also stores is built, so the two cannot say different things.
+            epsBases = newest ? Bases(fetched) : null,
+            valuation = newest ? Ratios(fetched) : null,
+            marketCapitalisation = newest ? Worth(fetched) : null,
+            ratings = newest ? Rated(fetched) : null,
+            dividend = newest ? Paying(fetched) : null,
+            estimated = newest ? Expected(fetched) : null,
             // The two parts the company financials endpoint files for nobody,
             // supplied by the filings archive and on the newest filing's row
             // alone. A segment table is read from one filing's own report page and
@@ -541,6 +532,83 @@ public sealed class FundamentalsFetcher : IComponent
                 value = Money(fact.Value),
             }) : null,
         });
+
+    // The parts of one fetch that are as of the fetch rather than as of a filing, as their own copy,
+    // which a fetch stores whether or not it found a new filing. The newest filing's row carries the
+    // same parts as they stood when it was fetched, and a row is never updated, so without the copy a
+    // later fetch would have nowhere to put a price that has moved.
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+    internal static string Snapshot(CompanyFundamentals fetched) =>
+        JsonSerializer.Serialize(new
+        {
+            epsBases = Bases(fetched),
+            valuation = Ratios(fetched),
+            marketCapitalisation = Worth(fetched),
+            ratings = Rated(fetched),
+            dividend = Paying(fetched),
+            estimated = Expected(fetched),
+        });
+
+    // The earnings bases a multiple is struck on.
+    static object Bases(CompanyFundamentals fetched) => new
+    {
+        trailing = Money(fetched.Bases.Trailing),
+        currentYear = Money(fetched.Bases.CurrentYear),
+        nextYear = Money(fetched.Bases.NextYear),
+    };
+
+    // The valuation on each earnings basis, copied from the payload with the basis beside it, so a
+    // reader can see which earnings figure a ratio was struck on. A ratio has a price in it and a
+    // price moves every session, which is why it is as of the fetch and sits on the newest row alone.
+    static object Ratios(CompanyFundamentals fetched) => new
+    {
+        trailingPe = Money(fetched.Valuation.TrailingPe),
+        forwardPe = Money(fetched.Valuation.ForwardPe),
+    };
+
+    // What the market says the company is worth, which section 15.9's fact strip states beside the
+    // close, as of the fetch for the reason the ratios are.
+    static string? Worth(CompanyFundamentals fetched) => Money(fetched.Market.Capitalisation);
+
+    // What the analysts following the company say of it, copied as the provider files it, as of the
+    // fetch for the reason the ratios are.
+    // see: The fundamentals row carries the analysts' ratings the provider files, on the newest filing alone
+    static object? Rated(CompanyFundamentals fetched) =>
+        fetched.PartsNotCarried.Contains(RatingsPart, StringComparer.Ordinal) ? null : new
+        {
+            rating = Money(fetched.Ratings.Rating),
+            targetPrice = Money(fetched.Ratings.TargetPrice),
+            strongBuy = fetched.Ratings.StrongBuy,
+            buy = fetched.Ratings.Buy,
+            hold = fetched.Ratings.Hold,
+            sell = fetched.Ratings.Sell,
+            strongSell = fetched.Ratings.StrongSell,
+        };
+
+    // The dividend the provider files, copied as it files it, as of the fetch for the reason the
+    // ratios are.
+    // see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none
+    static object? Paying(CompanyFundamentals fetched) =>
+        fetched.Dividend is { } paid ? new
+        {
+            forwardAnnualRate = Money(paid.ForwardAnnualRate),
+            forwardYield = Money(paid.ForwardYield),
+            payoutRatio = Money(paid.PayoutRatio),
+            exDividendDate = paid.ExDividendDate is { } ex ? Stored(ex) : null,
+            payDate = paid.PayDate is { } pay ? Stored(pay) : null,
+        } : null;
+
+    // The next print as the provider has it, and named for what it is: an analysts' estimate.
+    // Section 4 places the guided quarter at the earnings release exhibit, which is management
+    // stating what it expects, and this endpoint files no such thing.
+    static object? Expected(CompanyFundamentals fetched) =>
+        fetched.Estimated is { } next ? new
+        {
+            periodEnd = Stored(next.PeriodEnd),
+            reportDate = next.ReportDate is { } expected ? Stored(expected) : null,
+            timing = Filed(next.Timing),
+            epsEstimate = Money(next.EpsEstimate),
+        } : null;
 
     // One table as the payload holds it: the report it was read from, the title and the
     // scale it states, its period columns, and its groups in the order it states them.

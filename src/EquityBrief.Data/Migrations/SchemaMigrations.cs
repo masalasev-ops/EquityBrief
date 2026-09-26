@@ -665,6 +665,7 @@ public static class SchemaMigrations
         new Migration(42, "create list_rule", CreateListRule),
         new Migration(43, "create watch_list", CreateWatchList),
         new Migration(44, "add research_request.refresh", AddResearchRequestRefresh),
+        new Migration(45, "create fundamentals_snapshot", CreateFundamentalsSnapshot),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -1048,6 +1049,20 @@ public static class SchemaMigrations
     // see: Nothing expires on a timer
     const string AddResearchRequestRefresh = @"
         ALTER TABLE research_request ADD COLUMN refresh INTEGER NOT NULL DEFAULT 0 CHECK (refresh IN (0, 1));
+    ";
+
+    // The parts of a fetch that are as of the fetch rather than as of a filing, one row per fetch.
+    // A filing's row is never updated, so a fetch finding no new filing had nowhere to put a price
+    // that has moved since; this is where it goes, and the newest copy is read in place of the
+    // newest filing row's.
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+    const string CreateFundamentalsSnapshot = @"
+        CREATE TABLE fundamentals_snapshot (
+            ticker     TEXT NOT NULL,
+            fetched_at TEXT NOT NULL,
+            payload    TEXT NOT NULL,
+            PRIMARY KEY (ticker, fetched_at)
+        ) STRICT;
     ";
 
     public static int LatestVersion => All.Max(migration => migration.Version);
