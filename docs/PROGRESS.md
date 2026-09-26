@@ -26809,14 +26809,37 @@ Mutated:    the rule, stated before the run: each rule this batch lands put back
             V1 4.2's rule removed, overlapping windows taken again: red in the distinct moves test and the
             fixture's moves.
             V2 4.2's circle drawn with no link to its row: red in the level chart test.
-            Results: TO BE FILLED FROM THE 3.4 SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 34VT of 34VT tests ran
+            Results: one run for each of the sixteen in a detached worktree at f9f6d37, the tree carrying
+            this entry, filtered on the operator's instruction of 2026-09-24 to the tests named, each edit
+            made there and reverted with `git checkout -- .` and the tree read clean after. The band
+            mutations ran against the four band tests in `FixtureExpectations.Bands.cs`, the registration
+            test being the fifth, and the fixture's level arithmetic, which is its bands
+            and its worked band's strength, and the merge distance test; the summary's against the two level
+            evidence tests and the price order test; the registration's against the registration test and
+            the evaluator pin test; 4.2's against the distinct moves test, the fixture's moves and the level
+            chart test. The whole suite ran green over f9f6d37 in the gates, 1426 of 1426.
+            B1 turned the three-week test and both level arithmetic tests red, and the HUM test stayed
+            green. B2 turned the HUM test, the three-week test and both level arithmetic tests red. B3
+            turned the chain test, the stored width test, both level arithmetic tests and the merge distance
+            test red. B4 turned the chain test red and, not predicted, both level arithmetic tests, since
+            the fixture's own chains split elsewhere at their lowest gap. B5, whose edit also kept a chain
+            of one whole so a width of nothing could not recurse, turned the chain test red alone of the
+            seven. L1 turned both level evidence tests and the price order test red. L2 turned both level
+            evidence tests red; its first run followed an edit refused before it was made, ran over the
+            unmutated tree, and all three passed. L3 turned both level evidence tests red. L4 turned the
+            constructed level evidence test red alone. M1, M2 and M3 each turned one test red, the
+            registration test for the first two and the evaluator pin test for the third. V1 turned the
+            distinct moves test and the fixture's moves red. V2 was made where the circle is drawn, its
+            link emptied, and turned the level chart test red alone.
+Held:       all sixteen, in the tests each named; B4 in two more than predicted, each the fixture's own
+            bands rather than a test of this batch.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1426 of 1426 tests ran
             with none failed, migrations 0 to 43 with none pending, schema version 43, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 34VTB tables, 34VC claims, 34VP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 34VR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 34VT of 34VT tests.
-            Both gates ran over the tree carrying this entry and the three before it, 34TREESHA, in a
+            `tools/verify-phase.ps1` green at 42 tables, 574 claims, 574 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 584 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41
+            of 41 roster checks carried and all 41 run, 1426 of 1426 tests.
+            Both gates ran over the tree carrying this entry and the two before it, f9f6d37, in a
             worktree beside the repository, and the operator's store under `data/` was not touched by
             either.
 Carried:    the operator's store, once this merges and before the next night, since from the merge every
