@@ -27103,3 +27103,36 @@ Carried:    the operator's store needs migration 44 before a press of Regenerate
             A name's page for an earlier night is reached by its address alone, and from there by the walk
             through that evening's list, since the listing history was the one link any page drew to it:
             an earlier evening's list links each name to its page for tonight.
+
+### 5.8 ruling - a regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day   2026-09-26
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-26, after PR 249 landed Regenerate Report: "Did you make it so that the
+            report regeneration uses the latest data as of current date when it is asked for ?". Told that
+            it did not for the company's figures, which a pass fetches only where the store holds none, so
+            a regenerate after a new quarter would write from the old one and the claim checker would
+            refuse any sentence quoting the new: "Merge this PR now so i can see the latest pages. But
+            regenerate report should do a full paid report with current date. There is no point in
+            regenerating a report from 30 days ago using stale data. However, the condition is that it
+            regenerates only once per day". Asked how the figures that move with the price, the multiples,
+            the market value, the dividend yield, the analysts' ratings and the next report, should be
+            made current where the company has filed nothing new, since they sit on the newest filing's
+            row as first fetched and a row is never updated, they chose a fresh copy each fetch.
+Ruled:      a regenerate has the paid model write every section, the local lane's among them, whatever
+            lane its request names; it fetches the company's figures again whatever the store holds before
+            it writes, storing a filing made since as a row of its own and each fetch's copy of the parts
+            that are as of the fetch in a store of their own, which the facts file and the numbers read in
+            place of the newest row's; the night's facts file is assembled again after the fetch; and it
+            runs at most once a name a day in New York, the drain as well as the page refusing a second
+            (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day).
+Changed:    `DECISIONS.md` gains the decision, which supersedes **A report is regenerated whole on the
+            operator's ask once the day it was written has passed**, moved to "Previously decided" with its
+            reasoning. No code changes here: the 5.8 correction that follows carries it.
+Consequences: a regenerate costs a pass with every section paid, $0.0330 over the fixture's KEYS, and a
+            fetch of ten of the provider's 100,000 daily calls; the prices, bands and plan are the newest
+            night's, since the night is what fetches bars; the facts file of the fixture holds what it held,
+            since each fetch's copy of the parts states what the newest row states, so no recording is
+            invalidated; and the operator's store takes migration 45 once the correction merges.
+Tests:      none added here; the 5.8 correction that follows adds the ones that hold it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 5.8 correction closing this batch records.
+Carried:    nothing.
