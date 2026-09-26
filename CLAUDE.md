@@ -54,6 +54,7 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
   EquityBrief.Tests       the suite
 /docs             ARCHITECTURE.html  SCHEMA.md  BUILD_PLAN.md
                   DECISIONS.md  PROGRESS.md  CHANGELOG.md  RUNBOOK.md
+                  HOW_IT_WORKS.html   the reader's guide, not a corpus document
 /tools            ci.ps1  ci.sh          every CI step in order, against a dropped store
                   verify-phase  verify-phase.ps1   the phase report
                   migrate  migrate.ps1   apply migrations
@@ -217,5 +218,7 @@ A corpus of the same shape grew past twenty documents on a previous project and 
 **A screens document is not one of the eight.** Section 15 of `ARCHITECTURE.html` specifies what the operator sees. A mockup file and a built page are two answers to one question, and the day the two disagree nothing says which is the specification.
 
 **`fixtures/README.md` is not one of the eight.** It describes a folder's shape, as `.gitignore` describes exclusions, and it carries no rule and no decision.
+
+**`docs/HOW_IT_WORKS.html` is not one of the eight.** It is the operator's guide for a reader new to the tool, explaining the design in plain terms with figures and the published work it rests on, and it carries no rule, no decision and no value of its own. Every rule and value it mentions is stated in `ARCHITECTURE.html`, and where the two differ `ARCHITECTURE.html` is what the system does.
 
 **`.claude/rules/` is not a ninth document.** It holds no decision, no design fact and no rule this corpus does not already state. It is the same rules, placed where they load for the session that needs them: a path-scoped file costs nothing to a session working elsewhere, which is what lets the reference material keep every word of its reasoning. The eight stand unchanged, and the four rules files are read by the corpus checks exactly as this file is, which is what stops them becoming a place a rule can hide. A rule appearing in both this file and a rules file is the defect the placement exists to avoid, because two copies of one rule drift and nothing says which is current, so a rule lives in exactly one of them.

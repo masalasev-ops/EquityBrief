@@ -7718,3 +7718,51 @@ Now:
 > for an earlier one. On a store the swing filter has listed, the page opens from the first night it listed: an earlier date draws one line saying the record starts on that night, with a link opening it (see: The dated screens open from the swing filter's first night, and an evening before it is not drawn). A calendar beside the night drawn opens another: its arrows open the night before and the night after among those the page draws, and its month grid, newest month first, underlines each day holding one of them and opens it on a click, marks the night drawn, and draws every other day as no link.</p>
 > The same calendar as tonight's page sits beside the night drawn and opens the run page of the night it picks, and like tonight's page it opens from the swing filter's first night.</p>
 Why: the record starts on the first night the list was drawn by the rule it is drawn by now, and a calendar is read by which days hold a night.
+
+### 2026-09-25 - ARCHITECTURE.html - the watch list, a page of its own that the operator fills
+Authorised by: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+Was:
+> <code>#/</code>, <code>#/night/&lt;date&gt;</code>, <code>#/universe</code>,
+> <tr><td>Watch list</td><td>the two or three names shown every evening whether or not they are on the list, above the list rather than inside it</td></tr>
+> <td>run log, research requests</td>
+> which are the two writes it makes and the only table it writes;
+> the read and write matrix held no column for a watch list, and section 15 ended at 15.15 Queue.
+Now:
+> <code>#/</code>, <code>#/night/&lt;date&gt;</code>, <code>#/watch</code>, <code>#/universe</code>,
+> <tr><td>Watch list</td><td>one line above the list saying how many names the operator watches, with a link to the watch list page (section 15.16)</td></tr>
+> <td>run log, research requests, watch list</td>
+> and a press on the watch list page or beside a name on its own page puts the name on the watch list or takes it off, the only other table it writes;
+> a Watch list column in the matrix, read and written by the Read API alone, and a section 15.16 Watch list before section 16, stating what the page answers, its route, what it reads and writes, a table of its four parts (Add a name, Each name watched, What the swing filter said of it, Take it out) and a paragraph saying it decides nothing.
+Why: section 15.7 promised names shown every evening and no store could hold them, so the page drew a line saying none was on file. The operator ruled on 2026-09-25 that the list is theirs, up to twenty names of the index, on a page of its own.
+
+### 2026-09-25 - SCHEMA.md - the watch list, a table the read surface writes
+Authorised by: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+Was:
+> | `research_request` | ReadApi, RequestDrain | ReadApi, RequestDrain | none |
+> **`research_request` is the one table the read surface writes, and the split is by operation.**
+> no section for a watch list; the table did not exist.
+Now:
+> | `research_request` | ReadApi, RequestDrain | ReadApi, RequestDrain | none |
+> | `watch_list` | ReadApi | none | ReadApi |
+> **`research_request` and `watch_list` are the two tables the read surface writes, and the split on the first is by operation.** ... The watch list is the operator's own: ReadApi inserts a name on one press and deletes it on another, and nothing but the pages reads it (see: The watch list is the operator's own, up to twenty names of the index, on a page of its own).
+> a `### watch_list` section: one row per name watched, `ticker` and `added_at`, at most twenty rows, written on the operator's press alone and read by the pages alone.
+Why: a table is declared with its one writer per operation, and the read surface's second table is named beside its first.
+
+### 2026-09-25 - CLAUDE.md - docs/HOW_IT_WORKS.html placed outside the eight
+Corrects: the operator wrote a guide to the tool into `docs/` on 2026-09-25 and asked for it to be merged, and the Document lifecycle caps the corpus at eight, a ninth document requiring a retirement or a reason written down. Found on the operator's request to merge it.
+Was:
+> the section's placements ended at the paragraph placing `fixtures/README.md` outside the eight.
+Now:
+> a paragraph places `docs/HOW_IT_WORKS.html` outside them, on the ground that it explains the design and carries no rule, no decision and no value of its own, and says that where it and `ARCHITECTURE.html` differ, `ARCHITECTURE.html` is what the system does.
+Why: the cap only works if every document in the tree is either inside it or excluded by name, and a guide that restated rules would be a second copy of them that drifts.
+
+### 2026-09-25 - CLAUDE.md - the layout block names docs/HOW_IT_WORKS.html
+Corrects: the block listed the seven documents in `/docs` and the guide the operator added on 2026-09-25 had no place in the map. Found on the operator's request to merge it.
+Was:
+> /docs             ARCHITECTURE.html  SCHEMA.md  BUILD_PLAN.md
+>                   DECISIONS.md  PROGRESS.md  CHANGELOG.md  RUNBOOK.md
+Now:
+> /docs             ARCHITECTURE.html  SCHEMA.md  BUILD_PLAN.md
+>                   DECISIONS.md  PROGRESS.md  CHANGELOG.md  RUNBOOK.md
+>                   HOW_IT_WORKS.html   the reader's guide, not a corpus document
+Why: a file in the tree the layout block does not name is one a sweep of the tree against the block returns.

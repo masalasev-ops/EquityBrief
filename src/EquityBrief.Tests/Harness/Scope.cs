@@ -1354,9 +1354,73 @@ internal static class Scope
             Verdict.Pass,
             "one cell per evening over the window, a listed evening drawn differently in shape as well as in ink, and the count of listed evenings read off the markup",
             ByReadSurface),
-                [CheckReach.Key("15.7 Tonight", "Watch list")] = new Scoped(
+        [CheckReach.Key("15.7 Tonight", "Watch list")] = new Scoped(
             Verdict.Pass,
-            "the region sits above the list rather than inside it and states that no watch list is on file, because no store holds one and none is invented",
+            "the region sits above the list and states how many names are watched, read off the store, with a link to the watch list page",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "Add a name, a box offering the names of the index")] = new Scoped(
+            Verdict.Pass,
+            "the box is drawn on the page and offers the index's names from the list the masthead's search reads",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "Add a name, which adds one while the list holds fewer than twenty and otherwise gives way to a line saying the limit is reached")] = new Scoped(
+            Verdict.Pass,
+            "a press adds a name of the index and the store holds it; at twenty the box is gone and the line saying the limit is drawn in its place, and a twenty-first is refused with nothing written",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "Add a name, the same press beside a name on its own page")] = new Scoped(
+            Verdict.Pass,
+            "a name's own page offers Watch for a name not watched and Stop watching for one that is, each posting to the route the page's own press posts to",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "Add a name, a refusal with the line saying why for a name not of the index tonight or already watched or a twenty-first")] = new Scoped(
+            Verdict.Pass,
+            "a name not of the index tonight, one already watched and a twenty-first are each refused with the line saying why and nothing written, and a press without the page's own header is refused",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "Each name watched, in the order it was added")] = new Scoped(
+            Verdict.Pass,
+            "the rows are drawn in the order the store says each name was added, not the order of the tickers",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "Each name watched, its company")] = new Scoped(
+            Verdict.Pass,
+            "each row carries the company the membership store names for it",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "Each name watched, its close and the day's change")] = new Scoped(
+            Verdict.Pass,
+            "each row's close and day change are the night's close and its change from the session before, worked from the stored bars",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "Each name watched, its trend in a word")] = new Scoped(
+            Verdict.Pass,
+            "each row's trend is the trend state the newest ladder on or before the night holds for it",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "Each name watched, the reward to risk of its trade")] = new Scoped(
+            Verdict.Pass,
+            "each row's reward to risk is the one its trade gate read, as the gate row stores it",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "Each name watched, the day it was added and a link to its page")] = new Scoped(
+            Verdict.Pass,
+            "each row carries the day of the press that added it and a link to the name's own page",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "Each name watched, drawn for the newest night whether or not the list holds it")] = new Scoped(
+            Verdict.Pass,
+            "the page is dated by the newest night and a name the filter did not list is drawn as fully as one it did",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "What the swing filter said of it, listed and its number")] = new Scoped(
+            Verdict.Pass,
+            "a name the filter passed is drawn listed with its rank as the gate row stores it",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "What the swing filter said of it, the first gate that stopped it with that gate's reason")] = new Scoped(
+            Verdict.Pass,
+            "a name stopped is drawn with the first gate its stored row failed and that gate's own reason",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "What the swing filter said of it, what excluded it")] = new Scoped(
+            Verdict.Pass,
+            "a name that passed every gate and was excluded is drawn with the exclusion its stored row names",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "What the swing filter said of it, that no answer is stored for the night")] = new Scoped(
+            Verdict.Pass,
+            "a name with no gate row for the night is drawn saying so rather than as stopped",
+            ByReadSurface),
+        [CheckReach.Key("15.16 Watch list", "Take it out")] = new Scoped(
+            Verdict.Pass,
+            "each row's press takes the name off, and the page drawn again holds it no more",
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Research, per row")] = new Scoped(
             Verdict.Pass,
@@ -2735,6 +2799,22 @@ internal static class Scope
         [CheckReach.Key("15.15 Queue", "Being written")] = "9.3",
         [CheckReach.Key("15.15 Queue", "Settled")] = "9.3",
         [CheckReach.Key("15.15 Queue", "Take it out")] = "9.3",
+        [CheckReach.Key("15.16 Watch list", "Add a name, a box offering the names of the index")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "Add a name, which adds one while the list holds fewer than twenty and otherwise gives way to a line saying the limit is reached")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "Add a name, the same press beside a name on its own page")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "Add a name, a refusal with the line saying why for a name not of the index tonight or already watched or a twenty-first")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "Each name watched, in the order it was added")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "Each name watched, its company")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "Each name watched, its close and the day's change")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "Each name watched, its trend in a word")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "Each name watched, the reward to risk of its trade")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "Each name watched, the day it was added and a link to its page")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "Each name watched, drawn for the newest night whether or not the list holds it")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "What the swing filter said of it, listed and its number")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "What the swing filter said of it, the first gate that stopped it with that gate's reason")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "What the swing filter said of it, what excluded it")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "What the swing filter said of it, that no answer is stored for the night")] = "5.8",
+        [CheckReach.Key("15.16 Watch list", "Take it out")] = "5.8",
         [CheckReach.Key("15.15 Queue", "Which lane would write one")] = "9.4",
         [CheckReach.Key("15.15 Queue", "When each will be written")] = "11.2",
         [CheckReach.Key("15.7 Tonight", "The report's state")] = "11.3",
@@ -2937,6 +3017,13 @@ internal static class Scope
             ["names in the index", "names the swing filter listed", "names that fired", "the night's breadth with the share above the 50-day average beside it as context", "reports carrying fresh prose against reused", "spend", "run duration", "the harness verdict"],
         [CheckReach.Key("15.7 Tonight", "The list")] =
             ["one row per name on the list", "ordered by the swing filter's reward to risk then strength then band strength", "at most twenty drawn", "each numbered by its place in that order", "a line above them stating how many are drawn of how many are listed", "a line naming the rule that listed the evening", "name", "close", "day change", "trend state in a word", "the distance row mark", "the reward to risk or the plan's reason for none", "the gates with the values that decided them", "the reasons as context", "beside the name a line saying so where its prices may not reflect a dividend or split"],
+        // 5.8's watch list page, each row's parts as the row states them.
+        [CheckReach.Key("15.16 Watch list", "Add a name")] =
+            ["a box offering the names of the index", "which adds one while the list holds fewer than twenty and otherwise gives way to a line saying the limit is reached", "the same press beside a name on its own page", "a refusal with the line saying why for a name not of the index tonight or already watched or a twenty-first"],
+        [CheckReach.Key("15.16 Watch list", "Each name watched")] =
+            ["in the order it was added", "its company", "its close and the day's change", "its trend in a word", "the reward to risk of its trade", "the day it was added and a link to its page", "drawn for the newest night whether or not the list holds it"],
+        [CheckReach.Key("15.16 Watch list", "What the swing filter said of it")] =
+            ["listed and its number", "the first gate that stopped it with that gate's reason", "what excluded it", "that no answer is stored for the night"],
         // 12.6. An evening before the switch, drawn as it was listed.
         [CheckReach.Key("15.7 Tonight", "An evening before the switch")] =
             ["drawn as it was listed", "one row per name that fired", "ordered by how many fired then by the plan's reward to risk"],
@@ -3245,6 +3332,7 @@ internal static class Scope
         "15.9 Name",
         "15.10 Run",
         "15.15 Queue",
+        "15.16 Watch list",
         "15.11 How a reason's record is displayed",
     ];
 

@@ -12,7 +12,7 @@ public partial class ReadSurface
     // Tonight's page as the route draws it with the given row selected.
     static string TonightWith(IReadOnlyList<ListingCell> rows, string ticker) =>
         new SinglePageApp().TonightRegion(
-            new MarkRenderer(), rows[0].SessionDate, 503, rows.Count, null, rows, [], "<div class=\"plan\"></div>", null, selectedTicker: ticker);
+            new MarkRenderer(), rows[0].SessionDate, 503, rows.Count, null, rows, 0, "<div class=\"plan\"></div>", null, selectedTicker: ticker);
 
     // The selected name's card, from its opening to the next card.
     static string SelectedCard(string page)

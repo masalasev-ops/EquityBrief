@@ -663,6 +663,7 @@ public static class SchemaMigrations
         new Migration(40, "create shape_proposal", CreateShapeProposal),
         new Migration(41, "add gate_result.shadow", AddGateResultShadow),
         new Migration(42, "create list_rule", CreateListRule),
+        new Migration(43, "create watch_list", CreateWatchList),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -1029,6 +1030,13 @@ public static class SchemaMigrations
         CREATE TABLE list_rule (
             session_date TEXT NOT NULL PRIMARY KEY,
             rule         TEXT NOT NULL CHECK (rule IN ('reasons', 'filter'))
+        ) STRICT;
+    ";
+
+    const string CreateWatchList = @"
+        CREATE TABLE watch_list (
+            ticker   TEXT NOT NULL PRIMARY KEY,
+            added_at TEXT NOT NULL
         ) STRICT;
     ";
 

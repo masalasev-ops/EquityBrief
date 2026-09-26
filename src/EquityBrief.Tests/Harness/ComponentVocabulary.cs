@@ -48,6 +48,7 @@ internal static class ComponentVocabulary
         ("Version scores and blocks", [DataStore.VersionScore, DataStore.VersionBlock]),
         ("Series state", [DataStore.SeriesState]),
         ("Research requests", [DataStore.ResearchRequest]),
+        ("Watch list", [DataStore.WatchList]),
         ("Run log", [DataStore.RunLog]),
     ];
 
@@ -160,6 +161,7 @@ internal static class ComponentVocabulary
         ["version scores"] = DataStore.VersionScore,
         ["version blocks"] = DataStore.VersionBlock,
         ["research requests"] = DataStore.ResearchRequest,
+        ["watch list"] = DataStore.WatchList,
     };
 
     internal sealed record CellReading(DataStore[] Stores, Feed[] Feeds, string[] Unresolved);

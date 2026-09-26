@@ -1,0 +1,718 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How EquityBrief works</title>
+<style>
+  :root{
+    --paper:#F3F4F1; --panel:#FBFBF8; --ink:#14202B; --muted:#4B5563; --faint:#9CA3AF; --rule:#D9DCD4;
+    --sup:#2A7F62; --res:#C0621F; --store:#3B5A8A; --serve:#1F8A8A; --research:#7A4E8C; --check:#A32D2D;
+    --boxbg:#FFFFFF; --flagbg:#FFF6E5; --link:#1F5A96;
+    box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#131920; --panel:#1B222A; --ink:#E3E7E4; --muted:#9AA4AE; --faint:#6C7681; --rule:#2E3740;
+      --sup:#5FC49B; --res:#E8955A; --store:#84A6DA; --serve:#54C2C2; --research:#BB92D2; --check:#E4776F;
+      --boxbg:#222A33; --flagbg:#2A2318; --link:#8DB6F2;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#131920; --panel:#1B222A; --ink:#E3E7E4; --muted:#9AA4AE; --faint:#6C7681; --rule:#2E3740;
+    --sup:#5FC49B; --res:#E8955A; --store:#84A6DA; --serve:#54C2C2; --research:#BB92D2; --check:#E4776F;
+    --boxbg:#222A33; --flagbg:#2A2318; --link:#8DB6F2;
+  }
+  *{box-sizing:border-box}
+  html{background:var(--paper);scroll-padding-top:calc(16px + env(safe-area-inset-top,0px))}
+  body{margin:0;color:var(--ink);background:var(--paper);font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.6}
+  a,a:visited{color:var(--link)}
+  main{max-width:1000px;margin:0 auto;padding:40px 24px 90px}
+  h1,h2,h3{font-family:Cambria,Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-0.01em;margin:0}
+  h1{font-size:38px;line-height:1.1}
+  h2{font-size:26px;margin:58px 0 4px;padding-top:16px;border-top:1px solid var(--rule)}
+  h3{font-size:18px;margin:22px 0 6px}
+  p{margin:0 0 12px;max-width:72ch}
+  ul{margin:0 0 12px;padding-left:22px;max-width:72ch}
+  li{margin-bottom:5px}
+  .lede{font-size:17.5px;color:var(--muted);margin:12px 0 0;max-width:66ch}
+  .asks{font-family:Cambria,Georgia,serif;font-size:18px;color:var(--muted);margin:2px 0 18px}
+  .note{font-size:14px;color:var(--muted)}
+  #themeToggle{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:14px;z-index:5;font:12.5px "Segoe UI",Arial,sans-serif;padding:7px 12px;border:1px solid var(--rule);border-radius:4px;background:var(--panel);color:var(--muted);cursor:pointer}
+  #themeToggle:hover{color:var(--ink)}
+  #themeToggle:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+
+  nav.toc{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px 18px;margin:26px 0 0}
+  nav.toc ol{columns:2;column-gap:32px;margin:0;padding-left:22px}
+  @media (max-width:640px){nav.toc ol{columns:1}}
+  nav.toc li{margin-bottom:4px}
+
+  figure{margin:10px 0 8px}
+  svg{width:100%;height:auto;display:block}
+  .key{background:var(--panel);border:1px solid var(--rule);border-radius:5px;padding:10px 14px;font-size:14.5px;margin:6px 0 16px}
+  .key p{margin:0 0 4px;max-width:none}
+  .why{background:var(--flagbg);border-radius:5px;padding:11px 14px;font-size:15px;margin:12px 0 14px}
+  .why p{margin:0 0 6px;max-width:none}
+  .why p:last-child{margin-bottom:0}
+  .refuse{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:14px 0}
+  .refuse div{background:var(--panel);border:1px solid var(--rule);border-left:4px solid var(--check);border-radius:5px;padding:10px 12px;font-size:15px}
+  .refuse b{display:block;margin-bottom:2px}
+
+  table{border-collapse:collapse;width:100%;font-size:14.5px;margin:8px 0 12px}
+  th,td{text-align:left;vertical-align:top;padding:8px 9px;border-bottom:1px solid var(--rule)}
+  th{font-weight:600;color:var(--muted);font-size:13.5px}
+  .wrap{overflow-x:auto}
+
+  dl.words{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:4px 26px;margin:10px 0}
+  dl.words div{padding:8px 0;border-bottom:1px solid var(--rule)}
+  dl.words dt{font-weight:600}
+  dl.words dd{margin:0;color:var(--muted);font-size:15px}
+
+  .src td:first-child{white-space:nowrap}
+  .src td{font-size:14px}
+  .src a{word-break:break-word}
+
+  /* figure classes, so every colour follows the theme */
+  .bx{fill:var(--boxbg);stroke:var(--rule);stroke-width:1.3}
+  .bx-n{fill:var(--boxbg);stroke:var(--store);stroke-width:1.7}
+  .bx-v{fill:var(--boxbg);stroke:var(--serve);stroke-width:1.7}
+  .bx-r{fill:var(--boxbg);stroke:var(--research);stroke-width:1.7}
+  .bx-k{fill:var(--boxbg);stroke:var(--check);stroke-width:1.7}
+  .bx-s{fill:var(--boxbg);stroke:var(--sup);stroke-width:1.7}
+  .bx-o{fill:var(--boxbg);stroke:var(--res);stroke-width:1.7}
+  .zone-n{fill:var(--store);opacity:.10}
+  .zone-v{fill:var(--serve);opacity:.11}
+  .zone-r{fill:var(--research);opacity:.10}
+  .band-s{fill:var(--sup);opacity:.22}
+  .band-o{fill:var(--res);opacity:.22}
+  .edge-s{stroke:var(--sup);stroke-width:1.2}
+  .edge-o{stroke:var(--res);stroke-width:1.2}
+  .t{fill:var(--ink);font:600 16px "Segoe UI",Arial,sans-serif}
+  .ts{fill:var(--muted);font:14.5px "Segoe UI",Arial,sans-serif}
+  .tl{fill:var(--muted);font:600 14.5px "Segoe UI",Arial,sans-serif}
+  .t-s{fill:var(--sup);font:600 14.5px "Segoe UI",Arial,sans-serif}
+  .t-o{fill:var(--res);font:600 14.5px "Segoe UI",Arial,sans-serif}
+  .t-k{fill:var(--check);font:600 14.5px "Segoe UI",Arial,sans-serif}
+  .ln{stroke:var(--faint);stroke-width:1.6;fill:none}
+  .ln-v{stroke:var(--serve);stroke-width:1.7;fill:none}
+  .ah{fill:var(--faint)}
+  .price{stroke:var(--ink);stroke-width:1.8;fill:none}
+  .axis{stroke:var(--faint);stroke-width:1.5}
+  .stop{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:6 5}
+  .inv{stroke:var(--check);stroke-width:2.2}
+  .mark{fill:var(--ink)}
+  .touch{fill:var(--boxbg);stroke:var(--ink);stroke-width:1.5}
+  .f0{fill:var(--store);opacity:.10}.f1{fill:var(--store);opacity:.16}.f2{fill:var(--store);opacity:.22}
+  .f3{fill:var(--store);opacity:.29}.f4{fill:var(--store);opacity:.36}.f5{fill:var(--store);opacity:.44}.f6{fill:var(--store);opacity:.54}
+  .fun{stroke:var(--store);stroke-width:1.2}
+  .tl-ax{stroke:var(--rule);stroke-width:2.5}
+  .dot-n{fill:var(--store)}.dot-k{fill:var(--check)}.dot-v{fill:var(--serve)}
+</style>
+</head>
+<body>
+<button id="themeToggle" type="button" aria-label="Switch colour theme">Dark</button>
+<main>
+
+<h1>How EquityBrief works</h1>
+<p class="lede">An introduction for anyone who wants to know what this tool does and why it is built the way it is. It explains ideas, not code. The specification in ARCHITECTURE.html holds every rule and every number; this guide explains the thinking behind them.</p>
+
+<nav class="toc" aria-label="Contents">
+  <ol>
+    <li><a href="#what">What it is, and what it will not do</a></li>
+    <li><a href="#night">One night, in one picture</a></li>
+    <li><a href="#words">Words used in this guide</a></li>
+    <li><a href="#levels">Finding the prices that matter</a></li>
+    <li><a href="#plan">Turning those prices into a plan</a></li>
+    <li><a href="#list">Choosing tonight's list</a></li>
+    <li><a href="#report">What a report contains</a></li>
+    <li><a href="#research">Research, written once and kept</a></li>
+    <li><a href="#improve">How the picks get better</a></li>
+    <li><a href="#screens">The four screens</a></li>
+    <li><a href="#why">Why these choices: sources</a></li>
+  </ol>
+</nav>
+
+<!-- 1 -->
+<h2 id="what">1. What it is, and what it will not do</h2>
+<p class="asks">What problem does this tool solve?</p>
+<p>Every evening, after the US market closes, EquityBrief looks at every stock in the S&amp;P 500. It picks the few that are at a buy point for a swing trade, a position held for a few weeks. Those form tonight's list.</p>
+<p>Any stock in the index can also be opened on its own. It opens to a full research report: the chart, the prices that matter, a plan, the numbers, and a written view of the company.</p>
+
+<div class="refuse">
+  <div><b>It does not predict prices.</b>It finds prices a stock has respected before and says what to do if it gets there again.</div>
+  <div><b>It does not rank companies as investments.</b>It judges setups on the chart, not whether a business is good.</div>
+  <div><b>It does not size positions.</b>It says where to buy and sell. How much is always your decision.</div>
+  <div><b>It does not spend money unless you ask.</b>The nightly work is free. Only written research costs anything.</div>
+</div>
+
+<div class="why">
+  <p><b>Why these limits.</b> A forecast or a ranking would need evidence the tool does not have. Levels, plans and their outcomes can each be checked, so the tool keeps to what can be checked.</p>
+</div>
+
+<!-- 2 -->
+<h2 id="night">2. One night, in one picture</h2>
+<p class="asks">What happens after the close, and what happens when you read?</p>
+<figure>
+  <svg viewBox="0 0 1000 250" role="img" aria-labelledby="f1">
+    <title id="f1">The nightly run on the left, reading on the right</title>
+    <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+    <rect class="zone-n" x="4" y="34" width="560" height="180" rx="8"/>
+    <rect class="zone-v" x="582" y="34" width="414" height="180" rx="8"/>
+    <text class="tl" x="18" y="24">Every night, free</text>
+    <text class="tl" x="596" y="24">When you read</text>
+
+    <rect class="bx-n" x="20" y="76" width="120" height="92" rx="6"/>
+    <text class="t" x="80" y="112" text-anchor="middle">Market</text>
+    <text class="t" x="80" y="132" text-anchor="middle">closes</text>
+
+    <rect class="bx-n" x="158" y="76" width="120" height="92" rx="6"/>
+    <text class="t" x="218" y="108" text-anchor="middle">Fetch</text>
+    <text class="ts" x="218" y="130" text-anchor="middle">every stock's</text>
+    <text class="ts" x="218" y="148" text-anchor="middle">day, in one go</text>
+
+    <rect class="bx-n" x="296" y="76" width="120" height="92" rx="6"/>
+    <text class="t" x="356" y="108" text-anchor="middle">Compute</text>
+    <text class="ts" x="356" y="130" text-anchor="middle">levels, plans,</text>
+    <text class="ts" x="356" y="148" text-anchor="middle">tonight's list</text>
+
+    <rect class="bx-n" x="434" y="76" width="120" height="92" rx="6"/>
+    <text class="t" x="494" y="116" text-anchor="middle">Store it</text>
+    <text class="ts" x="494" y="138" text-anchor="middle">for every stock</text>
+
+    <rect class="bx-v" x="598" y="76" width="120" height="92" rx="6"/>
+    <text class="t" x="658" y="108" text-anchor="middle">Tonight</text>
+    <text class="ts" x="658" y="130" text-anchor="middle">the list,</text>
+    <text class="ts" x="658" y="148" text-anchor="middle">best first</text>
+
+    <rect class="bx-v" x="736" y="76" width="120" height="92" rx="6"/>
+    <text class="t" x="796" y="108" text-anchor="middle">Open one</text>
+    <text class="ts" x="796" y="130" text-anchor="middle">its report</text>
+    <text class="ts" x="796" y="148" text-anchor="middle">shows at once</text>
+
+    <rect class="bx-r" x="874" y="76" width="112" height="92" rx="6"/>
+    <text class="t" x="930" y="108" text-anchor="middle">Research</text>
+    <text class="ts" x="930" y="130" text-anchor="middle">written once,</text>
+    <text class="ts" x="930" y="148" text-anchor="middle">if missing</text>
+
+    <path class="ln" d="M140 122 H154" marker-end="url(#ah1)"/>
+    <path class="ln" d="M278 122 H292" marker-end="url(#ah1)"/>
+    <path class="ln" d="M416 122 H430" marker-end="url(#ah1)"/>
+    <path class="ln" d="M554 122 H594" marker-end="url(#ah1)"/>
+    <path class="ln" d="M718 122 H732" marker-end="url(#ah1)"/>
+    <path class="ln" d="M856 122 H870" marker-end="url(#ah1)"/>
+    <text class="ts" x="284" y="198" text-anchor="middle">Arithmetic only. No AI model runs at night.</text>
+    <text class="ts" x="790" y="198" text-anchor="middle">Only research costs money.</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> Blue is the nightly run, teal is what you see, purple is the one paid step.</p>
+  <p><b>What to take from it.</b> Everything you look at was worked out the night before. Research is the only thing that waits for you.</p>
+</div>
+<div class="why">
+  <p><b>Why split it this way.</b> Five hundred stocks every night must be cheap and fast, so the night does arithmetic only. Written analysis is slow and costs money, so it happens only for the stocks you open, and it is kept.</p>
+</div>
+
+<!-- 3 -->
+<h2 id="words">3. Words used in this guide</h2>
+<p class="asks">The few terms everything else depends on.</p>
+<dl class="words">
+  <div><dt>Session</dt><dd>One trading day.</dd></div>
+  <div><dt>Support</dt><dd>A price where the stock has stopped falling before.</dd></div>
+  <div><dt>Resistance</dt><dd>A price where the stock has stopped rising before.</dd></div>
+  <div><dt>Band</dt><dd>A support or resistance level drawn as a narrow price range, because prices a few cents apart cannot be told apart.</dd></div>
+  <div><dt>Swing high, swing low</dt><dd>A local peak or trough: a day higher, or lower, than the days around it.</dd></div>
+  <div><dt>Moving average</dt><dd>The average closing price over the last 20, 50 or 200 sessions.</dd></div>
+  <div><dt>Retracement</dt><dd>A price a set fraction of the way back between the last swing high and swing low.</dd></div>
+  <div><dt>Volume shelf</dt><dd>A price range where an unusually large share of recent trading happened.</dd></div>
+  <div><dt>Typical daily move</dt><dd>How far this stock moves on an ordinary day. Used as a ruler, so "two typical days away" means the same for a calm stock and a volatile one.</dd></div>
+  <div><dt>Trend label</dt><dd>Uptrend, range or downtrend, read from the moving averages and the swings.</dd></div>
+  <div><dt>Pullback</dt><dd>A dip back toward support after a rise.</dd></div>
+  <div><dt>Tranche</dt><dd>One step of a purchase made in steps.</dd></div>
+  <div><dt>Stop</dt><dd>The price at which a step is sold because it was wrong. Here it means a close below that price, not a touch.</dd></div>
+  <div><dt>Invalidation</dt><dd>The price below which the whole idea is wrong.</dd></div>
+  <div><dt>Reward to risk</dt><dd>The distance to the target divided by the distance to the stop.</dd></div>
+  <div><dt>Break-even rate</dt><dd>How often a plan must reach its target before its stop just to come out even.</dd></div>
+  <div><dt>Breadth</dt><dd>The share of the index trading above its own 200-day average. A reading of the whole market's health.</dd></div>
+  <div><dt>Relative strength</dt><dd>How a stock's recent return compares with every other stock in the index.</dd></div>
+  <div><dt>Calibration</dt><dd>Adjusting a setting from what the system has measured, and only with your approval.</dd></div>
+</dl>
+
+<!-- 4 -->
+<h2 id="levels">4. Finding the prices that matter</h2>
+<p class="asks">Where has this stock repeatedly stopped falling or rising?</p>
+<figure>
+  <svg viewBox="0 0 1000 330" role="img" aria-labelledby="f2">
+    <title id="f2">A price path turning at support and resistance bands</title>
+    <rect class="band-o" x="40" y="58" width="800" height="26"/>
+    <line class="edge-o" x1="40" y1="58" x2="840" y2="58"/><line class="edge-o" x1="40" y1="84" x2="840" y2="84"/>
+    <rect class="band-s" x="40" y="206" width="800" height="30"/>
+    <line class="edge-s" x1="40" y1="206" x2="840" y2="206"/><line class="edge-s" x1="40" y1="236" x2="840" y2="236"/>
+    <rect class="band-s" x="40" y="272" width="800" height="18"/>
+    <line class="edge-s" x1="40" y1="272" x2="840" y2="272"/><line class="edge-s" x1="40" y1="290" x2="840" y2="290"/>
+
+    <polyline class="price" points="44,150 70,172 92,160 118,196 138,222 160,206 184,176 206,150 230,118 252,96 272,72 294,90 316,118 340,150 362,184 384,214 404,230 426,212 450,184 474,152 496,122 520,98 540,76 562,94 586,128 608,164 630,198 652,226 672,212 694,178 716,146 738,124 760,138 784,158 806,150 832,142"/>
+    <circle class="touch" cx="138" cy="222" r="5"/><circle class="touch" cx="404" cy="230" r="5"/><circle class="touch" cx="652" cy="226" r="5"/>
+    <circle class="touch" cx="272" cy="72" r="5"/><circle class="touch" cx="540" cy="76" r="5"/>
+    <circle class="mark" cx="832" cy="142" r="6"/>
+
+    <text class="t-o" x="856" y="76">Resistance</text>
+    <text class="ts" x="856" y="148">Tonight's close</text>
+    <text class="t-s" x="856" y="226">Support</text>
+    <text class="t-s" x="856" y="286">Support</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> The line is the price over a few months. Orange bands sit above the price, green bands below it. Each open circle is a day the price turned at a band.</p>
+  <p><b>What to take from it.</b> A band that turned the price several times is stronger evidence than one that turned it once.</p>
+</div>
+
+<h3>Four kinds of evidence become one band</h3>
+<figure>
+  <svg viewBox="0 0 1000 300" role="img" aria-labelledby="f3">
+    <title id="f3">Four sources merge into bands with a strength</title>
+    <defs><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+    <rect class="bx-n" x="10" y="10" width="230" height="56" rx="6"/>
+    <text class="t" x="125" y="34" text-anchor="middle">Swing highs and lows</text>
+    <text class="ts" x="125" y="54" text-anchor="middle">where it actually turned</text>
+    <rect class="bx-n" x="10" y="80" width="230" height="56" rx="6"/>
+    <text class="t" x="125" y="104" text-anchor="middle">Moving averages</text>
+    <text class="ts" x="125" y="124" text-anchor="middle">20, 50 and 200 sessions</text>
+    <rect class="bx-n" x="10" y="150" width="230" height="56" rx="6"/>
+    <text class="t" x="125" y="174" text-anchor="middle">Retracements</text>
+    <text class="ts" x="125" y="194" text-anchor="middle">between the last two swings</text>
+    <rect class="bx-n" x="10" y="220" width="230" height="56" rx="6"/>
+    <text class="t" x="125" y="244" text-anchor="middle">Volume shelves</text>
+    <text class="ts" x="125" y="264" text-anchor="middle">where heavy trading happened</text>
+
+    <path class="ln" d="M240 38 H290 V140 H310" marker-end="url(#ah2)"/>
+    <path class="ln" d="M240 108 H290"/>
+    <path class="ln" d="M240 178 H290"/>
+    <path class="ln" d="M240 248 H290 V140"/>
+
+    <rect class="bx-n" x="314" y="100" width="200" height="80" rx="6"/>
+    <text class="t" x="414" y="130" text-anchor="middle">Merge</text>
+    <text class="ts" x="414" y="150" text-anchor="middle">prices very close</text>
+    <text class="ts" x="414" y="168" text-anchor="middle">together become one band</text>
+    <path class="ln" d="M514 140 H540" marker-end="url(#ah2)"/>
+
+    <rect class="bx-n" x="544" y="100" width="200" height="80" rx="6"/>
+    <text class="t" x="644" y="130" text-anchor="middle">Add touches</text>
+    <text class="ts" x="644" y="150" text-anchor="middle">each day that reached it</text>
+    <text class="ts" x="644" y="168" text-anchor="middle">adds strength</text>
+    <path class="ln" d="M744 140 H770" marker-end="url(#ah2)"/>
+
+    <rect class="bx" x="774" y="90" width="216" height="100" rx="6"/>
+    <text class="t" x="882" y="120" text-anchor="middle">A band</text>
+    <text class="t-s" x="882" y="142" text-anchor="middle">support if below the price</text>
+    <text class="t-o" x="882" y="162" text-anchor="middle">resistance if above it</text>
+    <text class="ts" x="882" y="180" text-anchor="middle">with a strength score</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> Each box on the left is one reason a price might matter. Where several reasons land close together, they become one band.</p>
+  <p><b>What to take from it.</b> A band backed by several kinds of evidence, touched often and recently, scores highest.</p>
+</div>
+<div class="why">
+  <p><b>Why levels at all.</b> Support and resistance levels have been found to mark where prices pause more often than chance would give, and to sit where buy and sell orders cluster (<a href="#s-osler">Osler 2000</a>; <a href="#s-chung">Chung and Bellotti 2021</a>; <a href="#s-kavajecz">Kavajecz and Odders-White 2004</a>).</p>
+  <p><b>Why volume shelves.</b> Where many shares changed hands, many holders have that price as their cost. They tend to defend it on the way down and sell near it on the way up.</p>
+</div>
+
+<!-- 5 -->
+<h2 id="plan">5. Turning those prices into a plan</h2>
+<p class="asks">If I wanted to buy this stock, where would I buy, where would I be wrong, and where would I sell?</p>
+<figure>
+  <svg viewBox="0 0 1000 400" role="img" aria-labelledby="f4">
+    <title id="f4">The plan on one price axis</title>
+    <line class="axis" x1="250" y1="16" x2="250" y2="384"/>
+
+    <rect class="band-o" x="200" y="30" width="100" height="14"/>
+    <text class="t-o" x="316" y="42">Top: follow the price up with a trailing stop</text>
+    <rect class="band-o" x="200" y="80" width="100" height="14"/>
+    <text class="t-o" x="316" y="92">Sell a part here</text>
+    <rect class="band-o" x="200" y="126" width="100" height="14"/>
+    <text class="t-o" x="316" y="138">Sell a part here</text>
+
+    <line class="mark" x1="176" y1="178" x2="324" y2="178" style="stroke:var(--ink);stroke-width:2.5"/>
+    <text class="t" x="170" y="183" text-anchor="end">Tonight's close</text>
+
+    <rect class="band-s" x="200" y="200" width="100" height="22"/>
+    <text class="t-s" x="316" y="216">Buy step 1</text>
+    <rect class="band-s" x="200" y="250" width="100" height="16"/>
+    <text class="t-s" x="316" y="263">Buy step 2</text>
+    <rect class="band-s" x="200" y="298" width="100" height="14"/>
+    <text class="t-s" x="316" y="310">Buy step 3</text>
+
+    <line class="stop" x1="190" y1="272" x2="310" y2="272"/>
+    <text class="ts" x="180" y="276" text-anchor="end">stop for step 1</text>
+    <line class="stop" x1="190" y1="318" x2="310" y2="318"/>
+    <text class="ts" x="180" y="322" text-anchor="end">stop for step 2</text>
+    <line class="inv" x1="180" y1="352" x2="320" y2="352"/>
+    <text class="t-k" x="316" y="372">Invalidation: below here the whole idea is wrong</text>
+
+    <text class="ts" x="620" y="92">Above the price, everything is a sale.</text>
+    <text class="ts" x="620" y="114">Part of the position is sold at each band.</text>
+    <text class="ts" x="620" y="216">Below the price, everything is a purchase,</text>
+    <text class="ts" x="620" y="238">in up to three steps, nearest first.</text>
+    <text class="ts" x="620" y="276">Each step's stop is a close below</text>
+    <text class="ts" x="620" y="298">the next band down, not a touch.</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> One vertical price scale. The dark line is tonight's close. Green is where to buy, orange is where to sell, dashed lines are stops, red is where the idea fails.</p>
+  <p><b>What to take from it.</b> Every number in a plan comes from a band on the chart, so every instruction can be traced to a price the stock has respected before.</p>
+</div>
+
+<h3>The trend label decides the plan's shape</h3>
+<figure>
+  <svg viewBox="0 0 1000 150" role="img" aria-labelledby="f5">
+    <title id="f5">Four trend labels and what each does to the plan</title>
+    <rect class="bx-n" x="6" y="12" width="236" height="122" rx="6"/>
+    <text class="t" x="124" y="42" text-anchor="middle">Uptrend</text>
+    <text class="ts" x="124" y="68" text-anchor="middle">Buy the pullbacks.</text>
+    <text class="ts" x="124" y="88" text-anchor="middle">Stops trail up behind</text>
+    <text class="ts" x="124" y="108" text-anchor="middle">the price.</text>
+    <rect class="bx" x="256" y="12" width="236" height="122" rx="6"/>
+    <text class="t" x="374" y="42" text-anchor="middle">Range</text>
+    <text class="ts" x="374" y="68" text-anchor="middle">Buy at support,</text>
+    <text class="ts" x="374" y="88" text-anchor="middle">sell at resistance.</text>
+    <rect class="bx-k" x="506" y="12" width="236" height="122" rx="6"/>
+    <text class="t" x="624" y="42" text-anchor="middle">Downtrend</text>
+    <text class="ts" x="624" y="68" text-anchor="middle">No buying.</text>
+    <text class="ts" x="624" y="88" text-anchor="middle">The report says why.</text>
+    <rect class="bx" x="756" y="12" width="236" height="122" rx="6"/>
+    <text class="t" x="874" y="42" text-anchor="middle">Not classified</text>
+    <text class="ts" x="874" y="68" text-anchor="middle">Not enough history</text>
+    <text class="ts" x="874" y="88" text-anchor="middle">to tell. No buying,</text>
+    <text class="ts" x="874" y="108" text-anchor="middle">and it says so.</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> An uptrend means the price is above its 50 and 200-day averages with each swing low higher than the last. A downtrend is the reverse. Anything else is a range.</p>
+  <p><b>What to take from it.</b> The same bands give a different plan depending on the trend, and a falling stock is never given a buying plan.</p>
+</div>
+<div class="why">
+  <p><b>Why buy in steps.</b> A support band is a zone, not a single price, and nobody knows where in it the price will turn. Spreading the purchase across bands means being partly right is still useful (<a href="#s-brennan">Brennan, Li and Torous 2005</a>).</p>
+  <p><b>Why stops on a close.</b> Prices dip through levels during the day far more often than they close through them. A stop on a touch is taken out by ordinary noise; a stop on a close is taken out by a real decision. Overnight gaps can still jump past a stop, which is why the report states the gap risk around earnings (<a href="#s-arratia">Arratia and Dorador 2019</a>).</p>
+  <p><b>Why no position sizes.</b> How much to buy depends on your money and your tolerance for loss. The report shows the arithmetic from a risk budget you choose, and never picks one for you.</p>
+</div>
+
+<!-- 6 -->
+<h2 id="list">6. Choosing tonight's list</h2>
+<p class="asks">Out of five hundred stocks, which are at a buy point tonight?</p>
+<figure>
+  <svg viewBox="0 0 1000 450" role="img" aria-labelledby="f6">
+    <title id="f6">The swing filter as a funnel of five gates</title>
+    <polygon class="f0 fun" points="30,20 400,20 388,72 42,72"/>
+    <polygon class="f1 fun" points="42,76 388,76 374,128 56,128"/>
+    <polygon class="f2 fun" points="56,132 374,132 356,184 74,184"/>
+    <polygon class="f3 fun" points="74,188 356,188 334,240 96,240"/>
+    <polygon class="f4 fun" points="96,244 334,244 310,296 120,296"/>
+    <polygon class="f5 fun" points="120,300 310,300 284,352 146,352"/>
+    <polygon class="f6 fun" points="146,356 284,356 262,408 168,408"/>
+    <text class="t" x="215" y="52" text-anchor="middle">Every stock in the index</text>
+    <text class="t" x="215" y="108" text-anchor="middle">1  The market</text>
+    <text class="t" x="215" y="164" text-anchor="middle">2  Trend and strength</text>
+    <text class="t" x="215" y="220" text-anchor="middle">3  A setup</text>
+    <text class="t" x="215" y="276" text-anchor="middle">4  A fresh trigger</text>
+    <text class="t" x="215" y="332" text-anchor="middle">5  A trade worth taking</text>
+    <text class="t" x="215" y="388" text-anchor="middle">Exclusions</text>
+    <text class="t" x="215" y="438" text-anchor="middle">Tonight's list, best first</text>
+
+    <text class="ts" x="430" y="52">All five hundred, every night.</text>
+    <text class="ts" x="430" y="108">Enough of the market is healthy for buying dips to work.</text>
+    <text class="ts" x="430" y="164">The stock is in an uptrend and ahead of most others.</text>
+    <text class="ts" x="430" y="220">A pullback into support, or a tight base breaking out.</text>
+    <text class="ts" x="430" y="276">The buy signal fired in the last few sessions.</text>
+    <text class="ts" x="430" y="332">From tonight's price, the reward is big enough for the risk.</text>
+    <text class="ts" x="430" y="388">No earnings soon, no doubtful prices, no missing days.</text>
+    <text class="ts" x="430" y="438">Ordered by reward to risk, then strength, then support.</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> Each layer is one test. A stock must pass every layer to reach the bottom.</p>
+  <p><b>What to take from it.</b> The list is short on purpose, and some nights it is empty. An empty night says the market offered nothing that passed, and the page shows how many stocks reached each gate.</p>
+</div>
+
+<div class="wrap"><table>
+  <tr><th>Gate</th><th>What it asks</th><th>Why it is there</th></tr>
+  <tr><td>The market</td><td>Is a large enough share of the index above its long-term average?</td><td>Buying dips works poorly when most stocks are falling together.</td></tr>
+  <tr><td>Trend and strength</td><td>Is this stock rising, and has it done better than most others lately?</td><td>Stocks that have outperformed over recent months have tended to keep outperforming (<a href="#s-jt">Jegadeesh and Titman 1993</a>; <a href="#s-gh">George and Hwang 2004</a>).</td></tr>
+  <tr><td>A setup</td><td>Has it pulled back into support, or tightened into a base and broken out?</td><td>Short-term dips tend to partly reverse (<a href="#s-reversal">Jegadeesh 1990; Lehmann 1990</a>), and a real level gives a clear place to be wrong.</td></tr>
+  <tr><td>A fresh trigger</td><td>Did the buy signal fire in the last few sessions?</td><td>The list shows moments, not stocks that have been sitting at a price for weeks.</td></tr>
+  <tr><td>A trade worth taking</td><td>From tonight's price, is the target far enough away compared with the stop?</td><td>A good chart with a poor payoff is not a trade. Measuring from tonight's price also drops any stock that has already run away from its buy point.</td></tr>
+  <tr><td>Exclusions</td><td>Is an earnings report due within the holding period? Are the prices in doubt?</td><td>An earnings report can jump straight past a stop (<a href="#s-dubinsky">Dubinsky and others 2019</a>).</td></tr>
+</table></div>
+<p class="note">The exact values each gate uses are in the specification. They start as proposals and are adjusted by calibration, described in section 9.</p>
+
+<div class="why">
+  <p><b>Why a filter and not a score.</b> Each gate is a fact you can check on the chart. A single blended score would hide which fact put a stock on the list. The earlier design, where any one of six conditions listed a stock, let most of the index through every night, so the filter replaced it. Those six conditions are still shown beside each stock as context.</p>
+</div>
+
+<!-- 7 -->
+<h2 id="report">7. What a report contains</h2>
+<p class="asks">When I open a stock, what do I get, and where does each part come from?</p>
+<figure>
+  <svg viewBox="0 0 1000 300" role="img" aria-labelledby="f7">
+    <title id="f7">Report parts computed nightly beside parts written by research</title>
+    <rect class="zone-n" x="6" y="30" width="480" height="262" rx="8"/>
+    <rect class="zone-r" x="514" y="30" width="480" height="262" rx="8"/>
+    <text class="tl" x="20" y="20">Worked out every night, free</text>
+    <text class="tl" x="528" y="20">Written by research, kept until out of date</text>
+
+    <rect class="bx-n" x="22" y="48" width="220" height="50" rx="6"/><text class="t" x="132" y="79" text-anchor="middle">Why it is on the list</text>
+    <rect class="bx-n" x="252" y="48" width="220" height="50" rx="6"/><text class="t" x="362" y="79" text-anchor="middle">Key facts at a glance</text>
+    <rect class="bx-n" x="22" y="108" width="220" height="50" rx="6"/><text class="t" x="132" y="139" text-anchor="middle">Chart and its bands</text>
+    <rect class="bx-n" x="252" y="108" width="220" height="50" rx="6"/><text class="t" x="362" y="139" text-anchor="middle">The plan</text>
+    <rect class="bx-n" x="22" y="168" width="220" height="50" rx="6"/><text class="t" x="132" y="199" text-anchor="middle">The biggest moves</text>
+    <rect class="bx-n" x="252" y="168" width="220" height="50" rx="6"/><text class="t" x="362" y="199" text-anchor="middle">The numbers, by quarter</text>
+    <rect class="bx-n" x="22" y="228" width="220" height="50" rx="6"/><text class="t" x="132" y="259" text-anchor="middle">Dates coming up</text>
+    <rect class="bx-n" x="252" y="228" width="220" height="50" rx="6"/><text class="t" x="362" y="259" text-anchor="middle">Past earnings reactions</text>
+
+    <rect class="bx-r" x="530" y="48" width="220" height="50" rx="6"/><text class="t" x="640" y="79" text-anchor="middle">The short version</text>
+    <rect class="bx-r" x="760" y="48" width="220" height="50" rx="6"/><text class="t" x="870" y="79" text-anchor="middle">What the company sells</text>
+    <rect class="bx-r" x="530" y="108" width="220" height="50" rx="6"/><text class="t" x="640" y="139" text-anchor="middle">The industry cycle</text>
+    <rect class="bx-r" x="760" y="108" width="220" height="50" rx="6"/><text class="t" x="870" y="139" text-anchor="middle">The bull and bear cases</text>
+    <rect class="bx-r" x="530" y="168" width="220" height="50" rx="6"/><text class="t" x="640" y="199" text-anchor="middle">The risks</text>
+    <rect class="bx-r" x="760" y="168" width="220" height="50" rx="6"/><text class="t" x="870" y="199" text-anchor="middle">Causes of big moves</text>
+    <text class="ts" x="754" y="252" text-anchor="middle">Every part shows the date it was written</text>
+    <text class="ts" x="754" y="272" text-anchor="middle">and which model wrote it.</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> The left half is ready the moment you open a stock. The right half exists only once research has been written for it.</p>
+  <p><b>What to take from it.</b> A report is never blank. Without research you still see the chart, the plan and the numbers, and the page says the written parts are not there yet.</p>
+</div>
+
+<!-- 8 -->
+<h2 id="research">8. Research, written once and kept</h2>
+<p class="asks">How is the written analysis produced, and how do we know it is not made up?</p>
+<figure>
+  <svg viewBox="0 0 1000 400" role="img" aria-labelledby="f8">
+    <title id="f8">What happens when research is needed</title>
+    <defs><marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+
+    <rect class="bx-v" x="10" y="20" width="200" height="70" rx="6"/>
+    <text class="t" x="110" y="61" text-anchor="middle">You open a stock</text>
+    <path class="ln" d="M210 55 H246" marker-end="url(#ah3)"/>
+
+    <rect class="bx" x="250" y="12" width="330" height="86" rx="6"/>
+    <text class="t" x="415" y="40" text-anchor="middle">Has anything changed?</text>
+    <text class="ts" x="415" y="62" text-anchor="middle">New filing? Earnings passed? News spike?</text>
+    <text class="ts" x="415" y="82" text-anchor="middle">Or did you press refresh?</text>
+    <path class="ln" d="M580 55 H616" marker-end="url(#ah3)"/>
+    <text class="ts" x="598" y="44" text-anchor="middle">no</text>
+
+    <rect class="bx-v" x="620" y="20" width="370" height="70" rx="6"/>
+    <text class="t" x="805" y="50" text-anchor="middle">Show the stored research</text>
+    <text class="ts" x="805" y="72" text-anchor="middle">with its date. Nothing is spent.</text>
+
+    <path class="ln" d="M415 98 V140" marker-end="url(#ah3)"/>
+    <text class="ts" x="428" y="124">yes, or no research yet</text>
+
+    <rect class="bx-n" x="250" y="144" width="330" height="60" rx="6"/>
+    <text class="t" x="415" y="170" text-anchor="middle">Fetch and store every document</text>
+    <text class="ts" x="415" y="190" text-anchor="middle">filings, news, the industry's own record</text>
+
+    <path class="ln" d="M330 204 V230 H180 V246" marker-end="url(#ah3)"/>
+    <path class="ln" d="M500 204 V230 H650 V246" marker-end="url(#ah3)"/>
+    <rect class="bx-r" x="40" y="250" width="280" height="64" rx="6"/>
+    <text class="t" x="180" y="276" text-anchor="middle">Local model, your machine</text>
+    <text class="ts" x="180" y="298" text-anchor="middle">sorts and extracts, free</text>
+    <rect class="bx-r" x="510" y="250" width="280" height="64" rx="6"/>
+    <text class="t" x="650" y="276" text-anchor="middle">Paid model</text>
+    <text class="ts" x="650" y="298" text-anchor="middle">weighs the whole evidence</text>
+
+    <path class="ln" d="M180 314 V334 H410 V346" marker-end="url(#ah3)"/>
+    <path class="ln" d="M650 314 V334 H420"/>
+    <rect class="bx-k" x="250" y="350" width="330" height="44" rx="6"/>
+    <text class="t" x="415" y="378" text-anchor="middle">Check every number and claim</text>
+    <path class="ln" d="M580 372 H616" marker-end="url(#ah3)"/>
+    <rect class="bx" x="620" y="344" width="370" height="56" rx="6"/>
+    <text class="t" x="805" y="368" text-anchor="middle">One dated record, the old one kept</text>
+    <text class="ts" x="805" y="388" text-anchor="middle">every source document stored with it</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> Most opens stop at the top right: nothing has changed, so the stored research is shown and nothing is spent. The lower path runs only when something has actually changed.</p>
+  <p><b>What to take from it.</b> Nothing expires on a timer. Research is rewritten only when a filing, an earnings date, a news spike or you say so.</p>
+</div>
+
+<div class="why">
+  <p><b>How claims are checked.</b> Every number in the writing must match a number the system computed or read from a filing. Every claim must name a document that was fetched and stored. A section that fails twice is left out rather than guessed.</p>
+  <p><b>Why so strict.</b> The failure of automated research is a confident sentence that is wrong. Requiring a stored source for every claim means any sentence can be traced back to the document that supports it, months later.</p>
+  <p><b>Why two models.</b> Sorting and extracting from one document is small work a model on your own machine can do for free. Weighing all the evidence into a view of the company needs a stronger model, and that is the only part that costs money. Overnight, the local model drafts research for tonight's list so it is ready in the morning.</p>
+</div>
+
+<!-- 9 -->
+<h2 id="improve">9. How the picks get better</h2>
+<p class="asks">How does the system learn which settings work, without fooling itself?</p>
+<figure>
+  <svg viewBox="0 0 1000 240" role="img" aria-labelledby="f9">
+    <title id="f9">The improvement loop</title>
+    <defs><marker id="ah4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+    <rect class="bx-n" x="8" y="26" width="150" height="92" rx="6"/>
+    <text class="t" x="83" y="58" text-anchor="middle">Record</text>
+    <text class="ts" x="83" y="80" text-anchor="middle">every stock's plan,</text>
+    <text class="ts" x="83" y="98" text-anchor="middle">every night</text>
+    <rect class="bx-n" x="176" y="26" width="150" height="92" rx="6"/>
+    <text class="t" x="251" y="58" text-anchor="middle">Wait</text>
+    <text class="ts" x="251" y="80" text-anchor="middle">until the target</text>
+    <text class="ts" x="251" y="98" text-anchor="middle">or stop is reached</text>
+    <rect class="bx-n" x="344" y="26" width="150" height="92" rx="6"/>
+    <text class="t" x="419" y="58" text-anchor="middle">Score</text>
+    <text class="ts" x="419" y="80" text-anchor="middle">against the plan's</text>
+    <text class="ts" x="419" y="98" text-anchor="middle">own break-even</text>
+    <rect class="bx-n" x="512" y="26" width="150" height="92" rx="6"/>
+    <text class="t" x="587" y="58" text-anchor="middle">Compare</text>
+    <text class="ts" x="587" y="80" text-anchor="middle">with a plan that</text>
+    <text class="ts" x="587" y="98" text-anchor="middle">has no skill</text>
+    <rect class="bx-n" x="680" y="26" width="150" height="92" rx="6"/>
+    <text class="t" x="755" y="58" text-anchor="middle">Propose</text>
+    <text class="ts" x="755" y="80" text-anchor="middle">a change,</text>
+    <text class="ts" x="755" y="98" text-anchor="middle">never applied alone</text>
+    <rect class="bx-v" x="848" y="26" width="144" height="92" rx="6"/>
+    <text class="t" x="920" y="58" text-anchor="middle">You decide</text>
+    <text class="ts" x="920" y="80" text-anchor="middle">accept or reject,</text>
+    <text class="ts" x="920" y="98" text-anchor="middle">with a reason</text>
+    <path class="ln" d="M158 72 H172" marker-end="url(#ah4)"/>
+    <path class="ln" d="M326 72 H340" marker-end="url(#ah4)"/>
+    <path class="ln" d="M494 72 H508" marker-end="url(#ah4)"/>
+    <path class="ln" d="M662 72 H676" marker-end="url(#ah4)"/>
+    <path class="ln" d="M830 72 H844" marker-end="url(#ah4)"/>
+    <path class="ln-v" d="M920 118 V176 H83 V122" marker-end="url(#ah4)"/>
+    <text class="ts" x="500" y="202" text-anchor="middle">An accepted change starts a fresh record. The old record is kept.</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> The loop runs every night for every stock, whether or not it made the list. That is how the system learns what the gates turned away, not only what they let in.</p>
+  <p><b>What to take from it.</b> Nothing changes the list without your decision, and every change is written down with its evidence.</p>
+</div>
+
+<div class="why">
+  <p><b>A worked example, with illustrative numbers.</b> A plan buys at 100, stops at 95 and targets 112. The risk is 5 and the reward is 12, so the plan comes out even if it wins 5 times in every 17, about 29% of the time. A setting earns its place only if its plans win more often than their own break-even, and more often than a plan with no skill would from the same starting point.</p>
+</div>
+
+<h3>Two clocks, answering two different questions</h3>
+<figure>
+  <svg viewBox="0 0 1000 210" role="img" aria-labelledby="f10">
+    <title id="f10">The shape clock and the edge clock</title>
+    <text class="tl" x="10" y="48">Shape clock</text>
+    <text class="ts" x="10" y="68">how many stocks pass</text>
+    <text class="tl" x="10" y="132">Edge clock</text>
+    <text class="ts" x="10" y="152">does it make money</text>
+    <line class="tl-ax" x1="190" y1="56" x2="990" y2="56"/>
+    <line class="tl-ax" x1="190" y1="140" x2="990" y2="140"/>
+    <circle class="dot-v" cx="190" cy="56" r="7"/><text class="ts" x="190" y="34" text-anchor="middle">List goes live</text>
+    <circle class="dot-n" cx="310" cy="56" r="7"/><text class="ts" x="310" y="34" text-anchor="middle">A few months</text>
+    <text class="ts" x="310" y="86" text-anchor="middle">first adjustment</text>
+    <circle class="dot-v" cx="190" cy="140" r="7"/>
+    <circle class="dot-k" cx="690" cy="140" r="7"/><text class="ts" x="690" y="118" text-anchor="middle">About two years</text>
+    <text class="ts" x="690" y="170" text-anchor="middle">can drop a variant</text>
+    <circle class="dot-n" cx="930" cy="140" r="7"/><text class="ts" x="990" y="118" text-anchor="end">About three years</text>
+    <text class="ts" x="990" y="170" text-anchor="end">can promote one</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> The shape clock tunes how many stocks pass each gate, so the list is neither empty every night nor full of everything. The edge clock judges whether the list's picks actually work.</p>
+  <p><b>What to take from it.</b> The list's size can be tuned within months. Whether the picks make money takes years to answer with confidence, and the page says so plainly so an empty result reads as waiting, not broken.</p>
+</div>
+
+<div class="why">
+  <p><b>Why so slow.</b> Try enough settings and one will look good by luck. Studies of trading rules show that most apparent winners disappear once you account for how many were tried (<a href="#s-stw">Sullivan, Timmermann and White 1999</a>; <a href="#s-white">White 2000</a>; <a href="#s-hlz">Harvey, Liu and Zhu 2016</a>). So every alternative is registered before it is measured, measured in the background where it cannot influence the list, and judged against a stricter bar when several are tested at once (<a href="#s-holm">Holm 1979</a>).</p>
+  <p><b>Why years rather than a count of trades.</b> Trades that overlap in time share the same market, so they are not independent pieces of evidence. The system counts evidence in blocks of time rather than in trades (<a href="#s-cm">Cameron and Miller 2015</a>).</p>
+  <p><b>Why fixed checkpoints.</b> Looking at results again and again and stopping when they look good finds false winners. Results are judged only at set points, the way medical trials handle the same problem (<a href="#s-armitage">Armitage, McPherson and Rowe 1969</a>; <a href="#s-lan">Lan and DeMets 1983</a>; <a href="#s-fda">FDA 2019</a>).</p>
+  <p><b>Why a limit on adjustments.</b> Each time the live settings change, the edge clock has to start again. So after the first adjustment, any further change shows how much evidence it would throw away before you accept it.</p>
+</div>
+
+<!-- 10 -->
+<h2 id="screens">10. The four screens</h2>
+<p class="asks">Where do I look, and what does each page answer?</p>
+<figure>
+  <svg viewBox="0 0 1000 250" role="img" aria-labelledby="f11">
+    <title id="f11">The four screens and what each answers</title>
+    <rect class="bx-v" x="6" y="8" width="486" height="112" rx="6"/>
+    <text class="t" x="26" y="40">Tonight</text>
+    <text class="ts" x="26" y="66">Which stocks are at a buy point this evening,</text>
+    <text class="ts" x="26" y="86">best first, and how busy the market was.</text>
+    <rect class="bx-v" x="508" y="8" width="486" height="112" rx="6"/>
+    <text class="t" x="528" y="40">The universe</text>
+    <text class="ts" x="528" y="66">Where every stock in the index sits, including</text>
+    <text class="ts" x="528" y="86">the ones nothing happened to. Filter by sector.</text>
+    <rect class="bx-v" x="6" y="132" width="486" height="112" rx="6"/>
+    <text class="t" x="26" y="164">A stock's report</text>
+    <text class="ts" x="26" y="190">Everything about one stock: chart, plan,</text>
+    <text class="ts" x="26" y="210">numbers and research, each part dated.</text>
+    <rect class="bx-v" x="508" y="132" width="486" height="112" rx="6"/>
+    <text class="t" x="528" y="164">The run</text>
+    <text class="ts" x="528" y="190">What ran last night, what failed, what it cost,</text>
+    <text class="ts" x="528" y="210">and how the calibration is progressing.</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> Tonight and the universe are for finding stocks. A report is for reading one. The run page is the evidence behind everything else.</p>
+  <p><b>What to take from it.</b> On every screen, green means a level below the price and orange means a level above it. Nothing else uses those two colours.</p>
+</div>
+
+<!-- 11 -->
+<h2 id="why">11. Why these choices: sources</h2>
+<p class="asks">What published work supports the approach?</p>
+<p>These are the sources the design rests on, grouped by the choice they support. Some were read in full and some only in summary; the specification records which, and which rule each one supports.</p>
+
+<div class="wrap"><table class="src">
+  <tr><th>Choice</th><th>Source</th><th>What it contributes</th></tr>
+
+  <tr><td>Levels matter</td><td id="s-osler">Osler (2000), <i>Support for resistance: technical analysis and intraday exchange rates</i>, Federal Reserve Bank of New York Economic Policy Review. <a href="https://www.newyorkfed.org/research/epr/00v06n2/0007osle.html">Link</a></td><td>Evidence that published support and resistance levels marked where trends paused more often than arbitrary prices did.</td></tr>
+  <tr><td></td><td id="s-chung">Chung and Bellotti (2021), <i>Evidence and behaviour of support and resistance levels in financial time series</i>, arXiv. <a href="https://arxiv.org/abs/2101.07410">Link</a></td><td>A test of whether prices react at support and resistance more often than chance.</td></tr>
+  <tr><td></td><td id="s-kavajecz">Kavajecz and Odders-White (2004), <i>Technical analysis and liquidity provision</i>, Review of Financial Studies. <a href="https://academic.oup.com/rfs/article-abstract/17/4/1043/1570736">Link</a></td><td>Support and resistance levels line up with where buy and sell orders cluster.</td></tr>
+  <tr><td></td><td id="s-park">Park and Irwin (2007), <i>What do we know about the profitability of technical analysis?</i>, Journal of Economic Surveys. <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1467-6419.2007.00519.x">Link</a></td><td>A survey of the evidence on chart-based rules, and of the ways testing them goes wrong.</td></tr>
+
+  <tr><td>Heavy volume</td><td id="s-gervais">Gervais, Kaniel and Mingelgrin (2001), <i>The high-volume return premium</i>, Journal of Finance. <a href="https://rodneywhitecenter.wharton.upenn.edu/wp-content/uploads/2014/04/9901.pdf">Link</a></td><td>Stocks with unusually high trading volume have tended to rise over the following weeks.</td></tr>
+
+  <tr><td>Strength and trend</td><td id="s-jt">Jegadeesh and Titman (1993), <i>Returns to buying winners and selling losers</i>, Journal of Finance. <a href="https://www.bauer.uh.edu/rsusmel/phd/jegadeesh-titman93.pdf">Link</a></td><td>Stocks that did well over the previous months tended to keep doing well.</td></tr>
+  <tr><td></td><td id="s-gh">George and Hwang (2004), <i>The 52-week high and momentum investing</i>, Journal of Finance. <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1540-6261.2004.00695.x">Link</a></td><td>Closeness to a stock's own recent high helps explain which winners keep winning.</td></tr>
+  <tr><td></td><td id="s-avramov">Avramov, Kaplanski and Subrahmanyam (2021), <i>Moving average distance as a predictor of equity returns</i>, Review of Financial Economics. <a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/rfe.1118">Link</a></td><td>How far a price sits from its moving averages carries information about later returns.</td></tr>
+
+  <tr><td>Buying pullbacks</td><td id="s-reversal">Jegadeesh (1990), Journal of Finance, and Lehmann (1990), Quarterly Journal of Economics, as summarised in a Federal Reserve Bank of New York staff report on short-term reversal. <a href="https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr513.pdf">Link</a></td><td>Short-term price moves tend to partly reverse.</td></tr>
+
+  <tr><td>Buying in steps</td><td id="s-brennan">Brennan, Li and Torous (2005), <i>Dollar cost averaging</i>, working paper. <a href="https://www.anderson.ucla.edu/documents/areas/fac/finance/dollarcostave.pdf">Link</a></td><td>When spreading a purchase over time helps and when it does not.</td></tr>
+
+  <tr><td>Stops and gaps</td><td id="s-arratia">Arratia and Dorador (2019), <i>On the efficacy of stop-loss rules in the presence of overnight gaps</i>, Quantitative Finance. <a href="https://upcommons.upc.edu/server/api/core/bitstreams/2e11812d-c6d1-4e56-b88b-a14edf870e3e/content">Link</a></td><td>How overnight gaps change what a stop actually delivers.</td></tr>
+  <tr><td>Earnings risk</td><td id="s-dubinsky">Dubinsky, Johannes, Kaeck and Seeger (2019), <i>Option pricing of earnings announcement risks</i>, Review of Financial Studies. <a href="https://research.vu.nl/ws/portalfiles/portal/108247883/Option_Pricing_of_Earnings_Announcement_Risks.pdf">Link</a></td><td>How much extra risk an earnings announcement adds, which is why a report due within the holding period excludes a stock.</td></tr>
+
+  <tr><td>Not fooling ourselves</td><td id="s-stw">Sullivan, Timmermann and White (1999), <i>Data-snooping, technical trading rule performance, and the bootstrap</i>, Journal of Finance. <a href="https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00163">Link</a></td><td>Many trading rules that look profitable stop looking so once you account for how many were tried.</td></tr>
+  <tr><td></td><td id="s-white">White (2000), <i>A reality check for data snooping</i>, Econometrica. <a href="https://users.ssc.wisc.edu/~bhansen/718/White2000.pdf">Link</a></td><td>A method for checking whether the best of many tested rules is better than luck.</td></tr>
+  <tr><td></td><td id="s-hlz">Harvey, Liu and Zhu (2016), <i>... and the cross-section of expected returns</i>, Review of Financial Studies. <a href="https://www.nber.org/system/files/working_papers/w20592/w20592.pdf">Link</a></td><td>Why the bar for a new finding must rise with the number of things that have been tested.</td></tr>
+  <tr><td></td><td id="s-holm">Holm (1979), <i>A simple sequentially rejective multiple test procedure</i>, Scandinavian Journal of Statistics. <a href="https://www.ime.usp.br/~abe/lista/pdf4R8xPVzCnX.pdf">Link</a></td><td>A standard way to test several alternatives at once without inflating false winners.</td></tr>
+  <tr><td></td><td id="s-bailey">Bailey and Lopez de Prado (2014), <i>The deflated Sharpe ratio</i>, Journal of Portfolio Management. <a href="https://www.davidhbailey.com/dhbpapers/deflated-sharpe.pdf">Link</a></td><td>Adjusting a result for the number of attempts that came before it.</td></tr>
+
+  <tr><td>Overlapping trades</td><td id="s-cm">Cameron and Miller (2015), <i>A practitioner's guide to cluster-robust inference</i>, Journal of Human Resources. <a href="https://cameron.econ.ucdavis.edu/research/Cameron_Miller_JHR_2015_February.pdf">Link</a></td><td>Why observations that share a common cause count as less evidence than their number suggests.</td></tr>
+
+  <tr><td>Judging at set points</td><td id="s-armitage">Armitage, McPherson and Rowe (1969), <i>Repeated significance tests on accumulating data</i>, Journal of the Royal Statistical Society. <a href="https://academic.oup.com/jrsssa/article/132/2/235/7104382">Link</a></td><td>Checking results repeatedly as data arrives produces false positives.</td></tr>
+  <tr><td></td><td id="s-lan">Lan and DeMets (1983), <i>Discrete sequential boundaries for clinical trials</i>, Biometrika. <a href="https://eclass.uoa.gr/modules/document/file.php/MATH301/PracticalSession3/Lan_DeMets_1983.pdf">Link</a></td><td>How to plan a fixed number of looks at accumulating results.</td></tr>
+  <tr><td></td><td id="s-fda">U.S. Food and Drug Administration (2019), <i>Adaptive designs for clinical trials of drugs and biologics</i>. <a href="https://www.fda.gov/media/78495/download">Link</a></td><td>How regulated trials decide in advance when results may be looked at and acted on.</td></tr>
+</table></div>
+
+<p class="note">This guide explains the design. The rules, the exact values and which rule each source supports are in ARCHITECTURE.html.</p>
+
+</main>
+<script>
+(function(){
+  var root=document.documentElement, btn=document.getElementById('themeToggle');
+  function current(){
+    var t=root.getAttribute('data-theme');
+    if(t) return t;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  function label(){ btn.textContent = current()==='dark' ? 'Light' : 'Dark'; }
+  try{ var saved=localStorage.getItem('equitybrief-guide-theme'); if(saved){ root.setAttribute('data-theme', saved); } }catch(e){}
+  label();
+  btn.addEventListener('click', function(){
+    var next = current()==='dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try{ localStorage.setItem('equitybrief-guide-theme', next); }catch(e){}
+    label();
+  });
+})();
+</script>
+</body>
+</html>

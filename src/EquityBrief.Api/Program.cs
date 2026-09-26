@@ -78,6 +78,15 @@ builder.Services.AddSingleton<IDrainLauncher>(services => new WorkerDrainLaunche
 
 var app = builder.Build();
 
+// Every answer is drawn from the store as it stands, so the browser keeps none: a screen drawn again
+// after a press, or after a night, reads the store again rather than an earlier answer.
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.CacheControl = "no-store";
+
+    await next();
+});
+
 // A store behind this checkout is named on every screen rather than failing on the first column
 // it lacks, and the run page still draws its run log, which is where a refused night is.
 app.Use(async (context, next) =>
@@ -328,7 +337,10 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // The name's swing readings for the page's night, or its newest where the page is tonight's.
         await read.SwingReadingAsync(ticker, on),
         // The name's swing filter result for the page's night, or its newest where the page is tonight's.
-        await read.GateResultAsync(ticker, on));
+        await read.GateResultAsync(ticker, on),
+        // Whether the operator watches the name, which its header's press says. An exported file carries
+        // no press, because nothing it is opened beside can answer one.
+        export ? null : (await read.WatchedAsync()).Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -681,7 +693,7 @@ app.MapGet("/screens/tonight/{night?}", async (
             TonightScreen.Fired(listings),
             await read.NightDurationAsync(dated),
             rows,
-            [],
+            (await read.WatchedAsync()).Count,
             selected,
             RunScreen.Harness(PhaseReport(builder, checkout)),
             selection?.Ticker,
@@ -695,6 +707,80 @@ app.MapGet("/screens/tonight/{night?}", async (
             TonightScreen.Listed(listings),
             held: held),
         "text/html; charset=utf-8");
+});
+
+// The watch list page, section 15.16: the names the operator follows on the newest night, each drawn from
+// that night's own rows whether or not the list holds it, with what the swing filter said of it.
+// see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+app.MapGet("/screens/watch", async (ReadApi read, SinglePageApp page) =>
+{
+    var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
+    var watched = await read.WatchedAsync();
+
+    if (await read.NewestNightAsync() is not { } night)
+    {
+        return Results.Content(page.WatchRegion(null, [], ReadApi.WatchLimit), "text/html; charset=utf-8");
+    }
+
+    var universe = await read.UniverseAsync(index, night);
+
+    return Results.Content(
+        page.WatchRegion(
+            night,
+            TonightScreen.Watched(
+                night,
+                watched,
+                await read.ListingsAsync(night),
+                UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+                await read.ClosesToTheNightAsync(night),
+                universe,
+                await read.GateResultsAsync(night),
+                await read.ResearchedAsync()),
+            ReadApi.WatchLimit),
+        "text/html; charset=utf-8");
+});
+
+// A name put on the watch list, or taken off it, by the operator's press. Refused without the page's own
+// header, as every press is, and a name that is not a member of the index tonight, or one past the list's
+// limit, is refused with the line saying why.
+// see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+// see: A pass is started only by a request carrying the name page's own header
+app.MapPost(SinglePageApp.WatchPostRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read) =>
+{
+    if (!string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal))
+    {
+        return Results.Content(
+            "<p class=\"watch-refused\" data-refused=\"header\">nothing was added: the request did not come from a page of this tool</p>",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
+    var members = (await read.UniverseAsync(index, await read.NewestNightAsync())).Select(row => row.Ticker).ToHashSet(StringComparer.Ordinal);
+    var written = await read.WatchAsync(ticker, members);
+
+    return Results.Content(
+        $"<p class=\"watch-said-line\" data-written=\"{(written.Written ? "true" : "false")}\">{System.Net.WebUtility.HtmlEncode(written.Line)}</p>",
+        "text/html; charset=utf-8",
+        statusCode: written.Written ? StatusCodes.Status200OK : StatusCodes.Status409Conflict);
+});
+
+app.MapPost(SinglePageApp.UnwatchPostRoute + "{ticker}", async (string ticker, HttpRequest request, ReadApi read) =>
+{
+    if (!string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal))
+    {
+        return Results.Content(
+            "<p class=\"watch-refused\" data-refused=\"header\">nothing was taken out: the request did not come from a page of this tool</p>",
+            "text/html; charset=utf-8",
+            statusCode: StatusCodes.Status403Forbidden);
+    }
+
+    var written = await read.UnwatchAsync(ticker);
+
+    return Results.Content(
+        $"<p class=\"watch-said-line\" data-written=\"{(written.Written ? "true" : "false")}\">{System.Net.WebUtility.HtmlEncode(written.Line)}</p>",
+        "text/html; charset=utf-8",
+        statusCode: written.Written ? StatusCodes.Status200OK : StatusCodes.Status409Conflict);
 });
 
 // The universe screen, section 15.8, read here and composed by the app for the

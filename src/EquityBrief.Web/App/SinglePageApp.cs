@@ -87,6 +87,12 @@ public sealed class SinglePageApp : IComponent
     // The queue, section 15.15, the fifth entry in the masthead.
     public const string QueueRoute = "#/queue";
 
+    // The watch list page, second in the masthead, and the two presses that change it, each refused
+    // without the page's own header as every press is.
+    public const string WatchRoute = "#/watch";
+    public const string WatchPostRoute = "/watch/";
+    public const string UnwatchPostRoute = "/watch/remove/";
+
     // The three states a request is settled in, spelled here because the page draws a
     // region per state and the surface's own constants sit in a project the page does
     // not reference. `read-surface` asserts the two agree.
@@ -170,7 +176,7 @@ public sealed class SinglePageApp : IComponent
         </script>
         </head>
         <body>
-        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a></nav>{{{LaneSwitch(lane)}}}<button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
+        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{WatchRoute}}}" data-view="watch">Watch list</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a></nav>{{{LaneSwitch(lane)}}}<button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
         <main class="wrap" id="screen"></main>
         <script>
         const screen = document.getElementById('screen');
@@ -215,6 +221,10 @@ public sealed class SinglePageApp : IComponent
             view = 'researched';
             const researched = await fetch('/screens/researched');
             screen.innerHTML = await researched.text();
+          } else if (path === '{{{WatchRoute}}}') {
+            view = 'watch';
+            const watch = await fetch('/screens/watch');
+            screen.innerHTML = await watch.text();
           } else if (path === '{{{QueueRoute}}}') {
             view = 'queue';
             const queued = await fetch('/screens/queue');
@@ -259,6 +269,28 @@ public sealed class SinglePageApp : IComponent
           paintTheme();
         }
         addEventListener('hashchange', show);
+        // A name put on the watch list or taken off it: the press names the ticker, from the box on the
+        // watch list page or from the form's own, sends the page's header, and the screen is drawn again
+        // with what the read surface said above the list.
+        document.addEventListener('submit', async (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement) || !form.classList.contains('watch-control')) { return; }
+          event.preventDefault();
+          const box = form.querySelector('input[name="ticker"]');
+          const ticker = (box ? box.value : (form.dataset.ticker || '')).trim().split(' ')[0].toUpperCase();
+          if (ticker === '') { return; }
+          for (const button of form.querySelectorAll('button')) { button.disabled = true; }
+          const response = await fetch(form.getAttribute('action') + encodeURIComponent(ticker), {
+            method: 'POST',
+            headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' },
+          });
+          const said = await response.text();
+          const kept = scrollY;
+          await show();
+          scrollTo(0, kept);
+          const place = screen.querySelector('.watch-said');
+          if (place) { place.innerHTML = said; }
+        });
         // A link followed or a row picked is a new place, and back or forward returns to where
         // the reader was. Anywhere on a row of tonight's list but its links picks that row, which
         // draws its plan beneath the list.
@@ -520,7 +552,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<ReactionCell>? reactions = null,
         SwingReadingsView? swing = null,
         GatesView? gates = null,
-        FilterWhy? passed = null)
+        FilterWhy? passed = null,
+        bool? watched = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -630,7 +663,7 @@ public sealed class SinglePageApp : IComponent
             ? Invariant($" · <a href=\"#/universe?sector={Uri.EscapeDataString(sector)}\">{Escaped(sector)}</a>{(mast.Industry is { Length: > 0 } industry ? Invariant($", {Escaped(industry)}") : string.Empty)}")
             : string.Empty;
 
-        region.Append(Cards.Masthead(ticker, identity.ToString(), asOf));
+        region.Append(Cards.Masthead(ticker, identity.ToString(), asOf + (watched is { } held ? WatchControl(ticker, held) : string.Empty)));
 
         // What the page is for and what it refuses to do, before any figure, and the words it
         // uses beneath that. First, so a reader meets the refusals before the first number.
@@ -1279,7 +1312,7 @@ public sealed class SinglePageApp : IComponent
         int fired,
         string? duration,
         IReadOnlyList<ListingCell> rows,
-        IReadOnlyList<ListingCell> watched,
+        int watching,
         string selectedName,
         HarnessCounts? harness,
         string? selectedTicker = null,
@@ -1315,7 +1348,7 @@ public sealed class SinglePageApp : IComponent
 
         region.Append(Cards.Computed(
             "Watch list",
-            marks.WatchList(watched),
+            WatchLine(watching),
             title: "Shown every evening",
             lede: "These names appear whether or not they are on the list.",
             region: "watch"));
@@ -1342,7 +1375,7 @@ public sealed class SinglePageApp : IComponent
         // see: Selecting a row draws its plan beneath the list and is no navigation
         if (selectedName.Length > 0 && selectedTicker is { } chosen)
         {
-            var picked = rows.Concat(watched).FirstOrDefault(row => row.Ticker == chosen);
+            var picked = rows.FirstOrDefault(row => row.Ticker == chosen);
             var name = picked?.Distance?.Name;
 
             region.Append(Cards.Computed(
@@ -1622,6 +1655,77 @@ public sealed class SinglePageApp : IComponent
         banner.Append("</section>");
 
         return banner.ToString();
+    }
+
+    // Tonight's line for the watch list, which is a page of its own: how many names it holds and a link.
+    // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+    public static string WatchLine(int watching) =>
+        watching == 0
+            ? Invariant($"<p class=\"watch-line\" data-watching=\"0\">No name is watched yet. <a href=\"{WatchRoute}\">Add names on the watch list</a></p>")
+            : Invariant($"<p class=\"watch-line\" data-watching=\"{watching}\">{watching} name(s) watched. <a href=\"{WatchRoute}\">Open the watch list</a></p>");
+
+    // A name page's press to watch the name or stop watching it, which sits beside the name in the header.
+    // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+    public static string WatchControl(string ticker, bool watched) =>
+        Invariant($"<form class=\"watch-control name-watch\" method=\"post\" action=\"{(watched ? UnwatchPostRoute : WatchPostRoute)}\" data-ticker=\"{Escaped(ticker)}\" data-watched=\"{(watched ? "true" : "false")}\">")
+        + Invariant($"<button type=\"submit\" class=\"btn-2\">{(watched ? "Stop watching" : "Watch")}</button></form>");
+
+    // The watch list page: the names the operator follows, each drawn from the night's own rows whether or
+    // not the list holds it with what the swing filter said of it, a box to add a name of the index while
+    // the list holds fewer than its limit, and a press to take each out.
+    // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+    public string WatchRegion(DateOnly? night, IReadOnlyList<WatchCell> watched, int limit)
+    {
+        var region = new StringBuilder();
+        var shown = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
+
+        region.Append(Invariant($"<section class=\"watch\" data-night=\"{shown}\" data-watched=\"{watched.Count}\" data-limit=\"{limit}\">"));
+        region.Append(Cards.Masthead("Watch list", "<span class=\"m-screen\">Watch list</span>", Invariant($"{watched.Count} of {limit} names, night of {shown}")));
+
+        var body = new StringBuilder();
+
+        body.Append("<div class=\"watch-said\" role=\"status\"></div>");
+        body.Append(watched.Count < limit
+            ? Invariant($"<form class=\"watch-control watch-add\" method=\"post\" action=\"{WatchPostRoute}\"><input name=\"ticker\" list=\"findable\" placeholder=\"Add a name from the S&amp;P 500\" aria-label=\"A ticker to watch\" autocomplete=\"off\" spellcheck=\"false\"><button type=\"submit\" class=\"btn\">Add</button></form>")
+            : Invariant($"<p class=\"watch-full\" data-full=\"true\">The watch list holds {limit}, its limit; take one out to add another.</p>"));
+
+        if (watched.Count == 0)
+        {
+            body.Append("<p class=\"degraded\" data-watch=\"none\">No name is watched yet. Add one above, or press Watch on any name's page.</p>");
+        }
+        else
+        {
+            body.Append("<div class=\"tbl-wrap\"><table class=\"watch-table\"><thead><tr><th>#</th><th>Name</th><th class=\"r\">Close</th><th class=\"r\">Day</th><th>Trend</th>");
+            body.Append("<th class=\"r\">Reward to risk</th><th>The swing filter</th><th>Added</th><th></th></tr></thead><tbody>");
+
+            for (var at = 0; at < watched.Count; at++)
+            {
+                var one = watched[at];
+                var row = one.Row;
+
+                body.Append(Invariant($"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-listed=\"{(one.Listed ? "true" : "false")}\"><td class=\"num\">{at + 1}</td>"));
+                body.Append(Invariant($"<td><a href=\"{NameRoute}{Escaped(row.Ticker)}\"><b>{Escaped(row.Ticker)}</b></a>{(one.Company is { Length: > 0 } company ? Invariant($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>"));
+                body.Append(row.Close is { } close ? Invariant($"<td class=\"r num\">{close:0.00}</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
+                body.Append(row.DayChangePct is { } change ? Invariant($"<td class=\"r num\">{change:+0.00;-0.00;0.00}%</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
+                body.Append(Invariant($"<td>{Escaped(row.TrendState ?? "none")}</td>"));
+                body.Append(row.RewardToRisk is { } ratio ? Invariant($"<td class=\"r num\">{ratio:0.00}</td>") : "<td class=\"r\"><span class=\"degraded\">none</span></td>");
+                body.Append(Invariant($"<td class=\"{(one.Listed ? "listed" : "stopped")}\" data-filter=\"{Escaped(one.Filter)}\">{Escaped(one.Filter)}</td>"));
+                body.Append(Invariant($"<td class=\"num\">{one.Added:yyyy-MM-dd}</td>"));
+                body.Append(Invariant($"<td><form class=\"watch-control\" method=\"post\" action=\"{UnwatchPostRoute}\" data-ticker=\"{Escaped(row.Ticker)}\"><button type=\"submit\" class=\"btn-2\" aria-label=\"Stop watching {Escaped(row.Ticker)}\">&#215;</button></form></td></tr>"));
+            }
+
+            body.Append("</tbody></table></div>");
+        }
+
+        region.Append(Cards.Computed(
+            "Watch list",
+            body.ToString(),
+            title: "Names you follow",
+            lede: Invariant($"Drawn every evening whether or not the swing filter lists them, up to {limit} names of the index."),
+            region: "watch-list"));
+        region.Append("</section>");
+
+        return region.ToString();
     }
 
     // An evening before the swing filter's first night, which neither dated screen draws: the record

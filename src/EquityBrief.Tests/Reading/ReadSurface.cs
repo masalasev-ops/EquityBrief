@@ -228,6 +228,22 @@ public partial class ReadSurface
             CheckReach.Key("15.15 Queue", "Take it out"),
             CheckReach.Key("15.15 Queue", "Which lane would write one"),
             CheckReach.Key("15.15 Queue", "When each will be written"),
+            CheckReach.Key("15.16 Watch list", "Add a name, a box offering the names of the index"),
+            CheckReach.Key("15.16 Watch list", "Add a name, which adds one while the list holds fewer than twenty and otherwise gives way to a line saying the limit is reached"),
+            CheckReach.Key("15.16 Watch list", "Add a name, the same press beside a name on its own page"),
+            CheckReach.Key("15.16 Watch list", "Add a name, a refusal with the line saying why for a name not of the index tonight or already watched or a twenty-first"),
+            CheckReach.Key("15.16 Watch list", "Each name watched, in the order it was added"),
+            CheckReach.Key("15.16 Watch list", "Each name watched, its company"),
+            CheckReach.Key("15.16 Watch list", "Each name watched, its close and the day's change"),
+            CheckReach.Key("15.16 Watch list", "Each name watched, its trend in a word"),
+            CheckReach.Key("15.16 Watch list", "Each name watched, the reward to risk of its trade"),
+            CheckReach.Key("15.16 Watch list", "Each name watched, the day it was added and a link to its page"),
+            CheckReach.Key("15.16 Watch list", "Each name watched, drawn for the newest night whether or not the list holds it"),
+            CheckReach.Key("15.16 Watch list", "What the swing filter said of it, listed and its number"),
+            CheckReach.Key("15.16 Watch list", "What the swing filter said of it, the first gate that stopped it with that gate's reason"),
+            CheckReach.Key("15.16 Watch list", "What the swing filter said of it, what excluded it"),
+            CheckReach.Key("15.16 Watch list", "What the swing filter said of it, that no answer is stored for the night"),
+            CheckReach.Key("15.16 Watch list", "Take it out"),
             CheckReach.Key("15.7 Tonight", "The report's state"),
             CheckReach.Key("15.9 Name", "Each move beside its group"),
             CheckReach.Key("15.9 Name", "Peers, beneath the table of the biggest moves"),
@@ -4310,7 +4326,7 @@ public partial class ReadSurface
         // legible on the surface rather than only in the hash.
         var tonight = page.TonightRegion(
             marks, night, universe.Count, TonightScreen.Fired(listings), "00:00:01",
-            rows, [], region, null, picked.Ticker);
+            rows, 0, region, null, picked.Ticker);
 
         Assert.Contains($"data-selected=\"{picked.Ticker}\"", tonight, StringComparison.Ordinal);
 

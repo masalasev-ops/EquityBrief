@@ -54,6 +54,7 @@ public enum Store
     VersionBlock,
     SeriesState,
     ResearchRequest,
+    WatchList,
     RunLog,
 }
 

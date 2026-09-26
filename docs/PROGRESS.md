@@ -26479,3 +26479,79 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             the figures the 5.8 correction closing this batch records.
 Carried:    nothing.
 
+### 5.8 - correction: the operator's watch list, on a page of its own and counted on tonight's page, where tonight's region said no watch list was on file because no store held one   2026-09-25
+Corrects:   5.8, whose tonight's page drew section 15.7's watch list region as one line saying no watch list
+            is on file, because the region promised names shown every evening and no store held any.
+Found:      by the operator on 2026-09-25, reading that line, on the ruling of this batch.
+Repaired:   migration 43 creates `watch_list`, a name and the instant of the press that added it.
+            `ReadApi.WatchAsync` adds a name of the index tonight while fewer than `ReadApi.WatchLimit`, twenty,
+            are held, and refuses any other with the line saying why; `ReadApi.UnwatchAsync` takes one off.
+            `POST /watch/{ticker}` and `POST /watch/remove/{ticker}` refuse a request without the page's own
+            header, as every press is refused. `GET /screens/watch` draws `SinglePageApp.WatchRegion` over
+            `TonightScreen.Watched`: the names in the order added, each with its company, close, day change,
+            trend, the reward to risk its trade gate read, the day it was added, a link to its page and what
+            the swing filter said of it, a box to add a name while fewer than twenty are held and the line
+            saying the limit in its place at twenty, and a press to take each out. The masthead links to it
+            second, tonight's region draws `SinglePageApp.WatchLine` counting the names, and a name's own page
+            draws `SinglePageApp.WatchControl` beside the name, which an exported report leaves out. Every
+            response the app serves carries `Cache-Control: no-store`, so a screen drawn again after a press
+            reads the store again rather than the browser's copy. `MarkRenderer.WatchList`, which drew the line
+            saying none was on file, is gone.
+Guarded:    `read-surface`, three tests added in `ReadSurface.WatchList.cs`.
+            `EachWatchListPressNeedsThePagesOwnHeaderAndAddsOnlyANameOfTheIndexOnce`: over the fixture's
+            members, a press without the header is refused and writes nothing, a name not of the index is
+            refused, a name is put on once and refused the second time, taken off once and refused the second
+            time, each line read off the response, and a screen carries `no-store`.
+            `TheWatchListHoldsTwentyNamesAndRefusesATwentyFirst`: twenty names of a constructed index are held
+            and the twenty-first is refused with the line saying the limit, nothing written.
+            `TheWatchListPageDrawsEachNameWithWhatTheSwingFilterSaidOfIt`: over the fixture's night, four names
+            added a day apart in an order that is not the tickers', one listed, one stopped at its trend gate,
+            one that passed every gate and was excluded, and one with no gate row. Each row's company is read
+            off the membership, its close and day change worked from the stored bars, its trend off the newest
+            ladder, its reward to risk off its gate row, and each filter answer against the gate rows written;
+            tonight's line, the name page's presses, the masthead link and the line at twenty are each read off
+            the page.
+            `TheExportedReportIsTheNameRegionInAFileThatNeedsNothingElseToBeRead` already refused a form in the
+            exported file, and it went red on the first draft, which carried the watch press into it.
+Written:    section 15.7's watch list row, a section 15.16 Watch list, the Read API's catalogue row and a
+            Watch list column in the matrix in `ARCHITECTURE.html`; the `watch_list` writer row, the read
+            surface's paragraph and a `watch_list` section in `SCHEMA.md`; each with its prior text in
+            `CHANGELOG.md`. The decision by the ruling of this batch.
+            The operator's `docs/HOW_IT_WORKS.html`, merged on their request of 2026-09-25 with the text they
+            wrote, is placed outside the eight by a paragraph in `CLAUDE.md`'s Document lifecycle and named in
+            its layout block, the prior text of both in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      1418, from 1415: three added to `read-surface`, none removed. Migrations 0 to 43 with none
+            pending, schema version 43.
+Claims:     572, from 556, with 572 PASS and 0 out of scope. Sixteen added, section 15.16's four rows as the
+            parts they state: Add a name as four, Each name watched as seven, What the swing filter said of
+            it as four, and Take it out whole, each due at 5.8 and each in phase 12's pair beyond the
+            prediction, which reads (550, 572).
+Pins:       the branch against `main` at 0028f89; this correction edits `ReadApi.cs`, `TonightScreen.cs`,
+            `NameScreen.cs`, the read surface's `Program.cs`, `ComponentAccess.cs`, `SchemaMigrations.cs`,
+            `SinglePageApp.cs`, `Stylesheet.cs`, `MarkRenderer.cs`, tests and five documents, none of them in
+            the twelve `RuleVersionScorer.CodeVersionSources`, the twenty-one
+            `CandidateEvaluator.EvaluationSources` with each evaluator's own source ahead of them, or the
+            sixteen `SwingFilter.CodeVersionSources`, each read from the tree being committed.
+Mutated:    the rule, stated before the run: each refusal and each state the pages read put back to its
+            plainest form, one at a time, filtered to the three watch list tests and the exported report's
+            test.
+            Predicted:
+            W1 the add route's header check removed: red in the press test alone.
+            W2 the membership check removed, any ticker added: red in the press test alone.
+            W3 the limit removed: red in the twenty test alone.
+            W4 the listed flag inverted: red in the page test alone.
+            W5 tonight's line handed no count: red in the page test alone.
+            W6 the no-store header removed: red in the press test alone.
+            W7 the name page's press drawn for the opposite state: red in the page test alone.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, VT of VT tests ran with
+            none failed, migrations 0 to 43 with none pending, schema version 43, exit 0, against `data-ci`
+            and never `data`.
+            `tools/verify-phase.ps1` green at VTB tables, VC claims, VP PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, VR placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41 of
+            41 roster checks carried and all 41 run, VT of VT tests.
+            Both gates ran over the tree carrying this entry and the one before it, TREESHA, in a worktree
+            beside the repository, and the operator's store under `data/` was not touched by either.
+Carried:    the operator's store needs migration 43 before the real app draws the watch list page:
+            `tools/migrate.ps1`, or the next night's own first step, which applies it.
