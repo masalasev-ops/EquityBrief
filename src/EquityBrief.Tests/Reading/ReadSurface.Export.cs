@@ -69,9 +69,12 @@ public partial class ReadSurface
 
         // Every value the file states, as a data attribute, is one the page states as often or
         // more, so the file adds no figure the page does not draw.
+        // The file offers no control by design, so its count of controls is the one value it states
+        // that a page offering one does not.
         var onThePage = Blocks(page, "data-[a-z-]+=\"[^\"]*\"").GroupBy(value => value).ToDictionary(group => group.Key, group => group.Count());
         var extra = Blocks(file, "data-[a-z-]+=\"[^\"]*\"")
             .Where(value => !value.StartsWith("data-exported=", StringComparison.Ordinal))
+            .Where(value => value != "data-controls=\"0\"")
             .GroupBy(value => value)
             .Where(group => group.Count() > onThePage.GetValueOrDefault(group.Key))
             .Select(group => group.Key)

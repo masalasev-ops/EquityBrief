@@ -275,7 +275,8 @@ public partial class ReadSurface
             CheckReach.Key("15.9 Name", "Dividend, the ex-dividend date and the pay date"),
             CheckReach.Key("15.9 Name", "Dividend, nothing where the provider files none"),
             CheckReach.Key("15.9 Name", "A pass as it runs"),
-            CheckReach.Key("15.9 Name", "Listing history"),
+            CheckReach.Key("15.9 Name", "The numbers snapshot"),
+            CheckReach.Key("15.9 Name", "Regenerate Report"),
             CheckReach.Key("15.9 Name", "How it got here, the twelve-month picture"),
             CheckReach.Key("15.5 The mark vocabulary", "Plan column, Everything above the marker is a sale"),
             CheckReach.Key("15.5 The mark vocabulary", "Plan column, everything below is a purchase"),
@@ -1676,6 +1677,10 @@ public partial class ReadSurface
             var row = NameScreen.PlanRows(Ladder(Plan(condition))).First(row => row.Kind == PlanKind.Tranche);
 
             Assert.Contains($"buy on {words}", row.Detail, StringComparison.Ordinal);
+
+            // The tranche table's own columns: the words alone, and the stop as the plan stores it.
+            Assert.Equal(words, row.BuyOn);
+            Assert.Equal(88.0000m, row.Stop);
         }
 
         // And a value the mapping has no words for fails rather than rendering a
@@ -1688,11 +1693,19 @@ public partial class ReadSurface
 
         Assert.Throws<InvalidOperationException>(() => NameScreen.PlanRows(Ladder(Plan(string.Empty))));
 
-        // The sentences reach the surface a person reads them on, which is what
-        // makes this a claim about a page rather than about a function.
-        var drawn = new MarkRenderer().PlanTables(Name, NameScreen.PlanRows(await api.LadderAsync(Name)));
+        // The words reach the surface a person reads them on, which is what makes this a claim
+        // about a page rather than about a function: each tranche's under the heading that says
+        // what they are, beside its stop as a daily close below the stored stop.
+        var rows = NameScreen.PlanRows(await api.LadderAsync(Name));
+        var drawn = new MarkRenderer().PlanTables(Name, rows);
 
-        Assert.Contains("buy on ", drawn, StringComparison.Ordinal);
+        Assert.Contains("<tr><th>Zone</th><th>Buy on</th><th>Stop on</th></tr>", drawn, StringComparison.Ordinal);
+        Assert.All(
+            rows.Where(row => row.Kind == PlanKind.Tranche),
+            tranche => Assert.Contains(
+                $"<td>{tranche.BuyOn}</td><td>" + (tranche.Stop is { } stop ? $"a daily close below {Figures.Price(stop)}" : "no stop beneath"),
+                drawn,
+                StringComparison.Ordinal));
     }
 
     static LadderRow Ladder(string plan) => new("ZZZZ", new DateOnly(2026, 9, 8), "range", plan);

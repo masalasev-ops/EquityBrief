@@ -358,7 +358,8 @@ public partial class ReadSurface
                 "<tr><td>Tonight&#39;s figures</td><td>x</td></tr><tr><td>How it got here</td><td>y</td></tr></table>" +
                 "<h2>5. After</h2><table><tr><td>Nor this</td></tr></table>")]);
 
-        Assert.True(rows.Count >= 19, $"Section 4 names {rows.Count} region(s), expected at least 19.");
+        // Eighteen since the 5.8 correction took the listing history off the page.
+        Assert.True(rows.Count >= 18, $"Section 4 names {rows.Count} region(s), expected at least 18.");
 
         using var store = await FixtureExpectations.WithListings();
 

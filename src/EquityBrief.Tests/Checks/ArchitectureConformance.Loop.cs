@@ -1275,6 +1275,15 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.16 Watch list", "Take it out"),
         CheckReach.Key("15.9 Name", "Level evidence"),
         CheckReach.Key(Scope.LimitsTable, "Band width"),
+        CheckReach.Key("15.9 Name", "The numbers snapshot"),
+        CheckReach.Key("15.9 Name", "Regenerate Report"),
+    ];
+
+    // Rows taken out of the document after phase 12's prediction, which counted each: the name page's
+    // listing history, which 5.8's correction took off the page on the operator's ruling of 2026-09-26.
+    static readonly string[] TakenOutAfterPhaseTwelve =
+    [
+        CheckReach.Key("15.9 Name", "Listing history"),
     ];
 
     // Rows phase 12 took out of the document: 11.9's region stating each reason's share against its
@@ -1299,7 +1308,8 @@ public partial class ArchitectureConformance
     // correction built on the operator's ruling of 2026-09-25, a component with its catalogue and matrix rows,
     // and the watch list page 5.8's correction built on the operator's ruling of the same day, its four rows
     // as the sixteen parts they state, and the level summary's evidence and the band width 3.4's correction
-    // built on the operator's rulings of 2026-09-26.
+    // built on the operator's rulings of 2026-09-26, and the numbers' snapshot and Regenerate Report 5.8's
+    // correction built on the operator's rulings of the same day.
     static readonly string[] PhaseTwelveBeyondThePrediction =
     [
         CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
@@ -1329,6 +1339,8 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.16 Watch list", "Take it out"),
         CheckReach.Key("15.9 Name", "Level evidence"),
         CheckReach.Key(Scope.LimitsTable, "Band width"),
+        CheckReach.Key("15.9 Name", "The numbers snapshot"),
+        CheckReach.Key("15.9 Name", "Regenerate Report"),
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1352,14 +1364,16 @@ public partial class ArchitectureConformance
         Assert.All(PhaseTwelveBeyondThePrediction, key => Assert.Contains(key, PhaseTwelveRows));
         Assert.All(PhaseTwelveBeyondThePrediction, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
-        var actual = predicted + PhaseTwelveBeyondThePrediction.Length - PhaseTwelveNotLanded;
+        Assert.All(TakenOutAfterPhaseTwelve, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+
+        var actual = predicted + PhaseTwelveBeyondThePrediction.Length - PhaseTwelveNotLanded - TakenOutAfterPhaseTwelve.Length;
 
         Assert.Equal(
             (actual, 0, 0, actual),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((550, 574), (predicted, actual));
+        Assert.Equal((550, 575), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before
@@ -1517,9 +1531,10 @@ public partial class ArchitectureConformance
 
         // Phase 12's rows came after the phase this pair is about, each named where it was added, and
         // the rows it took out are named too, 11.9's region among them.
-        var now = expected + PhaseTwelveRows.Length - PhaseTwelveRemoved.Length;
+        var now = expected + PhaseTwelveRows.Length - PhaseTwelveRemoved.Length - TakenOutAfterPhaseTwelve.Length;
 
         Assert.All(PhaseTwelveRemoved, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All(TakenOutAfterPhaseTwelve, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
         Assert.All(PhaseTwelveRows, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
@@ -1541,10 +1556,11 @@ public partial class ArchitectureConformance
             + ReadAsItsParts.Sum(key => Scope.ElementsOf(key).Count - 1)
             + AddedAfterThePrediction.Length
             - RemovedAfterThePrediction.Length
-            - PhaseTwelveRemoved.Length;
+            - PhaseTwelveRemoved.Length
+            - TakenOutAfterPhaseTwelve.Length;
 
-        Assert.All(AddedAfterThePrediction.Except(PhaseTwelveRemoved), key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
-        Assert.All([.. RemovedAfterThePrediction, .. PhaseTwelveRemoved], key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All(AddedAfterThePrediction.Except([.. PhaseTwelveRemoved, .. TakenOutAfterPhaseTwelve]), key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All([.. RemovedAfterThePrediction, .. PhaseTwelveRemoved, .. TakenOutAfterPhaseTwelve], key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
         // Out of scope was zero while phase 8 was the last phase. Phase 9's rows are
         // placed at checkpoints the record does not carry, so each reads as out of scope

@@ -9,8 +9,9 @@ namespace EquityBrief.Worker.Research;
 
 // One request the drain took, as the worker reads it. The instant it was claimed at is
 // carried with it, because the run that settles it is one that started at or after that
-// instant and an earlier pass's run is not this request's.
-public sealed record TakenRequest(string Ticker, string AskedAt, string Lane, DateTimeOffset ClaimedAt);
+// instant and an earlier pass's run is not this request's. `Refresh` is a press that asked
+// for every section to be written again.
+public sealed record TakenRequest(string Ticker, string AskedAt, string Lane, DateTimeOffset ClaimedAt, bool Refresh = false);
 
 // The worker's half of the request store: taking the oldest request nobody has started,
 // and saying what came of it.
@@ -34,7 +35,7 @@ public static class RequestDrain
             WHERE state = 'outstanding'
             ORDER BY asked_at, ticker
             LIMIT 1)
-        RETURNING ticker, asked_at, lane;
+        RETURNING ticker, asked_at, lane, refresh;
     ";
 
     // The run is written at the settle rather than at the claim, because a pass names its
@@ -312,10 +313,15 @@ public static class RequestDrain
             taken++;
 
             // The request carries the lane the press meant, so a queue drained a day later
-            // writes under it rather than under whatever configuration now says.
-            string[] verb = request.Lane == "paid"
-                ? ["research", "--ticker", request.Ticker, "--paid-for-local"]
-                : ["research", "--ticker", request.Ticker];
+            // writes under it rather than under whatever configuration now says, and whether
+            // the press asked for every section to be written again.
+            // see: Nothing expires on a timer
+            string[] verb =
+            [
+                "research", "--ticker", request.Ticker,
+                .. request.Lane == "paid" ? ["--paid-for-local"] : Array.Empty<string>(),
+                .. request.Refresh ? ["--refresh"] : Array.Empty<string>(),
+            ];
 
             await pass(verb);
 
@@ -346,7 +352,7 @@ public static class RequestDrain
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         return await reader.ReadAsync(cancellation)
-            ? new TakenRequest(reader.GetString(0), reader.GetString(1), reader.GetString(2), at)
+            ? new TakenRequest(reader.GetString(0), reader.GetString(1), reader.GetString(2), at, reader.GetInt64(3) == 1)
             : null;
     }
 

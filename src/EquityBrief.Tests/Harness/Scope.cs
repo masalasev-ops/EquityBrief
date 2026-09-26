@@ -902,9 +902,13 @@ internal static class Scope
             Verdict.Pass,
             "the line states the step the pass's own rows are on and how many sections the name holds, saying the pass has started before its first row lands and that it has ended when its own row does, read for the run the page was handed and never for an earlier pass, and the page asks again and redraws as each section lands",
             ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Listing history")] = new Scoped(
+        [CheckReach.Key("15.9 Name", "The numbers snapshot")] = new Scoped(
             Verdict.Pass,
-            "the strip marks each stored evening and one row stands for each evening the name was listed, newest first, with the reasons that fired, the stored close that night and what followed five and twenty-one sessions on beside the base rate its row carries, an unmatured horizon saying so, nothing summing the evenings, and a name listed on none saying so beneath its strip",
+            "the name page's numbers open on twelve rows of the newest filing, each drawn at the places it is read at with the stored value whole on its element and what it is measured against beneath it, read back against the stored payload by a query of the test's own; the five quarters stand under their own heading; management's passage is folded and drawn a point to an item that joins back into the passage as filed; the other filed tables are folded each under its own heading, the segments with each group's label once over its lines and a line filed with a colon and no figure drawn as a heading; and no provider is named in the page's words",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Regenerate Report")] = new Scoped(
+            Verdict.Pass,
+            "the control is offered where research stands or has gone stale and no pass has run on the day the page is read, and not on the day one ran, nor where none is written, nor while the cap has paused research; a press carrying it writes a request holding the ask, read back off the store by a query of the test's own, and the drain hands that request's pass the rewrite, read off the verb it runs",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Fact strip, close")] = new Scoped(
             Verdict.Pass,
@@ -2114,7 +2118,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "The case for and the case against")] = new Scoped(
             Verdict.Pass,
-            "the section is drawn as two labelled halves over a store the recorded model wrote, each half one of the section's own paragraphs unchanged and in the order it was written, read back against the stored prose by a query of the test's own, and a section of the same name written in another shape is drawn with no half and no label",
+            "the section is drawn a claim to a row under its two labels over a store the recorded model wrote in the parts it is asked for, each case its own paragraph cut at its sentences and read back against the stored prose by a query of the test's own, eight rows each counted by hand off the recording; one paragraph whose case against opens mid-way is cut where it opens, a third paragraph is read in the case it was set in, and prose opening on neither case is drawn a claim to a row with no label",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "How far each band is")] = new Scoped(
             Verdict.Pass,
@@ -2126,11 +2130,11 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "The risks as parts")] = new Scoped(
             Verdict.Pass,
-            "the section is drawn one part to a risk over a store the recorded model wrote, each part one of the section's own paragraphs read back against the stored prose by a query of the test's own, and over prose run together as one paragraph the parts are cut where it says a risk starts with what would confirm each set beneath it and the run before the first cut opening the first part, the parts joined back up asserted to be the prose as it was written; a section saying nowhere that a part ends and a section of another name written in the same shape each draw no part at all",
+            "the section is drawn as a table of four rows over a store the recorded model wrote in the parts it is asked for, each risk beside what would confirm it and each row its own paragraph read back against the stored prose by a query of the test's own, and constructed prose every part of which confirms apart draws the same table; over prose whose parts do not all confirm apart the parts are cut where it says a risk starts with what would confirm each set beneath it and the run before the first cut opening the first part, the parts joined back up asserted to be the prose as it was written; a section saying nowhere that a part ends is drawn a claim to a row, and a section of another name written in the same shape draws no part at all",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Contents")] = new Scoped(
             Verdict.Pass,
-            "the contents is read against the regions the page drew in both directions, so neither a region nobody can reach nor an entry pointing at nothing passes, with the numbering contiguous from where a reader starts and the contents standing above the first region it names",
+            "the contents is read against the regions the page drew in both directions, so neither a region nobody can reach nor an entry pointing at nothing passes, with the numbering contiguous from where a reader starts and the contents standing above the first region it names; and the page's script is read to follow a link whose address is not a screen's to its place on the page below the masthead, where a screen's own address still opens that screen",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Sections left out")] = new Scoped(
             Verdict.Pass,
@@ -2714,7 +2718,8 @@ internal static class Scope
         [CheckReach.Key("15.8 Universe", "The table, sessions until earnings")] = "5.8",
         [CheckReach.Key("15.8 Universe", "The table, the evening last on the list")] = "5.4",
         [CheckReach.Key("15.8 Universe", "Researched")] = "5.8",
-        [CheckReach.Key("15.9 Name", "Listing history")] = "5.8",
+        [CheckReach.Key("15.9 Name", "The numbers snapshot")] = "5.8",
+        [CheckReach.Key("15.9 Name", "Regenerate Report")] = "5.8",
         [CheckReach.Key("15.9 Name", "A pass as it runs")] = "5.8",
         // The fact strip, whole at 6.1. Five of its seven parts existed from
         // phase 3 and two did not, and the row is one claim per part rather than

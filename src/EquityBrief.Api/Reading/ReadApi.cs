@@ -1817,7 +1817,7 @@ public sealed class ReadApi : IComponent
     // evening a page asked for an earlier one draws: a date the exchange did not trade on,
     // or one a night never ran for, answers with the evening before it rather than with
     // nothing, and the page says which evening it drew.
-    // see: A name's page for an earlier night is what the store held that night
+    // see: A name's page for an earlier night draws what the store held that night and nothing it learned after
     public async Task<DateOnly?> NewestNightAsync(DateOnly? onOrBefore = null)
     {
         await using var connection = Open();
@@ -2680,7 +2680,7 @@ public sealed class ReadApi : IComponent
     // The night a read is about. A page about tonight asks for the last date there is
     // rather than for no bound, so one statement serves both and a night's page and
     // tonight's differ in the date they hand over and in nothing else.
-    // see: A name's page for an earlier night is what the store held that night
+    // see: A name's page for an earlier night draws what the store held that night and nothing it learned after
     static string On(DateOnly? asOf) =>
         (asOf ?? DateOnly.MaxValue).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
@@ -3584,8 +3584,8 @@ public sealed class ReadApi : IComponent
     // states rather than thrown, because a reader pressing twice has asked a
     // reasonable question.
     const string Ask = @"
-        INSERT INTO research_request (ticker, asked_at, asked_from, lane, state)
-        VALUES ($ticker, $asked_at, $asked_from, $lane, 'outstanding');
+        INSERT INTO research_request (ticker, asked_at, asked_from, lane, state, refresh)
+        VALUES ($ticker, $asked_at, $asked_from, $lane, 'outstanding', $refresh);
     ";
 
     // Only a request nobody has started. The state is named in the statement
@@ -3608,7 +3608,10 @@ public sealed class ReadApi : IComponent
         ORDER BY asked_at, ticker;
     ";
 
-    public async Task<RequestWritten> AskAsync(string ticker, string from, string lane)
+    // A press asking for every section to be written again carries `refresh`, which the drain
+    // hands the pass as the operator's own ask.
+    // see: Nothing expires on a timer
+    public async Task<RequestWritten> AskAsync(string ticker, string from, string lane, bool refresh = false)
     {
         await using var connection = Open();
         await using var command = connection.CreateCommand();
@@ -3618,6 +3621,7 @@ public sealed class ReadApi : IComponent
         command.Parameters.AddWithValue("$asked_at", clock.UtcNow.ToString(ResearchRequests.Instant, CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$asked_from", from);
         command.Parameters.AddWithValue("$lane", lane);
+        command.Parameters.AddWithValue("$refresh", refresh ? 1 : 0);
 
         try
         {
@@ -3648,7 +3652,7 @@ public sealed class ReadApi : IComponent
                 $"{ticker} was asked for earlier in this same second and that request is {earlier}, so nothing was added: press again and a new request is written.");
         }
 
-        return new RequestWritten(true, $"{ticker} is in the queue.");
+        return new RequestWritten(true, refresh ? $"{ticker} is in the queue, to have every section written again." : $"{ticker} is in the queue.");
     }
 
     // SQLite's extended code for a primary key refusing a row, as against a unique index.

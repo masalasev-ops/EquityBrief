@@ -658,9 +658,11 @@ public partial class FixtureExpectations
         // Two from the replay, MSFT's key under each figure and NFLX's; four from the release's
         // passes, what the company sells, the segment commentary and the cause, and the cause
         // again after the checker refused its first draft, the key being the research pass's own
-        // request; three from the research pass with the configured lanes; nine from the
-        // comparison with every section in the local lane, four of them drafts written after the
-        // checker refused the first; two from the queue over the fixture's night, AAPL's key and
+        // request; three from the research pass with the configured lanes; seven from the
+        // comparison with every section in the local lane, two of them drafts written after the
+        // checker refused the first, the two cases and the risks each asked once in the parts the
+        // name page draws, the first answer running to its budget and the second accepted; two
+        // from the queue over the fixture's night, AAPL's key and
         // KEYS's, MSFT's and NFLX's being the replay's requests asked again; nine from the two
         // later nights, every member's key on each and NFLX's again on the night after a miss,
         // the checker having refused its first draft there; and one from the night after a short
@@ -670,7 +672,7 @@ public partial class FixtureExpectations
         // group of one: AAPL's key and MSFT's on the fixture's night, before KEYS joins, and
         // KEYS's and MSFT's on the next session, AAPL having left, NFLX's on each being a request
         // the other nights asked, since its group holds nobody either way.
-        Assert.Equal(34, recorded.Length);
+        Assert.Equal(32, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 
         foreach (var request in asked)

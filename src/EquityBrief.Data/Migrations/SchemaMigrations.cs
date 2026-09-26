@@ -664,6 +664,7 @@ public static class SchemaMigrations
         new Migration(41, "add gate_result.shadow", AddGateResultShadow),
         new Migration(42, "create list_rule", CreateListRule),
         new Migration(43, "create watch_list", CreateWatchList),
+        new Migration(44, "add research_request.refresh", AddResearchRequestRefresh),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -1038,6 +1039,15 @@ public static class SchemaMigrations
             ticker   TEXT NOT NULL PRIMARY KEY,
             added_at TEXT NOT NULL
         ) STRICT;
+    ";
+
+    // Whether a press asked for every section to be written again rather than only what is not
+    // written or has gone stale, carried on the request so the drain that answers it later runs
+    // the pass the press meant. A request written before the column is one that asked for no
+    // rewrite, which is what every press before it could ask.
+    // see: Nothing expires on a timer
+    const string AddResearchRequestRefresh = @"
+        ALTER TABLE research_request ADD COLUMN refresh INTEGER NOT NULL DEFAULT 0 CHECK (refresh IN (0, 1));
     ";
 
     public static int LatestVersion => All.Max(migration => migration.Version);

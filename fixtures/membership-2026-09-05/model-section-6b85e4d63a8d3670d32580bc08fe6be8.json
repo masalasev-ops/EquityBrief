@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-k93sheogxfh894tr6fctg",
+  "object": "chat.completion",
+  "created": 1790433924,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The first risk is that supply chain constraints will limit revenue conversion, and that risk would be confirmed by the statement from President Satish Dhanasekaran that the supply environment is less flexible today than a year ago [D3]. The second risk is that one-time tariff impacts recorded in fiscal 2026 will not repeat, and that risk would be confirmed by Executive VP and CFO Neil Dougherty's caution that these impacts artificially pulled up profitability for the current year but won't recur [D3]. The third risk is that supply chain conditions are nonlinear and will act as a governor on near-term revenue, and that risk would be confirmed by Executive VP and CFO Neil Dougherty's statement that supply will remain a governor of the company's ability to convert demand into revenue for the next several quarters [D3].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18547,
+    "completion_tokens": 166,
+    "total_tokens": 18713,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

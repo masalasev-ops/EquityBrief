@@ -7849,3 +7849,78 @@ Was:
 Now:
 > three on the local model and four through the spend cap for $0.0312, a sum that includes the cause of each large move, asked twice and answered with nothing both times, since a call answered with nothing is billed, and is at the off-peak rate, since the pass's paid calls were recorded on a Saturday, outside the provider's peak days; recorded inside the peak window, the same calls cost twice as much.
 Why: the corrections moved the facts file every recorded request carries, so the fixture's answers were recorded again, off-peak, and a paid call is priced at the provider's own timestamp.
+
+### 2026-09-26 - ARCHITECTURE.html - section 4's count of regions, the plan's name and contents, and the listing history dropped
+Authorised by: A name's page states no listing history, since what an earlier evening's list said is not what the page is read for
+Was:
+> A name's report is the page drawn for it: up to nineteen regions, ... its earnings reactions where the calendar holds a print, the evenings it was on the list where it has been listed, the industry cycle where its industry's theme has been written, ... The other thirteen need no paid call to be drawn, though two of them carry a part the paid model writes, the causes of the moves and the dated items the research read, and ten of the thirteen change every night.
+> <tr><td>Where it is bought, sold, and wrong</td><td>The plan figure, the tranche table with conditions and stops, the exit table with actions, the earnings setups around the next report, and the sizing arithmetic</td><td>Computed by the ladder builder</td><td>free</td><td>nightly</td></tr>
+> <tr><td>The evenings it was on the list</td><td>The listing strip over sixty sessions, and each evening the name was listed with what followed five and twenty-one sessions later beside the base rate</td><td>Computed from the listings and their forward returns (see: A name's listing history states what followed each evening it was listed and forms no rate for the name)</td><td>free</td><td>nightly</td></tr>
+Now:
+> A name's report is the page drawn for it: up to eighteen regions, ... its earnings reactions where the calendar holds a print, the industry cycle where its industry's theme has been written, ... The other twelve need no paid call to be drawn, though two of them carry a part the paid model writes, the causes of the moves and the dated items the research read, and nine of the twelve change every night.
+> <tr><td>Entry and exit plan</td><td>The plan figure, the entries with each zone, what it is bought on and its stop, the exits with each zone and what is sold there, the earnings setups around the next report, and the sizing arithmetic with the last two prints' moves against the first tranche's stop</td><td>Computed by the ladder builder</td><td>free</td><td>nightly</td></tr>
+> and no row for the evenings it was on the list.
+Why: the operator ruled on 2026-09-26 that the plan's heading read "something like Entry and exit plan" and its tables be legible, and that the listing history be removed, since it stated past evenings of no use to a reader today.
+
+### 2026-09-26 - ARCHITECTURE.html - section 4's numbers, two cases, risks and research regions
+Authorised by: The numbers open on a snapshot of the newest filing with every other filed figure folded beneath it, and the report names no provider
+Was:
+> <tr><td>The numbers</td><td>Five reported quarters and one guided quarter, revenue, margin, earnings, guide against actual, the next quarter's estimate, the balance sheet, valuation on each earnings basis, the dividend the provider files, and the segment table</td>
+> <tr><td>The two cases</td><td>The case for and the case against, each ending in what it needs to see at the next print</td>
+> <tr><td>The risks, each with what would confirm it</td><td>Each risk, with what would confirm it set beneath it</td>
+> <tr><td>Where the research stands</td><td>What the newest pass came to and what research has cost, each written region left out or not written with its reason, and the control that asks for a report, its cost stated before it is pressed</td>
+Now:
+> <tr><td>The numbers</td><td>A snapshot of the newest filing, a figure to a row: ... then five reported quarters, management's guidance folded as filed, and folded beneath, the balance sheet, valuation on each earnings basis, the dividend the provider files, and the segment table, each segment named once over its lines (see: The numbers open on a snapshot of the newest filing with every other filed figure folded beneath it, and the report names no provider)</td>
+> <tr><td>The two cases</td><td>The case for and the case against, a point to a row, each ending in what it needs to see at the next print</td>
+> <tr><td>The risks, each with what would confirm it</td><td>Each risk beside what would confirm it, a risk to a row</td>
+> <tr><td>Where the research stands</td><td>... and the control that asks for a report, or once the day a report was written has passed the control that regenerates it, its cost stated before it is pressed</td>
+Why: the operator ruled on 2026-09-26 on the numbers, the two cases and the risks, and asked for a way to regenerate a report once the day it was written has passed (see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws) (see: A report is regenerated whole on the operator's ask once the day it was written has passed).
+
+### 2026-09-26 - ARCHITECTURE.html - section 12.2's asks for the two cases and the risks
+Authorised by: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws
+Was:
+> <td>the bull case and the bear case side by side, each ending in what it needs to see at the next report</td>
+> <td>each risk the documents support, with the figure or event that would confirm it</td>
+Now:
+> <td>the bull case as one paragraph opening on the words "The bull case" and the bear case as a second opening on "The bear case", a point to a sentence, each ending in what it needs to see at the next report (see: ...)</td>
+> <td>each risk the documents support in a paragraph of its own, opening on its ordinal as "The first risk is" and followed by a sentence opening "That risk would be confirmed by" naming the figure or event that would confirm it</td>
+Why: the writer is asked for the parts the page draws, and the fixture's answers to both sections and to the short version written from them were recorded again.
+
+### 2026-09-26 - ARCHITECTURE.html - section 15.9's contents, plan, listing history, numbers, written sections and research controls
+Authorised by: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws
+Was:
+> <tr><td>Contents</td><td>at the head of the page: a numbered link to each region the page drew and to no other, in the order the page drew them</td></tr>
+> <tr><td>The plan</td><td>the plan column mark, the tranche table with conditions and stops, the exit table with actions, the earnings setups, and the sizing arithmetic</td></tr>
+> <tr><td>Listing history</td><td>the listing strip over sixty sessions and one row per evening the name was listed, each naming the rule that listed it with the reasons that fired and the close that night and what followed five and twenty-one sessions later beside the universe base rate or the words that it has not matured (see: A name's listing history states what followed each evening it was listed and forms no rate for the name)</td></tr>
+> <tr><td>The case for and the case against</td><td>each case under its own label where the two cases were answered in the shape the writer was asked for and as the prose was written where they were not</td></tr>
+> <tr><td>The risks as parts</td><td>one part per risk where the prose says where each part ends, with what would confirm a risk set beneath the risk it confirms (see: A written section is broken into parts only where its own prose says where each part ends)</td></tr>
+> and no row for the numbers snapshot or for Regenerate Report.
+Now:
+> <tr><td>Contents</td><td>... in the order the page drew them. A link is followed to its region on the same page below the masthead as every link to a place on the page is, where one read as a screen's address would open tonight's list</td></tr>
+> <tr><td>The plan</td><td>the plan column mark, the tranche table with conditions and stops, the exit table with actions, the earnings setups, and the sizing arithmetic. The region is headed Entry and exit plan; the mark's price line and stop rules cross the column and none of the words beside it; the tranches are headed Entries ... and the exits are headed Exits; the last two prints' moves against the first tranche's stop stand under a heading of their own</td></tr>
+> no Listing history row, and a row for The numbers snapshot after Dividend
+> <tr><td>The case for and the case against</td><td>a claim to a row; each case under its own label where the prose opens on the bull case, ...; the rows unlabelled where the prose opens on neither (see: ...)</td></tr>
+> <tr><td>The risks as parts</td><td>a table of each risk beside what would confirm it where every part the prose states opens its confirmation apart; ...; a claim to a row where the prose states no part (see: ...)</td></tr>
+> and a row for Regenerate Report after Research stale.
+Why: the operator's rulings of 2026-09-26 on the report page, and a defect the operator found the same day, pressing The numbers in the contents and landing on tonight's list: a link to a place on the page was read as a screen's address, as was every circle on the twelve-month picture (see: A name's page states no listing history, since what an earlier evening's list said is not what the page is read for) (see: The numbers open on a snapshot of the newest filing with every other filed figure folded beneath it, and the report names no provider) (see: A report is regenerated whole on the operator's ask once the day it was written has passed).
+
+### 2026-09-26 - SCHEMA.md - research_request.refresh
+Authorised by: A report is regenerated whole on the operator's ask once the day it was written has passed
+Was:
+> | `run_id` | TEXT | the pass's run, written by RequestDrain when it settles the request, null before; last but one because SQLite appends |
+> | `reason` | TEXT | why, in words, for `refused` and `withdrawn` and null otherwise; last because SQLite appends |
+> Declared column sets, ...: ReadApi inserts `ticker`, `asked_at`, `asked_from`, `lane` and `state` for a press, RequestDrain inserts the same five for the night's own request,
+Now:
+> `run_id` last but two and `reason` last but one, and a `refresh` column last, 1 where the press asked for every section to be written again and 0 otherwise.
+> Declared column sets, ...: ReadApi inserts `ticker`, `asked_at`, `asked_from`, `lane`, `state` and `refresh` for a press, RequestDrain inserts the first five for the night's own request, which asks for no rewrite and takes the column's 0,
+Why: the drain answers a press later and from the row alone, so a press asking for a rewrite read as a plain one until the row held it. Migration 44 adds the column.
+
+### 2026-09-26 - RUNBOOK.md - what a pass over the fixture costs, and Regenerate Report
+Authorised by: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws
+Was:
+> three on the local model and four through the spend cap for $0.0312, a sum that includes the cause of each large move, ...
+> ... the page's rewrite and its option to have the paid model write the local lane's sections still start one (see: A name opened again on the day its research pass ran starts no second pass unless the page asks for one).
+Now:
+> three on the local model and four through the spend cap for $0.0226, a sum that includes the cause of each large move, ...
+> ... still start one (see: ...). Once the day a report was written has passed, the page offers Regenerate Report, which has every section written again whether or not a trigger has fired, and costs what a pass costs (see: A report is regenerated whole on the operator's ask once the day it was written has passed).
+Why: the two cases and the risks are asked for in the parts the page draws, so the fixture's answers to both and to the short version written from them were recorded again, off-peak, and the short version was accepted on its first draft where it had needed a second; and the operator asked for a way to regenerate a report once the day it was written has passed.

@@ -30,7 +30,8 @@ public partial class ReadSurface
         using var client = host.CreateClient();
 
         // The two payers: every value on its element as the store holds it, drawn at the places a
-        // reader reads it, and the provider named for the part.
+        // reader reads it, and the provider kept on the element and named nowhere in the page's words.
+        // see: The numbers open on a snapshot of the newest filing with every other filed figure folded beneath it, and the report names no provider
         foreach (var ticker in new[] { "AAPL", "MSFT" })
         {
             var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/{ticker}"));
@@ -42,7 +43,8 @@ public partial class ReadSurface
 
             Assert.True(drawn.Success, $"{ticker}'s dividend is not drawn");
             Assert.Equal(FundamentalsFetcher.Provider, drawn.Groups[1].Value);
-            Assert.Contains($"From {FundamentalsFetcher.Provider}", drawn.Groups[2].Value, StringComparison.Ordinal);
+            Assert.Contains("<p class=\"dividend-source\">As of the newest filing's fetch.", drawn.Groups[2].Value, StringComparison.Ordinal);
+            Assert.DoesNotContain(FundamentalsFetcher.Provider, Regex.Replace(page, "<[^>]+>", " "), StringComparison.OrdinalIgnoreCase);
 
             foreach (var part in new[] { "forwardAnnualRate", "forwardYield", "payoutRatio", "exDividendDate", "payDate" })
             {

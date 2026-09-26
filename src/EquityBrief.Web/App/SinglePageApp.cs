@@ -295,6 +295,26 @@ public sealed class SinglePageApp : IComponent
         // the reader was. Anywhere on a row of tonight's list but its links picks that row, which
         // draws its plan beneath the list.
         document.addEventListener('click', (event) => {
+          // The hide control at the foot of a fold closes it and brings its heading back into view.
+          const hide = event.target.closest('.fold-hide');
+          if (hide) {
+            const fold = hide.closest('details');
+            if (fold) { fold.open = false; fold.querySelector('summary').scrollIntoView({ block: 'center' }); }
+            return;
+          }
+          // A link to a place on this screen. Every screen's address opens "#/", so a link whose hash
+          // does not is a place rather than a screen, and is scrolled to rather than taken as an
+          // address, which would draw a screen of that name that does not exist. It lands below the
+          // masthead, measured as it stands, since the masthead stays at the top and wraps on a
+          // narrower window.
+          const jump = event.target.closest('a[href^="#"]:not([href^="#/"])');
+          if (jump) {
+            event.preventDefault();
+            const place = document.getElementById(decodeURIComponent(jump.getAttribute('href').slice(1)));
+            const mast = document.querySelector('.mast');
+            if (place) { scrollTo({ top: place.getBoundingClientRect().top + scrollY - (mast ? mast.offsetHeight : 0) - 12 }); }
+            return;
+          }
           if (event.target.closest('#theme')) {
             const next = currentTheme() === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-eb-theme', next);
@@ -546,7 +566,6 @@ public sealed class SinglePageApp : IComponent
         NoYear? noYear = null,
         NameMast? mast = null,
         DateOnly? filedOn = null,
-        ListingHistoryCard? history = null,
         DateOnly? night = null,
         PeersView? peers = null,
         IReadOnlyList<ReactionCell>? reactions = null,
@@ -637,7 +656,7 @@ public sealed class SinglePageApp : IComponent
         // A page about an earlier night says so above every figure it draws, and links to
         // tonight's, since each of those figures is what the store held that evening and a
         // reader arriving on a link has nothing else to tell them which evening they are in.
-        // see: A name's page for an earlier night is what the store held that night
+        // see: A name's page for an earlier night draws what the store held that night and nothing it learned after
         region.Append(night is { } evening
             ? Invariant($"<p class=\"notice earlier-night\" data-night=\"{evening:yyyy-MM-dd}\" role=\"status\">This is {Escaped(ticker)} as the store held it after the close of {evening:yyyy-MM-dd}. <a href=\"{NameRoute}{Escaped(ticker)}\">Tonight's page</a></p>")
             : string.Empty);
@@ -828,7 +847,7 @@ public sealed class SinglePageApp : IComponent
         var planned = new StringBuilder();
 
         planned.Append("<div class=\"plan-grid\"><div class=\"fig\">").Append(marks.PlanColumn(ticker, close, plan)).Append("</div><div>");
-        planned.Append("<div class=\"sub\" style=\"margin-top:0\">Tranches and exits</div><div class=\"tbl-wrap\">").Append(marks.PlanTables(ticker, plan)).Append("</div></div></div>");
+        planned.Append(marks.PlanTables(ticker, plan)).Append("</div></div>");
         planned.Append("<div class=\"sub\">Around the next report</div>").Append(eventBook);
         planned.Append("<div class=\"sub\">Sizing arithmetic</div>").Append(arithmetic);
         planned.Append(Cards.Key(
@@ -836,7 +855,7 @@ public sealed class SinglePageApp : IComponent
             "The price now sits in the middle of the column. Orange zones above it are where part of the position is sold, and green blocks below are where it is bought. Each thin rule is a stop, and the heavy rule is the invalidation, the lowest stop.",
             "Everything above the price marker is a sale, everything below it is a purchase, and the lowest line is where the whole idea is wrong. The risk you take is yours to choose; the page only does the division."));
 
-        Card("plan", "Where it is bought, sold, and wrong", Cards.Computed("The plan", planned.ToString(), title: "Where it is bought, sold, and wrong", stamp: Cards.Night(session), id: "plan", region: "plan"));
+        Card("plan", "Entry and exit plan", Cards.Computed("The plan", planned.ToString(), title: "Entry and exit plan", stamp: Cards.Night(session), id: "plan", region: "plan"));
 
         // The earnings reaction record, beside the earnings setups the plan closes on: what each
         // print over the calendar's year behind did on the session it moved.
@@ -855,24 +874,8 @@ public sealed class SinglePageApp : IComponent
                 region: "reactions"));
         }
 
-        // The listing history, after the plan: the evenings the name was on the list and what
-        // followed each, section 15.9's row.
-        if (history is not null)
-        {
-            Card("listing-history", "The evenings it was on the list", Cards.Computed(
-                "Listing history",
-                marks.ListingHistory(ticker, history) + Cards.Key(
-                    "How to read it.",
-                    "The strip marks each stored session, inked where the name was on the list. Each row is one of those evenings, with where the price was five and twenty-one sessions later. A win means it was higher. The base rate is the share of every name on every night that was higher over the same span.",
-                    "One evening is one observation. A record is measured per reason across every name it fired on, so none is formed here for this name."),
-                title: "The evenings it was on the list",
-                stamp: Cards.Night(session),
-                id: "listing-history",
-                region: "listing-history"));
-        }
-
-        // What the company sells and the segment commentary, after the listing history and before
-        // the numbers, where section 4 lists them.
+        // What the company sells and the segment commentary, after the plan and before the
+        // numbers, where section 4 lists them.
         Draw(BeforeTheNumbers);
 
         // The numbers, which section 4 lists after the segment commentary. It arrives already written, for the
@@ -1740,7 +1743,7 @@ public sealed class SinglePageApp : IComponent
 
     // A name asked for on something that is not a date: tonight's page with a line saying
     // what was asked for, as an unknown route is tonight's list with one.
-    // see: A name's page for an earlier night is what the store held that night
+    // see: A name's page for an earlier night draws what the store held that night and nothing it learned after
     public static string NotANight(string asked) =>
         Invariant($"<p class=\"notice\" role=\"status\" data-not-a-night=\"{Escaped(asked)}\">{Escaped(asked)} is not an evening this reads, so this is tonight.</p>");
 

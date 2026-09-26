@@ -308,6 +308,37 @@ p[data-most],.cost{font-size:13px;color:var(--soft);margin-top:8px}
 .absent h2{font-size:20px}
 .cases{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
 .plan-grid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:24px;align-items:start}
+/* the numbers' snapshot: a figure to a row in two columns, what it is on the left and the figure on
+   the right with what it is measured against beneath, the rows ruled as a table's are */
+dl.snapshot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:36px;margin:0 0 4px;border-top:1px solid var(--ink)}
+dl.snapshot>div{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:9px 0;border-bottom:1px solid var(--hair)}
+dl.snapshot dt{color:var(--ink-2);font-size:13.5px}
+dl.snapshot dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+dl.snapshot dd b{font-weight:600;font-size:15px}
+dl.snapshot dd small{display:block;font-size:12.5px;color:var(--soft)}
+/* what management said and every other filed figure, closed until opened */
+details.guidance-fold,details.numbers-detail{margin:14px 0 0;border:1px solid var(--hair);border-radius:6px;background:var(--surface)}
+details.guidance-fold>summary,details.numbers-detail>summary{cursor:pointer;padding:9px 14px;font:600 13px var(--sans);min-height:40px;display:flex;align-items:center}
+details.guidance-fold[open]>summary,details.numbers-detail[open]>summary{border-bottom:1px solid var(--hair)}
+details.guidance-fold>blockquote,details.numbers-detail>*:not(summary){margin:12px 14px}
+details.guidance-fold>summary::after,details.numbers-detail>summary::after{content:"Show";margin-left:auto;padding-left:16px;font-weight:400;color:var(--soft)}
+details.guidance-fold[open]>summary::after,details.numbers-detail[open]>summary::after{content:"Hide"}
+.fold-hide{display:block;margin:6px 14px 12px auto;font:600 13px var(--sans);color:var(--ink);background:transparent;border:1px solid var(--hair-2);border-radius:6px;padding:0 14px;min-height:34px;cursor:pointer}
+details.guidance-fold>.fold-hide,details.numbers-detail>.fold-hide{margin:6px 14px 12px auto}
+ul.guidance-passage{margin:0 0 10px;padding-left:20px}
+ul.guidance-passage>li{margin:0 0 6px}
+ul.guidance-passage>li.beneath{margin-left:18px;list-style-type:circle}
+/* the segment table, each group's label once as a heading over its lines, the lines set in beneath
+   it and their figures to the right */
+.numbers-segments tr.segment-group th{padding:16px 10px 6px 0;font:600 13.5px var(--sans);letter-spacing:0;text-transform:none;color:var(--ink);border-bottom:1px solid var(--hair-2)}
+.numbers-segments tr:not(.segment-group) td:first-child{padding-left:14px}
+.numbers-segments tr.segment-heading td{color:var(--soft);font-style:italic}
+.numbers-segments td.num,.numbers-segments tr:first-child th:last-child{text-align:right}
+/* the entries and the exits, each under its own heading, the zone column one width in both so
+   the two tables read as one */
+.plan-sub:first-child{margin-top:0}
+.tranche-table th:first-child,.exit-table th:first-child{width:11em}
+.tranche-table td.num,.exit-table td.num{white-space:nowrap}
 .break-even,.sizing{margin:12px 0 0;max-width:70ch}
 .proposal-note{font-size:13px;color:var(--soft);margin:0 0 8px}
 .how-it-got-here figure{margin:0}
@@ -321,17 +352,23 @@ nav.contents a{text-decoration:none;color:var(--soft);display:flex;gap:10px;alig
 nav.contents a:hover{color:var(--ink)}
 nav.contents .c-n{color:var(--soft);font-variant-numeric:tabular-nums;min-width:1.4em;text-align:right;flex:0 0 auto}
 @media (max-width:700px){nav.contents ol{columns:1}}
-/* the two cases, each half under its own label. Neutral ink: the two hues are a level's and
-   nothing else may use them. */
-.case{border-left:3px solid var(--hair);padding:2px 0 2px 14px;margin:14px 0}
-.case h4{margin:0 0 6px;font:600 14px var(--sans);letter-spacing:.02em;color:var(--soft);text-transform:uppercase}
-.case .prose{margin:0}
-/* the risks, one to a part, with what would confirm each set in beneath it. Neutral ink for
-   the same reason the cases carry none. */
-ul.risks{margin:0 0 10px;padding-left:20px}
-ul.risks>li{margin:0 0 16px;padding-left:4px}
-ul.risks .prose{margin:0}
-ul.risks .confirms{margin:6px 0 0;padding-left:12px;border-left:2px solid var(--hair);color:var(--soft);font-size:14px}
+/* the two cases and the risks, a row to a claim or to a risk, the rows ruled apart as a table's
+   are: the cases under each case's label, and what would confirm a risk set in beneath it.
+   Neutral ink: the two hues are a level's and nothing else may use them. */
+.case{margin:0 0 22px;max-width:78ch}
+.case h4{margin:0;padding:0 0 7px;border-bottom:1px solid var(--hair-2);font:600 13px var(--sans);letter-spacing:.06em;color:var(--soft);text-transform:uppercase}
+ul.claim-rows,ul.risks{list-style:none;margin:0 0 10px;padding:0;max-width:78ch}
+.written-section>ul.claim-rows,.written-section>ul.risks{border-top:1px solid var(--hair-2)}
+ul.claim-rows>li,ul.risks>li{padding:10px 0;border-bottom:1px solid var(--hair)}
+ul.claim-rows>li:last-child,ul.risks>li:last-child{border-bottom:0}
+.written-section ul.claim-rows .prose,.written-section ul.risks .prose{margin:0;max-width:none}
+.written-section ul.risks .confirms{margin:6px 0 0;padding-left:12px;border-left:2px solid var(--hair);color:var(--soft);font-size:14px}
+/* the risks as a table where every risk states what would confirm it: the risk and its confirmation
+   side by side, a risk to a row */
+table.risks-table{max-width:120ch}
+table.risks-table th:first-child{width:50%}
+table.risks-table td{vertical-align:top;padding-top:10px;padding-bottom:10px}
+.written-section table.risks-table .prose{margin:0;max-width:none;font-size:14.5px}
 nav.walk{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin-top:24px;padding-top:16px;border-top:1px solid var(--ink)}
 nav.walk a{text-decoration:none;display:flex;flex-direction:column;min-height:44px;justify-content:center;font:600 16px var(--serif)}
 nav.walk a::before{font:12px var(--sans);color:var(--soft);letter-spacing:.08em;text-transform:uppercase}
@@ -410,7 +447,7 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
  :root{--gutter:14px}
  .card{padding:16px 16px 20px}
  .card.spined{grid-template-columns:1fr} .spine{border-right:0;border-bottom:1px solid var(--hair);padding:0 0 10px;margin-bottom:12px}
- .night,.selwrap,.plan-grid,.cases,.ops{grid-template-columns:1fr}
+ .night,.selwrap,.plan-grid,.cases,.ops,dl.snapshot{grid-template-columns:1fr}
  .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
  .verdicts{grid-template-columns:repeat(2,minmax(0,1fr))}
  .headline .big{font-size:56px}
