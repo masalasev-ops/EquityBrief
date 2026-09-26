@@ -26598,3 +26598,50 @@ Mutated:    stated with the batch's mutations in the 3.4 correction that closes 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
             the figures the 3.4 correction closing this batch records.
 Carried:    nothing new.
+
+### 3.4 ruling - a session counts once in a band, a touch is a visit, and a band is no wider than two typical days' moves   2026-09-26
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-26, reading HUM's name page, where a band from 353.69 to 355.81 on two
+            swing lows scored five on three sessions: three corrections asked together, that a session
+            counts once in a band, that a touch counts a visit rather than a session, and that a band has a
+            maximum width in typical moves, proposed in section 17; the members column to say what the
+            evidence is; the pinned code's cost stated before any edit; and a measurement before and after
+            with its predictions stated first. Shown the measurement, which at a width of one typical move
+            left two names listed over thirteen nights, the operator ruled the width. Asked how the
+            fixture's recorded answers should move, since the facts file every request carries changes with
+            the bands and with 4.2's moves: record both corrections once. Asked whether the derived
+            expectations should be re-derived or read back from the code: re-derive them all. And asked how
+            to register the family again once the pins move: "how do i reregister the family. Let me know
+            once coding changes are on main".
+Ruled:      the width, in the operator's words: "2 typical moves, landed with corrections 1 and 2 in the
+            same change. All three corrections edit the same pinned file, so landing them together costs
+            one restart of the ladder windows, the six candidate clocks and the shape window. Holding the
+            width limit for later would cost a second restart for the same file. The list changing on most
+            nights and first tranches moving on about a third of name-nights is the reach of the defect
+            being corrected, not a side effect of the fix. State both figures in the entry. One thing the
+            measurement has shown that should not be lost: the swing trade's risk is set by how wide its
+            setup band merged, because its stop sits at the band's low edge. Band width is a consequence
+            of how candidates cluster, not a judgement about where a trade is wrong. Record it as an
+            obligation in the second deferral form, with the width sweep just run as its evidence and the
+            shape calibration's first live trigger as the point it is ruled, rather than changing the trade
+            rules in this correction."
+            The fixture's answers are recorded once for 4.2 and 3.4 together, and every expectation the
+            fixture derives is derived again outside the code before the tests that read it run.
+Changed:    `DECISIONS.md`: (see: A touch is one visit to a band, counted only where the band holds no swing or retracement from that visit, and it never creates a band)
+            replaces "Touches strengthen a band and never create one", which moves to Previously decided
+            with its reasoning; (see: A band is no wider than two typical days' moves, and a chain that would be wider splits at its widest gap)
+            is added, marked proposed; and (see: A candidate whose evaluator a code change moved is registered again unchanged, every one at one instant)
+            is added. The third answers the operator's question with a command the 3.4 correction builds:
+            it is this batch's design, put to the operator with the commands that follow the merge, and not
+            a ruling of theirs. No code changes here: the 3.4 correction that follows carries all three.
+Consequences: `LevelSeries.cs` is among the sources the ladder rules' code version, every candidate
+            evaluator's version and the swing filter's code version pin, so the eight rule version windows
+            open since 2026-09-23 close and open again, the six candidates standing register again, and the
+            filter's shape window counts from its new code version. Read off the store, opened read-only:
+            each version window holds two counted sessions, 2026-09-24 and 2026-09-25, and the family two
+            nights of shadow, so the restart costs two nights of each.
+Tests:      none added here; the 3.4 correction that follows adds the ones that hold it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 3.4 correction closing this batch records.
+Carried:    the swing trade's stop, ruled apart from how wide its setup band merged, is written into
+            `BUILD_PLAN.md` by the 3.4 correction as an operating obligation in the second deferral form.
