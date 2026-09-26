@@ -26852,3 +26852,55 @@ Carried:    the operator's store, once this merges and before the next night, si
             (owes: The swing trade's stop ruled apart from how wide its setup band merged), carried in
             `BUILD_PLAN.md` to the shape calibration's first live trigger, with the width sweep above as
             its evidence.
+
+### 5.8 ruling - the report reads at a glance: the written sections a claim to a row, the plan and the numbers laid out plainly, the listing history off the page, and a report regenerated on the operator's ask   2026-09-26
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-26, reading HUM's report on the preview page, one ask at a time.
+            Of the two cases, drawn as one block: "I need this as a bulleted point or a rows separated by
+            lines like in the second image for both bull and bear. I dont need this to be so condensed.
+            THat completely makes it unreadable", the second image being a table of risks each beside the
+            trigger that would confirm it; then "and i dont want it just for HUM. THis should be an overall
+            template change", and "Even the risk section needs that change. Addendum". Shown the rows and
+            offered the writer asked again with the fixture recorded again: "ok finish the re-recording
+            and then PR all this in".
+            Of the plan: "Words are overlapping over here with the lines. The header needs to change to
+            something like Entry and exit plan or something more legible like the 2nd image", the second
+            image being a table of entries and one of exits.
+            Of the listing history: "i dont think this section is doing anything for the reader. We know
+            HUM has never been on the tonight list except on 25th yet we are saying the nights it has been
+            on the list. Overall , this section says entry zones for past dates which are of no use as a
+            reader reading it today", and asked what to do with it, "Remove it".
+            Of the numbers: "If this is supposed to be showing the fundamentals then i think it's better to
+            have a concise snapshot which highlights the important parts like the 2nd image . I want it
+            more readable", then of the segment table and its source line "i dont want EODHD to be
+            mentioned and this column is repeatative , it needs to be grouped", and of the folds "they are
+            not collapsing back".
+            Of a report: "i also dont see on any page a way to regenerate the report once it is past the
+            day it was generated", then "the button should be called Regenerate Report if it has crossed
+            the day it was generated".
+            And, pressing The numbers in the contents: "when i click on the numbers header it takes me to
+            tonight page", which is a defect rather than an ask and is corrected in the batch this ruling
+            opens.
+Ruled:      the two cases and the risks are drawn a claim to a row, the two cases under their labels
+            where the prose opens on the bull case and the risks as a table of each risk beside what would
+            confirm it where every part states its confirmation apart, and the writer is asked for those
+            parts (see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws).
+            The plan is headed Entry and exit plan, its rules cross the column and none of the words beside
+            it, and its tranches and exits are tables under their own headings. The name page states no
+            listing history (see: A name's page states no listing history, since what an earlier evening's list said is not what the page is read for),
+            and the page for an earlier night is stated without it (see: A name's page for an earlier night draws what the store held that night and nothing it learned after).
+            The numbers open on a snapshot of the newest filing, fold every other filed figure beneath it,
+            group the segments and name no provider (see: The numbers open on a snapshot of the newest filing with every other filed figure folded beneath it, and the report names no provider).
+            A report is regenerated whole on the operator's ask once the day it was written has passed,
+            by a control named Regenerate Report (see: A report is regenerated whole on the operator's ask once the day it was written has passed).
+Changed:    `DECISIONS.md` gains the five decisions, three of them superseding the entries they name, which
+            move to "Previously decided" with their reasoning. No code changes here: the 5.8 correction that
+            follows carries them.
+Consequences: the facts file, the night, the list, the queue and every record are as they were; the
+            fixture's answers to the two cases, the risks and the short version written from them are recorded
+            again, since each recording is keyed on the prompt that asked for it; and the operator's store
+            takes migration 44 once the correction merges.
+Tests:      none added here; the 5.8 correction that follows adds the ones that hold it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 5.8 correction closing this batch records.
+Carried:    nothing.
