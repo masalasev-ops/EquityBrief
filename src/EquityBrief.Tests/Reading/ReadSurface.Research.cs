@@ -99,7 +99,7 @@ public partial class ReadSurface
 
         foreach (var session in sessions)
         {
-            var row = Regex.Match(region, $"<tr data-session-date=\"{session}\"[^>]*>(.*?)</tr>", RegexOptions.Singleline);
+            var row = Regex.Match(region, $"<tr id=\"move-[^\"]+\" data-session-date=\"{session}\"[^>]*>(.*?)</tr>", RegexOptions.Singleline);
 
             Assert.True(row.Success, $"no row for {session}");
 

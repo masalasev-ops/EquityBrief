@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-40ldy67focxx19fryvv38a",
+  "object": "chat.completion",
+  "created": 1790397324,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The close stands at 76.77, while the session high reached 77.73 and the session low fell to 75.92 with a volume of 33.87 million shares. The stock trades below its 20-day average of 79.56 and its 50-day average of 75.67, though it remains above the 200-day average of 86.39 as the trend state is range. The latest earnings reaction occurred on session 2026-07-17 with an actual value of 0.8 against an estimate of 0.79, resulting in a move per cent of -7.26 and a surprise per cent of 1.27. Technical indicators show a MACD of 0.66 with a histogram of -0.67 and a signal line at 1.33, while the 14-day average true range is 2.31 and the 14-day relative strength index is 45.43.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1636,
+    "completion_tokens": 230,
+    "total_tokens": 1866,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

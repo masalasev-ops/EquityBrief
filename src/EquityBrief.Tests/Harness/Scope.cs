@@ -2120,6 +2120,10 @@ internal static class Scope
             Verdict.Pass,
             "each band's row states the gap from the stored close to that band's nearer edge over the name's own newest typical move, read back off the markup against a computation of the test's own from queries of its own, with a close inside a band stating no distance rather than the gap to one of its sides",
             ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Level evidence")] = new Scoped(
+            Verdict.Pass,
+            "the rows run from the highest band to the lowest with the close between the resistance and the support, read off the fixture name's page and off constructed bands worked by hand; each band's line counts its swings and visits by kind with the first and last dates or the one date they share, names an average and a shelf by kind with no date, a band of the 200-day average alone included; and each strength carries a bar three pixels a point beside a key saying what a point is",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "The risks as parts")] = new Scoped(
             Verdict.Pass,
             "the section is drawn one part to a risk over a store the recorded model wrote, each part one of the section's own paragraphs read back against the stored prose by a query of the test's own, and over prose run together as one paragraph the parts are cut where it says a risk starts with what would confirm each set beneath it and the run before the first cut opening the first part, the parts joined back up asserted to be the prose as it was written; a section saying nowhere that a part ends and a section of another name written in the same shape each draw no part at all",
@@ -2388,7 +2392,11 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Band merge distance")] = new Scoped(
             Verdict.Pass,
-            "the fraction the row states is read off it against the multiple the builder merges at, each current member's distance in the expectation is that multiple of the average true range the store holds at its as-of session, at a price's four places, and no two stored bands are closer to each other than that distance",
+            "the fraction the row states is read off it against the multiple the builder merges at, each current member's distance in the expectation is that multiple of the average true range the store holds at its as-of session, at a price's four places, and no two stored bands are closer to each other than that distance but the parts of a chain split for its width, every run of which spans more than the widest a band may be, two runs in the fixture counted in advance",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Band width")] = new Scoped(
+            Verdict.Pass,
+            "the multiple the row states is read off it against the one the builder splits at, no stored band of the fixture is wider than that multiple of the average true range the store holds at its as-of session, and constructed chains either side of the width and exactly at it split where the row says, at the widest gap and the lower of two equal ones",
             ByExpectations),
         [CheckReach.Key("15.5 The mark vocabulary", "Level chart, the level bands")] = new Scoped(
             Verdict.Pass,
@@ -2828,6 +2836,7 @@ internal static class Scope
         // 5.8 correction that stopped them carrying the draft a checker refused.
         [CheckReach.Key("15.9 Name", "The case for and the case against")] = "5.8",
         [CheckReach.Key("15.9 Name", "How far each band is")] = "5.8",
+        [CheckReach.Key("15.9 Name", "Level evidence")] = "3.4",
         [CheckReach.Key("15.9 Name", "The risks as parts")] = "5.8",
         [CheckReach.Key("15.9 Name", "Contents")] = "5.8",
         [CheckReach.Key("15.9 Name", "Sections left out")] = "6.5",
@@ -3451,6 +3460,7 @@ internal static class Scope
         ["Level window"] = "3.4",
         ["Swing lookback"] = "3.2",
         ["Band merge distance"] = "3.4",
+        ["Band width"] = "3.4",
         ["Tranches, exits"] = "4.5",
         ["Tranche eligibility"] = "4.4",
         ["Earnings horizon"] = "4.7",

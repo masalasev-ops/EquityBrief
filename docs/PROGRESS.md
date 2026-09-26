@@ -26645,3 +26645,187 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             the figures the 3.4 correction closing this batch records.
 Carried:    the swing trade's stop, ruled apart from how wide its setup band merged, is written into
             `BUILD_PLAN.md` by the 3.4 correction as an operating obligation in the second deferral form.
+
+### 3.4 - correction: a session counts once in a band, a touch is a visit, and a band is no wider than two typical days' moves, where a band on two swing lows scored five on three sessions and chains of candidates ran for several typical days' moves   2026-09-26
+Corrects:   3.4, whose level builder added every session whose high or low reached a band as a touch, so
+            a session the band already held as a swing was counted a second time and a band the price sat
+            in scored by how long it sat there, and whose merge joined any two candidates closer than half
+            a typical day's move, so a chain of them could run across prices anyone can tell apart. HUM's
+            band from 353.69 to 355.81 held two swing lows and scored five on three sessions. Over the
+            store's thirteen nights from 2026-09-09 to 2026-09-25, 6,535 name-nights, 6,705 of 39,288 bands
+            were wider than one typical move, the widest 5.87, one band held 85 members, 60 of them
+            touches, and the median name-night's strongest band scored 47. And the level summary under it,
+            which counted "member(s)" with a date range, dated an average or a shelf by the night it was
+            recomputed, and ran from the lowest band upward beside a plan column running downward.
+Found:      by the operator on 2026-09-26, reading HUM's page, on the ruling of this batch.
+Repaired:   `LevelSeries.Touched` adds one touch for each visit, a run of consecutive sessions whose low or
+            high lay inside the band, dated by the session it arrived on and priced at that session's low
+            where the low reached; a visit holding a session the band already has as a swing or a
+            retracement adds nothing. `LevelSeries.Merged` chains candidates as before and hands each chain
+            to `Split`, which keeps a chain no wider than `MaximumWidthInTypicalMoves`, 2, times the typical
+            move whole and splits a wider one at its widest gap, the lower of two equal gaps, until every
+            part fits; a chain exactly that wide fits. `LevelSeries.For` takes the typical move, which
+            `LevelBuilder`, `SessionReplay` and `RuleVersionScorer` each hand it.
+            `MarkRenderer.LevelSummary` runs from the highest band to the lowest, the resistance first,
+            with the close as a row between the resistance and the support, which `NameScreen` and
+            `SinglePageApp` hand it; each band's collapsed line is `EvidenceLine`, saying what turned the
+            price with a correct plural and one date where the first is the last, then the averages,
+            retracements and shelves by kind with no date; each member is `MemberLine`; the strength
+            carries a bar three pixels a point, and a key beneath the table says what a point is.
+            `CandidateRegistrar.RegisterMovedAgainAsync`, run as `register --moved --evidence`, retires
+            every standing candidate whose evaluator the code no longer carries at the version it was
+            registered with and registers each again with its name, rule, test, evaluator and parameters
+            as they stood and the version the code now carries, all at one instant or none; refused where
+            none has moved, and whole where one's evaluator is no longer carried or its parameters are ones
+            the evaluator does not read.
+Guarded:    `fixture-expectations`, five tests added in `FixtureExpectations.Bands.cs`, each over input
+            constructed and worked by hand beside it.
+            `ASessionTheBandHoldsAsASwingIsNotCountedAgainAsATouch`: HUM's two swing lows and one visit
+            between them, three members and a strength of four, where counting each session again gave
+            five members and six.
+            `AThreeWeekStayInsideABandIsOneVisit`: fifteen sessions inside a band are one touch dated the
+            first of them, a later visit a second, and the swing's own session none.
+            `AChainWiderThanTwoTypicalMovesSplitsAtItsWidestGap`: a chain split at its one wider gap, a
+            chain exactly two moves wide kept whole, equal gaps split at the lowest, and a chain 4.5 wide
+            split until every part fits.
+            `TheBandWidthIsTwoTypicalMovesAndNoStoredBandIsWiderThanIt`: section 17's row against the
+            constant, and every band the fixture's store holds against its own typical move.
+            `TheCandidatesWhoseEvaluatorMovedAreRegisteredAgainUnchangedAtOneInstantOrNone`: refused with
+            none moved, one moved candidate retired and registered again unchanged at one instant beside
+            three left standing, a second run refused, and refused whole for parameters its evaluator does
+            not read and for an evaluator no longer carried, nothing written by any refusal.
+            `read-surface`, two tests added in `ReadSurface.LevelEvidence.cs`.
+            `TheLevelSummaryReadsDownwardThroughTheCloseAndSaysWhatEachBandsEvidenceIs`: five constructed
+            bands and a close, the order through the close, each line word for word, a band of the 200-day
+            average alone named by kind with no date, the strength bar and the key.
+            `TheNamePagesLevelSummaryRunsDownwardThroughTheCloseAndNamesEachBandsEvidence`: off the fixture
+            name's rendered page, the resistance above the close row and the support below it each
+            highest first, every line's form, and no date on a band of averages or shelves alone.
+            `ANamesBandsAreListedInPriceOrderHoweverTheyAreSpelled` reads the table highest first, its
+            constructed bands both support, as the role rule makes any band whose low edge is below the
+            close. `RegisterAppendOnly`'s evaluation path check reads a registration's parameters as on the
+            path where they are handed to an evaluation and not where the registrar reads a row's own to
+            check it, with constructed lines held both ways, so the registrar is not pinned.
+Measured:   over a copy of the store as it stood after the 2026-09-25 night, its thirteen nights and 6,535
+            name-nights replayed through the level builder, the ladder and the swing filter before and
+            after, read-only and never through the harness.
+            Before: 39,288 bands; width in typical moves median 0.00, 90th percentile 1.97, widest 5.87,
+            6,705 wider than one; members a band median 2, 90th percentile 39, most 85; touches a band most
+            60; the strongest band a name-night median 47, 90th percentile 70, most 88; 38 names listed.
+            Predicted before the first run, for a width of one typical move: about 45,000 bands, the 90th
+            percentile width about 0.85 and none wider than 1.00, members a band 90th percentile about 6
+            and most about 15, touches most about 8, the strongest band median about 8, 90th percentile
+            about 12 and most about 20, between 27 and 49 names listed, and about 30% of first tranches
+            moved.
+            At one typical move: 56,121 bands; widths 0.73 at the 90th percentile and 1.00 at most; members
+            10 and 25; touches 17 at most; strongest median 13, 90th percentile 18, most 28; 2 names
+            listed, both on 2026-09-14; first tranches moved on 2,879 of 6,535 name-nights. The list was
+            the prediction's miss: the trade gate taken alone passed 60 name-nights against 1,056 before,
+            because a nearer resistance band split out of a wide chain shortens the target, and the
+            setup gate 1,562 against 2,565. Shown this, the operator ruled two.
+            Touches as visits alone, with no width: the bands and the list unchanged, members a band 90th
+            percentile 13, the strongest median 16. At three typical moves: 40,353 bands, the widest 3.00,
+            the list unchanged but one reordering, first tranches moved on 539.
+            At two, the rule as landed: 45,031 bands; width median 0.03, 90th percentile 1.44, widest 2.00;
+            members a band 90th percentile 11, most 24; touches most 13; the strongest band median 14,
+            90th percentile 19, most 27; the trade gate alone 589 and the setup gate alone 2,196.
+            The two figures the ruling asks for: the list changed on 9 of the 13 nights, 38 names in all
+            before and 34 after, HUM leaving 2026-09-25's; and the first tranche's zone moved on 2,040 of
+            6,535 name-nights, 31.2%, over 352 names, two of them losing their first tranche and none
+            gaining one.
+Recorded:   the fixture's model answers recorded once for 4.2 and 3.4 together, over the facts file both
+            move, from the requests the suite makes: 34 from the local model, LM Studio serving
+            qwen/qwen3.5-9b, and 11 from the paid model, deepseek-flash, all on 2026-09-26 between 04:33Z
+            and 04:42Z, off-peak, the 11 priced at $0.0393 together by the configured rates, each recording
+            named for its request's key and read by the suite byte for byte. The key was read at run time
+            from the checkout's secrets file and printed nowhere. The 44 recordings no request asks for any
+            more are removed, and the 4 still asked for kept. The manifest names each of the 45 with its
+            request, its usage and, for a paid one, its price.
+Expected:   every expectation the fixture derives was derived again outside the code, by scripts over the
+            committed bars and the rules as the documents state them, before the tests that read them were
+            run, and each was then held against what the code computes: `levels.json`, 7, 6, 11 and 9
+            bands with the worked band now AAPL's from 304.7879 to 316.0175 at a strength of 14 on 11
+            members; `ladder.json`, every tranche, stop, invalidation and blended figure; `gate-results.json`,
+            both nights' gates and plans; `listings.json`'s two nights; `candidate-conditions.json`;
+            `version-scores.json`'s plans. All matched. The prices read are the adjusted bars, high and low
+            scaled by the adjusted close over the close and held to four places, the stop moves divided by
+            the typical move unrounded, and a blended risk read against the second tranche's stop.
+            `research-record.json`, `prose.json` and the token count are readings of the recordings, each
+            verdict frozen as it was reached: the research pass now writes the two cases on its first
+            draft, the risks as seven numbered parts with no confirmation opened in the words the writer
+            is asked for, and the release's cause refused once and written on its second draft. Each paid
+            stage's spend was worked from its recording's usage at the configured rates, $0.031171572 for
+            the pass's own calls and $0.032237718 for the comparison with every section paid, and the
+            context a machine cannot hold was counted again from the logged request by the rule, 7,113
+            tokens. Figure 11.3's setup, which was the latest to pass the trade gate and resolve, is now
+            the latest to pass the setup gate and resolve, because the replayed year holds no plan past the
+            trade gate that resolves twenty sessions before the night: NFLX on 2026-07-31, entered at 71.71
+            with a stop of 68.3958 and a target of 73.66, won on 2026-08-05 by the captured closes walked
+            by hand. Figures 11.2 and 11.3 are regenerated from the fixture.
+Written:    section 9's merge and touch steps and its key, section 17's Band width row marked proposed,
+            section 15.9's Level evidence row, the candidate registrar's catalogue row and figures 11.2 and
+            11.3 in `ARCHITECTURE.html`; the carried obligation and 12.3's owes in `BUILD_PLAN.md`; the
+            command and the fixture pass's cost in `RUNBOOK.md`; the merge and touch boxes in the
+            operator's `HOW_IT_WORKS.html` and the section 9 addendum they asked for; each with its prior
+            text in `CHANGELOG.md`. The decisions by the ruling of this batch.
+Tests:      1426, from 1418: seven added by this correction and one by 4.2's, none removed. Migrations 0
+            to 43 with none pending, schema version 43.
+Claims:     574, from 572, each due at 3.4: section 15.9's Level evidence row and section 17's Band width
+            row, each in phase 12's pair beyond the prediction, which reads (550, 574).
+Pins:       the branch against `main` at 8c348ed. Of the twelve `RuleVersionScorer.CodeVersionSources` this
+            batch edits `LevelSeries.cs`, `LevelBuilder.cs` and `RuleVersionScorer.cs`, and the ladder
+            rules' code version moves from 9c5b1776d336 to fd934631fb3b. Of the twenty-one
+            `CandidateEvaluator.EvaluationSources` it edits `LevelSeries.cs`, `LevelBuilder.cs` and
+            `SwingFilter.cs`, whose code version line moves with it, and every evaluator's version moves:
+            momentum-index-reading 7c3bee53d309 to 0de09fd1038f, momentum-histogram-turn d2e1429c7243 to
+            681c0a59ba70, arrived-and-narrow 9117a53605c0 to 95cac39ec42f, volume-against-the-night
+            82d449fc696b to 75271ad2ada6, crossed-by-a-margin 6591db1c05ad to 45de3ae088d1 and swing-filter
+            d1936df599dd to cbd265d1edf2. Of the sixteen `SwingFilter.CodeVersionSources` it edits
+            `LevelSeries.cs` and `SwingFilter.cs`, and the filter's code version moves from 08408580d719
+            to 9c34a8d191d1. Each list is read from the tree being committed.
+Mutated:    the rule, stated before the run: each rule this batch lands put back to the behaviour it
+            corrects, and each surface it draws to its plainest wrong form, one at a time, each filtered to
+            the tests named against it.
+            Predicted:
+            B1 a touch for every session inside a band rather than one a visit, the swing's own sessions
+            still left out: red in the three-week test and in the fixture's level arithmetic, green in the
+            HUM test, whose sessions inside the band are each a visit of one.
+            B2 the check for a visit the band already holds removed: red in the HUM test, the three-week
+            test and the fixture's level arithmetic.
+            B3 no width at all: red in the chain test, the stored width test, the fixture's level
+            arithmetic and the merge distance test.
+            B4 a chain split at its lowest gap rather than its widest: red in the chain test.
+            B5 a chain exactly two moves wide split: red in the chain test alone of the five band tests.
+            L1 the summary ordered from the lowest band up: red in both level evidence tests and the price
+            order test.
+            L2 the close row never drawn: red in both level evidence tests.
+            L3 the collapsed line counting members as before: red in both level evidence tests.
+            L4 an average's line given the night's date: red in the constructed level evidence test alone.
+            M1 each row the moved registration writes at an instant of its own: red in the registration
+            test.
+            M2 a moved candidate's parameters left unchecked: red in the registration test.
+            M3 the evaluation path read off any call reading a registration's parameters, as before: red
+            in the evaluator pin test.
+            V1 4.2's rule removed, overlapping windows taken again: red in the distinct moves test and the
+            fixture's moves.
+            V2 4.2's circle drawn with no link to its row: red in the level chart test.
+            Results: TO BE FILLED FROM THE 3.4 SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 34VT of 34VT tests ran
+            with none failed, migrations 0 to 43 with none pending, schema version 43, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 34VTB tables, 34VC claims, 34VP PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 34VR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 34VT of 34VT tests.
+            Both gates ran over the tree carrying this entry and the three before it, 34TREESHA, in a
+            worktree beside the repository, and the operator's store under `data/` was not touched by
+            either.
+Carried:    the operator's store, once this merges and before the next night, since from the merge every
+            open window's code version has moved and every standing candidate's evaluator with it, which
+            would stop the night at the rule versions step and name the six as failures on the listings
+            stage: close the eight open windows, each version before its live window, with evidence naming
+            the move from 9c5b1776d336 to fd934631fb3b; open them again at the values they held; register
+            the six again with `register --moved`; and apply migration 43 with `tools/migrate.ps1` if the
+            night has not already. The commands are the operator's to run.
+            (owes: The swing trade's stop ruled apart from how wide its setup band merged), carried in
+            `BUILD_PLAN.md` to the shape calibration's first live trigger, with the width sweep above as
+            its evidence.

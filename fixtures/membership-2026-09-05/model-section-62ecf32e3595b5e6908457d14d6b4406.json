@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-0iw5jmmj7pjc444870d7ct5",
+  "object": "chat.completion",
+  "created": 1790397725,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Keysight Technologies Inc reported latest quarter earnings per share of 2.82 against an estimate of 2.16, resulting in a surprise of 30.5556 percent on the session of 2026-08-19 [D1]. The company posted revenue of 1846000000.00 with a gross margin of 0.658722 and net income of 397000000.00, while trailing price to earnings stands at 45.8862 [D1]. The stock closed at 333.42 with immediate support edges at 332.78 and 311.2696, and immediate resistance edges at 366.41 [D1].\n\nThe market is arguing about the sustainability of order levels given that supply chain will remain the governor of near-term revenue according to management statements in the transcript [D3]. Analysts are also probing whether demand durability can be maintained as the supply environment is less flexible today than a year ago [D3]. There is concern regarding one-time tariff impacts in fiscal 2026 that artificially pulled up profitability but will not repeat in future periods [D3].\n\nThe plan therefore involves raising the outlook for the fourth quarter of 2026 revenue to a range of 1930000000 to 1950000000 and non-GAAP earnings per share to a range of 3.34 to 3.40 [D1]. Management expects fiscal year 2026 revenue growth of 32 percent and EPS growth of approximately 60 percent at the midpoint based on a weighted diluted share count of approximately 172 million shares [D3]. The company intends to continue returning capital through its share repurchase programme while managing external component supply dependencies for high-demand new product introductions [D4].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18673,
+    "completion_tokens": 421,
+    "total_tokens": 19094,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

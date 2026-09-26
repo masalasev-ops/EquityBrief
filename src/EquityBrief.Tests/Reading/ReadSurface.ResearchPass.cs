@@ -295,21 +295,21 @@ public partial class ReadSurface
             "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted');")
             .Single()[0];
 
-        // The fixture's risks are one paragraph of five: the first opens it numbered by nothing and
-        // the four after it each open on an ordinal from the second, so each is a part, cut where
-        // the prose says it starts, with the first one's confirmation beneath it and never the
-        // second risk. The parts joined back up are the prose as it was stored.
+        // The fixture's risks are one paragraph of seven, each opening on an ordinal from the first,
+        // so each is a part, cut where the prose says it starts. A sentence opening "A related risk"
+        // names no ordinal and stays inside the part before it. The writer opened no confirmation in
+        // the words it is asked for, so none is set apart and each part is drawn as written. The
+        // parts joined back up are the prose as it was stored.
         var drawn = RisksDrawn(written.Value);
 
         Assert.DoesNotContain("\n\n", stored.Trim(), StringComparison.Ordinal);
-        Assert.Equal(5, drawn.Count);
+        Assert.Equal(7, drawn.Count);
         Assert.Equal(stored.Trim(), string.Join(" ", drawn.Select(RiskWhole)));
-        Assert.StartsWith("The clearest risk", drawn[0].Risk, StringComparison.Ordinal);
-        Assert.StartsWith("That risk would be confirmed", drawn[0].Confirmation, StringComparison.Ordinal);
-        Assert.DoesNotContain("A second risk", drawn[0].Confirmation, StringComparison.Ordinal);
         Assert.Equal(
-            ["A second risk", "A third risk", "A fourth risk", "A fifth risk"],
-            [.. drawn.Skip(1).Select(part => string.Join(' ', part.Risk.Split(' ').Take(3)))]);
+            ["The first risk", "The second risk", "The third risk", "The fourth risk", "The fifth risk", "The sixth risk", "The seventh risk"],
+            [.. drawn.Select(part => string.Join(' ', part.Risk.Split(' ').Take(3)))]);
+        Assert.Contains(". A related risk", drawn[2].Risk, StringComparison.Ordinal);
+        Assert.All(drawn, part => Assert.Null(part.Confirmation));
 
         var marks = new MarkRenderer();
 

@@ -226,6 +226,7 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.FailureTable, "A name whose trend state cannot be classified"),
             CheckReach.Key(Scope.LimitsTable, "Level window"),
             CheckReach.Key(Scope.LimitsTable, "Band merge distance"),
+            CheckReach.Key(Scope.LimitsTable, "Band width"),
             CheckReach.Key(Scope.LimitsTable, "Volume shelf threshold"),
             CheckReach.Key(Scope.LimitsTable, "Swing lookback"),
             CheckReach.Key(Scope.FailureTable, "Fewer than 200 bars for a new index member, 200-day average"),
@@ -1594,31 +1595,34 @@ public partial class FixtureExpectations
         // captured bars.
         var asOf = new DateOnly(2026, 9, 4);
 
-        // Sixty sessions whose low is the average itself, so the band is reached
-        // over and over. A touch is a session high or low inside the band rather
-        // than a session that traded through it, which is why the low sits on
-        // the price rather than beneath it.
+        // Sixty sessions, every other one with its low on the average itself and
+        // the ones between clear of it, so the band is visited thirty times. A
+        // touch is a visit, a run of sessions whose high or low lay inside the
+        // band, rather than a session that traded through it, which is why the
+        // low sits on the price rather than beneath it.
         var window = Enumerable.Range(0, 60)
-            .Select(day => new LevelBar(asOf.AddDays(day - 59), 101m, 100m, 100.5m))
+            .Select(day => day % 2 == 0
+                ? new LevelBar(asOf.AddDays(day - 59), 101m, 100m, 100.5m)
+                : new LevelBar(asOf.AddDays(day - 59), 104m, 102m, 103m))
             .ToArray();
 
         // One candidate, and it is an average.
         LevelMember[] candidates = [new(MemberSource.Average, "sma20", 100m, asOf)];
 
-        var bands = LevelSeries.For(window, candidates, close: 105m, mergeDistance: 1m, asOf);
+        var bands = LevelSeries.For(window, candidates, close: 105m, mergeDistance: 1m, typicalMove: 2m, asOf);
         var band = Assert.Single(bands);
 
         // The touches arrived. This is what makes the case the one it is: a band
-        // computed over its whole membership would now see sixty non-average
+        // computed over its whole membership would now see thirty non-average
         // members and call itself anchored.
         var touches = band.Members.Count(member => member.Source == MemberSource.Touch);
 
-        Assert.True(touches >= 55, $"the constructed band carries {touches} touches, expected at least 55.");
+        Assert.Equal(30, touches);
         Assert.Contains(band.Members, member => member.Source == MemberSource.Average);
 
         // The property. An anchor is what creates a band and a touch is not one,
-        // so a band held up by an average and sixty sessions that reached it is
-        // still anchored on an average alone.
+        // so a band held up by an average and thirty visits to it is still
+        // anchored on an average alone.
         Assert.False(
             band.HasNonAverageAnchor,
             "a band whose only anchor is a moving average reported a non-average anchor because " +
@@ -1633,7 +1637,7 @@ public partial class FixtureExpectations
             new(MemberSource.Swing, "swing low", 100.2m, asOf.AddDays(-30)),
         ];
 
-        var anchored = Assert.Single(LevelSeries.For(window, withASwing, close: 105m, mergeDistance: 1m, asOf));
+        var anchored = Assert.Single(LevelSeries.For(window, withASwing, close: 105m, mergeDistance: 1m, typicalMove: 2m, asOf));
 
         Assert.True(anchored.HasNonAverageAnchor);
     }
@@ -1820,7 +1824,7 @@ public partial class FixtureExpectations
         // a band and can never create or widen one. So every band's edges are
         // the lowest and highest of its non-touch members, and every touch sits
         // between them.
-        // see: Touches strengthen a band and never create one
+        // see: A touch is one visit to a band, counted only where the band holds no swing or retracement from that visit, and it never creates a band
         using var store = await WithLevels();
 
         var rows = Query(store, "SELECT ticker, low_edge, high_edge, members FROM level ORDER BY ticker, low_edge;");
@@ -1857,8 +1861,9 @@ public partial class FixtureExpectations
         }
 
         // Stated, because a run finding no touch would satisfy every assertion
-        // above by having nothing to check.
-        Assert.True(touches >= 50, $"Found {touches} touches across the bands, expected at least 50.");
+        // above by having nothing to check. A touch is a visit, and the fixture's
+        // bands hold 34 of them.
+        Assert.True(touches >= 30, $"Found {touches} touches across the bands, expected at least 30.");
     }
 
     [Fact]
@@ -1997,6 +2002,7 @@ public partial class FixtureExpectations
         using var store = await WithLevels();
 
         var names = new List<string>();
+        var split = 0;
 
         foreach (var entry in expected.GetProperty("mergeDistance").GetProperty("byName").EnumerateObject())
         {
@@ -2013,9 +2019,13 @@ public partial class FixtureExpectations
                 typicalMove * LevelSeries.MergeDistanceInTypicalMoves == merge,
                 $"{ticker}'s stored typical move at {session} is {typicalMove}, and the expectation's merge distance is {merge}.");
 
-            // No two bands are closer than the merge distance, which is what the
-            // merge step is for: two bands that close would be one band.
-            var edges = Query(store, $"SELECT low_edge, high_edge FROM level WHERE ticker = '{ticker}' ORDER BY low_edge;")
+            // Two bands closer than the merge distance would be one band, which is
+            // what the merge step is for, unless they are parts of one chain split
+            // because it was wider than a band may be. So every run of bands each
+            // closer than the merge distance to the one before spans more than the
+            // maximum width, and a run that did not would be a split nothing called for.
+            // see: A band is no wider than two typical days' moves, and a chain that would be wider splits at its widest gap
+            var edges = Query(store, $"SELECT low_edge, high_edge FROM level WHERE ticker = '{ticker}' ORDER BY low_edge + 0;")
                 .Select(cells => cells.Split('|'))
                 .Select(cells => (
                     Low: decimal.Parse(cells[0], CultureInfo.InvariantCulture),
@@ -2024,17 +2034,35 @@ public partial class FixtureExpectations
 
             Assert.True(edges.Length >= 2, $"{ticker} stores {edges.Length} band(s), so no gap between two is asserted.");
 
-            for (var band = 1; band < edges.Length; band++)
+            var from = 0;
+
+            for (var band = 1; band <= edges.Length; band++)
             {
-                Assert.True(
-                    edges[band].Low - edges[band - 1].High >= merge,
-                    $"{ticker} has bands ending at {edges[band - 1].High} and starting at {edges[band].Low}, which is closer than {merge}.");
+                if (band < edges.Length && edges[band].Low - edges[band - 1].High < merge)
+                {
+                    continue;
+                }
+
+                if (band - from > 1)
+                {
+                    split++;
+
+                    Assert.True(
+                        edges[band - 1].High - edges[from].Low > LevelSeries.MaximumWidthInTypicalMoves * typicalMove,
+                        $"{ticker}'s bands from {edges[from].Low} to {edges[band - 1].High} are each closer than {merge} to the one before and span no more than a band may.");
+                }
+
+                from = band;
             }
 
             names.Add(ticker);
         }
 
         Assert.Equal(FixtureExpectation.CurrentMembers.Order(StringComparer.Ordinal), names.Order(StringComparer.Ordinal));
+
+        // Counted in advance: AAPL's chain from 299.7415 to 320.28 and KEYS's from 300.87 to 332.78, each
+        // split in three, and no other.
+        Assert.Equal(2, split);
     }
 
     [Fact]
@@ -2133,11 +2161,11 @@ public partial class FixtureExpectations
         // is held by the shape of the code rather than by the line under test.
         //
         // The rule that is not a tautology is which sessions count. The document
-        // says any session high or low that reached a band, so a session whose
+        // says a session high or low that reached a band, so a session whose
         // range covers the band without either extreme landing in it did not
         // reach it, and one whose low landed in it did. Both are choices a later
         // session could take the other way.
-        // see: Touches strengthen a band and never create one
+        // see: A touch is one visit to a band, counted only where the band holds no swing or retracement from that visit, and it never creates a band
         var band = new[]
         {
             new LevelMember(MemberSource.Swing, "swing low", 100m, new DateOnly(2026, 1, 5)),
@@ -2156,7 +2184,7 @@ public partial class FixtureExpectations
 
         // A merge distance of two, so the two swings a point apart are one band
         // running 100 to 101 rather than two bands with nothing between them.
-        var levels = LevelSeries.For(window, band, 200m, 2m, new DateOnly(2026, 1, 9));
+        var levels = LevelSeries.For(window, band, 200m, 2m, 4m, new DateOnly(2026, 1, 9));
         var touches = levels.Single(level => level.LowEdge == 100m)
             .Members
             .Where(member => member.Source == MemberSource.Touch)
@@ -2936,7 +2964,7 @@ public partial class FixtureExpectations
         }
 
         // The bands below the price that carry no tranche, named per name. AAPL's
-        // 283.439 is its 200-day average: it carries no tranche and is the first
+        // 283.439 is its 200-day average: it carries no tranche and is the third
         // tranche's stop, which is the rule doing both things at once.
         var skipped = expected.GetProperty("skipped").GetProperty("byName");
 
@@ -2961,12 +2989,12 @@ public partial class FixtureExpectations
         Assert.Contains(
             "283.439",
             JsonDocument.Parse(Query(store, "SELECT plan FROM ladder WHERE ticker = 'AAPL';").Single())
-                .RootElement.GetProperty("tranches").EnumerateArray().First()
+                .RootElement.GetProperty("tranches").EnumerateArray().Last()
                 .GetProperty("stop").GetString()!,
             StringComparison.Ordinal);
 
-        // At most three, which is section 17's count, over the two names that
-        // have more eligible bands than that.
+        // At most three, which is section 17's count, over names that have more
+        // eligible bands than that.
         Assert.All(
             FixtureExpectation.Names,
             name => Assert.True(counts.GetProperty(name).GetInt32() <= LadderSeries.MostTranches));
@@ -3008,20 +3036,23 @@ public partial class FixtureExpectations
         }
 
         // Where the trailing rule bites, named per name in the expectation and
-        // read back off the store. KEYS is the only tranche in this fixture
-        // whose stop the trailing rule moves, and stating that is what keeps a
-        // rule that changed nothing from reading as a rule that works.
+        // read back off the store. KEYS's first and third tranches and AAPL's
+        // second are the ones in this fixture whose stop the trailing rule moves,
+        // and stating that is what keeps a rule that changed nothing from reading
+        // as a rule that works.
         var stops = Expected("ladder").GetProperty("stops").GetProperty("whereTheTrailingRuleBites");
 
+        Assert.Contains("306.852", stops.GetProperty("KEYS").GetString()!, StringComparison.Ordinal);
         Assert.Contains("293.55", stops.GetProperty("KEYS").GetString()!, StringComparison.Ordinal);
+        Assert.Contains("300.57", stops.GetProperty("AAPL").GetString()!, StringComparison.Ordinal);
 
         var keys = JsonDocument
             .Parse(Query(store, "SELECT plan FROM ladder WHERE ticker = 'KEYS';").Single())
             .RootElement;
 
         Assert.Equal(
-            "293.55",
-            keys.GetProperty("tranches").EnumerateArray().First().GetProperty("stop").GetString());
+            ["306.852", "300.87", "293.55"],
+            keys.GetProperty("tranches").EnumerateArray().Select(tranche => tranche.GetProperty("stop").GetString()));
 
         // A skipped exit is listed with its reason rather than omitted, which is
         // the half a rule that only filtered would lose.
@@ -5841,11 +5872,16 @@ public partial class FixtureExpectations
         // input, because a series where a single day is the largest mover on a
         // session a five-day run also ends on is not something four names of
         // committed bars can be relied on to hold.
-        var rising = Enumerable.Range(0, 12)
-            .Select(day => new MoveBar(new DateOnly(2026, 1, 1).AddDays(day), 100m + day))
+        //
+        // A one-session jump on the second session, back on the third, and a
+        // rise of five sessions late in the series, which share no session, so
+        // both are among the moves kept.
+        decimal[] closes = [100m, 110m, 100m, 100m, 100m, 100m, 100m, 100m, 100m, 100m, 100m, 104m, 108m, 112m, 116m, 120m];
+        var series = closes
+            .Select((close, day) => new MoveBar(new DateOnly(2026, 1, 1).AddDays(day), close))
             .ToArray();
 
-        var moves = MoveSeries.For(rising);
+        var moves = MoveSeries.For(series);
 
         Assert.Equal(moves.Count, moves.Select(move => move.SessionDate).Distinct().Count());
 
@@ -5853,18 +5889,12 @@ public partial class FixtureExpectations
         // carries the longer, and one too near the start carries the only span
         // that reaches it. Both halves are asserted, because a rule that only
         // ever saw the first half would read as the longer span always winning.
-        var first = rising[0].SessionDate;
+        Assert.Equal(5, Assert.Single(moves, move => move.SessionDate == series[^1].SessionDate).Sessions);
+        Assert.Equal(1, Assert.Single(moves, move => move.SessionDate == series[1].SessionDate).Sessions);
 
-        Assert.All(
-            moves.Where(move => move.SessionDate.DayNumber - first.DayNumber >= 5),
-            move => Assert.Equal(5, move.Sessions));
-
-        Assert.All(
-            moves.Where(move => move.SessionDate.DayNumber - first.DayNumber < 5),
-            move => Assert.Equal(1, move.Sessions));
-
-        Assert.Contains(moves, move => move.Sessions == 5);
-        Assert.Contains(moves, move => move.Sessions == 1);
+        var rising = Enumerable.Range(0, 12)
+            .Select(day => new MoveBar(new DateOnly(2026, 1, 1).AddDays(day), 100m + day))
+            .ToArray();
 
         // A series shorter than a span produces the shorter moves alone rather
         // than nothing, and a series of one session produces none: a move needs

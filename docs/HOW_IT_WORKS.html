@@ -291,14 +291,14 @@
 
     <rect class="bx-n" x="314" y="100" width="200" height="80" rx="6"/>
     <text class="t" x="414" y="130" text-anchor="middle">Merge</text>
-    <text class="ts" x="414" y="150" text-anchor="middle">prices very close</text>
-    <text class="ts" x="414" y="168" text-anchor="middle">together become one band</text>
+    <text class="ts" x="414" y="150" text-anchor="middle">prices very close together</text>
+    <text class="ts" x="414" y="168" text-anchor="middle">become one narrow band</text>
     <path class="ln" d="M514 140 H540" marker-end="url(#ah2)"/>
 
     <rect class="bx-n" x="544" y="100" width="200" height="80" rx="6"/>
     <text class="t" x="644" y="130" text-anchor="middle">Add touches</text>
-    <text class="ts" x="644" y="150" text-anchor="middle">each day that reached it</text>
-    <text class="ts" x="644" y="168" text-anchor="middle">adds strength</text>
+    <text class="ts" x="644" y="150" text-anchor="middle">each separate visit to it</text>
+    <text class="ts" x="644" y="168" text-anchor="middle">adds strength once</text>
     <path class="ln" d="M744 140 H770" marker-end="url(#ah2)"/>
 
     <rect class="bx" x="774" y="90" width="216" height="100" rx="6"/>
@@ -592,6 +592,9 @@
   <p><b>A worked example, with illustrative numbers.</b> A plan buys at 100, stops at 95 and targets 112. The risk is 5 and the reward is 12, so the plan comes out even if it wins 5 times in every 17, about 29% of the time. A setting earns its place only if its plans win more often than their own break-even, and more often than a plan with no skill would from the same starting point.</p>
 </div>
 
+<h3>What the loop can change</h3>
+<p>Only the list's filter settings move: how strong a stock's recent return must be, how deep a pullback counts, how quiet the volume must be on the way down, how far away the stop may sit, the minimum reward for the risk, and how healthy the market must be. The rules for finding levels and building the report's plan do not change through this loop.</p>
+
 <h3>Two clocks, answering two different questions</h3>
 <figure>
   <svg viewBox="0 0 1000 210" role="img" aria-labelledby="f10">
@@ -613,7 +616,7 @@
   </svg>
 </figure>
 <div class="key">
-  <p><b>How to read it.</b> The shape clock tunes how many stocks pass each gate, so the list is neither empty every night nor full of everything. The edge clock judges whether the list's picks actually work.</p>
+  <p><b>How to read it.</b> The shape clock adjusts those settings so each gate lets through a sensible number of stocks. The edge clock runs a few alternative versions of the filter in the background, each differing in one setting, and judges which version's trades actually win more often than they need to.</p>
   <p><b>What to take from it.</b> The list's size can be tuned within months. Whether the picks make money takes years to answer with confidence, and the page says so plainly so an empty result reads as waiting, not broken.</p>
 </div>
 
@@ -622,6 +625,7 @@
   <p><b>Why years rather than a count of trades.</b> Trades that overlap in time share the same market, so they are not independent pieces of evidence. The system counts evidence in blocks of time rather than in trades (<a href="#s-cm">Cameron and Miller 2015</a>).</p>
   <p><b>Why fixed checkpoints.</b> Looking at results again and again and stopping when they look good finds false winners. Results are judged only at set points, the way medical trials handle the same problem (<a href="#s-armitage">Armitage, McPherson and Rowe 1969</a>; <a href="#s-lan">Lan and DeMets 1983</a>; <a href="#s-fda">FDA 2019</a>).</p>
   <p><b>Why a limit on adjustments.</b> Each time the live settings change, the edge clock has to start again. So after the first adjustment, any further change shows how much evidence it would throw away before you accept it.</p>
+  <p><b>Why the turned-away stocks count.</b> Each gate is also judged by what it turned away. If the stocks a gate rejects would have done as well as the ones it lets through, that gate is not earning its place, and the page says so.</p>
 </div>
 
 <!-- 10 -->

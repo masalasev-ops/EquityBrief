@@ -7774,3 +7774,78 @@ Was:
 Now:
 > <div class="box compute"><b>Move annotator</b>picks the biggest moves of the last year for the how-it-got-here table, no two of them sharing a session (see: The biggest moves of a year are distinct episodes rather than overlapping windows of one)</div>
 Why: a five-session window slid by one day is four fifths the same days, so the biggest windows of a year are one rally described several ways unless each is taken only where it shares no session with one already taken.
+
+### 2026-09-26 - DECISIONS.md - a touch is one visit that the band holds no other evidence for
+Corrects: "Touches strengthen a band and never create one" counted every session that reached a band as a touch, so a session already in the band as a swing was counted twice and a band the price sat in scored by how long it sat there. Found by the operator on 2026-09-26 reading HUM's selected name, where a band of three sessions scored 5 and a band of 68 members scored 71 beside a next strongest of 5.
+Was:
+> **Touches strengthen a band and never create one** A session that reached a band is evidence for it, which is how the report cites dated lows that are not swings in their own right.
+Now:
+> **A touch is one visit to a band, counted only where the band holds no swing or retracement from that visit, and it never creates a band**, with the original reasoning kept at its head; the entry above moves to "Previously decided" with its reasoning intact, and **A band is no wider than two typical days' moves, and a chain that would be wider splits at its widest gap** is added beside it.
+Why: a session is evidence for a band once, and how long the price sat in a band is not how many times the band held it.
+
+### 2026-09-26 - ARCHITECTURE.html - section 9's merge and touch steps, and its key
+Authorised by: A touch is one visit to a band, counted only where the band holds no swing or retracement from that visit, and it never creates a band
+Was:
+> <div class="box compute"><b>Merge into bands</b>sort by price; two candidates closer than half a typical day's move join one band, whose edges are its lowest and highest member</div>
+> <div class="box compute"><b>Add touches</b>any session high or low that reached a band joins it as evidence; a touch strengthens a band and can never create one (see: Touches strengthen a band and never create one)</div>
+> cannot be told apart by anyone trading them. Touches are why a band can cite specific dated lows inside it without those days being swings in their own right.</p>
+Now:
+> <div class="box compute"><b>Merge into bands</b>sort by price; two candidates closer than half a typical day's move join one band, whose edges are its lowest and highest member; a chain of them wider than two typical days' moves splits at its widest gap until every part fits (see: A band is no wider than two typical days' moves, and a chain that would be wider splits at its widest gap)</div>
+> <div class="box compute"><b>Add touches</b>each visit the price paid a band, a run of sessions whose high or low lay inside it, joins it as one touch dated the session it arrived, unless the band already holds a swing or a retracement from that visit; a touch strengthens a band and can never create one (see: A touch is one visit to a band, counted only where the band holds no swing or retracement from that visit, and it never creates a band)</div>
+> the key adds that the merge distance holds between neighbours and not between a chain's ends, so a band is no wider than two typical days' moves and a longer chain splits at its widest gap, and that a touch is a visit rather than a session, a visit holding a session the band already has as a swing or a retracement adding nothing.
+Why: the rule text is stated in terms true on any day, and the key says why each rule is what it is.
+
+### 2026-09-26 - ARCHITECTURE.html - section 17's band width, marked proposed
+Authorised by: A band is no wider than two typical days' moves, and a chain that would be wider splits at its widest gap
+Was: section 17 stated the band merge distance and no width.
+Now:
+> <tr><td>Band width</td><td>at most two typical days' moves, marked proposed; a chain of candidates each closer than the merge distance to the one before, and wider than that, splits at its widest gap until every part fits (see: A band is no wider than two typical days' moves, and a chain that would be wider splits at its widest gap)</td><td>...measured over the thirteen stored nights on 2026-09-26...</td><td>fixture level diff, plus constructed chains either side of the width and exactly at it</td></tr>
+Why: a new constant stated in a document is pinned, and section 17 is where the numbers the harness asserts are stated.
+
+### 2026-09-26 - ARCHITECTURE.html - section 15.9's level evidence
+Authorised by: A member's date is the session its evidence occurred on, and a figure recomputed nightly has none of its own
+Corrects: the level summary drew each band's members under a line counting "member(s)" with a date range, dated an average or a shelf by the night it was recomputed, and ran from the lowest band upward against the plan column beside it running downward. Asked for by the operator on 2026-09-26.
+Was: section 15.9's table held no row for the order of the level summary or the line above each band's members.
+Now:
+> <tr><td>Level evidence</td><td>the level summary reads from the highest band to the lowest with the close as a row between the resistance and the support, as the plan column beside it does; each band's line says what its evidence is, the swings and visits by kind with the first and last of their dates or the one date they share; an average and a shelf are named by kind with no date, being recomputed every night; and each strength carries a bar a point long, with a key saying what a point is (see: A member's date is the session its evidence occurred on, and a figure recomputed nightly has none of its own)</td></tr>
+Why: a line saying what the evidence is reads at a glance where a count does not, and a date a figure does not have is one a reader takes for an event.
+
+### 2026-09-26 - ARCHITECTURE.html - the candidate registrar registers again the candidates whose evaluator moved
+Authorised by: A candidate whose evaluator a code change moved is registered again unchanged, every one at one instant
+Was:
+> at one instant or none (see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read)</td></tr>
+Now:
+> at one instant or none (see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read); and through <code>register --moved</code>, every standing candidate whose evaluator a code change moved, retired on the evidence given and registered again unchanged at the version the code carries, at one instant or none (see: A candidate whose evaluator a code change moved is registered again unchanged, every one at one instant)</td></tr>
+Why: a component's catalogue row names what it writes and on what command.
+
+### 2026-09-26 - BUILD_PLAN.md - the swing trade's stop carried to the shape calibration's first live trigger
+Authorised by: A band is no wider than two typical days' moves, and a chain that would be wider splits at its widest gap
+Was: the carried obligations table held no row for the swing trade's stop, and 12.3's text ended its citations at "(owes: The six reason thresholds calibrated from the nights they fired on)."
+Now:
+> | **The swing trade's stop ruled apart from how wide its setup band merged** | 3.4 | operating | 60 ordinary nights under one filter version, read on the run page's Calibration region, which 12.3 builds: ... At the trigger the operator rules whether the stop keeps the band's low edge ... |
+> and 12.3's text adds: "The shape half's count of ordinary nights is also the trigger at which the swing trade's stop is ruled apart from how its setup band merged (owes: The swing trade's stop ruled apart from how wide its setup band merged)."
+Why: the operator ruled on 2026-09-26 that the width sweep's finding is carried in the second deferral form rather than changed in the correction that found it.
+
+### 2026-09-26 - RUNBOOK.md - registering again the candidates whose evaluator moved
+Authorised by: A candidate whose evaluator a code change moved is registered again unchanged, every one at one instant
+Was: no paragraph; the command did not exist.
+Now: a paragraph after the swing family's giving `register --moved --evidence`, when to run it, what it writes and what it refuses.
+Why: the operator runs the command, and the runbook is where a command is given.
+
+### 2026-09-26 - ARCHITECTURE.html - section 11.3's figures 11.2 and 11.3 regenerated from the fixture
+Authorised by: A band is no wider than two typical days' moves, and a chain that would be wider splits at its widest gap
+Was:
+> Figure 11.2: the support band drawn to a stop of 300.87, and "Plan: entry 327.21, stop 300.87, target 366.41: reward 39.20 against risk 26.34, a reward to risk of 1.4882."
+> Figure 11.3: "A setup resolving, KEYS from 2026-07-24", entered at 318.67 with a stop of 300.87 and a target of 355.49, "Lost on 2026-07-29, 3 session(s) after the entry, at a close of 296.72.", and a key choosing "the latest session at least twenty sessions before the fixture&#39;s night whose swing plan passed the trade gate and resolved"
+Now:
+> Figure 11.2: the support band drawn to a stop of 311.2696, and "Plan: entry 327.21, stop 311.2696, target 366.41: reward 39.20 against risk 15.9404, a reward to risk of 2.4592."
+> Figure 11.3: "A setup resolving, NFLX from 2026-07-31", entered at 71.71 with a stop of 68.3958 and a target of 73.66, "Won on 2026-08-05, 3 session(s) after the entry, at a close of 74.2.", and a key choosing "the latest session at least twenty sessions before the fixture&#39;s night at which a member passed the setup gate and its swing plan resolved"
+Why: the figures are what the code computes over the committed fixture. KEYS's setup band on 2026-09-04 now ends at 311.2696, where the chain below it splits at its widest gap. On 2026-07-24 its nearest resistance is a band at 332.35 split from the chain that reached 355.49, so its plan no longer passes the trade gate, and no plan the year's replay passes through the trade gate resolves twenty sessions before the night. Figure 11.3 shows how a setup is scored on closes, so it now chooses by the setup gate its title names.
+
+### 2026-09-26 - RUNBOOK.md - what a pass over the fixture costs, from the recordings made again
+Authorised by: A touch is one visit to a band, counted only where the band holds no swing or retracement from that visit, and it never creates a band
+Was:
+> three on the local model and four through the spend cap for $0.0770, a sum that includes the cause of each large move, asked twice and answered with nothing both times, since a call answered with nothing is billed, and is at twice the off-peak rate, since the pass's paid calls were recorded inside the provider's peak window.
+Now:
+> three on the local model and four through the spend cap for $0.0312, a sum that includes the cause of each large move, asked twice and answered with nothing both times, since a call answered with nothing is billed, and is at the off-peak rate, since the pass's paid calls were recorded on a Saturday, outside the provider's peak days; recorded inside the peak window, the same calls cost twice as much.
+Why: the corrections moved the facts file every recorded request carries, so the fixture's answers were recorded again, off-peak, and a paid call is priced at the provider's own timestamp.

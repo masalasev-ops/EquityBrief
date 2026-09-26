@@ -399,6 +399,7 @@ public partial class ReadSurface
             CheckReach.Key("15.9 Name", "How it got here, the cause of each where research has been written"),
             CheckReach.Key("15.9 Name", "Contents"),
             CheckReach.Key("15.9 Name", "How far each band is"),
+            CheckReach.Key("15.9 Name", "Level evidence"),
             CheckReach.Key("15.9 Name", "The case for and the case against"),
             CheckReach.Key("15.9 Name", "The risks as parts"),
             CheckReach.Key("15.9 Name", "Sections left out"),
@@ -1488,7 +1489,7 @@ public partial class ReadSurface
         // No cell holds a cause, and no row carries an empty one. The second is
         // the half a blank column would satisfy.
         Assert.DoesNotContain("data-cause=\"\"", table, StringComparison.Ordinal);
-        Assert.Equal(moves.Count, Regex.Matches(table, "<tr data-session-date=\"[^\"]+\"").Count);
+        Assert.Equal(moves.Count, Regex.Matches(table, "<tr id=\"move-[^\"]+\" data-session-date=\"[^\"]+\"").Count);
 
         // Every value drawn is one the store carries, which is the containment
         // property applied to a table.
@@ -4572,7 +4573,7 @@ public partial class ReadSurface
         Assert.Contains("class=\"twelve-months\"", region, StringComparison.Ordinal);
         Assert.True(
             region.IndexOf("class=\"twelve-months\"", StringComparison.Ordinal)
-                < region.IndexOf("<tr data-session-date=", StringComparison.Ordinal),
+                < region.IndexOf(" data-session-date=", StringComparison.Ordinal),
             "the twelve-month picture is drawn below the table of moves.");
 
         // It is the level chart mark rather than a drawing of its own, and it is

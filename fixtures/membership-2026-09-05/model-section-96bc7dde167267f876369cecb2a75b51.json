@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-bgrlgxlcmoh08eeng5cr47f",
+  "object": "chat.completion",
+  "created": 1790397226,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock closed at 333.42, trading above the 20-day average of 330.47 and the 50-day average of 326.21 while remaining below the immediate resistance high edge of 366.41. The latest quarter ended on 2026-07-31 with revenue of 1.85 billion, representing a growth of 36.5 per cent on a year earlier, and earnings per share of 2.82 which beat the estimate of 2.16 by 30.56 per cent. This performance drove net income to 397 million, an increase of 107.9 per cent from the prior year, resulting in a forward price to earnings ratio of 20.66 and a trailing price to earnings multiple of 45.89. The company operates within the Technology sector with total assets of 11.92 billion and shareholders equity of 6.57 billion, maintaining an uptrend state as indicated by technical indicators.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 5247,
+    "completion_tokens": 231,
+    "total_tokens": 5478,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

@@ -25,12 +25,17 @@ public static class RegisterVerb
     // The flag that retires phase 10's three and registers the swing family at one instant.
     public const string TheFamily = "--the-family";
 
+    // The flag that registers again, unchanged and at one instant, every standing candidate whose
+    // evaluator a code change moved, on the evidence given.
+    public const string Moved = "--moved";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
         new("--retire", ["--retire", "--evidence"], [], []),
         new(TheThree, [], [], [TheThree]),
         new(TheFamily, [], [], [TheFamily]),
+        new(Moved, ["--evidence"], [], [Moved]),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -90,6 +95,11 @@ public static class RegisterVerb
         if (form.Flag == TheFamily)
         {
             return await Said(await registrar.RegisterTheFamilyAsync(runId), output, error);
+        }
+
+        if (form.Flag == Moved)
+        {
+            return await Said(await registrar.RegisterMovedAgainAsync(Given("--evidence"), runId), output, error);
         }
 
         if (form.Flag == TheThree)

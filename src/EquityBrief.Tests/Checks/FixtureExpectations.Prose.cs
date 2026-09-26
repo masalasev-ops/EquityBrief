@@ -262,7 +262,7 @@ public partial class FixtureExpectations
     // ---- the release ----
 
     [Fact]
-    public async Task APassOverTheReleaseWritesTheCauseOfTheOneMoveTheReleaseFallsInsideAndASecondTheSameDayWritesNothing()
+    public async Task APassOverTheReleaseWritesTheCauseOfTheOneMoveTheReleaseFallsInsideAndASecondTheSameDayWritesOnlyWhatTheCheckerRefused()
     {
         var release = Expected("prose").GetProperty("release");
         var (store, document) = await WithRelease();
@@ -655,20 +655,22 @@ public partial class FixtureExpectations
 
         var recorded = Directory.GetFiles(Folder(), RecordedLocalModelFeed.FilePrefix + "*.json").Select(Path.GetFileName).Order(StringComparer.Ordinal).ToArray();
 
-        // Two from the replay, MSFT's key under each figure and NFLX's; three from the release's
-        // passes, what the company sells, the segment commentary and the cause, the key being the
-        // research pass's own request; three from the research pass with the configured lanes;
-        // nine from the comparison with every section in the local lane, four of them drafts
-        // written after the checker refused the first; two from the queue over the fixture's
-        // night, AAPL's key and KEYS's, MSFT's and NFLX's being the replay's requests asked
-        // again; eight from the two later nights, every member's key on each; and one from the
-        // night after a short catch-up, the key of the member the caught-up file left out, over
-        // the facts file its missing session left it, the other three being the missed night's
-        // requests asked again; and four from the rebalance's two nights, whose Technology names
-        // each read a group of one: AAPL's key and MSFT's on the fixture's night, before KEYS
-        // joins, and KEYS's and MSFT's on the next session, AAPL having left, NFLX's on each being
-        // a request the other nights asked, since its group holds nobody either way.
-        Assert.Equal(32, recorded.Length);
+        // Two from the replay, MSFT's key under each figure and NFLX's; four from the release's
+        // passes, what the company sells, the segment commentary and the cause, and the cause
+        // again after the checker refused its first draft, the key being the research pass's own
+        // request; three from the research pass with the configured lanes; nine from the
+        // comparison with every section in the local lane, four of them drafts written after the
+        // checker refused the first; two from the queue over the fixture's night, AAPL's key and
+        // KEYS's, MSFT's and NFLX's being the replay's requests asked again; nine from the two
+        // later nights, every member's key on each and NFLX's again on the night after a miss,
+        // the checker having refused its first draft there; and one from the night after a short
+        // catch-up, the key of the member the caught-up file left out, over the facts file its
+        // missing session left it, the other three being the missed night's requests asked
+        // again; and four from the rebalance's two nights, whose Technology names each read a
+        // group of one: AAPL's key and MSFT's on the fixture's night, before KEYS joins, and
+        // KEYS's and MSFT's on the next session, AAPL having left, NFLX's on each being a request
+        // the other nights asked, since its group holds nobody either way.
+        Assert.Equal(34, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 
         foreach (var request in asked)

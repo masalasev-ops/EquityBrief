@@ -43,12 +43,12 @@
     "filedOn": "2026-08-18",
     "movesInside": [
       {
-        "move": "move 8",
+        "move": "move 3",
         "measuredFrom": "2026-08-17",
         "ended": "2026-08-24"
       }
     ],
-    "movesInsideNote": "the one stored move whose span holds the filing date. Each move is five sessions, so its start is the fifth exchange session before the one it ended on, and 2026-08-24 counts back through 08-21, 08-20, 08-19 and 08-18 to 08-17. The other seven end in November, December, February and March, months before the filing.",
+    "movesInsideNote": "the one stored move whose span holds the filing date. Each move is five sessions, so its start is the fifth exchange session before the one it ended on, and 2026-08-24 counts back through 08-21, 08-20, 08-19 and 08-18 to 08-17. It is the third of KEYS's eight now that no two moves share a session, and the other seven end on or before 2026-08-05, before the filing.",
     "passes": [
       {
         "written": [
@@ -59,22 +59,28 @@
         ],
         "modelCalls": 4,
         "verdicts": {
-          "The cause of each large move": "accepted",
+          "The cause of each large move": "rejected",
           "What the company sells": "accepted",
           "The segment commentary": "accepted",
           "The key under each figure": "accepted"
         }
       },
       {
-        "written": [],
+        "written": [
+          "The cause of each large move"
+        ],
+        "retried": [
+          "The cause of each large move"
+        ],
         "skipped": {
-          "The cause of each large move": "it was already written today",
           "What the company sells": "it was already written today",
           "The segment commentary": "it was already written today",
           "The key under each figure": "it was already written for the newest facts file"
         },
-        "modelCalls": 0,
-        "verdicts": {}
+        "modelCalls": 1,
+        "verdicts": {
+          "The cause of each large move": "accepted"
+        }
       }
     ],
     "causeNames": [
@@ -109,9 +115,9 @@
     "asked": [
       "The key under each figure"
     ],
-    "why": "a call fits where its estimated prompt and the answer's budget of 1,024 tokens sit inside the context. The three sections handed the release carry its text whole, 22,996 characters, 1,281 of them digits and 73 outside ASCII in 219 bytes, which the rule counts as a token each, and 21,642 others at 2.75 characters a token, 7,870 tokens, so 9,370 in all, which with the answer's budget does not fit in 9,250 before a word of the rest of the prompt is counted. The key under each figure carries the facts file alone, as a reader reads it, 16,894 characters in all, 1,520 of them digits and none outside ASCII, which the rule counts as a token each, and 15,374 others at 2.75 characters a token, 5,591 tokens, so 7,111 in all, which fits with the answer's budget in 9,250. The context was 8,000 until 11.9 widened the facts file, which took the key past what 8,000 holds.",
+    "why": "a call fits where its estimated prompt and the answer's budget of 1,024 tokens sit inside the context. The three sections handed the release carry its text whole, 22,996 characters, 1,281 of them digits and 73 outside ASCII in 219 bytes, which the rule counts as a token each, and 21,642 others at 2.75 characters a token, 7,870 tokens, so 9,370 in all, which with the answer's budget does not fit in 9,250 before a word of the rest of the prompt is counted. The key under each figure carries the facts file alone, as a reader reads it, 16,897 characters in all, 1,521 of them digits and none outside ASCII, which the rule counts as a token each, and 15,376 others at 2.75 characters a token, 5,592 tokens, so 7,113 in all, which fits with the answer's budget in 9,250. The context was 8,000 until 11.9 widened the facts file, which took the key past what 8,000 holds.",
     "releaseTokens": 9370,
-    "askedTokens": 7111
+    "askedTokens": 7113
   },
   "unavailable": {
     "modelCalls": 1,

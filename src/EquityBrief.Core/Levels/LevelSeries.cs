@@ -55,6 +55,10 @@ public static class LevelSeries
     // Two candidates closer than this many typical days' moves join one band.
     public const decimal MergeDistanceInTypicalMoves = 0.5m;
 
+    // No band is wider than this many typical days' moves.
+    // see: A band is no wider than two typical days' moves, and a chain that would be wider splits at its widest gap
+    public const decimal MaximumWidthInTypicalMoves = 2m;
+
     // The window for the recency point in the strength score.
     public const int RecentSessions = 20;
 
@@ -63,6 +67,7 @@ public static class LevelSeries
         IReadOnlyList<LevelMember> candidates,
         decimal close,
         decimal mergeDistance,
+        decimal typicalMove,
         DateOnly asOf)
     {
         if (window.Count == 0 || candidates.Count == 0)
@@ -70,7 +75,7 @@ public static class LevelSeries
             return [];
         }
 
-        var bands = Merged(candidates, mergeDistance);
+        var bands = Merged(candidates, mergeDistance, typicalMove * MaximumWidthInTypicalMoves);
 
         Touched(bands, window);
 
@@ -139,43 +144,97 @@ public static class LevelSeries
     // Strictly closer, so two candidates exactly the merge distance apart are
     // two bands. The document says closer than, and the boundary has to fall on
     // one side of the line whichever way it is written.
-    static List<List<LevelMember>> Merged(IReadOnlyList<LevelMember> candidates, decimal mergeDistance)
+    //
+    // A chain of close pairs can reach prices anyone trading them can tell
+    // apart, since the merge distance holds between neighbours and not between
+    // the chain's two ends, so a chain wider than the maximum width is split.
+    // see: A band is no wider than two typical days' moves, and a chain that would be wider splits at its widest gap
+    static List<List<LevelMember>> Merged(IReadOnlyList<LevelMember> candidates, decimal mergeDistance, decimal maximumWidth)
     {
         var sorted = candidates.OrderBy(member => member.Price).ThenBy(member => member.Kind, StringComparer.Ordinal).ToArray();
-        var bands = new List<List<LevelMember>> { new() { sorted[0] } };
+        var chains = new List<List<LevelMember>> { new() { sorted[0] } };
 
         for (var index = 1; index < sorted.Length; index++)
         {
             if (sorted[index].Price - sorted[index - 1].Price < mergeDistance)
             {
-                bands[^1].Add(sorted[index]);
+                chains[^1].Add(sorted[index]);
             }
             else
             {
-                bands.Add([sorted[index]]);
+                chains.Add([sorted[index]]);
             }
+        }
+
+        var bands = new List<List<LevelMember>>();
+
+        foreach (var chain in chains)
+        {
+            Split(chain, maximumWidth, bands);
         }
 
         return bands;
     }
 
-    // Any session that reached a band joins it as evidence.
+    // A chain no wider than the maximum is one band. A wider one splits at the
+    // widest gap between neighbouring candidates, the lower of two equal gaps,
+    // and each part is split again until it fits. A width exactly at the maximum
+    // fits, since the maximum is the widest a band may be.
+    static void Split(List<LevelMember> chain, decimal maximumWidth, List<List<LevelMember>> bands)
+    {
+        if (chain[^1].Price - chain[0].Price <= maximumWidth)
+        {
+            bands.Add(chain);
+
+            return;
+        }
+
+        var widest = 1;
+
+        for (var index = 2; index < chain.Count; index++)
+        {
+            if (chain[index].Price - chain[index - 1].Price > chain[widest].Price - chain[widest - 1].Price)
+            {
+                widest = index;
+            }
+        }
+
+        Split(chain[..widest], maximumWidth, bands);
+        Split(chain[widest..], maximumWidth, bands);
+    }
+
+    // Each visit the price paid a band joins it as one touch.
     //
-    // One member per session per band, not one per extreme. A session whose
-    // whole range sits inside a band reached it once, and the decision says a
-    // session that reached a band is evidence for it. Priced at the low where
-    // the low reached, because the report cites dated lows inside a support
-    // band, and at the high otherwise.
+    // A visit is a run of consecutive sessions whose low or high lay inside the
+    // band, so a band the price entered, stayed in for three weeks and left was
+    // visited once and not fifteen times: how long the price sat in a band is
+    // not how many times the band held it. The touch is dated by the session the
+    // visit arrived on and priced at that session's low where the low reached,
+    // because the report cites dated lows inside a support band, and at its high
+    // otherwise.
+    //
+    // A visit holding a session the band already has as a swing or a retracement
+    // adds nothing, since that session's evidence is in the band once already.
+    // An average and a shelf carry the night's date rather than a session of
+    // their own, so neither stands for a visit.
     //
     // Added after the edges are fixed, which is what makes a touch unable to
     // create or widen a band.
-    // see: Touches strengthen a band and never create one
+    // see: A touch is one visit to a band, counted only where the band holds no swing or retracement from that visit, and it never creates a band
     static void Touched(List<List<LevelMember>> bands, IReadOnlyList<LevelBar> window)
     {
         foreach (var band in bands)
         {
             var low = band.Min(member => member.Price);
             var high = band.Max(member => member.Price);
+            var evidenced = band
+                .Where(member => member.Source is MemberSource.Swing or MemberSource.Retracement)
+                .Select(member => member.Date)
+                .ToHashSet();
+
+            var visits = new List<LevelMember>();
+            LevelMember? arrived = null;
+            var held = false;
 
             foreach (var bar in window)
             {
@@ -184,15 +243,31 @@ public static class LevelSeries
 
                 if (!lowReached && !highReached)
                 {
+                    if (arrived is { } visit && !held)
+                    {
+                        visits.Add(visit);
+                    }
+
+                    arrived = null;
+                    held = false;
+
                     continue;
                 }
 
-                band.Add(new LevelMember(
+                arrived ??= new LevelMember(
                     MemberSource.Touch,
                     "touch",
                     lowReached ? bar.Low : bar.High,
-                    bar.SessionDate));
+                    bar.SessionDate);
+                held |= evidenced.Contains(bar.SessionDate);
             }
+
+            if (arrived is { } last && !held)
+            {
+                visits.Add(last);
+            }
+
+            band.AddRange(visits);
         }
     }
 

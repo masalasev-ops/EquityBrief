@@ -47,7 +47,7 @@
  },
  "twoNights": {
   "derivation": "derived",
-  "derivedFrom": "the rule in section 11.1, worked by hand over the two nights the replay stores. The fixture's session before its own, 2026-09-03, is replayed from the committed year of bars with the last session held back, and the fixture's night then arrives as one session's bulk file built from the same committed bars, with no overnight queue and no model call on either night. Each fired reason is read by hand off the close, the previous close and the zone or edge its values name; each reward to risk is worked by hand from the entry zone, the stop and the first traded target the listing kept, entered at the zone's middle and rounded to four places as the ladder stores it; and each order is derived by hand: fired count first, then the ratio highest first with a row that has none after every row with one in its group, then the ticker. The prices are the replay's own, stated as it stores them, and the reasons, the ratios and the orders are what is derived from them",
+  "derivedFrom": "the rule in section 11.1, worked by hand over the two nights the replay stores. The fixture's session before its own, 2026-09-03, is replayed from the committed year of bars with the last session held back, and the fixture's night then arrives as one session's bulk file built from the same committed bars, with no overnight queue and no model call on either night. Each fired reason is read by hand off the close, the previous close and the zone or edge its values name; each reward to risk is worked by hand from the entry zone, the stop and the first traded target the listing kept, entered at the zone's middle and rounded to four places as the ladder stores it; and each order is derived by hand: fired count first, then the ratio highest first with a row that has none after every row with one in its group, then the ticker. The prices are the replay's own, stated as it stores them, and the reasons, the ratios and the orders are what is derived from them. Worked again on 2026-09-26 over the bands of the 3.4 correction: every reason fired as before and each night's order held, while KEYS's zones and AAPL's on the fixture's night narrowed with their bands, and their stops and ratios moved with them",
   "nights": {
    "2026-09-03": {
     "rows": {
@@ -59,10 +59,10 @@
      },
      "KEYS": {
       "fired": ["at entry zone"],
-      "reading": "the close 322.62 is inside the zone 300.87 to 332.78, and its trend label has no night before it to have changed from",
-      "entryLow": "300.87", "entryHigh": "332.78", "stop": "287.7549", "firstTradedTarget": "366.41",
-      "worked": "the entry is (300.87 + 332.78) / 2 = 316.825, the risk 316.825 - 287.7549 = 29.0701, the reward 366.41 - 316.825 = 49.585, and 49.585 / 29.0701 = 1.70570",
-      "rewardToRisk": "1.7057"
+      "reading": "the close 322.62 is inside the zone 311.2696 to 332.78, and its trend label has no night before it to have changed from",
+      "entryLow": "311.2696", "entryHigh": "332.78", "stop": "305.42", "firstTradedTarget": "366.41",
+      "worked": "the entry is (311.2696 + 332.78) / 2 = 322.0248, the risk 322.0248 - 305.42 = 16.6048, the reward 366.41 - 322.0248 = 44.3852, and 44.3852 / 16.6048 = 2.67303",
+      "rewardToRisk": "2.6730"
      },
      "AAPL": {
       "fired": [],
@@ -79,17 +79,17 @@
     "rows": {
      "KEYS": {
       "fired": ["at entry zone", "trend state changed"],
-      "reading": "the close 327.21 is inside the zone 300.87 to 332.78, and the trend label moved from range on 2026-09-03 to uptrend",
-      "entryLow": "300.87", "entryHigh": "332.78", "stop": "293.55", "firstTradedTarget": "366.41",
-      "worked": "the entry is 316.825, the risk 316.825 - 293.55 = 23.275, the reward 49.585, and 49.585 / 23.275 = 2.13040",
-      "rewardToRisk": "2.1304"
+      "reading": "the close 327.21 is inside the zone 311.2696 to 332.78, and the trend label moved from range on 2026-09-03 to uptrend",
+      "entryLow": "311.2696", "entryHigh": "332.78", "stop": "306.852", "firstTradedTarget": "366.41",
+      "worked": "the entry is 322.0248, the risk 322.0248 - 306.852 = 15.1728, the reward 44.3852, and 44.3852 / 15.1728 = 2.92531",
+      "rewardToRisk": "2.9253"
      },
      "AAPL": {
       "fired": ["at entry zone", "crossed a level"],
-      "reading": "the close 319.97 is inside the zone 299.7415 to 320.28, and it fell from 328.21 through the edge at 320.28",
-      "entryLow": "299.7415", "entryHigh": "320.28", "stop": "283.439", "firstTradedTarget": "334.7013",
-      "worked": "the entry is (299.7415 + 320.28) / 2 = 310.01075, the risk 310.01075 - 283.439 = 26.57175, the reward 334.7013 - 310.01075 = 24.69055, and 24.69055 / 26.57175 = 0.92920",
-      "rewardToRisk": "0.9292"
+      "reading": "the close 319.97 is inside the zone 319.0748 to 320.28, and it fell from 328.21 through the edge at 320.28",
+      "entryLow": "319.0748", "entryHigh": "320.28", "stop": "304.7879", "firstTradedTarget": "334.7013",
+      "worked": "the entry is (319.0748 + 320.28) / 2 = 319.6774, the risk 319.6774 - 304.7879 = 14.8895, the reward 334.7013 - 319.6774 = 15.0239, and 15.0239 / 14.8895 = 1.00903",
+      "rewardToRisk": "1.0090"
      },
      "MSFT": {
       "fired": ["at entry zone", "crossed a level"],
@@ -108,6 +108,6 @@
     "order": ["KEYS", "AAPL", "MSFT", "NFLX"]
    }
   },
-  "theEarlierNightsOwnPlan": "KEYS is drawn on 2026-09-03 at 1.7057 and on 2026-09-04 at 2.1304, its first tranche's stop having moved from 287.7549 to 293.55, so the earlier night's row carries its own night's ratio and not the newer one"
+  "theEarlierNightsOwnPlan": "KEYS is drawn on 2026-09-03 at 2.6730 and on 2026-09-04 at 2.9253, its first tranche's stop having moved from the band at 305.42 in a range to the swing low at 306.852 in an uptrend, so the earlier night's row carries its own night's ratio and not the newer one"
  }
 }

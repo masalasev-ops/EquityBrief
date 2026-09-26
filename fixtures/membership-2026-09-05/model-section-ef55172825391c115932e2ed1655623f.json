@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-nt1g1nieozcsqew73ig2ts",
+  "object": "chat.completion",
+  "created": 1790397218,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock for Apple Inc. closed at 316.22 within a technology sector group that includes two members, currently trading in an uptrend state with fourty-three swings marked on the chart. Technical indicators show a fourteen-day average true range of 7.50 and a relative strength index of 50.26, while price levels are bounded by immediate resistance edges at 320.28 and 319.07 against support edges at 316.02 and 304.79. Moving averages indicate the twenty-day average is 313.54, the fifty-day average is 315.64, and the two-hundred-day average is 283.69, with session volume recorded at 35.42 million shares against twenty-day and fifty-day average volumes of 39.18 million and 48.64 million respectively. The most recent earnings reaction reported on 2026-07-31 showed an actual value of 2.02 compared to an estimate of 1.88, resulting in a surprise of 7.45 per cent and a move of minus 7.35 per cent after the report date.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1630,
+    "completion_tokens": 268,
+    "total_tokens": 1898,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

@@ -1684,7 +1684,8 @@ public static class NameScreen
                     level.HasNonAverageAnchor,
                     Members(level.Members),
                     Away(level)))],
-                [])
+                [],
+                closeStored ? close : null)
             + "</div></div></section>";
     }
 

@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-va97qoon2wk0px2l8w6y",
+  "object": "chat.completion",
+  "created": 1790397671,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The move from 2026-08-17 to 2026-08-24 down 13.980341 per cent was caused by the earnings reaction 2 actual of 2.87 and earnings reaction 2 estimate of 2.32 as reported in [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 9320,
+    "completion_tokens": 74,
+    "total_tokens": 9394,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

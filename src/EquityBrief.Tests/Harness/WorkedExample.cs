@@ -206,7 +206,7 @@ internal static class WorkedExample
             $"{setup.Ticker}'s swing plan read on {D(setup.Session)}, its closes from the entry to the session it resolved on, with the stop and the target it resolved against.",
             body.ToString(),
             $"Figure 11.3. A setup resolving, {setup.Ticker} replayed on the committed fixture's {D(setup.Session)}.",
-            $"Replayed by the code over the committed fixture as of {D(setup.Session)}, an earlier session than the fixture's nights, so the closes after it are stored and the setup can resolve: the latest session at least twenty sessions before the fixture's night whose swing plan passed the trade gate and resolved, at section 17's proposed values. The dot on the left is the entry at that session's close, the dashed green line the stop and the orange line the target; the ringed close is the one that decided it, the first close past either line.",
+            $"Replayed by the code over the committed fixture as of {D(setup.Session)}, an earlier session than the fixture's nights, so the closes after it are stored and the setup can resolve: the latest session at least twenty sessions before the fixture's night at which a member passed the setup gate and its swing plan resolved, at section 17's proposed values. The dot on the left is the entry at that session's close, the dashed green line the stop and the orange line the target; the ringed close is the one that decided it, the first close past either line.",
             "A setup is scored on closes and on nothing else: a close through the stop is a loss and a close at the target is a win, whichever comes first, and one that reaches neither inside 63 sessions is unresolved and never a win.");
     }
 

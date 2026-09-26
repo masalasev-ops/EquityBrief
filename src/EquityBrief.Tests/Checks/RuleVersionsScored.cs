@@ -1495,7 +1495,7 @@ public class RuleVersionsScored
             Assert.Equal(VolumeProfileSeries.Window, inputs.Window.Count);
             Assert.Equal(
                 Query(store, $"SELECT low_edge || '|' || high_edge || '|' || role || '|' || strength || '|' || has_non_average_anchor || '|' || json_array_length(members) FROM level WHERE ticker = '{ticker}' AND as_of = '{night}' ORDER BY low_edge + 0;"),
-                LevelSeries.For(inputs.Window, inputs.Candidates, inputs.Close, inputs.TypicalMove * LevelSeries.MergeDistanceInTypicalMoves, session)
+                LevelSeries.For(inputs.Window, inputs.Candidates, inputs.Close, inputs.TypicalMove * LevelSeries.MergeDistanceInTypicalMoves, inputs.TypicalMove, session)
                     .Select(band => FormattableString.Invariant($"{Core.Prices.PriceForm.Round(band.LowEdge)}|{Core.Prices.PriceForm.Round(band.HighEdge)}|{band.Role}|{band.Strength}|{(band.HasNonAverageAnchor ? 1 : 0)}|{band.Members.Count}")));
 
             var beneath = new RuleVersionRow(LadderRules.StopPlacement, "the band beneath", RuleVersions.Write(new Dictionary<string, double>(StringComparer.Ordinal) { ["stopTrailsTheLastHigherLow"] = 0 }), "", RuleVersionScorer.CodeVersion, Opened, null, null);

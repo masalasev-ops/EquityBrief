@@ -112,7 +112,7 @@ public static class SessionReplay
         candidates.AddRange(shelves);
         candidates.AddRange(LevelSeries.RetracementsBetween(Last(swings, SwingSeries.High), Last(swings, SwingSeries.Low)));
 
-        return LevelSeries.For(window, candidates, window[^1].Close, Statistic.ToPrice(atr) * LevelSeries.MergeDistanceInTypicalMoves, session);
+        return LevelSeries.For(window, candidates, window[^1].Close, Statistic.ToPrice(atr) * LevelSeries.MergeDistanceInTypicalMoves, Statistic.ToPrice(atr), session);
     }
 
     static (decimal Price, DateOnly Date)? Last(IReadOnlyList<LevelMember> swings, string direction)

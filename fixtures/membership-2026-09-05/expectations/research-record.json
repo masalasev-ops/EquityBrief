@@ -1,7 +1,7 @@
 {
   "stage": "research-record",
   "derivation": "derived",
-  "derivedFrom": "section 12's rules and the lane configuration assigns each section, the decision that a research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the decision that a dated calendar item's date rests on a document the sentence cites, the decision that the fixture comparison moved the cause of each large move into the paid lane, the decision that a theme is the industry the index names for a member, the decision that a theme page is handed to the model only where its text names the industry, and the fixture's own captures: KEYS's thirteen articles, of which the eight published from 2026-08-17 to the night are the ones a pass reads, since the stored year's only move inside the three months before 2026-09-08 is the fall to 2026-08-24, measured from 2026-08-17, and it and the days since the release filed on 2026-08-18 are one window; its eight stored moves, the other seven of which fall in two episodes older than three months and are read with no document; and the twelve theme searches for its industry, Scientific & Technical Instruments, one a site of the industry list, which keep eleven pages from bls.gov, statista.com, spglobal.com, census.gov and digitimes.com, two of which name the industry's words at least five times in every ten thousand characters, a payroll note at 11.04 and a page on India's machinery industry at 5.22, so the theme's one call is handed those two, the research model answers it with nothing, and the industry cycle is not written and says why. Every title of the thirteen names the company. The cause of the one episode with documents inside it is handed the two newest inside the fall, both published on 2026-08-19 and both naming one listing, taken by id where three tie; the sections built across the evidence are handed the release and one article from each stretch of the seventeen days from the release to the newest article where a stretch has one, 2026-08-19, 2026-08-28 and 2026-09-03, and three more by fewest listings, newest and id, listed in the order they were published. Which lane writes each section, which sections a pass warrants, which documents are fetched, admitted, refused and handed to each section, and in which order, were worked out from those rules and captures outside this repository before the tests that read this file were run, the ids as the SHA-256 of each article's address. Section 19.1's research record, whose local half 6.6's prose file carries.",
+  "derivedFrom": "section 12's rules and the lane configuration assigns each section, the decision that a research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it, the decision that a dated calendar item's date rests on a document the sentence cites, the decision that the fixture comparison moved the cause of each large move into the paid lane, the decision that a theme is the industry the index names for a member, the decision that a theme page is handed to the model only where its text names the industry, and the fixture's own captures: KEYS's thirteen articles, of which the eight published from 2026-08-17 to the night are the ones a pass reads, since three of its eight stored moves fall inside the three months before 2026-09-08, the fall to 2026-07-02 measured from 2026-06-25, the rise to 2026-08-05 measured from 2026-07-29 and the fall to 2026-08-24 measured from 2026-08-17, no article is published inside the first two, and the third and the days since the release filed on 2026-08-18 are one window; the other five moves end before those three months and are read with no document; and the twelve theme searches for its industry, Scientific & Technical Instruments, one a site of the industry list, which keep eleven pages from bls.gov, statista.com, spglobal.com, census.gov and digitimes.com, two of which name the industry's words at least five times in every ten thousand characters, a payroll note at 11.04 and a page on India's machinery industry at 5.22, so the theme's one call is handed those two, the research model answers it with nothing, and the industry cycle is not written and says why. Every title of the thirteen names the company. The cause of the one episode with documents inside it is handed the two newest inside the fall, both published on 2026-08-19 and both naming one listing, taken by id where three tie; the sections built across the evidence are handed the release and one article from each stretch of the seventeen days from the release to the newest article where a stretch has one, 2026-08-19, 2026-08-28 and 2026-09-03, and three more by fewest listings, newest and id, listed in the order they were published. Which lane writes each section, which sections a pass warrants, which documents are fetched, admitted, refused and handed to each section, and in which order, were worked out from those rules and captures outside this repository before the tests that read this file were run, the ids as the SHA-256 of each article's address. Section 19.1's research record, whose local half 6.6's prose file carries.",
   "tables": [
     "research_section",
     "source_document"
@@ -65,8 +65,7 @@
     { "section": "The segment commentary", "version": 1, "lane": "local", "status": "accepted" },
     { "section": "The short version", "version": 1, "lane": "paid", "status": "rejected" },
     { "section": "The short version", "version": 2, "lane": "paid", "status": "accepted" },
-    { "section": "The two cases", "version": 1, "lane": "paid", "status": "rejected" },
-    { "section": "The two cases", "version": 2, "lane": "paid", "status": "accepted" },
+    { "section": "The two cases", "version": 1, "lane": "paid", "status": "accepted" },
     { "section": "What the company sells", "version": 1, "lane": "local", "status": "accepted" }
   ],
   "stages": [
@@ -80,7 +79,6 @@
     "research call: The two cases",
     "research call: The risks, each with what would confirm it",
     "claims",
-    "research call: The two cases, round 2",
     "research call: The short version, round 2",
     "claims, round 2",
     "research call: The short version, round 3",
@@ -89,9 +87,9 @@
   ],
   "modelCalls": {
     "local": 3,
-    "paid": 8
+    "paid": 7
   },
-  "spend": "0.076969284",
+  "spend": "0.031171572",
   "theme": {
     "theme": "Scientific & Technical Instruments",
     "searches": 12,
@@ -105,25 +103,25 @@
   "comparison": {
     "paid": {
       "accepted": {
-        "What the company sells": 1,
+        "What the company sells": 2,
         "The segment commentary": 1,
         "The key under each figure": 1,
         "The dated calendar items": 1,
-        "The two cases": 2,
+        "The two cases": 1,
         "The risks, each with what would confirm it": 1,
-        "The short version": 2
+        "The short version": 1
       },
       "fallback": [],
-      "calls": 11,
-      "spend": "0.079531656"
+      "calls": 10,
+      "spend": "0.032237718"
     },
     "local": {
       "accepted": {
-        "The cause of each large move": 2,
+        "The cause of each large move": 1,
         "What the company sells": 1,
         "The segment commentary": 1,
         "The key under each figure": 1,
-        "The risks, each with what would confirm it": 1
+        "The risks, each with what would confirm it": 2
       },
       "fallback": [
         "The dated calendar items",
