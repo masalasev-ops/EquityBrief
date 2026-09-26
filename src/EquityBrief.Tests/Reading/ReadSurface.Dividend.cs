@@ -43,7 +43,7 @@ public partial class ReadSurface
 
             Assert.True(drawn.Success, $"{ticker}'s dividend is not drawn");
             Assert.Equal(FundamentalsFetcher.Provider, drawn.Groups[1].Value);
-            Assert.Contains("<p class=\"dividend-source\">As of the newest filing's fetch.", drawn.Groups[2].Value, StringComparison.Ordinal);
+            Assert.Contains("<p class=\"dividend-source\">As of the newest fetch of the company's figures.", drawn.Groups[2].Value, StringComparison.Ordinal);
             Assert.DoesNotContain(FundamentalsFetcher.Provider, Regex.Replace(page, "<[^>]+>", " "), StringComparison.OrdinalIgnoreCase);
 
             foreach (var part in new[] { "forwardAnnualRate", "forwardYield", "payoutRatio", "exDividendDate", "payDate" })
@@ -71,8 +71,10 @@ public partial class ReadSurface
 
         // A row holding no dividend part, as one fetched before the part existed, says the part is
         // absent and why rather than drawing nothing, since that absence is the store's and a payer
-        // drawn as paying none would be wrong.
+        // drawn as paying none would be wrong. A fetch that old stored no copy of the parts as of the
+        // fetch either, since the copies came later still.
         store.Execute("UPDATE fundamentals SET payload = json_remove(payload, '$.dividend') WHERE ticker = 'AAPL';");
+        store.Execute("DELETE FROM fundamentals_snapshot WHERE ticker = 'AAPL';");
 
         var absent = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/AAPL"));
 

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Spending;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Facts;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Time;
@@ -511,6 +512,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
             new StoreTouch(Store.Fundamentals, Touch.Read),
+            new StoreTouch(Store.FundamentalsSnapshot, Touch.Read),
             new StoreTouch(Store.NewsPulse, Touch.Read),
             new StoreTouch(Store.ResearchSection, Touch.Read),
             new StoreTouch(Store.ThemeSection, Touch.Read),
@@ -735,6 +737,16 @@ public sealed class ReadApi : IComponent
         FROM fundamentals
         WHERE ticker = $ticker AND filing_date <= $on
         ORDER BY filing_date DESC;
+    ";
+
+    // Every copy of the parts a fetch stores as of itself, newest first. Read whole rather than
+    // bounded here, because the night a copy belongs to is the session date of the instant it was
+    // fetched at, which is the clock's to say.
+    const string SnapshotsForName = @"
+        SELECT fetched_at, payload
+        FROM fundamentals_snapshot
+        WHERE ticker = $ticker
+        ORDER BY fetched_at DESC;
     ";
 
     // The bars of the sessions the largest move spans, whose highest high and
@@ -2782,27 +2794,62 @@ public sealed class ReadApi : IComponent
     // (see: Twelve filings are stored and five are shown). The payload and the
     // source are handed back as stored, since a read surface that unpacked the JSON
     // would be deciding which figures exist.
+    //
+    // The newest row's parts that are as of a fetch are the newest copy's, of the copies fetched on
+    // or before the night the read is about, so tonight's page draws the day's figures and an
+    // earlier night's draws what the store held that night.
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+    // see: A name's page for an earlier night draws what the store held that night and nothing it learned after
     public async Task<IReadOnlyList<FilingRow>> FundamentalsAsync(string ticker, DateOnly? asOf = null)
     {
         await using var connection = Open();
-        await using var command = connection.CreateCommand();
-
-        command.CommandText = FilingsForName;
-        command.Parameters.AddWithValue("$ticker", ticker);
-        command.Parameters.AddWithValue("$on", On(asOf));
 
         var rows = new List<FilingRow>();
 
-        await using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
+        await using (var command = connection.CreateCommand())
         {
-            rows.Add(new FilingRow(
-                reader.GetString(0),
-                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                reader.GetString(2),
-                reader.GetString(3)));
+            command.CommandText = FilingsForName;
+            command.Parameters.AddWithValue("$ticker", ticker);
+            command.Parameters.AddWithValue("$on", On(asOf));
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                rows.Add(new FilingRow(
+                    reader.GetString(0),
+                    DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    reader.GetString(2),
+                    reader.GetString(3)));
+            }
         }
+
+        if (rows.Count == 0)
+        {
+            return rows;
+        }
+
+        string? snapshot = null;
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = SnapshotsForName;
+            command.Parameters.AddWithValue("$ticker", ticker);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            while (snapshot is null && await reader.ReadAsync())
+            {
+                var fetchedAt = DateTimeOffset.Parse(reader.GetString(0), CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal);
+
+                if (asOf is not { } night || clock.SessionDateAt(fetchedAt) <= night)
+                {
+                    snapshot = reader.GetString(1);
+                }
+            }
+        }
+
+        rows[0] = rows[0] with { Payload = FundamentalsSnapshot.Over(rows[0].Payload, snapshot) };
 
         return rows;
     }

@@ -928,4 +928,123 @@ public class FundamentalsFetcherTests
         Assert.Equal("2026-07-31", newest["KEYS"]);
         Assert.Equal("2026-06-30", newest["AAPL"]);
     }
+
+    // The recorded answer moved, standing for the provider on a later day, every call counted.
+    sealed class Moved(Func<CompanyFundamentals, CompanyFundamentals> move) : IFundamentalsFeed
+    {
+        readonly IFundamentalsFeed recorded = Feed();
+
+        public int Requests { get; private set; }
+
+        public async Task<CompanyFundamentals> FundamentalsAsync(string ticker, CancellationToken cancellation = default)
+        {
+            Requests++;
+
+            return move(await recorded.FundamentalsAsync(ticker, cancellation));
+        }
+    }
+
+    // One part of a payload as its JSON, or null where the payload holds it as null or not at all.
+    static string? Part(string payload, string part) =>
+        System.Text.Json.Nodes.JsonNode.Parse(payload)![part]?.ToJsonString();
+
+    static IReadOnlyList<(string FetchedAt, string Payload)> Copies(TemporaryStore store, string ticker)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            "SELECT fetched_at, payload FROM fundamentals_snapshot WHERE ticker = $ticker ORDER BY fetched_at;";
+        command.Parameters.AddWithValue("$ticker", ticker);
+
+        var copies = new List<(string, string)>();
+
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            copies.Add((reader.GetString(0), reader.GetString(1)));
+        }
+
+        return copies;
+    }
+
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+    [Fact]
+    public async Task ARegenerateFetchesWhateverIsHeldAndEveryFetchStoresItsOwnCopyOfThePartsAsOfTheFetch()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        await Fetcher(store, Feed()).RunAsync("AAPL", null, "open-1");
+
+        // The first fetch wrote its filings and one copy beside them, holding the six parts the
+        // newest filing's row carries, since one fetch built both.
+        var held = Rows(store, "AAPL");
+        var first = Assert.Single(Copies(store, "AAPL"));
+
+        Assert.Equal("2026-09-12T18:30:00Z", first.FetchedAt);
+        Assert.All(Core.Facts.FundamentalsSnapshot.Parts, part => Assert.Equal(Part(held[0].Payload, part), Part(first.Payload, part)));
+        Assert.NotNull(Part(first.Payload, "valuation"));
+
+        // Three days on the company has filed a quarter and the price has moved: the provider's answer
+        // carries one more filing, dated 2026-09-14, a trailing multiple of 31.25 and a market value of
+        // 4,100,000,000,000.
+        static CompanyFundamentals Later(CompanyFundamentals fetched)
+        {
+            var top = fetched.Filed.MaxBy(quarter => quarter.FilingDate)!;
+
+            return fetched with
+            {
+                Filed = [.. fetched.Filed, top with { PeriodEnd = new DateOnly(2026, 8, 31), FilingDate = new DateOnly(2026, 9, 14) }],
+                Valuation = fetched.Valuation with { TrailingPe = 31.25m },
+                Market = new MarketValue(4_100_000_000_000m),
+            };
+        }
+
+        var later = FixedClock.At(new DateTimeOffset(2026, 9, 15, 15, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        // A plain open knowing of no newer filing fetches nothing for a name holding some.
+        var plain = new Moved(Later);
+        var opened = await new FundamentalsFetcher(plain, later, store.DatabaseFile).RunAsync("AAPL", null, "open-2");
+
+        Assert.False(opened.Fetched);
+        Assert.Equal(0, plain.Requests);
+        Assert.Single(Copies(store, "AAPL"));
+
+        // A regenerate fetches whatever is held. The new filing is a row of its own, every held row
+        // is as it was, and the day's copy is stored beside the first.
+        var asked = new Moved(Later);
+        var regenerated = await new FundamentalsFetcher(asked, later, store.DatabaseFile).RefetchAsync("AAPL", "regenerate-1");
+
+        Assert.True(regenerated.Fetched);
+        Assert.Equal(1, asked.Requests);
+        Assert.Equal(1, regenerated.RowsWritten);
+
+        var now = Rows(store, "AAPL");
+
+        Assert.Equal("2026-09-14", now[0].FilingDate);
+        Assert.Equal(held, now.Skip(1).ToArray());
+
+        var copies = Copies(store, "AAPL");
+
+        Assert.Equal(["2026-09-12T18:30:00Z", "2026-09-15T15:00:00Z"], copies.Select(copy => copy.FetchedAt));
+
+        using var copy = JsonDocument.Parse(copies[1].Payload);
+
+        Assert.Equal("31.25", copy.RootElement.GetProperty("valuation").GetProperty("trailingPe").GetString());
+        Assert.Equal("4100000000000", copy.RootElement.GetProperty("marketCapitalisation").GetString());
+
+        // The new filing's row, written by the same fetch, carries the same six parts as its copy, and
+        // the row that was newest keeps what its own fetch stated.
+        Assert.All(Core.Facts.FundamentalsSnapshot.Parts, part => Assert.Equal(Part(now[0].Payload, part), Part(copies[1].Payload, part)));
+        Assert.NotEqual(Part(now[0].Payload, "valuation"), Part(now[1].Payload, "valuation"));
+
+        // A second regenerate the same day, with nothing new filed, writes no filing and a copy of its own.
+        var again = await new FundamentalsFetcher(new Moved(Later), FixedClock.At(new DateTimeOffset(2026, 9, 15, 16, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile)
+            .RefetchAsync("AAPL", "regenerate-2");
+
+        Assert.Equal(0, again.RowsWritten);
+        Assert.Equal(3, Copies(store, "AAPL").Count);
+    }
 }

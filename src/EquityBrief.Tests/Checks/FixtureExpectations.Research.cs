@@ -297,22 +297,30 @@ public partial class FixtureExpectations
             Query(store, "SELECT detail FROM run_log WHERE run_id = 'research-warranted' AND stage = 'staleness';").Single(),
             StringComparison.Ordinal);
 
+        // A regenerate asked the same day, while no pass has run to the end, writes what went stale
+        // and nothing accepted that day, so it pays for no section twice in a day. The judge makes
+        // every accepted section stale for a regenerate, which is what leaves this to the rule.
+        var rewrite = await FixtureReplay.Researcher(store, ResearchClock, paid: new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped(), unreachable))
+            .RunAsync("KEYS", "research-warranted-rewrite", new ResearchPassRequest(Refresh: true));
+
+        Assert.Equal(warranted, rewrite.Warranted);
+
         // A pass the research model did not answer did not run to the end, so it does not
         // close the day: an open the same day once the model answers starts one and fetches,
         // which the 6.8 sweep found no test showing.
         var news = new NoArticles();
         var later = await FixtureReplay.Researcher(store, ResearchClock, archive: new NoRelease(), news: news).RunAsync("KEYS", "research-warranted-answered");
 
-        Assert.NotEqual(ResearchRunner.NotWarranted, later.Outcome);
+        Assert.Equal(ResearchRunner.Written, later.Outcome);
         Assert.NotEqual(0, news.Requests);
 
-        // A rewrite asked the same day writes what went stale and nothing accepted that day,
-        // so the rewrite control pays for no section twice in a day. The judge makes every
-        // accepted section stale for a rewrite, which is what leaves this to the rule.
-        var rewrite = await FixtureReplay.Researcher(store, ResearchClock, paid: new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped(), unreachable))
-            .RunAsync("KEYS", "research-warranted-rewrite", new ResearchPassRequest(Refresh: true));
+        // Once one has, a regenerate that day starts nothing and warrants nothing.
+        // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+        var regenerate = await FixtureReplay.Researcher(store, ResearchClock, paid: new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped(), unreachable))
+            .RunAsync("KEYS", "research-warranted-regenerate", new ResearchPassRequest(Refresh: true));
 
-        Assert.Equal(warranted, rewrite.Warranted);
+        Assert.Equal(ResearchRunner.RegeneratedToday, regenerate.Reason);
+        Assert.Empty(regenerate.Warranted);
     }
 
     [Fact]

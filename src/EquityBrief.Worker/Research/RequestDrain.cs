@@ -314,12 +314,14 @@ public static class RequestDrain
 
             // The request carries the lane the press meant, so a queue drained a day later
             // writes under it rather than under whatever configuration now says, and whether
-            // the press asked for every section to be written again.
+            // the press asked for every section to be written again, which the paid model
+            // writes whole whatever lane the request names.
             // see: Nothing expires on a timer
+            // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
             string[] verb =
             [
                 "research", "--ticker", request.Ticker,
-                .. request.Lane == "paid" ? ["--paid-for-local"] : Array.Empty<string>(),
+                .. request.Lane == "paid" || request.Refresh ? ["--paid-for-local"] : Array.Empty<string>(),
                 .. request.Refresh ? ["--refresh"] : Array.Empty<string>(),
             ];
 

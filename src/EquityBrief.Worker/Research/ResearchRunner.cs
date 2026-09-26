@@ -108,6 +108,10 @@ public sealed class ResearchRunner(
     // Why a plain open on the day a pass ran starts nothing.
     public const string RanToday = "a research pass for this name already ran today, and opening it again writes nothing until a later day or a rewrite";
 
+    // Why a regenerate on the day a pass for the name ran starts nothing.
+    // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+    public const string RegeneratedToday = "a report for this name was already written today, and a report is regenerated once a day";
+
     // The window a document a pass keeps may be dated inside, which is the stored year: a
     // move's cause rests on a document inside that move, and no stored move is older than the
     // bars kept. The news a pass asks for is narrower, the windows the rule hands a section
@@ -243,9 +247,13 @@ public sealed class ResearchRunner(
         // not run to the end, and the page's two explicit asks run because each asks for
         // something the first pass did not do.
         // see: A name opened again on the day its research pass ran starts no second pass unless the page asks for one
-        if (!asked.Refresh && !asked.PaidForLocal && await RanTodayAsync(connection, ticker, asOf, cancellation))
+        //
+        // A regenerate is the one ask that is held to the day as well: it rewrites every section
+        // with the paid model, so a second on the same day would pay for the same report twice.
+        // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+        if ((asked.Refresh || !asked.PaidForLocal) && await RanTodayAsync(connection, ticker, asOf, cancellation))
         {
-            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, NotWarranted, verdict.State, [], RanToday), 0, 0, cancellation);
+            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, NotWarranted, verdict.State, [], asked.Refresh ? RegeneratedToday : RanToday), 0, 0, cancellation);
         }
 
         var newest = await NewestAsync(connection, ticker, cancellation);
@@ -967,6 +975,17 @@ public sealed class ResearchRunner(
         return await reader.ReadAsync(cancellation)
             ? (FactsFile.Read(reader.GetString(0)), DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture))
             : (null, asOf);
+    }
+
+    // Whether a pass for the name ran to the end on the day the clock reads now, which a regenerate
+    // is asked before it fetches the company's figures, so one that will start nothing costs nothing.
+    // see: Deciding not to spend must not cost anything
+    public static async Task<bool> WrittenTodayAsync(string databaseFile, IClock clock, string ticker, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        return await RanTodayAsync(connection, ticker, clock.SessionDateAt(clock.UtcNow), cancellation);
     }
 
     static async Task<bool> RanTodayAsync(SqliteConnection connection, string ticker, DateOnly asOf, CancellationToken cancellation)

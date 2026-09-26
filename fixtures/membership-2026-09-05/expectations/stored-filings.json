@@ -1,9 +1,10 @@
 {
  "stage": "stored-filings",
  "derivation": "derived",
- "derivedFrom": "the ruling that twelve filings are stored and five are shown, taken together with what the probe settled about this endpoint. Nothing here is frozen from a run. The window is stated as a count of filings rather than as a list of dates, because a list would be a second statement of which quarters the capture holds and the two would drift the first time the capture moved; the dates are read off the store at test time and checked against the rules below. The margin is not stated as a figure either: what is stated is the two figures it is computed from, and the test divides them itself, so a fetcher that wrote the right shape and the wrong arithmetic fails.",
+ "derivedFrom": "the ruling that twelve filings are stored and five are shown, taken together with what the probe settled about this endpoint. Nothing here is frozen from a run. The window is stated as a count of filings rather than as a list of dates, because a list would be a second statement of which quarters the capture holds and the two would drift the first time the capture moved; the dates are read off the store at test time and checked against the rules below. The margin is not stated as a figure either: what is stated is the two figures it is computed from, and the test divides them itself, so a fetcher that wrote the right shape and the wrong arithmetic fails. The parts as of the fetch are from the ruling that a regenerated report is written from the company's figures as they stand on the day it runs: they are the ones with a price or an analyst's view in them, being the earnings bases a multiple is struck on, the two multiples, the market value, the analysts' ratings, the dividend and the next report's consensus, and every fetch stores them once as its own copy. Read off the ruling and the provider's parts, not off a run.",
  "tables": [
-  "fundamentals"
+  "fundamentals",
+  "fundamentals_snapshot"
  ],
  "storedFilings": 12,
  "quartersShown": 5,
@@ -47,5 +48,14 @@
   "segments",
   "guidance",
   "facts"
- ]
+ ],
+ "asOfTheFetch": [
+  "epsBases",
+  "valuation",
+  "marketCapitalisation",
+  "ratings",
+  "dividend",
+  "estimated"
+ ],
+ "copiesAFetchStores": 1
 }

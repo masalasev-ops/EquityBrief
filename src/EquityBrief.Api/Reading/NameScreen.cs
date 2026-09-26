@@ -630,7 +630,8 @@ public static class NameScreen
         html.Append("</tr></table></div>");
         // The provider stays on the element and out of the words: a reader is told when the figures
         // were fetched, and whose feed they came from is the store's record rather than the report's.
-        html.Append("<p class=\"dividend-source\">As of the newest filing's fetch.</p></div>");
+        // The dividend is as of the newest fetch, whose copy is read over the newest filing's own.
+        html.Append("<p class=\"dividend-source\">As of the newest fetch of the company's figures.</p></div>");
 
         return html.ToString();
     }

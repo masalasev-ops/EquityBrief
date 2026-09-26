@@ -9,9 +9,9 @@ using EquityBrief.Worker.Research;
 
 namespace EquityBrief.Tests.Reading;
 
-// read-surface, the 5.8 correction: a report is regenerated whole on the operator's ask once the day
+// read-surface, the 5.8 corrections: a report is regenerated whole on the operator's ask once the day
 // it was written has passed, the press carrying the ask on its request and the drain handing it on.
-// see: A report is regenerated whole on the operator's ask once the day it was written has passed
+// see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
 public partial class ReadSurface
 {
     const string RegenerateControl =
@@ -86,8 +86,15 @@ public partial class ReadSurface
 
         Assert.Equal("0", Rows(store, "SELECT refresh FROM research_request WHERE ticker = 'AAPL';").Single()[0]);
 
+        // Two requests naming the local lane, one asking for a regenerate and one not: the regenerate is
+        // the paid model's whole, whatever lane its request names, and the plain one keeps its lane.
+        store.Execute(
+            "INSERT INTO research_request (ticker, asked_at, asked_from, lane, state, refresh) VALUES " +
+            "('MSFT', '2026-09-27T12:00:00Z', 'name', 'local', 'outstanding', 1), " +
+            "('NFLX', '2026-09-27T12:00:00Z', 'name', 'local', 'outstanding', 0);");
+
         // The drain hands each request's pass what its press asked for, read off the verb it runs: the
-        // rewrite to the one that asked and to no other, whichever it takes first, since two presses in
+        // rewrite to the ones that asked and to no other, whichever it takes first, since two presses in
         // one second are taken by ticker. A Sunday, so nothing waits for off-peak.
         var clock = FixedClock.At(DateTimeOffset.Parse("2026-09-27T12:00:05Z", CultureInfo.InvariantCulture), SessionZones.UnitedStates);
         var passes = new List<string>();
@@ -105,7 +112,7 @@ public partial class ReadSurface
             _ => throw new InvalidOperationException("nothing here is at peak, so nothing waits"));
 
         Assert.Equal(
-            ["research --ticker AAPL --paid-for-local", "research --ticker KEYS --paid-for-local --refresh"],
+            ["research --ticker AAPL --paid-for-local", "research --ticker KEYS --paid-for-local --refresh", "research --ticker MSFT --paid-for-local --refresh", "research --ticker NFLX"],
             passes.Order(StringComparer.Ordinal));
         Assert.Equal(2, launcher.Started);
     }

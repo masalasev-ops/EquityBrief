@@ -6675,6 +6675,22 @@ public partial class FixtureExpectations
             Assert.Equal(
                 filesNone ? JsonValueKind.Null : JsonValueKind.Object,
                 newest.RootElement.GetProperty("estimated").ValueKind);
+
+            // Each fetch stores one copy of the parts that are as of the fetch, and the replay makes one
+            // fetch a name: the copy holds exactly those parts, each as the newest row states it, since
+            // one fetch wrote both.
+            var asOfTheFetch = expected.GetProperty("asOfTheFetch").EnumerateArray().Select(part => part.GetString()!).ToArray();
+
+            Assert.Equal(FundamentalsSnapshot.Parts, asOfTheFetch);
+
+            var copies = Query(store, $"SELECT payload FROM fundamentals_snapshot WHERE ticker = '{ticker}';");
+
+            Assert.Equal(expected.GetProperty("copiesAFetchStores").GetInt32(), copies.Count);
+
+            using var copy = JsonDocument.Parse(copies[0]);
+
+            Assert.Equal(asOfTheFetch, copy.RootElement.EnumerateObject().Select(part => part.Name).ToArray());
+            Assert.All(asOfTheFetch, part => Assert.Equal(newest.RootElement.GetProperty(part).GetRawText(), copy.RootElement.GetProperty(part).GetRawText()));
         }
     }
 
