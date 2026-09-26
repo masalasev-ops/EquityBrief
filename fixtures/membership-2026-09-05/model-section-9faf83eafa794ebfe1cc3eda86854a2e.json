@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-9vllb0l47twcsajs7ewww",
+  "object": "chat.completion",
+  "created": 1790397311,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Apple Inc., a technology sector company, closed at 316.22 with a session high of 320.7 and a session low of 314.9 while trading on 35.42 million shares. The stock trades above its 20-day average of 313.54 and 50-day average of 315.64 but below the immediate resistance high edge at 320.28, indicating a neutral trend state with an RSI of 50.26. Technical indicators show a MACD of 2.25 above the signal line of 1.32 with a histogram of 0.92, suggesting bullish momentum despite recent volatility measured by a 14-day average true range of 7.50.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1222,
+    "completion_tokens": 172,
+    "total_tokens": 1394,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

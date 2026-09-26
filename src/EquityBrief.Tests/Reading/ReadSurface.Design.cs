@@ -99,11 +99,23 @@ public partial class ReadSurface
         Assert.All(dates, date => Assert.Contains(bars, bar => bar.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) == date));
 
         // A session the moves table numbers is marked with its number above its candle, and a
-        // date the chart does not hold is marked nowhere.
-        var marked = marks.LevelChart("TEST", bars, [], [], new ChartFrame(Markers: [bars[30].SessionDate, new DateOnly(2020, 1, 1), bars[10].SessionDate]));
+        // date the chart does not hold is marked nowhere. Each carries what its own row says
+        // and links to it, so a circle answers what it is where it is drawn.
+        ChartMarker Marker(DateOnly session, int rank) =>
+            new(
+                session,
+                $"{rank}: up 1.00% over one session, ending " + session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                $"#move-TEST-{rank}");
 
-        Assert.Matches("<g class=\"move-mark\" data-session=\"2026-07-01\"><circle class=\"m-mark\"[^>]*/><text class=\"m-mark-t\"[^>]*>1</text></g>", marked);
-        Assert.Matches("<g class=\"move-mark\" data-session=\"2026-06-11\"><circle class=\"m-mark\"[^>]*/><text class=\"m-mark-t\"[^>]*>3</text></g>", marked);
+        var marked = marks.LevelChart(
+            "TEST",
+            bars,
+            [],
+            [],
+            new ChartFrame(Markers: [Marker(bars[30].SessionDate, 1), Marker(new DateOnly(2020, 1, 1), 2), Marker(bars[10].SessionDate, 3)]));
+
+        Assert.Matches("<a href=\"#move-TEST-1\"><g class=\"move-mark\" data-session=\"2026-07-01\"><title>1: up 1.00% over one session, ending 2026-07-01</title><circle class=\"m-mark\"[^>]*/><text class=\"m-mark-t\"[^>]*>1</text></g></a>", marked);
+        Assert.Matches("<a href=\"#move-TEST-3\"><g class=\"move-mark\" data-session=\"2026-06-11\"><title>[^<]*</title><circle class=\"m-mark\"[^>]*/><text class=\"m-mark-t\"[^>]*>3</text></g></a>", marked);
         Assert.Equal(2, Regex.Matches(marked, "class=\"move-mark\"").Count);
 
         // Over too few bars it draws nothing and says how many it has against how many it needs.

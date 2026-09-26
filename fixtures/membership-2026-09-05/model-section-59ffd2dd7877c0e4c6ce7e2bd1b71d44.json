@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-0an6ynnfvp07ta40h8ntk8",
+  "object": "chat.completion",
+  "created": 1790397304,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Apple Inc., a technology sector company, closed at 316.22 with a session high of 320.7 and a low of 314.9 on a volume of 35.42 million shares. The stock trades above its 20-day average of 314.10 and 50-day average of 316.34 while remaining below the 200-day average of 283.93, indicating a range trend state marked by 44 swings. Technical indicators show a MACD of 1.91 with a histogram of 0.47 and a signal line at 1.44, supported by a 14-day relative strength index of 50.26 and an average true range of 7.38. Immediate support edges are located between 310.66 and 323.67 with a strength of 16, while immediate resistance is set at 330.81 with a strength of 2. The most recent earnings reaction reported on 2026-07-31 showed an actual value of 2.02 against an estimate of 1.88, resulting in a surprise of 7.45 per cent and a move of -7.35 per cent after the report date.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1629,
+    "completion_tokens": 291,
+    "total_tokens": 1920,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

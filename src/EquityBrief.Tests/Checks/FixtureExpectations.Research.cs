@@ -752,7 +752,7 @@ public partial class FixtureExpectations
             [.. ProseWriter.DefaultLane, "The short version"],
             outcome.NotWritten.Where(line => line.Reason.StartsWith(ProseWriter.Unavailable, StringComparison.Ordinal)).Select(line => line.Section).ToArray());
         Assert.Equal(
-            ["The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The two cases"],
+            ["The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
             outcome.Written.Select(section => section.Section).ToArray());
         Assert.Contains(outcome.NotWritten, line => line.Section == ClaimRules.CauseSection && line.Reason == ProseWriter.NoUsableAnswer);
         Assert.All(outcome.Written, section => Assert.Equal(paid.Identity, section.Model));

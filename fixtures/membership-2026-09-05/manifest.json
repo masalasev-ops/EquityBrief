@@ -526,312 +526,319 @@
       "trimmedTo": "nothing. The whole response, 5816 prompt tokens, 128 of them served from the provider's cache, and 2032 completion tokens, 1810 of them reasoning, finishing on stop, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "model-section-028aeccca77c48d8554f48e1015a68b6.json",
+      "file": "model-section-07fcc6a42b0758277b4e4920405c88c8.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 028aeccca77c48d8554f48e1015a68b6, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:09:58Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1629 prompt tokens and 207 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on NFLX in the local lane, the draft written after the checker refused the first, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 07fcc6a42b0758277b4e4920405c88c8, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:35:24Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1636 prompt tokens and 230 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-1065d471caf7c40a12123a9f8b5c1f35.json",
+      "file": "model-section-100887af8a6d070dbde3c98bd1c85237.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, its first draft, over 7 documents the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 1065d471caf7c40a12123a9f8b5c1f35, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:57:11Z",
-      "trimmedTo": "nothing. The whole response to one section call, 18502 prompt tokens and 481 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, its first draft, handed 2 documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 100887af8a6d070dbde3c98bd1c85237, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:41:11Z",
+      "trimmedTo": "nothing. The whole response to one section call, 9320 prompt tokens and 74 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-1a9234003366d9ea653f268268efabe6.json",
+      "file": "model-section-138e21daccd6d5734d0b05144709d48b.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, the draft written after the checker refused the first, over 7 documents the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 1a9234003366d9ea653f268268efabe6, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:57:35Z",
-      "trimmedTo": "nothing. The whole response to one section call, 18732 prompt tokens and 461 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on NFLX in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 138e21daccd6d5734d0b05144709d48b, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:35:20Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1600 prompt tokens and 267 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-1c9263e308467b85b910c6ce113f004c.json",
+      "file": "model-section-1c06a9b54009f39a31902ebeb64ce4a7.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The dated calendar items on KEYS in the local lane, the draft written after the checker refused the first, over 7 documents the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 1c9263e308467b85b910c6ce113f004c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:57:33Z",
-      "trimmedTo": "nothing. The whole response to one section call, 18604 prompt tokens and 132 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The dated calendar items on KEYS in the local lane, its first draft, handed 7 documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 1c06a9b54009f39a31902ebeb64ce4a7, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:41:15Z",
+      "trimmedTo": "nothing. The whole response to one section call, 18558 prompt tokens and 237 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-28d4244412a54742ae2c19514f5de005.json",
+      "file": "model-section-23c30137f4bae2c2f57f9abd699c0410.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 28d4244412a54742ae2c19514f5de005, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:11:43Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1633 prompt tokens and 259 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, its first draft, handed 7 documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 23c30137f4bae2c2f57f9abd699c0410, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:41:23Z",
+      "trimmedTo": "nothing. The whole response to one section call, 18503 prompt tokens and 460 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-306784de9389306e2158b8c0e4fdc0f3.json",
+      "file": "model-section-27afdb55a8a77f517fdaf139995a53fb.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 306784de9389306e2158b8c0e4fdc0f3, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:10:48Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1629 prompt tokens and 237 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 27afdb55a8a77f517fdaf139995a53fb, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:34:57Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1633 prompt tokens and 255 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-3825e79a9eacf7d5af3f937ababf531b.json",
+      "file": "model-section-2eb10e0c4edc07ed894615de6dbc8100.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, its first draft, over 1 document the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 3825e79a9eacf7d5af3f937ababf531b, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:10:09Z",
-      "trimmedTo": "nothing. The whole response to one section call, 11620 prompt tokens and 82 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The two cases on KEYS in the local lane, the draft written after the checker refused the first, handed 7 documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 2eb10e0c4edc07ed894615de6dbc8100, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:41:44Z",
+      "trimmedTo": "nothing. The whole response to one section call, 18715 prompt tokens and 370 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-410829eae01acaf168c2019dfeeb2ecd.json",
+      "file": "model-section-3437e7e31a61e9b5232ed48a419cd733.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 410829eae01acaf168c2019dfeeb2ecd, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:11:34Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1635 prompt tokens and 272 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, the draft written after the checker refused the first, handed 7 documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 3437e7e31a61e9b5232ed48a419cd733, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:41:50Z",
+      "trimmedTo": "nothing. The whole response to one section call, 18543 prompt tokens and 150 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-43c6324d1ffd58f0aa98a1a4a1b524ca.json",
+      "file": "model-section-392577e6af9332e9c6319bca4bbb86c9.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 43c6324d1ffd58f0aa98a1a4a1b524ca, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:11:02Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1226 prompt tokens and 225 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, its first draft, handed 1 document, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 392577e6af9332e9c6319bca4bbb86c9, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:33:41Z",
+      "trimmedTo": "nothing. The whole response to one section call, 11621 prompt tokens and 82 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-58ad957923a28a15b971a2b76f48f895.json",
+      "file": "model-section-59ffd2dd7877c0e4c6ce7e2bd1b71d44.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The short version on KEYS in the local lane, its first draft, over 7 documents the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 58ad957923a28a15b971a2b76f48f895, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:57:41Z",
-      "trimmedTo": "nothing. The whole response to one section call, 18502 prompt tokens and 683 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 59ffd2dd7877c0e4c6ce7e2bd1b71d44, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:35:04Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1629 prompt tokens and 291 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-5ea99ea670dcf1cb769a707bae25f4a2.json",
+      "file": "model-section-5a1ee0f5342e3ad2e3d0437674c07eed.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on NFLX in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 5ea99ea670dcf1cb769a707bae25f4a2, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:10:51Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1604 prompt tokens and 262 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 5a1ee0f5342e3ad2e3d0437674c07eed, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:36:44Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1627 prompt tokens and 236 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-6466e6f89ed32f7bc743a5c10a2cc44e.json",
+      "file": "model-section-5d221cc22ae24a55f01e87a26e8b86a5.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, its first draft, over 2 documents the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 6466e6f89ed32f7bc743a5c10a2cc44e, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:57:01Z",
-      "trimmedTo": "nothing. The whole response to one section call, 9319 prompt tokens and 74 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS in the local lane, its first draft, handed 1 document, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 5d221cc22ae24a55f01e87a26e8b86a5, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:33:30Z",
+      "trimmedTo": "nothing. The whole response to one section call, 11615 prompt tokens and 123 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-651605e9de3ce92fcf514270b7d3c1b0.json",
+      "file": "model-section-62ecf32e3595b5e6908457d14d6b4406.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS in the local lane, its first draft, over 1 document the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 651605e9de3ce92fcf514270b7d3c1b0, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:10:04Z",
-      "trimmedTo": "nothing. The whole response to one section call, 11614 prompt tokens and 113 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The short version on KEYS in the local lane, the draft written after the checker refused the first, handed 7 documents, with the sections already written, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 62ecf32e3595b5e6908457d14d6b4406, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:42:05Z",
+      "trimmedTo": "nothing. The whole response to one section call, 18673 prompt tokens and 421 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-65c5708931c3840e0adc70e270474da2.json",
+      "file": "model-section-85279bc2398d9f5fbcf57cabcab58b49.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 65c5708931c3840e0adc70e270474da2, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:09:55Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1636 prompt tokens and 254 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 85279bc2398d9f5fbcf57cabcab58b49, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:33:50Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1630 prompt tokens and 311 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-68462da95092937e1b32c674134b1409.json",
+      "file": "model-section-8c021d9fd19f73d5b72eb49349f6b29a.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 68462da95092937e1b32c674134b1409, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:09:51Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1634 prompt tokens and 268 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 8c021d9fd19f73d5b72eb49349f6b29a, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:36:15Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1632 prompt tokens and 346 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-76f36a8e45f98ab2328feb645c5a7dfa.json",
+      "file": "model-section-940897f40c667d271aad478ed6fec36b.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The dated calendar items on KEYS in the local lane, its first draft, over 7 documents the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 76f36a8e45f98ab2328feb645c5a7dfa, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:57:05Z",
-      "trimmedTo": "nothing. The whole response to one section call, 18557 prompt tokens and 33 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 940897f40c667d271aad478ed6fec36b, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:36:29Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1629 prompt tokens and 273 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-7e938a31c4645baa11cd9d169f93a7e6.json",
+      "file": "model-section-96bc7dde167267f876369cecb2a75b51.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 7e938a31c4645baa11cd9d169f93a7e6, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:11:51Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1635 prompt tokens and 272 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 96bc7dde167267f876369cecb2a75b51, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:33:46Z",
+      "trimmedTo": "nothing. The whole response to one section call, 5247 prompt tokens and 231 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-8f4c6fed77bf2064e79ed483216a844f.json",
+      "file": "model-section-97f03863e0b5d3c7845a30b585607010.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 8f4c6fed77bf2064e79ed483216a844f, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:10:44Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1637 prompt tokens and 259 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on NFLX in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 97f03863e0b5d3c7845a30b585607010, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:35:00Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1600 prompt tokens and 226 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-935de01b17ee81c16402e20a508bee83.json",
+      "file": "model-section-9a384cc1170bf83f24f5d91dffa31686.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 935de01b17ee81c16402e20a508bee83, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:11:05Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1628 prompt tokens and 287 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its first draft, handed 7 documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 9a384cc1170bf83f24f5d91dffa31686, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:41:34Z",
+      "trimmedTo": "nothing. The whole response to one section call, 18505 prompt tokens and 172 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-9c19dcba14abe5fb736f3d3dffd45b77.json",
+      "file": "model-section-9faf83eafa794ebfe1cc3eda86854a2e.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, the draft written after the checker refused the first, over 2 documents the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed 9c19dcba14abe5fb736f3d3dffd45b77, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:57:31Z",
-      "trimmedTo": "nothing. The whole response to one section call, 9421 prompt tokens and 78 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed 9faf83eafa794ebfe1cc3eda86854a2e, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:35:11Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1222 prompt tokens and 172 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-b4c8e674b2e6089fc2e7ab5c2bf2e076.json",
+      "file": "model-section-bcbc467f6b38536e49bae3905bf80cf5.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on NFLX in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed b4c8e674b2e6089fc2e7ab5c2bf2e076, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:11:09Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1604 prompt tokens and 257 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The dated calendar items on KEYS in the local lane, the draft written after the checker refused the first, handed 7 documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed bcbc467f6b38536e49bae3905bf80cf5, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:41:42Z",
+      "trimmedTo": "nothing. The whole response to one section call, 18689 prompt tokens and 124 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-ba013ae52eab41a78f91bd77ca93a79d.json",
+      "file": "model-section-c063fa46e163c19ee2a49509f4646046.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The short version on KEYS in the local lane, the draft written after the checker refused the first, over 7 documents the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed ba013ae52eab41a78f91bd77ca93a79d, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:57:54Z",
-      "trimmedTo": "nothing. The whole response to one section call, 18744 prompt tokens and 560 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed c063fa46e163c19ee2a49509f4646046, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:33:18Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1631 prompt tokens and 339 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-c677f8e32053232c6f317d91c1b664c1.json",
+      "file": "model-section-c7332624aeaeb9aeb7e63e1483b5ff8c.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed c677f8e32053232c6f317d91c1b664c1, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:10:54Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1633 prompt tokens and 231 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed c7332624aeaeb9aeb7e63e1483b5ff8c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:36:08Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1632 prompt tokens and 245 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-c9d183b5b4b219da9ee3e548d37996c0.json",
+      "file": "model-section-c8d51d08f1e42c6fe6115e321c95ba07.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed c9d183b5b4b219da9ee3e548d37996c0, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:10:59Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1635 prompt tokens and 239 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, its first draft, handed 1 document, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed c8d51d08f1e42c6fe6115e321c95ba07, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:36:38Z",
+      "trimmedTo": "nothing. The whole response to one section call, 11616 prompt tokens and 82 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-caee9253fdacec216c1a77c49eda344c.json",
+      "file": "model-section-d08d0538ccca831629187c8a9ffac526.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed caee9253fdacec216c1a77c49eda344c, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:11:55Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1629 prompt tokens and 352 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS in the local lane, its first draft, handed 1 document, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed d08d0538ccca831629187c8a9ffac526, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:36:33Z",
+      "trimmedTo": "nothing. The whole response to one section call, 11610 prompt tokens and 115 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-cca650a7a8721de61e9282f7e0afe233.json",
+      "file": "model-section-d48ba9fce4e8a73ba6dd4ac73c61f389.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on NFLX in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed cca650a7a8721de61e9282f7e0afe233, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:10:01Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1603 prompt tokens and 210 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The short version on KEYS in the local lane, its first draft, handed 7 documents, with the sections already written, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed d48ba9fce4e8a73ba6dd4ac73c61f389, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:41:52Z",
+      "trimmedTo": "nothing. The whole response to one section call, 18503 prompt tokens and 635 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-d54a385061ad56300ec8112de772a6bc.json",
+      "file": "model-section-d80128ec76edfc35e62eccde640ae3b5.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, its first draft, over 1 document the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed d54a385061ad56300ec8112de772a6bc, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:10:28Z",
-      "trimmedTo": "nothing. The whole response to one section call, 11725 prompt tokens and 77 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on NFLX in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed d80128ec76edfc35e62eccde640ae3b5, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:33:23Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1600 prompt tokens and 326 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-ddaa9d1a0e9040076157652484764d3e.json",
+      "file": "model-section-dc84da2db0fa7a78e2eaadd7fa91c2e9.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The segment commentary on KEYS in the local lane, its first draft, over 1 document the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed ddaa9d1a0e9040076157652484764d3e, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:10:38Z",
-      "trimmedTo": "nothing. The whole response to one section call, 11615 prompt tokens and 82 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed dc84da2db0fa7a78e2eaadd7fa91c2e9, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:36:47Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1632 prompt tokens and 227 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-e29cc8d1afd8404a0067c9b036965fb6.json",
+      "file": "model-section-e7e036afc9e4e4d023844650520200bd.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The risks, each with what would confirm it on KEYS in the local lane, its first draft, over 7 documents the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed e29cc8d1afd8404a0067c9b036965fb6, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:57:22Z",
-      "trimmedTo": "nothing. The whole response to one section call, 18504 prompt tokens and 281 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, its first draft, handed 1 document, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed e7e036afc9e4e4d023844650520200bd, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:36:24Z",
+      "trimmedTo": "nothing. The whole response to one section call, 11726 prompt tokens and 97 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-e539fed29d23ef94501083802a167750.json",
+      "file": "model-section-e9c95cefa69c2a4ca69673908ebb4bf8.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed e539fed29d23ef94501083802a167750, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:11:38Z",
-      "trimmedTo": "nothing. The whole response to one section call, 1636 prompt tokens and 220 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed e9c95cefa69c2a4ca69673908ebb4bf8, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:34:53Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1628 prompt tokens and 241 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-ebf2442b3c589985af2cfaca98b768f7.json",
+      "file": "model-section-ec494df88fd9e14caa70cdaef15c2d77.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for What the company sells on KEYS in the local lane, its first draft, over 1 document the research runner hands that section, over the facts file 11.9 widened: the request SectionPrompt builds, keyed ebf2442b3c589985af2cfaca98b768f7, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:10:33Z",
-      "trimmedTo": "nothing. The whole response to one section call, 11609 prompt tokens and 113 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The cause of each large move on KEYS in the local lane, the draft written after the checker refused the first, handed 1 document, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed ec494df88fd9e14caa70cdaef15c2d77, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:36:42Z",
+      "trimmedTo": "nothing. The whole response to one section call, 11794 prompt tokens and 83 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "model-section-f032e5c429ddbf053b648d902254bd39.json",
+      "file": "model-section-ee72bbb5142809e7ac8781701068f872.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
-      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed no documents, over the facts file 11.9 widened: the request SectionPrompt builds, keyed f032e5c429ddbf053b648d902254bd39, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
-      "fetchedAt": "2026-09-24T03:10:13Z",
-      "trimmedTo": "nothing. The whole response to one section call, 5246 prompt tokens and 293 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on MSFT in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed ee72bbb5142809e7ac8781701068f872, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:35:17Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1632 prompt tokens and 206 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
     },
     {
-      "file": "research-call-2cb3fe21d1baccd699b9d34704c629cb.json",
+      "file": "model-section-ef55172825391c115932e2ed1655623f.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed ef55172825391c115932e2ed1655623f, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:33:38Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1630 prompt tokens and 268 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+    },
+    {
+      "file": "model-section-f3e000a55d8ea6afb141fc27bbd87411.json",
+      "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
+      "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on KEYS in the local lane, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: the request SectionPrompt builds, keyed f3e000a55d8ea6afb141fc27bbd87411, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
+      "fetchedAt": "2026-09-26T04:35:14Z",
+      "trimmedTo": "nothing. The whole response to one section call, 1626 prompt tokens and 292 completion tokens, finishing on stop, named for the request's key so a replay asking the same request reads it and a replay asking anything else is refused by name."
+    },
+    {
+      "file": "research-call-24b040f7123dc53d5c2dab065a23e669.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST chat/completions for The risks, each with what would confirm it of KEYS in the paid lane, its first draft, over 7 documents the research runner hands that section, over the facts file 11.9 widened: model deepseek-flash, the request SectionPrompt builds, keyed 2cb3fe21d1baccd699b9d34704c629cb",
-      "fetchedAt": "2026-09-24T03:52:26Z",
-      "trimmedTo": "nothing. The whole response, 16360 prompt tokens, 128 of them served from the provider's cache, and 6620 completion tokens, 6244 of them reasoning, finishing on stop, created at 2026-09-24T03:52:26Z, inside the provider's peak window, at twice the off-peak rate, named for the request's key so a replay asking the same request reads it."
+      "query": "POST chat/completions for The short version of KEYS in the paid lane, its first draft, over 7 documents the research runner hands that section, with the sections already written, over the facts file the 4.2 and 3.4 corrections moved: model deepseek-flash, the request SectionPrompt builds, keyed 24b040f7123dc53d5c2dab065a23e669",
+      "fetchedAt": "2026-09-26T04:35:31Z",
+      "trimmedTo": "nothing. The whole response, 18062 prompt tokens, 512 of them served from the provider's cache, and 4183 completion tokens, 3409 of them reasoning, finishing on stop, created at 2026-09-26T04:35:31Z, off-peak, priced at 0.005143836 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "research-call-6f91e0a63e101c47d7d6a67be4dbdffb.json",
+      "file": "research-call-50cac2a1e9fc964444766173f4028874.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST chat/completions for The key under each figure of KEYS in the paid lane, its first draft, handed no documents, over the facts file 11.9 widened: model deepseek-flash, the request SectionPrompt builds, keyed 6f91e0a63e101c47d7d6a67be4dbdffb",
-      "fetchedAt": "2026-09-24T03:55:30Z",
-      "trimmedTo": "nothing. The whole response, 4557 prompt tokens, 128 of them served from the provider's cache, and 976 completion tokens, 752 of them reasoning, finishing on stop, created at 2026-09-24T03:55:30Z, inside the provider's peak window, at twice the off-peak rate, named for the request's key so a replay asking the same request reads it."
+      "query": "POST chat/completions for The cause of each large move of KEYS in the paid lane, its first draft and the same request asked again once it came back empty, over 2 documents the research runner hands that section, over the facts file the 4.2 and 3.4 corrections moved: model deepseek-flash, the request SectionPrompt builds, keyed 50cac2a1e9fc964444766173f4028874",
+      "fetchedAt": "2026-09-26T04:33:56Z",
+      "trimmedTo": "nothing. The whole response, 7980 prompt tokens, 128 of them served from the provider's cache, and 239 completion tokens, 238 of them reasoning, finishing on stop with no answer beside the reasoning, created at 2026-09-26T04:33:56Z, off-peak, priced at 0.001321584 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "research-call-892847caa3f4ca5592130bb1e35809b9.json",
+      "file": "research-call-5cfe84374283d284ce9520ec4cc8ccab.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST chat/completions for The short version of KEYS in the paid lane, its first draft, over 7 documents the research runner hands that section, with the sections already written, over the facts file 11.9 widened: model deepseek-flash, the request SectionPrompt builds, keyed 892847caa3f4ca5592130bb1e35809b9",
-      "fetchedAt": "2026-09-24T03:53:40Z",
-      "trimmedTo": "nothing. The whole response, 17266 prompt tokens, 128 of them served from the provider's cache, and 9086 completion tokens, 8411 of them reasoning, finishing on stop, created at 2026-09-24T03:53:40Z, inside the provider's peak window, at twice the off-peak rate, named for the request's key so a replay asking the same request reads it."
+      "query": "POST chat/completions for The segment commentary of KEYS in the paid lane, as the lane comparison asks it with every section paid, its first draft, over 1 document the research runner hands that section, over the facts file the 4.2 and 3.4 corrections moved: model deepseek-flash, the request SectionPrompt builds, keyed 5cfe84374283d284ce9520ec4cc8ccab",
+      "fetchedAt": "2026-09-26T04:37:48Z",
+      "trimmedTo": "nothing. The whole response, 9808 prompt tokens, 512 of them served from the provider's cache, and 582 completion tokens, 495 of them reasoning, finishing on stop, created at 2026-09-26T04:37:48Z, off-peak, priced at 0.001745136 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "research-call-985ddf46a3a1d5bc0928d41081f3610c.json",
+      "file": "research-call-83b361aea905fc5c785f415237855f66.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST chat/completions for What the company sells of KEYS in the paid lane, its first draft, over 1 document the research runner hands that section, over the facts file 11.9 widened: model deepseek-flash, the request SectionPrompt builds, keyed 985ddf46a3a1d5bc0928d41081f3610c",
-      "fetchedAt": "2026-09-24T03:55:21Z",
-      "trimmedTo": "nothing. The whole response, 9801 prompt tokens, 128 of them served from the provider's cache, and 1064 completion tokens, 935 of them reasoning, finishing on stop, created at 2026-09-24T03:55:21Z, inside the provider's peak window, at twice the off-peak rate, named for the request's key so a replay asking the same request reads it."
+      "query": "POST chat/completions for The risks, each with what would confirm it of KEYS in the paid lane, its first draft, over 7 documents the research runner hands that section, over the facts file the 4.2 and 3.4 corrections moved: model deepseek-flash, the request SectionPrompt builds, keyed 83b361aea905fc5c785f415237855f66",
+      "fetchedAt": "2026-09-26T04:34:44Z",
+      "trimmedTo": "nothing. The whole response, 16361 prompt tokens, 512 of them served from the provider's cache, and 10753 completion tokens, 10062 of them reasoning, finishing on stop, created at 2026-09-26T04:34:44Z, off-peak, priced at 0.008830686 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "research-call-9f1b26b3de93248b8d2ceef95aabdf07.json",
+      "file": "research-call-91e79dcd5f1d21f38e356a561cb12523.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST chat/completions for The two cases of KEYS in the paid lane, its first draft, over 7 documents the research runner hands that section, over the facts file 11.9 widened: model deepseek-flash, the request SectionPrompt builds, keyed 9f1b26b3de93248b8d2ceef95aabdf07",
-      "fetchedAt": "2026-09-24T03:51:50Z",
-      "trimmedTo": "nothing. The whole response, 16358 prompt tokens, 128 of them served from the provider's cache, and 7979 completion tokens, 7249 of them reasoning, finishing on stop, created at 2026-09-24T03:51:50Z, inside the provider's peak window, at twice the off-peak rate, named for the request's key so a replay asking the same request reads it."
+      "query": "POST chat/completions for The short version of KEYS in the paid lane, the draft written after the checker refused the first, over 7 documents the research runner hands that section, with the sections already written, over the facts file the 4.2 and 3.4 corrections moved: model deepseek-flash, the request SectionPrompt builds, keyed 91e79dcd5f1d21f38e356a561cb12523",
+      "fetchedAt": "2026-09-26T04:35:50Z",
+      "trimmedTo": "nothing. The whole response, 18122 prompt tokens, 17920 of them served from the provider's cache, and 5253 completion tokens, 4564 of them reasoning, finishing on stop, created at 2026-09-26T04:35:50Z, off-peak, priced at 0.00323586 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "research-call-a0aa3cba112e57718843bd6fb4694c28.json",
+      "file": "research-call-a41f74377e5d48913d167fe6c20e09a3.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST chat/completions for The short version of KEYS in the paid lane, the draft written after the checker refused the first, over 7 documents the research runner hands that section, with the sections already written, over the facts file 11.9 widened: model deepseek-flash, the request SectionPrompt builds, keyed a0aa3cba112e57718843bd6fb4694c28",
-      "fetchedAt": "2026-09-24T03:56:21Z",
-      "trimmedTo": "nothing. The whole response, 17942 prompt tokens, 16768 of them served from the provider's cache, and 4970 completion tokens, 4231 of them reasoning, finishing on stop, created at 2026-09-24T03:56:21Z, inside the provider's peak window, at twice the off-peak rate, named for the request's key so a replay asking the same request reads it."
+      "query": "POST chat/completions for The dated calendar items of KEYS in the paid lane, its first draft, over 7 documents the research runner hands that section, over the facts file the 4.2 and 3.4 corrections moved: model deepseek-flash, the request SectionPrompt builds, keyed a41f74377e5d48913d167fe6c20e09a3",
+      "fetchedAt": "2026-09-26T04:33:58Z",
+      "trimmedTo": "nothing. The whole response, 16410 prompt tokens, 512 of them served from the provider's cache, and 427 completion tokens, 355 of them reasoning, finishing on stop, created at 2026-09-26T04:33:58Z, off-peak, priced at 0.002642436 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "research-call-a68bc2b4b5d6cbc625d390b6a306dd5a.json",
+      "file": "research-call-ac345edd6e1acd8af31127509b29b79d.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST chat/completions for The segment commentary of KEYS in the paid lane, its first draft, over 1 document the research runner hands that section, over the facts file 11.9 widened: model deepseek-flash, the request SectionPrompt builds, keyed a68bc2b4b5d6cbc625d390b6a306dd5a",
-      "fetchedAt": "2026-09-24T03:55:27Z",
-      "trimmedTo": "nothing. The whole response, 9807 prompt tokens, 128 of them served from the provider's cache, and 586 completion tokens, 481 of them reasoning, finishing on stop, created at 2026-09-24T03:55:27Z, inside the provider's peak window, at twice the off-peak rate, named for the request's key so a replay asking the same request reads it."
+      "query": "POST chat/completions for The short version of KEYS in the paid lane, as the lane comparison asks it with every section paid, its first draft, over 7 documents the research runner hands that section, with the sections already written, over the facts file the 4.2 and 3.4 corrections moved: model deepseek-flash, the request SectionPrompt builds, keyed ac345edd6e1acd8af31127509b29b79d",
+      "fetchedAt": "2026-09-26T04:38:47Z",
+      "trimmedTo": "nothing. The whole response, 17971 prompt tokens, 16128 of them served from the provider's cache, and 6142 completion tokens, 5570 of them reasoning, finishing on stop, created at 2026-09-26T04:38:47Z, off-peak, priced at 0.004010034 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "research-call-a7e0d91e5829071e23b59d7a3f213249.json",
+      "file": "research-call-dc46627d351de1fbbce15db764560a36.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST chat/completions for The short version of KEYS in the paid lane, the draft written after the checker refused the first, over 7 documents the research runner hands that section, with the sections already written, over the facts file 11.9 widened: model deepseek-flash, the request SectionPrompt builds, keyed a7e0d91e5829071e23b59d7a3f213249",
-      "fetchedAt": "2026-09-24T03:54:20Z",
-      "trimmedTo": "nothing. The whole response, 17917 prompt tokens, 16640 of them served from the provider's cache, and 6742 completion tokens, 6153 of them reasoning, finishing on stop, created at 2026-09-24T03:54:20Z, inside the provider's peak window, at twice the off-peak rate, named for the request's key so a replay asking the same request reads it."
+      "query": "POST chat/completions for The key under each figure of KEYS in the paid lane, as the lane comparison asks it with every section paid, its first draft, handed no documents, over the facts file the 4.2 and 3.4 corrections moved: model deepseek-flash, the request SectionPrompt builds, keyed dc46627d351de1fbbce15db764560a36",
+      "fetchedAt": "2026-09-26T04:38:42Z",
+      "trimmedTo": "nothing. The whole response, 4557 prompt tokens, 512 of them served from the provider's cache, and 929 completion tokens, 721 of them reasoning, finishing on stop, created at 2026-09-26T04:38:42Z, off-peak, priced at 0.001165686 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "research-call-a83c687b08714a88e08a9fcf5fe23a56.json",
+      "file": "research-call-e9a8b2f500de1f3410f5610944a10ac4.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST chat/completions for The dated calendar items of KEYS in the paid lane, its first draft, over 7 documents the research runner hands that section, over the facts file 11.9 widened: model deepseek-flash, the request SectionPrompt builds, keyed a83c687b08714a88e08a9fcf5fe23a56",
-      "fetchedAt": "2026-09-24T03:51:45Z",
-      "trimmedTo": "nothing. The whole response, 16409 prompt tokens, 128 of them served from the provider's cache, and 835 completion tokens, 766 of them reasoning, finishing on stop, created at 2026-09-24T03:51:45Z, inside the provider's peak window, at twice the off-peak rate, named for the request's key so a replay asking the same request reads it."
+      "query": "POST chat/completions for The two cases of KEYS in the paid lane, its first draft, over 7 documents the research runner hands that section, over the facts file the 4.2 and 3.4 corrections moved: model deepseek-flash, the request SectionPrompt builds, keyed e9a8b2f500de1f3410f5610944a10ac4",
+      "fetchedAt": "2026-09-26T04:34:01Z",
+      "trimmedTo": "nothing. The whole response, 16359 prompt tokens, 512 of them served from the provider's cache, and 10495 completion tokens, 9970 of them reasoning, finishing on stop, created at 2026-09-26T04:34:01Z, off-peak, priced at 0.008675586 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "research-call-b53f888e183c43d86f00da4cb493855c.json",
+      "file": "research-call-edeb95150f1f730320ffa7c4b7361ce7.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST chat/completions for The short version of KEYS in the paid lane, its first draft, over 7 documents the research runner hands that section, with the sections already written, over the facts file 11.9 widened: model deepseek-flash, the request SectionPrompt builds, keyed b53f888e183c43d86f00da4cb493855c",
-      "fetchedAt": "2026-09-24T03:55:44Z",
-      "trimmedTo": "nothing. The whole response, 17291 prompt tokens, 16128 of them served from the provider's cache, and 8359 completion tokens, 7650 of them reasoning, finishing on stop, created at 2026-09-24T03:55:44Z, inside the provider's peak window, at twice the off-peak rate, named for the request's key so a replay asking the same request reads it."
+      "query": "POST chat/completions for What the company sells of KEYS in the paid lane, as the lane comparison asks it with every section paid, its first draft, over 1 document the research runner hands that section, over the facts file the 4.2 and 3.4 corrections moved: model deepseek-flash, the request SectionPrompt builds, keyed edeb95150f1f730320ffa7c4b7361ce7",
+      "fetchedAt": "2026-09-26T04:37:43Z",
+      "trimmedTo": "nothing. The whole response, 9802 prompt tokens, 512 of them served from the provider's cache, and 1006 completion tokens, 852 of them reasoning, finishing on stop, created at 2026-09-26T04:37:43Z, off-peak, priced at 0.001998636 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     },
     {
-      "file": "research-call-f437fb4ec7466eb00d1c1a50444777ca.json",
+      "file": "research-call-f7070843228c9907570cc58298066168.json",
       "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST chat/completions for The cause of each large move of KEYS in the paid lane, its first draft, over 2 documents the research runner hands that section, over the facts file 11.9 widened: model deepseek-flash, the request SectionPrompt builds, keyed f437fb4ec7466eb00d1c1a50444777ca",
-      "fetchedAt": "2026-09-24T03:51:42Z",
-      "trimmedTo": "nothing. The whole response, 7979 prompt tokens, 128 of them served from the provider's cache, and 702 completion tokens, 701 of them reasoning, finishing on stop, created at 2026-09-24T03:51:42Z, inside the provider's peak window, at twice the off-peak rate, named for the request's key so a replay asking the same request reads it."
-    },
-    {
-      "file": "research-call-f6185b13b97c05a2540ba0938bfe1577.json",
-      "endpoint": "the research model's provider named by the shipped configuration, at the OpenAI-format address https://api.deepseek.com, with the key in the authorisation header and never in the address",
-      "query": "POST chat/completions for The two cases of KEYS in the paid lane, the draft written after the checker refused the first, over 7 documents the research runner hands that section, over the facts file 11.9 widened: model deepseek-flash, the request SectionPrompt builds, keyed f6185b13b97c05a2540ba0938bfe1577",
-      "fetchedAt": "2026-09-24T03:52:56Z",
-      "trimmedTo": "nothing. The whole response, 16407 prompt tokens, 16256 of them served from the provider's cache, and 10554 completion tokens, 9963 of them reasoning, finishing on stop, created at 2026-09-24T03:52:56Z, inside the provider's peak window, at twice the off-peak rate, named for the request's key so a replay asking the same request reads it."
+      "query": "POST chat/completions for What the company sells of KEYS in the paid lane, as the lane comparison asks it with every section paid, the draft written after the checker refused the first, over 1 document the research runner hands that section, over the facts file the 4.2 and 3.4 corrections moved: model deepseek-flash, the request SectionPrompt builds, keyed f7070843228c9907570cc58298066168",
+      "fetchedAt": "2026-09-26T04:37:51Z",
+      "trimmedTo": "nothing. The whole response, 9837 prompt tokens, 9600 of them served from the provider's cache, and 770 completion tokens, 624 of them reasoning, finishing on stop, created at 2026-09-26T04:37:51Z, off-peak, priced at 0.00052635 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
     }
   ]
 }

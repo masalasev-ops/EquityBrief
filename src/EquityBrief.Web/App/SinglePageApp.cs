@@ -816,7 +816,7 @@ public sealed class SinglePageApp : IComponent
             "Each reading is drawn on its own scale with its neutral rule. Relative strength usually sits inside its shaded band, and the momentum bars read against their zero rule: above it is strengthening and below it weakening.",
             "Nothing in the plan or the list reads these. When they and the bands disagree, the plan follows the bands."));
         chart.Append("<div class=\"sub\">Levels</div>");
-        chart.Append("<div class=\"tbl-wrap\">").Append(marks.LevelSummary(ticker, summary, absent)).Append("</div>");
+        chart.Append("<div class=\"tbl-wrap\">").Append(marks.LevelSummary(ticker, summary, absent, bars.Count > 0 ? bars[^1].Close : null)).Append("</div>");
 
         Card("chart", "The daily chart and its levels", Cards.Computed("The chart", chart.ToString(), title: "The daily chart and its levels", stamp: Cards.Night(session), id: "chart", region: "chart"));
 

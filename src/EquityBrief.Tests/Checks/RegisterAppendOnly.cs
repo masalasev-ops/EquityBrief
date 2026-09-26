@@ -569,6 +569,14 @@ public class RegisterAppendOnly
         Assert.True(onThePath.Length >= 3, $"Found {onThePath.Length} file(s) on the evaluation path, expected at least 3.");
         Assert.All(onThePath, path => Assert.Contains(path, CandidateEvaluator.EvaluationSources));
 
+        // Each way the evaluation hands a registration's parameters on is found, and a registration
+        // reading its own parameters to check them is not.
+        Assert.Matches(EvaluationCall, "var verdict = evaluator.Evaluate(night, CandidateEvaluator.Read(row.Parameters));");
+        Assert.Matches(EvaluationCall, "var verdict = evaluator.EvaluateGates(inputs, CandidateEvaluator.Read(row.Parameters));");
+        Assert.Matches(EvaluationCall, "? gate.ArrivalSessions(CandidateEvaluator.Read(row.Parameters))");
+        Assert.DoesNotMatch(EvaluationCall, "Refusal(taken, row.Candidate, row.Evaluator, CandidateEvaluator.Read(row.Parameters), startedAt)");
+        Assert.Contains("src/EquityBrief.Core/Candidates/ShadowColumn.cs", onThePath);
+
         // And each source is the file of a type the evaluation calls, so none is a file nothing on the path lives in.
         //
         // The levels and the ladder are on the path because a night's values are
@@ -607,8 +615,10 @@ public class RegisterAppendOnly
         Assert.Null(CandidateEvaluators.Find("an-evaluator-nothing-implements"));
     }
 
+    // A registration's parameters read back counts where they are handed to an evaluation, and not
+    // where the registrar reads a row's own parameters to check a registration of it, which runs nothing.
     static readonly Regex EvaluationCall = new(
-        @"\bIndicatorSeries\.For\(|\bnew\s+CandidateNight\(|\bShadowColumn\.Evaluate\(|\bShadowColumn\.EvaluateGates\(|\bCandidateEvaluator\.Read\(|\binsert\s+into\s+indicator\b",
+        @"\bIndicatorSeries\.For\(|\bnew\s+CandidateNight\(|\bShadowColumn\.Evaluate\(|\bShadowColumn\.EvaluateGates\(|\.(?:Evaluate|EvaluateGates|ArrivalSessions)\([^;]*\bCandidateEvaluator\.Read\(|\binsert\s+into\s+indicator\b",
         RegexOptions.IgnoreCase);
 
     static string FileOf(Type type) =>

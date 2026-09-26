@@ -103,6 +103,10 @@ code{font-size:.92em}
 .watch-table td.listed{color:var(--support);font-weight:600}
 .watch-table td.stopped{color:var(--soft)}
 .watch-table .btn-2{padding:0 8px;line-height:20px}
+.level-summary td.strength{white-space:nowrap}
+.level-summary .str-bar{display:inline-block;height:8px;margin-right:6px;vertical-align:middle;border-radius:2px;background:var(--ink-2);opacity:.45}
+.level-summary tr.close-row td{border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);font-weight:600;color:var(--ink)}
+.level-key{font-size:12.5px;color:var(--soft);margin:6px 0 0;max-width:72ch}
 .night-picker .np-newest{margin-left:4px;color:var(--ink)}
 .m-right{display:flex;align-items:center;gap:16px}
 .m-nav{display:flex;gap:14px;font-size:13.5px}

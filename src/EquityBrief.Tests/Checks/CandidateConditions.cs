@@ -363,9 +363,9 @@ public sealed class CandidateConditions
             }
         }
 
-        // Three of the twelve, stated as a count so a night where nothing fired could not agree
+        // Four of the twelve, stated as a count so a night where nothing fired could not agree
         // with an expectation that was also all false.
-        Assert.Equal(3, fired.Count);
+        Assert.Equal(4, fired.Count);
     }
 
     [Fact]

@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-6q0g2e7tye16b3itjmczp",
+  "object": "chat.completion",
+  "created": 1790397320,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock closed at 76.77, trading within a session high of 77.73 and a low of 75.92 with volume of 33.87 million shares. The current price sits below the 20-day average of 79.56 and the 50-day average of 75.67, while remaining above the immediate support range between 75.67 and 76.53 but under the resistance zone from 78.44 to 79.56. Technical indicators show a relative strength index of 45.43 over fourteen days and a MACD value of 0.66 with a histogram of -0.67 against a signal line of 1.33, reflecting the range-bound trend state marked by forty-one swings. Recent earnings reactions include a surprise of 1.27 per cent on 2026-07-17 following an actual of 0.8 versus an estimate of 0.79, while earlier reports showed mixed results with surprises ranging from -15.71 per cent to 1.82 per cent across sessions in late 2025 and early 2026.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1600,
+    "completion_tokens": 267,
+    "total_tokens": 1867,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

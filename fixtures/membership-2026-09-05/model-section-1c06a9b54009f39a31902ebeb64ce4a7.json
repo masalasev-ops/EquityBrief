@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-dw3e8pg6rup845l7uprvxo",
+  "object": "chat.completion",
+  "created": 1790397675,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Keysight Technologies Inc reported earnings reaction 2 actual of 2.87 on session 2026-05-20 [D1]. The company recorded earnings reaction 3 actual of 2.17 on session 2026-02-24 [D1]. Earnings reaction 4 actual was 1.91 on session 2025-11-25 [D1]. The latest earnings reaction actual figure stands at 2.82 for session 2026-08-19 [D1]. Keysight Technologies Inc announced participation in the Goldman Sachs Communacopia + Technology Conference on Friday, September 11, 2026 [D6]. The company also scheduled a fireside chat at the 2026 Truist Technology Symposium on Tuesday, September 15, 2026 [D6]. Keysight Collaborates with the Centre for Assuring Autonomy at the University of York to Advance AI Safety Assurance for Software-Defined Vehicles was announced on September 3, 2026 [D7].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18558,
+    "completion_tokens": 237,
+    "total_tokens": 18795,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

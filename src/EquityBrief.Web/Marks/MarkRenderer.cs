@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Filter;
+using EquityBrief.Core.Levels;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Shortlist;
@@ -683,7 +684,12 @@ public sealed record PriceAxis(double Low, double High)
 // own, so a chart and the profile beside it drawn at one scale line up price for price,
 // and no scale draws it the width of whatever holds it. `Markers` are the sessions a
 // table beside the chart numbers.
-public sealed record ChartFrame(double? Scale = null, IReadOnlyList<DateOnly>? Markers = null);
+// One session a table beside the chart numbers: the session, what its own row says, and
+// where that row is. A circle drawn with a number and nothing else is a number a reader has
+// to go looking for the meaning of, so it carries both.
+public sealed record ChartMarker(DateOnly Session, string Says, string Href);
+
+public sealed record ChartFrame(double? Scale = null, IReadOnlyList<ChartMarker>? Markers = null);
 
 // One entry of a page's contents: where it sits as a reader counts down the page, what the
 // card calls itself, and the card's own id, which is what the entry links to.
@@ -1363,10 +1369,15 @@ public sealed class MarkRenderer : IComponent
     // states seven marks and this is not one of them. It is a region of the name
     // screen, listed in 15.9 beside the chart, and it is written here because
     // the marks and the regions that read them are drawn by the same server.
+    //
+    // Highest price first, with the close as a row between the resistance bands
+    // and the support bands, so the table reads in the direction the plan column
+    // beside it does.
     public string LevelSummary(
         string ticker,
         IReadOnlyList<SummaryBand> bands,
-        IReadOnlyList<AbsentAverage>? absent = null)
+        IReadOnlyList<AbsentAverage>? absent = null,
+        decimal? close = null)
     {
         var missing = absent ?? [];
 
@@ -1377,14 +1388,24 @@ public sealed class MarkRenderer : IComponent
         }
 
         var table = new StringBuilder();
+        var closeDrawn = close is null;
 
         table.Append("<div class=\"tbl-wrap\">");
         table.Append(Invariant, $"<table class=\"level-summary\" data-ticker=\"{Escaped(ticker)}\" data-bands=\"{bands.Count}\">");
         table.Append("<caption>Level summary, each band with its members and their dates</caption>");
         table.Append("<thead><tr><th>Band</th><th>Role</th><th>Away</th><th>Strength</th><th>Members</th></tr></thead><tbody>");
 
-        foreach (var band in bands)
+        foreach (var band in bands
+            .OrderBy(band => band.Role == LevelSeries.Resistance ? 0 : 1)
+            .ThenByDescending(band => band.LowEdge)
+            .ThenByDescending(band => band.HighEdge))
         {
+            if (!closeDrawn && band.Role != LevelSeries.Resistance)
+            {
+                table.Append(CloseRow(close!.Value));
+                closeDrawn = true;
+            }
+
             // A band of one price is written as one price rather than as a range
             // from a number to itself, because the second reads as a mistake.
             var edges = band.LowEdge == band.HighEdge
@@ -1407,13 +1428,15 @@ public sealed class MarkRenderer : IComponent
 
             table.Append(Invariant, $"<td>{Escaped(edges)}</td><td>{Escaped(role)}</td>");
             table.Append(Invariant, $"<td class=\"away\" data-away=\"{(band.AwayInTypicalDays is { } value ? value.ToString(Invariant) : "none")}\">{Escaped(away)}</td>");
-            table.Append(Invariant, $"<td>{band.Strength}</td><td>");
+            // The strength with a bar of a fixed length a point beside it, so two bands
+            // compare at a glance and two names' tables compare the same way.
+            table.Append(Invariant, $"<td class=\"strength\" data-strength=\"{band.Strength}\"><span class=\"str-bar\" style=\"width:{band.Strength * StrengthBarPerPoint}px\" aria-hidden=\"true\"></span>{band.Strength}</td><td>");
 
-            // The members one disclosure down, under a line saying how many and over which
-            // sessions, since a band can rest on dozens of them.
+            // The members one disclosure down, under a line saying what the evidence
+            // is, since a band can rest on a dozen pieces of it.
             if (band.Members.Count > 0)
             {
-                table.Append(Invariant, $"<details><summary>{band.Members.Count} member(s), {band.Members.Min(member => member.Date):yyyy-MM-dd} to {band.Members.Max(member => member.Date):yyyy-MM-dd}</summary>");
+                table.Append(Invariant, $"<details><summary>{Escaped(EvidenceLine(band.Members))}</summary>");
             }
 
             table.Append("<ul>");
@@ -1421,10 +1444,15 @@ public sealed class MarkRenderer : IComponent
             foreach (var member in band.Members)
             {
                 table.Append(Invariant, $"<li class=\"member\" data-kind=\"{Escaped(member.Kind)}\" data-date=\"{member.Date:yyyy-MM-dd}\" data-price=\"{member.Price.ToString(Invariant)}\">");
-                table.Append(Invariant, $"{Escaped(member.Kind)} at {Price(member.Price)} on {member.Date:yyyy-MM-dd}</li>");
+                table.Append(Invariant, $"{Escaped(MemberLine(member))}</li>");
             }
 
             table.Append(band.Members.Count > 0 ? "</ul></details></td></tr>" : "</ul></td></tr>");
+        }
+
+        if (!closeDrawn)
+        {
+            table.Append(CloseRow(close!.Value));
         }
 
         table.Append("</tbody>");
@@ -1448,9 +1476,102 @@ public sealed class MarkRenderer : IComponent
         }
 
         table.Append("</table></div>");
+        table.Append(Invariant, $"<p class=\"level-key\" data-recent=\"{LevelSeries.RecentSessions}\"><b>Strength.</b> One point for each piece of evidence in a band: each swing, each visit the price paid it, and each average, retracement and volume shelf inside it. One more where any of it came in the last {LevelSeries.RecentSessions} sessions, one where a retracement and a swing agree, and one where a heavy volume shelf sits in it. The bar beside each number is one step a point.</p>");
 
         return table.ToString();
     }
+
+    // The length a point of strength adds to the bar beside it, in pixels.
+    const int StrengthBarPerPoint = 3;
+
+    // The close, drawn as a row between the resistance bands above it and the
+    // support bands below it.
+    static string CloseRow(decimal close) =>
+        string.Create(CultureInfo.InvariantCulture, $"<tr class=\"close-row\" data-close=\"{close}\"><td>{Price(close)}</td><td colspan=\"4\">the close</td></tr>");
+
+    // What a band's evidence is, in one line. The turns first, being the swings
+    // and the visits the price paid it, counted by kind with the first and last
+    // dates, or the one date where they are the same; then the averages, the
+    // retracements and the shelves by kind, which carry no date of their own
+    // worth stating because each is recomputed every night.
+    // see: A member's date is the session its evidence occurred on, and a figure recomputed nightly has none of its own
+    internal static string EvidenceLine(IReadOnlyList<SummaryMember> members)
+    {
+        var turns = members.Where(member => member.Kind is "swing high" or "swing low" or "touch").ToArray();
+        var parts = new List<string>();
+
+        if (turns.Length > 0)
+        {
+            var kinds = new[] { ("swing high", "swing highs"), ("swing low", "swing lows"), ("touch", "touches") }
+                .Select(kind => (Count: turns.Count(member => member.Kind == kind.Item1), One: kind.Item1, Many: kind.Item2))
+                .Where(kind => kind.Count > 0)
+                .Select(kind => string.Create(CultureInfo.InvariantCulture, $"{kind.Count} {(kind.Count == 1 ? kind.One : kind.Many)}"));
+            var first = turns.Min(member => member.Date);
+            var last = turns.Max(member => member.Date);
+            var when = first == last
+                ? FormattableString.Invariant($"on {first:yyyy-MM-dd}")
+                : FormattableString.Invariant($"first {first:yyyy-MM-dd}, last {last:yyyy-MM-dd}");
+            var times = turns.Length switch
+            {
+                1 => "once",
+                2 => "twice",
+                _ => string.Create(CultureInfo.InvariantCulture, $"{turns.Length} times"),
+            };
+
+            parts.Add($"turned the price {times}: {string.Join(", ", kinds)}; {when}");
+        }
+
+        var averages = members
+            .Where(member => member.Kind.StartsWith("sma", StringComparison.Ordinal))
+            .Select(member => "the " + AverageName(member.Kind))
+            .Distinct(StringComparer.Ordinal);
+        var retracements = members
+            .Where(member => member.Kind.StartsWith("retracement ", StringComparison.Ordinal))
+            .Select(member => member.Kind["retracement ".Length..] + "%")
+            .ToArray();
+        var others = averages.ToList();
+
+        if (retracements.Length > 0)
+        {
+            others.Add(retracements.Length == 1
+                ? $"the {retracements[0]} retracement"
+                : $"the {Joined(retracements)} retracements");
+        }
+
+        if (members.Any(member => member.Kind == "shelf"))
+        {
+            others.Add("a heavy volume shelf");
+        }
+
+        if (others.Count > 0)
+        {
+            parts.Add((turns.Length > 0 ? "also " : string.Empty) + Joined(others));
+        }
+
+        return string.Join("; ", parts);
+    }
+
+    // One member as the disclosure lists it: a swing or a visit at its price on
+    // its session, a retracement at its price with the session the move it is
+    // drawn across ended on, and an average or a shelf by kind at its price alone.
+    internal static string MemberLine(SummaryMember member) => member.Kind switch
+    {
+        "swing high" or "swing low" or "touch" => FormattableString.Invariant($"{member.Kind} at {Price(member.Price)} on {member.Date:yyyy-MM-dd}"),
+        "shelf" => $"a heavy volume shelf at {Price(member.Price)}",
+        _ when member.Kind.StartsWith("sma", StringComparison.Ordinal) => $"the {AverageName(member.Kind)} at {Price(member.Price)}",
+        _ when member.Kind.StartsWith("retracement ", StringComparison.Ordinal) =>
+            FormattableString.Invariant($"the {member.Kind["retracement ".Length..]}% retracement at {Price(member.Price)}, of the move that ended {member.Date:yyyy-MM-dd}"),
+        _ => FormattableString.Invariant($"{member.Kind} at {Price(member.Price)} on {member.Date:yyyy-MM-dd}"),
+    };
+
+    // A list read aloud: one item, two joined by "and", or more with commas and a
+    // final "and".
+    static string Joined(IReadOnlyList<string> items) => items.Count switch
+    {
+        0 => string.Empty,
+        1 => items[0],
+        _ => string.Join(", ", items.Take(items.Count - 1)) + " and " + items[^1],
+    };
 
     public string LevelChart(
         string ticker,
@@ -1735,7 +1856,7 @@ public sealed class MarkRenderer : IComponent
 
                 for (var index = 0; index < bars.Count; index++)
                 {
-                    if (bars[index].SessionDate == markers[mark])
+                    if (bars[index].SessionDate == markers[mark].Session)
                     {
                         at = index;
                     }
@@ -1748,8 +1869,12 @@ public sealed class MarkRenderer : IComponent
 
                 var y = Math.Max(10, At(axis, PlotValue(bars[at].High)) - 14);
 
-                svg.Append(Invariant, $"<g class=\"move-mark\" data-session=\"{markers[mark]:yyyy-MM-dd}\"><circle class=\"m-mark\" cx=\"{Number(Centre(at))}\" cy=\"{Number(y)}\" r=\"9\"/>");
-                svg.Append(Invariant, $"<text class=\"m-mark-t\" x=\"{Number(Centre(at))}\" y=\"{Number(y + 4)}\" text-anchor=\"middle\">{mark + 1}</text></g>");
+                // Wrapped in a link to its own row and carrying what that row says, so a
+                // circle answers what it is where it is drawn and reaches the rest.
+                svg.Append(Invariant, $"<a href=\"{Escaped(markers[mark].Href)}\"><g class=\"move-mark\" data-session=\"{markers[mark].Session:yyyy-MM-dd}\">");
+                svg.Append(Invariant, $"<title>{Escaped(markers[mark].Says)}</title>");
+                svg.Append(Invariant, $"<circle class=\"m-mark\" cx=\"{Number(Centre(at))}\" cy=\"{Number(y)}\" r=\"9\"/>");
+                svg.Append(Invariant, $"<text class=\"m-mark-t\" x=\"{Number(Centre(at))}\" y=\"{Number(y + 4)}\" text-anchor=\"middle\">{mark + 1}</text></g></a>");
             }
         }
 
@@ -4194,7 +4319,7 @@ public sealed class MarkRenderer : IComponent
         // months, where most of the numbered moves are.
         table.Append(Invariant, $"<figure class=\"twelve-months\" data-sessions=\"{year.Count}\">");
         table.Append("<div class=\"fig\">");
-        table.Append(LevelChart(ticker, year, [], [], new ChartFrame(Markers: [.. moves.Select(move => move.SessionDate)])));
+        table.Append(LevelChart(ticker, year, [], [], new ChartFrame(Markers: [.. moves.Select(move => new ChartMarker(move.SessionDate, Says(move), "#" + RowId(ticker, move)))])));
         table.Append("</div>");
         table.Append(Invariant, $"<figcaption>the twelve months to {(year.Count > 0 ? year[^1].SessionDate.ToString("yyyy-MM-dd", Invariant) : "no stored session")}</figcaption>");
         table.Append("</figure>");
@@ -4221,7 +4346,7 @@ public sealed class MarkRenderer : IComponent
 
         foreach (var move in moves)
         {
-            table.Append(Invariant, $"<tr data-session-date=\"{move.SessionDate:yyyy-MM-dd}\" data-sessions=\"{move.Sessions}\" ");
+            table.Append(Invariant, $"<tr id=\"{RowId(ticker, move)}\" data-session-date=\"{move.SessionDate:yyyy-MM-dd}\" data-sessions=\"{move.Sessions}\" ");
             table.Append(Invariant, $"data-change-pct=\"{Number(move.ChangePct)}\" data-rank=\"{move.Rank}\">");
             table.Append(Invariant, $"<td>{move.SessionDate:yyyy-MM-dd}</td>");
             table.Append(Invariant, $"<td>{(move.Sessions == 1 ? "one session" : $"{move.Sessions} sessions")}</td>");
@@ -4254,6 +4379,18 @@ public sealed class MarkRenderer : IComponent
 
         return table.ToString();
     }
+
+    // Where a move's row sits, which its circle on the picture links to. The ticker is in it
+    // because an exported report holds one name and the app draws one at a time, and a
+    // bare rank would collide the day a page carries two of these tables.
+    static string RowId(string ticker, MoveCell move) =>
+        Formatted($"move-{Escaped(ticker)}-{move.Rank}");
+
+    // What a move's circle says when a reader asks it, in the words its own row uses.
+    static string Says(MoveCell move) =>
+        Formatted($"{move.Rank}: {(move.ChangePct < 0 ? "down" : "up")} {Number(Math.Abs(move.ChangePct))}% over ") +
+        (move.Sessions == 1 ? "one session" : Formatted($"{move.Sessions} sessions")) +
+        ", ending " + move.SessionDate.ToString("yyyy-MM-dd", Invariant);
 
     // A move's group beside it: the median move of the name's group over the same sessions,
     // named as an industry or a sector with how many members it was taken over, and a group

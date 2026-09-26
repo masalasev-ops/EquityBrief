@@ -289,11 +289,13 @@ public partial class ReadSurface
         var name = FiredNamesOn(store, night)[0];
 
         // Two bands spelled so that their text order is not their price order, which is the
-        // shape 48 of the index's 505 names carried on the night this was found.
+        // shape 48 of the index's 505 names carried on the night this was found. Both sit below
+        // the name's close, so both are support, as the role rule makes any band whose low edge
+        // is below the close.
         store.Execute(
             "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) " +
             $"VALUES ('{name}', '{night}', '87.64', '88.12', 'support', 0, 1, 1, '[]'), " +
-            $"('{name}', '{night}', '117.34', '118.02', 'resistance', 0, 1, 1, '[]');");
+            $"('{name}', '{night}', '117.34', '118.02', 'support', 0, 1, 1, '[]');");
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
@@ -310,11 +312,11 @@ public partial class ReadSurface
 
         Assert.True(listed.Length >= 3, $"The table lists {listed.Length} band(s), too few to be out of order.");
 
-        // In price order, top to bottom.
-        Assert.Equal([.. listed.OrderBy(Stored)], listed);
+        // In price order, the highest at the top.
+        Assert.Equal([.. listed.OrderByDescending(Stored)], listed);
 
-        // And the order the store would have given, which is not this one, so the assertion
-        // above is not one the defect would also have passed.
-        Assert.NotEqual([.. listed.OrderBy(edge => edge, StringComparer.Ordinal)], listed);
+        // And the order the store's text would have given, which is not this one, so the
+        // assertion above is not one the defect would also have passed.
+        Assert.NotEqual([.. listed.OrderByDescending(edge => edge, StringComparer.Ordinal)], listed);
     }
 }

@@ -15,7 +15,7 @@ public partial class ReadSurface
     static string GroupCellOf(string page, string session)
     {
         var table = Regex.Match(page, "<table class=\"moves-table\".*?</table>", RegexOptions.Singleline).Value;
-        var cell = Regex.Match(table, $"<tr data-session-date=\"{session}\"[^>]*>.*?(<td class=\"group-median\"[^>]*>[^<]*</td>)", RegexOptions.Singleline);
+        var cell = Regex.Match(table, $"<tr id=\"move-[^\"]+\" data-session-date=\"{session}\"[^>]*>.*?(<td class=\"group-median\"[^>]*>[^<]*</td>)", RegexOptions.Singleline);
 
         Assert.True(cell.Success, $"no group is drawn beside the move ending {session}");
 

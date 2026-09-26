@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-hqdd1kiurmsulc2qbcu3aa",
+  "object": "chat.completion",
+  "created": 1790397402,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The move from 2026-08-17 to 2026-08-24 ended on 2026-08-24 and document D1 gives as the cause of the move that revenue was $1.85 billion, compared with $1.35 billion in the third quarter of 2025 [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 11794,
+    "completion_tokens": 83,
+    "total_tokens": 11877,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

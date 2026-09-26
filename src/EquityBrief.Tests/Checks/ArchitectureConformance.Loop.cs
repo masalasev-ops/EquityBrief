@@ -1273,6 +1273,8 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.16 Watch list", "What the swing filter said of it, what excluded it"),
         CheckReach.Key("15.16 Watch list", "What the swing filter said of it, that no answer is stored for the night"),
         CheckReach.Key("15.16 Watch list", "Take it out"),
+        CheckReach.Key("15.9 Name", "Level evidence"),
+        CheckReach.Key(Scope.LimitsTable, "Band width"),
     ];
 
     // Rows phase 12 took out of the document: 11.9's region stating each reason's share against its
@@ -1296,7 +1298,8 @@ public partial class ArchitectureConformance
     // 12.7's near misses read as four parts where the plan counted three, and the filter history 12.6's
     // correction built on the operator's ruling of 2026-09-25, a component with its catalogue and matrix rows,
     // and the watch list page 5.8's correction built on the operator's ruling of the same day, its four rows
-    // as the sixteen parts they state.
+    // as the sixteen parts they state, and the level summary's evidence and the band width 3.4's correction
+    // built on the operator's rulings of 2026-09-26.
     static readonly string[] PhaseTwelveBeyondThePrediction =
     [
         CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
@@ -1324,6 +1327,8 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.16 Watch list", "What the swing filter said of it, what excluded it"),
         CheckReach.Key("15.16 Watch list", "What the swing filter said of it, that no answer is stored for the night"),
         CheckReach.Key("15.16 Watch list", "Take it out"),
+        CheckReach.Key("15.9 Name", "Level evidence"),
+        CheckReach.Key(Scope.LimitsTable, "Band width"),
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1354,7 +1359,7 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((550, 572), (predicted, actual));
+        Assert.Equal((550, 574), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

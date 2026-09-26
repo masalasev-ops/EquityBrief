@@ -393,7 +393,7 @@ public partial class FixtureExpectations
         Assert.Equal(["gate_result"], expected.GetProperty("tables").EnumerateArray().Select(table => table.GetString()!));
         Assert.Equal(0.5, expected.GetProperty("settings").GetProperty("breadthFloor").GetDouble());
         Assert.Equal(
-            ["the 2026-09-03 bands", "the 2026-09-03 trend states", "the 2026-09-03 plans of AAPL and NFLX"],
+            ["the 2026-09-03 bands", "the 2026-09-03 trend states"],
             expected.GetProperty("readFromTheStore").EnumerateArray().Select(one => one.GetString()!));
 
         using var store = await WithTwoNights();

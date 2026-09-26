@@ -74,9 +74,11 @@ public partial class FixtureExpectations
             [.. chosen.Gates.Select(gate => (gate.Gate, gate.Passed))]);
 
         // Figure 11.3: the counts replay every session of the stored year; the latest at least twenty sessions
-        // before the night at which a member's swing plan passed the trade gate and resolves on the closes the
-        // store holds after it, so the figure draws a plan a swing trade would take and the path it took, the
-        // member passing the most gates among equals and then the first by ticker.
+        // before the night at which a member stood at a setup, passing the setup gate, and its swing plan
+        // resolves on the closes the store holds after it, so the figure draws a setup's plan and the path it
+        // took, the member passing the most gates among equals and then the first by ticker. The setup gate
+        // rather than the trade gate, because the figure shows how a setup is scored on closes, and the
+        // fixture's year holds no plan past the trade gate far enough before its night to resolve.
         var replayed = new List<(DateOnly Session, GateResult Result)>();
         var twentyBefore = Query(store, $"SELECT DISTINCT session_date FROM bar WHERE session_date <= '{night}' ORDER BY session_date DESC LIMIT 1 OFFSET 20;").Single();
         var cutoff = DateOnly.ParseExact(twentyBefore, "yyyy-MM-dd", CultureInfo.InvariantCulture);
@@ -89,7 +91,7 @@ public partial class FixtureExpectations
                 if (setting == WorkedSetting)
                 {
                     replayed.AddRange(results
-                        .Where(result => result.SwingTrade is { Entry: not null, Stop: not null, Target: not null } && result.Gates.Single(gate => gate.Name == SwingGates.Trade).Passed)
+                        .Where(result => result.SwingTrade is { Entry: not null, Stop: not null, Target: not null } && result.Gates.Single(gate => gate.Name == SwingGates.Setup).Passed)
                         .Select(result => (session, result)));
                 }
             });

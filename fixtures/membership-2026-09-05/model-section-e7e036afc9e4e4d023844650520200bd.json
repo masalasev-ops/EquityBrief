@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-t4pivsizz5ys9nyuatbqj",
+  "object": "chat.completion",
+  "created": 1790397384,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The move from 2026-08-17 to 2026-08-24 was down 13.980341 per cent because the document reports that GAAP net income was $397 million, or $2.30 per share, compared with $191 million, or $1.10 per share, in the third quarter of 2025 [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 11726,
+    "completion_tokens": 97,
+    "total_tokens": 11823,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

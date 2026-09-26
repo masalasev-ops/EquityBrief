@@ -77,7 +77,7 @@ public sealed class RuleVersionScorer : IComponent
     // see: The ladder rules' code version pins every source a live ladder rule or its replay runs through
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "9c5b1776d336";
+    public const string CodeVersion = "fd934631fb3b";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
@@ -727,7 +727,7 @@ public sealed class RuleVersionScorer : IComponent
                     $"'{version.Version}' of '{version.Rule}' replays a merge distance of {multiple} typical moves, which no price can hold; close it."));
             }
 
-            bands = LevelSeries.For(inputs.Window, inputs.Candidates, inputs.Close, distance, inputs.AsOf);
+            bands = LevelSeries.For(inputs.Window, inputs.Candidates, inputs.Close, distance, inputs.TypicalMove, inputs.AsOf);
         }
 
         var rules = new LadderRuleSet(

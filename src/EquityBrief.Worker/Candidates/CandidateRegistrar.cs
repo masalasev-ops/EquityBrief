@@ -345,6 +345,102 @@ public sealed class CandidateRegistrar : IComponent
         return new RegistrationOutcome(Registered, null, detail);
     }
 
+    // Every standing candidate whose evaluator the code no longer carries at the version it was
+    // registered with, retired on the evidence given and registered again unchanged at the version the
+    // code carries now, all at one instant or none. Unchanged because nothing about the candidate was
+    // decided again: its name, rule, test and parameters are the row that stood, and only the pin of the
+    // code it runs through moved. At one instant for the reason a family registers at one, since each
+    // candidate's level is divided across the candidates the first night evaluated beside it. Refused
+    // where no standing candidate has moved, and where one's evaluator is no longer carried at all,
+    // since that one is a retirement and not a registration again.
+    // see: A candidate whose evaluator a code change moved is registered again unchanged, every one at one instant
+    public async Task<RegistrationOutcome> RegisterMovedAgainAsync(string evidence, string runId, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        async Task<RegistrationOutcome> RefuseAsync(string said)
+        {
+            await transaction.RollbackAsync(cancellation);
+            await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation);
+
+            return new RegistrationOutcome(Refused, null, said);
+        }
+
+        var rows = await RowsAsync(connection, cancellation);
+        var standing = CandidateFamily.Standing(rows, startedAt);
+
+        if (standing.FirstOrDefault(row => CandidateEvaluators.Find(row.Evaluator) is null) is { } gone)
+        {
+            return await RefuseAsync(
+                $"'{gone.Candidate}' runs on '{gone.Evaluator}', which the code no longer carries, so it cannot be registered again " +
+                "and none was written. Retire it with its evidence, then run this again.");
+        }
+
+        var moved = standing
+            .Where(row => !string.Equals(CandidateEvaluators.Find(row.Evaluator)!.Version, row.EvaluatorVersion, StringComparison.Ordinal))
+            .ToArray();
+
+        if (moved.Length == 0)
+        {
+            return await RefuseAsync("no standing candidate's evaluator has moved, so nothing needs registering again and none was written.");
+        }
+
+        var taken = rows.ToList();
+
+        foreach (var row in moved)
+        {
+            if (RetirementRefusal(taken, row.Candidate, evidence, startedAt, ShortlistSeries.Reasons) is { } refusal)
+            {
+                return await RefuseAsync($"'{row.Candidate}' was refused, so none of the {moved.Length} was written: {refusal}");
+            }
+
+            taken.Add(row with { Id = taken.Max(one => one.Id) + 1, Event = Retired, Retires = row.Candidate, RegisteredAt = startedAt, Evidence = evidence });
+        }
+
+        foreach (var row in moved)
+        {
+            if ((Unstated(row.Rule, row.Test) ?? Refusal(taken, row.Candidate, row.Evaluator, CandidateEvaluator.Read(row.Parameters), startedAt)) is { } refusal)
+            {
+                return await RefuseAsync($"'{row.Candidate}' was refused, so none of the {moved.Length} was written: {refusal}");
+            }
+
+            taken.Add(row with
+            {
+                Id = taken.Max(one => one.Id) + 1,
+                EvaluatorVersion = CandidateEvaluators.Find(row.Evaluator)!.Version,
+                Event = Registered,
+                Retires = null,
+                RegisteredAt = startedAt,
+                Evidence = null,
+            });
+        }
+
+        var appended = rows;
+
+        foreach (var row in taken.Skip(rows.Count))
+        {
+            var id = await AppendAsync(
+                connection, appended, row.Candidate, row.Rule, row.Test, row.Evaluator, row.Parameters,
+                row.EvaluatorVersion, row.Event, row.Retires, startedAt, row.Evidence, cancellation);
+
+            appended = [.. appended, row with { Id = id }];
+        }
+
+        var detail = FormattableString.Invariant($"retired and registered again {moved.Length} at one instant, each unchanged: ")
+            + string.Join("; ", moved.Select(row => $"'{row.Candidate}' on {row.Evaluator} from {row.EvaluatorVersion} to {CandidateEvaluators.Find(row.Evaluator)!.Version}"))
+            + $", on the evidence: {evidence}";
+
+        await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation);
+        await transaction.CommitAsync(cancellation);
+
+        return new RegistrationOutcome(Registered, null, detail);
+    }
+
     public async Task<RegistrationOutcome> RetireAsync(
         string candidate,
         string evidence,

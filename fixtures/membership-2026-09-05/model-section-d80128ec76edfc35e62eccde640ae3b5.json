@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-fbg1tpkkjj4tyf4hrwaiyl",
+  "object": "chat.completion",
+  "created": 1790397203,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock closed at 76.77, trading within a session high of 77.73 and a low of 75.92 with volume of 33.87 million shares. Technical indicators show the price is below the 20-day average of 79.33 and the 50-day average of 75.50, while remaining above the 200-day average of 86.70, indicating a range-bound trend state with immediate resistance at 78.35 and support at 75.50. The most recent earnings reaction occurred on session 2026-07-17 following a report date of 2026-07-16, where the actual earnings per share of 0.8 beat the estimate of 0.79 by 1.27 percent, resulting in a price move of -7.26 percent. Historical data reveals that the latest quarter reported on session 2026-04-17 after a report date of 2026-04-16 saw actual earnings of 0.8 versus an estimate of 0.79, though the price moved down by 7.26 percent despite a positive surprise. The company belongs to the Communication Services sector and has experienced significant volatility with a largest move of 27.72 percent measured from session 2026-02-23 on 2026-03-02.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1600,
+    "completion_tokens": 326,
+    "total_tokens": 1926,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}
