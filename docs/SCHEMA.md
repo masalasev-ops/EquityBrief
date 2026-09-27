@@ -671,7 +671,7 @@ Grain: one row per ticker per night.
 
 Primary key: `ticker`, `session_date`.
 
-Kept forever: Past picks draws the state a trade carried on its listing night, and the order a night's list was drawn in is read from that night's rows. A night reads only the quarters fetched on the nights before it, so a night run again later never reads a quarter from its future. The reader's delete removes one night's set, the night it is writing, so a night run again replaces its own rows whole and a member no longer in the index keeps none on it (see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone).
+Kept forever: Past picks draws the state a trade carried on its listing night, and the order a night's list was drawn in is read from that night's rows. A night reads only the quarters fetched on the nights before it, so a night run again later never reads a quarter from its future. The reader's delete removes one night's set, the night it is writing, so a night run again replaces its own rows whole and a member no longer in the index keeps none on it (see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone).
 
 ### news_pulse
 Grain: one row per ticker per date.

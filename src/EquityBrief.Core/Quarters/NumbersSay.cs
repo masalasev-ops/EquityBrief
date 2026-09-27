@@ -10,7 +10,7 @@ namespace EquityBrief.Core.Quarters;
 // page draws matches one of them. Each describes the business and none advises buying or selling. The
 // heading says the state is read from sales and operating margin alone, so a reader seeing improving
 // beside earnings that ran ahead of cash sees why both can be true.
-// see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+// see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
 // see: Code owns every number
 public static partial class NumbersSay
 {

@@ -4,7 +4,7 @@ namespace EquityBrief.Core.Providers;
 // reported quarters add: the operating income the margin is read from and the operating cash
 // flow earnings are read against. Money, so decimal here and TEXT in storage, and nullable
 // because the provider files a quarter with some of them missing rather than filing zero.
-// see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+// see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
 public sealed record QuarterFigures(
     decimal? Revenue,
     decimal? GrossProfit,

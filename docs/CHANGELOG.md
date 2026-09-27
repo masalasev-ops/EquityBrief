@@ -8538,3 +8538,43 @@ Was:
 Now:
 > | `nightly-cost` | ... a step past its own limit starts no ask and an ask that would take the night past the day's allowance is not made; and the `quarters` verb runs the same step by hand, a second run the same day asking none the first asked and the rest of the fill, each run under the prefix the run page reads as by hand |
 Why: the check asserts the verb the operator ran on 2026-09-27.
+
+### 2026-09-27 - ARCHITECTURE.html - section 17's state rule, met tolerance and earnings quality are settled, the quality's cut points at 1.0 and 2.0
+Authorised by: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
+Was:
+> | Business state | ... no fundamentals yet where no quarter is stored, read from the trajectory alone, proposed (owes: The fundamental state rule settled from the members' measured split) | the word says something only where sales and margin agree. The record, the quality and the valuation are drawn beside it and never move it, which the heading says, and the split across the index is measured once every member holds quarters or is marked absent, when the rule is settled | ... |
+> | Met tolerance | ... and one further than that beat or missed it, proposed (owes: The fundamental state rule settled from the members' measured split) | ... | ... |
+> | Earnings quality | ... each carrying both: below 0.8 earnings ran ahead of cash, 0.8 to 1.2 in line, above 1.2 more than backed by cash, and a total at or below nought named a loss and not compared, proposed (owes: The fundamental state rule settled from the members' measured split) | a year's ordinary timing gaps between cash and profit, working capital, tax and deferred revenue, read as in line, and only a gap of a fifth or more either way is named. No study sets the width, and the cut points are settled from the measured spread across the index | ... |
+> and eleven citations of "Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone".
+Now:
+> | Business state | ... read from the trajectory alone (see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone) | ... which the heading says. Over the 503 members' first fill the rule read improving 172, steady 317 and deteriorating 14, and either signal with the other not opposite read almost the same, so the operator kept both | ... |
+> | Met tolerance | ... and one further than that beat or missed it (see: ...) | ... | ... |
+> | Earnings quality | ... below 1.0 earnings ran ahead of cash, 1.0 to 2.0 in line, above 2.0 more than backed by cash, and a total at or below nought named a loss and not compared (see: ...) | operating cash flow runs above net income for most companies, depreciation being added back, and over the 477 members compared at the first fill the ratio's median was 1.51, so cut points at 0.8 and 1.2 put 350 in the upper band. At 1.0 and 2.0 the bands read 59, 284 and 134, ... and the operator moved them there | ... |
+> and the eleven citations name the decision that superseded it.
+Why: the operator ruled on 2026-09-27, once every member held quarters, from the members' measured split: both signals for the state, a cent or 1% for a met estimate, and 1.0 and 2.0 for the quality's cut points.
+
+### 2026-09-27 - SCHEMA.md - the fundamental readings cite the decision that settled their rules
+Authorised by: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
+Was:
+> ... (see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone)
+Now:
+> ... (see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone)
+Why: the decision the citation named was superseded by the operator's ruling of 2026-09-27.
+
+### 2026-09-27 - BUILD_PLAN.md - the fundamental state rule is discharged by the operator's ruling
+Authorised by: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
+Was:
+> | **The fundamental state rule settled from the members' measured split** | 12.2 | operating | 0 members still to be asked for their quarters for the first time, ... |
+> and three citations of "Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone".
+Now:
+> | **The fundamental state rule settled from the members' measured split** | 12.2 | 12.2, discharged | fired on 2026-09-27, when the fill taken by hand left no member to ask, and discharged by the operator's ruling the same day: the state keeps both signals, a met estimate stays within a cent or 1% and the quality's cut points move to 1.0 and 2.0. Its trigger was 0 members still to be asked for their quarters for the first time, ... |
+> and the three citations name the decision that superseded it.
+Why: the row said it is discharged by the operator's ruling whichever way it goes, and the ruling came on 2026-09-27.
+
+### 2026-09-27 - RUNBOOK.md - the measured split was put to the operator and ruled
+Authorised by: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
+Was:
+> ... When it says none is still to be asked, the measured split of the states, of beats, meets and misses and of the earnings quality bands is read off the store and put to you, and the candidate that skips a deteriorating business is registered only after you have ruled on it (owes: The fundamental state rule settled from the members' measured split). ...
+Now:
+> ... When it first said none was still to be asked, on 2026-09-27, the measured split ... was read off the store and put to you, and you ruled it: both signals for the state, a cent or 1% for a met estimate, and 1.0 and 2.0 for the quality's cut points, which the candidate that skips a deteriorating business freezes when it is registered (see: ...). ...
+Why: the ruling of 2026-09-27 answered what the paragraph said would be put to the operator.

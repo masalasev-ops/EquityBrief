@@ -17,7 +17,7 @@ public sealed record FundamentalReadOutcome(int Members, int RowsWritten, IReadO
 // A row for every member, one holding no quarter among them, because absent is never a failure: a
 // member with no fundamentals or too few quarters is judged and listed as any other, and its row says
 // which it is. It makes no request and calls no model: everything it reads is already in the store.
-// see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+// see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
 // see: The nightly run is arithmetic only
 //
 // The arithmetic is in `QuarterReadings`. What is here is reading, writing and the run log.

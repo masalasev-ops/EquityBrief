@@ -968,7 +968,7 @@ public sealed class SinglePageApp : IComponent
     }
 
     // What the name page is for, what it does not do, and its words, which open the page.
-    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+    // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
     // see: The plan places a position and never sizes one
     static string Intro(string ticker, string company) =>
         $"<section class=\"intro\" aria-label=\"About this page\"><p class=\"intro-p\">This page finds the prices {Escaped(company)} has repeatedly stopped falling or rising at, and sets out what to do if it reaches one of them again. " +

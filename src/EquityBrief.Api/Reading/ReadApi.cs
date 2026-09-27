@@ -417,7 +417,7 @@ public sealed record PickRow(
     string? State = null);
 
 // One member's readings of its reported quarters on a night, as the fundamental reader stored them.
-// see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+// see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
 public sealed record FundamentalReadingRow(
     string Ticker,
     DateOnly SessionDate,
@@ -2656,7 +2656,7 @@ public sealed class ReadApi : IComponent
 
     // Every member's readings of its reported quarters on one night, and none on a night the readings did
     // not run for.
-    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+    // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
     public async Task<IReadOnlyList<FundamentalReadingRow>> FundamentalReadingsAsync(DateOnly on)
     {
         await using var connection = Open();

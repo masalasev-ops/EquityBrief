@@ -444,7 +444,7 @@ public sealed record ListingCell(
     FilterRow? Filter = null,
     // The state the member's reported quarters gave it on the night and what the numbers say, and null
     // on a night that stored no readings.
-    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+    // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
     NumbersRow? Business = null);
 
 // The state a member's reported quarters gave it on a night and the sentences its readings say, which
@@ -5409,7 +5409,7 @@ public sealed class MarkRenderer : IComponent
 
     // The state word a row draws beside the trend word, focusable so the sentences show from the keyboard
     // as from the pointer, and nothing on a night that stored no readings.
-    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+    // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
     static string BusinessWord(NumbersRow? business) =>
         business is null
             ? string.Empty
@@ -5419,7 +5419,7 @@ public sealed class MarkRenderer : IComponent
     // "What the numbers say", the block a name's numbers open with: the heading carrying the state, the
     // quarter the readings were read from, one sentence per reading, and folded beneath them the quarters
     // behind them with the dates each was filed and reported on, then the full numbers table.
-    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+    // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
     public string NumbersSay(NumbersSayView view, string numbers)
     {
         var block = new StringBuilder();
