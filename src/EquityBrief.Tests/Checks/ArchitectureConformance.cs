@@ -1449,7 +1449,9 @@ public partial class ArchitectureConformance
         // history leaves and the numbers' snapshot and the Regenerate Report control arrive.
         // 285 at the 12.2 correction that built the Past picks screen: its three rows as the twenty clauses
         // they state, the name page's region and the eighth mark.
-        Assert.Equal(285, inDocument.Length);
+        // 286 at the 12.5 correction that shares the level across the distinct trials: the shadow region's
+        // count of them and the level each starts at, beside the family's divisor.
+        Assert.Equal(286, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1510,7 +1512,9 @@ public partial class ArchitectureConformance
         // 252 at 5.8's correction: three of the watch list page's rows as the fifteen parts they state.
         // 272 at the 12.2 correction that built the Past picks screen: its three rows as the twenty clauses
         // they state.
-        Assert.Equal(272, checkedElements);
+        // 273 at the 12.5 correction that shares the level across the distinct trials: the shadow region's
+        // count of them and the level each starts at.
+        Assert.Equal(273, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

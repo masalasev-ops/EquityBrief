@@ -28380,3 +28380,113 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    the distinct-trials change, then part 1, then the fill and the measured splits to the operator,
             then part 2 with its remedy; items 2 and 3 on their own schedule after the night of 2026-09-28,
             then items 4, 5 and 7 in the order ruled.
+
+### 12.5 - correction: the level at Holm's first step is 0.05 over the distinct trials read at a look or still running, shared for the life of the system, and the run page draws the count and the level beside the family's divisor, where each window's level was fresh   2026-09-27
+Corrects:   the candidates' level 10.2 built and 12.5's swing family inherited, on the operator's ruling of
+            2026-09-27 on the review due at eight registered candidates and the addendum that keeps Holm's
+            method and changes what it counts, both recorded in the ruling before this entry. The level at
+            the graph's first step was 0.05 over the candidates a window opened with, fresh for each window,
+            and the records region read the names ever registered against the eight at which the rule was
+            revisited, a count the register had passed at sixteen.
+Repaired:   `CandidateFamily.Trial` reads a registration as its evaluator and every number its parameters
+            state, written back in one order, so a version moved or the numbers reordered are one rule and a
+            number moved is another; `CandidateFamily.Trials` counts the distinct rules among the candidates
+            it is handed, each read at its last registration. `HolmGraph.Levels` takes the count and starts
+            every member at the significance over it, refusing a count below one, and passes levels as before.
+            `CandidateRecord.LookNights` dates each look a record has reached by the first night on which its
+            blocks were whole, and `CandidateRecord.For` and `Looks.CrossedAt` read each look at a level of
+            its own, a look whose level fell below what earlier looks spent admitting nothing new. `RunScreen`
+            counts, as of any night, the rules that night evaluated or the register held standing through its
+            day and the rules a look had read by it, a promoted candidate being one a look read; as the page is
+            read, the rules standing and those read. The graph starts at the count as the page is read, and each
+            look is read at the count as of its night, carried by the ratio of the two counts. The shadow region
+            draws beside the family's divisor the count, the level and what the three looks release of it, and
+            says the first look cannot promote where its release sits below the 1 in 256 eight blocks reach;
+            the records region draws the names ever registered and the trials they are.
+Measured:   over the operator's register read immutable at schema 47, 38 rows: 22 registrations under 16 names,
+            15 rules, and 6 trials, none having reached a look and every retirement taken unread. The preview at
+            127.0.0.1:5188, serving this branch over its copy of the store, draws "6 candidate condition(s)
+            registered as this page is read, of at most 8, and the family's divisor is 6" and beside it "6
+            distinct trial(s) counted ... 0.05 over 6, 0.00833, which a candidate's looks release as 0.00019 by
+            the first, 0.00232 by the second and 0.00833 by the last, the first below the 1 in 256 that eight
+            blocks can reach, so it can retire a candidate and never promote one", and the records region "16
+            candidate condition(s) have ever been registered, which are 6 distinct trial(s) counted".
+Guarded:    `TheLiveRegistersThirtyEightRowsAreSixDistinctTrialsDrawnBesideTheDivisor`, over a register
+            written back from the operator's 38 rows: sixteen names, fifteen rules, six trials, the line drawn
+            word for word after the divisor's, a seventh rule lowering every release and the same rule under a
+            new name moving nothing. `ALookKeepsTheBarOfTheCountAsOfTheNightItWasRead`: a candidate alone at its
+            first look crosses at 0.05 and stays crossed when a rule registers the day after, and the same rule
+            registered before the look and evaluated beside it leaves the look at 0.025, not crossed.
+            `TheGraphsFirstStepIsTheSignificanceOverTheDistinctTrialsAndNotOverTheWindow` and
+            `ADistinctTrialIsTheRuleAndNotTheNameOrTheVersion` in `candidate-verdicts`. Reworked to the new
+            budget, each worked by hand: the retirement test, split into a candidate retired after its first
+            look was read, which stays counted, and one retired unread, which leaves the count; the windows'
+            test, renamed `EveryWindowsFirstStepIsTheLevelOverTheDistinctTrialsAndNeverOverTheCandidatesItOpenedWith`,
+            the three retired unread leaving six trials and, read at their looks first, sharing 0.05 over 9 with
+            the six; `ACandidateNoNightHasEvaluatedReadsTheGraphBesideItAtTheLevelOverTheTrials`, where it read
+            the level over the candidates beside it; the lifetime count's test, renamed
+            `TheCountOfDistinctTrialsStandsBesideEveryVerdict`; and the shadow region's own test, which reads
+            the family's divisor and the count beside it. Constructed registers that gave several candidates one
+            rule now give each its own, since one rule is one trial.
+Found:      the pair 8.0 predicted counted the shadow region as the parts its row states, so a part added
+            after the prediction was counted there and again among the rows added since; it counts such a part
+            once now. A verdict note counting "three read" was refused by the check on counts in notes and
+            reworded.
+Written:    section 13.6's first step over the distinct trials and its judgement; 13.8's family; section
+            15.10's shadow row, whose divisor is the family's and which gains the count and the level beside
+            it, the records row and its paragraph; section 17's family rows and a row of its own for the
+            distinct trials; the runbook's registration paragraph; `.claude/rules/checks.md`'s read-surface and
+            candidate-verdicts rows. Each changed line's prior text in `CHANGELOG.md`. The decision "Holm's level
+            passes between the candidates by a graph fixed when they are registered, and every verdict shows
+            the lifetime count" moves to Previously decided, its reasoning kept, superseded by "Holm's level
+            passes between the candidates by a graph fixed when they are registered, and its first step is
+            0.05 over the distinct trials read at a look or still running", which states the count, the bar
+            at each look and how both move when a trial is registered. Its citations in the specs and the code
+            are repointed; the records' two keep the name they were written under.
+Tests:      1456, from 1452: 4 added, none removed, 3 renamed.
+Claims:     605, from 603, the planning pass's prediction: section 15.10's shadow region's count of distinct
+            trials and the level each starts at, and section 17's row for them, both named beside phase 12's
+            other rows beyond its prediction. The shadow region's divisor, renamed the family's, and the
+            records region's count, renamed the distinct trials, add none. The checks' stated counts move with
+            them: section 15's claims from 285 to 286 and the decomposed elements from 272 to 273.
+Pins:       the branch against `main` edits no source in the twelve `RuleVersionScorer.CodeVersionSources`,
+            the sixteen `SwingFilter.CodeVersionSources` or the twenty-one `CandidateEvaluator.EvaluationSources`:
+            the register's readers in `Core`, the run page's projection and the marks. No version moves and
+            nothing is owed before a night.
+Mutated:    the rule, stated before the run: one mutation reversing each mechanism this correction adds, each
+            run filtered to the tests it touches.
+            Predicted:
+            M1 names counted as trials, `CandidateFamily.Trials` counting the candidates rather than their
+            rules: red in `ADistinctTrialIsTheRuleAndNotTheNameOrTheVersion` and in the live register's test.
+            M2 a candidate retired unread counted, the count as the page is read taking every name ever
+            registered: red in the retirement test, the windows' test and the live register's test.
+            M3 the window divided again, the graph starting at the candidates the window opened with rather
+            than the count: red in the windows' test and `ACandidateNoNightHasEvaluatedReadsTheGraphBesideItAtTheLevelOverTheTrials`.
+            M4 an old look read at today's count, every look at the level the graph gives now: red in
+            `ALookKeepsTheBarOfTheCountAsOfTheNightItWasRead`.
+            Not mutated: the look's night found by halving, the refusal of a count below one and the drawing
+            of the first look's clause, each asserted by the tests above.
+            Results: one run for each of the four in a detached worktree at 00530ba, this entry's commit
+            before it was rebased onto the ruling's filled entry, its code the same as 7554de3's, each run
+            filtered to the nine tests this correction adds or reworks, each edit made there and reverted,
+            and the tree read clean after. The whole suite ran green over 7554de3 in the gates, 1456 of
+            1456. M1 turned `ADistinctTrialIsTheRuleAndNotTheNameOrTheVersion` and the live register's test
+            red. M2 turned the retirement test, the windows' test and the live register's test red, and the
+            shadow region's own test and the no-night test as well. M3 turned the windows' test and the
+            no-night test red, and the look's test and the retirement test as well. M4 turned
+            `ALookKeepsTheBarOfTheCountAsOfTheNightItWasRead` red.
+Held:       all four red. M1 and M4 in exactly the tests predicted. M2 in the three predicted and two more:
+            the shadow region's own test reads the count after a retirement taken unread, and the no-night
+            test's three retired unread would be counted. M3 in the two predicted and two more, the look's
+            test and the retirement test, each of whose graphs would start over its own window.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1456 of 1456 tests ran
+            with none failed, migrations 0 to 47 with none pending, schema version 47, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 43 tables, 605 claims, 605 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 615 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1456 of 1456 tests.
+            Both gates ran over the tree carrying this entry, 7554de3, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    part 1, the fundamentals fetched after each report, the four readings, the state and the pages;
+            then the fill and the measured splits to the operator, then part 2 with its remedy; items 2 and 3
+            on their own schedule after the night of 2026-09-28, their remedy leaving the count at six.

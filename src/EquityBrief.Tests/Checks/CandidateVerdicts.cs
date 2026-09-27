@@ -176,14 +176,14 @@ public sealed class CandidateVerdicts
     {
         var significance = ReasonVerdict.Significance;
 
-        // Three candidates, none decided: each holds a third of the level.
+        // Three candidates, none decided, three trials counted: each holds a third of the level.
         var standing = new[] { Member("a", false, false, false), Member("b", false, false, false), Member("c", false, false, false) };
 
-        Assert.All(HolmGraph.Levels(standing, significance), level => Assert.Equal(significance / 3, level.Level, 12));
+        Assert.All(HolmGraph.Levels(standing, significance, 3), level => Assert.Equal(significance / 3, level.Level, 12));
 
         // The first crosses: its share passes in equal parts to the two still standing.
         var promoted = new[] { Member("a", true, false, false), Member("b", false, false, false), Member("c", false, false, false) };
-        var passed = HolmGraph.Levels(promoted, significance).ToDictionary(level => level.Candidate, StringComparer.Ordinal);
+        var passed = HolmGraph.Levels(promoted, significance, 3).ToDictionary(level => level.Candidate, StringComparer.Ordinal);
 
         Assert.Equal(significance / 3 + (significance / 3 / 2), passed["b"].Level, 12);
         Assert.Equal(passed["b"].Level, passed["c"].Level, 12);
@@ -194,11 +194,66 @@ public sealed class CandidateVerdicts
         // And with one retired rather than promoted, its share reaches nobody: the other two hold
         // what they opened with, and the one that crossed passes its share to the one left.
         var retired = new[] { Member("a", true, false, false), Member("b", false, false, false), Member("c", false, true, false) };
-        var kept = HolmGraph.Levels(retired, significance).ToDictionary(level => level.Candidate, StringComparer.Ordinal);
+        var kept = HolmGraph.Levels(retired, significance, 3).ToDictionary(level => level.Candidate, StringComparer.Ordinal);
 
         Assert.Equal(significance / 3 * 2, kept["b"].Level, 12);
         Assert.Equal(significance / 3, kept["c"].Level, 12);
         Assert.False(kept["c"].Crossed);
+    }
+
+    // The level at the graph's first step is the significance over the distinct trials counted and not
+    // over the candidates one window opened with: three standing beside three trials a look has read
+    // start at a sixth of it, and a promotion among the three passes a sixth in equal parts, so the
+    // budget the window holds is the three sixths it was given and never a fresh 0.05.
+    [Fact]
+    public void TheGraphsFirstStepIsTheSignificanceOverTheDistinctTrialsAndNotOverTheWindow()
+    {
+        var significance = ReasonVerdict.Significance;
+        var window = new[] { Member("a", false, false, false), Member("b", false, false, false), Member("c", false, false, false) };
+
+        Assert.All(HolmGraph.Levels(window, significance, 6), level => Assert.Equal(significance / 6, level.Level, 12));
+
+        var promoted = HolmGraph.Levels([Member("a", true, false, false), window[1], window[2]], significance, 6)
+            .ToDictionary(level => level.Candidate, StringComparer.Ordinal);
+
+        Assert.Equal(significance / 6 + (significance / 6 / 2), promoted["b"].Level, 12);
+        Assert.Equal(significance / 2, promoted["b"].Level + promoted["c"].Level, 12);
+
+        // A family with a member counts at least one trial, and none is refused rather than divided by.
+        Assert.Throws<ArgumentOutOfRangeException>(() => HolmGraph.Levels(window, significance, 0));
+    }
+
+    // A rule is the evaluator and every threshold and condition its registration states: registered again
+    // with only its version moved it is the trial it replaces, and with one number moved it is a new one.
+    // Two names carrying one rule are one trial, and a name is read at its last registration.
+    [Fact]
+    public void ADistinctTrialIsTheRuleAndNotTheNameOrTheVersion()
+    {
+        var at = new DateTimeOffset(2026, 9, 25, 10, 39, 49, TimeSpan.Zero);
+
+        RegisterRow Registration(long id, string candidate, string parameters, string version, DateTimeOffset when) =>
+            new(id, candidate, "rule", "test", "swing-filter", parameters, version, CandidateFamily.Registered, null, when, null);
+
+        RegisterRow[] rows =
+        [
+            Registration(1, "live, version 1", "{\"breadthFloor\": 0.5, \"trade\": 1}", "d1936df599", at),
+            Registration(2, "live, version 1", "{\"trade\": 1, \"breadthFloor\": 0.5}", "cbd265d1ed", at.AddDays(1)),
+            Registration(3, "live, version 2", "{\"breadthFloor\": 0.45, \"trade\": 1}", "cbd265d1ed", at.AddDays(1)),
+            Registration(4, "the plan at the nearest bands", "{\"breadthFloor\": 0.45, \"trade\": 1}", "78a5cfe3d0", at.AddDays(2)),
+            Registration(5, "live, version 3", "{\"breadthFloor\": 0.45, \"trade\": 2}", "78a5cfe3d0", at.AddDays(2)),
+        ];
+
+        // The version moved and the order the numbers were written in are not the rule.
+        Assert.Equal(CandidateFamily.Trial(rows[0]), CandidateFamily.Trial(rows[1]));
+        Assert.Equal(1, CandidateFamily.Trials(rows, ["live, version 1"]));
+
+        // One number moved is a new trial, and two names carrying one rule are one.
+        Assert.NotEqual(CandidateFamily.Trial(rows[1]), CandidateFamily.Trial(rows[2]));
+        Assert.Equal(1, CandidateFamily.Trials(rows, ["live, version 2", "the plan at the nearest bands"]));
+        Assert.Equal(3, CandidateFamily.Trials(rows, ["live, version 1", "live, version 2", "the plan at the nearest bands", "live, version 3"]));
+
+        // A name the register holds no registration for counts nothing.
+        Assert.Equal(0, CandidateFamily.Trials(rows, ["never registered"]));
     }
 
     [Fact]

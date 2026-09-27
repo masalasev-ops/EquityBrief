@@ -163,8 +163,13 @@ public partial class ReadSurface
             CheckReach.Key(Scope.LimitsTable, "Frozen measurement windows, threshold"),
 
             CheckReach.Key("15.10 Run", "Shadow candidates, how many candidate conditions are registered"),
-            CheckReach.Key("15.10 Run", "Shadow candidates, the correction divisor that number sets"),
+            CheckReach.Key("15.10 Run", "Shadow candidates, the family's divisor that number sets"),
             CheckReach.Key("15.10 Run", "Shadow candidates, one line saying each candidate's record is withheld until it is promoted"),
+
+            // The 12.5 correction's count of distinct trials and the bar it sets beside the divisor, and the
+            // row section 17 states it in.
+            CheckReach.Key("15.10 Run", "Shadow candidates, the count of distinct trials and the level each starts at beside it"),
+            CheckReach.Key(Scope.LimitsTable, "Distinct trials"),
 
             // 10.2, the candidates' record region, read off the run page: every part its row
             // enumerates, and the power figure section 17 states beside them.
@@ -176,7 +181,7 @@ public partial class ReadSurface
             CheckReach.Key("15.10 Run", "Candidates' records, the smallest excess that look could have detected"),
             CheckReach.Key("15.10 Run", "Candidates' records, the design effect and what a loss cost in multiples of the planned risk"),
             CheckReach.Key("15.10 Run", "Candidates' records, the setups entered and stopped on one session and those stopped out on a session the name reported on"),
-            CheckReach.Key("15.10 Run", "Candidates' records, the step the graph stands at with its level and the count of candidates ever registered"),
+            CheckReach.Key("15.10 Run", "Candidates' records, the step the graph stands at with its level and the count of distinct trials"),
             CheckReach.Key("15.10 Run", "Candidates' records, no name anywhere in it"),
             CheckReach.Key(Scope.LimitsTable, "Power stated at a look"),
             CheckReach.Key(Scope.FailureTable, "The machine slept and the overnight queue did not run"),
@@ -4107,7 +4112,7 @@ public partial class ReadSurface
             RunScreen.FellBack(await api.FellBackAsync(night)),
             RunScreen.Queue(await api.QueueRowsAsync(), night, _ => true),
             RunScreen.Harness(null),
-            RunScreen.Shadow(await api.RegisteredCandidatesAsync(), Utc("2026-09-08T22:00:00Z")),
+            RunScreen.Shadow(await api.RegisteredCandidatesAsync(), await api.CandidateNightsAsync(), await api.CandidateSetupsAsync(), night, Utc("2026-09-08T22:00:00Z")),
             orders: RunScreen.Orders(listings, night));
 
         foreach (var region in new[] { "operational", "reason-records", "shadow-candidates", "tonights-order", "stale-and-failed", "overnight-queue", "harness" })

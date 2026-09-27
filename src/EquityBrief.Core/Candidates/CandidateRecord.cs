@@ -93,12 +93,15 @@ public static class CandidateRecord
     // see: A candidate is retired by a futility guideline at its first two looks or by reaching its last look
     public const int FutilityLooks = 2;
 
-    public static Measured For(IReadOnlyList<CandidateSetup> setups, DateOnly? first, DateOnly night, double level)
+    public static Measured For(IReadOnlyList<CandidateSetup> setups, DateOnly? first, DateOnly night, double level) =>
+        For(setups, first, night, _ => level);
+
+    // The record with each look read at a level of its own, which is the level the count of trials gave
+    // the candidate as of the night that look was read on.
+    // see: Holm's level passes between the candidates by a graph fixed when they are registered, and its first step is 0.05 over the distinct trials read at a look or still running
+    public static Measured For(IReadOnlyList<CandidateSetup> setups, DateOnly? first, DateOnly night, Func<int, double> levelAt)
     {
-        var scored = setups
-            .Where(setup => setup.Outcome is ForwardReturnSeries.Win or ForwardReturnSeries.Loss && setup.Null is not null)
-            .OrderBy(setup => setup.Session)
-            .ToArray();
+        var scored = Scored(setups);
 
         var opened = first ?? (scored.Length == 0 ? night : scored[0].Session);
 
@@ -159,8 +162,12 @@ public static class CandidateRecord
             var over = blocks.Take(Looks.At[look]).ToArray();
             var inside = over.SelectMany(block => block).ToArray();
             var prefix = Take(sums, Looks.At[look]);
-            var spends = Looks.Spent(level, Looks.Fraction(look)) - (look == 0 ? 0 : Looks.Spent(level, Looks.Fraction(look - 1)));
-            var reached = Looks.CrossedAt(prefix, level);
+            var level = levelAt(look);
+
+            // What this look adds to what the looks before it spent, and nothing where a trial added since
+            // lowered the level below what they spent: a level is never taken back.
+            var spends = Math.Max(0, Looks.Spent(level, Looks.Fraction(look)) - (look == 0 ? 0 : Looks.Spent(levelAt(look - 1), Looks.Fraction(look - 1))));
+            var reached = Looks.CrossedAt(prefix, levelAt);
 
             crossedAt ??= reached == look ? look : null;
 
@@ -209,6 +216,63 @@ public static class CandidateRecord
                         : NotCrossed,
         };
     }
+
+    // The night each look a record has reached was read on: the first of the nights given, up to the
+    // last its record runs to, on which every block the look holds was whole, and the last night itself
+    // where the look is whole by it and no night given falls between.
+    //
+    // A trial whose results a look has read is counted for the life of the system from that night, and
+    // the look keeps the level of the count as of it. Blocks turn whole in the order they fall, so a look
+    // is read once the block holding its last setup is whole, and the looks this dates are the ones the
+    // record reads over the same setups to the same night.
+    // see: Holm's level passes between the candidates by a graph fixed when they are registered, and its first step is 0.05 over the distinct trials read at a look or still running
+    public static IReadOnlyList<DateOnly> LookNights(IReadOnlyList<CandidateSetup> setups, DateOnly? first, IReadOnlyList<DateOnly> nights, DateOnly until)
+    {
+        var scored = Scored(setups);
+        var opened = first ?? (scored.Length == 0 ? until : scored[0].Session);
+        var filled = scored.Select(setup => Blocks.Of(opened, setup.Session)).Distinct().Order().ToArray();
+        var ordered = nights.Where(on => on <= until).Distinct().Order().ToArray();
+        var read = new List<DateOnly>();
+
+        foreach (var holds in Looks.At.Where(holds => holds <= filled.Length))
+        {
+            var block = filled[holds - 1];
+
+            if (!Blocks.Complete(opened, block, until))
+            {
+                break;
+            }
+
+            // The first night the block is whole by, found by halving: whole on a night, it is whole on
+            // every night after.
+            var (low, high) = (0, ordered.Length);
+
+            while (low < high)
+            {
+                var middle = (low + high) / 2;
+
+                if (Blocks.Complete(opened, block, ordered[middle]))
+                {
+                    high = middle;
+                }
+                else
+                {
+                    low = middle + 1;
+                }
+            }
+
+            read.Add(low < ordered.Length ? ordered[low] : until);
+        }
+
+        return read;
+    }
+
+    static CandidateSetup[] Scored(IReadOnlyList<CandidateSetup> setups) =>
+    [
+        .. setups
+            .Where(setup => setup.Outcome is ForwardReturnSeries.Win or ForwardReturnSeries.Loss && setup.Null is not null)
+            .OrderBy(setup => setup.Session),
+    ];
 
     // A block's excess: the wins inside it less the bars their own plans and the
     // calibration set for them. It is the quantity whose sign the test flips.

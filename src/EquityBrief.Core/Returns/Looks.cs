@@ -59,7 +59,12 @@ public static class Looks
     // because at sixteen blocks the arrangements are enumerable whole, and a
     // boundary read off the arrangements the record's own blocks allow holds its
     // size whatever the setups inside a block did to each other.
-    public static int? CrossedAt(IReadOnlyList<double> sums, double level)
+    public static int? CrossedAt(IReadOnlyList<double> sums, double level) => CrossedAt(sums, _ => level);
+
+    // The same, each look read at a level of its own: the level a look was read at is the one the count
+    // of trials gave it as of the night it was read, so a look read before a trial was added keeps it, and
+    // a look whose level fell below what earlier looks already spent admits no arrangement at all.
+    public static int? CrossedAt(IReadOnlyList<double> sums, Func<int, double> levelAt)
     {
         var through = Array.IndexOf(LooksAt, sums.Count);
 
@@ -84,7 +89,7 @@ public static class Looks
                 .OrderByDescending(arrangement => statistics[arrangement])
                 .ToArray();
 
-            var spends = Spent(level, Fraction(look));
+            var spends = Spent(levelAt(look), Fraction(look));
             var (accepted, at) = (0, 0);
 
             while (at < order.Length)

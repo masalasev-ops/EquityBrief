@@ -26,6 +26,6 @@ public partial class ReadSurface
         // instant before the page is read, so the divisor is six too.
         Assert.True(region.Success);
         Assert.Equal(("6", "6", "8"), (region.Groups[1].Value, region.Groups[2].Value, region.Groups[3].Value));
-        Assert.Contains("6 candidate condition(s) registered as this page is read, of at most 8, so a candidate's threshold is divided by 6", page, StringComparison.Ordinal);
+        Assert.Contains("6 candidate condition(s) registered as this page is read, of at most 8, and the family's divisor is 6", page, StringComparison.Ordinal);
     }
 }

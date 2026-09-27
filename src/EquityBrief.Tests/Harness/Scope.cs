@@ -1181,9 +1181,15 @@ internal static class Scope
             Verdict.Pass,
             "the count is the candidates standing, read off the region's markup against the register, at nothing registered, at two, and at one after a retirement, so it moves with the register rather than being drawn once, and one night's page read before and after a retirement draws the register as it stands when the page is read",
             ByReadSurface),
-        [CheckReach.Key("15.10 Run", "Shadow candidates, the correction divisor that number sets")] = new Scoped(
+        [CheckReach.Key("15.10 Run", "Shadow candidates, the family's divisor that number sets")] = new Scoped(
             Verdict.Pass,
             "the divisor is the family's own figure and the count the candidates standing, computed apart and asserted equal over the register before anything is registered, at one, at two and at one after a retirement, and a region handed a divisor that is not its count draws each from its own field, so a divisor that stops being the count shows on the page",
+            ByReadSurface),
+        // The 12.5 correction's count of distinct trials beside the divisor, on the operator's ruling of
+        // 2026-09-27 that the level is shared across every trial for the life of the system.
+        [CheckReach.Key("15.10 Run", "Shadow candidates, the count of distinct trials and the level each starts at beside it")] = new Scoped(
+            Verdict.Pass,
+            "over a register written back from the operator's store the region draws six trials beside a divisor of six, the level 0.05 over 6 and what the three looks release of it, 0.00019, 0.00232 and 0.00833, word for word after the divisor's line, with the first look said to be unable to promote; a seventh rule lowers every release and the same rule under a new name moves nothing, a retirement taken unread moves the count down with the divisor, a single trial's region does not say its first look cannot promote, and an empty register draws no trial",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Shadow candidates, one line saying each candidate's record is withheld until it is promoted")] = new Scoped(
             Verdict.Pass,
@@ -1204,6 +1210,11 @@ internal static class Scope
             Verdict.Pass,
             "the divisor is computed over a register holding a retirement, a name retired and registered again and rows after the window, by two routes that state the rule differently, through the reader by the last row naming each candidate and by a query counting the registrations no later row names, at instants taking at least three values, and the check fails where they differ rather than reporting whichever answered; over the same store a set of the names registered less the names retired gives a different answer, so the routes do not share that rule",
             ByRegister),
+        // The 12.5 correction's budget, on the operator's ruling of 2026-09-27.
+        [CheckReach.Key(LimitsTable, "Distinct trials")] = new Scoped(
+            Verdict.Pass,
+            "a rule is read as the evaluator and every number its registration states, so the same numbers in another order or under another version are one trial and one number moved is two, and two names carrying one rule are one; over a register written back from the operator's store's 38 rows the sixteen names are fifteen rules and six trials, the retirements taken unread counted in none; the graph's first step is the significance over the count and not over the window, a promotion passing a sixth in equal parts where six are counted; and a look is read at the count as of its night",
+            ByReadSurface),
         [CheckReach.Key(LimitsTable, "Family size and correction")] = new Scoped(
             Verdict.Pass,
             "the maximum the row states is the bound the registrar refuses at, asserted at the bound and one below it and over a name retired and registered again, which stands once so the ninth candidate is refused; and the divisor counts the candidates standing before the window opened, over hand-worked rows covering a registration after the window, a retirement after it, a name retired and registered again and a registration in the second the window opened, which is read as after it, and over the fixture's derived rows",
@@ -2036,9 +2047,9 @@ internal static class Scope
             Verdict.Pass,
             "both counts are drawn in the reported line, the first over the losses whose fill the store does not place and the second over the losses whose resolving session the calendar dates as a print",
             ByReadSurface),
-        [CheckReach.Key("15.10 Run", "Candidates' records, the step the graph stands at with its level and the count of candidates ever registered")] = new Scoped(
+        [CheckReach.Key("15.10 Run", "Candidates' records, the step the graph stands at with its level and the count of distinct trials")] = new Scoped(
             Verdict.Pass,
-            "the step and the level the graph gives are drawn on the candidate's own entry and the lifetime count on the region, read off the markup over a family of one",
+            "the step and the level the graph gives are drawn on the candidate's own entry and the count of distinct trials on the region, read off the markup over a family of one and over the region handed counts of names and trials apart, each drawn from its own field; the level is 0.05 over the trials over constructed registers worked by hand, a candidate retired after its first look was read staying counted and one retired unread counted in none, three candidates whose first looks were read before six more registered sharing 0.05 over 9 with them, and a look keeping the bar of the count as of its night, crossing at 0.05 alone and not at 0.025 beside a rule evaluated with it",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Candidates' records, no name anywhere in it")] = new Scoped(
             Verdict.Pass,
@@ -2881,7 +2892,8 @@ internal static class Scope
         // was: a part added to the document with no point of its own is a claim
         // nobody decided when it is owed.
         [CheckReach.Key("15.10 Run", "Shadow candidates, how many candidate conditions are registered")] = "8.4",
-        [CheckReach.Key("15.10 Run", "Shadow candidates, the correction divisor that number sets")] = "8.4",
+        [CheckReach.Key("15.10 Run", "Shadow candidates, the family's divisor that number sets")] = "8.4",
+        [CheckReach.Key("15.10 Run", "Shadow candidates, the count of distinct trials and the level each starts at beside it")] = "12.5",
         [CheckReach.Key("15.10 Run", "Shadow candidates, one line saying each candidate's record is withheld until it is promoted")] = "8.4",
         [CheckReach.Key("15.10 Run", "Operational header, what ran")] = "5.6",
         [CheckReach.Key("15.10 Run", "Operational header, the instant each stage started and how long it took")] = "5.6",
@@ -3130,7 +3142,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Candidates' records, the smallest excess that look could have detected")] = "10.2",
         [CheckReach.Key("15.10 Run", "Candidates' records, the design effect and what a loss cost in multiples of the planned risk")] = "10.2",
         [CheckReach.Key("15.10 Run", "Candidates' records, the setups entered and stopped on one session and those stopped out on a session the name reported on")] = "10.2",
-        [CheckReach.Key("15.10 Run", "Candidates' records, the step the graph stands at with its level and the count of candidates ever registered")] = "10.2",
+        [CheckReach.Key("15.10 Run", "Candidates' records, the step the graph stands at with its level and the count of distinct trials")] = "12.5",
         [CheckReach.Key("15.10 Run", "Candidates' records, no name anywhere in it")] = "10.2",
 
     };
@@ -3317,13 +3329,14 @@ internal static class Scope
             "the smallest excess that look could have detected",
             "the design effect and what a loss cost in multiples of the planned risk",
             "the setups entered and stopped on one session and those stopped out on a session the name reported on",
-            "the step the graph stands at with its level and the count of candidates ever registered",
+            "the step the graph stands at with its level and the count of distinct trials",
             "no name anywhere in it",
         ],
         [CheckReach.Key("15.10 Run", "Shadow candidates")] =
         [
             "how many candidate conditions are registered",
-            "the correction divisor that number sets",
+            "the family's divisor that number sets",
+            "the count of distinct trials and the level each starts at beside it",
             "one line saying each candidate's record is withheld until it is promoted",
         ],
         [CheckReach.Key("15.5 The mark vocabulary", "Level chart")] =
@@ -3667,6 +3680,7 @@ internal static class Scope
         ["Trigger arrival window"] = "12.4",
         ["Shape acceptance bound"] = "12.4",
         ["Swing trade plan"] = "12.2",
+        ["Distinct trials"] = "12.5",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

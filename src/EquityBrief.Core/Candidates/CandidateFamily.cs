@@ -35,8 +35,38 @@ public static class CandidateFamily
     // record crossing, which is what the runbook's promotion procedure writes. A candidate leaves
     // the family either way, and the two are opposite: one was shown and one was not, and only the
     // first passes its level to the candidates still standing.
-    // see: Holm's level passes between the candidates by a graph fixed when they are registered, and every verdict shows the lifetime count
+    // see: Holm's level passes between the candidates by a graph fixed when they are registered, and its first step is 0.05 over the distinct trials read at a look or still running
     public const string PromotedBy = "promoted";
+
+    // A rule as the count of trials reads it: the evaluator and every threshold and condition its
+    // registration states, and never the version it reads. A registration after a correction that moved
+    // only the version is the trial it replaces, and one with any number moved is a trial of its own.
+    // see: Holm's level passes between the candidates by a graph fixed when they are registered, and its first step is 0.05 over the distinct trials read at a look or still running
+    public static string Trial(RegisterRow row) =>
+        row.Evaluator + " " + CandidateEvaluator.Write(CandidateEvaluator.Read(row.Parameters));
+
+    // The distinct trials among candidates, each read as the rule its last registration states, so two
+    // names carrying one rule are one trial.
+    //
+    // Which candidates are counted is the caller's: those still running and those a look has read, and
+    // never one retired with no result of its own read, because a rule nobody read cannot have been
+    // chosen on its luck.
+    public static int Trials(IEnumerable<RegisterRow> rows, IEnumerable<string> candidates)
+    {
+        var registrations = rows.Where(row => row.Event == Registered).ToArray();
+
+        return candidates
+            .Distinct(StringComparer.Ordinal)
+            .Select(candidate => registrations
+                .Where(row => string.Equals(row.Candidate, candidate, StringComparison.Ordinal))
+                .OrderBy(row => row.RegisteredAt)
+                .ThenBy(row => row.Id)
+                .LastOrDefault())
+            .OfType<RegisterRow>()
+            .Select(Trial)
+            .Distinct(StringComparer.Ordinal)
+            .Count();
+    }
 
     // The divisor: the candidates standing registered before the window opened.
     //
