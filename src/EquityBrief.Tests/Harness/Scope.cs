@@ -2714,22 +2714,6 @@ internal static class Scope
             Verdict.Pass,
             "the numbers table stands inside the folded part beneath the sentences, and a night that stored no readings draws the numbers with no summary",
             ByReadSurface),
-        [CheckReach.Key("15.10 Run", "Fundamentals, each member the night asked for its reported quarters after the close with why it was asked and the quarter awaited, what came of it with the quarters stored and the weighted calls spent")] = new Scoped(
-            Verdict.Pass,
-            "each ask of the night is drawn with why in words, the quarter awaited, what came of it, its quarters and its weighted calls, read back against a constructed store's asks, and the line totals the weighted calls",
-            ByReadSurface),
-        [CheckReach.Key("15.10 Run", "Fundamentals, every member still waiting for a quarter with the quarter awaited, the nights it was asked on and the next night it is asked")] = new Scoped(
-            Verdict.Pass,
-            "every member whose newest ask stored nothing is drawn with the quarter awaited, the nights asked and the next ask, and one whose newest ask stored is not",
-            ByReadSurface),
-        [CheckReach.Key("15.10 Run", "Fundamentals, the fill, how many members hold quarters and how many are marked absent or still to be asked for the first time")] = new Scoped(
-            Verdict.Pass,
-            "the fill's three counts are read back against counts worked by hand over constructed asks and members",
-            ByReadSurface),
-        [CheckReach.Key("15.10 Run", "Fundamentals, a line saying the candidate that skips a deteriorating business may be registered once every member holds quarters or is marked absent")] = new Scoped(
-            Verdict.Pass,
-            "the line names how many are left while any is, and says the candidate may be registered once none is",
-            ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "Every trade, within a night the order that night's list was drawn in, improving businesses first where it stored readings and the filter's own order where it stored none")] = new Scoped(
             Verdict.Pass,
             "over a night whose readings put the filter's first name deteriorating and its second improving, Past picks draws the second first within that night, and a night that stored none draws the filter's own order",
@@ -2780,11 +2764,11 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(FailureTable, "A member the provider returns no quarter for")] = new Scoped(
             Verdict.Pass,
-            "a member holding no quarter reads no fundamentals yet in its trend cell and on its page, is drawn with the members reading no state rather than left off, and is named waiting on the run page with its next ask, over a constructed store",
+            "a member holding no quarter reads no fundamentals yet in its trend cell and on its page and is drawn with the members reading no state rather than left off, and the quarters step's line in the run page's operational header counts the asks that returned nothing, over a constructed store",
             ByReadSurface),
         [CheckReach.Key(FailureTable, "A member's new quarter is not yet posted when it is asked")] = new Scoped(
             Verdict.Pass,
-            "what the numbers say names the quarter awaited and the quarter read from, and the run page lists the member waiting with the quarter awaited, the nights asked and the next ask, over a constructed store",
+            "what the numbers say names the quarter awaited and the quarter read from, and the quarters step's line in the run page's operational header counts the asks whose quarter was not yet posted, over a constructed store",
             ByReadSurface),
         [CheckReach.Key(FailureTable, "The provider refuses a quarters ask")] = new Scoped(
             Verdict.Pass,
@@ -3161,10 +3145,6 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "What the numbers say, a sentence saying so where a reading is absent or read over too few quarters")] = "12.2",
         [CheckReach.Key("15.9 Name", "What the numbers say, the quarters the readings read with the dates each was filed and reported on")] = "12.2",
         [CheckReach.Key("15.9 Name", "What the numbers say, the full numbers table folded beneath them")] = "12.2",
-        [CheckReach.Key("15.10 Run", "Fundamentals, each member the night asked for its reported quarters after the close with why it was asked and the quarter awaited, what came of it with the quarters stored and the weighted calls spent")] = "12.2",
-        [CheckReach.Key("15.10 Run", "Fundamentals, every member still waiting for a quarter with the quarter awaited, the nights it was asked on and the next night it is asked")] = "12.2",
-        [CheckReach.Key("15.10 Run", "Fundamentals, the fill, how many members hold quarters and how many are marked absent or still to be asked for the first time")] = "12.2",
-        [CheckReach.Key("15.10 Run", "Fundamentals, a line saying the candidate that skips a deteriorating business may be registered once every member holds quarters or is marked absent")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "Every trade, within a night the order that night's list was drawn in, improving businesses first where it stored readings and the filter's own order where it stored none")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "Every trade, the state its reported quarters gave it on the night it was listed, or not read that night")] = "12.2",
         [CheckReach.Key("15.15 Queue", "Which lane would write one")] = "9.4",
@@ -3414,13 +3394,6 @@ internal static class Scope
             "a sentence saying so where a reading is absent or read over too few quarters",
             "the quarters the readings read with the dates each was filed and reported on",
             "the full numbers table folded beneath them",
-        ],
-        [CheckReach.Key("15.10 Run", "Fundamentals")] =
-        [
-            "each member the night asked for its reported quarters after the close with why it was asked and the quarter awaited, what came of it with the quarters stored and the weighted calls spent",
-            "every member still waiting for a quarter with the quarter awaited, the nights it was asked on and the next night it is asked",
-            "the fill, how many members hold quarters and how many are marked absent or still to be asked for the first time",
-            "a line saying the candidate that skips a deteriorating business may be registered once every member holds quarters or is marked absent",
         ],
         // 12.6. An evening before the switch, drawn as it was listed.
         [CheckReach.Key("15.7 Tonight", "An evening before the switch")] =

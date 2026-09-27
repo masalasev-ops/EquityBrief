@@ -268,40 +268,6 @@ public static class RunScreen
             level is { } first && Looks.Spent(first, Looks.Fraction(0)) >= 1d / (1 << Looks.At[0]));
     }
 
-    // The Fundamentals region for a night: the asks made on it, the members still waiting as their newest
-    // ask up to the night left them, with the nights asked and the next ask as that ask recorded them, and
-    // the fill as of the night, a member holding quarters where any of its asks stored one, marked absent
-    // where it was asked and none stored, and left where it was never asked.
-    // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
-    public static FundamentalsView Fundamentals(IReadOnlyList<QuarterAskRow> asks, IReadOnlyList<string> members, DateOnly night)
-    {
-        var upTo = asks.Where(ask => ask.SessionDate <= night).ToArray();
-        var index = members.ToHashSet(StringComparer.Ordinal);
-        var byMember = upTo.GroupBy(ask => ask.Ticker, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.OrderBy(ask => ask.SessionDate).ToArray(), StringComparer.Ordinal);
-
-        var holding = members.Count(member => byMember.TryGetValue(member, out var made) && made.Any(ask => ask.Outcome == "stored"));
-        var absent = members.Count(member => byMember.TryGetValue(member, out var made) && made.All(ask => ask.Outcome != "stored"));
-
-        return new FundamentalsView(
-            night,
-            [
-                .. upTo
-                    .Where(ask => ask.SessionDate == night)
-                    .OrderBy(ask => ask.Ticker, StringComparer.Ordinal)
-                    .Select(ask => new QuarterAskCell(ask.Ticker, ask.Reason, ask.Awaited, ask.Outcome, ask.Quarters, ask.Weighted, ask.Detail)),
-            ],
-            [
-                .. byMember
-                    .Where(entry => index.Contains(entry.Key) && entry.Value[^1].Outcome != "stored")
-                    .OrderBy(entry => entry.Key, StringComparer.Ordinal)
-                    .Select(entry => new WaitingCell(entry.Key, entry.Value[^1].Awaited, entry.Value[^1].Nights, entry.Value[^1].SessionDate, entry.Value[^1].NextAsk)),
-            ],
-            members.Count,
-            holding,
-            absent,
-            members.Count - holding - absent);
-    }
-
     static RegisterRow[] Register(IReadOnlyList<CandidateRow> rows) =>
     [
         .. rows.Select(row => new RegisterRow(

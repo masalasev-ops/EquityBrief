@@ -1325,7 +1325,7 @@ public partial class ArchitectureConformance
     // the twenty clauses they state, the name page's region, the eighth mark and section 18's two rows, and
     // the count of distinct trials a 12.5 correction built on the operator's ruling of the same day, beside
     // the family's divisor and as a row of section 17, and the fundamentals item a 12.2 correction built on
-    // the operator's ruling of the same day, its 39 claims each named in its own list.
+    // the operator's ruling of the same day, its 35 claims each named in its own list.
     static readonly string[] PhaseTwelveBeyondThePrediction =
     [
         CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
@@ -1397,7 +1397,7 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((550, 644), (predicted, actual));
+        Assert.Equal((550, 640), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

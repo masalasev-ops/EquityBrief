@@ -1382,8 +1382,8 @@ public partial class ArchitectureConformance
         // 87 at the 12.2 correction that built the Past picks screen: its three rows, the name page's region
         // and the eighth mark.
         // 89 at the 12.2 correction that reads the reported quarters: what the numbers say on the name page
-        // and the run page's Fundamentals region.
-        Assert.Equal(89, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // and the run page's Fundamentals region. 88 when the operator had that region taken off the run page.
+        Assert.Equal(88, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1454,8 +1454,9 @@ public partial class ArchitectureConformance
         // 286 at the 12.5 correction that shares the level across the distinct trials: the shadow region's
         // count of them and the level each starts at, beside the family's divisor.
         // 300 at the 12.2 correction that reads the reported quarters: the list's three new parts, what the
-        // numbers say as its five, the Fundamentals region as its four and Past picks' two.
-        Assert.Equal(300, inDocument.Length);
+        // numbers say as its five, the Fundamentals region as its four and Past picks' two. 296 when the
+        // operator had the Fundamentals region taken off the run page.
+        Assert.Equal(296, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1519,8 +1520,9 @@ public partial class ArchitectureConformance
         // 273 at the 12.5 correction that shares the level across the distinct trials: the shadow region's
         // count of them and the level each starts at.
         // 287 at the 12.2 correction that reads the reported quarters: the list's three new parts, what the
-        // numbers say as its five, the run page's Fundamentals region as its four and Past picks' two.
-        Assert.Equal(287, checkedElements);
+        // numbers say as its five, the run page's Fundamentals region as its four and Past picks' two. 283
+        // when the operator had the Fundamentals region taken off the run page.
+        Assert.Equal(283, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

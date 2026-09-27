@@ -8578,3 +8578,47 @@ Was:
 Now:
 > ... When it first said none was still to be asked, on 2026-09-27, the measured split ... was read off the store and put to you, and you ruled it: both signals for the state, a cent or 1% for a met estimate, and 1.0 and 2.0 for the quality's cut points, which the candidate that skips a deteriorating business freezes when it is registered (see: ...). ...
 Why: the ruling of 2026-09-27 answered what the paragraph said would be put to the operator.
+
+### 2026-09-27 - ARCHITECTURE.html - the run page draws no Fundamentals region, and what showed there is counted on the quarters step's line
+Authorised by: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+Was:
+> <p><b>Reads:</b> ..., which the stale-and-failed region draws sections from and this list did not name until 6.0, and the quarter asks, which the Fundamentals region draws against the night's members.</p>
+> | Fundamentals | each member the night asked for its reported quarters after the close with why it was asked and the quarter awaited, what came of it with the quarters stored and the weighted calls spent; every member still waiting for a quarter with the quarter awaited, the nights it was asked on and the next night it is asked; the fill, how many members hold quarters and how many are marked absent or still to be asked for the first time; and a line saying the candidate that skips a deteriorating business may be registered once every member holds quarters or is marked absent (see: ...) |
+> | A member the provider returns no quarter for | ... | its state reads no fundamentals yet and what the numbers say says no reported quarter is stored for it; the run page's Fundamentals region names it with what came of its ask, the nights it was asked on and its next ask, and counts it among the members marked absent | ... |
+> | A member's new quarter is not yet posted when it is asked | ... | what the numbers say names the quarter awaited and the quarter the readings were read from; the run page lists the member as waiting with the quarter awaited, the nights it was asked on and its next ask | ... |
+> | The provider refuses a quarters ask | ... | the run page's Fundamentals region names the member as refused, with why | ... |
+Now:
+> <p><b>Reads:</b> ..., which the stale-and-failed region draws sections from and this list did not name until 6.0.</p>
+> and no Fundamentals row in section 15.10;
+> | A member the provider returns no quarter for | ... | its state reads no fundamentals yet and what the numbers say says no reported quarter is stored for it; the quarters step's line in the run page's operational header counts it among the asks that returned nothing | ... |
+> | A member's new quarter is not yet posted when it is asked | ... | what the numbers say names the quarter awaited and the quarter the readings were read from; the quarters step's line in the run page's operational header counts it among the asks whose quarter was not yet posted | ... |
+> | The provider refuses a quarters ask | ... | the quarters step's line in the run page's operational header counts the ask among those refused, and the ask's own row keeps the provider's reason | ... |
+Why: the operator said on 2026-09-27, looking at the region drawing all 503 of the fill's asks, that the section can go.
+
+### 2026-09-27 - BUILD_PLAN.md - the peak reporting night is read on the quarters step's line
+Authorised by: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+Was:
+> ... the run page draws a Fundamentals region, which is where the members' measured split and a peak reporting night are read (owes: ...) (owes: ...).
+> | **The fundamental state rule settled from the members' measured split** | ... Its trigger was 0 members still to be asked ..., read on the run page's Fundamentals region, which 12.2 builds. ... |
+> | **The quarters fetch measured on a peak reporting night** | 12.2 | operating | 40 or more members asked on the first night after their report on one night, read on the run page's Fundamentals region and its operational header, which 12.2 builds. ... |
+Now:
+> ... the run page's operational header counts each night's asks for reported quarters on the step's own line, which is where the fill's end and a peak reporting night are read (owes: ...) (owes: ...).
+> | **The fundamental state rule settled from the members' measured split** | ... read on the quarters step's line in the run page's operational header, which 12.2 builds. ... |
+> | **The quarters fetch measured on a peak reporting night** | 12.2 | operating | 40 or more members asked on the first night after their report on one night, read on the quarters step's line in the run page's operational header, which counts the members reporting, and 12.2 builds. ... |
+Why: the run page's Fundamentals region was taken off the page on the operator's word of 2026-09-27, and the step's own line counts the members reporting.
+
+### 2026-09-27 - RUNBOOK.md - the fill is counted on the quarters step's line
+Authorised by: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+Was:
+> ... The run page's Fundamentals region states each night's asks with why each was made and what came of it, every member still waiting for a quarter with when it is asked next, and the fill as it stands: how many hold quarters, how many are marked absent because the provider returned none, and how many are still to be asked. When it first said none was still to be asked, on 2026-09-27, ...
+Now:
+> ... The quarters step's line in the run page's operational header counts each night's asks by why each was made and what came of it, and the members of the fill still owed. When the fill first owed none, on 2026-09-27, ...
+Why: the region the paragraph described was taken off the run page on the operator's word of 2026-09-27.
+
+### 2026-09-27 - .claude/rules/checks.md - read-surface reads the quarters step's line and no region
+Authorised by: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+Was:
+> | `read-surface` | ... the run page's Fundamentals region draws the night's asks, the members waiting and the fill, read back against counts worked by hand over a constructed store; and Past picks draws ... |
+Now:
+> | `read-surface` | ... the run page draws the quarters step's line in its operational header and no region of the night's asks; and Past picks draws ... |
+Why: the check reaches what the run page draws after the operator had the region taken off it.

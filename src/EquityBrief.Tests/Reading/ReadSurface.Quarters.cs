@@ -5,6 +5,7 @@ using EquityBrief.Core.Quarters;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.Marks;
+using EquityBrief.Worker.Quarters;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -12,7 +13,7 @@ namespace EquityBrief.Tests.Reading;
 // pages over constructed stores: tonight's list drawn state first from the first night whose readings are
 // stored and in the filter's own order before it, the word beside the trend with what the numbers say inside
 // it, the name page's numbers opening with what the numbers say, section 4's patterns held to the renderer's,
-// the run page's Fundamentals region, and Past picks' state and order.
+// the quarters step's line on the run page, and Past picks' state and order.
 // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
 // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
 public partial class ReadSurface
@@ -28,10 +29,6 @@ public partial class ReadSurface
         CheckReach.Key("15.9 Name", "What the numbers say, a sentence saying so where a reading is absent or read over too few quarters"),
         CheckReach.Key("15.9 Name", "What the numbers say, the quarters the readings read with the dates each was filed and reported on"),
         CheckReach.Key("15.9 Name", "What the numbers say, the full numbers table folded beneath them"),
-        CheckReach.Key("15.10 Run", "Fundamentals, each member the night asked for its reported quarters after the close with why it was asked and the quarter awaited, what came of it with the quarters stored and the weighted calls spent"),
-        CheckReach.Key("15.10 Run", "Fundamentals, every member still waiting for a quarter with the quarter awaited, the nights it was asked on and the next night it is asked"),
-        CheckReach.Key("15.10 Run", "Fundamentals, the fill, how many members hold quarters and how many are marked absent or still to be asked for the first time"),
-        CheckReach.Key("15.10 Run", "Fundamentals, a line saying the candidate that skips a deteriorating business may be registered once every member holds quarters or is marked absent"),
         CheckReach.Key("15.17 Past picks", "Every trade, within a night the order that night's list was drawn in, improving businesses first where it stored readings and the filter's own order where it stored none"),
         CheckReach.Key("15.17 Past picks", "Every trade, the state its reported quarters gave it on the night it was listed, or not read that night"),
     ];
@@ -241,63 +238,47 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task TheRunPageDrawsTheNightsAsksTheMembersWaitingAndTheFill()
+    public async Task TheRunPageCountsTheNightsQuarterAsksOnTheStepsLineAndDrawsNoRegionOfThem()
     {
         using var store = ReadingsStore();
 
-        // Worked by hand over the two nights: Q1 filled on the first; Q2 filled on the first and asked on the
-        // second, the night after its report, its quarter not yet posted; Q3 answered with nothing on both;
-        // Q4 filled on the second; Q5 never asked.
-        foreach (var (ticker, session, reason, awaited, outcome, quarters, weighted, nights, detail) in new (string, string, string, string?, string, int, int, int, string?)[]
-        {
-            ("Q1", BeforeTheReadings, "fill", null, "stored", 12, 11, 1, null),
-            ("Q2", BeforeTheReadings, "fill", null, "stored", 12, 11, 1, null),
-            ("Q2", WithTheReadings, "report", "2026-09-30", "not yet posted", 0, 10, 1, "the answer's newest quarter ends 2026-06-30"),
-            ("Q3", BeforeTheReadings, "fill", null, "nothing returned", 0, 10, 1, null),
-            ("Q3", WithTheReadings, "waiting", null, "nothing returned", 0, 10, 2, null),
-            ("Q4", WithTheReadings, "fill", null, "stored", 12, 11, 1, null),
-        })
-        {
-            store.Execute(
-                "INSERT INTO quarter_ask (ticker, session_date, asked_at, reason, awaited, outcome, quarters, weighted, nights, next_ask, detail) VALUES " +
-                $"('{ticker}', '{session}', '{session}T23:45:00.000Z', '{reason}', {Quoted(awaited)}, '{outcome}', {quarters}, {weighted}, {nights}, NULL, {Quoted(detail?.Replace("'", "''", StringComparison.Ordinal))});");
-        }
+        // The night's quarters step as its row holds it: Q2 asked the night after its report and its quarter
+        // not yet posted, Q3 asked again and answered with nothing, Q4 filled, and one member of the fill
+        // still owed. Worked by hand: three asked of three due, one each reporting, waiting and filled, one
+        // each stored, not yet posted and returning nothing, twelve quarters and 31 weighted calls.
+        var outcome = new QuartersOutcome(
+            5,
+            3,
+            [
+                new QuarterAsked("Q2", QuarterFetcher.Report, new DateOnly(2026, 9, 30), QuarterFetcher.NotYetPosted, 0, 10, "the answer's newest quarter ends 2026-06-30"),
+                new QuarterAsked("Q3", QuarterFetcher.Waiting, null, QuarterFetcher.NothingReturned, 0, 10, null, 2),
+                new QuarterAsked("Q4", QuarterFetcher.Fill, null, QuarterFetcher.Stored, 12, 11, null),
+            ],
+            0,
+            0,
+            1,
+            4,
+            31);
+        var line = QuarterFetcher.Detail(outcome);
+
+        Assert.Equal(
+            "3 of 3 member(s) due asked: 1 reporting, 1 waiting, 0 joining, 1 filled; 1 stored, 1 not yet posted, 1 returning nothing, 0 refused; 12 quarter row(s), 31 weighted call(s); 1 member(s) of the fill still owed",
+            line);
+
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES " +
+            $"('night-quarters', '{QuarterFetcher.Stage}', '{WithTheReadings}T23:45:00.000Z', '{WithTheReadings}T23:46:00.000Z', 'ok', 12, 0, 4, '0', '{line}');");
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{WithTheReadings}"));
-        var region = Assert.Single(Blocks(page, "<section class=\"fundamentals\".*?</section>"));
 
-        // The night's three asks, each with why in words, the quarter awaited, what came of it, its quarters
-        // and its weighted calls, and the line totalling them: 10, 10 and 11.
-        Assert.StartsWith($"<section class=\"fundamentals\" data-night=\"{WithTheReadings}\" data-asked=\"3\" data-weighted=\"31\" data-waiting=\"2\" data-members=\"5\" data-holding=\"3\" data-absent=\"1\" data-left=\"1\">", region, StringComparison.Ordinal);
-        Assert.Contains("<p data-asked=\"3\">3 member(s) asked for their quarters on this night, spending 31 weighted call(s).</p>", region, StringComparison.Ordinal);
-        Assert.Contains("<tr data-ticker=\"Q2\" data-reason=\"report\" data-outcome=\"not yet posted\"><td>Q2</td><td>the first night after its report</td><td class=\"num\">2026-09-30</td><td>not yet posted <span class=\"degraded\">the answer's newest quarter ends 2026-06-30</span></td><td class=\"r num\">0</td><td class=\"r num\">10</td></tr>", region, StringComparison.Ordinal);
-        Assert.Contains("<tr data-ticker=\"Q3\" data-reason=\"waiting\" data-outcome=\"nothing returned\"><td>Q3</td><td>its quarter was not yet posted</td><td class=\"num\">any quarter</td><td>nothing returned</td><td class=\"r num\">0</td><td class=\"r num\">10</td></tr>", region, StringComparison.Ordinal);
-        Assert.Contains("<tr data-ticker=\"Q4\" data-reason=\"fill\" data-outcome=\"stored\"><td>Q4</td><td>the fill</td><td class=\"num\">any quarter</td><td>stored</td><td class=\"r num\">12</td><td class=\"r num\">11</td></tr>", region, StringComparison.Ordinal);
-        Assert.DoesNotContain("<tr data-ticker=\"Q1\" data-reason", region, StringComparison.Ordinal);
-
-        // Waiting: the two whose newest ask stored nothing, each with the quarter awaited, the nights asked
-        // and the next night asked; Q1 and Q4, whose newest ask stored, are not.
-        Assert.Contains("<tr data-ticker=\"Q2\"><td>Q2</td><td class=\"num\">2026-09-30</td><td class=\"r num\">1</td><td class=\"num\">2026-10-02</td><td class=\"num\">the next night</td></tr>", region, StringComparison.Ordinal);
-        Assert.Contains("<tr data-ticker=\"Q3\"><td>Q3</td><td class=\"num\">any quarter</td><td class=\"r num\">2</td><td class=\"num\">2026-10-02</td><td class=\"num\">the next night</td></tr>", region, StringComparison.Ordinal);
-        Assert.DoesNotContain("<tr data-ticker=\"Q1\"><td>Q1</td>", region, StringComparison.Ordinal);
-        Assert.DoesNotContain("<tr data-ticker=\"Q4\"><td>Q4</td><td class=\"num\">", region, StringComparison.Ordinal);
-
-        // The fill: Q1, Q2 and Q4 hold quarters, Q3 is marked absent and Q5 is left, so the line names one left.
-        Assert.Contains("The fill: 3 of 5 members hold quarters, 1 marked absent, 1 still to be asked for the first time.", region, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"registration\" data-ready=\"false\">The candidate that skips a deteriorating business may be registered once every member holds quarters or is marked absent: 1 left.</p>", region, StringComparison.Ordinal);
-
-        // Once Q5 is asked, none is left and the line says the candidate may be registered.
-        store.Execute(
-            "INSERT INTO quarter_ask (ticker, session_date, asked_at, reason, awaited, outcome, quarters, weighted, nights, next_ask, detail) VALUES " +
-            $"('Q5', '{WithTheReadings}', '{WithTheReadings}T23:46:00.000Z', 'fill', NULL, 'stored', 12, 11, 1, NULL, NULL);");
-
-        var filled = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{WithTheReadings}")), "<section class=\"fundamentals\".*?</section>"));
-
-        Assert.Contains("data-left=\"0\"", filled, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"registration\" data-ready=\"true\">", filled, StringComparison.Ordinal);
+        // The step's line stands in the operational header, whole, and the page draws no region of the asks.
+        Assert.Contains(line, page, StringComparison.Ordinal);
+        Assert.DoesNotContain("The reported quarters the night asked for", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("class=\"fundamentals\"", page, StringComparison.Ordinal);
+        Assert.DoesNotContain("The fill:", page, StringComparison.Ordinal);
     }
 
     [Fact]
