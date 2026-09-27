@@ -28630,15 +28630,26 @@ Mutated:    the rule, stated before the run: one mutation reversing each mechani
             M10 a night before the first readings drawn state-first, tonight's reader taking the newest night's
             readings whatever night it is asked for: red in tonight's list test.
             Not mutated here: absent members skipped by the candidate, which is part 2's and carried with it.
-            Results: 12QM
-Held:       12QH
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12QT of 12QT tests ran
+            Results: one run for each of the ten in a detached worktree at bf31bbc, this entry's commit,
+            each run filtered to the twenty-one tests this correction adds, each edit made there and
+            reverted, and the tree read clean after. The whole suite ran green over bf31bbc in the gates,
+            1477 of 1477. M1 turned nine red: the state's test, the fixture's four names, the replay's, the
+            facts file's, tonight's list, the name page, Past picks, the queue's and the request's. M2 turned
+            five red: the tolerance's test, the record's, the fixture's four names, the replay's and the
+            state's. M3 turned four red: the quality's test, the fixture's four names, the replay's and the
+            state's. M4 turned the valuation's test red. M5 turned the record's test red. M6 turned tonight's
+            list test red. M7 turned four red: tonight's list test, Past picks', the queue's and the
+            request's. M8 turned the reporting member's schedule test and the absent member's red. M9 turned
+            three red: the tolerance's test, the fixture's four names and the replay's. M10 turned tonight's
+            list test red.
+Held:       all ten red, each in exactly the tests predicted and in no other of the twenty-one.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1477 of 1477 tests ran
             with none failed, migrations 0 to 48 with none pending, schema version 48, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 12QB tables, 12QC claims, 12QP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 12QR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 12QT of 12QT tests.
-            Both gates ran over the tree carrying this entry, 12QSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 44 tables, 644 claims, 644 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 655 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1477 of 1477 tests.
+            Both gates ran over the tree carrying this entry, bf31bbc, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    the fill on the operator's next two nights, each night's asks, weighted calls and time recorded
             in the entry after it; "The fundamental state rule settled from the members' measured split",
