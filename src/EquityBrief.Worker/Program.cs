@@ -36,13 +36,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "shape" => await Shape(args),
     "filter-history" => await FilterHistoryRun(args),
     "history-pull" => await HistoryPullRun(args),
+    "quarters" => await QuartersRun(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. Eleven are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. Twelve are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
         "'research --ticker <TICKER>' writes the sections of one name's research that are not written or have gone " +
@@ -65,7 +66,8 @@ static int NoVerb()
         "'filter-history --from <yyyy-MM-dd> --through <yyyy-MM-dd>' replays the swing filter's results for sessions before its " +
         "first stored night, for the trigger's arrival alone, and " +
         "'history-pull --from <yyyy-MM-dd>' stores the daily bars and earnings prints of every name the index held from that " +
-        "date to tonight apart from the store's own, each row marked by its pull, with '--purge <pull>' removing a pull whole. '--live' " +
+        "date to tonight apart from the store's own, each row marked by its pull, with '--purge <pull>' removing a pull whole, and " +
+        "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -157,6 +159,30 @@ static async Task<int> HistoryPullRun(string[] args)
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
 
     return await EquityBrief.Worker.Bars.HistoryPull.RunAsync(
+        args,
+        () => NightFeeds.Resolve(
+            args.Contains("--live") ? NightFeeds.LiveSource
+                : Argument(args, "--fixture") is not null ? NightFeeds.FixtureSource
+                : configuration[NightFeeds.SourceKey],
+            Argument(args, "--fixture") ?? configuration[NightFeeds.FixtureKey],
+            configuration[EodhdBulkPriceFeed.BaseAddressKey],
+            configuration[ProviderCredentials.ApiKeyName]),
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        Console.Out,
+        Console.Error);
+}
+
+// The quarters step run by hand, outside the night, the fourth carve-out's own asks taken when the
+// operator says rather than waiting for the nights. The verb's work is in `QuarterFetcher`, so a test
+// runs the verb a person runs.
+// see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+static async Task<int> QuartersRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await EquityBrief.Worker.Quarters.QuarterFetcher.RunAsync(
         args,
         () => NightFeeds.Resolve(
             args.Contains("--live") ? NightFeeds.LiveSource

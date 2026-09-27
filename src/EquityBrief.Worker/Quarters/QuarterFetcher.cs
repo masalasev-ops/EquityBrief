@@ -176,6 +176,44 @@ public sealed class QuarterFetcher : IComponent
         this.limit = limit ?? Limit;
     }
 
+    // The run ids the step writes when a person runs it, which the run page reads as run by hand.
+    public const string ByHandPrefix = "quarters-by-hand-";
+
+    // The verb a person runs: `quarters`, the step itself outside the night, over the configured feeds and
+    // store, its asks dated by the session the clock falls on. Run again on the same session it asks no
+    // member that session already asked and takes the next of the fill, so a fill the night spreads over
+    // two nights can be taken in one sitting; each run keeps the step's own limit and the day's allowance.
+    public static async Task<int> RunAsync(
+        string[] args,
+        Func<NightFeeds> feeds,
+        IClock clock,
+        string databaseFile,
+        TextWriter output,
+        TextWriter error)
+    {
+        NightFeeds resolved;
+
+        try
+        {
+            resolved = feeds();
+        }
+        catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
+        {
+            error.WriteLine("quarters: " + refusal.Message);
+
+            return 1;
+        }
+
+        var outcome = await new QuarterFetcher(resolved.Fundamentals, resolved.Historical, () => resolved.WeightedCalls, clock, databaseFile)
+            .RunAsync(
+                VerbArguments.Value(args, "--index") ?? "GSPC",
+                FormattableString.Invariant($"{ByHandPrefix}{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}"));
+
+        output.WriteLine("quarters: " + Detail(outcome));
+
+        return 0;
+    }
+
     public async Task<QuartersOutcome> RunAsync(string indexCode, string runId, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;

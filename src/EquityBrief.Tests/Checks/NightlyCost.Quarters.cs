@@ -263,6 +263,112 @@ public partial class NightlyCost
     }
 
     [Fact]
+    public async Task TheQuartersVerbRunsTheStepByHandAndARunAgainTheSameDayAsksTheNextOfTheFill()
+    {
+        // The verb the operator runs, over feeds the test holds: the first run asks the fill's count by
+        // ticker, a second the same day asks none the first asked and the rest of the fill, a third asks
+        // nothing, and each run's row is under the prefix the run page reads as by hand.
+        var tickers = Enumerable.Range(0, 300).Select(at => FormattableString.Invariant($"M{at:D3}")).ToArray();
+
+        using var store = QuarterMembers(tickers);
+
+        var fundamentals = new PostedFundamentals();
+        var closes = new OneClose();
+
+        foreach (var ticker in tickers)
+        {
+            fundamentals.Post(ticker, new DateOnly(2026, 6, 30));
+        }
+
+        var feeds = EquityBrief.Worker.NightFeeds.FromFixture(FixtureFolder()) with { Fundamentals = fundamentals, Historical = closes };
+
+        async Task<string> ByHand(int minute)
+        {
+            var output = new StringWriter();
+            var error = new StringWriter();
+            var code = await QuarterFetcher.RunAsync(
+                [],
+                () => feeds,
+                FixedClock.At(new DateTimeOffset(2026, 9, 27, 17, minute, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+                store.DatabaseFile,
+                output,
+                error);
+
+            Assert.True(code == 0, error.ToString());
+
+            return output.ToString();
+        }
+
+        IReadOnlyList<string> Asked()
+        {
+            using var connection = store.Open();
+            using var command = connection.CreateCommand();
+
+            command.CommandText = "SELECT ticker || '|' || session_date || '|' || reason FROM quarter_ask ORDER BY ticker;";
+
+            var rows = new List<string>();
+            using var reader = command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                rows.Add(reader.GetString(0));
+            }
+
+            return rows;
+        }
+
+        Assert.StartsWith($"quarters: {QuarterFetcher.FillPerNight} of 300 member(s) due asked", await ByHand(30), StringComparison.Ordinal);
+        Assert.Equal(tickers.Take(QuarterFetcher.FillPerNight).Select(ticker => $"{ticker}|2026-09-27|{QuarterFetcher.Fill}"), Asked());
+
+        Assert.StartsWith("quarters: 40 of 40 member(s) due asked", await ByHand(45), StringComparison.Ordinal);
+        Assert.Equal(tickers.Select(ticker => $"{ticker}|2026-09-27|{QuarterFetcher.Fill}"), Asked());
+        Assert.Equal(300, fundamentals.Requests);
+
+        Assert.StartsWith("quarters: 0 of 0 member(s) due asked", await ByHand(50), StringComparison.Ordinal);
+        Assert.Equal(300, fundamentals.Requests);
+
+        // Every run's row is the step's, under the by-hand prefix the run page leaves out of its nights.
+        using (var connection = store.Open())
+        using (var command = connection.CreateCommand())
+        {
+            command.CommandText = "SELECT run_id, stage FROM run_log ORDER BY rowid;";
+
+            using var reader = command.ExecuteReader();
+            var runs = 0;
+
+            while (reader.Read())
+            {
+                runs++;
+                Assert.StartsWith(QuarterFetcher.ByHandPrefix, reader.GetString(0), StringComparison.Ordinal);
+                Assert.Equal(QuarterFetcher.Stage, reader.GetString(1));
+            }
+
+            Assert.Equal(3, runs);
+        }
+
+        Assert.Contains(QuarterFetcher.ByHandPrefix, EquityBrief.Api.Reading.RunScreen.RunsByHand);
+        Assert.True(EquityBrief.Api.Reading.RunScreen.IsByHand(QuarterFetcher.ByHandPrefix + "20260927T173000.0000000Z"));
+
+        // A source that cannot be resolved is refused by name and writes nothing.
+        var refusedOutput = new StringWriter();
+        var refusedError = new StringWriter();
+        var refused = await QuarterFetcher.RunAsync(
+            [],
+            () => throw new InvalidOperationException("no key is configured"),
+            FixedClock.At(new DateTimeOffset(2026, 9, 27, 18, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+            store.DatabaseFile,
+            refusedOutput,
+            refusedError);
+
+        Assert.Equal(1, refused);
+        Assert.Equal("quarters: no key is configured", refusedError.ToString().Trim());
+        Assert.Equal(300, Asked().Count);
+
+        // The runbook names the verb as a person types it.
+        Assert.Contains("dotnet run --project src/EquityBrief.Worker -- quarters --live", Corpus.Read("docs/RUNBOOK.md"), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task AMemberTheProviderReturnsNoQuarterForIsMarkedAbsentAndAskedOnTheSameSchedule()
     {
         using var store = QuarterMembers("ZZZZ");
