@@ -58,7 +58,8 @@ public sealed class ShapeProposer : IComponent
     // Every row stored under the version.
     const string Rows = @"
         SELECT ticker, session_date, ladder_reward_to_risk, ladder_stop_moves,
-               swing_reward_to_risk, swing_stop_moves, exclusions, gates
+               swing_reward_to_risk, swing_stop_moves, exclusions, gates,
+               clear_reward_to_risk, clear_stop_moves
         FROM gate_result
         WHERE version = $version
         ORDER BY session_date, ticker;
@@ -355,7 +356,9 @@ public sealed class ShapeProposer : IComponent
                 Real(3),
                 Real(4),
                 Real(5),
-                reader.GetString(6) != "[]"));
+                reader.GetString(6) != "[]",
+                Real(8),
+                Real(9)));
         }
 
         return ([.. nights.OrderBy(pair => pair.Key).Select(pair => new StoredNight(pair.Key, pair.Value))], unanswered);

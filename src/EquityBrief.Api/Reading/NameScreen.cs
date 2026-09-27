@@ -1271,7 +1271,15 @@ public static class NameScreen
             row.Exclusions,
             [.. root.GetProperty("notes").EnumerateArray().Select(note => note.GetString()!)],
             row.Passed,
-            row.Rank);
+            row.Rank,
+            ClearStop: row.ClearStop,
+            ClearTarget: row.ClearTarget,
+            ClearRewardToRisk: row.ClearRewardToRisk,
+            ClearStopMoves: row.ClearStopMoves,
+            Input: root.GetProperty("gates").EnumerateArray()
+                .Where(gate => gate.GetProperty("gate").GetString() == EquityBrief.Core.Filter.SwingGates.Trade)
+                .Select(gate => gate.GetProperty("values").TryGetProperty(EquityBrief.Core.Filter.SwingGates.TradeInputValue, out var input) ? input.GetString() : null)
+                .FirstOrDefault());
     }
 
     // A name's swing readings as the page draws them, each as the swing reader stored it.

@@ -19,7 +19,9 @@ public partial class FixtureExpectations
     // a dry-up of 0.8, a close of 102 above the previous high of 101 with no event stored on the session
     // before, and a plan entered at 102 with its stop at 96, 1.5 typical moves below. Their reward to
     // risk and strength are 3 and 0.8, 4 and 0.7, and 3 and 0.9, so worked by hand the order is ZZB,
-    // then ZZC ahead of ZZA on strength. ZZD is in a range and passes no trend gate.
+    // then ZZC ahead of ZZA on strength. ZZD is in a range and passes no trend gate. The support band 95
+    // to 96 beneath is where section 10's plan stops, the setup band's low edge sitting half a typical
+    // move below the entry.
     static TemporaryStore FilterStore()
     {
         var store = new TemporaryStore().Migrated();
@@ -46,7 +48,7 @@ public partial class FixtureExpectations
                 $"('{ticker}', '{FilterNight}', 'atr14', 4, 252), ('{ticker}', '{FilterNight}', 'vol_avg50', 1000, 252);" +
                 $"INSERT INTO ladder (ticker, as_of, trend_state, plan) VALUES ('{ticker}', '{FilterNight}', '{trend}', '{{}}');" +
                 "INSERT INTO level (ticker, as_of, low_edge, high_edge, role, immediate, strength, has_non_average_anchor, members) VALUES " +
-                $"('{ticker}', '{FilterNight}', '100', '104', 'support', 1, 10, 1, '[]'), ('{ticker}', '{FilterNight}', '{target}', '{target}', 'resistance', 1, 5, 1, '[]');" +
+                $"('{ticker}', '{FilterNight}', '95', '96', 'support', 0, 3, 1, '[]'), ('{ticker}', '{FilterNight}', '100', '104', 'support', 1, 10, 1, '[]'), ('{ticker}', '{FilterNight}', '{target}', '{target}', 'resistance', 1, 5, 1, '[]');" +
                 "INSERT INTO listing (ticker, session_date, reasons, fired_count, plan_at_listing, shadow_reasons) " +
                 $"VALUES ('{ticker}', '{FilterNight}', '[]', 0, '{{\"entryLow\":\"102\",\"entryHigh\":\"102\",\"stop\":\"96\",\"firstTradedTarget\":\"{target}\"}}', '[]');" +
                 "INSERT INTO gate_result (ticker, session_date, version, code, market, trend, setup, family, trigger_pass, trigger_event, trade, exclusions, passed, gates) " +

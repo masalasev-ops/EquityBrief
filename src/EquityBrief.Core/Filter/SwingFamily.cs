@@ -22,10 +22,20 @@ public static class SwingFamily
     public static RegisterRow? Standing(IReadOnlyList<RegisterRow> rows, DateTimeOffset at) =>
         CandidateFamily.Standing(rows, at).LastOrDefault(row => IsLive(row.Candidate));
 
-    // The acceptances already taken while a live candidate stood: each one retired the candidate
-    // it replaced, and nothing else retires one.
+    // The words every retirement a shape acceptance writes opens with, and no other retirement does.
+    public const string AcceptanceEvidence = "a shape acceptance opening filter version";
+
+    // The acceptances already taken while a live candidate stood: each retired the candidate it
+    // replaced on evidence opening with the acceptance's words. A live candidate is retired on other
+    // evidence too, registered again where a code change moved its evaluator or retired with its
+    // family by a rule correction, and neither is an acceptance.
+    // see: A rule correction taken before the family's first scored night opens a filter version and registers the family again at one instant, and is no shape acceptance
     public static int AcceptedWhileLive(IReadOnlyList<RegisterRow> rows) =>
-        rows.Count(row => row.Event == CandidateFamily.Retired && row.Retires is { } retired && IsLive(retired));
+        rows.Count(row => row.Event == CandidateFamily.Retired
+            && row.Retires is { } retired
+            && IsLive(retired)
+            && row.Evidence is { } evidence
+            && evidence.StartsWith(AcceptanceEvidence, StringComparison.Ordinal));
 
     // The non-empty blocks the live candidate's clock has run by the night, by the arithmetic every
     // candidate's record is read with, from the first night that evaluated it.

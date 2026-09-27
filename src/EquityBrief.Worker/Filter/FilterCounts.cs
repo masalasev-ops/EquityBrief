@@ -29,8 +29,8 @@ public sealed record SessionCounts(
 
 // The shape counts the operator rules the filter's starting settings from: for each session, the
 // members through each gate in order and what each removed, each gate alone, each gate relaxed with
-// every other held, the trade gate read from the ladder's first tranche and from the swing trade's own
-// plan, and the market gate at two floors. Over the nights the store keeps bands and plans for, those
+// every other held, the trade gate read from the ladder's first tranche, from the swing trade at the
+// nearest bands and from the swing trade clear of the noise, and the market gate at two floors. Over the nights the store keeps bands and plans for, those
 // are read; over the rest of the stored year they are replayed as of each session.
 //
 // Shape only: it reads no outcome, scores nothing and writes nothing. The store is opened read-only.
@@ -319,13 +319,14 @@ public sealed class FilterCounts : IComponent
         return (sameBands, sameTrend, samePlan);
     }
 
-    // The four settings counted: the market gate at each floor, each with the trade gate read from the
-    // ladder's first tranche and from the swing trade's own plan, every other threshold section 17's.
+    // The six settings counted: the market gate at each floor, each with the trade gate read from the
+    // ladder's first tranche, from the swing trade at the nearest bands and from the swing trade clear of
+    // the noise, every other threshold section 17's.
     public static IReadOnlyDictionary<string, FilterSettings> Settings() =>
         MarketFloors
-            .SelectMany(floor => new[] { TradeInput.Ladder, TradeInput.Swing }.Select(trade => (floor, trade)))
+            .SelectMany(floor => new[] { TradeInput.Ladder, TradeInput.Swing, TradeInput.Clear }.Select(trade => (floor, trade)))
             .ToDictionary(
-                pair => FormattableString.Invariant($"market {pair.floor * 100:0}%, trade from the {(pair.trade == TradeInput.Ladder ? "ladder" : "swing trade")}"),
+                pair => FormattableString.Invariant($"market {pair.floor * 100:0}%, trade from the {(pair.trade switch { TradeInput.Ladder => "ladder", TradeInput.Swing => "swing trade", _ => "swing trade clear of the noise" })}"),
                 pair => FilterSettings.Proposed with { BreadthFloor = pair.floor, Trade = pair.trade },
                 StringComparer.Ordinal);
 

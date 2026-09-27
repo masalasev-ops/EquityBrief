@@ -49,7 +49,7 @@ public sealed record Gate(string Name, bool Passed, string Reason, IReadOnlyDict
 public sealed record TradeReading(decimal? Entry, decimal? Stop, decimal? Target, decimal? RewardToRisk, double? StopInMoves, string? Absent);
 
 // One member's evaluation on one night: the five gates in order, the setup family that passed, whether
-// the pullback's trigger event happened tonight, the trade read both ways, the exclusions that apply
+// the pullback's trigger event happened tonight, the trade read three ways, the exclusions that apply
 // and the notes on the ones that could not be read, and whether it passes the whole filter.
 public sealed record GateResult(
     string Ticker,
@@ -58,12 +58,21 @@ public sealed record GateResult(
     bool? TriggerEvent,
     TradeReading LadderTrade,
     TradeReading SwingTrade,
+    TradeReading ClearTrade,
     IReadOnlyList<string> Exclusions,
     IReadOnlyList<string> Notes,
     double? Strength,
     int? BandStrength)
 {
     public bool Passed => Gates.All(gate => gate.Passed) && Exclusions.Count == 0;
+
+    // The reading of the trade the input names.
+    public TradeReading TradeFor(TradeInput input) => input switch
+    {
+        TradeInput.Ladder => LadderTrade,
+        TradeInput.Swing => SwingTrade,
+        _ => ClearTrade,
+    };
 }
 
 // The swing filter's five gates, its trigger, its exclusions and its order, as pure functions of one
@@ -100,6 +109,10 @@ public static class SwingGates
     // The trigger's value naming the session its event arrived on inside the window, or none, which the
     // shape proposer recounts from: no threshold moves it.
     public const string ArrivedValue = "arrived";
+
+    // The trade gate's value naming the plan it read, as a version's settings name it.
+    public const string TradeInputValue = "input";
+
     public const string SupportRole = "support";
 
     public static GateResult Evaluate(GateInputs inputs, FilterSettings settings)
@@ -115,7 +128,13 @@ public static class SwingGates
         var setupBand = family == Breakout ? breakoutBand : pullbackBand ?? breakoutBand;
         var ladder = LadderTrade(inputs);
         var swing = SwingTrade(inputs, setupBand);
-        var trade = TradeGate(settings, settings.Trade == TradeInput.Ladder ? ladder : swing);
+        var clear = ClearTrade(inputs, setupBand);
+        var trade = TradeGate(settings, settings.Trade switch
+        {
+            TradeInput.Ladder => ladder,
+            TradeInput.Swing => swing,
+            _ => clear,
+        });
 
         var (exclusions, notes) = Excluded(inputs, settings);
 
@@ -126,6 +145,7 @@ public static class SwingGates
             triggerEvent,
             ladder,
             swing,
+            clear,
             exclusions,
             notes,
             inputs.Strength,
@@ -392,8 +412,66 @@ public static class SwingGates
             plan.RewardToRisk is null ? plan.Absent ?? "the plan's arithmetic computes no reward to risk" : null);
     }
 
-    // The swing trade's own plan: the entry at tonight's close, the stop at the setup band's low edge,
-    // and the target at the lowest low edge of a band above the close.
+    // Section 10's two distances in typical daily moves: a stop closer than one below the entry is inside
+    // the noise, and so is a band closer than two above it.
+    // see: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
+    public const double ClearStopMoves = 1;
+
+    public const double ClearTargetMoves = 2;
+
+    // The swing trade clear of the noise, section 10's plan: the entry at tonight's close, the stop at the
+    // setup band's low edge, or at the low edge of the next support band beneath it where the setup
+    // band's is less than a typical move below the entry, and the target at the lowest low edge of a band
+    // two typical moves or more above the entry. The band beneath is the next support band whatever
+    // anchors it, as a tranche's is.
+    static TradeReading ClearTrade(GateInputs inputs, FilterBand? setupBand)
+    {
+        if (inputs.Close is not { } close)
+        {
+            return new TradeReading(null, null, null, null, null, "no close is stored for the night");
+        }
+
+        if (setupBand is null)
+        {
+            return new TradeReading(close, null, null, null, null, "no setup band to set a stop at");
+        }
+
+        if (inputs.TypicalMove is not { } move || move <= 0)
+        {
+            return new TradeReading(close, null, null, null, null, "no typical move to place the stop and the target by");
+        }
+
+        var stop = Statistic.FromPrice(close - setupBand.LowEdge) / move < ClearStopMoves
+            ? inputs.Bands
+                .Where(band => band.Role == SupportRole && band.LowEdge < setupBand.LowEdge)
+                .MaxBy(band => band.LowEdge)?.LowEdge
+            : setupBand.LowEdge;
+
+        if (stop is not { } placed)
+        {
+            return new TradeReading(close, null, null, null, null, "the setup band's low edge is less than a typical move below the entry and no support band sits beneath it to set a stop at");
+        }
+
+        var target = inputs.Bands
+            .Where(band => band.LowEdge > close && Statistic.FromPrice(band.LowEdge - close) / move >= ClearTargetMoves)
+            .MinBy(band => band.LowEdge)?.LowEdge;
+
+        if (target is not { } above)
+        {
+            return new TradeReading(close, placed, null, null, Moves(close, placed, move), "no band sits two typical moves or more above the close to set a target at");
+        }
+
+        return new TradeReading(
+            close,
+            placed,
+            above,
+            Math.Round((above - close) / (close - placed), PriceForm.Places, MidpointRounding.AwayFromZero),
+            Moves(close, placed, move),
+            null);
+    }
+
+    // The swing trade at the nearest bands: the entry at tonight's close, the stop at the setup band's
+    // low edge, and the target at the lowest low edge of a band above the close.
     static TradeReading SwingTrade(GateInputs inputs, FilterBand? setupBand)
     {
         if (inputs.Close is not { } close)
@@ -438,7 +516,7 @@ public static class SwingGates
     static Gate TradeGate(FilterSettings settings, TradeReading trade)
     {
         var values = Values(
-            ("input", settings.Trade == TradeInput.Ladder ? "ladder" : "swing"),
+            (TradeInputValue, FilterSettings.Word(settings.Trade)),
             ("reward to risk", trade.RewardToRisk is { } ratio ? ratio.ToString(CultureInfo.InvariantCulture) : "none"),
             ("stop in typical moves", Figure(trade.StopInMoves)));
 
@@ -501,7 +579,7 @@ public static class SwingGates
     [
         .. results
             .Where(result => result.Passed)
-            .OrderByDescending(result => (settings.Trade == TradeInput.Ladder ? result.LadderTrade : result.SwingTrade).RewardToRisk)
+            .OrderByDescending(result => result.TradeFor(settings.Trade).RewardToRisk)
             .ThenByDescending(result => result.Strength)
             .ThenByDescending(result => result.BandStrength)
             .ThenBy(result => result.Ticker, StringComparer.Ordinal),

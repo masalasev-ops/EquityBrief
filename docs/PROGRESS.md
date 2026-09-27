@@ -27824,3 +27824,121 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             the figures the entry closing this batch records.
 Carried:    items 2 and 3 as one change after the night of 2026-09-28, with the test the operator named;
             items 4, 5 and 7 in the order ruled.
+
+### 12.2 - correction: the trade gate reads section 10's plan for the swing trade, the plan at the nearest bands becomes the variant in the reward to risk variant's place, and the shape command's rule correction registers the family again at one instant   2026-09-26
+Corrects:   the trade gate 12.2 built and the family 12.5 registered, which read the swing trade at the
+            nearest bands, whose stops the pairs measured put a median 0.69 typical moves below the entry,
+            inside the noise by section 10's own rule, where the report's plan for the same name stops by
+            that rule; on item 1 of the operator's ruling of 2026-09-26, the 12.2 ruling of the six pairs, a
+            rule correction taken before the family's first scored night and no shape acceptance.
+Repaired:   `SwingGates` reads a third plan, section 10's for the swing trade: entered at the close, stopped
+            at the setup band's low edge, or at the low edge of the next support band beneath it whatever
+            anchors it where the setup band's is less than `ClearStopMoves`, 1, typical move below, the step
+            taken once as the pair was measured, and targeted at the lowest low edge of a band
+            `ClearTargetMoves`, 2, typical moves or more above; each distance read as a statistic against the
+            typical move, as the plan at the nearest bands reads its stop's. `TradeInput` gains `Clear`, a
+            version's settings name it `clear`, and the trade gate and the order read the plan the settings
+            name. `SwingFilterRule` reads the trade parameter as 0, 1 or 2, refusing any other, and its
+            verdict names the plan its trade gate read. `TheSwingFamily` writes the plan at the nearest bands
+            in the reward to risk variant's place and names each variant for the version it was defined
+            against. Migration 47 adds `gate_result`'s `clear_stop`, `clear_target`, `clear_reward_to_risk`
+            and `clear_stop_moves`, which the swing filter and the filter history write; the forward return
+            filler scores that plan on `clear` and `clear-20` as it scores the other on `swing` and
+            `swing-20`. A candidate's setups are read on the horizon its verdict's plan names and the near
+            misses on their version's, a verdict naming none and a version reading another being the plan at
+            the nearest bands as before. The name page's trade table draws the three plans and marks the one
+            the trade gate read, and tonight's gates cell names it in words. The shape command's
+            `--rule-correction --trade <plan> --restarts <blocks> --evidence <text>` closes the open version
+            and opens the next with the plan named and every other setting as it stood, and in the same
+            transaction the registrar retires every standing swing family candidate and registers the six the
+            code writes for the new version, or none; it is refused with nothing changed where no version is
+            open, where the version already reads the plan named, where no live candidate stands, and without
+            the live candidate's non-empty blocks. `SwingFamily.AcceptedWhileLive` counts the retirements whose
+            evidence opens with the acceptance's own words and no other, where every retirement of a live
+            candidate counted and read the registration again of 2026-09-26 as a second acceptance.
+Guarded:    `SectionTensPlanStopsAtTheSetupBandOrTheBandBeneathItAndTargetsTheLowestBandTwoTypicalMovesUp`,
+            worked by hand from a close of 102 on a typical move of 4: the setup band's edge at 98, exactly a
+            move below, is the stop at 4.5; at 98.01 the stop steps to the band beneath, 95 over 90 and
+            unanchored, at 2.5714 and 1.75 moves; with none beneath no stop is placed; the step is taken once,
+            99.5 at 0.625 moves; a band at 110, exactly two moves up, is the target and one at 109.99 is not;
+            the trade gate reads it where the settings name it and the order follows its reward to risk.
+            `EachPlanARowCarriesIsScoredOnItsOwnHorizonsAndARowWithoutTheSecondScoresOnlyTheFirst`: one row's
+            two plans resolving on different sessions, a row written before the second plan and one whose
+            second has no target scoring the first alone, and each plan's break-even and risk.
+            `ARuleCorrectionOpensTheNextVersionOnThePlanNamedAndRegistersTheFamilyAgainAtOneInstantAndIsNoAcceptance`
+            over a constructed store, each refusal changing nothing, and
+            `TheBoundCountsTheRetirementsAnAcceptanceWritesAndNoOther`. The family's test reworked under
+            section 10's plan, its member given a support band beneath, with the plan at the nearest bands
+            firing where section 10's has no target and not firing where section 10's reaches past a band
+            inside the noise; the edge half's test reading each candidate's setups on its verdict's plan, a
+            row the variant alone fired on scored on the nearest bands' plan alone; the fixture's gate
+            results, the name page's trade table and tonight's gates cell each holding the third plan.
+Expected:   the fixture's section 10 plans derived outside the repository from the bands, closes and typical
+            moves its gate-results expectation already works from, not read back: on 2026-09-03 KEYS stops at
+            305.42 under a setup band 0.98 moves below its close of 322.62 and targets 366.41 at 2.5459, and
+            MSFT stops at 492.1166, 1.52 moves below, with no band two moves above; on 2026-09-04 AAPL stops
+            at 304.7879 and targets 344.2731 at 1.6008, the band at 334.7013 being 1.93 moves up, KEYS's plan
+            is the plan at the nearest bands', 311.2696 to 366.41 at 2.4592, and MSFT stops at 485.1401 with
+            no target; AAPL on 2026-09-03 and NFLX on both nights have no setup band. Figure 11.2 draws KEYS
+            on 2026-09-04, where the two plans agree, and its test holds that.
+Written:    section 11's trade gate and figure 11.2's key, the glossary's swing plan, section 7's Filter
+            counts, Shape command and Forward return filler rows, section 13's family and setups, section
+            14's filter and forward returns steps, section 15.9's gates, section 16's forward returns and gate
+            results, section 17's new Swing trade plan row with its two distances pinned and its family and
+            two outcome rows, and section 19.1's gate results; `SCHEMA.md`'s four columns and two horizons;
+            `RUNBOOK.md`'s rule correction and the counts' six settings; `.claude/rules/checks.md`'s
+            read-surface row; `BUILD_PLAN.md`'s 12.2 text, its settings row, and the obligation discharged,
+            each with its prior text in `CHANGELOG.md`. Three decisions: the trade gate reads
+            section 10's plan, a row carries both plans, and a rule correction is no acceptance, the first
+            two superseding the entries that opened the filter on the swing trade's own plan and scored that
+            plan alone, moved to Previously decided with their reasoning.
+Discharged: (owes: The swing trade's stop ruled apart from how wide its setup band merged), ahead of its
+            trigger: section 10's stop sits at the setup band's low edge only where that is a typical move
+            or more below the entry.
+Tests:      12CT, from 1443: 4 added, none removed.
+Claims:     579, from 578: section 17's Swing trade plan row, named beside phase 12's other rows beyond its
+            prediction.
+Pins:       the branch against `main` at a7007be edits `FilterSettings.cs`, `SwingGates.cs` and
+            `SwingFilter.cs`, each in the sixteen `SwingFilter.CodeVersionSources` and the twenty-one
+            `CandidateEvaluator.EvaluationSources`, and `SwingFilterRule.cs`, that evaluator's own source; none
+            of the twelve `RuleVersionScorer.CodeVersionSources`, so the ladder rules' code version and the
+            eight open windows stand. The swing filter's code version moves from 9c34a8d191d1 to daccb4aabfaf,
+            and every evaluator's version with the shared sources: swing-filter from cbd265d1edf2 to
+            78a5cfe3d020, momentum-index-reading from 0de09fd1038f to 8bc44f1e4855, momentum-histogram-turn
+            from 681c0a59ba70 to 7277843424be, arrived-and-narrow from 95cac39ec42f to 76cd0d95e636,
+            volume-against-the-night from 75271ad2ada6 to 4035f246e6aa and crossed-by-a-margin from
+            45de3ae088d1 to 8cccb2804954. Read off the operator's store, the six swing family candidates
+            registered at 2026-09-26T12:51:26Z are the only ones standing, all on swing-filter, so the
+            correction's one command retires every candidate the move strands.
+Mutated:    the rule, stated before the run: each property this correction lands broken one at a time, each
+            run filtered to the tests named for it.
+            Predicted:
+            M1 the stop stepping beneath at exactly one typical move rather than under it: red in the gates
+            test alone.
+            M2 the target at more than two typical moves rather than two or more: red in the gates test alone.
+            M3 the band beneath taken among the anchored bands alone: red in the gates test alone, 90 read
+            where 95 is the stop.
+            M4 the trade gate reading the plan at the nearest bands where the settings name section 10's: red
+            in the gates test and the family's first test.
+            M5 every candidate's setups read on the plan at the nearest bands whatever its verdict names: red
+            in the edge half's first test, the live filter resolving one setup where it resolved two.
+            M6 the bound counting every retirement of a live candidate: red in the correction's test and the
+            bound's.
+            M7 the plan clear of the noise left unscored: red in the both-plans filler test alone.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12CT of 12CT tests ran
+            with none failed, migrations 0 to 47 with none pending, schema version 47, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 12CB tables, 12CC claims, 12CP PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 12CR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 12CT of 12CT tests.
+            Both gates ran over the tree carrying this entry and the ruling before it, 12CSHA, in a worktree
+            beside the repository, and the operator's store under `data/` was not touched by either.
+Carried:    the remedy, the operator's command or run on their word, after the merge and before the night
+            of 2026-09-28, when no night is running: `shape --rule-correction --trade clear --restarts 0
+            --evidence "..."` as `RUNBOOK.md` states it, which opens version 3 and registers the six for it,
+            migration 47 applied by `tools/migrate.ps1` or the night's own first step. A night run before it
+            marks the swing filter's step failed naming the six stranded candidates, evaluates none of them,
+            and draws its list on version 2's plan at the nearest bands. Whether the guide's
+            illustrative example, an alternative with a higher reward bar, is rewritten for the family as it
+            now stands is the operator's to say.

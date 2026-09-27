@@ -52,11 +52,18 @@ public sealed class ShapeCommand : IComponent
 
     public const string Refused = "refused";
 
+    public const string Corrected = "corrected";
+
+    // The words every retirement a rule correction writes opens with, which the bound on acceptances
+    // does not count.
+    public const string CorrectionEvidence = "a rule correction opening filter version";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--accept", ["--accept"], ["--restarts"], []),
         new("--settings", ["--settings", "--evidence"], ["--trade", "--restarts"], []),
         new("--reject", ["--reject", "--reason"], [], []),
+        new("--rule-correction", ["--trade", "--evidence", "--restarts"], [], ["--rule-correction"]),
     ];
 
     const string OpenVersion = "SELECT version, settings FROM filter_version WHERE closed_at IS NULL ORDER BY opened_at DESC LIMIT 1;";
@@ -83,8 +90,9 @@ public sealed class ShapeCommand : IComponent
     // The live candidate's fired setups and the first night that evaluated it, read as the run page's
     // record region reads every candidate's, so the blocks the command holds an acceptance to are the
     // blocks the page draws beside the proposal: a swing family candidate fires on the swing filter's
-    // rows, and its setup is the row's own plan.
-    // see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context
+    // rows, and its setup is the plan its verdict names, the plan at the nearest bands where a verdict
+    // written before any other was stored names none.
+    // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
     const string LiveSetups = @"
         SELECT l.session_date, f.outcome,
                f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings
@@ -97,7 +105,8 @@ public sealed class ShapeCommand : IComponent
                f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings
         FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.candidates') c
         LEFT JOIN forward_return f
-            ON f.ticker = g.ticker AND f.session_date = g.session_date AND f.horizon = $swing
+            ON f.ticker = g.ticker AND f.session_date = g.session_date
+            AND f.horizon = CASE json_extract(c.value, '$.values.plan') WHEN $clearPlan THEN $clear ELSE $swing END
         WHERE json_extract(c.value, '$.fired') = 1 AND json_extract(c.value, '$.candidate') = $candidate
         ORDER BY 1;
     ";
@@ -196,7 +205,92 @@ public sealed class ShapeCommand : IComponent
                 : await RefuseAsync(runId, $"'{Given("--accept")}' is not a proposal's number.");
         }
 
+        if (form.Flag == "--rule-correction")
+        {
+            return await CorrectAsync(Given("--trade")!, Given("--evidence")!, restarts!.Value, runId);
+        }
+
         return await AcceptSettingsAsync(Given("--settings")!, Given("--trade"), Given("--evidence")!, restarts, runId);
+    }
+
+    // A rule correction taken before the family's first scored night: the open version closed and the
+    // next opened with the trade input the ruling names and every other setting as it stood, every
+    // standing swing family candidate retired and the six the code writes for the new version registered,
+    // all at one instant. It states the non-empty blocks the live candidate has run, which it restarts,
+    // or is refused, and it is no acceptance: the bound counts the acceptances of a proposal or of ruled
+    // settings and nothing else.
+    // see: A rule correction taken before the family's first scored night opens a filter version and registers the family again at one instant, and is no shape acceptance
+    public async Task<ShapeOutcome> CorrectAsync(string trade, string evidence, int restarts, string runId, CancellationToken cancellation = default)
+    {
+        await using var connection = await OpenAsync(cancellation);
+
+        if (await OpenVersionAsync(connection, cancellation) is not { } held)
+        {
+            return await RefuseAsync(runId, "no filter version is open, so there is no rule to correct. Nothing was changed.");
+        }
+
+        if (FilterSettings.InputOf(trade) is not { } input)
+        {
+            return await RefuseAsync(runId, $"--trade '{trade}' is not ladder, swing or clear. Nothing was changed.");
+        }
+
+        var settings = held.Settings with { Trade = input };
+
+        if (settings.Write() == held.Settings.Write())
+        {
+            return await RefuseAsync(runId, $"filter version {held.Version} already reads the {trade} plan, so the correction would change nothing. Nothing was changed.");
+        }
+
+        var startedAt = clock.UtcNow;
+        var registrar = new CandidateRegistrar(clock, databaseFile);
+        var live = SwingFamily.Standing(await registrar.RowsAsync(cancellation), startedAt);
+
+        if (live is null)
+        {
+            return await RefuseAsync(runId, "no live filter candidate stands registered, so there is no family to correct. Nothing was changed.");
+        }
+
+        var blocks = await LiveBlocksAsync(connection, live.Candidate, cancellation);
+
+        if (restarts != blocks)
+        {
+            return await RefuseAsync(runId, FormattableString.Invariant($"'{live.Candidate}' has run {blocks} non-empty block(s), and --restarts {restarts} states another count. Nothing was changed."));
+        }
+
+        var next = FormattableString.Invariant($"{await CountAsync(connection, cancellation) + 1}");
+
+        async Task Write(SqliteConnection writing, SqliteTransaction transaction, CancellationToken token)
+        {
+            await ExecuteAsync(writing, transaction, CloseVersion, token, ("$at", Stamp(startedAt)));
+            await ExecuteAsync(
+                writing,
+                transaction,
+                OpenNext,
+                token,
+                ("$version", next),
+                ("$settings", settings.Write()),
+                ("$at", Stamp(startedAt)),
+                ("$evidence", evidence));
+        }
+
+        var corrected = await registrar.CorrectTheFamilyAsync(
+            TheSwingFamily.For(next, settings),
+            FormattableString.Invariant($"{CorrectionEvidence} {next}, restarting {blocks} non-empty block(s): {evidence}"),
+            Write,
+            runId,
+            cancellation);
+
+        if (corrected.Outcome == CandidateRegistrar.Refused)
+        {
+            return await RefuseAsync(runId, corrected.Detail + " Nothing was changed.");
+        }
+
+        var said = FormattableString.Invariant(
+            $"filter version {next} opened, closing {held.Version}, its trade gate reading the {trade} plan and every other setting as version {held.Version} held it; {corrected.Detail}; a rule correction and no shape acceptance, restarting {blocks} non-empty block(s)");
+
+        await RecordAsync(connection, null, runId, startedAt, Corrected, 1, said, cancellation);
+
+        return new ShapeOutcome(Corrected, next, said);
     }
 
     // A proposal accepted: its settings opened as the next version, the proposal marked with it.
@@ -356,7 +450,7 @@ public sealed class ShapeCommand : IComponent
         var replaced = await registrar.ReplaceAsync(
             live.Candidate,
             new Registration(SwingFamily.LiveCandidate(next), live.Rule, live.Test, live.Evaluator, parameters),
-            FormattableString.Invariant($"a shape acceptance opening filter version {next}, restarting {blocks} non-empty block(s): {evidence}"),
+            FormattableString.Invariant($"{SwingFamily.AcceptanceEvidence} {next}, restarting {blocks} non-empty block(s): {evidence}"),
             Write,
             runId,
             cancellation);
@@ -412,11 +506,11 @@ public sealed class ShapeCommand : IComponent
             numbers[name] = value;
         }
 
-        var input = trade ?? (settings.Trade == TradeInput.Ladder ? "ladder" : "swing");
+        var input = trade ?? FilterSettings.Word(settings.Trade);
 
-        if (input is not ("ladder" or "swing"))
+        if (FilterSettings.InputOf(input) is null)
         {
-            throw new FormatException($"--trade '{trade}' is neither 'ladder' nor 'swing'.");
+            throw new FormatException($"--trade '{trade}' is not 'ladder', 'swing' or 'clear'.");
         }
 
         var written = numbers.ToDictionary(pair => pair.Key, pair => (object)pair.Value, StringComparer.Ordinal);
@@ -487,6 +581,8 @@ public sealed class ShapeCommand : IComponent
             command.Parameters.AddWithValue("$candidate", candidate);
             command.Parameters.AddWithValue("$horizon", ForwardReturnSeries.Setup);
             command.Parameters.AddWithValue("$swing", ForwardReturnSeries.Swing);
+            command.Parameters.AddWithValue("$clear", ForwardReturnSeries.Clear);
+            command.Parameters.AddWithValue("$clearPlan", FilterSettings.ClearWord);
 
             await using var reader = await command.ExecuteReaderAsync(cancellation);
 

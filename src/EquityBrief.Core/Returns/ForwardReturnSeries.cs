@@ -49,19 +49,24 @@ public static class ForwardReturnSeries
 
     public static readonly string[] Horizons = [FiveSessions, TwentyOneSessions, Setup];
 
-    // A swing filter row's own plan, scored the setup's way from the listing close with no zone: entered
-    // at the close, stopped on a close below the setup band's low edge, won on a close at or above the
-    // nearest resistance band's low edge, over the setup's cap; and the same plan over twenty sessions,
-    // stored as context and read by no verdict.
-    // see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context
+    // A swing filter row's two plans, each scored the setup's way from the listing close with no zone:
+    // entered at the close, stopped on a close below its stop and won on a close at or above its target,
+    // over the setup's cap; and each over twenty sessions, stored as context and read by no verdict. The
+    // swing trade at the nearest bands, stopped at the setup band's low edge and won at the nearest band's
+    // low edge above the close, and the swing trade clear of the noise, section 10's plan.
+    // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
     public const string Swing = "swing";
     public const string SwingTwenty = "swing-20";
+    public const string Clear = "clear";
+    public const string ClearTwenty = "clear-20";
 
     public const int SwingTwentySessions = 20;
 
     public static readonly string[] SwingHorizons = [Swing, SwingTwenty];
 
-    public static int CapOf(string horizon) => horizon == SwingTwenty ? SwingTwentySessions : SetupSessionCap;
+    public static readonly string[] ClearHorizons = [Clear, ClearTwenty];
+
+    public static int CapOf(string horizon) => horizon is SwingTwenty or ClearTwenty ? SwingTwentySessions : SetupSessionCap;
 
     // Section 17's cap: a listed setup resolves when its target is reached, its
     // stop is closed through, or 63 sessions pass.

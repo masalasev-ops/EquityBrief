@@ -1157,7 +1157,7 @@ public partial class ArchitectureConformance
         // fixture's row.
         CheckReach.Key("15.9 Name", "Gates, each of the five gates with whether it passed and why"),
         CheckReach.Key("15.9 Name", "Gates, the setup's family and whether the trigger's event happened"),
-        CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from the swing trade's own plan"),
+        CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked"),
         CheckReach.Key("15.9 Name", "Gates, the exclusions with a key saying how to read it"),
         CheckReach.Key("15.10 Run", "Swing filter funnel, how many members each gate passed in order and how many it removed"),
         CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's two families"),
@@ -1169,7 +1169,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.MatrixTable, "Filter counts"),
         CheckReach.Key(Scope.StoresTable, "Gate results"),
         CheckReach.Key(Scope.StoresTable, "Filter versions"),
-        CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche and from the swing trade's own plan, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it)."),
         CheckReach.Key(Scope.LimitsTable, "Market gate"),
         CheckReach.Key(Scope.LimitsTable, "Strength gate"),
         CheckReach.Key(Scope.LimitsTable, "Pullback depth"),
@@ -1280,6 +1280,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.CatalogueTable, "History pull"),
         CheckReach.Key(Scope.MatrixTable, "History pull"),
         CheckReach.Key(Scope.StoresTable, "Pulled history"),
+        CheckReach.Key(Scope.LimitsTable, "Swing trade plan"),
     ];
 
     // Rows taken out of the document after phase 12's prediction, which counted each: the name page's
@@ -1314,7 +1315,8 @@ public partial class ArchitectureConformance
     // built on the operator's rulings of 2026-09-26, and the numbers' snapshot and Regenerate Report 5.8's
     // correction built on the operator's rulings of the same day, and the history pull 12.2's correction
     // built on the operator's ruling of the same day, a component with its catalogue and matrix rows and its
-    // two tables a store of their own.
+    // two tables a store of their own, and section 17's plan clear of the noise, which a later 12.2
+    // correction built on the operator's ruling of 2026-09-26 that the live trade gate reads it.
     static readonly string[] PhaseTwelveBeyondThePrediction =
     [
         CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
@@ -1349,6 +1351,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.CatalogueTable, "History pull"),
         CheckReach.Key(Scope.MatrixTable, "History pull"),
         CheckReach.Key(Scope.StoresTable, "Pulled history"),
+        CheckReach.Key(Scope.LimitsTable, "Swing trade plan"),
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1381,7 +1384,7 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((550, 578), (predicted, actual));
+        Assert.Equal((550, 579), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

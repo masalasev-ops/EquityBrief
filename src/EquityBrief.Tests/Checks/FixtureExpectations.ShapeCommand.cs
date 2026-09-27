@@ -76,7 +76,7 @@ public partial class FixtureExpectations
             "shape: filter version 1 opened, on the evidence: the operator's ruling on the counts; no live filter candidate is registered, so it restarts nothing" + Environment.NewLine,
             said);
 
-        // Every setting not named stands at section 17's proposed value, and the trade gate reads the swing trade's own plan.
+        // Every setting not named stands at section 17's proposed value, and the trade gate reads the swing trade at the nearest bands.
         Assert.Equal(
             FilterSettings.Proposed with { StrengthFloor = 0.6, RewardToRiskFloor = 1.5, Trade = TradeInput.Swing },
             FilterSettings.Read(Text(store, "SELECT settings FROM filter_version WHERE version = '1' AND closed_at IS NULL;")));
@@ -171,5 +171,102 @@ public partial class FixtureExpectations
             Text(store, "SELECT parameters FROM candidate_register WHERE id = 1;"),
             Text(store, "SELECT parameters FROM candidate_register WHERE id = 3;"));
         Assert.StartsWith("a shape acceptance opening filter version 2, restarting 0 non-empty block(s)", Text(store, "SELECT evidence FROM candidate_register WHERE id = 2;"), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ARuleCorrectionOpensTheNextVersionOnThePlanNamedAndRegistersTheFamilyAgainAtOneInstantAndIsNoAcceptance()
+    {
+        var threeAt = new DateTimeOffset(2026, 9, 6, 22, 0, 0, TimeSpan.Zero);
+        var familyAt = new DateTimeOffset(2026, 9, 7, 22, 0, 0, TimeSpan.Zero);
+        var correctedAt = new DateTimeOffset(2026, 9, 27, 22, 0, 0, TimeSpan.Zero);
+        var nearest = Ruled with { Trade = TradeInput.Swing };
+
+        string[] Correct(string trade, string restarts, string evidence) => ["--rule-correction", "--trade", trade, "--restarts", restarts, "--evidence", evidence];
+
+        // With no version open there is no rule to correct.
+        using (var closed = await FamilyStore(threeAt, versionOpen: false))
+        {
+            var (refused, why) = await ShapeVerb(closed, correctedAt, Correct("clear", "0", "the ruling"));
+
+            Assert.Equal(1, refused);
+            Assert.Contains("no filter version is open, so there is no rule to correct. Nothing was changed.", why, StringComparison.Ordinal);
+        }
+
+        // Version 1 open on the plan at the nearest bands, before the family stands: no family to correct.
+        using var store = await FamilyStore(threeAt, versionOpen: false);
+
+        store.Execute($"INSERT INTO filter_version (version, settings, opened_at, closed_at, evidence) VALUES ('1', '{nearest.Write()}', '2026-09-05T22:00:00Z', NULL, 'the ruling');");
+
+        var (early, earlySaid) = await ShapeVerb(store, threeAt.AddHours(1), Correct("clear", "0", "too early"));
+
+        Assert.Equal(1, early);
+        Assert.Contains("no live filter candidate stands registered, so there is no family to correct", earlySaid, StringComparison.Ordinal);
+
+        Assert.Equal(0, (await RegisterVerbAt(store, familyAt, RegisterVerb.TheFamily)).Code);
+
+        // The plan the version already reads, a word naming no plan, and a count of blocks the live filter
+        // has not run are each refused with nothing changed; the live filter has run none, its first night
+        // not yet stored.
+        var before = ShapeTables(store);
+
+        Assert.Contains("filter version 1 already reads the swing plan", (await ShapeVerb(store, correctedAt.AddMinutes(-4), Correct("swing", "0", "no change"))).Said, StringComparison.Ordinal);
+        Assert.Contains("--trade 'clean' is not ladder, swing or clear", (await ShapeVerb(store, correctedAt.AddMinutes(-3), Correct("clean", "0", "a misspelling"))).Said, StringComparison.Ordinal);
+        Assert.Contains("'the live swing filter, version 1' has run 0 non-empty block(s), and --restarts 1 states another count", (await ShapeVerb(store, correctedAt.AddMinutes(-2), Correct("clear", "1", "a wrong count"))).Said, StringComparison.Ordinal);
+        Assert.Equal(1, (await ShapeVerb(store, correctedAt.AddMinutes(-1), "--rule-correction", "--trade", "clear", "--evidence", "no count")).Code);
+        Assert.Equal(before, ShapeTables(store));
+        Assert.Equal(4, Scalar(store, "SELECT COUNT(*) FROM run_log WHERE stage = 'shape' AND outcome = 'refused' AND started_at >= '2026-09-27T21:56:00Z';"));
+
+        var (corrected, said) = await ShapeVerb(store, correctedAt, Correct("clear", "0", "the operator's ruling of 2026-09-26"));
+
+        Assert.Equal(0, corrected);
+        Assert.StartsWith(
+            "shape: filter version 2 opened, closing 1, its trade gate reading the clear plan and every other setting as version 1 held it; retired 6 and registered 6 at one instant, family of 6 of 8",
+            said,
+            StringComparison.Ordinal);
+
+        // Version 2 is version 1 with the plan moved, opened as version 1 closes.
+        Assert.Equal("[[\"1\",\"2026-09-27T22:00:00Z\"],[\"2\",null]]", Text(store, "SELECT json_group_array(json_array(version, closed_at)) FROM (SELECT * FROM filter_version ORDER BY version);"));
+        Assert.Equal(Ruled, FilterSettings.Read(Text(store, "SELECT settings FROM filter_version WHERE version = '2';")));
+
+        // The six standing retired and the six the code writes for version 2 registered, all at that instant,
+        // each retirement stating what it restarts and that it is a correction.
+        const string At = "2026-09-27T22:00:00Z";
+
+        Assert.Equal(
+            [.. TheSwingFamily.For("1", nearest).Select(one => one.Candidate).Order(StringComparer.Ordinal)],
+            TextRows(store, $"SELECT retires FROM candidate_register WHERE event = 'retired' AND registered_at = '{At}' ORDER BY retires;"));
+        Assert.Equal(
+            [.. TheSwingFamily.For("2", Ruled).Select(one => one.Candidate)],
+            TextRows(store, $"SELECT candidate FROM candidate_register WHERE event = 'registered' AND registered_at = '{At}' ORDER BY id;"));
+        Assert.All(
+            TextRows(store, $"SELECT evidence FROM candidate_register WHERE event = 'retired' AND registered_at = '{At}';"),
+            evidence => Assert.StartsWith("a rule correction opening filter version 2, restarting 0 non-empty block(s): the operator's ruling of 2026-09-26", evidence, StringComparison.Ordinal));
+        Assert.Equal(
+            (2.0, 1.0),
+            (CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{SwingFamily.LiveCandidate("2")}' AND registered_at = '{At}';"))[SwingFilterRule.TradeParameter],
+             CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{TheSwingFamily.Variant(TheSwingFamily.NearestBandsName, "2")}' AND registered_at = '{At}';"))[SwingFilterRule.TradeParameter]));
+
+        // It is no acceptance: the bound counts none after it, so the first acceptance still states nothing,
+        // and that one is counted.
+        async Task<int> Accepted() => SwingFamily.AcceptedWhileLive(await new CandidateRegistrar(FixedClock.At(correctedAt, SessionZones.UnitedStates), store.DatabaseFile).RowsAsync());
+
+        Assert.Equal(0, await Accepted());
+        Assert.Equal(0, (await ShapeVerb(store, correctedAt.AddDays(1), "--settings", "strengthFloor=0.6", "--evidence", "the first live trigger")).Code);
+        Assert.Equal(1, await Accepted());
+        Assert.Equal(1, (await ShapeVerb(store, correctedAt.AddDays(2), "--settings", "strengthFloor=0.65", "--evidence", "a later trigger")).Code);
+    }
+
+    [Fact]
+    public void TheBoundCountsTheRetirementsAnAcceptanceWritesAndNoOther()
+    {
+        var at = new DateTimeOffset(2026, 9, 26, 12, 0, 0, TimeSpan.Zero);
+        RegisterRow Retired(long id, string evidence) =>
+            new(id, SwingFamily.LiveCandidate("2"), "a rule", "a test", SwingFilterRule.EvaluatorName, "{}", "000000000000", CandidateFamily.Retired, SwingFamily.LiveCandidate("2"), at, evidence);
+
+        // Registered again after a code change moved its evaluator, and retired with its family by a rule
+        // correction: neither is an acceptance. Retired by an acceptance: one.
+        Assert.Equal(0, SwingFamily.AcceptedWhileLive([Retired(1, "the 3.4 correction's touches and band width moved every evaluator's version")]));
+        Assert.Equal(0, SwingFamily.AcceptedWhileLive([Retired(1, ShapeCommand.CorrectionEvidence + " 3, restarting 0 non-empty block(s): the ruling")]));
+        Assert.Equal(1, SwingFamily.AcceptedWhileLive([Retired(1, SwingFamily.AcceptanceEvidence + " 2, restarting 0 non-empty block(s): the ruling"), Retired(2, "the 3.4 correction's touches and band width moved every evaluator's version")]));
     }
 }

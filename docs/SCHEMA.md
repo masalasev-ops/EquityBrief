@@ -418,8 +418,8 @@ Grain: one row per index member per night.
 | `trade` | INTEGER | 1 where the trade gate passed on the plan the settings name |
 | `ladder_reward_to_risk` | REAL | the ladder's first tranche's reward to risk as the listing kept it, null where it computes none |
 | `ladder_stop_moves` | REAL | how far that tranche's stop sits below its entry in typical moves |
-| `swing_entry` | TEXT | the swing trade's entry, the night's close |
-| `swing_stop` | TEXT | its stop, the setup band's low edge |
+| `swing_entry` | TEXT | the swing trade's entry, the night's close, which both swing plans enter at |
+| `swing_stop` | TEXT | the swing trade at the nearest bands: its stop, the setup band's low edge |
 | `swing_target` | TEXT | its target, the lowest low edge of a band above the close |
 | `swing_reward_to_risk` | REAL | |
 | `swing_stop_moves` | REAL | |
@@ -430,6 +430,10 @@ Grain: one row per index member per night.
 | `band_strength` | INTEGER | the setup band's strength, the ranking's third key |
 | `gates` | TEXT | JSON: the five gates' answers, each with its reason and values, and the notes on what could not be counted |
 | `shadow` | TEXT | JSON: from 12.5, each swing family candidate standing when the night started, whether it fired with each gate's answer, the market read or not, the exclusions and the session it arrived on, and the candidates the night could not evaluate with why; null on a row written before it or with no family standing |
+| `clear_stop` | TEXT | from migration 47, section 10's plan for the swing trade, entered at `swing_entry`: its stop, the setup band's low edge, or the next support band's beneath it where that is less than a typical move below the close; null where no stop is placed and on a row written before the column (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads) |
+| `clear_target` | TEXT | its target, the lowest low edge of a band two typical moves or more above the close, null where none sits there |
+| `clear_reward_to_risk` | REAL | null where either is |
+| `clear_stop_moves` | REAL | how far its stop sits below the close in typical moves, wherever a stop is placed |
 
 Primary key: `(ticker, session_date)`.
 
@@ -515,7 +519,7 @@ Grain: one row per listing per horizon, and one per swing filter row carrying a 
 |---|---|---|
 | `ticker` | TEXT | |
 | `session_date` | TEXT | the listing's date, which a swing filter row shares |
-| `horizon` | TEXT | `5`, `21` or `setup` for a listing; `swing` or `swing-20` for a swing filter row's own plan, over the setup's cap and over twenty sessions as context (see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context) |
+| `horizon` | TEXT | `5`, `21` or `setup` for a listing; `swing` or `swing-20` for a swing filter row's plan at the nearest bands and `clear` or `clear-20` for its section 10 plan, each over the setup's cap and over twenty sessions as context (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads) |
 | `outcome` | TEXT | `win`, `loss`, `unresolved`, `never entered`, or null while immature. `never entered` is the setup horizon's alone: the price never closed at or below the entry zone's top edge, so there was no purchase to score (see: A setup is scored from its entry, and a target reached before the entry is never a win) |
 | `resolved_on` | TEXT | date: the session a horizon matured or a setup resolved on, the cap's own session for a setup timed out, and null while immature |
 | `return_pct` | REAL | for the two session horizons, the move from the listing's close; for the `setup` horizon, the move from the close the setup was entered at, and null where nothing was entered or the entry and the stop fell on one session (see: A setup is scored from its entry, and a target reached before the entry is never a win) |

@@ -4,7 +4,8 @@ namespace EquityBrief.Core.Filter;
 
 // One member's stored answers on one night, as the shape proposer recounts them: the readings each
 // threshold is compared with, the two band tests and the trigger's arrival inside its window, which no
-// threshold moves, the trade read both ways, and whether an exclusion removed it.
+// threshold moves, the trade read three ways, and whether an exclusion removed it. A row written before
+// the plan clear of the noise was stored carries none of it.
 public sealed record StoredMember(
     string Ticker,
     string? TrendState,
@@ -20,7 +21,9 @@ public sealed record StoredMember(
     double? LadderStopMoves,
     double? SwingRewardToRisk,
     double? SwingStopMoves,
-    bool Excluded);
+    bool Excluded,
+    double? ClearRewardToRisk = null,
+    double? ClearStopMoves = null);
 
 public sealed record StoredNight(DateOnly Session, IReadOnlyList<StoredMember> Members);
 
@@ -88,9 +91,12 @@ public static class ShapeProposals
             var setup = pullback || breakout;
             var trigger = (!pullback && breakout) || member.Arrived == true;
 
-            var (ratio, moves) = settings.Trade == TradeInput.Ladder
-                ? (member.LadderRewardToRisk, member.LadderStopMoves)
-                : (member.SwingRewardToRisk, member.SwingStopMoves);
+            var (ratio, moves) = settings.Trade switch
+            {
+                TradeInput.Ladder => (member.LadderRewardToRisk, member.LadderStopMoves),
+                TradeInput.Swing => (member.SwingRewardToRisk, member.SwingStopMoves),
+                _ => (member.ClearRewardToRisk, member.ClearStopMoves),
+            };
             var trade = ratio is { } rewardToRisk && rewardToRisk >= settings.RewardToRiskFloor
                 && moves is { } stop && stop >= settings.StopLow && stop <= settings.StopHigh;
 

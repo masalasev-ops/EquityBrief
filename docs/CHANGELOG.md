@@ -8047,3 +8047,153 @@ Was:
 Now:
 > A name the provider does not answer, and a session one name misses where at least half the names spanning it hold it, are each named on its run log row and printed, and a day fewer than half hold is counted apart as no one's missing session and named on the row. Run it when no night is running.
 Why: the same.
+
+### 2026-09-26 - ARCHITECTURE.html - the glossary's swing plan is section 10's plan applied to the swing trade
+Authorised by: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
+Was:
+> The trade the swing filter reads, entered at the night's close, stopped below the setup band's low edge and targeting the nearest resistance band above.
+Now:
+> The trade the swing filter reads, section 10's plan applied to it: entered at the night's close, stopped below the setup band's low edge, or below the next support band's where that is less than a typical day's move below the entry, and targeting the lowest band two typical days' moves or more above; the plan at the nearest bands, stopped below the setup band's low edge and targeting the nearest band above, is scored beside it for the variant that reads it.
+Why: the operator's ruling of 2026-09-26 moves the live trade gate to section 10's plan and keeps the plan it replaces as a variant.
+
+### 2026-09-26 - ARCHITECTURE.html - section 7's Filter counts row reads the trade three ways
+Authorised by: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
+Was:
+> ... with the market gate at two floors and the trade gate read two ways; shape only, reading no outcome
+Now:
+> ... with the market gate at two floors and the trade gate read three ways; shape only, reading no outcome
+Why: the counts read section 10's plan beside the ladder's first tranche and the plan at the nearest bands.
+
+### 2026-09-26 - ARCHITECTURE.html - section 7's Shape command row takes a rule correction
+Authorised by: A rule correction taken before the family's first scored night opens a filter version and registers the family again at one instant, and is no shape acceptance
+Was:
+> ... the count the run page draws beside the proposal (see: A shape acceptance restarts the live filter's edge clock, and after one acceptance while the list is live each further one states the blocks it restarts)
+Now:
+> ... the count the run page draws beside the proposal (see: A shape acceptance restarts ...); and on a rule correction the operator rules before the family's first scored night, opens the next version with the trade input named and every other setting as it stood, retiring every standing swing family candidate and registering the six for the new version in the same write, stating the live filter's non-empty blocks and counting as no acceptance (see: A rule correction taken before the family's first scored night opens a filter version and registers the family again at one instant, and is no shape acceptance)
+Why: the operator's ruling of 2026-09-26 that the switch to section 10's plan is a rule correction and no shape acceptance.
+
+### 2026-09-26 - ARCHITECTURE.html - section 7's Forward return filler row scores both swing plans
+Authorised by: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
+Was:
+> ... and scores every swing filter row carrying a plan on that plan from its night's close, over the setup's cap and over twenty sessions as context (see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context)
+Now:
+> ... and scores each of the two swing plans a swing filter row carries, the plan at the nearest bands and section 10's, from its night's close, over the setup's cap and over twenty sessions as context (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads)
+Why: the live filter's setups are section 10's plan and the variant's the plan at the nearest bands, so both are scored.
+
+### 2026-09-26 - ARCHITECTURE.html - section 11's trade gate reads the plan the version names, section 10's for the live filter, and figure 11.2's key names the plan it draws
+Authorised by: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
+Was:
+> The trade gate reads the plan the open filter version names, the ladder's first tranche or the swing trade's own plan entered at tonight's close with its stop at the setup band's low edge and its target at the nearest resistance band above, and asks for a reward to risk at or above its floor with the stop between its two distances in typical moves.
+> The plan is the swing trade&#39;s own: entered at the night&#39;s close, stopped below the band, won at the target.
+Now:
+> The trade gate reads the plan the open filter version names: the ladder's first tranche; the swing trade at the nearest bands, entered at tonight's close with its stop at the setup band's low edge and its target at the nearest band above; or section 10's plan for the swing trade, entered at tonight's close with its stop at the setup band's low edge, or at the low edge of the next support band beneath it where the setup band's is less than a typical day's move below the entry, and its target at the lowest band two typical days' moves or more above, the plan the live filter reads (see: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place). It asks for a reward to risk at or above its floor with the stop between its two distances in typical moves.
+> The plan is the swing trade at the nearest bands: entered at the night&#39;s close, stopped below the band, won at the target. Section 10&#39;s plan, which the live trade gate reads, places the same stop and target for KEYS that night.
+Why: the same; the figures stay drawn on the plan at the nearest bands, which for KEYS on 2026-09-04 is section 10's plan too, and the fixture's expectation holds that.
+
+### 2026-09-26 - ARCHITECTURE.html - section 13's family and section 14's filter step name section 10's plan
+Authorised by: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
+Was:
+> From 12.5 the family is the swing filter's: the live filter at the open filter version's settings and five variants, each the same whole rule with one setting moved to its other side, six candidates ... stored on the member's row (see: The swing filter opens loose on the swing trade's own plan, and each of its five variants moves one setting to its other side) (see: A variant of the swing filter ...).
+> Evaluate every member through the swing filter: ... the trade read from the ladder's first tranche and from the swing trade's own plan, and the exclusions, ...
+Now:
+> From 12.5 the family is the swing filter's: the live filter at the open filter version's settings and five variants, each the same whole rule with one thing moved and named for the version it was defined against, six candidates ... stored on the member's row (see: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place) (see: A variant of the swing filter ...).
+> Evaluate every member through the swing filter: ... the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, ...
+Why: the same.
+
+### 2026-09-26 - ARCHITECTURE.html - section 13's setups and section 14's forward returns step read each plan scored
+Authorised by: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
+Was:
+> A candidate's setups are the swing filter rows it fired on, each scored on its own plan (see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context).
+> Fill forward returns for past listings that matured today, and recompute the universe base rate, and score every swing filter row carrying a plan on that plan (see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context).
+Now:
+> A candidate's setups are the swing filter rows it fired on, each scored on the plan its trade gate read (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads).
+> Fill forward returns for past listings that matured today, and recompute the universe base rate, and score every swing filter row on each plan it carries (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads).
+Why: the same.
+
+### 2026-09-26 - ARCHITECTURE.html - section 15.9's gates, section 16's forward returns and gate results, and section 19.1's gate results
+Authorised by: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
+Was:
+> Gates: ... the trade read from the ladder's first tranche and from the swing trade's own plan, and the exclusions with a key saying how to read it
+> Forward returns: ... and for every swing filter row carrying a plan, that plan's outcome over the setup's cap and over twenty sessions as context (see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context)
+> Gate results: ... the trade read from the ladder's first tranche and from the swing trade's own entry, stop and target with each one's reward to risk and the stop's distance in typical moves, the exclusions, ...
+> gate results: each member's five gates, family, trigger event, trade read both ways and exclusions ...
+Now:
+> Gates: ... the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked, and the exclusions with a key saying how to read it
+> Forward returns: ... and for every swing filter row, each plan it carries scored over the setup's cap and over twenty sessions as context (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads)
+> Gate results: ... the trade read from the ladder's first tranche, from the swing trade at the nearest bands with its entry, stop and target, and from section 10's plan for it with its stop and target, each with its reward to risk and the stop's distance in typical moves, the exclusions, ...
+> gate results: each member's five gates, family, trigger event, trade read three ways and exclusions ...
+Why: the same.
+
+### 2026-09-26 - ARCHITECTURE.html - section 17's swing trade plan and the family
+Authorised by: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
+Was:
+> no Swing trade plan row;
+> The swing family: the live filter and five variants, each the same whole rule with one setting on its other side, a reward to risk of 2, a pullback 1 to 3 typical moves deep, the market gate off, strength in the top third and arrival on the night alone, 6 candidates tested at 0.05 over 6 (see: The swing filter opens loose on the swing trade's own plan, and each of its five variants moves one setting to its other side) | the operator's ruling of 2026-09-25: the live filter is the loose side and the tighter sides are the ones worth testing, and the one-session window took the dry-up's place because arrival moved the list more than any other setting
+Now:
+> Swing trade plan: the swing trade clear of the noise, the report's rules applied to it: entered at the night's close, stopped below the setup band's low edge, or below the low edge of the next support band beneath it where the setup band's is less than 1 typical daily move below the entry, and won at the lowest low edge of a band 2 typical daily moves or more above the entry; the step to the band beneath is taken once (see: The swing filter's trade gate reads section 10's plan ...) | a stop closer than a typical day's move is inside the noise and so is a band closer than two, the rules section 10 places the report's plan by, so the list and the report agree about where a name's trade is wrong | fixture-expectations, over constructed members on both sides of each distance and at it
+> The swing family: the live filter and five variants, each the same whole rule with one thing moved and named for the version it was defined against: the plan at the nearest bands, a pullback 1 to 3 typical moves deep, the market gate off, strength in the top third and arrival on the night alone, 6 candidates tested at 0.05 over 6 (see: The swing filter's trade gate reads section 10's plan ...) | the operator's rulings of 2026-09-25 and 2026-09-26: ..., and the plan section 10 reasons for is the live one, so the departure from it is what a variant tests
+Why: the same; the two distances the new row states are pinned against the constants the plan reads.
+
+### 2026-09-26 - ARCHITECTURE.html - section 17's two outcomes score each swing plan
+Authorised by: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
+Was:
+> Swing plan outcome: a swing filter row carrying a plan is entered at its night's close, stopped on a close below the setup band's low edge and won on a close at or above the nearest resistance band's low edge above it, resolving within 63 sessions or unresolved after them; a plan whose night's close does not sit between its stop and its target is not scored (see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context) | the plan the trade gate read is the plan a swing trade would have taken, so its outcome is the one the family's records and the near misses are read over
+> Twenty-session outcome: the same plan's outcome inside 20 sessions, stored beside it as context and read by no verdict (see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context)
+Now:
+> Swing plan outcome: each of a swing filter row's two plans, the plan at the nearest bands and the plan clear of the noise, is entered at its night's close, stopped on a close below its stop and won on a close at or above its target, resolving within 63 sessions or unresolved after them; a plan whose night's close does not sit between its stop and its target is not scored, and a candidate's setups are read on the plan its trade gate read (see: A swing filter row carries both swing plans, ...) | the plan a trade gate read is the plan a swing trade would have taken, so its outcome is the one a candidate's record and the near misses are read over
+> Twenty-session outcome: each plan's outcome inside 20 sessions, stored beside it as context and read by no verdict (see: A swing filter row carries both swing plans, ...)
+Why: the same.
+
+### 2026-09-26 - SCHEMA.md - gate_result carries section 10's plan and forward_return its two horizons
+Authorised by: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
+Was:
+> | `swing_entry` | TEXT | the swing trade's entry, the night's close |
+> | `swing_stop` | TEXT | its stop, the setup band's low edge |
+> and no clear_stop, clear_target, clear_reward_to_risk or clear_stop_moves column;
+> | `horizon` | TEXT | `5`, `21` or `setup` for a listing; `swing` or `swing-20` for a swing filter row's own plan, over the setup's cap and over twenty sessions as context (see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context) |
+Now:
+> | `swing_entry` | TEXT | the swing trade's entry, the night's close, which both swing plans enter at |
+> | `swing_stop` | TEXT | the swing trade at the nearest bands: its stop, the setup band's low edge |
+> and after `shadow`, from migration 47, `clear_stop`, `clear_target`, `clear_reward_to_risk` and `clear_stop_moves`, section 10's plan for the swing trade, null on a row written before them;
+> | `horizon` | TEXT | `5`, `21` or `setup` for a listing; `swing` or `swing-20` for a swing filter row's plan at the nearest bands and `clear` or `clear-20` for its section 10 plan, each over the setup's cap and over twenty sessions as context (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads) |
+Why: migration 47 adds the four columns, which the swing filter and the filter history write, and the forward return filler scores the plan on two horizons of its own.
+
+### 2026-09-26 - RUNBOOK.md - the shape command's rule correction, and the trade input clear
+Authorised by: A rule correction taken before the family's first scored night opens a filter version and registers the family again at one instant, and is no shape acceptance
+Was:
+> The operator's ruling of 2026-09-25 opens version 1 with (see: The swing filter opens loose on the swing trade's own plan, and each of its five variants moves one setting to its other side):
+> ... and `--trade` takes `ladder` or `swing`; ...
+> and no paragraph on a rule correction.
+Now:
+> The operator's ruling of 2026-09-25 opened version 1 with:
+> ... and `--trade` takes `ladder`, `swing` or `clear`; ...
+> a paragraph before the list of settings: **A rule correction** taken before the family's first scored night, the operator's ruling of 2026-09-26 opening version 3 on section 10's plan, `shape --rule-correction --trade clear --restarts 0 --evidence "..."`, what it writes, what refuses it, and what a night run after the merge and before it does.
+Why: the operator's ruling of 2026-09-26; the command is theirs to run, or run on their word, after the merge and before the night of 2026-09-28.
+
+### 2026-09-26 - RUNBOOK.md - the counts read the trade three ways
+Authorised by: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
+Was:
+> ... under four settings: the market gate at 45% and at 50%, each with the trade gate read from the ladder's first tranche and from the swing trade's own plan.
+Now:
+> ... under six settings: the market gate at 45% and at 50%, each with the trade gate read from the ladder's first tranche, from the swing trade at the nearest bands and from the swing trade clear of the noise.
+Why: the counts read section 10's plan beside the other two.
+
+### 2026-09-26 - .claude/rules/checks.md - read-surface reads the name page's three plans
+Authorised by: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
+Was:
+> ... the trade read from the ladder's first tranche and from the swing trade's own entry, stop and target, and the exclusions, read back off every fixture member's page against the stored row; ...
+Now:
+> ... the trade read from the ladder's first tranche and from both swing plans' entry, stop and target with the one the trade gate read marked once, and the exclusions, read back off every fixture member's page against the stored row; ...
+Why: the name page draws both swing plans and marks the one its trade gate read.
+
+### 2026-09-26 - BUILD_PLAN.md - the swing trade's stop discharged at 12.2, and the settings row's citation
+Authorised by: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
+Was:
+> | **The swing trade's stop ruled apart from how wide its setup band merged** | 3.4 | operating | 60 ordinary nights under one filter version, ... At the trigger the operator rules whether the stop keeps the band's low edge (see: A band is no wider than two typical days' moves, and a chain that would be wider splits at its widest gap) |
+> 12.2's text ended: "... and the fixture's row."
+> | 12.4, discharged by the operator's ruling of 2026-09-25, which the operator's acceptance through 12.4's command makes the first version (see: The swing filter opens loose on the swing trade's own plan, and each of its five variants moves one setting to its other side) |
+Now:
+> | **The swing trade's stop ruled apart from how wide its setup band merged** | 3.4 | 12.2, discharged | discharged ahead of its trigger by the operator's ruling of 2026-09-26, which the 12.2 correction of the same day builds: ... (see: The swing filter's trade gate reads section 10's plan ...) |
+> 12.2's text ends: "... and the fixture's row. From the operator's ruling of 2026-09-26 the trade gate is also read from section 10's plan for the swing trade, which the live filter reads, and that plan's stop answers ahead of its trigger the question 3.4 carried (owes: The swing trade's stop ruled apart from how wide its setup band merged)."
+> | 12.4, discharged by the operator's ruling of 2026-09-25, which the operator's acceptance through 12.4's command makes the first version, the trade gate's reading and one variant moved by the ruling of 2026-09-26 (see: The swing filter's trade gate reads section 10's plan ...) |
+Why: section 10's stop sits at the setup band's low edge only where that is a typical move or more below the entry, which answers the question the obligation carried, and a spec cites no superseded decision.

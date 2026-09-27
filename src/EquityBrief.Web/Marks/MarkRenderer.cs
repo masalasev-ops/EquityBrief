@@ -219,8 +219,9 @@ public sealed record FunnelView(
 public sealed record GateLine(string Gate, bool Passed, string Reason);
 
 // A name's swing filter result on a night as its page draws it: the five gates with their reasons,
-// the family and the trigger, the trade read both ways, the exclusions and the notes, and its rank
-// where it passed.
+// the family and the trigger, the trade read three ways with the plan the trade gate read, the
+// exclusions and the notes, and its rank where it passed. The plan clear of the noise enters at the same
+// close as the plan at the nearest bands.
 public sealed record GatesView(
     DateOnly Session,
     string Version,
@@ -238,7 +239,12 @@ public sealed record GatesView(
     IReadOnlyList<string> Notes,
     bool Passed,
     int? Rank,
-    string Rule = ListRules.Reasons);
+    string Rule = ListRules.Reasons,
+    decimal? ClearStop = null,
+    decimal? ClearTarget = null,
+    double? ClearRewardToRisk = null,
+    double? ClearStopMoves = null,
+    string? Input = null);
 
 // The night's market reading as the swing reader stored it: the members, the breadth over the ones
 // read with how many it was counted over, the same over the shorter average as context, and the
@@ -2441,7 +2447,7 @@ public sealed class MarkRenderer : IComponent
             if (byFilter)
             {
                 list.Append(row.Filter is { } gates
-                    ? Formatted($"<td class=\"gates\" data-rank=\"{gates.Rank}\" data-family=\"{Escaped(gates.Family ?? "none")}\" data-arrived=\"{Escaped(gates.Arrived)}\" data-input=\"{Escaped(gates.Input)}\" title=\"{Escaped(string.Join("; ", gates.Gates.Select(gate => gate.Name + ": " + gate.Reason)))}\">{Escaped(gates.Family ?? "no family")}, arrived {Escaped(gates.Arrived)}; the {Escaped(gates.Input)} trade's reward to risk {Hundredths(gates.RewardToRisk)}, its stop {Hundredths(gates.StopMoves)} typical moves below the entry</td>")
+                    ? Formatted($"<td class=\"gates\" data-rank=\"{gates.Rank}\" data-family=\"{Escaped(gates.Family ?? "none")}\" data-arrived=\"{Escaped(gates.Arrived)}\" data-input=\"{Escaped(gates.Input)}\" title=\"{Escaped(string.Join("; ", gates.Gates.Select(gate => gate.Name + ": " + gate.Reason)))}\">{Escaped(gates.Family ?? "no family")}, arrived {Escaped(gates.Arrived)}; {Escaped(PlanWords(gates.Input))}, reward to risk {Hundredths(gates.RewardToRisk)}, its stop {Hundredths(gates.StopMoves)} typical moves below the entry</td>")
                     : "<td class=\"gates\"><span class=\"degraded\">no gate result stored</span></td>");
             }
 
@@ -4898,9 +4904,20 @@ public sealed class MarkRenderer : IComponent
         return region.ToString();
     }
 
+    // The plan a trade gate read, in the words the pages use for it.
+    // see: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
+    public static string PlanWords(string? input) => input switch
+    {
+        FilterSettings.LadderWord => "the ladder's first tranche",
+        FilterSettings.SwingWord => "the swing trade at the nearest bands",
+        FilterSettings.ClearWord => "the swing trade clear of the noise",
+        _ => "the plan named " + (input ?? "none"),
+    };
+
     // A name's gates, section 15.9's row: each of the five with whether it passed and why, the setup's
-    // family and the trigger, the trade read from the ladder's first tranche and from the swing trade's
-    // own plan, and the exclusions and notes, each whole on its element as the store holds it.
+    // family and the trigger, the trade read from the ladder's first tranche, from the swing trade at the
+    // nearest bands and from the swing trade clear of the noise with the one the trade gate read marked,
+    // and the exclusions and notes, each whole on its element as the store holds it.
     public string GatesTable(string ticker, GatesView view)
     {
         var region = new StringBuilder();
@@ -4926,9 +4943,20 @@ public sealed class MarkRenderer : IComponent
         region.Append("</p>");
 
         region.Append("<div class=\"tbl-wrap\"><table class=\"trade-table\"><tr><th>Plan</th><th>Reward to risk</th><th>Stop below the entry</th></tr>");
-        region.Append(Invariant, $"<tr data-plan=\"ladder\" data-reward-to-risk=\"{Whole(view.LadderRewardToRisk)}\" data-stop-moves=\"{Whole(view.LadderStopMoves)}\"><td>The ladder's first tranche</td><td class=\"num\">{Ratio(view.LadderRewardToRisk)}</td><td class=\"num\">{Moves(view.LadderStopMoves)}</td></tr>");
-        region.Append(Invariant, $"<tr data-plan=\"swing\" data-entry=\"{Plain(view.SwingEntry)}\" data-stop=\"{Plain(view.SwingStop)}\" data-target=\"{Plain(view.SwingTarget)}\" data-reward-to-risk=\"{Whole(view.SwingRewardToRisk)}\" data-stop-moves=\"{Whole(view.SwingStopMoves)}\"><td>The swing trade's own: in at {(view.SwingEntry is { } entry ? Price(entry) : "no close")}, stop {(view.SwingStop is { } stop ? Price(stop) : "none")}, target {(view.SwingTarget is { } target ? Price(target) : "none")}</td><td class=\"num\">{Ratio(view.SwingRewardToRisk)}</td><td class=\"num\">{Moves(view.SwingStopMoves)}</td></tr>");
+        region.Append(Invariant, $"<tr data-plan=\"{FilterSettings.LadderWord}\" data-read=\"{Read(FilterSettings.LadderWord)}\" data-reward-to-risk=\"{Whole(view.LadderRewardToRisk)}\" data-stop-moves=\"{Whole(view.LadderStopMoves)}\"><td>{Capitalised(PlanWords(FilterSettings.LadderWord))}{Marked(FilterSettings.LadderWord)}</td><td class=\"num\">{Ratio(view.LadderRewardToRisk)}</td><td class=\"num\">{Moves(view.LadderStopMoves)}</td></tr>");
+        region.Append(Invariant, $"<tr data-plan=\"{FilterSettings.SwingWord}\" data-read=\"{Read(FilterSettings.SwingWord)}\" data-entry=\"{Plain(view.SwingEntry)}\" data-stop=\"{Plain(view.SwingStop)}\" data-target=\"{Plain(view.SwingTarget)}\" data-reward-to-risk=\"{Whole(view.SwingRewardToRisk)}\" data-stop-moves=\"{Whole(view.SwingStopMoves)}\"><td>{Capitalised(PlanWords(FilterSettings.SwingWord))}: in at {Entry()}, stop {Level(view.SwingStop)}, target {Level(view.SwingTarget)}{Marked(FilterSettings.SwingWord)}</td><td class=\"num\">{Ratio(view.SwingRewardToRisk)}</td><td class=\"num\">{Moves(view.SwingStopMoves)}</td></tr>");
+        region.Append(Invariant, $"<tr data-plan=\"{FilterSettings.ClearWord}\" data-read=\"{Read(FilterSettings.ClearWord)}\" data-entry=\"{Plain(view.SwingEntry)}\" data-stop=\"{Plain(view.ClearStop)}\" data-target=\"{Plain(view.ClearTarget)}\" data-reward-to-risk=\"{Whole(view.ClearRewardToRisk)}\" data-stop-moves=\"{Whole(view.ClearStopMoves)}\"><td>{Capitalised(PlanWords(FilterSettings.ClearWord))}: in at {Entry()}, stop {Level(view.ClearStop)}, target {Level(view.ClearTarget)}{Marked(FilterSettings.ClearWord)}</td><td class=\"num\">{Ratio(view.ClearRewardToRisk)}</td><td class=\"num\">{Moves(view.ClearStopMoves)}</td></tr>");
         region.Append("</table></div>");
+
+        string Read(string plan) => view.Input == plan ? "yes" : "no";
+
+        string Marked(string plan) => view.Input == plan ? " <span class=\"plan-read\">(the plan the trade gate read)</span>" : string.Empty;
+
+        string Entry() => view.SwingEntry is { } entry ? Price(entry) : "no close";
+
+        static string Level(decimal? value) => value is { } held ? Price(held) : "none";
+
+        static string Capitalised(string words) => char.ToUpperInvariant(words[0]) + words[1..];
 
         region.Append(Invariant, $"<p class=\"exclusions\" data-exclusions=\"{Escaped(string.Join(",", view.Exclusions))}\">");
         region.Append(view.Exclusions.Count == 0 ? "No exclusion applies." : "Excluded: " + Escaped(string.Join(", ", view.Exclusions)) + ".");

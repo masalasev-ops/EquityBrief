@@ -55,7 +55,7 @@ public sealed class SwingFilter : IComponent
     // the list from the compiled code and holds this to it.
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "9c34a8d191d1";
+    public const string CodeVersion = "daccb4aabfaf";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
@@ -155,11 +155,13 @@ public sealed class SwingFilter : IComponent
         INSERT INTO gate_result (
             ticker, session_date, version, code, market, trend, setup, family, trigger_pass, trigger_event, trade,
             ladder_reward_to_risk, ladder_stop_moves, swing_entry, swing_stop, swing_target, swing_reward_to_risk,
-            swing_stop_moves, exclusions, passed, rank, strength, band_strength, gates, shadow)
+            swing_stop_moves, clear_stop, clear_target, clear_reward_to_risk, clear_stop_moves,
+            exclusions, passed, rank, strength, band_strength, gates, shadow)
         VALUES (
             $ticker, $session_date, $version, $code, $market, $trend, $setup, $family, $trigger_pass, $trigger_event, $trade,
             $ladder_reward_to_risk, $ladder_stop_moves, $swing_entry, $swing_stop, $swing_target, $swing_reward_to_risk,
-            $swing_stop_moves, $exclusions, $passed, $rank, $strength, $band_strength, $gates, $shadow);
+            $swing_stop_moves, $clear_stop, $clear_target, $clear_reward_to_risk, $clear_stop_moves,
+            $exclusions, $passed, $rank, $strength, $band_strength, $gates, $shadow);
     ";
 
 
@@ -351,6 +353,10 @@ public sealed class SwingFilter : IComponent
         command.Parameters.AddWithValue("$swing_target", Price(result.SwingTrade.Target));
         command.Parameters.AddWithValue("$swing_reward_to_risk", Ratio(result.SwingTrade.RewardToRisk));
         command.Parameters.AddWithValue("$swing_stop_moves", Nullable(result.SwingTrade.StopInMoves));
+        command.Parameters.AddWithValue("$clear_stop", Price(result.ClearTrade.Stop));
+        command.Parameters.AddWithValue("$clear_target", Price(result.ClearTrade.Target));
+        command.Parameters.AddWithValue("$clear_reward_to_risk", Ratio(result.ClearTrade.RewardToRisk));
+        command.Parameters.AddWithValue("$clear_stop_moves", Nullable(result.ClearTrade.StopInMoves));
         command.Parameters.AddWithValue("$exclusions", JsonSerializer.Serialize(result.Exclusions));
         command.Parameters.AddWithValue("$passed", Flag(result.Passed));
         command.Parameters.AddWithValue("$rank", rank is { } at ? at : DBNull.Value);

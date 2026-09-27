@@ -56,7 +56,7 @@ public partial class ReadSurface
                 Gate("trend and strength", member.Trend, member.Trend ? "an uptrend at or above its floor" : "not an uptrend", new() { ["trend state"] = "uptrend" }),
                 Gate("setup", member.Setup, member.Setup ? "a pullback into an anchored support band" : "no pullback and no breakout", new() { ["family"] = member.Setup ? "pullback" : "none" }),
                 Gate("trigger", member.Trigger, member.Trigger ? "the close above the previous session's high" : "no event inside the window", new() { ["arrived"] = member.Trigger ? "tonight" : "none" }),
-                Gate("trade", member.Trade, member.Trade ? $"reward to risk {ratio} at or above its floor" : "reward to risk below its floor", new() { ["input"] = "swing", ["reward to risk"] = ratio, ["stop in typical moves"] = "1.2" }),
+                Gate("trade", member.Trade, member.Trade ? $"reward to risk {ratio} at or above its floor" : "reward to risk below its floor", new() { ["input"] = "clear", ["reward to risk"] = ratio, ["stop in typical moves"] = "1.2" }),
             },
             notes = Array.Empty<string>(),
         });
@@ -195,7 +195,7 @@ public partial class ReadSurface
         // as the reward to risk column draws them: the first row's 3.25 and 1.2 worked by hand, and never the
         // figure as the gate stored it.
         Assert.Contains("<th>Gates</th>", list, StringComparison.Ordinal);
-        Assert.Contains("pullback, arrived tonight; the swing trade's reward to risk 3.25, its stop 1.20 typical moves below the entry", WordsOf(RowOf(list, drawn[0])), StringComparison.Ordinal);
+        Assert.Contains("pullback, arrived tonight; the swing trade clear of the noise, reward to risk 3.25, its stop 1.20 typical moves below the entry", WordsOf(RowOf(list, drawn[0])), StringComparison.Ordinal);
         Assert.DoesNotContain("trade at ", list, StringComparison.Ordinal);
 
         foreach (var (ticker, place) in drawn.Select((ticker, at) => (ticker, at + 1)))
@@ -203,9 +203,9 @@ public partial class ReadSurface
             var member = Passers().Single(one => one.Ticker == ticker);
             var row = RowOf(list, ticker);
 
-            Assert.Contains($"data-rank=\"{place}\" data-family=\"pullback\" data-arrived=\"tonight\" data-input=\"swing\"", row, StringComparison.Ordinal);
+            Assert.Contains($"data-rank=\"{place}\" data-family=\"pullback\" data-arrived=\"tonight\" data-input=\"clear\"", row, StringComparison.Ordinal);
             Assert.Contains($"data-reward-to-risk=\"{((decimal)member.RewardToRisk).ToString(CultureInfo.InvariantCulture)}\"", row, StringComparison.Ordinal);
-            Assert.Contains($"pullback, arrived tonight; the swing trade's reward to risk {member.RewardToRisk.ToString("0.00", CultureInfo.InvariantCulture)}, its stop 1.20 typical moves below the entry", WordsOf(row), StringComparison.Ordinal);
+            Assert.Contains($"pullback, arrived tonight; the swing trade clear of the noise, reward to risk {member.RewardToRisk.ToString("0.00", CultureInfo.InvariantCulture)}, its stop 1.20 typical moves below the entry", WordsOf(row), StringComparison.Ordinal);
         }
     }
 

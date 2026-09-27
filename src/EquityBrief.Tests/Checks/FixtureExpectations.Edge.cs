@@ -171,6 +171,78 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task EachPlanARowCarriesIsScoredOnItsOwnHorizonsAndARowWithoutTheSecondScoresOnlyTheFirst()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        var sessions = SessionsFrom(new DateOnly(2026, 1, 2), 70);
+        var night = Day(sessions[0]);
+
+        void Bars(string ticker, params decimal[] after)
+        {
+            store.Execute(
+                "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) " +
+                $"VALUES ('{ticker}', '{night}', '100', '100', '100', '100', 1000, 'test', '2026-01-02T22:00:00Z', '100');");
+
+            for (var at = 0; at < after.Length; at++)
+            {
+                var close = after[at].ToString(CultureInfo.InvariantCulture);
+
+                store.Execute(
+                    "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) " +
+                    $"VALUES ('{ticker}', '{Day(sessions[at + 1])}', '{close}', '{close}', '{close}', '{close}', 1000, 'test', '2026-01-02T22:00:00Z', '{close}');");
+            }
+        }
+
+        void Gate(string ticker, string? clearStop, string? clearTarget) =>
+            store.Execute(
+                "INSERT INTO gate_result (ticker, session_date, version, code, market, trend, setup, trigger_pass, trade, swing_stop, swing_target, clear_stop, clear_target, exclusions, passed, gates) " +
+                $"VALUES ('{ticker}', '{night}', '1', 'code', 1, 1, 1, 1, 1, '95', '110', {(clearStop is null ? "NULL" : $"'{clearStop}'")}, {(clearTarget is null ? "NULL" : $"'{clearTarget}'")}, '[]', 0, '{{\"gates\":[],\"notes\":[]}}');");
+
+        // Worked by hand from the night's close of 100. TWO's plan at the nearest bands stops below 95 and
+        // wins at 110; its plan clear of the noise stops below 90 and wins at 105. Its closes are 101 for
+        // nineteen sessions, 105 on the twentieth and 111 on the twenty-first: the plan clear of the noise
+        // wins on the twentieth over both of its horizons, and the plan at the nearest bands wins on the
+        // twenty-first over the cap and is unresolved at the twentieth. OLD, written before the second plan
+        // was stored, and NOTARGET, whose plan clear of the noise has a stop and no target, score the plan
+        // at the nearest bands alone.
+        var closes = (decimal[])[.. Enumerable.Repeat(101m, 19), 105m, 111m];
+
+        Bars("TWO", closes);
+        Gate("TWO", "90", "105");
+        Bars("OLD", closes);
+        Gate("OLD", null, null);
+        Bars("NOTARGET", closes);
+        Gate("NOTARGET", "90", null);
+
+        var filled = await new ForwardReturnFiller(FixedClock.At(new DateTimeOffset(2026, 6, 1, 22, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile).RunAsync("both-plans");
+
+        Assert.Equal((3, 0, 1, 0), (filled.PlansExamined, filled.PlansNotScorable, filled.ClearPlansExamined, filled.ClearPlansNotScorable));
+        Assert.Equal(
+            [
+                $"NOTARGET|swing|win|{Day(sessions[21])}",
+                $"NOTARGET|swing-20|unresolved|{Day(sessions[20])}",
+                $"OLD|swing|win|{Day(sessions[21])}",
+                $"OLD|swing-20|unresolved|{Day(sessions[20])}",
+                $"TWO|clear|win|{Day(sessions[20])}",
+                $"TWO|clear-20|win|{Day(sessions[20])}",
+                $"TWO|swing|win|{Day(sessions[21])}",
+                $"TWO|swing-20|unresolved|{Day(sessions[20])}",
+            ],
+            Query(store, "SELECT ticker || '|' || horizon || '|' || IFNULL(outcome, 'none') || '|' || IFNULL(resolved_on, 'none') FROM forward_return ORDER BY ticker, horizon;"));
+
+        // The plan clear of the noise had to be right (100 - 90) of (105 - 90), two thirds of the time, to come
+        // out even, and the plan at the nearest bands a third; what each put at risk from its fill, 10% and
+        // 5%, rides on its capped horizon and on neither twenty-session one.
+        Assert.Equal(
+            ["clear|66.7|10.0", "clear-20|66.7|none", "swing|33.3|5.0", "swing-20|33.3|none"],
+            Query(store, "SELECT horizon || '|' || printf('%.1f', break_even) || '|' || CASE WHEN planned_risk IS NULL THEN 'none' ELSE printf('%.1f', planned_risk) END FROM forward_return WHERE ticker = 'TWO' ORDER BY horizon;"));
+        Assert.Contains("3 swing plan(s) read, 0 not scorable from the night's close; 1 plan(s) clear of the noise read, 0 not scorable from the night's close", Query(store, "SELECT detail FROM run_log WHERE run_id = 'both-plans';").Single(), StringComparison.Ordinal);
+
+        static string Day(DateOnly day) => day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    }
+
+    [Fact]
     public async Task EverySwingPlanOnTheFixturesNightCarriesBothSwingHorizonsNotYetMatured()
     {
         var swing = Expected("forward-returns").GetProperty("swing");

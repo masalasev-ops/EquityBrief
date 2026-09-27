@@ -245,7 +245,7 @@ public sealed class CandidateRegistrar : IComponent
     // instant or none. Refused whole where no version is open, since the live filter's candidate states
     // the settings the list runs on, or where any one row would be refused.
     // see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read
-    // see: The swing filter opens loose on the swing trade's own plan, and each of its five variants moves one setting to its other side
+    // see: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
     public async Task<RegistrationOutcome> RegisterTheFamilyAsync(string runId, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
@@ -492,6 +492,103 @@ public sealed class CandidateRegistrar : IComponent
         await transaction.CommitAsync(cancellation);
 
         return new RegistrationOutcome(Retired, id, detail);
+    }
+
+    // A rule correction taken before the family's first scored night: every standing swing family
+    // candidate retired on the evidence given, the family the caller writes for the version it opens
+    // registered, and the caller's own write in the same transaction, all at one instant or none. Refused
+    // whole where no swing family candidate stands, since a correction replaces a family and registers
+    // none from nothing, and where any one row would be refused.
+    // see: A rule correction taken before the family's first scored night opens a filter version and registers the family again at one instant, and is no shape acceptance
+    public async Task<RegistrationOutcome> CorrectTheFamilyAsync(
+        IReadOnlyList<Registration> family,
+        string evidence,
+        Func<SqliteConnection, SqliteTransaction, CancellationToken, Task> alongside,
+        string runId,
+        CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        async Task<RegistrationOutcome> RefuseAsync(string said)
+        {
+            await transaction.RollbackAsync(cancellation);
+            await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation);
+
+            return new RegistrationOutcome(Refused, null, said);
+        }
+
+        var rows = await RowsAsync(connection, cancellation);
+        var standing = CandidateFamily.Standing(rows, startedAt)
+            .Where(row => string.Equals(row.Evaluator, SwingFilterRule.EvaluatorName, StringComparison.Ordinal))
+            .ToArray();
+
+        if (standing.Length == 0)
+        {
+            return await RefuseAsync("no swing family candidate stands registered, so there is no family to correct and none was written.");
+        }
+
+        var taken = rows.ToList();
+
+        foreach (var row in standing)
+        {
+            if (RetirementRefusal(taken, row.Candidate, evidence, startedAt, ShortlistSeries.Reasons) is { } refusal)
+            {
+                return await RefuseAsync($"'{row.Candidate}' was refused, so none of the {standing.Length + family.Count} was written: {refusal}");
+            }
+
+            taken.Add(row with { Id = taken.Max(one => one.Id) + 1, Event = Retired, Retires = row.Candidate, RegisteredAt = startedAt, Evidence = evidence });
+        }
+
+        foreach (var one in family)
+        {
+            if ((Unstated(one.Rule, one.Test) ?? Refusal(taken, one.Candidate, one.Evaluator, one.Parameters, startedAt)) is { } refusal)
+            {
+                return await RefuseAsync($"'{one.Candidate}' was refused, so none of the {standing.Length + family.Count} was written: {refusal}");
+            }
+
+            taken.Add(new RegisterRow(
+                taken.Max(row => row.Id) + 1,
+                one.Candidate,
+                one.Rule,
+                one.Test,
+                one.Evaluator,
+                CandidateEvaluator.Write(one.Parameters),
+                CandidateEvaluators.Find(one.Evaluator)!.Version,
+                Registered,
+                null,
+                startedAt,
+                null));
+        }
+
+        var appended = rows;
+
+        foreach (var row in taken.Skip(rows.Count))
+        {
+            var id = await AppendAsync(
+                connection, appended, row.Candidate, row.Rule, row.Test, row.Evaluator, row.Parameters,
+                row.EvaluatorVersion, row.Event, row.Retires, startedAt, row.Evidence, cancellation);
+
+            appended = [.. appended, row with { Id = id }];
+        }
+
+        await alongside(connection, transaction, cancellation);
+
+        var detail = FormattableString.Invariant(
+            $"retired {standing.Length} and registered {family.Count} at one instant, family of {CandidateFamily.Standing(appended, startedAt).Count} of {CandidateFamily.Maximum}: retired ")
+            + string.Join("; ", standing.Select(row => $"'{row.Candidate}'"))
+            + "; registered "
+            + string.Join("; ", family.Select(one => $"'{one.Candidate}'"))
+            + $"; on the evidence: {evidence}";
+
+        await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation);
+        await transaction.CommitAsync(cancellation);
+
+        return new RegistrationOutcome(Registered, null, detail);
     }
 
     // A retirement and the registration that replaces it at one instant, with the caller's own write in

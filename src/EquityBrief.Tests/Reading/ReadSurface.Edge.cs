@@ -16,23 +16,31 @@ namespace EquityBrief.Tests.Reading;
 // has moved since the version it was defined against.
 public partial class ReadSurface
 {
+    static readonly string NearestBands = TheSwingFamily.Variant(TheSwingFamily.NearestBandsName, "1");
+
     static readonly string[] TheSix =
     [
         SwingFamily.LiveCandidate("1"),
-        TheSwingFamily.RewardToRiskName,
-        TheSwingFamily.DepthName,
-        TheSwingFamily.MarketOffName,
-        TheSwingFamily.StrengthName,
-        TheSwingFamily.ArrivalName,
+        NearestBands,
+        TheSwingFamily.Variant(TheSwingFamily.DepthName, "1"),
+        TheSwingFamily.Variant(TheSwingFamily.MarketOffName, "1"),
+        TheSwingFamily.Variant(TheSwingFamily.StrengthName, "1"),
+        TheSwingFamily.Variant(TheSwingFamily.ArrivalName, "1"),
     ];
 
     // One gate row under filter version 1 with the family's shadow on it: the candidates named fired and
-    // every other one of the six evaluated and quiet.
+    // every other one of the six evaluated and quiet, each verdict naming the plan its trade gate read,
+    // the nearest bands' for that variant and section 10's for every other.
     static void EdgeRow(TemporaryStore store, string session, string ticker, bool[] gates, string[] exclusions, params string[] fired)
     {
         var shadow = JsonSerializer.Serialize(new
         {
-            candidates = TheSix.Select(candidate => new { candidate, fired = fired.Contains(candidate), values = new Dictionary<string, string>() }),
+            candidates = TheSix.Select(candidate => new
+            {
+                candidate,
+                fired = fired.Contains(candidate),
+                values = new Dictionary<string, string> { [SwingFilterRule.PlanValue] = candidate == NearestBands ? FilterSettings.SwingWord : FilterSettings.ClearWord },
+            }),
             skipped = Array.Empty<object>(),
         });
 
@@ -44,10 +52,10 @@ public partial class ReadSurface
         static string Bit(bool value) => value ? "1" : "0";
     }
 
-    static void SwingOutcome(TemporaryStore store, string session, string ticker, string outcome) =>
+    static void SwingOutcome(TemporaryStore store, string session, string ticker, string outcome, string horizon = ForwardReturnSeries.Swing) =>
         store.Execute(
             "INSERT INTO forward_return (ticker, session_date, horizon, outcome, resolved_on, return_pct, base_rate, break_even, null_win, null_win_at_sensitivity, planned_risk, on_earnings) " +
-            $"VALUES ('{ticker}', '{session}', 'swing', '{outcome}', '{session}', 1, NULL, 35, 0.4, 0.4, 5, 0);");
+            $"VALUES ('{ticker}', '{session}', '{horizon}', '{outcome}', '{session}', 1, NULL, 35, 0.4, 0.4, 5, 0);");
 
     static string EdgeHalf(string page) =>
         Assert.Single(Blocks(page, "<section class=\"edge-clock\".*?</section>")) + Assert.Single(Blocks(page, "<section class=\"near-misses\".*?</section>"));
@@ -59,21 +67,26 @@ public partial class ReadSurface
 
         Assert.Equal(0, (await FixtureExpectations.RegisterVerbAt(store, new DateTimeOffset(2026, 9, 7, 22, 0, 0, TimeSpan.Zero), RegisterVerb.TheFamily)).Code);
 
-        // Three nights under version 1. Worked by hand: the live filter fires on the name the filter passed
-        // on the first two, a win and a loss, and the reward to risk variant on the first alone, the win;
-        // the other four fire nowhere. Every candidate was first evaluated on 2026-09-14, two sessions
-        // before the page's night. The rows: two admitted, one the trigger alone rejected, one the setup
-        // alone rejected, one suspect series alone removed, and one failing two gates in no group.
+        // Three nights under version 1, whose trade gate reads section 10's plan. Worked by hand: the live
+        // filter fires on the name the filter passed on the first two, each plan clear of the noise a win and
+        // a loss, and the nearest bands' variant on A's first night and on F's, each read on the plan at the
+        // nearest bands, a win on both, where F's plan clear of the noise has no outcome; the other four fire
+        // nowhere. Every candidate was first evaluated on 2026-09-14, two sessions before the page's night.
+        // The rows: three admitted, one the trigger alone rejected, one the setup alone rejected, one suspect
+        // series alone removed, and one failing two gates in no group.
         bool[] all = [true, true, true, true, true];
 
-        EdgeRow(store, "2026-09-14", "A", all, [], SwingFamily.LiveCandidate("1"), TheSwingFamily.RewardToRiskName);
+        EdgeRow(store, "2026-09-14", "A", all, [], SwingFamily.LiveCandidate("1"), NearestBands);
         EdgeRow(store, "2026-09-14", "B", [true, true, true, false, true], []);
         EdgeRow(store, "2026-09-14", "C", [true, true, false, true, true], []);
         EdgeRow(store, "2026-09-14", "D", [true, true, true, false, false], []);
         EdgeRow(store, "2026-09-15", "A", all, [], SwingFamily.LiveCandidate("1"));
+        EdgeRow(store, "2026-09-15", "F", all, [], NearestBands);
         EdgeRow(store, "2026-09-16", "E", all, [SwingGates.SuspectExclusion]);
+        SwingOutcome(store, "2026-09-14", "A", "win", ForwardReturnSeries.Clear);
         SwingOutcome(store, "2026-09-14", "A", "win");
-        SwingOutcome(store, "2026-09-15", "A", "loss");
+        SwingOutcome(store, "2026-09-15", "A", "loss", ForwardReturnSeries.Clear);
+        SwingOutcome(store, "2026-09-15", "F", "win");
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
@@ -90,7 +103,7 @@ public partial class ReadSurface
 
         Assert.Equal(TheSix, rows.Select(row => System.Text.RegularExpressions.Regex.Match(row, "data-candidate=\"([^\"]+)\"").Groups[1].Value));
 
-        foreach (var (row, resolved) in rows.Zip(new[] { 2, 1, 0, 0, 0, 0 }))
+        foreach (var (row, resolved) in rows.Zip(new[] { 2, 2, 0, 0, 0, 0 }))
         {
             Assert.Contains($"data-defined=\"1\" data-moved=\"\" data-sessions=\"2\" data-blocks=\"0\" data-floor=\"8\" data-resolved=\"{resolved}\" data-withheld=\"true\"", row, StringComparison.Ordinal);
             Assert.Contains("<td>2 since its first night, 2026-09-14</td>", row, StringComparison.Ordinal);
@@ -101,14 +114,15 @@ public partial class ReadSurface
         Assert.Contains("<td>version 1, the live settings</td>", rows[0], StringComparison.Ordinal);
         Assert.Contains("<td>version 1, and the live filter has not moved since</td>", rows[1], StringComparison.Ordinal);
 
-        // The near misses over version 1's rows, each group counted and withheld.
+        // The near misses over version 1's rows, each group counted and withheld, each row's setup read on the
+        // plan version 1's trade gate reads, so F's, with no outcome on it, is admitted and unresolved.
         var misses = Assert.Single(Blocks(page, "<section class=\"near-misses\".*?</section>"));
 
         Assert.Contains("Over the rows filter version 1 has stored from 2026-09-14", misses, StringComparison.Ordinal);
 
         foreach (var (group, count, resolved) in new (string, int, int)[]
         {
-            (EdgeClock.Admitted, 2, 2), (SwingGates.Market, 0, 0), (SwingGates.Trend, 0, 0), (SwingGates.Setup, 1, 0), (SwingGates.Trigger, 1, 0), (SwingGates.Trade, 0, 0),
+            (EdgeClock.Admitted, 3, 2), (SwingGates.Market, 0, 0), (SwingGates.Trend, 0, 0), (SwingGates.Setup, 1, 0), (SwingGates.Trigger, 1, 0), (SwingGates.Trade, 0, 0),
             (SwingGates.EarningsExclusion, 0, 0), (SwingGates.SuspectExclusion, 1, 0), (SwingGates.GapExclusion, 0, 0),
         })
         {
@@ -163,7 +177,7 @@ public partial class ReadSurface
         RegisterRow[] register =
         [
             new(1, SwingFamily.LiveCandidate("1"), string.Empty, string.Empty, SwingFilterRule.EvaluatorName, parameters, string.Empty, CandidateFamily.Registered, null, registered, null),
-            new(2, TheSwingFamily.RewardToRiskName, string.Empty, string.Empty, SwingFilterRule.EvaluatorName, parameters, string.Empty, CandidateFamily.Registered, null, registered, null),
+            new(2, NearestBands, string.Empty, string.Empty, SwingFilterRule.EvaluatorName, parameters, string.Empty, CandidateFamily.Registered, null, registered, null),
         ];
 
         CandidateSetup Setup(DateOnly on, string outcome, double bar, double breakEven) => new(on, outcome, bar, bar, breakEven, 0, 1, false);
