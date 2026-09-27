@@ -27705,18 +27705,28 @@ Mutated:    the rule, stated before the run: each property this correction lands
             session exactly half the names spanning it hold.
             M3 every name counted as spanning every day, rather than those whose series reach either side of
             it: red in the new test alone, where FFF's later start makes 2026-08-12 two of five.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12RT of 12RT tests ran
+            Results: one run for each of the three in a detached worktree at fdf7dfd, this correction's
+            first commit, whose source and tests are those of ce7f750, the commits after it changing this
+            entry and the operator's guide alone; each filtered on the operator's instruction of
+            2026-09-24 to the seven tests in `HistoryPullTests`, each edit made there and reverted with
+            `git checkout -- .` and the tree read clean after. The whole suite ran green over ce7f750 in
+            the gates, 1443 of 1443. M1 turned the new test red alone. M2 turned the new test and the
+            second, `ANameTheProviderDoesNotAnswerAndASessionOneNameMissesAreNamedAndEverythingElseIsStoredAsSent`,
+            red. M3 turned the new test red alone. No other test of the seven went red under any of them.
+Held:       all three, each in the tests predicted and in no other of the seven.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1443 of 1443 tests ran
             with none failed, migrations 0 to 46 with none pending, schema version 46, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 12RB tables, 12RC claims, 12RP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 12RR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 12RT of 12RT tests.
-            Both gates ran over the tree carrying this entry and the ruling before it, 12RSHA, in a
-            worktree beside the repository, and the operator's store under `data/` was not touched by
-            either. A first run of `tools/ci.ps1` over fdf7dfd went red on one test and stopped at the
-            suite: `EveryEntrySinceTheLastHostedWindowsLegRecordsTheWindowsRun`, for this entry's line
-            written as a bare placeholder without the words the check reads. The second run over 12RSHA
-            is the one recorded here.
+            `tools/verify-phase.ps1` green at 42 tables, 578 claims, 578 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 588 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41
+            of 41 roster checks carried and all 41 run, 1443 of 1443 tests.
+            Both gates ran over the tree carrying this entry, the ruling before it and the operator's edit
+            to the guide, ce7f750, in a worktree beside the repository, and the operator's store under
+            `data/` was not touched by either. A first run of `tools/ci.ps1` over fdf7dfd went red on one
+            test and stopped at the suite: `EveryEntrySinceTheLastHostedWindowsLegRecordsTheWindowsRun`,
+            for this entry's line written as a bare placeholder without the words the check reads. A second
+            run over 3b9e94c was stopped by hand in its suite, so that the gates would run over the tree
+            carrying the operator's edit to the guide as well. The third run, over ce7f750, is the one
+            recorded here.
 Carried:    the first pull's run log row keeps its 621 as written, and this entry states the figure the
             correction gives for it, 10 names and 3 strays.
