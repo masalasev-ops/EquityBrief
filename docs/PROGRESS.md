@@ -28727,3 +28727,59 @@ Carried:    the operator's ruling on the split above, which settles the state ru
             the quality cut points before part 2; Monday's night, the first whose readings read the fill, its
             states and pages recorded in the entry after it; "The quarters fetch measured on a peak reporting
             night"; part 2 after the ruling; items 2 and 3 after the night of 2026-09-28.
+
+### 12.2 - correction: the state rule, the met tolerance and the quality's cut points are settled on the operator's ruling from the members' measured split, the quality's bands turning at 1.0 and 2.0, where they were proposed at 0.8 and 1.2   2026-09-27
+Corrects:   the three values the fundamentals item proposed and left to "The fundamental state rule settled
+            from the members' measured split". The split recorded in the entry before this was put to the
+            operator on 2026-09-27, and the operator ruled: the state keeps both signals, sales above a year
+            earlier and the margin wider in both quarters for improving and the reverse in both for
+            deteriorating; a met estimate stays within a cent or 1% of it, whichever is larger; and earnings
+            quality's cut points move from 0.8 and 1.2 to 1.0 and 2.0, since operating cash flow runs above net
+            income for most companies and the proposed points put 350 of the 477 compared in the upper band.
+Repaired:   `QuarterReadings.QualityLow` is 1.0 and `QualityHigh` 2.0, and the class says which of its
+            figures are settled and which proposed. Section 17's three rows state the settled values with the
+            figures they were settled from, and cite the decision that settles them in place of the row
+            that owed them. "Four readings of a member's reported quarters are worked out every night, and its
+            state is read from sales and operating margin alone" moves to Previously decided with its reasoning,
+            superseded by "Four readings of a member's reported quarters are worked out every night by rules the
+            measured split settled, and its state is read from sales and operating margin alone", which states
+            the ruling and its figures; every citation in the specs, the code and the tests is repointed. The
+            obligation row is discharged, the runbook says the split was put and ruled, and the fixture's worked
+            expectation bands its four names at the new cut points: AAPL, KEYS and MSFT in line and NFLX ahead of
+            cash, where KEYS and MSFT read more than backed and NFLX in line.
+Measured:   nothing new: the split is the one the entry before this records. At the new cut points the 477
+            compared read 59 ahead of cash, 284 in line and 134 more than backed by cash, counted over the
+            stored quarters read-only, the count at 0.8 and 1.2 agreeing with the shipped readings' 34, 93 and 350.
+            No night has stored readings yet, so no stored row moves; Monday's is the first to read at 1.0 and 2.0.
+Guarded:    `EarningsQualityReadsItsBandsAtTheirCutPointsAndALossIsNotCompared` at the new points, exactly at
+            each and a step outside each; `TheFixturesFourNamesReadAsWorkedByHandFromTheirCaptures` and
+            `TheReplayStoresEachNamesQuartersFromOneAskAndReadsNoMemberOnTheNightBeforeIt` against the
+            expectation's new bands; the census pinning section 17's 1.0 and 2.0 to the code; and the operating
+            rows phase 12 opened, three standing where four did.
+Written:    DECISIONS as above; section 17's three rows and eleven citations; SCHEMA's citation; BUILD_PLAN's
+            row and three citations; the runbook's fill paragraph. Each changed line's prior text in
+            `CHANGELOG.md`.
+Tests:      1478, unchanged: none added, removed or renamed.
+Claims:     644, unchanged: the three rows are reworded and add none.
+Pins:       the branch against `main` edits no source in the three pin lists, read as before. No version
+            moves; the candidate that skips a deteriorating business freezes these values when part 2
+            registers it.
+Mutated:    the rule, stated before the run: one mutation reversing the mechanism this correction changes,
+            filtered to the tests it reworks and the census.
+            Predicted:
+            S1 the quality's cut points back at 0.8 and 1.2: red in the quality test, the fixture's four
+            names, the replay's and the census.
+            Results: 12SM
+Held:       12SH
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12ST of 12ST tests ran
+            with none failed, migrations 0 to 48 with none pending, schema version 48, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 12SB tables, 12SC claims, 12SP PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 12SR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 12ST of 12ST tests.
+            Both gates ran over the tree carrying this entry, 12SSHA, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    Monday's night, the first whose readings read the fill at the settled values, its states and
+            pages recorded in the entry after it; "The quarters fetch measured on a peak reporting night";
+            part 2, the seventh candidate with its remedy, the operator's command, and its mutation of absent
+            members skipped by the candidate; items 2 and 3 after the night of 2026-09-28.

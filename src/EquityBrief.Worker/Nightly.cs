@@ -293,7 +293,7 @@ public static class Nightly
             // they give it, from the quarters fetched on the nights before this one, before the listings
             // and the facts file that read them. It makes no request: the quarters it reads were asked
             // for after an earlier night's close.
-            // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+            // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
             new("fundamental-readings", async () =>
             {
                 var outcome = await new FundamentalReader(clock, store.DatabaseFile)

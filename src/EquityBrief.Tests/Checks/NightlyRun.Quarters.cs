@@ -13,7 +13,7 @@ namespace EquityBrief.Tests.Checks;
 
 // nightly-run: the night reads every member's reported quarters after its swing readings and before its
 // listings, and asks for the members due after its close and before the overnight queue.
-// see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+// see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
 // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
 public partial class NightlyRun
 {

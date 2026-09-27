@@ -9,7 +9,7 @@ namespace EquityBrief.Core.Quarters;
 // year earlier, in both of the two newest quarters. The record against the estimates, the earnings
 // quality and the valuation position are shown beside it and never move it, so a business can read
 // improving beside earnings that ran ahead of cash.
-// see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+// see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
 public static class FundamentalState
 {
     public const string Improving = "improving";
@@ -90,10 +90,9 @@ public sealed record Readings(
 // The four readings of one fetch's quarters, and the state, worked out every night by arithmetic over
 // what the store holds and no model.
 //
-// Every figure is proposed and settled from the members' measured split once every member holds
-// quarters or is marked absent.
-// owes: The fundamental state rule settled from the members' measured split
-// see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+// The state rule, the met tolerance and the quality's cut points are the ones the operator settled from
+// the members' measured split; the other figures are proposed.
+// see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
 // see: Code owns every number
 public static class QuarterReadings
 {
@@ -114,14 +113,15 @@ public static class QuarterReadings
 
     public const decimal MetShare = 0.01m;
 
-    // Earnings quality reads the four newest quarters, a year, and names a gap of a fifth or more
-    // either way: below the first, earnings ran ahead of cash; above the second, they were more than
-    // backed by it.
+    // Earnings quality reads the four newest quarters, a year. Operating cash flow runs above net income
+    // for most companies, depreciation being added back, so below the first cut the cash fell short of
+    // the reported profit and earnings ran ahead of cash, and above the second they were more than backed
+    // by it.
     public const int QualityQuarters = 4;
 
-    public const decimal QualityLow = 0.8m;
+    public const decimal QualityLow = 1.0m;
 
-    public const decimal QualityHigh = 1.2m;
+    public const decimal QualityHigh = 2.0m;
 
     // The valuation position reads the kept quarters' own multiples and is stated where eight or more
     // carry one, tonight's multiple placed in the thirds of their range.

@@ -13,7 +13,7 @@ namespace EquityBrief.Tests.Reading;
 // stored and in the filter's own order before it, the word beside the trend with what the numbers say inside
 // it, the name page's numbers opening with what the numbers say, section 4's patterns held to the renderer's,
 // the run page's Fundamentals region, and Past picks' state and order.
-// see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+// see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
 // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
 public partial class ReadSurface
 {

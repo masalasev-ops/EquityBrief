@@ -9,7 +9,7 @@ namespace EquityBrief.Tests.Checks;
 // fixture-expectations: the four readings of a member's reported quarters and the state they give,
 // worked by hand over constructed quarters on both sides of each cut point and exactly at it, and the
 // fixture's four names read from their captures and off the rows the replay stored.
-// see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+// see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
 public partial class FixtureExpectations
 {
     static readonly DateOnly NewestQuarter = new(2026, 6, 30);
@@ -146,16 +146,16 @@ public partial class FixtureExpectations
     [Fact]
     public void EarningsQualityReadsItsBandsAtTheirCutPointsAndALossIsNotCompared()
     {
-        Assert.Equal((4, 0.8m, 1.2m), (QuarterReadings.QualityQuarters, QuarterReadings.QualityLow, QuarterReadings.QualityHigh));
+        Assert.Equal((4, 1.0m, 2.0m), (QuarterReadings.QualityQuarters, QuarterReadings.QualityLow, QuarterReadings.QualityHigh));
 
         QualityReading Over(decimal cash, decimal income) =>
             QuarterReadings.Quality([.. Enumerable.Range(0, 4).Select(back => Quarter(back, cash: cash / 4m, income: income / 4m))]);
 
         // Exactly at each cut point is in line, and a step outside is the band beyond.
-        Assert.Equal((0.8m, QuarterReadings.InLine), (Over(80m, 100m).Ratio, Over(80m, 100m).Band));
-        Assert.Equal(QuarterReadings.AheadOfCash, Over(79.99m, 100m).Band);
-        Assert.Equal((1.2m, QuarterReadings.InLine), (Over(120m, 100m).Ratio, Over(120m, 100m).Band));
-        Assert.Equal(QuarterReadings.BackedByCash, Over(120.01m, 100m).Band);
+        Assert.Equal((1.0m, QuarterReadings.InLine), (Over(100m, 100m).Ratio, Over(100m, 100m).Band));
+        Assert.Equal(QuarterReadings.AheadOfCash, Over(99.99m, 100m).Band);
+        Assert.Equal((2.0m, QuarterReadings.InLine), (Over(200m, 100m).Ratio, Over(200m, 100m).Band));
+        Assert.Equal(QuarterReadings.BackedByCash, Over(200.01m, 100m).Band);
 
         // A year's net income at or below nought is a loss and is not compared.
         Assert.Equal(QuarterReadings.Loss, Over(50m, 0m).Absent);

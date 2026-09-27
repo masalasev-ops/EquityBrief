@@ -1234,7 +1234,7 @@ public static class NameScreen
     // "What the numbers say" for a night's readings: the heading carrying the state, the quarter read from,
     // one sentence per reading, and the quarters any reading read with the dates each was filed and
     // reported on, newest first.
-    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+    // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
     public static NumbersSayView WhatTheNumbersSay(FundamentalReadingRow reading, IReadOnlyList<QuarterDatesRow> quarters)
     {
         var readings = Readings.FromJson(reading.Readings);

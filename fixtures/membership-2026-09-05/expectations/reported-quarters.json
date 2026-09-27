@@ -1,7 +1,7 @@
 {
  "stage": "reported-quarters",
  "derivation": "derived",
- "derivedFrom": "the four captured fundamentals payloads and the four captured bar files read through the rules section 17 states, not from a run. A fetch keeps the twelve newest quarters the income statement files with a filing date. Each quarter's sales growth is its revenue against the quarter within a week of a year earlier, the same growth a year before is that earlier quarter's own, and each margin is operating income over revenue, all rounded to six places, half to even. The four quarters' earnings a share sum the actuals of the quarter and the three before it, each found within a week of three, six and nine months back. The close after a report is the first captured adjusted close on a session after the report date and no more than a week after it, and the basis is the newest captured close of the three years before the night. The readings follow: the trajectory over the two newest quarters, the state read from it alone, the record over the eight newest quarters carrying an actual and an estimate with a met estimate within a cent or 1% of it, whichever is larger, earnings quality over the four newest, and the valuation needing eight multiples, which one year of captured closes never reaches. Computed outside this repository from the captured payloads, so a fetch that kept the wrong quarters, a growth read against the wrong quarter or a tolerance applied the wrong way would not agree with it.",
+ "derivedFrom": "the four captured fundamentals payloads and the four captured bar files read through the rules section 17 states, not from a run. A fetch keeps the twelve newest quarters the income statement files with a filing date. Each quarter's sales growth is its revenue against the quarter within a week of a year earlier, the same growth a year before is that earlier quarter's own, and each margin is operating income over revenue, all rounded to six places, half to even. The four quarters' earnings a share sum the actuals of the quarter and the three before it, each found within a week of three, six and nine months back. The close after a report is the first captured adjusted close on a session after the report date and no more than a week after it, and the basis is the newest captured close of the three years before the night. The readings follow: the trajectory over the two newest quarters, the state read from it alone, the record over the eight newest quarters carrying an actual and an estimate with a met estimate within a cent or 1% of it, whichever is larger, earnings quality over the four newest, banded at the cut points of 1.0 and 2.0 the operator ruled from the members' measured split, and the valuation needing eight multiples, which one year of captured closes never reaches. Computed outside this repository from the captured payloads, so a fetch that kept the wrong quarters, a growth read against the wrong quarter or a tolerance applied the wrong way would not agree with it.",
  "tables": [
   "reported_quarter",
   "quarter_ask",
@@ -53,7 +53,7 @@
    "state": "improving",
    "marginRun": 2,
    "record": {"quarters": 8, "beat": 8, "met": 0, "missed": 0},
-   "quality": {"ratio": "1.277070", "band": "more than backed by cash"},
+   "quality": {"ratio": "1.277070", "band": "in line"},
    "valuation": {"multiples": 4, "absent": "too few quarters"}
   },
   "MSFT": {
@@ -73,7 +73,7 @@
    "state": "improving",
    "marginRun": 7,
    "record": {"quarters": 8, "beat": 8, "met": 0, "missed": 0},
-   "quality": {"ratio": "1.367749", "band": "more than backed by cash"},
+   "quality": {"ratio": "1.367749", "band": "in line"},
    "valuation": {"multiples": 4, "absent": "too few quarters"}
   },
   "NFLX": {
@@ -93,7 +93,7 @@
    "state": "steady",
    "marginRun": 1,
    "record": {"quarters": 8, "beat": 2, "met": 4, "missed": 2},
-   "quality": {"ratio": "0.865476", "band": "in line"},
+   "quality": {"ratio": "0.865476", "band": "ran ahead of cash"},
    "valuation": {"multiples": 4, "absent": "too few quarters"}
   }
  },

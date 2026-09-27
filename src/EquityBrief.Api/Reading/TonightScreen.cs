@@ -181,7 +181,7 @@ public static class TonightScreen
 
     // The state a member's reported quarters gave it on the night and the sentences its readings say, and
     // nothing for a member the night stored no reading for.
-    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+    // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
     public static NumbersRow? Business(FundamentalReadingRow? reading) =>
         reading is null ? null : new NumbersRow(reading.State, NumbersSay.Sentences(Readings.FromJson(reading.Readings)));
 
