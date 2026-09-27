@@ -28658,3 +28658,69 @@ Carried:    the fill on the operator's next two nights, each night's asks, weigh
             first night of 40 or more first asks; then part 2, the
             seventh candidate with its remedy, the operator's command, and its mutation of absent members
             skipped by the candidate; items 2 and 3 on their own schedule after the night of 2026-09-28.
+
+### 12.2 - correction: the quarters step runs by hand with the worker's `quarters` verb, and the fill was taken on 2026-09-27 on the operator's word, where it waited for the next two nights   2026-09-27
+Corrects:   the fill the correction before this left to the operator's next two nights. The operator said on
+            2026-09-27 that it need not wait for Monday and was to be taken at once, the provider's allowance
+            being ample, and the quarters step ran only inside a night.
+Repaired:   `QuarterFetcher.RunAsync(args, ...)` is the worker's `quarters` verb: the step itself outside
+            the night, over the configured feeds and store, its asks dated by the session the clock falls on,
+            bounded by the step's own limit and the day's allowance, its run ids under `quarters-by-hand-`,
+            which `RunScreen.RunsByHand` now reads as run by hand so the run page never takes one for a night.
+            Run again the same day it asks no member that day asked and takes the next of the fill. The
+            worker names it among its twelve verbs, and the runbook says how and when to run it.
+Measured:   the fill, run twice from this branch's build over the operator's store on 2026-09-27 with no
+            night running, the store already at schema 48 by the operator's own migration, both runs dated
+            2026-09-27: the first from 17:18:54Z to 17:23:29Z asked 260 members and the second from 17:23:37Z
+            to 17:27:52Z the other 243, each a fill ask that stored its quarters, none returning nothing and
+            none refused. 6,020 quarters from 2023-06-30 to 2026-08-31, 500 members holding twelve, two
+            eight and one four; 1,006 requests and 5,533 weighted calls, 11 a member. The run page on the
+            relaunched app reads "The fill: 503 of 503 members hold quarters, 0 marked absent, 0 still to be
+            asked for the first time", which is the trigger of "The fundamental state rule settled from the
+            members' measured split".
+            The split it owes, worked with the shipped `QuarterReadings` over the stored quarters of all 503
+            members, the store opened read-only and the close each reads being 2026-09-25's on its fetch's
+            basis, where Monday's night reads Monday's. States:
+            improving 172, steady 317, deteriorating 14. The branch the ruling left open, either signal with
+            the other not pointing the opposite way, reads improving 173 and deteriorating 14, since two
+            signals read to six places are almost never exactly level. The record, stated for 500 members and
+            too few quarters for 3, over 3,994 quarters: beat 2,905, met 553, missed 536; read with no
+            tolerance, beat 3,174, met 165 and missed 655, the cent taking 286 of the meets and the 1% beyond
+            it 102; 100 members beat all eight. Earnings quality: in line 93, more than backed by cash 350,
+            ran ahead of cash 34, a loss 24, a quarter lacking a figure 2; over the 477 compared the ratio's
+            median is 1.51, its tenth percentile 0.92 and its ninetieth 3.06, so cut points either side of
+            one put three in four members in the upper band, and 0.7 and 1.3 would read 27, 141 and 309.
+            Valuation: the cheap end 205, the middle 127, the expensive end 151, too few quarters 13 and
+            earnings not above nought 7.
+Guarded:    `TheQuartersVerbRunsTheStepByHandAndARunAgainTheSameDayAsksTheNextOfTheFill` in `nightly-cost`,
+            over 300 constructed members and feeds the test holds: the first run asks the fill's 260 by
+            ticker, a second the same day none of them and the other 40, a third nothing, every run's row
+            the step's under the by-hand prefix the run page leaves out of its nights, a source that cannot be
+            resolved refused by name with nothing written, and the runbook naming the verb as typed.
+Written:    the runbook's paragraph on running the step by hand; `.claude/rules/checks.md`'s nightly-cost row.
+            Each changed line's prior text in `CHANGELOG.md`.
+Tests:      1478, from 1477: 1 added, none removed or renamed.
+Claims:     644, unchanged: no document the claims read moves.
+Pins:       the branch against `main` edits no source in the three pin lists, read as before. No version
+            moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: one mutation reversing each mechanism this correction adds, each
+            run filtered to the test it adds.
+            Predicted:
+            H1 the verb's run ids written without the by-hand prefix: red in the verb's test.
+            H2 the run page not reading the prefix as by hand, `quarters-by-hand-` taken out of
+            `RunScreen.RunsByHand`: red in the verb's test.
+            Not mutated: the same-session skip, which the correction before this built and its tests assert.
+            Results: 12HM
+Held:       12HH
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12HT of 12HT tests ran
+            with none failed, migrations 0 to 48 with none pending, schema version 48, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 12HB tables, 12HC claims, 12HP PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 12HR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 12HT of 12HT tests.
+            Both gates ran over the tree carrying this entry, 12HSHA, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    the operator's ruling on the split above, which settles the state rule, the met tolerance and
+            the quality cut points before part 2; Monday's night, the first whose readings read the fill, its
+            states and pages recorded in the entry after it; "The quarters fetch measured on a peak reporting
+            night"; part 2 after the ruling; items 2 and 3 after the night of 2026-09-28.

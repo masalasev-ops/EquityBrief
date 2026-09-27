@@ -8519,3 +8519,22 @@ Now:
 > | `read-surface` | ... and a pick on the session before; and tonight's list draws the names the filter passed by the state their reported quarters give them, ... and Past picks draws each trade's state on its listing night, ... each night's trades in the order that night was drawn in |
 > | `nightly-cost` | ... so the step's cost is shown to grow with versions and not with requests. The fourth carve-out, the quarters fetch after the close, is asserted rather than exempted over constructed nights: ... |
 Why: each check reaches the part of the 2026-09-27 ruling it asserts.
+
+### 2026-09-27 - RUNBOOK.md - the quarters step can be run by hand
+Authorised by: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+Was:
+> ... After the fill a member is asked on the night after it reports, ... (owes: The quarters fetch measured on a peak reporting night).
+Now:
+> ... (owes: The quarters fetch measured on a peak reporting night).
+> **The quarters step can be run by hand, to take the fill in one sitting rather than over two nights.**
+> `dotnet run --project src/EquityBrief.Worker -- quarters --live`
+> It is the night's own step, outside the night: ... Run again the same day it asks no member that day already asked and takes the next 260 of the fill, ... Run it when no night is running, and the next night's readings read what it stored.
+Why: the operator said on 2026-09-27 that the fill need not wait for the nights and was to be taken at once, which the step had no way to do outside a night.
+
+### 2026-09-27 - .claude/rules/checks.md - nightly-cost reaches the quarters verb
+Authorised by: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+Was:
+> | `nightly-cost` | ... and a step past its own limit starts no ask and an ask that would take the night past the day's allowance is not made |
+Now:
+> | `nightly-cost` | ... a step past its own limit starts no ask and an ask that would take the night past the day's allowance is not made; and the `quarters` verb runs the same step by hand, a second run the same day asking none the first asked and the rest of the fill, each run under the prefix the run page reads as by hand |
+Why: the check asserts the verb the operator ran on 2026-09-27.

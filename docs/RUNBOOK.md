@@ -22,6 +22,14 @@ Three steps a night, from one scheduled invocation. None is part of the applicat
 
 **The quarters step fills every member once, over its first two nights.** On the first night it asks for 260 members in ticker order after any member that reported, and on the second the rest, so the index holds quarters by the third night's readings: a night reads only the quarters fetched on the nights before it, so the first night's list reads every member as no fundamentals yet and is drawn in the swing filter's own order, the second night's reads the first 260, and the third's reads every member the provider answered for. The run page's Fundamentals region states each night's asks with why each was made and what came of it, every member still waiting for a quarter with when it is asked next, and the fill as it stands: how many hold quarters, how many are marked absent because the provider returned none, and how many are still to be asked. When it says none is still to be asked, the measured split of the states, of beats, meets and misses and of the earnings quality bands is read off the store and put to you, and the candidate that skips a deteriorating business is registered only after you have ruled on it (owes: The fundamental state rule settled from the members' measured split). After the fill a member is asked on the night after it reports, which the calendar says is about four times a year, so an ordinary night asks for a handful and a peak reporting night for up to a hundred or so (owes: The quarters fetch measured on a peak reporting night).
 
+**The quarters step can be run by hand, to take the fill in one sitting rather than over two nights.**
+
+```
+dotnet run --project src/EquityBrief.Worker -- quarters --live
+```
+
+It is the night's own step, outside the night: the members due, asked for as the night asks for them, each ask dated by the session the clock falls on, bounded by the step's own limit and by the day's allowance. Run again the same day it asks no member that day already asked and takes the next 260 of the fill, so two runs fill the whole index, each ask costing what the night's does. Its rows on the run log are drawn on the run page as run by hand, apart from any night's stages. Run it when no night is running, and the next night's readings read what it stored.
+
 ### Registering the schedule
 
 Until 5.7 this section said to register the schedule with the platform's scheduler, which is an instruction and not a command, and nothing was ever registered. A night that nobody scheduled produces no evening of observation however long anyone waits for one, so the two figures that were waiting on a week of nights waited on this instead.
