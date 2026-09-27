@@ -138,6 +138,7 @@ public class PinnedConstants
             new("Minimum resolved setups", "60", ReasonVerdict.MinimumSessions, "ReasonVerdict.MinimumSessions"),
             new("Minimum resolved setups", "400", ReasonVerdict.MinimumBeforeALiveReasonIsRetired, "ReasonVerdict.MinimumBeforeALiveReasonIsRetired"),
             new("Family size and correction", "8", CandidateFamily.Maximum, "CandidateFamily.Maximum"),
+            new("Distinct trials", "0.05", (decimal)ReasonVerdict.Significance, "ReasonVerdict.Significance"),
             new(Significance, "0.05", (decimal)ReasonVerdict.Significance, "ReasonVerdict.Significance"),
             new(Significance, "6", ReasonVerdict.LiveFamily, "ReasonVerdict.LiveFamily"),
             new(Significance, "8", CandidateFamily.Maximum, "CandidateFamily.Maximum"),
@@ -215,7 +216,6 @@ public class PinnedConstants
             new("The swing family", "3", (decimal)TheSwingFamily.VariantDepthHigh, "TheSwingFamily.VariantDepthHigh"),
             new("The swing family", "6", TheSwingFamily.For("1", FilterSettings.Proposed).Count, "the registrations TheSwingFamily writes"),
             new("The swing family", "0.05", (decimal)ReasonVerdict.Significance, "ReasonVerdict.Significance"),
-            new("The swing family", "6", TheSwingFamily.For("1", FilterSettings.Proposed).Count, "the divisor the family's six set"),
             new("Swing plan outcome", "63", ForwardReturnSeries.CapOf(ForwardReturnSeries.Swing), "ForwardReturnSeries.CapOf(ForwardReturnSeries.Swing)"),
             new("Twenty-session outcome", "20", ForwardReturnSeries.CapOf(ForwardReturnSeries.SwingTwenty), "ForwardReturnSeries.CapOf(ForwardReturnSeries.SwingTwenty)"),
         ];

@@ -62,10 +62,12 @@ public partial class ReadSurface
         Assert.Contains("data-proposed=\"{&quot;level&quot;: 30}\"", drawn, StringComparison.Ordinal);
         Assert.Contains("a changed number is a new registration", drawn, StringComparison.Ordinal);
 
-        // The step the graph stands at and the level it gives, beside the count ever registered.
+        // The step the graph stands at and the level it gives, beside the count of distinct trials, which
+        // for one candidate standing alone is one, so its level is the whole 0.05.
         Assert.Contains("data-step=\"1\"", drawn, StringComparison.Ordinal);
         Assert.Contains("data-level=\"0.05\"", drawn, StringComparison.Ordinal);
-        Assert.Contains("1 candidate condition(s) have ever been registered", drawn, StringComparison.Ordinal);
+        Assert.Contains("data-trials=\"1\"", drawn, StringComparison.Ordinal);
+        Assert.Contains("1 candidate condition(s) have ever been registered, which are 1 distinct trial(s) counted", drawn, StringComparison.Ordinal);
 
         // And the figures reported beside the verdict and tested nowhere.
         Assert.Contains("Reported and tested nowhere", drawn, StringComparison.Ordinal);
@@ -73,31 +75,85 @@ public partial class ReadSurface
         Assert.Contains("data-earnings=\"0\"", drawn, StringComparison.Ordinal);
     }
 
-    // The count ever registered is read against the count the per-window level is revisited at: below it
-    // the line says when the revisit comes, and at it or past it, which the swing family's registration took
-    // the store to with the three it retired, the line says the revisit is due and is the operator's, where
-    // it read nine of at most eight. Section 13.6 names the candidates each window opened with, as many as
-    // the code registers in each.
+    // The count of distinct trials stands beside every verdict where the names ever registered were read
+    // against the eight the revisit was due at: the names, the trials they come to, and the level at the
+    // graph's first step over the trials, drawn from the region's own fields so a count that stops being
+    // the trials' shows. Section 13.6 states the level over the distinct trials and names the candidates
+    // the count leaves out and the family it counts, as many as the code registers in each.
     [Fact]
-    public void TheLifetimeCountIsReadAgainstTheCountItsRevisitIsDueAt()
+    public void TheCountOfDistinctTrialsStandsBesideEveryVerdict()
     {
         var region = Region(WonInEachBlock(3), Nights(EquityBrief.Core.Returns.Blocks.Sessions * 9));
 
-        foreach (var (registered, due) in new[] { (7, false), (8, true), (9, true) })
+        foreach (var (registered, trials) in new[] { (1, 1), (16, 6), (22, 7) })
         {
-            var drawn = new MarkRenderer().CandidateRecords(region with { Registered = registered });
-            var line = FormattableString.Invariant($"{registered} candidate condition(s) have ever been registered, against the 8 at which the per-window level is revisited");
+            var drawn = new MarkRenderer().CandidateRecords(region with { Registered = registered, Trials = trials });
+            var line = FormattableString.Invariant(
+                $"<p data-trials=\"{trials}\">{registered} candidate condition(s) have ever been registered, which are {trials} distinct trial(s) counted, ") +
+                "the rules still running and the rules a look has read, and the level at the graph's first step is 0.05 over them. ";
 
-            Assert.Contains(line + (due ? ": the count has reached it, so the revisit is due and is the operator's ruling. " : ". "), drawn, StringComparison.Ordinal);
-            Assert.DoesNotContain("of at most", drawn, StringComparison.Ordinal);
+            Assert.Contains(line, drawn, StringComparison.Ordinal);
+            Assert.DoesNotContain("revisit", drawn, StringComparison.Ordinal);
         }
 
         string[] words = ["none", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
         var architecture = File.ReadAllText(Repository.Architecture);
         var first = Regex.Match(architecture, "<p data-phase=\"10\">The level at Holm's first step is (.*?);", RegexOptions.Singleline).Groups[1].Value;
 
+        Assert.StartsWith("0.05 over the distinct trials", first, StringComparison.Ordinal);
         Assert.Contains($"the {words[TheThreeCandidates.All.Count]} registered on 2026-09-23", first, StringComparison.Ordinal);
         Assert.Contains($"the swing family's {words[TheSwingFamily.For("1", FilterSettings.Proposed).Count]}", first, StringComparison.Ordinal);
+    }
+
+    // A look is read at the count of trials as of the night it was read, and a trial registered after it
+    // moves only the looks not yet read. A candidate alone at its first look holds the whole 0.05, whose
+    // release at half the information, 0.00558, is above the 1 in 256 that eight blocks all one way reach,
+    // so that look crosses and stays crossed when a second rule registers the day after, the page then
+    // counting two. The same second rule registered before the look and evaluated beside it on the night
+    // the look was read makes that night's count two, and the look, read at 0.025, releases 0.00153 and
+    // does not cross.
+    [Fact]
+    public void ALookKeepsTheBarOfTheCountAsOfTheNightItWasRead()
+    {
+        DateOnly night = Nights(EquityBrief.Core.Returns.Blocks.Sessions * 9);
+        const string Second = "momentum index at twenty";
+
+        CandidateRow Judging() =>
+            new(1, Judged, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, Registered, "{\"level\": 30}", null);
+
+        CandidateRow SecondRule(DateTimeOffset when) =>
+            new(2, Second, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, when, "{\"level\": 20}", null);
+
+        var dayAfter = new DateTimeOffset(night.AddDays(1).ToDateTime(new TimeOnly(10, 0)), TimeSpan.Zero);
+
+        var after = RunScreen.Candidates(
+            [Judging(), SecondRule(dayAfter)],
+            [new CandidateNightRow(FirstNight, Judged), new CandidateNightRow(night, Judged)],
+            WonInEachBlock(8),
+            night,
+            dayAfter.AddHours(1));
+
+        var kept = after.Candidates.Single(candidate => candidate.Candidate == Judged);
+
+        Assert.Equal(2, after.Trials);
+        Assert.Equal(0.05 / 2, kept.Level, 12);
+        Assert.Equal(0.05, Assert.Single(kept.Record.Looks).Level, 12);
+        Assert.True(kept.Record.Looks[0].Crossed);
+        Assert.Equal(CandidateRecord.Crossed, kept.Record.Verdict);
+
+        var before = RunScreen.Candidates(
+            [Judging(), SecondRule(Registered.AddDays(1))],
+            [new CandidateNightRow(FirstNight, Judged), new CandidateNightRow(night, Judged), new CandidateNightRow(night, Second)],
+            WonInEachBlock(8),
+            night,
+            dayAfter.AddHours(1));
+
+        var lowered = before.Candidates.Single(candidate => candidate.Candidate == Judged);
+
+        Assert.Equal(2, before.Trials);
+        Assert.Equal(0.05 / 2, Assert.Single(lowered.Record.Looks).Level, 12);
+        Assert.False(lowered.Record.Looks[0].Crossed);
+        Assert.Equal(CandidateRecord.NotCrossed, lowered.Record.Verdict);
     }
 
     [Fact]
@@ -199,7 +255,8 @@ public partial class ReadSurface
         // The row that takes a candidate out of the family names the registration it retires, and
         // the register keeps both: the retirement is a new row and the registration it names still
         // stands in the table behind it. A retirement that is not a promotion passes its level to
-        // nobody, so the two candidates still standing hold what they opened with.
+        // nobody. Taken after the candidate's first look was read, the trial stays counted, so the two
+        // candidates still standing hold what they opened with, a third each.
         var registered = Family();
 
         var nights = new[]
@@ -212,45 +269,62 @@ public partial class ReadSurface
         DateOnly night = Nights(EquityBrief.Core.Returns.Blocks.Sessions * 9);
         var opened = RunScreen.Candidates(registered, nights, [], night, Registered.AddYears(3));
 
+        // Retired on the night its eighth block was whole, which is the night its first look was read.
         var retired = registered.Append(new CandidateRow(
             4,
             "a",
             MomentumIndexReading.EvaluatorName,
             CandidateFamily.Retired,
             Retires: "a",
-            Registered.AddYears(2),
+            new DateTimeOffset(night.ToDateTime(new TimeOnly(22, 0)), TimeSpan.Zero),
             "{}",
             "the futility guideline was met at the first look")).ToArray();
 
-        var kept = RunScreen.Candidates(retired, nights, [], night, Registered.AddYears(3))
-            .Candidates.ToDictionary(candidate => candidate.Candidate, StringComparer.Ordinal);
+        var region = RunScreen.Candidates(retired, nights, WonInEachBlock(8, "a"), night, Registered.AddYears(3));
+        var kept = region.Candidates.ToDictionary(candidate => candidate.Candidate, StringComparer.Ordinal);
 
         Assert.Equal("a", retired[^1].Retires);
         Assert.False(kept["a"].Standing);
         Assert.False(kept["a"].Crossed);
+        Assert.Single(kept["a"].Record.Looks);
+        Assert.Equal(3, region.Trials);
         Assert.Equal(opened.Significance / 3, kept["b"].Level, 12);
         Assert.Equal(opened.Significance / 3, kept["c"].Level, 12);
 
         // The registration it retires is still in the register, which is what makes the retirement
         // a row rather than an edit.
         Assert.Contains(retired, row => row.Candidate == "a" && row.Event == CandidateFamily.Registered);
+
+        // Retired with no result of its own read, the trial is counted in none: a rule nobody read
+        // cannot have been chosen on its luck, so the two standing share the level between them.
+        var unread = RunScreen.Candidates(retired, nights, [], night, Registered.AddYears(3));
+        var shared = unread.Candidates.ToDictionary(candidate => candidate.Candidate, StringComparer.Ordinal);
+
+        Assert.Empty(shared["a"].Record.Looks);
+        Assert.Equal(2, unread.Trials);
+        Assert.Equal(opened.Significance / 2, shared["b"].Level, 12);
+        Assert.Equal(opened.Significance / 2, shared["c"].Level, 12);
     }
 
     // Two windows, as the register has held them since the swing family registered: three candidates
     // first evaluated on one night and retired at the instant six more registered, and the six first
-    // evaluated on a later night. Each window's first step is the level over the candidates it opened
-    // with, 0.05 over 3 and 0.05 over 6, and never over the nine the register has ever held.
+    // evaluated on a later night. Every window's first step is the level over the distinct trials and
+    // never over the candidates it opened with. The three retired with no result read are counted in
+    // none, so the six start at 0.05 over 6; retired on the night their first looks were read, the
+    // three are counted for good and the six start at 0.05 over 9, the three sharing the same budget
+    // rather than holding a fresh 0.05 of their own.
     [Fact]
-    public void EachWindowsFirstStepIsTheLevelOverTheCandidatesItOpenedWith()
+    public void EveryWindowsFirstStepIsTheLevelOverTheDistinctTrialsAndNeverOverTheCandidatesItOpenedWith()
     {
         var retiredAt = Registered.AddDays(21);
         string[] six = ["d", "e", "f", "g", "h", "i"];
+        DateOnly night = Nights(EquityBrief.Core.Returns.Blocks.Sessions * 9);
 
-        CandidateRow[] registered =
+        CandidateRow[] Written(DateTimeOffset when) =>
         [
             .. Family(),
-            .. Family().Select((row, at) => row with { Id = 4 + at, Event = CandidateFamily.Retired, Retires = row.Candidate, RegisteredAt = retiredAt, Evidence = "retired when six more registered" }),
-            .. six.Select((candidate, at) => new CandidateRow(7 + at, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, retiredAt, "{\"level\": 30}", null)),
+            .. Family().Select((row, at) => row with { Id = 4 + at, Event = CandidateFamily.Retired, Retires = row.Candidate, RegisteredAt = when, Evidence = "retired when six more registered" }),
+            .. six.Select((candidate, at) => new CandidateRow(7 + at, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, when, FormattableString.Invariant($"{{\"level\": {40 + at}}}"), null)),
         ];
 
         var later = FirstNight.AddDays(22);
@@ -260,32 +334,42 @@ public partial class ReadSurface
             .. six.Select(candidate => new CandidateNightRow(later, candidate)),
         ];
 
-        var region = RunScreen.Candidates(registered, nights, [], Nights(EquityBrief.Core.Returns.Blocks.Sessions * 9), Registered.AddYears(3));
-        var levels = region.Candidates.ToDictionary(candidate => candidate.Candidate, candidate => candidate.Level, StringComparer.Ordinal);
+        var unread = RunScreen.Candidates(Written(retiredAt), nights, [], night, Registered.AddYears(3));
+        var levels = unread.Candidates.ToDictionary(candidate => candidate.Candidate, candidate => candidate.Level, StringComparer.Ordinal);
 
-        Assert.Equal(9, region.Registered);
-        Assert.Equal(6, region.Standing);
-        Assert.All(["a", "b", "c"], candidate => Assert.Equal(0.05 / 3, levels[candidate], 12));
+        Assert.Equal((9, 6, 6), (unread.Registered, unread.Standing, unread.Trials));
         Assert.All(six, candidate => Assert.Equal(0.05 / 6, levels[candidate], 12));
+        Assert.All(["a", "b", "c"], candidate => Assert.Equal(0.05 / 6, levels[candidate], 12));
+
+        // The three read at their first looks, eight whole blocks each, and retired that night.
+        var readAt = new DateTimeOffset(night.ToDateTime(new TimeOnly(22, 0)), TimeSpan.Zero);
+        CandidateSetupRow[] setups = [.. WonInEachBlock(8, "a"), .. WonInEachBlock(8, "b"), .. WonInEachBlock(8, "c")];
+
+        var read = RunScreen.Candidates(Written(readAt), nights, setups, night, Registered.AddYears(3));
+        var shared = read.Candidates.ToDictionary(candidate => candidate.Candidate, StringComparer.Ordinal);
+
+        Assert.Equal((9, 6, 9), (read.Registered, read.Standing, read.Trials));
+        Assert.All(["a", "b", "c"], candidate => Assert.Single(shared[candidate].Record.Looks));
+        Assert.All(six, candidate => Assert.Equal(0.05 / 9, shared[candidate].Level, 12));
+        Assert.All(["a", "b", "c"], candidate => Assert.Equal(0.05 / 9, shared[candidate].Level, 12));
     }
 
-    // A candidate no night has evaluated has opened no window yet, and it reads the level over the
+    // A candidate no night has evaluated has opened no window yet, and it reads the graph of the
     // candidates standing beside it, the ones the next night evaluates with it, or, retired first, the
-    // ones standing when it was retired. Each state below is worked by hand from the register.
-    // The six registered at the instant the three retired, before any night evaluates them, while the
-    // page's night holds the three's rows: the three at 0.05 over 3 and the six at 0.05 over 6, drawn
-    // at the graph's first step. The six's first night moves no level. An acceptance retiring "d" and
-    // registering "j": before either's first night all six read 0.05 over 6, "d" over the six standing
-    // when it was retired; after the five and "d" were first evaluated on one night, "j" reads 0.05
-    // over the six standing beside it and no level of the window before it moves. Each candidate reads
-    // the window it opened with and no other: "e" promoted after the six's first night passes its 0.05
-    // over 6 to the four of that window still standing, each then at 0.05 over 6 and a quarter of it
-    // again at the graph's second, while "j", first evaluated with those four and not "e", reads 0.05
-    // over 5. And a candidate retired, registered again and retired again reads the ones standing at
-    // its last retirement, and one registered and retired in one second the ones standing before that
-    // second, and itself.
+    // ones standing when it was retired, at the level over the distinct trials as every candidate does.
+    // Each state below is worked by hand from the register. The six registered at the instant the three
+    // retired unread, before any night evaluates them: six trials, so the six and the three read 0.05
+    // over 6 at the graph's first step. The six's first night moves no level. An acceptance retiring "d"
+    // unread and registering "j" keeps six trials, and every candidate reads 0.05 over 6. Each candidate
+    // reads the graph of the window it opened with and no other: "e" promoted after the six's first night
+    // stays counted and passes its 0.05 over 6 to the four of that window still standing, each then at
+    // 0.05 over 6 and a quarter of it again at the graph's second, while "j", first evaluated with those
+    // four and not "e", holds 0.05 over 6 and receives nothing. And a candidate retired, registered again
+    // and retired again reads the graph of the ones standing at its last retirement, and one registered
+    // and retired in one second the ones standing before that second, and itself, each at 0.05 over the
+    // three trials still running, since neither was read.
     [Fact]
-    public void ACandidateNoNightHasEvaluatedReadsTheLevelOverTheCandidatesStandingBesideIt()
+    public void ACandidateNoNightHasEvaluatedReadsTheGraphBesideItAtTheLevelOverTheTrials()
     {
         var retiredAt = Registered.AddDays(21);
         var acceptedAt = Registered.AddDays(60);
@@ -299,7 +383,7 @@ public partial class ReadSurface
         [
             .. Family(),
             .. Family().Select((row, at) => row with { Id = 4 + at, Event = CandidateFamily.Retired, Retires = row.Candidate, RegisteredAt = retiredAt, Evidence = "retired when six more registered" }),
-            .. six.Select((candidate, at) => new CandidateRow(7 + at, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, retiredAt, "{\"level\": 30}", null)),
+            .. six.Select((candidate, at) => new CandidateRow(7 + at, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, retiredAt, FormattableString.Invariant($"{{\"level\": {40 + at}}}"), null)),
         ];
 
         CandidateRow[] accepted =
@@ -323,7 +407,8 @@ public partial class ReadSurface
         var unread = RunScreen.Candidates(family, threeRead, [], night, Registered.AddYears(3));
         var before = unread.Candidates.ToDictionary(candidate => candidate.Candidate, StringComparer.Ordinal);
 
-        Levels(before, ["a", "b", "c"], 0.05 / 3);
+        Assert.Equal(6, unread.Trials);
+        Levels(before, ["a", "b", "c"], 0.05 / 6);
         Levels(before, six, 0.05 / 6);
 
         // Drawn on the page, each of the six's own article reads the same level, matched on the whole
@@ -346,21 +431,21 @@ public partial class ReadSurface
         // The six's first night moves nothing.
         var after = Read(family, sixRead);
 
-        Levels(after, ["a", "b", "c"], 0.05 / 3);
+        Levels(after, ["a", "b", "c"], 0.05 / 6);
         Levels(after, six, 0.05 / 6);
 
-        // An acceptance before any night evaluated the six: "d" retired, over the six standing when it
-        // was, and "j" over the six standing beside it now.
+        // An acceptance before any night evaluated the six: "d" retired unread and "j" registered, still
+        // six trials.
         var acceptedUnread = Read(accepted, threeRead);
 
         Assert.False(acceptedUnread["d"].Standing);
-        Levels(acceptedUnread, ["a", "b", "c"], 0.05 / 3);
+        Levels(acceptedUnread, ["a", "b", "c"], 0.05 / 6);
         Levels(acceptedUnread, [.. six, "j"], 0.05 / 6);
 
         // An acceptance after the six's first night, "j" not yet evaluated.
         var acceptedAfter = Read(accepted, sixRead);
 
-        Levels(acceptedAfter, ["a", "b", "c"], 0.05 / 3);
+        Levels(acceptedAfter, ["a", "b", "c"], 0.05 / 6);
         Levels(acceptedAfter, [.. six, "j"], 0.05 / 6);
 
         // "e" promoted after the six's first night, and "j" first evaluated with the four of the six
@@ -376,14 +461,14 @@ public partial class ReadSurface
         Assert.True(ownWindows["e"].Crossed);
         Levels(ownWindows, variants.Skip(1), 0.05 / 6 + (0.05 / 6 / 4), step: 2);
         Levels(ownWindows, ["d"], 0.05 / 6, step: 2);
-        Levels(ownWindows, ["j"], 0.05 / 5);
+        Levels(ownWindows, ["j"], 0.05 / 6);
 
         // "k" retired beside three and registered again, then retired beside four, before any night
         // evaluated it; "m" registered and retired in one second beside three.
         CandidateRow Written(long id, string candidate, string written, DateTimeOffset when) =>
             written == CandidateFamily.Retired
                 ? new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Retired, candidate, when, "{}", "retired")
-                : new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, when, "{\"level\": 30}", null);
+                : new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, when, FormattableString.Invariant($"{{\"level\": {(int)candidate[0]}}}"), null);
 
         CandidateRow[] rejoined =
         [
@@ -401,7 +486,7 @@ public partial class ReadSurface
         var again = Read(rejoined, []);
 
         Levels(again, ["x", "y", "z"], 0.05 / 3);
-        Levels(again, ["k", "m"], 0.05 / 4);
+        Levels(again, ["k", "m"], 0.05 / 3);
         Assert.False(again["k"].Standing || again["m"].Standing);
     }
 
@@ -417,7 +502,7 @@ public partial class ReadSurface
         DateOnly night = Nights(EquityBrief.Core.Returns.Blocks.Sessions * 9);
 
         CandidateRow Registration(long id, string candidate, DateTimeOffset when) =>
-            new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, when, "{\"level\": 30}", null);
+            new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, when, FormattableString.Invariant($"{{\"level\": {(int)candidate[0]}}}"), null);
 
         CandidateRow[] back =
         [
@@ -459,7 +544,7 @@ public partial class ReadSurface
         DateOnly night = Nights(EquityBrief.Core.Returns.Blocks.Sessions * 9);
 
         CandidateRow Registration(long id, string candidate) =>
-            new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, Registered, "{\"level\": 30}", null);
+            new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Registered, null, Registered, FormattableString.Invariant($"{{\"level\": {(int)candidate[0]}}}"), null);
 
         CandidateRow Promotion(long id, string candidate, DateTimeOffset when) =>
             new(id, candidate, MomentumIndexReading.EvaluatorName, CandidateFamily.Retired, candidate, when, "{}", CandidateFamily.PromotedBy + " at the look of 12 blocks");
@@ -513,7 +598,8 @@ public partial class ReadSurface
 
         var onOneRead = HolmGraph.Levels(
                 [.. RunScreen.StepOrder(both, ["p", "q", "r"]).Select(candidate => new GraphMember(candidate, false, false, level => candidate != "r" && level >= (0.05 / 3) - 1e-12))],
-                0.05)
+                0.05,
+                3)
             .ToDictionary(level => level.Candidate, StringComparer.Ordinal);
 
         Assert.Equal((Math.Round(0.05 / 3, 12), 1, true), (Math.Round(onOneRead["q"].Level, 12), onOneRead["q"].Step, onOneRead["q"].Crossed));
@@ -575,10 +661,10 @@ public partial class ReadSurface
 
     // One won setup in each of the first blocks, each listed on the block's own first session and
     // each against a bar of a half, so the excess is a half a block.
-    static IReadOnlyList<CandidateSetupRow> WonInEachBlock(int blocks) =>
+    static IReadOnlyList<CandidateSetupRow> WonInEachBlock(int blocks, string candidate = Judged) =>
     [
         .. Enumerable.Range(0, blocks).Select(block => new CandidateSetupRow(
-            Judged,
+            candidate,
             Nights(block * EquityBrief.Core.Returns.Blocks.Sessions),
             ForwardReturnSeries.Win,
             0.5,

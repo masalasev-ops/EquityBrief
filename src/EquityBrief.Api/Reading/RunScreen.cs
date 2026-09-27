@@ -240,32 +240,142 @@ public static class RunScreen
     // The instant is the one the page is read at rather than the night's, because
     // what the region states is how hard the correction is now, which is what a
     // reader comparing it against a verdict needs.
+    //
+    // Beside the family's divisor stand the distinct trials the level is shared across and
+    // the level each starts at, with what a candidate's looks release of it, so the bar a
+    // verdict is read against is on the page wherever the divisor is.
     // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
-    public static ShadowRegion Shadow(IReadOnlyList<CandidateRow> rows, DateTimeOffset at)
+    // see: Holm's level passes between the candidates by a graph fixed when they are registered, and its first step is 0.05 over the distinct trials read at a look or still running
+    public static ShadowRegion Shadow(
+        IReadOnlyList<CandidateRow> rows,
+        IReadOnlyList<CandidateNightRow> nights,
+        IReadOnlyList<CandidateSetupRow> setups,
+        DateOnly night,
+        DateTimeOffset at)
     {
-        var register = rows
-            .Select(row => new RegisterRow(
-                row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
-                "{}", string.Empty, row.Event, row.Retires, row.RegisteredAt, null))
-            .ToArray();
+        var register = Register(rows);
+        var trials = TrialsCounted(register, nights, Fired(setups), night, at).Now;
+        double? level = trials > 0 ? ReasonVerdict.Significance / trials : null;
 
         // The count is the set a night evaluates and the divisor the family's own figure, taken apart so a disagreement shows.
         return new ShadowRegion(
             ShadowColumn.StandingAt(register, at).Count,
             CandidateFamily.Divisor(register, at),
-            CandidateFamily.Maximum);
+            CandidateFamily.Maximum,
+            trials,
+            level,
+            level is { } starts ? [.. Looks.At.Select((_, look) => Looks.Spent(starts, Looks.Fraction(look)))] : [],
+            level is { } first && Looks.Spent(first, Looks.Fraction(0)) >= 1d / (1 << Looks.At[0]));
     }
+
+    static RegisterRow[] Register(IReadOnlyList<CandidateRow> rows) =>
+    [
+        .. rows.Select(row => new RegisterRow(
+            row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
+            row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
+    ];
+
+    static Dictionary<string, IReadOnlyList<CandidateSetup>> Fired(IReadOnlyList<CandidateSetupRow> setups) =>
+        setups
+            .GroupBy(row => row.Candidate, StringComparer.Ordinal)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<CandidateSetup>)
+                [
+                    .. group.Select(row => new CandidateSetup(
+                        row.SessionDate, row.Outcome ?? string.Empty, row.Null, row.NullAtSensitivity,
+                        row.BreakEven, row.ReturnPct, row.PlannedRisk, row.OnEarnings)),
+                ],
+                StringComparer.Ordinal);
+
+    // The nights each registered candidate's looks were read on, the count of distinct trials as of any
+    // night, and the count as the page is read.
+    //
+    // A night's count is the rules that night evaluated, which are the ones running when it started, and
+    // the rules a look had read by it. A candidate retired with no result of its own read is counted in
+    // neither, and one a look has read is counted from that night for the life of the system.
+    sealed record Counted(IReadOnlyDictionary<string, IReadOnlyList<DateOnly>> LookNights, Func<DateOnly, int> On, int Now);
+
+    static Counted TrialsCounted(
+        IReadOnlyList<RegisterRow> rows,
+        IReadOnlyList<CandidateNightRow> nights,
+        IReadOnlyDictionary<string, IReadOnlyList<CandidateSetup>> fired,
+        DateOnly night,
+        DateTimeOffset at)
+    {
+        var standing = CandidateFamily.Standing(rows, at).Select(row => row.Candidate).ToArray();
+
+        var evaluatedOn = nights
+            .GroupBy(row => row.SessionDate)
+            .ToDictionary(group => group.Key, group => group.Select(row => row.Candidate).ToArray());
+
+        var opened = nights
+            .GroupBy(row => row.Candidate, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Min(row => row.SessionDate), StringComparer.Ordinal);
+
+        DateOnly[] evaluated = [.. evaluatedOn.Keys];
+
+        var lookNights = rows
+            .Where(row => row.Event == CandidateFamily.Registered)
+            .Select(row => row.Candidate)
+            .Distinct(StringComparer.Ordinal)
+            .ToDictionary(
+                candidate => candidate,
+                candidate => CandidateRecord.LookNights(
+                    fired.GetValueOrDefault(candidate, []),
+                    opened.GetValueOrDefault(candidate, night),
+                    evaluated,
+                    RecordUntil(rows, standing.Contains(candidate, StringComparer.Ordinal), candidate, night)),
+                StringComparer.Ordinal);
+
+        // A promotion is written after a look crossed, so a promoted candidate is one a look has read
+        // whatever the setups handed here hold.
+        IEnumerable<string> ReadBy(DateOnly on, DateTimeOffset promotedBy) =>
+            lookNights
+                .Where(entry => entry.Value.Count > 0 && entry.Value[0] <= on
+                    || PromotionOf(rows, entry.Key) is { } promotion && promotion.RegisteredAt <= promotedBy)
+                .Select(entry => entry.Key);
+
+        // Running on a night: the candidates it evaluated, and those the register held standing through
+        // its day, so a night whose rows were not written still counts what was running.
+        int On(DateOnly on)
+        {
+            var through = new DateTimeOffset(on.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+
+            return CandidateFamily.Trials(
+                rows,
+                evaluatedOn.GetValueOrDefault(on, [])
+                    .Concat(CandidateFamily.StandingBefore(rows, through).Select(row => row.Candidate))
+                    .Concat(ReadBy(on, through)));
+        }
+
+        return new Counted(lookNights, On, CandidateFamily.Trials(rows, standing.Concat(ReadBy(night, at))));
+    }
+
+    // The night a candidate's record runs to: tonight while it stands, and the night it was first retired
+    // on once it is not. Its blocks would otherwise go on completing over setups it stopped producing, and a
+    // look read after a candidate left the family would be a look nobody registered.
+    static DateOnly RecordUntil(IReadOnlyList<RegisterRow> rows, bool stands, string candidate, DateOnly night) =>
+        stands
+            ? night
+            : rows.Where(row => row.Event == CandidateFamily.Retired && row.Retires == candidate)
+                .Select(row => DateOnly.FromDateTime(row.RegisteredAt.UtcDateTime))
+                .DefaultIfEmpty(night)
+                .Min();
 
     // What each registered candidate's setups have come to, read at the looks it was registered
     // with and at the level the graph gives it now.
     //
     // A candidate's window opens on the first night that evaluated it, and the candidates that
-    // night evaluated are the family its level is divided by: a candidate registered after a
-    // window opened was not among the things being tried over the evidence that window holds.
+    // night evaluated are the family its graph passes a level among: a candidate registered after a
+    // window opened was not among the things being tried over the evidence that window holds. The
+    // level at the graph's first step is the significance over the distinct trials, and each look is
+    // read at the level of the count as of the night it was read on, so a trial registered since moves
+    // only the looks not yet read.
     // Nothing here names a ticker, and nothing it hands the page could: a record is a count of
     // setups and the sessions they were listed on.
     // see: A candidate is judged by a sign-flip test over blocks of 63 sessions, with at least eight blocks
-    // see: Holm's level passes between the candidates by a graph fixed when they are registered, and every verdict shows the lifetime count
+    // see: Holm's level passes between the candidates by a graph fixed when they are registered, and its first step is 0.05 over the distinct trials read at a look or still running
     public static CandidateRegion Candidates(
         IReadOnlyList<CandidateRow> register,
         IReadOnlyList<CandidateNightRow> nights,
@@ -273,11 +383,7 @@ public static class RunScreen
         DateOnly night,
         DateTimeOffset at)
     {
-        var rows = register
-            .Select(row => new RegisterRow(
-                row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
-                row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence))
-            .ToArray();
+        var rows = Register(register);
 
         var standing = CandidateFamily.Standing(rows, at).ToDictionary(row => row.Candidate, StringComparer.Ordinal);
 
@@ -295,35 +401,24 @@ public static class RunScreen
             .GroupBy(row => row.SessionDate)
             .ToDictionary(group => group.Key, group => group.Select(row => row.Candidate).ToArray());
 
-        var fired = setups
-            .GroupBy(row => row.Candidate, StringComparer.Ordinal)
-            .ToDictionary(
-                group => group.Key,
-                group => (IReadOnlyList<CandidateSetup>)
-                [
-                    .. group.Select(row => new CandidateSetup(
-                        row.SessionDate, row.Outcome ?? string.Empty, row.Null, row.NullAtSensitivity,
-                        row.BreakEven, row.ReturnPct, row.PlannedRisk, row.OnEarnings)),
-                ],
-                StringComparer.Ordinal);
+        var fired = Fired(setups);
+        var trials = TrialsCounted(rows, nights, fired, night, at);
 
-        // A retired candidate's record stops at the night it was retired on. Its blocks would
-        // otherwise go on completing over setups it stopped producing, and a look read after a
-        // candidate left the family would be a look nobody registered.
-        DateOnly Until(string candidate) =>
-            standing.ContainsKey(candidate)
-                ? night
-                : rows.Where(row => row.Event == CandidateFamily.Retired && row.Retires == candidate)
-                    .Select(row => DateOnly.FromDateTime(row.RegisteredAt.UtcDateTime))
-                    .DefaultIfEmpty(night)
-                    .Min();
+        // A family whose every candidate was retired unread counts no trial, and its records are still
+        // drawn at the level a single trial would hold.
+        var now = Math.Max(1, trials.Now);
 
+        // The graph's levels are over the count as the page is read, and a look already read takes its
+        // own count's instead: the level is the same share of the significance either way, so it is
+        // carried from one count to the other by their ratio.
         Measured Read(string candidate, double level) =>
             CandidateRecord.For(
                 fired.GetValueOrDefault(candidate, []),
                 opened.GetValueOrDefault(candidate, night),
-                Until(candidate),
-                level);
+                RecordUntil(rows, standing.ContainsKey(candidate), candidate, night),
+                look => trials.LookNights.TryGetValue(candidate, out var read) && look < read.Count
+                    ? level * now / Math.Max(1, trials.On(read[look]))
+                    : level);
 
         // A retirement the operator wrote after a promotion says so in its evidence, which is what
         // tells a candidate that left the family having been shown from one that left having not.
@@ -347,7 +442,8 @@ public static class RunScreen
                             !standing.ContainsKey(candidate),
                             level => Read(candidate, level).Verdict == CandidateRecord.Crossed)),
                 ],
-                ReasonVerdict.Significance);
+                ReasonVerdict.Significance,
+                now);
 
         var levels = new Dictionary<string, GraphLevel>(StringComparer.Ordinal);
 
@@ -381,7 +477,7 @@ public static class RunScreen
                     {
                         var level = levels.GetValueOrDefault(
                             candidate,
-                            new GraphLevel(candidate, ReasonVerdict.Significance, 1, false));
+                            new GraphLevel(candidate, ReasonVerdict.Significance / now, 1, false));
 
                         return new CandidateRecordRow(
                             candidate,
@@ -395,7 +491,7 @@ public static class RunScreen
             ],
             registered.Length,
             standing.Count,
-            CandidateFamily.Maximum,
+            trials.Now,
             ReasonVerdict.Significance,
             Blocks.Sessions,
             Blocks.Floor,

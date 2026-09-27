@@ -990,7 +990,12 @@ app.MapGet("/screens/run/{night?}", async (
             RunScreen.FellBack(await read.FellBackAsync(dated)),
             RunScreen.Queue(await read.QueueRowsAsync(), dated, Traded),
             RunScreen.Harness(PhaseReport(builder, checkout)),
-            RunScreen.Shadow(await read.RegisteredCandidatesAsync(), clock.UtcNow),
+            RunScreen.Shadow(
+                await read.RegisteredCandidatesAsync(),
+                await read.CandidateNightsAsync(),
+                await read.CandidateSetupsAsync(),
+                dated,
+                clock.UtcNow),
             priced,
             TonightScreen.WrittenBeforeTheCorrection(await read.ListingsAsync(dated)),
             RunScreen.Orders(everyListing, dated),

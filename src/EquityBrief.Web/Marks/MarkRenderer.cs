@@ -562,15 +562,25 @@ public sealed record ReasonTrackRow(
 public sealed record BaseRateLine(string Window, double? Rate);
 
 // The shadow candidates region: how many candidate conditions stand registered,
-// and the maximum family that number is corrected against.
+// the maximum family that number is held to and the family's divisor, and beside
+// the divisor the distinct trials the level is shared across, the level each starts
+// at and what a candidate's looks release of it, first to last.
 //
-// Two numbers and no names. The region says how hard the correction is and that
+// Numbers and no names. The region says how hard the correction is and that
 // every candidate's own record is withheld until it is promoted, and it carries
 // nothing a reader could read a candidate's performance off, because the
 // register is only a pre-registration for as long as nobody can see how a
 // candidate is doing before deciding whether to keep it.
 // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
-public sealed record ShadowRegion(int Registered, int Divisor, int Maximum);
+// see: Holm's level passes between the candidates by a graph fixed when they are registered, and its first step is 0.05 over the distinct trials read at a look or still running
+public sealed record ShadowRegion(
+    int Registered,
+    int Divisor,
+    int Maximum,
+    int Trials,
+    double? Level,
+    IReadOnlyList<double> Releases,
+    bool FirstLookPromotes);
 
 // One order of tonight's list as the run page measures it: its name and whether it is the benchmark,
 // the setups among the rows it would have drawn, how many of those have had their whole outcome
@@ -592,13 +602,13 @@ public sealed record CandidateRecordRow(
     int Step,
     Measured Record);
 
-// The candidates' records, with the lifetime count beside them, the looks a verdict is read at,
-// the block length and floor, and the round trip the bars carry.
+// The candidates' records, with the count of distinct trials beside them, the looks a verdict is
+// read at, the block length and floor, and the round trip the bars carry.
 public sealed record CandidateRegion(
     IReadOnlyList<CandidateRecordRow> Candidates,
     int Registered,
     int Standing,
-    int Maximum,
+    int Trials,
     double Significance,
     int BlockSessions,
     int Floor,
@@ -3950,8 +3960,25 @@ public sealed class MarkRenderer : IComponent
         region.Append(Invariant, $"<section class=\"shadow-candidates\" data-shadow=\"{shadow.Registered}\" data-divisor=\"{shadow.Divisor}\" data-maximum=\"{shadow.Maximum}\">");
 
         region.Append(shadow is { Registered: 0, Divisor: 0 }
-            ? Formatted($"<p data-shadow=\"none\">no candidate condition is registered as this page is read, so no candidate's threshold is divided; the candidate family may hold at most {shadow.Maximum}</p>")
-            : Formatted($"<p data-shadow=\"{shadow.Registered}\">{shadow.Registered} candidate condition(s) registered as this page is read, of at most {shadow.Maximum}, so a candidate's threshold is divided by {shadow.Divisor}</p>"));
+            ? Formatted($"<p data-shadow=\"none\">no candidate condition is registered as this page is read, so the family's divisor is none; the candidate family may hold at most {shadow.Maximum}</p>")
+            : Formatted($"<p data-shadow=\"{shadow.Registered}\">{shadow.Registered} candidate condition(s) registered as this page is read, of at most {shadow.Maximum}, and the family's divisor is {shadow.Divisor}</p>"));
+
+        // Beside the divisor, the count the level is actually shared across and the bar it sets, with what
+        // each look releases of it, because a verdict is read against the bar and not against the divisor.
+        // see: Holm's level passes between the candidates by a graph fixed when they are registered, and its first step is 0.05 over the distinct trials read at a look or still running
+        if (shadow.Level is { } level && shadow.Releases.Count >= 2)
+        {
+            region.Append(Invariant, $"<p data-trials=\"{shadow.Trials}\" data-level=\"{level:0.#####}\" data-releases=\"{string.Join(", ", shadow.Releases.Select(release => release.ToString("0.#####", Invariant)))}\">");
+            region.Append(Invariant, $"{shadow.Trials} distinct trial(s) counted, the rules still running and the rules a look has read, so the level at Holm's first step is 0.05 over {shadow.Trials}, {level:0.#####}, ");
+            region.Append(Invariant, $"which a candidate's looks release as {shadow.Releases[0]:0.#####} by the first, {shadow.Releases[1]:0.#####} by the second and {shadow.Releases[^1]:0.#####} by the last");
+            region.Append(shadow.FirstLookPromotes
+                ? "</p>"
+                : ", the first below the 1 in 256 that eight blocks can reach, so it can retire a candidate and never promote one</p>");
+        }
+        else
+        {
+            region.Append("<p data-trials=\"0\">no distinct trial is counted, since no rule is running and no look has read one, so no level is divided</p>");
+        }
 
         region.Append("<p data-withheld=\"true\">each candidate's own record is withheld until it is promoted, and no evaluation of a name is shown here or anywhere else</p>");
 
@@ -4117,14 +4144,12 @@ public sealed class MarkRenderer : IComponent
             return drawn.ToString();
         }
 
-        // The lifetime count against the count the per-window level is revisited at, which is a different
-        // rule from the family's maximum standing at once and is reached by retirements as well as
-        // registrations, so a count past it says the revisit is due rather than reading as a breach.
-        // see: Holm's level passes between the candidates by a graph fixed when they are registered, and every verdict shows the lifetime count
-        drawn.Append(Invariant, $"<p data-lifetime=\"{region.Registered}\" data-revisit=\"{region.Maximum}\">{region.Registered} candidate condition(s) have ever been registered, against the {region.Maximum} at which the per-window level is revisited");
-        drawn.Append(region.Registered >= region.Maximum
-            ? ": the count has reached it, so the revisit is due and is the operator's ruling. "
-            : ". ");
+        // The count of distinct trials beside every verdict, which is what the level at the graph's first
+        // step is divided by: the rules still running and the rules a look has read, so the names ever
+        // registered, retirements taken unread among them, are not what a verdict is judged against.
+        // see: Holm's level passes between the candidates by a graph fixed when they are registered, and its first step is 0.05 over the distinct trials read at a look or still running
+        drawn.Append(Invariant, $"<p data-trials=\"{region.Trials}\">{region.Registered} candidate condition(s) have ever been registered, which are {region.Trials} distinct trial(s) counted, ");
+        drawn.Append(Invariant, $"the rules still running and the rules a look has read, and the level at the graph's first step is {region.Significance:0.##} over them. ");
         drawn.Append(Invariant, $"A verdict is read at {looks} non-empty blocks of {region.BlockSessions} sessions and at no other time, ");
         drawn.Append(Invariant, $"over the setups whose whole outcome window has closed, against a bar simulated from each setup's own plan at a round trip of {region.Cost:0.#} basis points, with {region.Sensitivity:0.#} shown beside it.</p>");
 

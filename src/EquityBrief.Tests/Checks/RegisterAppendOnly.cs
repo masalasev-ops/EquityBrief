@@ -380,7 +380,7 @@ public class RegisterAppendOnly
 
         // The run page reads the same rule off the same rows.
         var page = new MarkRenderer().ShadowCandidates(
-            RunScreen.Shadow(await new ReadApi(store.DatabaseFile, Clock(Opened)).RegisteredCandidatesAsync(), Opened));
+            RunScreen.Shadow(await new ReadApi(store.DatabaseFile, Clock(Opened)).RegisteredCandidatesAsync(), [], [], DateOnly.FromDateTime(Opened.UtcDateTime), Opened));
 
         Assert.Contains("data-shadow=\"8\"", page, StringComparison.Ordinal);
         Assert.Contains("data-divisor=\"8\"", page, StringComparison.Ordinal);
