@@ -234,6 +234,7 @@
   <div><dt>Break-even rate</dt><dd>How often a plan must reach its target before its stop just to come out even.</dd></div>
   <div><dt>Breadth</dt><dd>The share of the index trading above its own 200-day average. A reading of the whole market's health.</dd></div>
   <div><dt>Relative strength</dt><dd>How a stock's recent return compares with every other stock in the index.</dd></div>
+  <div><dt>Settings version</dt><dd>The set of thresholds the list's filter runs with each night. A change opens a new version; the old one and its record are kept.</dd></div>
   <div><dt>Calibration</dt><dd>Adjusting a setting from what the system has measured, and only with your approval.</dd></div>
 </dl>
 
@@ -584,7 +585,7 @@
   </svg>
 </figure>
 <div class="key">
-  <p><b>How to read it.</b> The loop runs every night for every stock, whether or not it made the list. That is how the system learns what the gates turned away, not only what they let in.</p>
+  <p><b>How to read it.</b> The loop runs every night for every stock, whether or not it made the list. That is how the system learns what the gates turned away, not only what they let in. The plan scored is the swing trade from section 6: bought at the close, with its stop and target taken from the bands around it. The stepped plan in section 5 is what the report shows you.</p>
   <p><b>What to take from it.</b> Nothing changes the list without your decision, and every change is written down with its evidence.</p>
 </div>
 
@@ -626,6 +627,87 @@
   <p><b>Why fixed checkpoints.</b> Looking at results again and again and stopping when they look good finds false winners. Results are judged only at set points, the way medical trials handle the same problem (<a href="#s-armitage">Armitage, McPherson and Rowe 1969</a>; <a href="#s-lan">Lan and DeMets 1983</a>; <a href="#s-fda">FDA 2019</a>).</p>
   <p><b>Why a limit on adjustments.</b> Each time the live settings change, the edge clock has to start again. So after the first adjustment, any further change shows how much evidence it would throw away before you accept it.</p>
   <p><b>Why the turned-away stocks count.</b> Each gate is also judged by what it turned away. If the stocks a gate rejects would have done as well as the ones it lets through, that gate is not earning its place, and the page says so.</p>
+</div>
+
+<h3>How a result reaches tonight's list</h3>
+<p>The list's filter runs every night on a stored settings version. The feedback never edits those settings itself. It prepares a change, the run page tells you it is ready, and the change reaches the list only when you accept it.</p>
+<figure>
+  <svg viewBox="0 0 1000 330" role="img" aria-labelledby="f12">
+    <title id="f12">How a measured result becomes a change to tonight's list</title>
+    <defs><marker id="ah5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+
+    <rect class="bx-n" x="10" y="100" width="170" height="90" rx="6"/>
+    <text class="t" x="95" y="132" text-anchor="middle">Record and score</text>
+    <text class="ts" x="95" y="154" text-anchor="middle">every stock,</text>
+    <text class="ts" x="95" y="172" text-anchor="middle">every night</text>
+
+    <rect class="bx-n" x="215" y="18" width="220" height="74" rx="6"/>
+    <text class="t" x="325" y="48" text-anchor="middle">Shape proposer</text>
+    <text class="ts" x="325" y="70" text-anchor="middle">suggests new settings</text>
+    <rect class="bx-n" x="215" y="108" width="220" height="74" rx="6"/>
+    <text class="t" x="325" y="138" text-anchor="middle">Alternatives judged</text>
+    <text class="ts" x="325" y="160" text-anchor="middle">at fixed checkpoints</text>
+    <rect class="bx-n" x="215" y="198" width="220" height="74" rx="6"/>
+    <text class="t" x="325" y="228" text-anchor="middle">Turned-away stocks</text>
+    <text class="ts" x="325" y="250" text-anchor="middle">how they would have done</text>
+
+    <path class="ln" d="M180 145 H198 V55 H211" marker-end="url(#ah5)"/>
+    <path class="ln" d="M180 145 H211" marker-end="url(#ah5)"/>
+    <path class="ln" d="M198 145 V235 H211" marker-end="url(#ah5)"/>
+
+    <rect class="bx-v" x="470" y="108" width="180" height="74" rx="6"/>
+    <text class="t" x="560" y="138" text-anchor="middle">Run page</text>
+    <text class="ts" x="560" y="160" text-anchor="middle">says one is ready</text>
+    <path class="ln" d="M435 55 H452 V145 H466" marker-end="url(#ah5)"/>
+    <path class="ln" d="M435 145 H466" marker-end="url(#ah5)"/>
+    <path class="ln" d="M435 235 H452 V145"/>
+
+    <rect class="bx-v" x="685" y="108" width="130" height="74" rx="6"/>
+    <text class="t" x="750" y="138" text-anchor="middle">You decide</text>
+    <text class="ts" x="750" y="160" text-anchor="middle">with a reason</text>
+    <path class="ln" d="M650 145 H681" marker-end="url(#ah5)"/>
+
+    <rect class="bx" x="850" y="18" width="140" height="66" rx="6"/>
+    <text class="t" x="920" y="46" text-anchor="middle">Reject</text>
+    <text class="ts" x="920" y="68" text-anchor="middle">kept on record</text>
+    <rect class="bx-n" x="850" y="108" width="140" height="74" rx="6"/>
+    <text class="t" x="920" y="138" text-anchor="middle">Accept</text>
+    <text class="ts" x="920" y="160" text-anchor="middle">new version</text>
+    <rect class="bx-v" x="850" y="232" width="140" height="74" rx="6"/>
+    <text class="t" x="920" y="262" text-anchor="middle">Next night</text>
+    <text class="ts" x="920" y="284" text-anchor="middle">the list uses it</text>
+
+    <path class="ln" d="M815 132 H832 V51 H846" marker-end="url(#ah5)"/>
+    <path class="ln" d="M815 145 H846" marker-end="url(#ah5)"/>
+    <path class="ln-v" d="M920 182 V228" marker-end="url(#ah5)"/>
+    <text class="ts" x="470" y="316" text-anchor="middle">Nothing moves from the run page to the list except through your decision.</text>
+  </svg>
+</figure>
+<div class="key">
+  <p><b>How to read it.</b> Blue boxes run on their own. Teal boxes are what you see and do. The only route to the list passes through "You decide".</p>
+  <p><b>What to take from it.</b> The system does the measuring and the proposing. Changing the list is always one deliberate step by you, and both the old and the new settings stay on record.</p>
+</div>
+
+<div class="wrap"><table>
+  <tr><th>Step</th><th>What happens</th><th>Who does it</th></tr>
+  <tr><td>Every night</td><td>Every stock's result on every check is stored, with the trade it would have taken.</td><td>The system</td></tr>
+  <tr><td>As trades finish</td><td>Each trade is scored: target reached first, stop reached first, or neither in time.</td><td>The system</td></tr>
+  <tr><td>A clock reaches its point</td><td>The top of the run page says a proposal or a verdict is ready, with its evidence.</td><td>The system</td></tr>
+  <tr><td>Decide</td><td>Accept or reject, with a reason. A rejection changes nothing and is recorded.</td><td>You</td></tr>
+  <tr><td>From the next night</td><td>The filter runs on the new settings version. The previous version and everything measured under it are kept.</td><td>The system</td></tr>
+</table></div>
+
+<div class="wrap"><table>
+  <tr><th>What was found</th><th>What it changes</th></tr>
+  <tr><td>A shape proposal, accepted</td><td>One or more settings. A new settings version opens and the next night uses it.</td></tr>
+  <tr><td>An alternative clearly better, promoted</td><td>If it differs only in a setting, the same as above. If it differs in a rule, such as how the stop is placed or how fresh the signal must be, the code and the specification are changed first, as a build step.</td></tr>
+  <tr><td>An alternative clearly worse</td><td>It is retired and stops running. The live list is unchanged.</td></tr>
+  <tr><td>A gate whose turned-away stocks did as well as its admitted ones</td><td>Nothing automatically. It is the evidence for you to loosen or remove that gate as a ruling.</td></tr>
+</table></div>
+
+<div class="why">
+  <p><b>An example over time, with illustrative steps.</b> A few months after the list goes live, the run page says the trend gate lets through too few stocks on ordinary nights and proposes a slightly lower strength bar. You accept it, and from the next night the list runs on it. About two years in, the first checkpoint shows the alternative without the market gate doing clearly worse, so it is retired and the list is unchanged. About three years in, an alternative with a higher reward bar is shown clearly beating the live filter. You promote it, and its setting becomes the live one from the next night.</p>
+  <p><b>Why the system never applies a change itself.</b> A filter that moved its own settings would tune itself toward whatever it saw last. Every change also restarts the evidence for the settings it replaces, so it should be a deliberate choice with a written reason.</p>
 </div>
 
 <!-- 10 -->

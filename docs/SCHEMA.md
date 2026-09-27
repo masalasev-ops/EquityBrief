@@ -200,7 +200,7 @@ Primary key: `ticker`, `session_date`.
 
 **`pull` is what removes a pull whole.** The pull's purge deletes every row one pull wrote and nothing else. No stored bar may be removed that way, and these rows may because no night, listing, score or page ever read one. A second pull inserts only the sessions no earlier pull holds, so each row belongs to exactly one pull.
 
-**A session missing from one name's pulled series is kept as a hole rather than refused.** The pull names it on its run log row, read against the sessions the other pulled names hold, and the reader of the series decides what a hole stops, because nothing is computed from this table on its own.
+**A session missing from one name's pulled series is kept as a hole rather than refused.** The pull names it on its run log row, read against the days at least half the pulled names whose series span each day hold, and the reader of the series decides what a hole stops, because nothing is computed from this table on its own. A day fewer than half of them hold is named apart on the same row and is no name's hole: the exchange's closure table covers the store's own years alone, so what places an older session is the names that traded it, and a bar the provider sent for one name on a day the exchange was closed is stored as sent.
 
 ### pulled_earnings
 Grain: one row per ticker per earnings report date a pull reached.

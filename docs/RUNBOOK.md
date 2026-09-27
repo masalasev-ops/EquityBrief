@@ -321,7 +321,7 @@ The store keeps a year of bars, and a session can be read only once two hundred 
 dotnet run --project src/EquityBrief.Worker -- history-pull --from 2018-01-01 --live
 ```
 
-It asks every name the index held on any session from that date to tonight, the members that have left since among them, for its daily bars over the whole span, one request a name, and the earnings calendar once for each calendar month of the span, and stores what comes back in `pulled_bar` and `pulled_earnings`, every row carrying the pull's run id, which begins `history-pull-` and is printed first. A pull from 2018 asks about seven hundred names and about a hundred months, so it costs about eight hundred weighted calls. A name the provider does not answer, and a session one name misses against the others, are each named on its run log row and printed. Run it when no night is running.
+It asks every name the index held on any session from that date to tonight, the members that have left since among them, for its daily bars over the whole span, one request a name, and the earnings calendar once for each calendar month of the span, and stores what comes back in `pulled_bar` and `pulled_earnings`, every row carrying the pull's run id, which begins `history-pull-` and is printed first. A pull from 2018 asks about seven hundred names and about a hundred months, so it costs about eight hundred weighted calls. A name the provider does not answer, and a session one name misses where at least half the names spanning it hold it, are each named on its run log row and printed, and a day fewer than half hold is counted apart as no one's missing session and named on the row. Run it when no night is running.
 
 Remove a pull whole by its run id:
 

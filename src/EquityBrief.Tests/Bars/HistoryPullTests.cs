@@ -156,6 +156,7 @@ public class HistoryPullTests
         Assert.Equal((From, Tonight, 3, 3), (outcome.From, outcome.Through, outcome.Names, outcome.Stored));
         Assert.Empty(outcome.Unanswered);
         Assert.Empty(outcome.Holes);
+        Assert.Empty(outcome.Strays);
 
         Assert.Equal(["history-pull-one"], Rows(store, "SELECT DISTINCT pull FROM pulled_bar UNION SELECT DISTINCT pull FROM pulled_earnings;"));
         Assert.Equal(
@@ -205,8 +206,10 @@ public class HistoryPullTests
         Assert.Equal(["BBB: the provider answered 404", "EEE: the provider sent no session"], outcome.Unanswered);
         Assert.Equal((4, 2), (outcome.Names, outcome.Stored));
 
-        // CCC's hole is a session AAA holds, stored as sent rather than refused or filled.
+        // CCC's hole is a session AAA holds, stored as sent rather than refused or filled: one of the two
+        // names spanning it holds it, which is half.
         Assert.Equal([new Gap("CCC", missing)], outcome.Holes);
+        Assert.Empty(outcome.Strays);
         Assert.Equal(
             [$"AAA|{SessionsInTheSpan}", $"CCC|{SessionsInTheSpan - 1}"],
             Rows(store, "SELECT ticker, COUNT(*) FROM pulled_bar GROUP BY ticker ORDER BY ticker;"));
@@ -221,8 +224,54 @@ public class HistoryPullTests
         var said = HistoryPull.Detail(outcome);
 
         Assert.Contains("2 of 4 name(s) answered", said, StringComparison.Ordinal);
-        Assert.Contains("1 name(s) with a missing session", said, StringComparison.Ordinal);
+        Assert.Contains("1 name(s) with a missing session, 0 day(s) held by fewer than half the names spanning them", said, StringComparison.Ordinal);
         Assert.Contains("unanswered: BBB: the provider answered 404", said, StringComparison.Ordinal);
+    }
+
+    // A day is a session where at least half the names whose series span it hold it. Five names answer,
+    // FFF's series starting on 2026-08-17, so four span every day before it: EEE alone holds a bar on
+    // Independence Day observed, 2026-07-03, one of the four, which is a stray and nobody's missing
+    // session; AAA and EEE alone hold 2026-08-12, two of the four, exactly half, which is a session BBB
+    // and CCC each miss. Against every date any name held, AAA, BBB and CCC would each miss 2026-07-03:
+    // three names with a missing session where two miss a session the exchange traded.
+    [Fact]
+    public async Task ADayFewerThanHalfTheNamesSpanningItHoldIsNamedApartAndNoOtherNameReadsAsMissingIt()
+    {
+        using var store = Seeded("EEE", "FFF");
+
+        var missing = new DateOnly(2026, 8, 12);
+        var later = new DateOnly(2026, 8, 17);
+        var bars = new ConstructedBars(new Dictionary<string, IReadOnlyList<DateOnly>>
+        {
+            ["AAA"] = Sessions(From, Tonight),
+            ["BBB"] = [.. Sessions(From, Tonight).Where(session => session != missing)],
+            ["CCC"] = [.. Sessions(From, Tonight).Where(session => session != missing)],
+            ["EEE"] = [.. Sessions(From, Tonight), Closure],
+            ["FFF"] = Sessions(later, Tonight),
+        });
+
+        var outcome = await new HistoryPull(bars, new ConstructedPrints([]), Clock(), store.DatabaseFile).PullAsync(Index, From, "history-pull-stray");
+
+        Assert.Equal((5, 5), (outcome.Names, outcome.Stored));
+        Assert.Equal([new Gap("BBB", missing), new Gap("CCC", missing)], outcome.Holes);
+
+        var stray = Assert.Single(outcome.Strays);
+
+        Assert.Equal((Closure, 4), (stray.Day, stray.Spanning));
+        Assert.Equal(["EEE"], stray.Holders);
+
+        // Every bar stored as it was sent, the stray among them: 47, 46, 46, 48 and FFF's 15.
+        Assert.Equal(
+            [$"AAA|{SessionsInTheSpan}", $"BBB|{SessionsInTheSpan - 1}", $"CCC|{SessionsInTheSpan - 1}", $"EEE|{SessionsInTheSpan + 1}", "FFF|15"],
+            Rows(store, "SELECT ticker, COUNT(*) FROM pulled_bar GROUP BY ticker ORDER BY ticker;"));
+
+        var logged = Assert.Single(Rows(store, "SELECT detail FROM run_log WHERE run_id = 'history-pull-stray';"));
+
+        Assert.Contains("BBB is missing 1 session(s), the first 2026-08-12", logged, StringComparison.Ordinal);
+        Assert.Contains("CCC is missing 1 session(s), the first 2026-08-12", logged, StringComparison.Ordinal);
+        Assert.DoesNotContain("AAA is missing", logged, StringComparison.Ordinal);
+        Assert.Contains("2026-07-03 held by 1 of the 4 name(s) spanning it: EEE", logged, StringComparison.Ordinal);
+        Assert.Contains("2 name(s) with a missing session, 1 day(s) held by fewer than half the names spanning them", HistoryPull.Detail(outcome), StringComparison.Ordinal);
     }
 
     [Fact]

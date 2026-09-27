@@ -224,7 +224,7 @@ public sealed class HistoryPull(
             entry => entry.Key,
             entry => (IReadOnlyCollection<DateOnly>)[.. entry.Value.Select(bar => bar.SessionDate)],
             StringComparer.OrdinalIgnoreCase);
-        var holes = TradingCalendar.CanDetect(dates) ? TradingCalendar.GapsIn(dates) : [];
+        var (holes, strays) = HolesIn(dates);
 
         var held = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var prints = new Dictionary<(string Ticker, DateOnly Date), CalendarEvent>();
@@ -301,7 +301,8 @@ public sealed class HistoryPull(
             earningsWritten,
             requests,
             months.Count,
-            monthsUnanswered);
+            monthsUnanswered,
+            strays);
 
         await AppendAsync(
             connection,
@@ -326,6 +327,9 @@ public sealed class HistoryPull(
                 holes = holes
                     .GroupBy(gap => gap.Ticker, StringComparer.Ordinal)
                     .Select(group => FormattableString.Invariant($"{group.Key} is missing {group.Count()} session(s), the first {group.Min(gap => gap.SessionDate):yyyy-MM-dd}"))
+                    .ToArray(),
+                strays = strays
+                    .Select(stray => FormattableString.Invariant($"{stray.Day:yyyy-MM-dd} held by {stray.Holders.Count} of the {stray.Spanning} name(s) spanning it: {string.Join(", ", stray.Holders)}"))
                     .ToArray(),
             }),
             cancellation);
@@ -401,9 +405,66 @@ public sealed class HistoryPull(
         return months;
     }
 
+    // The sessions each name's series misses, and the days read as no session at all. A day is a
+    // session where at least half the names whose series span it hold it, and a stray where fewer do:
+    // the closure table covers the store's own years alone, and read against every date any name holds,
+    // a provider's bar on a day the exchange was closed is a session every other name missed.
+    public static (IReadOnlyList<Gap> Holes, IReadOnlyList<Stray> Strays) HolesIn(IReadOnlyDictionary<string, IReadOnlyCollection<DateOnly>> series)
+    {
+        if (!TradingCalendar.CanDetect(series))
+        {
+            return ([], []);
+        }
+
+        var spans = series.Values
+            .Where(held => held.Count > 0)
+            .Select(held => (First: held.Min(), Last: held.Max()))
+            .ToArray();
+        var holders = new SortedDictionary<DateOnly, List<string>>();
+
+        foreach (var (ticker, held) in series)
+        {
+            foreach (var day in held.Distinct())
+            {
+                if (!holders.TryGetValue(day, out var on))
+                {
+                    holders[day] = on = [];
+                }
+
+                on.Add(ticker);
+            }
+        }
+
+        var sessions = new List<DateOnly>();
+        var strays = new List<Stray>();
+
+        foreach (var (day, on) in holders)
+        {
+            var spanning = spans.Count(span => span.First <= day && day <= span.Last);
+
+            if (on.Count * 2 >= spanning)
+            {
+                sessions.Add(day);
+            }
+            else
+            {
+                strays.Add(new Stray(day, [.. on.Order(StringComparer.Ordinal)], spanning));
+            }
+        }
+
+        IReadOnlyList<Gap> holes =
+        [
+            .. series
+                .OrderBy(entry => entry.Key, StringComparer.Ordinal)
+                .SelectMany(entry => TradingCalendar.MissingFrom(entry.Value, sessions).Select(session => new Gap(entry.Key, session))),
+        ];
+
+        return (holes, strays);
+    }
+
     // What a pull did, as the operator reads it at the prompt.
     public static string Detail(HistoryPullOutcome outcome) =>
-        FormattableString.Invariant($"pulled {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Stored} of {outcome.Names} name(s) answered, {outcome.BarsWritten} bar(s) and {outcome.EarningsWritten} earnings print(s) stored, {outcome.Holes.Select(gap => gap.Ticker).Distinct(StringComparer.Ordinal).Count()} name(s) with a missing session, {outcome.Months} calendar month(s) asked, {outcome.Requests} request(s)")
+        FormattableString.Invariant($"pulled {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Stored} of {outcome.Names} name(s) answered, {outcome.BarsWritten} bar(s) and {outcome.EarningsWritten} earnings print(s) stored, {outcome.Holes.Select(gap => gap.Ticker).Distinct(StringComparer.Ordinal).Count()} name(s) with a missing session, {outcome.Strays.Count} day(s) held by fewer than half the names spanning them, {outcome.Months} calendar month(s) asked, {outcome.Requests} request(s)")
         + string.Concat(outcome.Unanswered.Select(line => Environment.NewLine + "  unanswered: " + line))
         + string.Concat(outcome.MonthsUnanswered.Select(line => Environment.NewLine + "  month unanswered: " + line));
 
@@ -471,7 +532,8 @@ public sealed class HistoryPull(
 
 // What one pull did: the span, the names the index held over it and how many answered, each name the
 // provider did not answer and why, the sessions the answered names miss against one another, the rows
-// stored, the requests made, and the calendar months asked and unanswered.
+// stored, the requests made, the calendar months asked and unanswered, and the days too few names hold
+// to be read as sessions.
 public sealed record HistoryPullOutcome(
     DateOnly From,
     DateOnly Through,
@@ -483,7 +545,11 @@ public sealed record HistoryPullOutcome(
     int EarningsWritten,
     int Requests,
     int Months,
-    IReadOnlyList<string> MonthsUnanswered);
+    IReadOnlyList<string> MonthsUnanswered,
+    IReadOnlyList<Stray> Strays);
+
+// A day fewer than half the names whose series span it hold: the names holding it, and how many span it.
+public sealed record Stray(DateOnly Day, IReadOnlyList<string> Holders, int Spanning);
 
 // What one purge removed.
 public sealed record HistoryPurgeOutcome(string Pull, int Bars, int Earnings);

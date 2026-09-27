@@ -27515,3 +27515,218 @@ Carried:    the operator's store needs migration 46 before the pull: `tools/migr
             --live`, run when no night is running, on the operator's command or their word. The operator
             ruled the same day that the pulled history stays on the store after the pull, and whether it is
             ever purged is theirs to decide later: nothing runs `history-pull --purge` until they say so.
+
+### 12.2 ruling - the six stop and target pairs measured over eight years: section 10's pair becomes the live trade rule and the rule it replaces a variant in the reward to risk variant's place, breakouts are diagnosed before they are ruled, and five further rulings   2026-09-26
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Measured:   the six pairs the ruling before this one planned, read-only over the operator's store after the
+            pull history-pull-20260926T235929.5174577Z, which stored 1,368,251 bars and 21,834 prints for 688
+            of the 691 names the index held on some session from 2018-01-01, BCR, MRP_old and VSNT_old
+            sending no session. Every session from 2018-10-16, the first whose breadth could be read, to
+            2026-09-25: 1,996 sessions, the members being those the index held on each, a median of 504,
+            under filter version 2's settings as the store holds them. The pulled series were scaled to the
+            stored over the sessions both hold, 508 names at factors from 0.998 to 1.002. The calendar is the
+            2,195 days at least half the names spanning each hold, JWN's bars on 2024-11-28, 2025-01-01 and
+            2025-01-09 set aside as days the exchange was closed, and a member missing a session in its last
+            252 is excluded as the night excludes it. The recomputed pair A equalled the trade gate's own
+            answer, stop and target included, on every member-night the store holds a result for, and the
+            recomputed trend agreed with the stored ladder's on 6,517 of 6,540 member-nights since
+            2026-09-09. The measurement's code is scratch and not part of the build. The market gate was open
+            on 1,628 sessions and closed on 368: 32 in 2018, 20 in 2019, 85 in 2020, 145 in 2022, 51 in 2023,
+            33 in 2025 and 2 in 2026.
+            For each pair, over the 1,628 open sessions: the sessions listing a name; the names a session,
+            the median and the most; then over every session, the names listed in all; the members passing
+            the trade gate alone, the median a session; the reward to risk of the names listed and the stop's
+            distance below the entry in typical moves, each the tenth percentile, the median and the
+            ninetieth; the stops strictly above a support band's low edge and at or below its high edge,
+            the share of the names listed and the count of every trade the gate read; and the breakouts
+            among the names listed.
+            A, the live rule: 1,274 (78.3%); 2, 14; 3,760; 43; 1.60, 2.13, 3.30; 0.54, 0.69, 0.94; 0.0% and
+            0 of 443,055; 0.
+            B, section 10 as the operator stated it: 1,348 (82.8%); 2, 14; 4,694; 114; 1.61, 2.14, 3.38;
+            0.76, 1.18, 1.58; 0.0% and 0 of 310,854; 0.
+            C, the report's plan as the ladder computes it: 1,147 (70.5%); 1, 10; 2,815; 102; 1.56, 1.89,
+            2.74; 0.92, 1.17, 1.47; 31.2% and 44,485 of 571,857, 7.8%; 0.
+            D, the band stop and back to the high: 1,463 (89.9%); 3, 23; 6,949; 82; 1.63, 2.25, 3.80; 0.55,
+            0.76, 1.16; 0.0% and 0 of 494,678; 4.
+            E, a stop one typical move below the entry and A's target: 1,398 (85.9%); 3, 23; 5,662; 72;
+            1.56, 1.84, 2.49; 1.00 throughout; 30.5% and 192,886 of 443,055, 43.5%; 1.
+            F, a stop one typical move below the entry and D's target: 1,543 (94.8%); 6, 39; 12,298; 173;
+            1.59, 2.01, 3.01; 1.00 throughout; 38.6% and 216,581 of 494,678, 43.8%; 12.
+            Three names or more on an open session: A 38%, B 45%, C 27%, D 62%, E 53%, F 80%. The longest run
+            of open sessions with no name: A 15 from 2026-04-08, B 10.
+            The 40 sessions from 2026-07-14 to 2026-09-08, the market open on all: a name on A 33, B 38, C
+            35, D 40, E 39 and F 40 of them, a median of A 2, B 4, C 2, D 4, E 3.5 and F 8.5 names. The 13
+            from 2026-09-09 to 2026-09-25: A 38 names on all 13, B 62, C 28 on 10, D 64, E 64 and F 140.
+            By year, the sessions on which A listed a name: 177 in 2019, 130 in 2020, 199 in 2021, 75 of
+            2022's 106 open, 158 in 2023, 203 in 2024, 176 in 2025 and 147 in 2026 to 2026-09-25.
+            Counts decide how many names a list shows and say nothing about whether a rule makes money.
+Against:    the expectations the ruling before this one stated before the run. The market closed on 18% of
+            the sessions rather than about a quarter, in the periods named. A matched on its count, a name on
+            63.8% of every session against 55 to 65%, a median of 1, the trade gate alone 43 against about 40,
+            a reward to risk of 2.13 against near 2, no stop inside a band, and 38 names over September
+            against 34 give or take 5; it listed up to 14 against about 10, and its stops sat a median 0.69
+            typical moves below the entry against about 1. B listed more than A, as expected, on 67.5% of
+            every session against about 60% and a median of 2 as expected, at 2.14 against about 2.5, its stop
+            1.18 moves against about 1.4, none inside a band. C passed the trade gate alone about 100 times a
+            session as expected, though B and F passed more; it listed on 57.5% against about 60%, a median of
+            1 against 2 or 3, at 1.89 against 2.5 to 3, its stop 1.17 moves against about 1.5, and put 31.2% of
+            the stops it listed inside a band against about a third. D listed on 73.3% against about 60%, at
+            2.25 against 2.2, its stop 0.76 against about 1, none inside a band. E listed on 70.0% against
+            about half, a median of 2 against 1; F on 77.3% against about 65%, a median of 5 against 4; each
+            put 30 to 44% of its stops inside a band, inside the third to a half expected.
+Reconciled: the two figures this session misreported to the operator on 2026-09-26.
+            The "one night in forty" is reconciled in the ruling before this one: a count under section 17's
+            proposed settings reported as the live filter's. Version 2, read over the pulled history, lists a
+            name on 33 of the same 40 sessions of July and August, a median of 2. Over the 13 of September it
+            lists 38 names on all 13, where the width ruling counted 34 on 12: that count had no session
+            before 2026-09-09 to read the trigger's arrival from, and read the trend and swings over the
+            store's year alone.
+            "621 names with a missing session" is the line the pull printed and wrote on its run log row. It
+            read a missing session against every date any pulled name held, and JWN's series carries bars on
+            2024-11-28, 2025-01-01 and 2025-01-09, three days the exchange was closed, so every other name
+            spanning them read as missing all three. Against the days at least half the names spanning each
+            hold, 10 names miss a session: DTM 1, KTB 1, LUV 2, NVT 1, ONL 5, Q 204, SBNY 10, SOLS 199, SW 913
+            and ZIMV 8. This session told the operator 11: the eleventh is P, whose three, 2026-09-18,
+            2026-09-21 and 2026-09-22, are missing from the store's own bars, which the measurement joined to
+            the pulled. The 12.2 correction that follows counts the pull's own series that way.
+Ruled:      the operator, on 2026-09-26, reading the six pairs, in seven items worked in their order, items 1
+            and 6 before the night of 2026-09-28, the family's first, and item 7 only once item 1's rule is
+            live and item 2 has been ruled.
+            1. The live rule becomes B, and A replaces the reward to risk variant, before Monday's first
+            night so no evidence is lost: "B is section 10's stated rule applied to the swing trade, not a
+            tuning choice. On every figure measured it is at least as good as A: open nights with a name 83%
+            against 78%, the same median ratio, stops a median 1.18 typical moves below the entry against
+            0.69, never inside a band. A's stops sit where section 10 says a stop is inside the noise, and the
+            report's plan for the same stock places its stop by section 10's rule, so under A the list and the
+            report disagree about one stock. With no evidence on either side, the rule the architecture
+            already reasons for is the live one, and the departure from it is what the variant tests." The
+            family: the live filter on B, and five variants, A, a pullback 1 to 3 typical moves deep, the
+            market gate off, strength in the top third and one-session arrival, six tested at 0.05 over 6.
+            It is a rule correction taken before the first scored night and does not count as the one shape
+            acceptance the bound allows. The remedy commands for the pinned files run before Monday's night,
+            and the entry states which pins moved.
+            2. Breakouts never reach the list, 0 of A's 3,760 and 12 of F's 12,298: find gate by gate where
+            they are removed, and test the likely cause, that a breakout clearing its highest band has no
+            resistance band above it and so no target. Section 10 already makes the top of the ladder a
+            trailing rule rather than a price, so one or two target rules for a breakout with no band above
+            are measured read-only over the same sessions, with what each lists and the ratio it implies. If
+            no sound rule exists, the filter is stated as pullback-only and the breakout family is removed
+            from the gates and the documents rather than kept as a path that never fires.
+            3. Pair C's stops inside a band: whether the test counts an edge as inside, or whether since the
+            width cap the next band down is often the other half of a split chain, so the stop sits inside
+            what was one zone. If the second, the report's plan has had a defect since the band correction and
+            is corrected the same way as the list.
+            4. Eight years of bars in the production store, against (see: One year of bars, and no more):
+            that decision is superseded, its reasoning kept and the new reason stated, or the history moves
+            into a separate research copy. Either way it is asserted that nothing in the nightly run reads
+            bars past its own window, that the chart, the forward-return filler and every computed stage
+            behave as they did with one year stored, and that no outcome from a replayed night can reach the
+            edge clock, eight-year counts being shape-only; and the nightly deleter's behaviour is stated.
+            5. Every output of the counts command states in its first line the filter version and every
+            threshold it ran with, and a test fails where the header and the thresholds used disagree.
+            6. The six pairs' results, the reconciliation of both misreported figures and these rulings land
+            in PROGRESS now, in a documents pull request, with the pull's line about missing sessions
+            corrected in the same pull request.
+            7. A second list on tonight's page, "Close to a buy point", since the page already has a watch
+            list: the members that passed every gate but exactly one on the live rule, an exclusion staying
+            an exclusion, both lists together at most twenty, the buy points first. Each row states the gate
+            it missed, the value it had and the bar it needed in plain words, with everything a first-list
+            row shows, the swing trade's entry, stop and target among it where one exists; the nearest to
+            qualifying first, by one comparable distance to each gate's bar proposed with its reasoning,
+            ties by the live order. On a night the market gate is closed, the members passing every other
+            gate, under one line saying they would qualify if the market turned, with the breadth and its
+            bar. It is drawn from the gate results already stored and computes nothing new, the pin diff
+            stated and empty; the edge clock judges only the first list, and the page's key says the near
+            misses already score these members by the gate they missed. A row opens to the report, whose
+            "why it is here" names the gate missed and by how much, and the overnight queue drafts the first
+            list, then the second, on the local model alone. Section 15.7 gains the region, section 17 the
+            cap across both lists, section 18 the row for a night both are empty, with prior text to
+            CHANGELOG, and HOW_IT_WORKS.html's sections 6 and 10 a sentence each. Tested on a constructed night
+            with members each missing one different gate, one missing two and one excluded by an earnings
+            date, a closed-market night and the cap, every row off the rendered page, with the one-gate count
+            mutated to two and the exclusion rule removed.
+Changed:    this entry alone. The pull's summary line is code, so the pull request carries its correction,
+            the 12.2 correction that follows, beside the documents, and both gates run as for any code.
+Consequences: item 1 edits `SwingGates.cs` and the files beside it that the swing filter's code version
+            and every swing family candidate's evaluator version pin, so the family registered again at
+            2026-09-26T12:51:26Z, which no night has evaluated, is retired and the six ruled registered in
+            its place at one instant before the night of 2026-09-28; none of the ladder rules' twelve sources
+            is among the files it is planned to edit. Ruling the stop by section 10's rule answers ahead of
+            its trigger the question carried as
+            (owes: The swing trade's stop ruled apart from how wide its setup band merged).
+            A change items 2 or 3 lead to that edits the gates or the ladder moves the same pins, and made
+            after the night of 2026-09-28 it restarts the family's clocks a second time.
+Tests:      none added here; the 12.2 correction that follows adds the one that holds it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 12.2 correction closing this batch records.
+Carried:    items 1 to 5 and 7, in the order ruled; item 6 is this batch.
+
+### 12.2 - correction: the history pull reads a missing session against the days at least half the names spanning each hold, where one name's bars on three days the exchange was closed read as a session 621 names missed   2026-09-26
+Corrects:   the 12.2 correction of 2026-09-26 that built the history pull, which read a missing session
+            against every date any pulled name held.
+Found:      by this session, reading the first pull's run log row beside the measurement it was made for:
+            the pull printed and wrote "621 names with a missing session" where 10 of the pulled series miss
+            one, and the operator ruled it corrected with the records of the ruling before this entry.
+Repaired:   `HistoryPull.HolesIn` reads a day as a session where at least half the names whose series span
+            it hold it, and as a stray where fewer do, and a hole is a session a name's series misses between
+            its own first and last. Each stray is named on the pull's run log row with the names holding it
+            and how many span it, and counted in the line the verb prints beside the names with a missing
+            session. At least half rather than more than half, so that of two names one holding a session
+            the other misses names the miss. Nothing the pull stores changes: every bar is stored as the
+            provider sent it, a stray's among them, and the first pull's row keeps what it wrote, since no
+            run log row is rewritten.
+Guarded:    `ADayFewerThanHalfTheNamesSpanningItHoldIsNamedApartAndNoOtherNameReadsAsMissingIt`, over five
+            names stated beside it, FFF's series starting on 2026-08-17 so that four span every day before
+            it: EEE alone holds a bar on 2026-07-03, the Friday Independence Day was observed on, one of the
+            four, which is a stray held by EEE with four spanning; AAA and EEE alone hold 2026-08-12, two of
+            the four, exactly half, which is a session BBB and CCC each miss; so two names with a missing
+            session and one stray, where every date any name held would give three names, AAA, BBB and CCC
+            each missing 2026-07-03. Every bar stored as sent, EEE's 48 among them, and the run log row naming
+            both holes and the stray with its holder. The earlier test's CCC is stated as one of two names
+            holding half, and it and the first test assert no stray.
+Expected:   every count is derived from the exchange's calendar over the span and the series constructed
+            beside it, not read back: 47 sessions from 2026-07-01 to 2026-09-04, 46 for BBB and CCC, 48 for
+            EEE and 15 for FFF from 2026-08-17. No fixture file is added, as for the pull.
+Written:    section 7's History pull row in `ARCHITECTURE.html`, the pulled bar note in `SCHEMA.md` and the
+            pull's section in `RUNBOOK.md`, each with its prior text in `CHANGELOG.md`; the decision the pull
+            rests on corrected in place, since what it rules is unchanged.
+Tests:      1443, from 1442: one added, none removed.
+Claims:     578, unchanged: section 7's History pull row is reworded and keeps its key.
+Pins:       the branch against `main` at d7a9450; this correction edits `HistoryPull.cs` and
+            `HistoryPullTests.cs` and no other source, neither in the twelve
+            `RuleVersionScorer.CodeVersionSources`, the twenty-one `CandidateEvaluator.EvaluationSources` or
+            the sixteen `SwingFilter.CodeVersionSources`, each read from the tree being committed.
+Mutated:    the rule, stated before the run: each property this correction lands broken one at a time, each
+            run filtered to the seven tests in `HistoryPullTests`.
+            Predicted:
+            M1 every date any name holds read as a session, the rule before this correction: red in the new
+            test alone.
+            M2 at least half read as more than half: red in the second test and the new one, each holding a
+            session exactly half the names spanning it hold.
+            M3 every name counted as spanning every day, rather than those whose series reach either side of
+            it: red in the new test alone, where FFF's later start makes 2026-08-12 two of five.
+            Results: one run for each of the three in a detached worktree at fdf7dfd, this correction's
+            first commit, whose source and tests are those of ce7f750, the commits after it changing this
+            entry and the operator's guide alone; each filtered on the operator's instruction of
+            2026-09-24 to the seven tests in `HistoryPullTests`, each edit made there and reverted with
+            `git checkout -- .` and the tree read clean after. The whole suite ran green over ce7f750 in
+            the gates, 1443 of 1443. M1 turned the new test red alone. M2 turned the new test and the
+            second, `ANameTheProviderDoesNotAnswerAndASessionOneNameMissesAreNamedAndEverythingElseIsStoredAsSent`,
+            red. M3 turned the new test red alone. No other test of the seven went red under any of them.
+Held:       all three, each in the tests predicted and in no other of the seven.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1443 of 1443 tests ran
+            with none failed, migrations 0 to 46 with none pending, schema version 46, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 42 tables, 578 claims, 578 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 588 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41
+            of 41 roster checks carried and all 41 run, 1443 of 1443 tests.
+            Both gates ran over the tree carrying this entry, the ruling before it and the operator's edit
+            to the guide, ce7f750, in a worktree beside the repository, and the operator's store under
+            `data/` was not touched by either. A first run of `tools/ci.ps1` over fdf7dfd went red on one
+            test and stopped at the suite: `EveryEntrySinceTheLastHostedWindowsLegRecordsTheWindowsRun`,
+            for this entry's line written as a bare placeholder without the words the check reads. A second
+            run over 3b9e94c was stopped by hand in its suite, so that the gates would run over the tree
+            carrying the operator's edit to the guide as well. The third run, over ce7f750, is the one
+            recorded here.
+Carried:    the first pull's run log row keeps its 621 as written, and this entry states the figure the
+            correction gives for it, 10 names and 3 strays.
