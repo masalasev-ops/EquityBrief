@@ -28769,15 +28769,18 @@ Mutated:    the rule, stated before the run: one mutation reversing the mechanis
             Predicted:
             S1 the quality's cut points back at 0.8 and 1.2: red in the quality test, the fixture's four
             names, the replay's and the census.
-            Results: 12SM
-Held:       12SH
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12ST of 12ST tests ran
+            Results: one run in a detached worktree at 8db1527, this entry's commit, filtered to the three
+            reworked tests and the census, the edit made there and reverted, and the tree read clean after.
+            The whole suite ran green over 8db1527 in the gates, 1478 of 1478. S1 turned the quality test,
+            the fixture's four names, the replay's and the census red.
+Held:       red in exactly the four predicted.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1478 of 1478 tests ran
             with none failed, migrations 0 to 48 with none pending, schema version 48, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 12SB tables, 12SC claims, 12SP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 12SR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 12ST of 12ST tests.
-            Both gates ran over the tree carrying this entry, 12SSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 44 tables, 644 claims, 644 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 655 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1478 of 1478 tests.
+            Both gates ran over the tree carrying this entry, 8db1527, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    Monday's night, the first whose readings read the fill at the settled values, its states and
             pages recorded in the entry after it; "The quarters fetch measured on a peak reporting night";
