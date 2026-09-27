@@ -28466,15 +28466,26 @@ Mutated:    the rule, stated before the run: one mutation reversing each mechani
             `ALookKeepsTheBarOfTheCountAsOfTheNightItWasRead`.
             Not mutated: the look's night found by halving, the refusal of a count below one and the drawing
             of the first look's clause, each asserted by the tests above.
-            Results: 12DM
-Held:       12DH
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12DT of 12DT tests ran
+            Results: one run for each of the four in a detached worktree at 00530ba, this entry's commit
+            before it was rebased onto the ruling's filled entry, its code the same as 7554de3's, each run
+            filtered to the nine tests this correction adds or reworks, each edit made there and reverted,
+            and the tree read clean after. The whole suite ran green over 7554de3 in the gates, 1456 of
+            1456. M1 turned `ADistinctTrialIsTheRuleAndNotTheNameOrTheVersion` and the live register's test
+            red. M2 turned the retirement test, the windows' test and the live register's test red, and the
+            shadow region's own test and the no-night test as well. M3 turned the windows' test and the
+            no-night test red, and the look's test and the retirement test as well. M4 turned
+            `ALookKeepsTheBarOfTheCountAsOfTheNightItWasRead` red.
+Held:       all four red. M1 and M4 in exactly the tests predicted. M2 in the three predicted and two more:
+            the shadow region's own test reads the count after a retirement taken unread, and the no-night
+            test's three retired unread would be counted. M3 in the two predicted and two more, the look's
+            test and the retirement test, each of whose graphs would start over its own window.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1456 of 1456 tests ran
             with none failed, migrations 0 to 47 with none pending, schema version 47, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 12DB tables, 12DC claims, 12DP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 12DR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 12DT of 12DT tests.
-            Both gates ran over the tree carrying this entry, 12DSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 43 tables, 605 claims, 605 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 615 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1456 of 1456 tests.
+            Both gates ran over the tree carrying this entry, 7554de3, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    part 1, the fundamentals fetched after each report, the four readings, the state and the pages;
             then the fill and the measured splits to the operator, then part 2 with its remedy; items 2 and 3
