@@ -27961,10 +27961,11 @@ Done:       the remedy the 12.2 correction before this entry carried, run on the
             and registering the six for version 3 as rows 33 to 38 at that one instant on swing-filter at
             78a5cfe3d020, the live filter's trade parameter 2 and the variant at the nearest bands' 1. Read
             back off the store, the acceptances while live count row 13 alone, version 2's opening.
-Ruled:      the operator, on 2026-09-27, in three parts: the first two land in the same change and remedy
-            run as items 2 and 3 after the night of 2026-09-28, items 4, 5 and 7 follow in the order already
-            set, and the third is built last, after item 7, because items 2 and 3 change which trades exist
-            and where their stops sit.
+Ruled:      the operator, on 2026-09-27, in three parts: the first lands in the same change and remedy run
+            as items 2 and 3 after the night of 2026-09-28, items 4, 5 and 7 follow in the order already set,
+            and the third is built last, after item 7, because items 2 and 3 change which trades exist and
+            where their stops sit. The second was set to land with the first, and the operator asked the same
+            day for it now, so it lands with this entry.
             1. A variant's plan is not shown on the name page. The trade table draws three plans and marks the
             one the check used, and the plan at the nearest bands is a registered candidate, which appears
             nowhere until it has cleared the minimum evidence (see: Candidate conditions are registered before
@@ -28038,6 +28039,8 @@ Consequences: from the night of 2026-09-28 until items 2 and 3 land, a name's pa
             run page's reason records use is two, `ReasonVerdict.MinimumResolved` and
             `ReasonVerdict.MinimumSessions`, 250 resolved setups across at least 60 distinct listing sessions,
             which the screen's rate waits on.
+Changed:    `HOW_IT_WORKS.html`'s section 9, the example over time, in the operator's words as part 2 gives
+            them; the guide carries no rule, so nothing in the specs moves with it.
 Tests:      none added here.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12QT of 12QT tests ran
             with none failed, migrations 0 to 47 with none pending, schema version 47, exit 0, against
@@ -28047,5 +28050,5 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             41 of 41 roster checks carried and all 41 run, 12QT of 12QT tests.
             Both gates ran over the tree carrying this entry, 12QSHA, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
-Carried:    parts 1 and 2 with items 2 and 3 after the night of 2026-09-28; items 4, 5 and 7 in the order
-            ruled; part 3 after item 7.
+Carried:    part 1 with items 2 and 3 after the night of 2026-09-28; items 4, 5 and 7 in the order ruled;
+            part 3 after item 7.
