@@ -50,6 +50,12 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Swing reader"),
             CheckReach.Key(Scope.MatrixTable, "Swing reader"),
 
+            // 12.2's correction, the fundamentals item: the readings and the fetch after the close.
+            CheckReach.Key(Scope.CatalogueTable, "Fundamental reader"),
+            CheckReach.Key(Scope.MatrixTable, "Fundamental reader"),
+            CheckReach.Key(Scope.CatalogueTable, "Quarter fetcher"),
+            CheckReach.Key(Scope.MatrixTable, "Quarter fetcher"),
+
             // 9.2, the request drain, the worker's half of the request store.
             CheckReach.Key(Scope.CatalogueTable, "Request drain"),
             CheckReach.Key(Scope.MatrixTable, "Request drain"),

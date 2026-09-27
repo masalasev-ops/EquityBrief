@@ -12,8 +12,9 @@ using Microsoft.Data.Sqlite;
 namespace EquityBrief.Tests.Checks;
 
 // nightly-run, 11.4 and 12.6: after the overnight queue the night asks for a report on the first
-// name drawn on its list, the first the swing filter passed in its order, one request marked as
-// asked by the night, and starts the drain it was handed as a press does.
+// name drawn on its list, improving businesses first where the night stored its readings and the
+// swing filter's own order within a state, one request marked as asked by the night, and starts the
+// drain it was handed as a press does.
 public partial class NightlyRun
 {
     // What the night starts, held by the test so a night is run without a drain reaching a model.
@@ -114,15 +115,17 @@ public partial class NightlyRun
             [[night, expected.GetProperty("rule").GetString()!]],
             StoreRows(store, "SELECT session_date, rule FROM list_rule;"));
 
-        // No request and no drain started, and the step still runs last, after the close and the queue,
-        // its own row saying why and recording no model call and no request.
+        // No request and no drain started, and the step still runs last, after the close, the quarters
+        // step and the queue, its own row saying why and recording no model call and no request.
         Assert.Empty(StoreRows(store, "SELECT ticker FROM research_request;"));
         Assert.Equal(expected.GetProperty("count").GetInt32(), StoreRows(store, "SELECT ticker FROM research_request;").Count);
         Assert.Equal(0, launcher.Started);
 
         var stages = RunLog(store, "night-with-request");
 
-        Assert.Equal([EquityBrief.Worker.Nights.NightClose.Stage, OvernightQueue.Stage, "report"], stages.Select(row => row.Stage).TakeLast(3));
+        Assert.Equal(
+            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage, OvernightQueue.Stage, "report"],
+            stages.Select(row => row.Stage).TakeLast(4));
         Assert.Equal("ok", stages[^1].Outcome);
         Assert.Equal(expected.GetProperty("line").GetString(), stages[^1].Detail);
         Assert.Equal(
@@ -242,6 +245,12 @@ public partial class NightlyRun
         Assert.Empty(StoreRows(store, "SELECT ticker FROM research_request;"));
         Assert.Equal(0, launcher.Started);
         Assert.Equal("no report was asked for, since this night was run again for an earlier session", RunLog(store, "night-again")[^1].Detail);
+
+        // And it asks for no member's quarters: what it would store is today's answer and not that
+        // night's, so the step says so and writes no ask and no quarter.
+        Assert.Contains("  quarters: no quarters were asked for, since this night was run again for an earlier session", output.ToString(), StringComparison.Ordinal);
+        Assert.Empty(StoreRows(store, "SELECT ticker FROM quarter_ask;"));
+        Assert.Empty(StoreRows(store, "SELECT ticker FROM reported_quarter;"));
     }
 
     [Fact]

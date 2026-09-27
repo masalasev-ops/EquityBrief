@@ -178,7 +178,10 @@ public sealed record PickCell(
     double? ReturnPct,
     DateOnly? NowOn,
     decimal? NowClose,
-    double? BreakEven);
+    double? BreakEven,
+    // The state the member's reported quarters gave it on its listing night, and null on a night that
+    // stored no readings, which the row says it was not read on.
+    string? State = null);
 
 // What became of a trade, in the words its status cell and its filter chip draw, and the one value each
 // is filtered by. A trade whose outcome row is missing is its own status and in no filter but all.
@@ -438,12 +441,49 @@ public sealed record ListingCell(
     // see: The queue page states when each request will be written
     QueueState? Queue = null,
     // Where the swing filter drew the row: its rank and the gates that decided it.
-    FilterRow? Filter = null);
+    FilterRow? Filter = null,
+    // The state the member's reported quarters gave it on the night and what the numbers say, and null
+    // on a night that stored no readings.
+    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+    NumbersRow? Business = null);
+
+// The state a member's reported quarters gave it on a night and the sentences its readings say, which
+// tonight's row draws beside the trend word, the sentences showing while the word is under the pointer
+// or has focus.
+public sealed record NumbersRow(string State, IReadOnlyList<string> Sentences);
+
+// "What the numbers say" as a name's page opens its numbers with it: the heading carrying the state, the
+// quarter the readings were read from, one sentence per reading, and the quarters behind them with the
+// dates each was filed and reported on.
+public sealed record NumbersSayView(string State, string Heading, DateOnly? ReadFrom, IReadOnlyList<string> Sentences, IReadOnlyList<QuarterFiled> Quarters);
+
+public sealed record QuarterFiled(DateOnly PeriodEnd, DateOnly? FilingDate, DateOnly? ReportDate);
+
+// One ask the quarters step made on the night the run page is about: the member, why it was asked, the
+// quarter awaited, what came of it, the quarter rows it stored and the weighted calls it spent.
+public sealed record QuarterAskCell(string Ticker, string Reason, DateOnly? Awaited, string Outcome, int Quarters, int Weighted, string? Detail);
+
+// A member still waiting for a quarter: the quarter awaited, or none where any quarter would do, how many
+// nights it has been asked on for it, the night it was last asked and the night it is next asked on, null
+// where that is the next night.
+public sealed record WaitingCell(string Ticker, DateOnly? Awaited, int Asked, DateOnly LastAsked, DateOnly? NextAsk);
+
+// The run page's Fundamentals region: the night's asks with the weighted calls they spent, the members still
+// waiting, and the fill: of the members, how many hold quarters, how many are marked absent and how many are
+// still to be asked for the first time.
+public sealed record FundamentalsView(
+    DateOnly Night,
+    IReadOnlyList<QuarterAskCell> Tonight,
+    IReadOnlyList<WaitingCell> Waiting,
+    int Members,
+    int Holding,
+    int Absent,
+    int Left);
 
 // A row the swing filter drew: its rank, the setup's family, the session its trigger arrived on, the plan
 // the trade gate read with its reward to risk and the stop's distance in typical moves, and each gate with
 // whether it passed and why.
-// see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+// see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
 public sealed record FilterRow(int Rank, string? Family, string Arrived, string Input, string RewardToRisk, string StopMoves, IReadOnlyList<FilterGate> Gates);
 
 public sealed record FilterGate(string Name, bool Passed, string Reason);
@@ -2177,7 +2217,7 @@ public sealed class MarkRenderer : IComponent
 
     // Why a name the swing filter listed is on the list: each gate with why it passed, and the reasons
     // that fired on it as context, so the page states the rule that listed the evening.
-    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     public string WhyItPassed(string ticker, FilterWhy why)
     {
         var region = new StringBuilder();
@@ -2200,7 +2240,7 @@ public sealed class MarkRenderer : IComponent
     }
 
     // The list from night to night, the run page's overlap.
-    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     public string Overlap(OverlapView? overlap)
     {
         if (overlap is null)
@@ -2383,7 +2423,7 @@ public sealed class MarkRenderer : IComponent
 
         // The rule the evening was listed by, so a row read from an evening before the switch is not
         // taken for one the swing filter drew.
-        // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+        // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
         list.Append(Invariant, $"<p class=\"list-rule\" data-rule=\"{Escaped(rule?.Rule ?? ListRules.Reasons)}\">This evening was {Escaped(ListRules.EveningSaid(rule?.Rule ?? ListRules.Reasons))}.</p>");
 
         if (byFilter && rule is { MarketOpen: false } closed)
@@ -2516,8 +2556,9 @@ public sealed class MarkRenderer : IComponent
 
             // The trend state in a word, read off the ladder row rather than
             // worked out here, and a name with no row says so rather than
-            // showing an empty cell.
-            list.Append(Invariant, $"<td class=\"trend-state\">{Escaped((row.TrendState ?? NotClassified).Replace('_', ' '))}</td>");
+            // showing an empty cell. Beside it, the state the member's reported
+            // quarters gave it on the night, with what its readings say.
+            list.Append(Invariant, $"<td class=\"trend-state\">{Escaped((row.TrendState ?? NotClassified).Replace('_', ' '))}{BusinessWord(row.Business)}</td>");
 
             // The distance row mark, the same mark the universe table draws, so
             // a shape means one thing on both screens.
@@ -4321,7 +4362,7 @@ public sealed class MarkRenderer : IComponent
         // The headline, large, with the index it is out of beneath it: on a night the swing filter
         // listed, the names it passed, and the fired count as context beside it; before the switch, the
         // fired count.
-        // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+        // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
         header.Append(listed is { } passed
             ? Formatted($"<div class=\"headline\" aria-hidden=\"true\"><div class=\"big\">{passed}</div><div class=\"cap\">names the swing filter passed<span>out of {index} in the index</span></div></div>")
             : Formatted($"<div class=\"headline\" aria-hidden=\"true\"><div class=\"big\">{fired}</div><div class=\"cap\">names fired<span>out of {index} in the index</span></div></div>"));
@@ -5000,7 +5041,7 @@ public sealed class MarkRenderer : IComponent
             ? "No filter version is open, so the night ran on section 17's proposed values."
             : Formatted($"The night ran under filter version {Escaped(funnel.Version)}."));
         // Whether these counts drew the evening's list is the evening's rule.
-        // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+        // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
         region.Append(Invariant, $" {funnel.Passing} of {funnel.Members} member(s) pass.");
         region.Append(funnel.Rule == ListRules.Filter
             ? " The names passing are this evening's list.</p>"
@@ -5366,6 +5407,134 @@ public sealed class MarkRenderer : IComponent
         return mark.ToString();
     }
 
+    // The state word a row draws beside the trend word, focusable so the sentences show from the keyboard
+    // as from the pointer, and nothing on a night that stored no readings.
+    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+    static string BusinessWord(NumbersRow? business) =>
+        business is null
+            ? string.Empty
+            : $" <span class=\"business\" tabindex=\"0\" data-state=\"{Escaped(business.State)}\">{Escaped(business.State)}"
+                + $"<span class=\"says\" role=\"tooltip\">{string.Join(" ", business.Sentences.Select(Escaped))}</span></span>";
+
+    // "What the numbers say", the block a name's numbers open with: the heading carrying the state, the
+    // quarter the readings were read from, one sentence per reading, and folded beneath them the quarters
+    // behind them with the dates each was filed and reported on, then the full numbers table.
+    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+    public string NumbersSay(NumbersSayView view, string numbers)
+    {
+        var block = new StringBuilder();
+
+        block.Append(Invariant, $"<section class=\"numbers-say\" data-state=\"{Escaped(view.State)}\" data-read-from=\"{(view.ReadFrom is { } from ? DayOf(from) : "none")}\">");
+        block.Append(Invariant, $"<h4 class=\"says-heading\">{Escaped(view.Heading)}</h4>");
+
+        if (view.ReadFrom is { } read)
+        {
+            block.Append(Invariant, $"<p class=\"read-from\">Read from the quarter to {DayOf(read)}.</p>");
+        }
+
+        block.Append("<ul class=\"says\">");
+
+        foreach (var sentence in view.Sentences)
+        {
+            block.Append(Invariant, $"<li>{Escaped(sentence)}</li>");
+        }
+
+        block.Append("</ul>");
+        block.Append("<details class=\"numbers-behind\"><summary>The quarters these read, and the full numbers</summary>");
+
+        if (view.Quarters.Count > 0)
+        {
+            block.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"quarters-read\" data-quarters=\"{view.Quarters.Count}\"><thead><tr><th>Quarter to</th><th>Filed</th><th>Reported</th></tr></thead><tbody>");
+
+            foreach (var quarter in view.Quarters)
+            {
+                block.Append(Invariant, $"<tr data-quarter=\"{DayOf(quarter.PeriodEnd)}\"><td class=\"num\">{DayOf(quarter.PeriodEnd)}</td>");
+                block.Append(Invariant, $"<td class=\"num\">{(quarter.FilingDate is { } filed ? DayOf(filed) : "<span class=\"degraded\">not filed</span>")}</td>");
+                block.Append(Invariant, $"<td class=\"num\">{(quarter.ReportDate is { } reported ? DayOf(reported) : "<span class=\"degraded\">not stated</span>")}</td></tr>");
+            }
+
+            block.Append("</tbody></table></div>");
+        }
+
+        block.Append(numbers);
+        block.Append("</details></section>");
+
+        return block.ToString();
+    }
+
+    // What a Past picks row says of a night that stored no readings of the reported quarters.
+    public const string NotReadThatNight = "not read that night";
+
+    // The run page's Fundamentals region: who was asked for their quarters on the night and why, with what
+    // came of each and the weighted calls it spent; who is still waiting, the quarter awaited, the nights
+    // asked and the next ask; and how far the fill has come, which the seventh candidate's registration
+    // waits on.
+    // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+    public string Fundamentals(FundamentalsView view)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"fundamentals\" data-night=\"{DayOf(view.Night)}\" data-asked=\"{view.Tonight.Count}\" data-weighted=\"{view.Tonight.Sum(ask => ask.Weighted)}\" ");
+        region.Append(Invariant, $"data-waiting=\"{view.Waiting.Count}\" data-members=\"{view.Members}\" data-holding=\"{view.Holding}\" data-absent=\"{view.Absent}\" data-left=\"{view.Left}\">");
+
+        region.Append(view.Tonight.Count == 0
+            ? "<p data-asked=\"0\">No member was asked for its quarters on this night.</p>"
+            : Formatted($"<p data-asked=\"{view.Tonight.Count}\">{view.Tonight.Count} member(s) asked for their quarters on this night, spending {view.Tonight.Sum(ask => ask.Weighted)} weighted call(s).</p>"));
+
+        if (view.Tonight.Count > 0)
+        {
+            region.Append("<div class=\"tbl-wrap\"><table class=\"asks\"><thead><tr><th>Member</th><th>Why</th><th>Quarter awaited</th><th>What came of it</th><th class=\"r\">Quarters stored</th><th class=\"r\">Weighted calls</th></tr></thead><tbody>");
+
+            foreach (var ask in view.Tonight)
+            {
+                region.Append(Invariant, $"<tr data-ticker=\"{Escaped(ask.Ticker)}\" data-reason=\"{Escaped(ask.Reason)}\" data-outcome=\"{Escaped(ask.Outcome)}\">");
+                region.Append(Invariant, $"<td>{Escaped(ask.Ticker)}</td><td>{Escaped(AskedBecause(ask.Reason))}</td>");
+                region.Append(Invariant, $"<td class=\"num\">{(ask.Awaited is { } awaited ? DayOf(awaited) : "any quarter")}</td>");
+                region.Append(Invariant, $"<td>{Escaped(ask.Outcome)}{(ask.Detail is { Length: > 0 } detail ? Formatted($" <span class=\"degraded\">{Escaped(detail)}</span>") : string.Empty)}</td>");
+                region.Append(Invariant, $"<td class=\"r num\">{ask.Quarters}</td><td class=\"r num\">{ask.Weighted}</td></tr>");
+            }
+
+            region.Append("</tbody></table></div>");
+        }
+
+        region.Append(view.Waiting.Count == 0
+            ? "<p data-waiting=\"0\">No member is waiting for a quarter.</p>"
+            : Formatted($"<p data-waiting=\"{view.Waiting.Count}\">{view.Waiting.Count} member(s) still waiting for a quarter, each asked again on the five nights after its first ask and weekly after that:</p>"));
+
+        if (view.Waiting.Count > 0)
+        {
+            region.Append("<div class=\"tbl-wrap\"><table class=\"waiting\"><thead><tr><th>Member</th><th>Quarter awaited</th><th class=\"r\">Nights asked</th><th>Last asked</th><th>Next asked</th></tr></thead><tbody>");
+
+            foreach (var waiting in view.Waiting)
+            {
+                region.Append(Invariant, $"<tr data-ticker=\"{Escaped(waiting.Ticker)}\"><td>{Escaped(waiting.Ticker)}</td>");
+                region.Append(Invariant, $"<td class=\"num\">{(waiting.Awaited is { } awaited ? DayOf(awaited) : "any quarter")}</td><td class=\"r num\">{waiting.Asked}</td>");
+                region.Append(Invariant, $"<td class=\"num\">{DayOf(waiting.LastAsked)}</td><td class=\"num\">{(waiting.NextAsk is { } next ? DayOf(next) : "the next night")}</td></tr>");
+            }
+
+            region.Append("</tbody></table></div>");
+        }
+
+        region.Append(Invariant, $"<p class=\"fill\" data-members=\"{view.Members}\" data-holding=\"{view.Holding}\" data-absent=\"{view.Absent}\" data-left=\"{view.Left}\">");
+        region.Append(Invariant, $"The fill: {view.Holding} of {view.Members} members hold quarters, {view.Absent} marked absent, {view.Left} still to be asked for the first time.</p>");
+        region.Append(view.Left == 0
+            ? "<p class=\"registration\" data-ready=\"true\">Every member holds quarters or is marked absent, so the candidate that skips a deteriorating business may be registered once you have ruled on the measured splits.</p>"
+            : Formatted($"<p class=\"registration\" data-ready=\"false\">The candidate that skips a deteriorating business may be registered once every member holds quarters or is marked absent: {view.Left} left.</p>"));
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // Why a member was asked, in the words the region states it.
+    static string AskedBecause(string reason) => reason switch
+    {
+        "fill" => "the fill",
+        "joined" => "its first night in the index",
+        "report" => "the first night after its report",
+        "waiting" => "its quarter was not yet posted",
+        _ => reason,
+    };
+
     // The trades as a table, newest first: the night listed, the stock where the table holds more than one
     // name's, the buy, the stop and the target each whole on its cell, the trade line, the status in words,
     // the sessions held and the result as a signed multiple of the risk, or open. A table on a name's own
@@ -5376,7 +5545,7 @@ public sealed class MarkRenderer : IComponent
 
         table.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"picks-table\" data-rows=\"{rows.Count}\"><thead><tr><th>Night listed</th>");
         table.Append(named ? "<th>Stock</th>" : string.Empty);
-        table.Append("<th class=\"r\">Buy</th><th class=\"r\">Stop</th><th class=\"r\">Target</th><th>Trade</th><th>Status</th><th class=\"r\">Sessions held</th><th class=\"r\">Result</th></tr></thead><tbody>");
+        table.Append("<th>Business that night</th><th class=\"r\">Buy</th><th class=\"r\">Stop</th><th class=\"r\">Target</th><th>Trade</th><th>Status</th><th class=\"r\">Sessions held</th><th class=\"r\">Result</th></tr></thead><tbody>");
 
         foreach (var row in rows)
         {
@@ -5386,6 +5555,13 @@ public sealed class MarkRenderer : IComponent
             table.Append(named
                 ? Formatted($"<td class=\"num\">{DayOf(row.Night)}</td><td class=\"c-nm\"><a class=\"nm\" href=\"{page}\"><span class=\"tk\">{Escaped(row.Ticker)}</span>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</a></td>")
                 : Formatted($"<td class=\"num\"><a href=\"{page}\">{DayOf(row.Night)}</a></td>"));
+
+            // The state the trade carried on its listing night, and a night before the readings existed says
+            // it was not read then rather than drawing an empty cell.
+            // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
+            table.Append(row.State is { } state
+                ? Formatted($"<td class=\"state-then\" data-state=\"{Escaped(state)}\">{Escaped(state)}</td>")
+                : $"<td class=\"state-then\" data-state=\"none\"><span class=\"degraded\">{NotReadThatNight}</span></td>");
 
             foreach (var (name, price) in new[] { ("buy", row.Buy), ("stop", row.Stop), ("target", row.Target) })
             {

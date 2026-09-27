@@ -30,20 +30,22 @@ internal static class ComponentVocabulary
     // source documents, version scores and blocks is the scores a night writes
     // beside the blocks frozen from them, which no component touches one of
     // without the other, fundamentals is the filings beside the copy each
-    // fetch stores of what is as of the fetch, which every reader of the one reads
-    // with the other, and pulled history is the pulled bars beside the pulled
-    // earnings, which one pull writes and one purge removes together.
+    // fetch stores of what is as of the fetch, and beside the quarters the night
+    // fetches after a report with the asks that fetched them, and pulled history
+    // is the pulled bars beside the pulled earnings, which one pull writes and one
+    // purge removes together. The fundamental readings are a computed table, one
+    // row a member a night, as the swing readings are.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
         ("Bars", [DataStore.Bar]),
         ("Calendar", [DataStore.Calendar]),
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings]),
-        ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal]),
+        ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading]),
         ("Listings", [DataStore.Listing, DataStore.ListRule]),
         ("Forward returns", [DataStore.ForwardReturn]),
         ("Facts", [DataStore.Facts]),
-        ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot]),
+        ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk]),
         ("News pulse", [DataStore.NewsPulse]),
         ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection]),
         ("Sources", [DataStore.SourceDocument]),
@@ -159,6 +161,9 @@ internal static class ComponentVocabulary
         ["facts"] = DataStore.Facts,
         ["fundamentals"] = DataStore.Fundamentals,
         ["fundamentals snapshots"] = DataStore.FundamentalsSnapshot,
+        ["reported quarters"] = DataStore.ReportedQuarter,
+        ["quarter asks"] = DataStore.QuarterAsk,
+        ["fundamental readings"] = DataStore.FundamentalReading,
         ["membership"] = DataStore.Membership,
         ["calendar"] = DataStore.Calendar,
         ["pulled bars"] = DataStore.PulledBar,

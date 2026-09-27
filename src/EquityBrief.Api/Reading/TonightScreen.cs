@@ -4,6 +4,7 @@ using EquityBrief.Core.Spending;
 using System.Text.Json;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Prices;
+using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Data;
 using EquityBrief.Web.Marks;
@@ -100,9 +101,12 @@ public static class TonightScreen
     // The order section 15.7 states: how many reasons fired, then the plan's reward to risk, then
     // the ticker. Every figure is read off the night's own listing rows, which carry the plan and
     // the band strength as that night had them.
-    // On a night the swing filter listed, the names it passed in its own order, each with its gates and the
-    // reasons beside it as context; before the switch, the names that fired in the order section 15.7 states.
-    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    // On a night the swing filter listed, the names it passed, improving businesses first, then steady, then
+    // the members reading no state, then deteriorating, each state in the filter's own order, and each row
+    // with its gates, the state beside its trend and the reasons beside it as context; a night that stored no
+    // readings draws the filter's own order, since every row then reads no state. Before the switch, the
+    // names that fired in the order section 15.7 states.
+    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     public static IReadOnlyList<ListingCell> Rows(
         DateOnly night,
         IReadOnlyList<ListingRow> listings,
@@ -110,8 +114,13 @@ public static class TonightScreen
         IReadOnlyList<CloseRow> closesToTheNight,
         IReadOnlyList<SuspectSeriesRow>? suspects = null,
         IReadOnlyList<ResearchedRow>? researched = null,
-        IReadOnlyList<GateResultRow>? gates = null)
+        IReadOnlyList<GateResultRow>? gates = null,
+        IReadOnlyList<FundamentalReadingRow>? readings = null)
     {
+        // The night's own readings, by member, which order the names passing and say what each one's
+        // reported quarters say. A night that stored none reads none here.
+        var readingByTicker = (readings ?? []).ToDictionary(row => row.Ticker, StringComparer.Ordinal);
+
         // The names whose stored series is suspect, which a row says beside the name.
         var suspectByTicker = (suspects ?? [])
             .ToDictionary(row => row.Ticker, StringComparer.Ordinal);
@@ -139,6 +148,7 @@ public static class TonightScreen
         {
             Suspect = NameScreen.Suspect(suspectByTicker.GetValueOrDefault(listing.Ticker)),
             ResearchedOn = researchedByTicker.TryGetValue(listing.Ticker, out var written) ? written : null,
+            Business = Business(readingByTicker.GetValueOrDefault(listing.Ticker)),
         };
 
         if (gates is not null)
@@ -149,7 +159,8 @@ public static class TonightScreen
             [
                 .. gates
                     .Where(gate => gate.Passed && byTicker.ContainsKey(gate.Ticker))
-                    .OrderBy(gate => gate.Rank ?? int.MaxValue)
+                    .OrderBy(gate => FundamentalState.Place(readingByTicker.GetValueOrDefault(gate.Ticker)?.State))
+                    .ThenBy(gate => gate.Rank ?? int.MaxValue)
                     .ThenBy(gate => gate.Ticker, StringComparer.Ordinal)
                     .Select(gate =>
                     {
@@ -167,6 +178,12 @@ public static class TonightScreen
 
         return Ordered(listings.Where(listing => listing.FiredCount > 0).Select(Drawn), Order.FiredThenRewardToRisk);
     }
+
+    // The state a member's reported quarters gave it on the night and the sentences its readings say, and
+    // nothing for a member the night stored no reading for.
+    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+    public static NumbersRow? Business(FundamentalReadingRow? reading) =>
+        reading is null ? null : new NumbersRow(reading.State, NumbersSay.Sentences(Readings.FromJson(reading.Readings)));
 
     // The names the operator watches, in the order they were added, each drawn from the night's own rows
     // as the list draws a name whether or not the list holds it, with what the swing filter said of it that

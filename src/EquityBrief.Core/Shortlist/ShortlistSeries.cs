@@ -58,7 +58,7 @@ public sealed record ReasonThreshold(string Reason, string Value, string Constan
 // names as context. There is no score and no fixed length, because the length of
 // the list is itself the reading.
 // see: Tonight's list is built from stated conditions, not a score
-// see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+// see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
 //
 // Every threshold here is a proposal and the page says so. Two of them are known
 // to produce too many names as written, and the calibration is not a backfill:

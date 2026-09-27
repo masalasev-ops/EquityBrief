@@ -1,0 +1,101 @@
+{
+ "stage": "reported-quarters",
+ "derivation": "derived",
+ "derivedFrom": "the four captured fundamentals payloads and the four captured bar files read through the rules section 17 states, not from a run. A fetch keeps the twelve newest quarters the income statement files with a filing date. Each quarter's sales growth is its revenue against the quarter within a week of a year earlier, the same growth a year before is that earlier quarter's own, and each margin is operating income over revenue, all rounded to six places, half to even. The four quarters' earnings a share sum the actuals of the quarter and the three before it, each found within a week of three, six and nine months back. The close after a report is the first captured adjusted close on a session after the report date and no more than a week after it, and the basis is the newest captured close of the three years before the night. The readings follow: the trajectory over the two newest quarters, the state read from it alone, the record over the eight newest quarters carrying an actual and an estimate with a met estimate within a cent or 1% of it, whichever is larger, earnings quality over the four newest, and the valuation needing eight multiples, which one year of captured closes never reaches. Computed outside this repository from the captured payloads, so a fetch that kept the wrong quarters, a growth read against the wrong quarter or a tolerance applied the wrong way would not agree with it.",
+ "tables": [
+  "reported_quarter",
+  "quarter_ask",
+  "fundamental_reading"
+ ],
+ "night": "2026-09-08",
+ "ask": {
+  "reason": "fill",
+  "outcome": "stored",
+  "quarters": 12,
+  "weighted": 11
+ },
+ "readingOnTheNight": "no fundamentals yet",
+ "names": {
+  "AAPL": {
+   "newest": "2026-06-30",
+   "basis": ["2026-09-04", "319.97"],
+   "trajectory": [
+    {"quarter": "2026-06-30", "salesGrowth": "0.163565", "salesGrowthBefore": "0.096285", "margin": "0.326229", "marginYearEarlier": "0.299906"},
+    {"quarter": "2026-03-31", "salesGrowth": "0.165952", "salesGrowthBefore": "0.050753", "margin": "0.322753", "marginYearEarlier": "0.310291"}
+   ],
+   "closesAfter": [
+    ["2026-06-30", "2026-07-31", "308.6438"],
+    ["2026-03-31", "2026-05-01", "279.641"],
+    ["2025-12-31", "2026-01-30", "258.7756"],
+    ["2025-09-30", "2025-10-31", "269.3749"]
+   ],
+   "trailing": [["2026-06-30", "8.72"], ["2026-03-31", "8.27"], ["2025-12-31", "7.91"], ["2025-09-30", "7.47"]],
+   "state": "improving",
+   "marginRun": 10,
+   "record": {"quarters": 8, "beat": 8, "met": 0, "missed": 0},
+   "quality": {"ratio": "1.138013", "band": "in line"},
+   "valuation": {"multiples": 4, "absent": "too few quarters"}
+  },
+  "KEYS": {
+   "newest": "2026-07-31",
+   "basis": ["2026-09-04", "327.21"],
+   "trajectory": [
+    {"quarter": "2026-07-31", "salesGrowth": "0.365385", "salesGrowthBefore": "0.110929", "margin": "0.249729", "marginYearEarlier": "0.173077"},
+    {"quarter": "2026-04-30", "salesGrowth": "0.314701", "salesGrowthBefore": "0.074013", "margin": "0.237041", "marginYearEarlier": "0.158499"}
+   ],
+   "closesAfter": [
+    ["2026-07-31", "2026-08-19", "319.45"],
+    ["2026-04-30", "2026-05-20", "342.08"],
+    ["2026-01-31", "2026-02-24", "301.48"],
+    ["2025-10-31", "2025-11-25", "195.46"]
+   ],
+   "trailing": [["2026-07-31", "9.77"], ["2026-04-30", "8.67"], ["2026-01-31", "7.50"], ["2025-10-31", "7.15"]],
+   "state": "improving",
+   "marginRun": 2,
+   "record": {"quarters": 8, "beat": 8, "met": 0, "missed": 0},
+   "quality": {"ratio": "1.277070", "band": "more than backed by cash"},
+   "valuation": {"multiples": 4, "absent": "too few quarters"}
+  },
+  "MSFT": {
+   "newest": "2026-06-30",
+   "basis": ["2026-09-04", "499.7"],
+   "trajectory": [
+    {"quarter": "2026-06-30", "salesGrowth": "0.177470", "salesGrowthBefore": "0.180975", "margin": "0.451109", "marginYearEarlier": "0.449013"},
+    {"quarter": "2026-03-31", "salesGrowth": "0.182970", "salesGrowthBefore": "0.132691", "margin": "0.463263", "marginYearEarlier": "0.456712"}
+   ],
+   "closesAfter": [
+    ["2026-06-30", "2026-07-30", "450.2524"],
+    ["2026-03-31", "2026-04-30", "406.1342"],
+    ["2025-12-31", "2026-01-29", "430.7671"],
+    ["2025-09-30", "2025-10-30", "521.4695"]
+   ],
+   "trailing": [["2026-06-30", "17.89"], ["2026-03-31", "16.80"], ["2025-12-31", "15.99"], ["2025-09-30", "14.06"]],
+   "state": "improving",
+   "marginRun": 7,
+   "record": {"quarters": 8, "beat": 8, "met": 0, "missed": 0},
+   "quality": {"ratio": "1.367749", "band": "more than backed by cash"},
+   "valuation": {"multiples": 4, "absent": "too few quarters"}
+  },
+  "NFLX": {
+   "newest": "2026-06-30",
+   "basis": ["2026-09-04", "78.25"],
+   "trajectory": [
+    {"quarter": "2026-06-30", "salesGrowth": "0.133654", "salesGrowthBefore": "0.158992", "margin": "0.333808", "marginYearEarlier": "0.340702"},
+    {"quarter": "2026-03-31", "salesGrowth": "0.161907", "salesGrowthBefore": "0.125113", "margin": "0.323027", "marginYearEarlier": "0.317468"}
+   ],
+   "closesAfter": [
+    ["2026-06-30", "2026-07-17", "68.95"],
+    ["2026-03-31", "2026-04-17", "97.31"],
+    ["2025-12-31", "2026-01-21", "85.36"],
+    ["2025-09-30", "2025-10-22", "111.637"]
+   ],
+   "trailing": [["2026-06-30", "3.18"], ["2026-03-31", "3.10"], ["2025-12-31", "2.53"], ["2025-09-30", "2.40"]],
+   "state": "steady",
+   "marginRun": 1,
+   "record": {"quarters": 8, "beat": 2, "met": 4, "missed": 2},
+   "quality": {"ratio": "0.865476", "band": "in line"},
+   "valuation": {"multiples": 4, "absent": "too few quarters"}
+  }
+ },
+ "notes": "NFLX's record reads 2 beats, 4 meets and 2 misses where an exact comparison reads 6 beats: after its 10:1 split the provider restates each figure a share to the cent at a tenth of its size, so its quarter to 2025-06-30 reads 0.72 against 0.71 and the one to 2026-06-30 reads 0.80 against 0.79, each a cent apart and inside the tolerance."
+}

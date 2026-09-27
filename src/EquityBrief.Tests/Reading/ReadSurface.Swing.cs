@@ -83,7 +83,7 @@ public partial class ReadSurface
 
             // Its refusal to rank is the one wording the code holds, and the page states the refusal in no
             // other words: the page's opening and this key are the two places it is drawn.
-            // see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns
+            // see: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters
             Assert.Contains("this page " + SinglePageApp.RankRefusal + ".", card, StringComparison.Ordinal);
             Assert.Equal(2, Regex.Matches(page, Regex.Escape(SinglePageApp.RankRefusal)).Count);
             Assert.Equal(2, Regex.Matches(page, "as an investment").Count);

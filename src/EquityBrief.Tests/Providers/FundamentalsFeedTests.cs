@@ -298,13 +298,16 @@ public class FundamentalsFeedTests
         Assert.Equal("AAPL", answered.Ticker);
         Assert.Equal(1, recorded.Requests);
 
-        var refusal = await Assert.ThrowsAsync<InvalidOperationException>(
+        var refusal = await Assert.ThrowsAsync<ProviderRefusal>(
             () => recorded.FundamentalsAsync("NOSUCH"));
 
         // An empty payload would look exactly like a name the provider files
-        // nothing for, and the fetcher would record it as fetched.
+        // nothing for, and the fetcher would record it as fetched. A refusal the
+        // provider would not answer again, so a replayed night's quarters step
+        // records it on that member and goes on to the next.
         Assert.Contains("NOSUCH", refusal.Message, StringComparison.Ordinal);
         Assert.Contains("record it as fetched", refusal.Message, StringComparison.Ordinal);
+        Assert.False(refusal.Transient);
     }
 
     [Fact]

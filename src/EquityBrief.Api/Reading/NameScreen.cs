@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Ladders;
+using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Shortlist;
@@ -1095,7 +1096,9 @@ public static class NameScreen
         SwingReadingRow? swing = null,
         GateResultRow? gates = null,
         bool? watched = null,
-        IReadOnlyList<PickCell>? earlier = null)
+        IReadOnlyList<PickCell>? earlier = null,
+        FundamentalReadingRow? reading = null,
+        IReadOnlyList<QuarterDatesRow>? readQuarters = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1196,7 +1199,7 @@ public static class NameScreen
             bars.Count > 0 ? bars[^1].Close : 0m,
             EventBook(ladder),
             Arithmetic(ladder),
-            Numbers(filings),
+            reading is null ? Numbers(filings) : marks.NumbersSay(WhatTheNumbersSay(reading, readQuarters ?? []), Numbers(filings)),
             cells,
             TwelveMonths(bars),
             listing?.ListedBy == ListRules.Filter ? [] : FiredReasons(listing),
@@ -1228,10 +1231,37 @@ public static class NameScreen
             earlier);
     }
 
+    // "What the numbers say" for a night's readings: the heading carrying the state, the quarter read from,
+    // one sentence per reading, and the quarters any reading read with the dates each was filed and
+    // reported on, newest first.
+    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+    public static NumbersSayView WhatTheNumbersSay(FundamentalReadingRow reading, IReadOnlyList<QuarterDatesRow> quarters)
+    {
+        var readings = Readings.FromJson(reading.Readings);
+
+        var read = readings.Trajectory.Quarters.Select(quarter => quarter.Quarter)
+            .Concat(readings.Record.Quarters)
+            .Concat(readings.Quality.Quarters)
+            .Concat(readings.Valuation.Quarters)
+            .ToHashSet();
+
+        return new NumbersSayView(
+            readings.State,
+            EquityBrief.Core.Quarters.NumbersSay.Heading(readings.State),
+            readings.ReadFrom,
+            EquityBrief.Core.Quarters.NumbersSay.Sentences(readings),
+            [
+                .. quarters
+                    .Where(quarter => read.Contains(quarter.PeriodEnd))
+                    .OrderByDescending(quarter => quarter.PeriodEnd)
+                    .Select(quarter => new QuarterFiled(quarter.PeriodEnd, quarter.FilingDate, quarter.ReportDate)),
+            ]);
+    }
+
     // Why the swing filter listed the name on an evening it listed it: each gate with why it passed, and
     // the reasons that fired on it as context. An evening the reasons listed, or one the filter did not pass
     // the name on, has none.
-    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     public static FilterWhy? Passed(ListingRow? listing, GateResultRow? gates)
     {
         if (listing is null || listing.ListedBy != ListRules.Filter || gates is not { Passed: true } || gates.SessionDate != listing.SessionDate)

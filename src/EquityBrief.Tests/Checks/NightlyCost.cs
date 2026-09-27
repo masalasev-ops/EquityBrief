@@ -9,6 +9,7 @@ using EquityBrief.Tests.Harness;
 using EquityBrief.Worker;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Membership;
+using EquityBrief.Worker.Quarters;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Checks;
@@ -24,7 +25,7 @@ namespace EquityBrief.Tests.Checks;
 // with the universe". A night measured once over one population has been
 // measured against a number, not against the rule.
 // see: The nightly run is arithmetic only
-public class NightlyCost
+public partial class NightlyCost
 {
     internal static CheckReach Reach => new(
         "nightly-cost",
@@ -36,6 +37,14 @@ public class NightlyCost
             CheckReach.Key(Scope.LimitsTable, "Backfill"),
             CheckReach.Key(Scope.LimitsTable, "Weighted-call budget"),
             CheckReach.Key(Scope.LimitsTable, "Rule versions scored at once"),
+
+            // 12.2's correction of 2026-09-27: the quarters fetch, the fourth carve-out, its schedule,
+            // its fill, what an ask costs, and the two ways it stops short.
+            CheckReach.Key(Scope.LimitsTable, "Quarters step"),
+            CheckReach.Key(Scope.LimitsTable, "Quarters fill"),
+            CheckReach.Key(Scope.LimitsTable, "Weighted calls a quarters ask"),
+            CheckReach.Key(Scope.FailureTable, "The quarters step reaches its limit or the day's allowance"),
+            CheckReach.Key(Scope.FailureTable, "The provider refuses a quarters ask"),
         ])
     {
         Held = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -519,6 +528,15 @@ public class NightlyCost
         Feed.LocalModel,
     ];
 
+    // A company's financials, reached by the night through the quarter fetcher and no other
+    // component: the fourth carve-out, carved by name, whose asks follow the reporting calendar
+    // and stop at the step's own limit and the day's allowance.
+    // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+    internal static readonly (string Component, Feed Feed)[] CarvedByName =
+    [
+        (nameof(QuarterFetcher), Feed.CompanyFinancials),
+    ];
+
     static string NightSource() =>
         File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Nightly.cs"));
 
@@ -539,7 +557,7 @@ public class NightlyCost
             .. components
                 .Where(component => constructed.Contains(component.Name))
                 .SelectMany(component => component.Access.Feeds
-                    .Where(feed => !TheNightMayReach.Contains(feed))
+                    .Where(feed => !TheNightMayReach.Contains(feed) && !CarvedByName.Contains((component.Name, feed)))
                     .Select(feed => $"the night constructs {component.Name}, which reaches {feed}")),
         ];
     }
@@ -892,7 +910,8 @@ public class NightlyCost
                 new Bulk(inner.Bulk, this),
                 new Corporate(inner.Corporate, this),
                 new Calendar(inner.Calendar, this),
-                new News(inner.News, this));
+                new News(inner.News, this),
+                new Companies(inner.Fundamentals, this));
         }
 
         internal NightFeeds Inner { get; }
@@ -999,6 +1018,14 @@ public class NightlyCost
             public Task<IReadOnlyList<NewsArticle>> ArticlesAsync(DateOnly from, DateOnly to, CancellationToken cancellation = default) =>
                 counted.Counted(() => inner.Requests, () => inner.ArticlesAsync(from, to, cancellation));
         }
+
+        sealed class Companies(IFundamentalsFeed inner, StepAttributedFeeds counted) : IFundamentalsFeed
+        {
+            public int Requests => inner.Requests;
+
+            public Task<CompanyFundamentals> FundamentalsAsync(string ticker, CancellationToken cancellation = default) =>
+                counted.Counted(() => inner.Requests, () => inner.FundamentalsAsync(ticker, cancellation));
+        }
     }
 
     [Fact]
@@ -1063,15 +1090,16 @@ public class NightlyCost
 
         var limits = Corpus.Read("docs/ARCHITECTURE.html");
 
-        // Three carve-outs now. The night's own request is the third and is asserted under
-        // `nightly-run`, which reads its own row's calls and requests. The refetch is the second
-        // and was found at 1.6: it makes one request per name whose adjusted
+        // Four carve-outs now. The quarters fetch is the fourth and is counted night by night
+        // over constructed nights below. The night's own request is the third and is asserted
+        // under `nightly-run`, which reads its own row's calls and requests. The refetch is the
+        // second and was found at 1.6: it makes one request per name whose adjusted
         // prices an action moved, and from the 6.0 ruling a suspect name's
         // retries on the nights after, so it is bounded by the actions of the day
         // and of the retry nights before it rather than by the universe. It is
         // carved rather than the rule loosened, because a night that refetched
         // every name would satisfy a loosened rule.
-        Assert.Contains("the backfill, the corporate action refetch and the night's own request carved out of it", limits, StringComparison.Ordinal);
+        Assert.Contains("the backfill, the corporate action refetch, the quarters fetch after the close and the night's own request carved out of it", limits, StringComparison.Ordinal);
         Assert.Contains($"bounded by the actions of the day and of the {CorporateActionChecker.RetryNights} nights before it, and by one request every {CorporateActionChecker.WeeklyRetryDays} days for each name whose retries are spent, rather than by the universe", limits, StringComparison.Ordinal);
         Assert.Contains($"A name it stored nothing for is asked for again on each of the {Backfill.RetryNights} nights after the first and then every {Backfill.WeeklyRetryDays} days until one stores its year or the name leaves the index", limits, StringComparison.Ordinal);
     }
@@ -1349,6 +1377,7 @@ public class NightlyCost
             DateOnly.ParseExact(window.GetProperty("to").GetString()!, "yyyy-MM-dd", CultureInfo.InvariantCulture));
         await feeds.Historical.BarsAsync("AAPL", new DateOnly(2025, 9, 4), new DateOnly(2026, 9, 4));
         await feeds.News.ArticlesAsync(new DateOnly(2026, 8, 25), new DateOnly(2026, 9, 8));
+        await feeds.Fundamentals.FundamentalsAsync("AAPL");
 
         // Every role the record composes has been asked, read off the record, so a
         // role added to it is one this total has to ask.
@@ -1365,17 +1394,18 @@ public class NightlyCost
         Assert.Equal(feeds.Requests, asked.Values.Sum());
 
         // One membership, one bulk and two action requests, one calendar window, one
-        // ticker's history and one news request.
-        Assert.Equal(7, feeds.Requests);
+        // ticker's history, one news request and one member's reported quarters.
+        Assert.Equal(8, feeds.Requests);
         Assert.Equal(
             ProviderWeights.Fundamentals
             + ProviderWeights.BulkEndOfDay
             + (2 * ProviderWeights.BulkEndOfDay)
             + ProviderWeights.EarningsCalendar
             + ProviderWeights.HistoricalPerTicker
-            + ProviderWeights.News,
+            + ProviderWeights.News
+            + ProviderWeights.Fundamentals,
             feeds.WeightedCalls);
-        Assert.Equal(317, feeds.WeightedCalls);
+        Assert.Equal(327, feeds.WeightedCalls);
 
         Assert.Equal(
             calendar.GetProperty("cost").GetProperty("weightedCalls").GetInt32(),

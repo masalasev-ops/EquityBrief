@@ -8305,3 +8305,217 @@ Now:
 > | `read-surface` | ... and with the swing family registered the run page's shadow region reads six registered and a divisor of 6; over a register written back from the operator's store's 38 rows the region draws six distinct trials beside the divisor and the level each starts at with what the three looks release of it, the records region draws the count of distinct trials, a candidate retired unread leaves the count and one a look has read stays in it, and a look keeps the bar of the count as of its night; ...
 > | `candidate-verdicts` | ... the graph passes a candidate's level in equal shares to those still standing when its record crosses and to no one when it is retired, its first step the significance over the distinct trials and never over the window; a rule is its evaluator and every number its registration states, so a version moved is the trial it replaces and one number moved a new one; ...
 Why: the two checks reach the count and the budget the operator ruled on 2026-09-27.
+
+### 2026-09-27 - CLAUDE.md - the hard rule names the quarters fetch as its fourth carve-out
+Authorised by: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+Was:
+> ... Any component that adds a per-name call to the nightly path is a defect, not a feature. Three carve-outs are named rather than left to be discovered, and none grows with the index: a new member's one-year backfill, ... on the operator's ruling of 2026-09-23. (see: The nightly run is arithmetic only) ... (see: The night asks for a report on the first name of its list)
+Now:
+> ... Any component that adds a per-name call to the nightly path is a defect, not a feature. Four carve-outs are named rather than left to be discovered, and none asks for every member every night: a new member's one-year backfill, ... on the operator's ruling of 2026-09-23, and the quarters fetch after the close, which asks for a member's reported quarters on the night after it reports, again on each of the five nights after while its new quarter is not yet posted and once a week after that until it is, and for every member once at the start, so it follows the reporting calendar, about four asks a member a year, rather than the index, on the operator's ruling of 2026-09-27. (see: The nightly run is arithmetic only) ... (see: The night asks for a report on the first name of its list) (see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted)
+Why: the operator ruled on 2026-09-27 that a member's quarters are fetched on the night after it reports, a per-name request on the night carved out by name in the form the backfill and the refetch take. The fill asks for every member once, so the clause saying none grows with the index says instead what none of the four does.
+
+### 2026-09-27 - ARCHITECTURE.html - sections 1 and 2 say the list is drawn improving businesses first and the quarters are fetched after the close
+Authorised by: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+Was:
+> ... The list is chosen by the swing filter's gates, each a fact about the chart or the plan, and the improvement loop in section 13 exists to make it select better. (see: ...) (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it) ...
+> <p><b>What it is not.</b> The universe is a published index membership, not a filtered set, and tonight's list is chosen on the chart and the plan alone, with no fundamentals and no model in the decision. (see: No reading of the fundamentals fires a reason, gates a tranche or draws a panel) It does not trade, ...
+> ... an entry and exit ladder, the six reasons as context, and each name's answer at the swing filter's five gates. That is seconds of arithmetic and it costs nothing. The result is stored. When you open the app you see tonight's list, the names the swing filter passed, in its order (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it). ...
+Now:
+> ... The list is chosen by the swing filter's gates, each a fact about the chart or the plan, and drawn improving businesses first, by the direction of each company's reported quarters, and the improvement loop in section 13 exists to make it select better. (see: ...) (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it) ...
+> <p><b>What it is not.</b> The universe is a published index membership, not a filtered set, and tonight's list is chosen on the chart and the plan alone, with no model in the decision. The one reading of the fundamentals it uses is the direction of each company's reported quarters, sales and operating margin against a year earlier, which orders the names the chart and the plan chose and removes none. (see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone) It does not trade, ...
+> ... an entry and exit ladder, the six reasons as context, the four readings of its reported quarters and the state they give it, and each name's answer at the swing filter's five gates. That is seconds of arithmetic and it costs nothing. The result is stored. After it, the provider is asked for the quarters of the members that reported since the last night, which the next night reads (see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted). When you open the app you see tonight's list, the names the swing filter passed, improving businesses first and each state in the filter's order (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it). ...
+Why: the operator ruled on 2026-09-27 that four readings of every member's reported quarters are worked out every night and the state they give orders the list, which made "no fundamentals in the decision" false; the refusal it stood beside is kept.
+
+### 2026-09-27 - ARCHITECTURE.html - section 4's numbers open with what the numbers say, and the patterns they are written from are a table of their own
+Authorised by: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+Was:
+> ... the causes of the moves and the dated items the research read, and twelve of the fifteen change every night. ...
+> | The numbers | A snapshot of the newest filing, a figure to a row: ... | Computed from provider fundamentals and filings, each carrying the filing date it came from (see: Fundamentals are stored with the filing date they came from); ... | free after the fetch | quarterly, and on a regenerate |
+Now:
+> ... the causes of the moves and the dated items the research read, and thirteen of the fifteen change every night, the numbers in what they say first. ...
+> | The numbers | Where the night stored readings of the member's reported quarters, what the numbers say first: a heading carrying the state, the quarter the readings were read from and one sentence per reading, written from the patterns below, with the quarters they read and the dates each was filed and reported on folded beneath, beside everything else this region draws (see: ...). Then a snapshot of the newest filing, a figure to a row: ... | What the numbers say worked out by the fundamental reader from the quarters the quarter fetcher stored, and its sentences written by code from the patterns below (see: Reported quarters are stored per fetch, so every quarter a reading reads shares one fetch's per-share basis); the rest computed from provider fundamentals and filings, ... | free after the fetch | what the numbers say nightly, the rest quarterly and on a regenerate |
+> with a table of its own after the key, "What the numbers say, pattern by pattern": the heading's pattern and each reading's, twenty-seven rows, placed and held word for word to the renderer's patterns by read-surface.
+Why: the operator ruled that the report's numbers open on what the numbers say, one plain sentence per reading from fixed patterns written into section 4, and that the patterns are placed rather than counted as claims.
+
+### 2026-09-27 - ARCHITECTURE.html - section 7 gains the quarter fetcher and the fundamental reader, and the queue and the drain read the readings
+Authorised by: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
+Was:
+> | Overnight queue | research | nightly, after the arithmetic has closed | listings, gate results | run log | works through the names on tonight's list whose research is missing or stale, in the swing filter's order, ... |
+> | Request drain | research | ... | gate results, research requests, run log | research requests | ... After the night's overnight queue it writes the night's own request, for the first name the swing filter passed in its order where that name has none outstanding or being written, ... |
+> | Facts assembler | compute | ... | membership, bar store, ..., calendar, fundamentals, fundamentals snapshots | facts | ... (see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none). The listings went to the change detector at 5.4 ... |
+Now:
+> | Overnight queue | research | nightly, after the arithmetic has closed | listings, gate results, fundamental readings | run log | works through the names on tonight's list whose research is missing or stale, in the order the list is drawn in, ... |
+> | Request drain | research | ... | gate results, fundamental readings, research requests, run log | research requests | ... After the night's overnight queue it writes the night's own request, for the first name drawn on the night's list, improving businesses first where the night stored its readings, where that name has none outstanding or being written, ... |
+> | Facts assembler | compute | ... | membership, bar store, ..., calendar, fundamentals, fundamentals snapshots, fundamental readings | facts | ... (see: The numbers section draws the dividend the provider files from the newest filing alone, and nothing for a company paying none). The night's readings of a member's reported quarters are carried where the member holds any, and nothing for one holding none (see: The readings join the facts file for a member holding them, and nothing is added for one without). The listings went to the change detector at 5.4 ... |
+> with the catalogue and the read and write matrix gaining a row each for the Fundamental reader, after the Swing reader, and the Quarter fetcher, after the Night close.
+Why: the two components are the fetch and the readings the operator ruled on 2026-09-27, the queue and the night's request read the list in the order it is drawn, which reads the night's stored readings, and the facts file carries the readings where a member holds them.
+
+### 2026-09-27 - ARCHITECTURE.html - sections 11.2, 13.5 and 15.14 state the order the list is drawn in
+Authorised by: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters
+Was:
+> <p>The names passing are ordered by the trade's reward to risk, higher first, then relative strength, then the setup band's strength, then the ticker, each a fact about the chart or the plan and none a judgement about the company (see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns). At most twenty are drawn ...
+> ... No reading of the fundamentals fires a reason or gates a tranche. (see: No reading of the fundamentals fires a reason, gates a tranche or draws a panel) ...
+> <li>No screen orders names by a judgement about the company. The universe orders by distance to a level and tonight's list by the trade's reward to risk, then strength, then band strength, and an evening before the swing filter's list by how many reasons fired and then the plan's reward to risk, each a fact about the chart or the plan (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it). (see: ...) (see: ...)</li>
+> <li>A screen ranks no company as an investment, ... (see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns).</li>
+Now:
+> <p>The names passing are ordered first by the state the night's readings of their reported quarters give them, improving first, then steady, then the members reading no state, being not enough quarters and no fundamentals yet, then deteriorating, and within a state by the trade's reward to risk, higher first, then relative strength, then the setup band's strength, then the ticker, each a fact about the chart, the plan or the company's reported quarters and none an opinion about the company (see: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters). The state orders the names the gates passed and removes none, since no gate reads it (see: ...). The order is applied where the list is read, tonight's page, the overnight queue, the night's own request and Past picks, by one rule over the night's stored readings, and a night that stored none, which is every night before the first that did, keeps the filter's own order wherever it is drawn (see: ...). At most twenty are drawn ...
+> ... No reading of the fundamentals fires a reason or gates a tranche, and the one that orders anything is the state a company's reported quarters give it, which orders tonight's list and removes no name from it. (see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone) ...
+> <li>No screen orders names by an opinion about the company; the one reading of a company that orders anything is the direction of its reported quarters, by a stated rule. The universe orders by distance to a level and tonight's list by the state each company's reported quarters give it, improving first and deteriorating last, then by the trade's reward to risk, then strength, then band strength, a night that stored no readings by the filter's own order, and an evening before the swing filter's list by how many reasons fired and then the plan's reward to risk, each a fact about the chart, the plan or the reported quarters (see: ...) (see: ...). (see: ...) (see: ...)</li>
+> <li>A screen ranks no company as an investment, ... (see: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters).</li>
+Why: the operator ruled on 2026-09-27 that the names the filter passes are drawn improving businesses first, and gave section 15.14's line in these words; the refusal to rank stays word for word.
+
+### 2026-09-27 - ARCHITECTURE.html - section 14 gains the readings step and the quarters step, and the queue and the night's request read the list's order
+Authorised by: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+Was:
+> <li>Evaluate every member through the swing filter: ... (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it).</li>
+> <li>Run the overnight queue on the local model, ... the names on tonight's list first in the swing filter's order (see: ...), ...</li>
+> <li>Ask for a report on the first name drawn on tonight's list, the first the swing filter passed, one request marked as asked by the night ...</li>
+> <p class="note">The arithmetic, being steps 1 to 20, calls no model and makes no per-name network request, and step 21 is carved out of the first of those by name and calls the local model only (see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name). ...
+Now:
+> <li>Evaluate every member through the swing filter: ... (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it).</li>
+> <li>Run the overnight queue on the local model, ... the names on tonight's list first in the order it is drawn in (see: ...), ...</li>
+> <li>Ask for a report on the first name drawn on tonight's list, improving businesses first where the night stored its readings, one request marked as asked by the night ...</li>
+> <p class="note">The arithmetic, being steps 1 to 21, calls no model and makes no per-name network request. Step 22 is carved out of the second of those by name and calls no model: it asks the provider for one member's quarters at a time on the nights after the member reports, which the reporting calendar sets rather than the index, and it is bounded by its own limit and by the day's allowance (see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted). Step 23 is carved out of the first by name and calls the local model only (see: ...). ...
+> with a step after the swing readings reading every member's reported quarters, and a step after the close asking the provider for the quarters of the members due.
+Why: the readings are the night's arithmetic, read before the listings the facts file and the order read, and the fetch runs after the close, bounded apart from the arithmetic, as the operator ruled on 2026-09-27.
+
+### 2026-09-27 - ARCHITECTURE.html - section 15's screens draw the state, what the numbers say, the Fundamentals region and each night's own order
+Authorised by: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
+Was:
+> <p><b>Reads:</b> the listings, the rule that listed the night, the gate results, ladders, levels and facts for that night, the run log for the header, ...
+> | The list | one row per name on the list, ordered by the swing filter's reward to risk then strength then band strength, at most twenty drawn, ... Each row: name, close, day change, trend state in a word, the distance row mark, ... |
+> ... On an evening the swing filter listed, the order is the trade's reward to risk, then strength, then band strength, facts about the chart and the plan, and the reasons stand beside each row as context (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it); ...
+> <p><b>Reads:</b> the facts, ladder, levels, volume profile, moves and fundamentals for that name and date, every stored research section ...
+> <p><b>Reads:</b> the run log, the listings with the rule that listed each evening, the forward returns, and the research store, which the stale-and-failed region draws sections from and this list did not name until 6.0.</p>
+> <p><b>Reads:</b> for the newest night, the gate results with the rule that listed each evening and the filter version each night ran under, the forward returns, the bars and the membership.</p>
+> | Every trade | newest first; a line above the rows stating how many are shown of how many were listed; the night listed; the stock with a link to its page for that night; the buy and the stop and the target; ... |
+Now:
+> <p><b>Reads:</b> the listings, the rule that listed the night, the gate results, the fundamental readings, ladders, levels and facts for that night, the run log for the header, ...
+> | The list | one row per name on the list, ordered by the state its reported quarters give it and within a state by the swing filter's reward to risk then strength then band strength, the state-first order from the first night whose readings are stored and a night before it in the filter's own order, at most twenty drawn, ... Each row: name, close, day change, trend state in a word, the state its reported quarters give it beside the trend, what the numbers say while the state is under the pointer or holds focus, the distance row mark, ... |
+> ... On an evening the swing filter listed, the order is the state the members' reported quarters give them, improving first, then steady, then the members reading no state, then deteriorating, and within each state the trade's reward to risk, then strength, then band strength, facts about the chart and the plan; the state orders what comes first and never what is recommended, since no gate reads it and every member the filter passes is listed whatever its state, and an evening whose night stored no readings keeps the filter's own order, since each night keeps the order it was drawn in; and the reasons stand beside each row as context (see: ...); ...
+> <p><b>Reads:</b> the facts, ladder, levels, volume profile, moves and fundamentals for that name and date, the night's fundamental reading with the reported quarters of the fetch it read, every stored research section ...
+> <p><b>Reads:</b> the run log, the listings with the rule that listed each evening, the forward returns, the research store, which the stale-and-failed region draws sections from and this list did not name until 6.0, and the quarter asks, which the Fundamentals region draws against the night's members.</p>
+> <p><b>Reads:</b> for the newest night, the gate results with the rule that listed each evening and the filter version each night ran under, the fundamental readings each night stored, the forward returns, the bars and the membership.</p>
+> | Every trade | newest first; within a night the order that night's list was drawn in, improving businesses first where it stored readings and the filter's own order where it stored none; a line above the rows stating how many are shown of how many were listed; the night listed; the stock with a link to its page for that night; the state its reported quarters gave it on the night it was listed, or not read that night; the buy and the stop and the target; ... |
+> with 15.9 gaining the row for What the numbers say and 15.10 the Fundamentals region's row.
+Why: the operator ruled on 2026-09-27 that each row carries the state beside the trend with the readings on hover, the report's numbers open on what they say, the run page shows the fetch and who is waiting, Past picks the state each trade carried, and every night keeps the order it was drawn in.
+
+### 2026-09-27 - ARCHITECTURE.html - section 16 gains the reported quarters, the quarter asks and the fundamental readings
+Authorised by: Reported quarters are stored per fetch, so every quarter a reading reads shares one fetch's per-share basis
+Was:
+> | List rules | ... (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it) |
+> | Facts | ticker, as-of date, the facts file, its hash | kept whole for every night the name was listed, each night read by the rule that listed it (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it) ... |
+Now:
+> | List rules | ... (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it) |
+> | Facts | ticker, as-of date, the facts file, its hash | kept whole for every night the name was listed, each night read by the rule that listed it (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it) ... |
+> with rows for Reported quarters, Quarter asks and Fundamental readings after Fundamentals snapshots, and a column for each in the read and write matrix.
+Why: the readings keep stores of their own, on the operator's ruling of 2026-09-27, and the report's fundamentals and their snapshot are unchanged.
+
+### 2026-09-27 - ARCHITECTURE.html - section 17 states the quarters step's limits and the readings' values, and the arithmetic's rows read up to the close
+Authorised by: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+Was:
+> | Model calls in the nightly run | 0 in the arithmetic, being every step before the overnight queue, with the queue carved out by name ... |
+> | Per-name network calls in the nightly run | 0 in the steady state, with the backfill, the corporate action refetch and the night's own request carved out of it, ... (see: The night asks for a report on the first name of its list) | ... It is carved rather than the rule loosened, because a night that refetched every name would satisfy a loosened rule and defeat the whole design | run log, on the steady-state stages |
+> | Nightly wall clock, at index size | a night's arithmetic, every step before the overnight queue, bounded by 5 minutes, ... |
+> | Per-request timeout and the night's deadline | ... the arithmetic as a whole, every step before the overnight queue, bounded by 15 minutes, and the queue bounded by its own limit instead (see: ...) (see: ...) | ... |
+> | Overnight queue | ... the names on tonight's list first in the swing filter's order, ... |
+> | Reports the night asks for | 1 a night, the first name drawn on tonight's list, the first the swing filter passed, one request marked ... |
+> | Weighted-call budget | ... | a request is not a request, so a night counted in requests alone says 7 where the provider says 317, over one request from each feed role and the corporate action feed's second. The runbook, ... | ... |
+Now:
+> | Model calls in the nightly run | 0 in the arithmetic, being every step up to the close, and none in the quarters step after it, with the queue carved out by name ... |
+> | Per-name network calls in the nightly run | 0 in the steady state, with the backfill, the corporate action refetch, the quarters fetch after the close and the night's own request carved out of it, ... (see: The night asks for a report on the first name of its list) (see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted) | ... It is carved rather than the rule loosened, because a night that refetched every name would satisfy a loosened rule and defeat the whole design. The quarters fetch is the fourth exception and follows the reporting calendar rather than the index: ... It runs after the close, bounded by its own limit and by the day's allowance rather than by the night's deadline, and no figure the arithmetic computes moves whether it ran | run log, on the steady-state stages |
+> | Nightly wall clock, at index size | a night's arithmetic, every step up to the close, bounded by 5 minutes, ... |
+> | Per-request timeout and the night's deadline | ... the arithmetic as a whole, every step up to the close, bounded by 15 minutes, and the quarters step and the queue each bounded by its own limit instead (see: ...) (see: ...) | ... |
+> | Overnight queue | ... the names on tonight's list first in the order it is drawn in, ... |
+> | Reports the night asks for | 1 a night, the first name drawn on tonight's list, improving businesses first where the night stored its readings, one request marked ... |
+> | Weighted-call budget | ... | a request is not a request, so a night counted in requests alone says 8 where the provider says 327, over one request from each feed role and the corporate action feed's second, a member's reported quarters among them. The runbook, ... | ... |
+> with ten rows after the twenty-session outcome: the quarters step, the quarters fill, the quarter prices, the trajectory's quarters, the business state, the estimate record, the met tolerance, earnings quality, the valuation position and the weighted calls a quarters ask spends.
+Why: the operator ruled on 2026-09-27 the fetch's placement after the close with a limit of its own, its schedule and fill, three years of closes a fetch, and the readings' values, each proposed and settled from the members' measured split or on a peak reporting night.
+
+### 2026-09-27 - ARCHITECTURE.html - section 18 states what happens when a member has no quarter, a quarter is late, an ask is refused, the step stops, and a night stored no readings
+Authorised by: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+Was:
+> | The market gate closed on a night | ... (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it) |
+> | No name passed the swing filter on a night | ... (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it) |
+Now:
+> | The market gate closed on a night | ... (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it) |
+> | No name passed the swing filter on a night | ... (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it) |
+> with five rows after a trade whose outcome row is missing: a member the provider returns no quarter for, a member's new quarter not yet posted when it is asked, the provider refusing a quarters ask, the quarters step reaching its limit or the day's allowance, and a night that stored no readings of the reported quarters.
+Why: absent is never a failure, and every way the fetch can come back short says so where a reader looks, on the operator's ruling of 2026-09-27.
+
+### 2026-09-27 - ARCHITECTURE.html - section 19.1 gains the reported quarters
+Authorised by: Reported quarters are stored per fetch, so every quarter a reading reads shares one fetch's per-share basis
+Was:
+> | gate results | each member's five gates, ... | section 7's swing filter |
+Now:
+> | gate results | each member's five gates, ... | section 7's swing filter |
+> | reported quarters | the quarters one ask stored for each of the fixture's four names with the figures worked out at the fetch, what came of each ask, each member's reading on the fixture's night, which is no fundamentals yet since the night holds no quarter fetched before it, and each name's four readings and state over its stored quarters | section 7's quarter fetcher and fundamental reader, the figures and the readings worked by hand from the captures |
+Why: the fetch and the readings are stages the replay runs, and the fixture's four captures carry the operating income and the operating cash flow the readings need.
+
+### 2026-09-27 - ARCHITECTURE.html - the list's and the rank refusal's citations name the decisions that superseded them
+Authorised by: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
+Was:
+> (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it), in section 3's Listing row, section 7's Swing filter and Night close rows, section 8's key and its shortlist builder's paragraph, sections 11, 11.2 and 11.3, section 15.8's note, section 15.10's list from night to night and section 17's List display row
+> (see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns), in section 15.9's opening paragraph
+Now:
+> (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it) in each of the first places
+> (see: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters) in section 15.9's opening paragraph, its refusal unchanged
+Why: a citation in a spec never resolves to a superseded decision, and each of these passages states what the new decision still rules.
+
+### 2026-09-27 - SCHEMA.md - the reported quarters, the quarter asks and the fundamental readings, and the list rule's citation
+Authorised by: Reported quarters are stored per fetch, so every quarter a reading reads shares one fetch's per-share basis
+Was:
+> **The night close writes it and is its only writer, from the swing filter's step** (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it). ...
+Now:
+> **The night close writes it and is its only writer, from the swing filter's step** (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it). ...
+> with ownership rows for `reported_quarter` and `quarter_ask`, written by the quarter fetcher, and `fundamental_reading`, written and deleted by the fundamental reader, and a section for each after `fundamentals_snapshot`.
+Why: the three stores migration 48 creates, each declared with its one writer, on the operator's ruling of 2026-09-27.
+
+### 2026-09-27 - BUILD_PLAN.md - the fundamentals ruling's citations, phase 12's facts file, 12.2's text and two operating rows
+Authorised by: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+Was:
+> ... The four readings are not computed, no fundamental state fires a reason or gates a tranche, and no panel is drawn (see: No reading of the fundamentals fires a reason, gates a tranche or draws a panel). The mechanism is what decides it rather than taste: ...
+> | The computed fundamental panel, and whether a fundamental state may fire a reason or gate a tranche | 6.1 | 8.0, discharged | closed by ruling (see: No reading of the fundamentals fires a reason, gates a tranche or draws a panel). The four readings are not computed, ... |
+> ... and its refusal to rank is narrowed in one wording that section 15.9 and section 15.14 state word for word (see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns). ...
+> ... The shortlist builder is unchanged and the six reasons with it. The facts file does not change, so no fixture recording is made again and nothing paid is owed. ...
+> ... and that plan's stop answers ahead of its trigger the question 3.4 carried (owes: The swing trade's stop ruled apart from how wide its setup band merged).
+Now:
+> ... The four readings are not computed, no fundamental state fires a reason or gates a tranche, and no panel is drawn, a ruling superseded on 2026-09-27, when the quarters came to be fetched for every member on the night after it reports, so the four readings are computed for every member every night and the state they give orders tonight's list and gates nothing (see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone). The mechanism is what decided it rather than taste: ...
+> | The computed fundamental panel, and whether a fundamental state may fire a reason or gate a tranche | 6.1 | 8.0, discharged | closed by ruling, which was superseded on 2026-09-27 when the quarters came to be fetched for every member on the night after it reports and the four readings computed every night, the state they give ordering tonight's list and gating nothing (see: ...). What the ruling closed at 8.0: the four readings are not computed, ... |
+> ... and its refusal to rank is narrowed in one wording that section 15.9 and section 15.14 state word for word (see: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters). ...
+> ... The shortlist builder is unchanged and the six reasons with it. The facts file changes only for a member holding reported quarters, which gains the night's readings of them from the 2026-09-27 ruling on the fundamentals item, and the fixture's night holds none before its readings step runs, so no fixture recording is made again and nothing paid is owed (see: The readings join the facts file for a member holding them, and nothing is added for one without). ...
+> ... (owes: The swing trade's stop ruled apart from how wide its setup band merged). From the operator's ruling of 2026-09-27 on the fundamentals item, the quarter fetcher asks for a member's reported quarters after the close on the night after it reports, ... and the run page draws a Fundamentals region, which is where the members' measured split and a peak reporting night are read (owes: The fundamental state rule settled from the members' measured split) (owes: The quarters fetch measured on a peak reporting night).
+> with two operating rows in the carried obligations table: the fundamental state rule settled from the members' measured split, and the quarters fetch measured on a peak reporting night.
+Why: the 8.0 row stays discharged and its citation names the decision that superseded the ruling it closed by; the readings join the facts file on the operator's ruling; and the two rows are the obligations the planning pass opened, each read on the region 12.2's correction builds.
+
+### 2026-09-27 - RUNBOOK.md - the quarters step, the fill and what an ask costs
+Authorised by: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+Was:
+> Two jobs. Neither is part of the application, ...
+> | `tools/nightly` | after the US close | the arithmetic: ..., swing readings and the night's breadth, listings, ... |
+> | the overnight queue | after the arithmetic, same invocation | ... |
+> **Both jobs are idempotent.** Running a night twice produces identical stored state and makes no additional model call.
+> ... Fundamentals cost 10 per ticker. News costs 5 per page, ...
+Now:
+> Three steps a night, from one scheduled invocation. None is part of the application, ...
+> | `tools/nightly` | after the US close | the arithmetic: ..., swing readings and the night's breadth, the readings of each member's reported quarters and the state they give it, listings, ... |
+> | the quarters step | after the arithmetic, same invocation | asks the provider for the reported quarters of the members that reported since the last night, ... | 11 weighted calls a member whose answer stores a quarter and 10 where it does not; no model call |
+> | the overnight queue | after the quarters step, same invocation | ... |
+> **All three are idempotent.** Running a night twice produces identical stored state, makes no additional model call and asks for no member's quarters twice. ...
+> **The quarters step fills every member once, over its first two nights.** ...
+> ... Fundamentals cost 10 per ticker, and the quarters step's ask costs 11 where it stores a quarter, ... and 10 where the answer does not yet carry the quarter awaited. News costs 5 per page, ...
+Why: the operator reads here what the fetch the ruling of 2026-09-27 added does on a night, what the fill looks like on the run page, and when the measured split comes to them.
+
+### 2026-09-27 - .claude/rules/checks.md - four checks reach the fetch, the readings, the state and the order
+Authorised by: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+Was:
+> | `fixture-expectations` | ... and the two illustrative figures saying so in their drawing, caption and key |
+> | `nightly-run` | ... asks for none, starts no drain and says why on its row, recording no model call and no request |
+> | `read-surface` | ... and section 4 names every region the name page draws, the swing readings and the gates among them, read over a fixture page given both and a pick on the session before |
+> | `nightly-cost` | ... so the step's cost is shown to grow with versions and not with requests |
+Now:
+> | `fixture-expectations` | ... and the two illustrative figures saying so in their drawing, caption and key; and the four readings of a member's reported quarters and the state they give are worked by hand over constructed quarters on both sides of each cut point and exactly at it, ... |
+> | `nightly-run` | ... recording no model call and no request; and the fundamental readings run after the swing readings and before the listings, writing a row for every member, and the quarters step after the close and before the overnight queue, ... |
+> | `read-surface` | ... and a pick on the session before; and tonight's list draws the names the filter passed by the state their reported quarters give them, ... and Past picks draws each trade's state on its listing night, ... each night's trades in the order that night was drawn in |
+> | `nightly-cost` | ... so the step's cost is shown to grow with versions and not with requests. The fourth carve-out, the quarters fetch after the close, is asserted rather than exempted over constructed nights: ... |
+Why: each check reaches the part of the 2026-09-27 ruling it asserts.

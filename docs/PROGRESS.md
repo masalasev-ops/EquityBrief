@@ -28490,3 +28490,160 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    part 1, the fundamentals fetched after each report, the four readings, the state and the pages;
             then the fill and the measured splits to the operator, then part 2 with its remedy; items 2 and 3
             on their own schedule after the night of 2026-09-28, their remedy leaving the count at six.
+
+### 12.2 - correction: a member's reported quarters are fetched on the night after it reports and read every night into four readings and a state, tonight's list draws improving businesses first, and the name page's numbers open on what they say, where nothing the night computed read whether a business was growing   2026-09-27
+Corrects:   the list 12.2 built and the numbers the name page draws, on the operator's ruling of 2026-09-27
+            and its five corrections, recorded in the fundamentals ruling above; this is its part 1. A member's
+            reported quarters were fetched only when its report was written, so 5 of the 503 members held any,
+            and no reading the night computed said whether a business was growing or shrinking.
+Repaired:   migration 48 creates `reported_quarter`, a row a member a fetch a quarter, `quarter_ask`, a row a
+            member a night it was asked, and `fundamental_reading`, a row a member a night, each declared in
+            SCHEMA with its one writer. `QuarterFetch` works a fetch's twelve newest filed quarters out of the
+            one answer and its three years of closes: sales growth and the operating margin against the
+            quarter within a week of a year earlier and the same growth a year before, the four quarters'
+            earnings a share, the first close within a week after each report, and the fetch's own basis.
+            `QuarterFetcher` is the quarters step, after the close and before the overnight queue, bounded by
+            its own 15 minutes and by the day's allowance and handed no token from the night's deadline. It
+            asks for a member on the first night after its calendar report, again on each of the five nights
+            after and weekly after that until the quarter is posted or a later report replaces it; marks a
+            member the provider returns nothing for absent, on the same schedule; fills a joiner on its first
+            night and every member once at the start, at most 260 a night after the members reporting and
+            waiting, in ticker order; and asks for none on a night run again for an earlier session. An ask
+            spends the fundamentals' 10 and, where it stores a quarter, 1 for the closes. `FundamentalReader`
+            is step 13, after the swing readings and before the listings: every member's readings over the
+            quarters fetched before the night, tonight's close brought to the fetch's basis by the stored
+            bars' own adjustment, a row each and no request. `QuarterReadings` works the four readings and the
+            state, and `FundamentalState.Place` is the one order the four readers use: tonight's page reads
+            it, and `PlaceIn` writes it into the queries of the queue, the night's request and Past picks,
+            each joining the night's own readings, so a night that stored none keeps the filter's order.
+            `NumbersSay` writes the heading and the sentences from section 4's patterns. Tonight's list draws
+            the state beside the trend with the sentences shown under the pointer or on focus; the name page
+            opens its numbers with what the numbers say, the quarters read and the dates each was filed and
+            reported on folded beneath with the full table; the run page gains the Fundamentals region; and
+            Past picks draws each trade's state on its listing night, "not read that night" before the
+            readings existed, and each night in the order it was drawn in. The facts file carries the readings
+            of a member holding them and nothing for one without.
+Measured:   over the fixture's four names, from their committed captures, derived outside the code before
+            the tests read it (`reported-quarters.json`): each fetch keeps 12 quarters and each ask spends 11
+            weighted calls. AAPL, KEYS and MSFT read improving and NFLX steady, its sales up 13.4% and 16.2%
+            on a year earlier and its margin narrower in the newer quarter and wider in the older. The record
+            over 8 quarters reads 8 beats for each of AAPL, KEYS and MSFT, and 2 beats, 4 met and 2 missed for
+            NFLX, where an exact comparison reads 6 beats, its split leaving two quarters a cent from their
+            estimates. Earnings quality reads AAPL 1.14 and NFLX 0.87 in line, KEYS 1.28 and MSFT 1.37 more
+            than backed by cash. The valuation reads too few quarters for all four, whose captures hold one
+            year of closes and so 4 of the 8 multiples it needs. Over the replay, 48 quarters from 4 asks, and
+            every member reading no fundamentals yet on 2026-09-08, whose readings run before its asks. The
+            preview at 127.0.0.1:5188, serving this branch over its copy of the store migrated to 48, draws
+            tonight's list in the filter's order, no night having stored readings, and in the run page's
+            Fundamentals region "The fill: 0 of 503 members hold quarters, 0 marked absent, 503 still to be
+            asked for the first time."
+Recorded:   the fixture's key under each figure recorded again where a facts file now carries the readings
+            of the quarters the fixture's night stored, on the nights after it: 11 from the local model, LM
+            Studio serving qwen/qwen3.5-9b, on 2026-09-27 between 16:19:03Z and 16:19:38Z, free, each named
+            for its request's key and read by the suite byte for byte, on the operator's ruling to record them
+            locally. No paid recording moved, and the fixture's night itself asks for none, as the ruling
+            expected. The 11 no request asks for any more are removed, and the manifest names each new one with
+            its request and usage.
+Guarded:    in `fixture-expectations`, each worked by hand over constructed quarters on both sides of each
+            cut point and at it: `TheStateIsReadFromTheTwoNewestQuartersOfSalesAndOperatingMarginAlone`,
+            `TheRecordCountsTheEightNewestQuartersCarryingBothFiguresAndAQuarterWithNoActualIsNeverMet`,
+            `AnEstimateIsMetWithinACentOrOnePercentOfItWhicheverIsLarger`,
+            `EarningsQualityReadsItsBandsAtTheirCutPointsAndALossIsNotCompared`,
+            `TheValuationPlacesTonightsMultipleInTheThirdsOfTheQuartersOwnRange`; over the captures and the
+            expectation derived outside the code, `TheFixturesFourNamesReadAsWorkedByHandFromTheirCaptures`
+            and `TheReplayStoresEachNamesQuartersFromOneAskAndReadsNoMemberOnTheNightBeforeIt`; and
+            `TheFactsFileCarriesTheReadingsOfAMemberHoldingThemAndNothingForOneWithout`. In `nightly-cost`,
+            over nights run on recorded feeds: `AReportingMemberIsAskedOnTheNightAfterItsReportAndOnTheFiveAfterThenWeeklyUntilItsQuarterIsPosted`,
+            `TheFillAsksAtMostItsCountANightInTickerOrderAfterAJoinerAndTheRestOnTheNextNight`,
+            `AMemberTheProviderReturnsNoQuarterForIsMarkedAbsentAndAskedOnTheSameSchedule`,
+            `ARefusedAskIsRecordedWithItsReasonAndTheNextMemberIsStillAsked` and
+            `AStepAtItsLimitStartsNoAskAndOneAtTheAllowanceMakesNoneAndTheNextNightAsksThem`. In
+            `nightly-run`: `TheNightReadsTheReportedQuartersBeforeTheListingsAndAsksForThemAfterTheClose`,
+            `TheQueueTakesImprovingBusinessesFirstWhereTheNightStoredItsReadingsAndTheFiltersOrderWithinAState`
+            and `TheNightAsksForTheFirstImprovingBusinessWhereItStoredItsReadingsAndTheFiltersFirstOnANightItStoredNone`.
+            In `read-surface`, read off the rendered pages: `TonightsListDrawsImprovingBusinessesFirstFromTheFirstNightItsReadingsAreStoredAndTheFiltersOwnOrderBefore`,
+            `TheNamePageOpensItsNumbersWithWhatTheNumbersSayWordForWord`,
+            `SectionFoursPatternTableAndTheRenderersPatternsAreOneListInBothDirections`,
+            `TheRunPageDrawsTheNightsAsksTheMembersWaitingAndTheFill` and
+            `PastPicksDrawsEachTradesStateOnItsListingNightAndEachNightInTheOrderItWasDrawnIn`. Reworked: the
+            night's order at its end, the quarters step now between the close and the queue; a night run
+            again asks for no quarters; the weighted-call test, a night now 8 requests for 327; the token
+            test, which makes the night a ticker the feed stops listing leaves the index as well; and the
+            census, the obligation count and the conformance counts, which move with the rows below.
+Found:      two decision names carrying two commas each were read by section 15's parts reader as parts of
+            the rows citing them, and each is renamed to carry one; a citation closing a section 15 row
+            merged into its last part and moved to the note. Two lists spread across partial files were
+            initialised in the wrong order and became properties. A verdict note counting "the two feeds" was
+            refused by the check on counts in notes and reworded. The plan's tests of the queue's and the
+            night's request's order were missing until this entry named what it guards, and were added. The
+            facts file carrying the readings changed 11 local requests, and one of the recordings made again
+            is asked by a nightly-run test the token test's nights did not include, so the token test makes
+            that night too.
+Written:    sections 1 and 2; section 4's numbers row and its table of what the numbers say, pattern by
+            pattern; 7's catalogue and matrix; 11.2's order, 13.5's boundary and 15.14's line; 14's readings
+            step and quarters step and the queue's and the request's order; 15.7, 15.9, 15.10 and 15.17; 16's
+            three stores; 17's rows for the arithmetic up to the close, the carve-outs, the weighted calls and
+            ten rows of the step's and the readings' values; 18's five rows and 19.1's. SCHEMA's three stores.
+            DECISIONS: six decisions, and three moved to Previously decided with their reasoning kept: "No
+            reading of the fundamentals fires a reason, gates a tranche or draws a panel", "Tonight's list is
+            the swing filter's, and an evening is listed by the rule that listed it", and "A page ranks no
+            company as an investment, and a rank it draws is a return's place among the members' returns",
+            each citation repointed. CLAUDE.md's hard rule names the quarters fetch as its fourth carve-out.
+            BUILD_PLAN: phase 12's facts file, 12.2's text and two operating rows. The runbook's night of three
+            steps, the fill and the weights. `.claude/rules/checks.md`'s four rows. HOW_IT_WORKS sections 1, 6
+            and 7. Each changed line's prior text in `CHANGELOG.md`.
+Tests:      1477, from 1456: 21 added, none removed or renamed.
+Claims:     644, from 605, the planning pass's prediction, none out of scope: section 7's catalogue 2, the
+            matrix 2, section 16 3, section 14 2, 15.7 3, 15.9 5, 15.10 4, 15.17 2, section 17 10, section 18
+            5 and 19.1 1. The checks' stated counts move with them: section 15's screen rows from 87 to 89,
+            its claims from 286 to 300 and the decomposed elements from 273 to 287.
+Pins:       the branch against `main` edits no source in the twelve `RuleVersionScorer.CodeVersionSources`,
+            the sixteen `SwingFilter.CodeVersionSources` or the twenty-one `CandidateEvaluator.EvaluationSources`,
+            read by intersecting the branch's changed files with the 33 the three lists name. No version
+            moves. The operator's store takes migration 48 at the next night's first step, or by
+            `tools/migrate.ps1` before it, and that night's quarters step starts the fill.
+Mutated:    the rule, stated before the run: one mutation reversing each mechanism the plan's mutation list
+            names, each run filtered to the twenty-one tests this correction adds.
+            Predicted:
+            M1 the trajectory read the wrong way, `StateOf` reading improving where sales stood below a year
+            earlier and deteriorating where above: red in the state's test, the fixture's four names, the
+            replay's and the facts file's, and in every screen and order test whose readings are worked from
+            constructed quarters: tonight's list, the name page, Past picks, the queue's and the request's.
+            M2 the record read the wrong way, `Against` returning the gap's sign reversed: red in the
+            tolerance's test, the record's test, the fixture's four names, the replay's, and the state's test,
+            whose four misses read as beats.
+            M3 the quality's bands swapped, below the low cut point reading more than backed by cash and above
+            the high one ahead of it: red in the quality's test, the fixture's four names and the replay's,
+            KEYS and MSFT reading more than backed, and the state's test.
+            M4 the valuation's thirds swapped: red in the valuation's test alone, no other holding the eight
+            multiples a position needs.
+            M5 a quarter with an estimate and no actual counted as met: red in the record's test.
+            M6 absent members dropped from tonight's list, a passing member reading no fundamentals yet or
+            not enough quarters left off it: red in tonight's list test.
+            M7 the state's place in the order, improving and deteriorating swapped in `FundamentalState.Place`,
+            which `PlaceIn` carries into the three queries: red in tonight's list test, Past picks', the
+            queue's and the request's.
+            M8 the re-ask schedule moved from weekly to nightly, `Scheduled` asking on every night after the
+            five: red in the reporting member's schedule test and the absent member's.
+            M9 met's tolerance removed: red in the tolerance's test, the fixture's four names and the
+            replay's, NFLX reading 6 beats.
+            M10 a night before the first readings drawn state-first, tonight's reader taking the newest night's
+            readings whatever night it is asked for: red in tonight's list test.
+            Not mutated here: absent members skipped by the candidate, which is part 2's and carried with it.
+            Results: 12QM
+Held:       12QH
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12QT of 12QT tests ran
+            with none failed, migrations 0 to 48 with none pending, schema version 48, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 12QB tables, 12QC claims, 12QP PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 12QR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 12QT of 12QT tests.
+            Both gates ran over the tree carrying this entry, 12QSHA, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    the fill on the operator's next two nights, each night's asks, weighted calls and time recorded
+            in the entry after it; "The fundamental state rule settled from the members' measured split",
+            whose splits of states, beats, meets and misses and cash bands go to the operator once every member
+            holds quarters or is marked absent; "The quarters fetch measured on a peak reporting night", on the
+            first night of 40 or more first asks; then part 2, the
+            seventh candidate with its remedy, the operator's command, and its mutation of absent members
+            skipped by the candidate; items 2 and 3 on their own schedule after the night of 2026-09-28.

@@ -479,9 +479,10 @@ public class ObligationReconciles
         // Two, opened by the correction of 11.1's start after the phase's report said none, and
         // named in the report entry that amends it.
         ["11"] = 2,
-        // Two, opened by the 12.0 planning pass: the shape clock's trigger and the swing family's
-        // first look.
-        ["12"] = 2,
+        // Four: two opened by the 12.0 planning pass, the shape clock's trigger and the swing family's
+        // first look, and two by the 12.2 correction of 2026-09-27, the state rule settled from the
+        // members' measured split and the quarters fetch measured on a peak reporting night.
+        ["12"] = 4,
     };
 
     internal const string NoOperatingRowOpened = "opened no operating row";

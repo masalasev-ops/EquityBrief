@@ -45,7 +45,7 @@ public sealed class NightClose : IComponent
 
     // The names on the night's list, being the members the swing filter passed on its night, the newest
     // session any name holds, which is the session the night records the rule for.
-    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     const string OnTheList = @"
         SELECT COUNT(*) FROM gate_result
         WHERE session_date = (SELECT MAX(session_date) FROM bar) AND passed = 1;
@@ -149,7 +149,7 @@ public sealed class NightClose : IComponent
     // The rule tonight's list is drawn by, recorded as soon as the swing filter has stored its rows rather
     // than at the close, so a night that stops at a later step still reads as listed by the rule that drew
     // it. Returns whether a session was recorded, which it is not where the filter stored nothing.
-    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     public static async Task<bool> RecordRuleAsync(string databaseFile, CancellationToken cancellation = default)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
