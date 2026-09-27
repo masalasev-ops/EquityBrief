@@ -28710,15 +28710,18 @@ Mutated:    the rule, stated before the run: one mutation reversing each mechani
             H2 the run page not reading the prefix as by hand, `quarters-by-hand-` taken out of
             `RunScreen.RunsByHand`: red in the verb's test.
             Not mutated: the same-session skip, which the correction before this built and its tests assert.
-            Results: 12HM
-Held:       12HH
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12HT of 12HT tests ran
+            Results: one run for each of the two in a detached worktree at 0fbf182, this entry's commit,
+            each filtered to the test this correction adds, each edit made there and reverted, and the tree
+            read clean after. The whole suite ran green over 0fbf182 in the gates, 1478 of 1478. H1 turned
+            the verb's test red, and H2 turned it red.
+Held:       both red, each in the one test predicted.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1478 of 1478 tests ran
             with none failed, migrations 0 to 48 with none pending, schema version 48, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 12HB tables, 12HC claims, 12HP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 12HR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 12HT of 12HT tests.
-            Both gates ran over the tree carrying this entry, 12HSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 44 tables, 644 claims, 644 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 655 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1478 of 1478 tests.
+            Both gates ran over the tree carrying this entry, 0fbf182, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    the operator's ruling on the split above, which settles the state rule, the met tolerance and
             the quality cut points before part 2; Monday's night, the first whose readings read the fill, its
