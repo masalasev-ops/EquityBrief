@@ -28815,14 +28815,16 @@ Mutated:    the rule, stated before the run: one mutation reversing the mechanis
             filtered to the test this correction adds.
             Predicted:
             F1 the operational header leaving out the quarters step's line: red in the new test.
-            Results: 12FM
-Held:       12FH
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12FT of 12FT tests ran
+            Results: one run in a detached worktree at 9da0a3d, this entry's commit, filtered to the test this
+            correction adds, the edit made there and reverted, and the tree read clean after. The whole suite
+            ran green over 9da0a3d in the gates, 1478 of 1478. F1 turned the new test red.
+Held:       red in the one test predicted.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1478 of 1478 tests ran
             with none failed, migrations 0 to 48 with none pending, schema version 48, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 12FB tables, 12FC claims, 12FP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 12FR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 12FT of 12FT tests.
-            Both gates ran over the tree carrying this entry, 12FSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 44 tables, 640 claims, 640 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 651 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1478 of 1478 tests.
+            Both gates ran over the tree carrying this entry, 9da0a3d, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this.
