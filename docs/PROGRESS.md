@@ -28052,3 +28052,110 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             and the operator's store under `data/` was not touched by either.
 Carried:    part 1 with items 2 and 3 after the night of 2026-09-28; items 4, 5 and 7 in the order ruled;
             part 3 after item 7.
+
+### 12.2 - correction: a Past picks screen follows every trade the live list recommended, a name's page draws the nights the list picked it before, and the trade line is the eighth mark, where no page showed how one recommended trade turned out   2026-09-27
+Corrects:   the read surface 12.2 to 12.7 built, on which the scoring of the list's trades existed only as
+            counts on the run page; on part 3 of the operator's ruling of 2026-09-27, the ruling before this
+            entry. That ruling set part 3 after item 7. The operator approved the screen's mockup the same
+            day and asked for it built now, ahead of items 2, 3, 4, 5 and 7, so it lands here. It reads what
+            the store holds and edits no pinned source, so items 2 and 3 change which trades later nights list
+            and where their stops sit, and each is drawn on the plan its own night read.
+Repaired:   `ReadApi.PicksAsync` reads every name the swing filter passed on a night `list_rule` records as
+            the filter's, up to the night asked for, on the plan that night's version's trade gate read,
+            section 10's where the settings read `clear` and the nearest bands' otherwise, the choice the near
+            misses make, with the forward return on that plan's horizon and whether a row is stored at all.
+            A member one gate short, a candidate's plan and an evening the reasons listed are none of them,
+            and the operator's reminder the same day holds by construction: the record starts at the swing
+            filter's first night, 2026-09-24 in the operator's store. `PicksScreen`, the projection beside
+            `UniverseScreen`, works out the four figures no row holds: what became of a trade as of the night
+            drawn, open where the store says it finished later; the sessions held on the exchange calendar to
+            its resolution or to that night; its result, the stored return over the risk as a share of the
+            buy; and where its dot sits, the stored return for a finished trade and the close now over the
+            listing's close for an open one, ratios a split moves neither side of. Its counts, and the share
+            that reached the target, the mean break-even and the average result, which it computes only once
+            the trades decided at the target or the stop reach `ReasonVerdict.MinimumResolved` over
+            `ReasonVerdict.MinimumSessions` listing nights, the run page's own test of a scored setup counting
+            them. `MarkRenderer` gains the trade line, the table, the counts, the status chips and the line
+            above a name's earlier picks. The app gains `#/picks` between Universe and Researched with its
+            status in the hash, `/screens/picks`, and the name page's "On the list before" after the plan and
+            its earnings reactions, each trade as it stood on the page's night and absent where the name was
+            not picked before.
+Differs:    from the ruling's words in one place, on a decision that stands. The ruling's share of
+            finished trades would have counted a trade that ran out of time in its denominator, and the
+            mockup drew it so; a setup that resolved neither way is excluded from the rate (see: An unresolved
+            setup is never a win). So the share, its break-even and the minimum both count are over the trades
+            decided at the target or the stop, as the run page's reason records count, and a trade that ran
+            out of time is counted, drawn on the bar as its own step and in the average result, which is what
+            each trade earned, and in no share.
+Found:      section 4 named neither the swing readings nor the gates, which the name page has drawn since
+            12.1 and 12.2, because no fixture page drew them and the check reading the section against the
+            pages reads only what they draw. Seeding the pick this correction needed drew the gates and
+            found it. Both rows are written, the count stated in words moves from eighteen to twenty-one, and
+            the check's fixture page is given a swing reading, a gate row and a pick on the session before, so
+            it reaches all three. The check's reader took the count as one word and could not read
+            twenty-one, which the list of count words it reads against holds; it reads a hyphenated word now.
+Measured:   over the preview's copy of the operator's store, taken read-only on 2026-09-27 at schema 47:
+            four trades over the two nights the filter listed, both under version 2 and so on the plan at the
+            nearest bands: BDX on 2026-09-25 open with no session held, and CPAY, DVN and KO on 2026-09-24,
+            CPAY and KO open one session and DVN stopped out on 2026-09-25 at -2.37 times its risk, a close of
+            47.05 against its stop of 48.12 on a buy of 48.90, -3.78% on 1.60% risked. One trade decided of
+            the 250 needed, over one of the 60 nights, so no share. DVN's page draws "Picked once: stopped out
+            once."; KO's page for 2026-09-24 and BDX's tonight draw no such region.
+Guarded:    `ThePastPicksScreenFollowsEveryTradeTheLiveListRecommendedOnThePlanItsNightTraded`, over a
+            constructed store holding a version 2 night reading the nearest bands and a version 3 night
+            reading section 10's plan, every row carrying both plans with an outcome decided the other way on
+            the plan its night did not read, and a trade in every state: the counts, each row's plan, prices,
+            status, sessions and result, and each trade line's ticks and dot, worked by hand, with the member
+            one gate short and the row the filter passed on an evening the reasons listed drawn nowhere, the
+            hash's status drawing its trades alone, and the masthead's link.
+            `ThePastPicksShareIsDrawnOnlyOnceTheDecidedTradesAndTheirNightsReachTheRunPagesMinimum`: 249
+            decided over 60 nights and 250 over 59 draw the dashed outline and no share, and 250 over 60 with
+            20 run out of time draw 40.0%, a mean bar of 31.0% and +0.20 times the risk, and the bar's three
+            steps and its line, each worked by hand.
+            `ANamesPageDrawsTheNightsTheLiveListPickedItBeforeAsTheyStoodOnThePagesNight`: tonight's page
+            draws a pick reached target, the page for the night after the pick draws it open at its close
+            then, and the pick's own night, a member one gate short and an evening the reasons listed draw
+            none. `TheTradeLineDrawsAStopABuyATargetAndADotAndSaysWhatItLacks` over a full input and each input
+            it degrades on. `ThePastPicksScreenOverAStoreWithNoTradeSaysNoneHasBeenListed`, section 18's row.
+            `SectionFourNamesEveryRegionTheNamePageDrawsInTheOrderItDrawsThem` reaches the three regions.
+Written:    section 15.17, the Past picks screen; 15.1's screens, the watch list among them where it was
+            missing; 15.3's routes; 15.5's eighth mark; 15.9's "On the list before"; section 4's three rows
+            and its counts; section 7's mark renderer and single page app rows; section 17's minimum named as
+            the screen's too; section 18's two rows. `.claude/rules/checks.md`'s read-surface row. Each
+            changed line's prior text in `CHANGELOG.md`. One decision: every trade the live list recommended
+            is shown and their share waits for the reason records' minimum. `HOW_IT_WORKS.html`'s section 9
+            key gains "You can follow every recommended trade on the Past picks screen.", and its section 10
+            becomes "The screens" with a fifth card; the guide carries no rule.
+Tests:      1452, from 1447: 5 added, none removed.
+Claims:     603, from 579: section 15.17's three rows as the twenty clauses they state, 15.9's region,
+            15.5's trade line and section 18's two rows, 24 named beside phase 12's other rows beyond its
+            prediction; section 4 is outside the claim scope the catalogue states. The checks' stated counts
+            move with them: section 15's claims from 263 to 285, its rows from 82 to 87 and the decomposed
+            elements from 252 to 272.
+Pins:       the branch against `main` at edcc671 edits no source in the twelve
+            `RuleVersionScorer.CodeVersionSources`, the sixteen `SwingFilter.CodeVersionSources` or the
+            twenty-one `CandidateEvaluator.EvaluationSources`: the read API, its projections, the app, the
+            marks and the stylesheet alone. No version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: the four the operator named in the ruling, each run filtered to
+            the five tests this correction adds.
+            Predicted:
+            M1 a second-list name counted, the population read off every row carrying a plan rather than the
+            names passing: red in the screen's test alone, the member one gate short drawn and counted.
+            M2 a candidate's plan drawn, every night read on the plan its trade gate did not read: red in the
+            screen's test alone.
+            M3 the share drawn below the minimum, its figures computed whatever the counts: red in the screen's
+            test and the minimum's.
+            M4 an open trade's dot filled: red in the screen's test, the name page's and the mark's.
+            Not mutated: the sessions held, the result's arithmetic, the status as of an earlier night, the
+            filters and the empty store, each asserted by the tests above.
+            Results: 12PM
+Held:       12PH
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12PT of 12PT tests ran
+            with none failed, migrations 0 to 47 with none pending, schema version 47, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 12PB tables, 12PC claims, 12PP PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 12PR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 12PT of 12PT tests.
+            Both gates ran over the tree carrying this entry, 12PSHA, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    part 1 with items 2 and 3 after the night of 2026-09-28; items 4, 5 and 7 in the order ruled.

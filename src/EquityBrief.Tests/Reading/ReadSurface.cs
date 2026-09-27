@@ -244,6 +244,10 @@ public partial class ReadSurface
             CheckReach.Key("15.16 Watch list", "What the swing filter said of it, what excluded it"),
             CheckReach.Key("15.16 Watch list", "What the swing filter said of it, that no answer is stored for the night"),
             CheckReach.Key("15.16 Watch list", "Take it out"),
+
+            // The 12.2 correction's Past picks screen, the name page's region, the eighth mark and section
+            // 18's two rows for the screen.
+            .. PastPicksClaims,
             CheckReach.Key("15.7 Tonight", "The report's state"),
             CheckReach.Key("15.9 Name", "Each move beside its group"),
             CheckReach.Key("15.9 Name", "Peers, beneath the table of the biggest moves"),

@@ -867,6 +867,15 @@ internal static class Scope
             Verdict.Pass,
             "a constructed night no name passed draws the line with how many reached each gate, worked by hand, read off tonight's page; the night asking for no report and saying why on its row is `nightly-run`'s, over the fixture's night, on which no member passes",
             ByReadSurface),
+        // The 12.2 correction's two rows for the Past picks screen.
+        [CheckReach.Key(FailureTable, "No trade listed yet")] = new Scoped(
+            Verdict.Pass,
+            "a store whose filter nights passed no name draws the one line saying no trade has been listed yet, and no count, share or table",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "A trade whose outcome row is missing")] = new Scoped(
+            Verdict.Pass,
+            "a trade with no forward return row is drawn with its plan, counted as listed and in no status, its status and its trade line saying no outcome stored with no dot",
+            ByReadSurface),
         [CheckReach.Key(LimitsTable, "Peer return window")] = new Scoped(
             Verdict.Pass,
             "a return is taken over sixty sessions and a series one short of the window and the close it is measured from has none, over constructed bars, and the constant the row states is the one the reading uses",
@@ -1442,6 +1451,97 @@ internal static class Scope
         [CheckReach.Key("15.16 Watch list", "Take it out")] = new Scoped(
             Verdict.Pass,
             "each row's press takes the name off, and the page drawn again holds it no more",
+            ByReadSurface),
+        // The 12.2 correction's Past picks screen, the name page's region and the eighth mark, on the
+        // operator's ruling of 2026-09-27, each read off the rendered page over a constructed store holding a
+        // version 2 night and a version 3 night with a trade in every state.
+        [CheckReach.Key("15.5 The mark vocabulary", "Trade line")] = new Scoped(
+            Verdict.Pass,
+            "over a full input the stop, the buy and the target are drawn at their places on the line by the prices' ratios to the buy and the dot hollow for an open trade and filled for a finished one, a price past either end sits at that end, and over the inputs it degrades on it draws no line or no dot and says what it lacks",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "On the list before")] = new Scoped(
+            Verdict.Pass,
+            "a name the live list picked before the page's night draws the region after the plan and its earnings reactions, its line counting the picks and each group as the test's own arithmetic over the store gives them and a row per earlier listing as it stood on the page's night, and a name never picked before draws none",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, the trades listed with the nights they were listed on")] = new Scoped(
+            Verdict.Pass,
+            "the count of trades and of their nights is the test's own count of the names the filter passed on the nights it listed, a candidate's plan, a member one gate short and an evening the reasons listed left out",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many are still open and how many finished")] = new Scoped(
+            Verdict.Pass,
+            "the open and finished counts are the test's own over the constructed trades",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many reached the target and how many were stopped out or ran out of time")] = new Scoped(
+            Verdict.Pass,
+            "each finished status's count is the test's own over the constructed trades",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, a line saying how many carry no outcome row")] = new Scoped(
+            Verdict.Pass,
+            "a trade with no forward return row is counted as listed and in no status, and the line states how many",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, below the minimum a dashed outline stating the trades decided at the target or the stop and their listing nights against the numbers needed with no share")] = new Scoped(
+            Verdict.Pass,
+            "below either minimum the dashed outline states the decided trades and their nights against the constants the run page's records read and no share is drawn, at one decided trade short of the count and at one night short of the nights",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, at or above it a bar of the finished trades in three steps of one neutral hue with a line at the decided trades' average break-even")] = new Scoped(
+            Verdict.Pass,
+            "at both minimums the bar draws the finished trades in three steps sized by their counts and the line at the decided trades' mean break-even across the decided part, worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, the share that reached the target first beside the share needed to break even and the average result in multiples of the risk taken, the three always together")] = new Scoped(
+            Verdict.Pass,
+            "at both minimums the three figures are drawn together and each is the test's own arithmetic over the constructed trades, a trade that ran out of time in no share",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, a key saying how to read it")] = new Scoped(
+            Verdict.Pass,
+            "the region's key says how to read it and closes on what to take from it",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Filters, a chip for all and one for each status a trade can stand in with its count")] = new Scoped(
+            Verdict.Pass,
+            "each chip carries its status's count, the hash's status lights its chip and draws only its trades, and all draws every one",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Filters, none by setup")] = new Scoped(
+            Verdict.Pass,
+            "the chips are all and the four statuses and no other",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Every trade, newest first")] = new Scoped(
+            Verdict.Pass,
+            "the rows are drawn by the night listed, newest first, and in the list's own order within a night",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Every trade, a line above the rows stating how many are shown of how many were listed")] = new Scoped(
+            Verdict.Pass,
+            "the line above the rows states the rows drawn and the trades listed, filtered and not",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Every trade, the night listed")] = new Scoped(
+            Verdict.Pass,
+            "each row carries the night the store listed it on",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Every trade, the stock with a link to its page for that night")] = new Scoped(
+            Verdict.Pass,
+            "each row's stock links to its own page for the night it was listed",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Every trade, the buy and the stop and the target")] = new Scoped(
+            Verdict.Pass,
+            "each row's buy, stop and target are the plan the night's trade gate read, section 10's on a version 3 night and the nearest bands' on a version 2 night, whole on their cells",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Every trade, the trade line")] = new Scoped(
+            Verdict.Pass,
+            "each row draws the trade line for its own plan and status",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Every trade, the status in words")] = new Scoped(
+            Verdict.Pass,
+            "each row's status is the words for its stored outcome as of the newest night",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Every trade, the sessions held to its resolution or to the newest night")] = new Scoped(
+            Verdict.Pass,
+            "each row's sessions are counted on the exchange calendar from the night listed to the session it finished or to the newest night, worked by hand",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Every trade, the result as a signed multiple of the risk or open")] = new Scoped(
+            Verdict.Pass,
+            "a finished row's result is the stored return over the risk as a share of the buy, worked by hand, and an open row says open",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Every trade, a key saying how to read the trade line and that only the live list's trades appear with the alternatives hidden until one is promoted")] = new Scoped(
+            Verdict.Pass,
+            "the table's key says how to read the trade line and closes on only the live list's trades appearing",
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "Research, per row")] = new Scoped(
             Verdict.Pass,
@@ -2850,6 +2950,29 @@ internal static class Scope
         [CheckReach.Key("15.16 Watch list", "What the swing filter said of it, what excluded it")] = "5.8",
         [CheckReach.Key("15.16 Watch list", "What the swing filter said of it, that no answer is stored for the night")] = "5.8",
         [CheckReach.Key("15.16 Watch list", "Take it out")] = "5.8",
+        // The 12.2 correction's Past picks screen, the name page's region and the eighth mark.
+        [CheckReach.Key("15.5 The mark vocabulary", "Trade line")] = "12.2",
+        [CheckReach.Key("15.9 Name", "On the list before")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, the trades listed with the nights they were listed on")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many are still open and how many finished")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many reached the target and how many were stopped out or ran out of time")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, a line saying how many carry no outcome row")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, below the minimum a dashed outline stating the trades decided at the target or the stop and their listing nights against the numbers needed with no share")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, at or above it a bar of the finished trades in three steps of one neutral hue with a line at the decided trades' average break-even")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, the share that reached the target first beside the share needed to break even and the average result in multiples of the risk taken, the three always together")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done, a key saying how to read it")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Filters, a chip for all and one for each status a trade can stand in with its count")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Filters, none by setup")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Every trade, newest first")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Every trade, a line above the rows stating how many are shown of how many were listed")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Every trade, the night listed")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Every trade, the stock with a link to its page for that night")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Every trade, the buy and the stop and the target")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Every trade, the trade line")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Every trade, the status in words")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Every trade, the sessions held to its resolution or to the newest night")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Every trade, the result as a signed multiple of the risk or open")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Every trade, a key saying how to read the trade line and that only the live list's trades appear with the alternatives hidden until one is promoted")] = "12.2",
         [CheckReach.Key("15.15 Queue", "Which lane would write one")] = "9.4",
         [CheckReach.Key("15.15 Queue", "When each will be written")] = "11.2",
         [CheckReach.Key("15.7 Tonight", "The report's state")] = "11.3",
@@ -3019,8 +3142,8 @@ internal static class Scope
     // asserted where it exists and only what does not stays out of scope.
     //
     // The decomposition lives here rather than in the document, and that is
-    // deliberate. Section 15.5 opens by stating seven marks and the table has
-    // seven rows; splitting the row into four would make the document disagree
+    // deliberate. Section 15.5 opens by stating eight marks and the table has
+    // eight rows; splitting the row into four would make the document disagree
     // with itself and would turn one mark into four in a vocabulary whose whole
     // point is that a mark is defined once. So the row stays one row and the
     // harness reads it as four claims.
@@ -3060,6 +3183,33 @@ internal static class Scope
             ["in the order it was added", "its company", "its close and the day's change", "its trend in a word", "the reward to risk of its trade", "the day it was added and a link to its page", "drawn for the newest night whether or not the list holds it"],
         [CheckReach.Key("15.16 Watch list", "What the swing filter said of it")] =
             ["listed and its number", "the first gate that stopped it with that gate's reason", "what excluded it", "that no answer is stored for the night"],
+        // The 12.2 correction's Past picks screen, each row's clauses as the row states them.
+        [CheckReach.Key("15.17 Past picks", "How the list's picks have done")] =
+        [
+            "the trades listed with the nights they were listed on",
+            "how many are still open and how many finished",
+            "how many reached the target and how many were stopped out or ran out of time",
+            "a line saying how many carry no outcome row",
+            "below the minimum a dashed outline stating the trades decided at the target or the stop and their listing nights against the numbers needed with no share",
+            "at or above it a bar of the finished trades in three steps of one neutral hue with a line at the decided trades' average break-even",
+            "the share that reached the target first beside the share needed to break even and the average result in multiples of the risk taken, the three always together",
+            "a key saying how to read it",
+        ],
+        [CheckReach.Key("15.17 Past picks", "Filters")] =
+            ["a chip for all and one for each status a trade can stand in with its count", "none by setup"],
+        [CheckReach.Key("15.17 Past picks", "Every trade")] =
+        [
+            "newest first",
+            "a line above the rows stating how many are shown of how many were listed",
+            "the night listed",
+            "the stock with a link to its page for that night",
+            "the buy and the stop and the target",
+            "the trade line",
+            "the status in words",
+            "the sessions held to its resolution or to the newest night",
+            "the result as a signed multiple of the risk or open",
+            "a key saying how to read the trade line and that only the live list's trades appear with the alternatives hidden until one is promoted",
+        ],
         // 12.6. An evening before the switch, drawn as it was listed.
         [CheckReach.Key("15.7 Tonight", "An evening before the switch")] =
             ["drawn as it was listed", "one row per name that fired", "ordered by how many fired then by the plan's reward to risk"],
@@ -3369,6 +3519,7 @@ internal static class Scope
         "15.10 Run",
         "15.15 Queue",
         "15.16 Watch list",
+        "15.17 Past picks",
         "15.11 How a reason's record is displayed",
     ];
 
@@ -3461,6 +3612,8 @@ internal static class Scope
         // 12.6's, answered by tonight's page and the night's own request.
         ["The market gate closed on a night"] = "12.6",
         ["No name passed the swing filter on a night"] = "12.6",
+        ["No trade listed yet"] = "12.2",
+        ["A trade whose outcome row is missing"] = "12.2",
     };
 
     // The two rows of the read and write matrix whose component already exists.

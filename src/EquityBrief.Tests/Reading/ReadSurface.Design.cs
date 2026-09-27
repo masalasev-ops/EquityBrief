@@ -358,8 +358,10 @@ public partial class ReadSurface
                 "<tr><td>Tonight&#39;s figures</td><td>x</td></tr><tr><td>How it got here</td><td>y</td></tr></table>" +
                 "<h2>5. After</h2><table><tr><td>Nor this</td></tr></table>")]);
 
-        // Eighteen since the 5.8 correction took the listing history off the page.
-        Assert.True(rows.Count >= 18, $"Section 4 names {rows.Count} region(s), expected at least 18.");
+        // Eighteen since the 5.8 correction took the listing history off the page, and twenty-one since the
+        // 12.2 correction drew the nights the live list picked a name before and named the swing readings and
+        // the gates, which the page had drawn since 12.1 and 12.2 and no fixture page reached.
+        Assert.True(rows.Count >= 21, $"Section 4 names {rows.Count} region(s), expected at least 21.");
 
         using var store = await FixtureExpectations.WithListings();
 
@@ -383,6 +385,18 @@ public partial class ReadSurface
 
         ThemeDocument(store);
         ThemeCycle(store, 1, night, "accepted", "Orders across the industry are turning up from a low [D1].");
+
+        // And the name's swing readings and gates for the night, and the session before, on which the swing
+        // filter listed it, which its page draws as the nights the live list picked it before.
+        var pageNight = DateOnly.ParseExact(night, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        var earlier = EquityBrief.Core.Bars.ExchangeClosures.SessionsBetween(pageNight.AddDays(-7), pageNight)[^1].ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+        store.Execute(
+            "INSERT INTO swing_reading (ticker, session_date, bars, return_short, return_long, place_short, place_long, strength, recent_high, high_session, pullback_sessions, depth, dry_up, tightness, note) " +
+            $"VALUES ('KEYS', '{night}', 250, 4.5, 9.0, 0.6, 0.7, 0.65, '330', '{earlier}', 1, 1.5, 0.8, 0.6, NULL);");
+        GateRow(store, night, new Member("KEYS", Trigger: false));
+        store.Execute($"INSERT OR REPLACE INTO list_rule (session_date, rule) VALUES ('{earlier}', 'filter');");
+        GateRow(store, earlier, new Member("KEYS", Passed: true, Rank: 1));
 
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
@@ -414,7 +428,7 @@ public partial class ReadSurface
             [.. drawn.SelectMany(titles => titles).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)]);
 
         // And the count the section states in words is its count of rows.
-        var stated = Regex.Match(ReportText(document), @"up to (\w+) regions");
+        var stated = Regex.Match(ReportText(document), @"up to ([\w-]+) regions");
 
         Assert.True(stated.Success, "Section 4 states no count of its regions.");
         Assert.Equal(rows.Count, Array.IndexOf(CountWords, stated.Groups[1].Value));

@@ -333,7 +333,9 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         await read.GateResultAsync(ticker, on),
         // Whether the operator watches the name, which its header's press says. An exported file carries
         // no press, because nothing it is opened beside can answer one.
-        export ? null : (await read.WatchedAsync()).Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)));
+        export ? null : (await read.WatchedAsync()).Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
+        // Every night the live list picked the name before the page's own, each trade as it stood on the page's night.
+        night is { } picked ? PicksScreen.Before(await read.PicksAsync(picked, ticker), picked) : null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -860,6 +862,20 @@ app.MapGet("/screens/find", async (ReadApi read, SinglePageApp page) =>
 
     return Results.Content(
         page.FindOptions([.. names.Select(name => new Findable(name.Ticker, name.Name, name.Researched))]),
+        "text/html; charset=utf-8");
+});
+
+// The Past picks screen, section 15.17: every trade the live list recommended from the swing filter's
+// first night, as of the newest night, under the status filter the hash carries.
+// see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
+app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page) =>
+{
+    var night = await read.NewestNightAsync();
+    var cells = night is { } asOf ? PicksScreen.Cells(await read.PicksAsync(asOf), asOf) : [];
+    var status = request.Query["status"].FirstOrDefault();
+
+    return Results.Content(
+        page.PicksRegion(marks, night, PicksScreen.Summary(cells), PicksScreen.Filtered(cells, status), status),
         "text/html; charset=utf-8");
 });
 

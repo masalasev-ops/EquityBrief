@@ -1094,7 +1094,8 @@ public static class NameScreen
         DateOnly? notAMemberOn = null,
         SwingReadingRow? swing = null,
         GateResultRow? gates = null,
-        bool? watched = null)
+        bool? watched = null,
+        IReadOnlyList<PickCell>? earlier = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1223,7 +1224,8 @@ public static class NameScreen
             swing is null ? null : Swing(swing),
             gates is null ? null : Gates(gates) with { Rule = listing is { } held && held.SessionDate == gates.SessionDate ? held.ListedBy : ListRules.Reasons },
             Passed(listing, gates),
-            watched);
+            watched,
+            earlier);
     }
 
     // Why the swing filter listed the name on an evening it listed it: each gate with why it passed, and

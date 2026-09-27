@@ -391,6 +391,27 @@ public sealed record GateResultRow(
     double? ClearRewardToRisk = null,
     double? ClearStopMoves = null);
 
+// One trade the live list recommended, as the store holds it: the name the swing filter passed on a
+// night it listed, the plan that night's trade gate read, its entry, stop and target, the forward return
+// that plan was scored under with whether a row is stored at all, the company's name, the close the
+// name's bars hold now for its listing night, and the newest close at or before the night asked for.
+public sealed record PickRow(
+    string Ticker,
+    DateOnly Night,
+    string Plan,
+    decimal? Entry,
+    decimal? Stop,
+    decimal? Target,
+    bool OutcomeStored,
+    string? Outcome,
+    DateOnly? ResolvedOn,
+    double? ReturnPct,
+    double? BreakEven,
+    string? Company,
+    decimal? ListingClose,
+    DateOnly? NowOn,
+    decimal? NowClose);
+
 // The night's market reading as the swing reader stored it.
 public sealed record MarketReadingRow(
     DateOnly SessionDate,
@@ -1034,6 +1055,37 @@ public sealed class ReadApi : IComponent
             AND f.horizon = CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN $clear ELSE $swing END
         WHERE g.version = $version
         ORDER BY g.session_date, g.ticker;
+    ";
+
+    // Every trade the live list recommended up to a night: each name the swing filter passed on a night
+    // it listed, on the plan that night's trade gate read, with the forward return it was scored under,
+    // newest first in the list's own order. The names passing and no other, so a member failing one gate
+    // is not a trade the list recommended whatever plan its row carries; and a night the reasons listed
+    // holds no filter row to read. The plan is chosen as the near misses choose it.
+    // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
+    // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
+    const string Picks = @"
+        SELECT g.ticker, g.session_date,
+               CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN $clear ELSE $swing END,
+               g.swing_entry,
+               CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN g.clear_stop ELSE g.swing_stop END,
+               CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN g.clear_target ELSE g.swing_target END,
+               f.horizon IS NOT NULL, f.outcome, f.resolved_on, f.return_pct, f.break_even,
+               (SELECT m.name FROM membership m WHERE m.ticker = g.ticker
+                ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1),
+               (SELECT b.close FROM bar b WHERE b.ticker = g.ticker AND b.session_date = g.session_date),
+               (SELECT b.session_date FROM bar b WHERE b.ticker = g.ticker AND b.session_date <= $on
+                ORDER BY b.session_date DESC LIMIT 1),
+               (SELECT b.close FROM bar b WHERE b.ticker = g.ticker AND b.session_date <= $on
+                ORDER BY b.session_date DESC LIMIT 1)
+        FROM gate_result g
+        JOIN list_rule r ON r.session_date = g.session_date AND r.rule = $filter
+        LEFT JOIN filter_version v ON v.version = g.version
+        LEFT JOIN forward_return f
+            ON f.ticker = g.ticker AND f.session_date = g.session_date
+            AND f.horizon = CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN $clear ELSE $swing END
+        WHERE g.passed = 1 AND g.session_date <= $on AND ($ticker IS NULL OR g.ticker = $ticker)
+        ORDER BY g.session_date DESC, g.rank, g.ticker;
     ";
 
     // Every current member of the index, with what the night computed for it.
@@ -2479,6 +2531,53 @@ public sealed class ReadApi : IComponent
         while (await reader.ReadAsync())
         {
             rows.Add(GateRow(reader));
+        }
+
+        return rows;
+    }
+
+    // Every trade the live list recommended on a night up to the one given, newest first, or one name's
+    // alone where a ticker is given.
+    // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
+    public async Task<IReadOnlyList<PickRow>> PicksAsync(DateOnly on, string? ticker = null)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = Picks;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$ticker", (object?)ticker ?? DBNull.Value);
+        command.Parameters.AddWithValue("$filter", EquityBrief.Core.Shortlist.ListRules.Filter);
+        command.Parameters.AddWithValue("$clearPlan", EquityBrief.Core.Filter.FilterSettings.ClearWord);
+        command.Parameters.AddWithValue("$clear", EquityBrief.Core.Returns.ForwardReturnSeries.Clear);
+        command.Parameters.AddWithValue("$swing", EquityBrief.Core.Returns.ForwardReturnSeries.Swing);
+
+        var rows = new List<PickRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            decimal? Price(int at) => reader.IsDBNull(at) ? null : Money.FromStorage(reader.GetString(at));
+
+            DateOnly? Day(int at) => reader.IsDBNull(at) ? null : DateOnly.ParseExact(reader.GetString(at), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            rows.Add(new PickRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                Price(3),
+                Price(4),
+                Price(5),
+                reader.GetInt32(6) == 1,
+                reader.IsDBNull(7) ? null : reader.GetString(7),
+                Day(8),
+                reader.IsDBNull(9) ? null : reader.GetDouble(9),
+                reader.IsDBNull(10) ? null : reader.GetDouble(10),
+                reader.IsDBNull(11) ? null : reader.GetString(11),
+                Price(12),
+                Day(13),
+                Price(14)));
         }
 
         return rows;
