@@ -157,6 +157,86 @@ public sealed record UniverseCell(
     double? DryUp = null,
     double? Tightness = null);
 
+// One trade the live list recommended, as the Past picks screen and a name's own page draw it: the night
+// it was listed, the name, the plan's buy, stop and target, what became of it as of the night drawn, the
+// sessions it was held, its result in multiples of the risk it took once it finished, where the price
+// stood against the buy as a ratio of it, the session it finished on or the close it stood at, and the
+// bar its plan set.
+public sealed record PickCell(
+    string Ticker,
+    string? Company,
+    DateOnly Night,
+    string Plan,
+    decimal? Buy,
+    decimal? Stop,
+    decimal? Target,
+    string Status,
+    int? Sessions,
+    double? Result,
+    double? Along,
+    DateOnly? EndedOn,
+    double? ReturnPct,
+    DateOnly? NowOn,
+    decimal? NowClose,
+    double? BreakEven);
+
+// What became of a trade, in the words its status cell and its filter chip draw, and the one value each
+// is filtered by. A trade whose outcome row is missing is its own status and in no filter but all.
+public static class PickStatus
+{
+    public const string Open = "open";
+    public const string Target = "target";
+    public const string Stopped = "stopped";
+    public const string Time = "time";
+    public const string Missing = "missing";
+
+    public static IReadOnlyList<string> Filters { get; } = [Open, Target, Stopped, Time];
+
+    public static string Words(string status) => status switch
+    {
+        Open => "Open",
+        Target => "Reached target",
+        Stopped => "Stopped out",
+        Time => "Ran out of time",
+        _ => "No outcome stored",
+    };
+
+    public static string Chip(string status) => status == Open ? "Still open" : Words(status);
+}
+
+// The trades the live list recommended, counted: how many were listed and over how many nights, how many
+// stand in each status, the trades decided at their target or their stop that set a bar and the nights
+// they were listed on, the minimum both counts wait on, and the share of those that reached the target,
+// the share they needed to break even and the average result over every finished trade, each null until
+// both minimums are met. A trade that ran out of time is finished and in no share.
+public sealed record PicksSummary(
+    int Listed,
+    int Nights,
+    int Open,
+    int Target,
+    int Stopped,
+    int Time,
+    int Missing,
+    int Decided,
+    int DecidedNights,
+    int MinimumDecided,
+    int MinimumNights,
+    double? TargetShare,
+    double? BreakEven,
+    double? AverageResult)
+{
+    public int Finished => Target + Stopped + Time;
+
+    public int Of(string status) => status switch
+    {
+        PickStatus.Open => Open,
+        PickStatus.Target => Target,
+        PickStatus.Stopped => Stopped,
+        PickStatus.Time => Time,
+        _ => Missing,
+    };
+}
+
 // One name's swing readings on a night as the swing reader stored them, and the reason it read
 // nothing where it did.
 public sealed record SwingReadingsView(
@@ -5177,6 +5257,245 @@ public sealed class MarkRenderer : IComponent
 
         return filters.ToString();
     }
+
+    // The trade line, section 15.5's eighth mark: one trade from its stop at the left to its target at the
+    // right, the buy a short tick between them, and a dot for the price, hollow while the trade is open and
+    // filled where it finished. The stop and the target keep the two hues a level below and above the price
+    // own, and nothing else on the mark uses them; a price past either end sits at that end rather than off
+    // the line. It is placed by ratios to the buy, so a split since the listing moves no part of it.
+    //
+    // It degrades by saying what it has: a plan missing a price, or whose prices are out of order, draws no
+    // line, and a trade whose outcome row is missing or an open one with no close to place draws the line
+    // and no dot, each saying why.
+    // see: Support and resistance own two hues and nothing else uses them
+    // see: Marks are defined once and every screen draws from that list
+    public string TradeLine(PickCell pick)
+    {
+        const double Left = 10;
+        const double Right = 150;
+        const int Wide = 160;
+        const int Height = 30;
+        const int Middle = 15;
+
+        var mark = new StringBuilder();
+
+        mark.Append(Invariant, $"<svg class=\"trade-line\" role=\"img\" viewBox=\"0 0 {Wide} {Height}\" width=\"{Wide}\" height=\"{Height}\" ");
+        mark.Append(Invariant, $"data-ticker=\"{Escaped(pick.Ticker)}\" data-night=\"{DayOf(pick.Night)}\" data-status=\"{pick.Status}\" ");
+        mark.Append(Invariant, $"data-buy=\"{StoredPrice(pick.Buy)}\" data-stop=\"{StoredPrice(pick.Stop)}\" data-target=\"{StoredPrice(pick.Target)}\" data-along=\"{Whole(pick.Along)}\"");
+
+        if (pick.Buy is not { } buy || pick.Stop is not { } stop || pick.Target is not { } target || stop >= buy || buy >= target)
+        {
+            var missing = pick.Stop is null
+                ? "no stop stored"
+                : pick.Target is null
+                    ? "no target stored"
+                    : pick.Buy is null ? "no buy stored" : "the stop, buy and target are not in order";
+
+            mark.Append(" data-dot=\"none\">");
+            mark.Append(Invariant, $"<rect class=\"m-absent\" x=\"0.5\" y=\"2.5\" width=\"{Wide - 1}\" height=\"{Height - 5}\"/>");
+            mark.Append(Invariant, $"<text class=\"tl-say\" x=\"{Wide / 2}\" y=\"{Middle + 4}\" text-anchor=\"middle\">{missing}</text>");
+            mark.Append(Invariant, $"<title>{Escaped(pick.Ticker)}, listed {DayOf(pick.Night)}: {missing}</title></svg>");
+
+            return mark.ToString();
+        }
+
+        var low = EquityBrief.Core.Prices.Statistic.FromRatio(stop / buy);
+        var high = EquityBrief.Core.Prices.Statistic.FromRatio(target / buy);
+
+        double At(double ratio) => Left + (Math.Clamp((ratio - low) / (high - low), 0, 1) * (Right - Left));
+
+        var dot = pick.Status == PickStatus.Missing || pick.Along is null
+            ? "none"
+            : pick.Status == PickStatus.Open ? "open" : "filled";
+
+        mark.Append(Invariant, $" data-dot=\"{dot}\">");
+        mark.Append(Invariant, $"<line class=\"tl-track\" x1=\"{Left}\" y1=\"{Middle}\" x2=\"{Right}\" y2=\"{Middle}\"/>");
+        mark.Append(Invariant, $"<line class=\"tl-stop\" x1=\"{Left}\" y1=\"6\" x2=\"{Left}\" y2=\"24\"/>");
+        mark.Append(Invariant, $"<line class=\"tl-target\" x1=\"{Right}\" y1=\"6\" x2=\"{Right}\" y2=\"24\"/>");
+        mark.Append(Invariant, $"<line class=\"tl-buy\" x1=\"{Number(At(1))}\" y1=\"10\" x2=\"{Number(At(1))}\" y2=\"20\"/>");
+
+        var plan = Formatted($"Stop {Price(stop)}, buy {Price(buy)}, target {Price(target)}");
+
+        switch (dot)
+        {
+            case "none":
+                var absent = pick.Status == PickStatus.Missing ? "no outcome stored" : "no close stored to place";
+
+                mark.Append(Invariant, $"<text class=\"tl-say\" x=\"{Wide / 2}\" y=\"29\" text-anchor=\"middle\">{absent}</text>");
+                mark.Append(Invariant, $"<title>{plan}; {absent}</title>");
+                break;
+
+            case "open":
+                mark.Append(Invariant, $"<circle class=\"tl-open\" cx=\"{Number(At(pick.Along!.Value))}\" cy=\"{Middle}\" r=\"4.5\"/>");
+                mark.Append(Invariant, $"<title>{plan}; the close of {(pick.NowOn is { } on ? DayOf(on) : "none")}, {(pick.NowClose is { } now ? Price(now) : "none")}</title>");
+                break;
+
+            default:
+                mark.Append(Invariant, $"<circle class=\"tl-done\" cx=\"{Number(At(pick.Along!.Value))}\" cy=\"{Middle}\" r=\"4.5\"/>");
+                mark.Append(Invariant, $"<title>{plan}; {PickStatus.Words(pick.Status).ToLowerInvariant()} on {(pick.EndedOn is { } ended ? DayOf(ended) : "none")}, {(pick.ReturnPct is { } made ? made.ToString("+0.00;-0.00;0.00", Invariant) : "none")}% from the buy</title>");
+                break;
+        }
+
+        mark.Append("</svg>");
+
+        return mark.ToString();
+    }
+
+    // The trades as a table, newest first: the night listed, the stock where the table holds more than one
+    // name's, the buy, the stop and the target each whole on its cell, the trade line, the status in words,
+    // the sessions held and the result as a signed multiple of the risk, or open. A table on a name's own
+    // page leaves the stock out and links the night to that night's page instead.
+    public string PicksTable(IReadOnlyList<PickCell> rows, bool named)
+    {
+        var table = new StringBuilder();
+
+        table.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"picks-table\" data-rows=\"{rows.Count}\"><thead><tr><th>Night listed</th>");
+        table.Append(named ? "<th>Stock</th>" : string.Empty);
+        table.Append("<th class=\"r\">Buy</th><th class=\"r\">Stop</th><th class=\"r\">Target</th><th>Trade</th><th>Status</th><th class=\"r\">Sessions held</th><th class=\"r\">Result</th></tr></thead><tbody>");
+
+        foreach (var row in rows)
+        {
+            var page = Formatted($"#/name/{Uri.EscapeDataString(row.Ticker)}/{DayOf(row.Night)}");
+
+            table.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-night=\"{DayOf(row.Night)}\" data-status=\"{row.Status}\" data-plan=\"{Escaped(row.Plan)}\">");
+            table.Append(named
+                ? Formatted($"<td class=\"num\">{DayOf(row.Night)}</td><td class=\"c-nm\"><a class=\"nm\" href=\"{page}\"><span class=\"tk\">{Escaped(row.Ticker)}</span>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</a></td>")
+                : Formatted($"<td class=\"num\"><a href=\"{page}\">{DayOf(row.Night)}</a></td>"));
+
+            foreach (var (name, price) in new[] { ("buy", row.Buy), ("stop", row.Stop), ("target", row.Target) })
+            {
+                table.Append(Invariant, $"<td class=\"r num\" data-{name}=\"{StoredPrice(price)}\">{(price is { } held ? Price(held) : "<span class=\"degraded\">none</span>")}</td>");
+            }
+
+            table.Append(Invariant, $"<td>{TradeLine(row)}</td>");
+            table.Append(Invariant, $"<td class=\"status\">{PickStatus.Words(row.Status)}</td>");
+            table.Append(Invariant, $"<td class=\"r num\" data-sessions=\"{(row.Sessions is { } counted ? counted.ToString(Invariant) : "none")}\">{(row.Sessions is { } sessions ? sessions.ToString(Invariant) : "<span class=\"degraded\">not counted</span>")}</td>");
+            table.Append(row.Status == PickStatus.Open
+                ? "<td class=\"r res open\" data-result=\"open\">open</td>"
+                : row.Result is { } result
+                    ? Formatted($"<td class=\"r res\" data-result=\"{result.ToString("R", Invariant)}\">{result.ToString("+0.00;-0.00;0.00", Invariant)} &#215;</td>")
+                    : "<td class=\"r res\" data-result=\"none\"><span class=\"degraded\">none</span></td>");
+            table.Append("</tr>");
+        }
+
+        table.Append("</tbody></table></div>");
+
+        return table.ToString();
+    }
+
+    // The Past picks screen's counts: the trades listed over their nights, how many stand open, finished,
+    // reached target, stopped out and ran out of time, and a line for trades whose outcome row is missing.
+    // Below the minimum a dashed outline states the finished trades and their nights against the numbers
+    // needed and no share; at or above it, the finished trades as a bar in three steps of one neutral hue
+    // with a line at their average break-even, and the share that reached its target, the share needed to
+    // break even and the average result, always together.
+    // see: Not yet measured is drawn as a dashed outline, never as a pale value
+    // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
+    public string PicksCounts(PicksSummary summary)
+    {
+        var counts = new StringBuilder();
+
+        counts.Append(Invariant, $"<dl class=\"counts\" data-listed=\"{summary.Listed}\" data-nights=\"{summary.Nights}\" data-open=\"{summary.Open}\" data-finished=\"{summary.Finished}\" ");
+        counts.Append(Invariant, $"data-target=\"{summary.Target}\" data-stopped=\"{summary.Stopped}\" data-time=\"{summary.Time}\" data-missing=\"{summary.Missing}\">");
+        counts.Append(Invariant, $"<div><dt>Trades listed</dt><dd>{summary.Listed}<span class=\"grp\">over {summary.Nights} night{(summary.Nights == 1 ? string.Empty : "s")}</span></dd></div>");
+
+        foreach (var (words, count) in new[] { ("Still open", summary.Open), ("Finished", summary.Finished), ("Reached target", summary.Target), ("Stopped out", summary.Stopped), ("Ran out of time", summary.Time) })
+        {
+            counts.Append(Invariant, $"<div><dt>{words}</dt><dd>{count}</dd></div>");
+        }
+
+        counts.Append("</dl>");
+
+        if (summary.Missing > 0)
+        {
+            counts.Append(Invariant, $"<p class=\"degraded\" data-missing=\"{summary.Missing}\">{summary.Missing} trade{(summary.Missing == 1 ? " has" : "s have")} no outcome row stored, so {(summary.Missing == 1 ? "it counts" : "they count")} as listed and in no status.</p>");
+        }
+
+        if (summary.TargetShare is not { } share)
+        {
+            counts.Append(Invariant, $"<p class=\"not-yet-rate\" data-decided=\"{summary.Decided}\" data-needed=\"{summary.MinimumDecided}\" data-decided-nights=\"{summary.DecidedNights}\" data-nights-needed=\"{summary.MinimumNights}\">");
+            counts.Append(Invariant, $"<b>{summary.Decided}</b> trade{(summary.Decided == 1 ? string.Empty : "s")} decided at the target or the stop of the <b>{summary.MinimumDecided}</b> needed, over <b>{summary.DecidedNights}</b> of the <b>{summary.MinimumNights}</b> listing nights needed. ");
+            counts.Append("The share that reached its target is drawn once both are met, the same minimums the run page's records wait on, and a trade that ran out of time is never in it. Until then the trades below are the whole story.</p>");
+
+            return counts.ToString();
+        }
+
+        // The bar: the finished trades in three steps of one neutral hue, those that reached the target, then
+        // those stopped out, then those that ran out of time, and the line at the decided trades' average
+        // break-even across the part of the bar they fill, so the first step reaching past it is the share
+        // clearing the bar its trades set.
+        const int Wide = 620;
+
+        var finished = Math.Max(1, summary.Finished);
+        var reached = 1.0 * Wide * summary.Target / finished;
+        var stopped = 1.0 * Wide * summary.Stopped / finished;
+        double? even = summary.BreakEven is { } bar ? Math.Clamp(bar, 0, 100) * (reached + stopped) / 100 : null;
+
+        counts.Append(Invariant, $"<div class=\"rate\" data-share=\"{share.ToString("R", Invariant)}\" data-break-even=\"{Whole(summary.BreakEven)}\" data-average-result=\"{Whole(summary.AverageResult)}\">");
+        counts.Append(Invariant, $"<svg class=\"rate-bar\" viewBox=\"0 0 {Wide} 46\" role=\"img\" aria-label=\"{summary.Finished} finished trades: {summary.Target} reached target, {summary.Stopped} stopped out, {summary.Time} ran out of time\">");
+        counts.Append(Invariant, $"<rect class=\"rb-t\" x=\"0\" y=\"8\" width=\"{Number(reached)}\" height=\"18\"/>");
+        counts.Append(Invariant, $"<rect class=\"rb-s\" x=\"{Number(reached)}\" y=\"8\" width=\"{Number(stopped)}\" height=\"18\"/>");
+        counts.Append(Invariant, $"<rect class=\"rb-o\" x=\"{Number(reached + stopped)}\" y=\"8\" width=\"{Number(Wide - reached - stopped)}\" height=\"18\"/>");
+
+        if (even is { } line)
+        {
+            counts.Append(Invariant, $"<line class=\"rb-even\" x1=\"{Number(line)}\" y1=\"2\" x2=\"{Number(line)}\" y2=\"32\"/>");
+            counts.Append(Invariant, $"<text class=\"rb-lab\" x=\"{Number(Math.Clamp(line, 50, Wide - 50))}\" y=\"44\" text-anchor=\"middle\">break-even {summary.BreakEven!.Value.ToString("0.0", Invariant)}%</text>");
+        }
+
+        counts.Append("</svg>");
+        counts.Append(Invariant, $"<div class=\"rb-legend\"><span><i class=\"rb-key-t\"></i>reached target {summary.Target}</span><span><i class=\"rb-key-s\"></i>stopped out {summary.Stopped}</span><span><i class=\"rb-key-o\"></i>ran out of time {summary.Time}</span><span>of {summary.Finished} finished</span></div>");
+        counts.Append("<dl class=\"three\">");
+        counts.Append(Invariant, $"<div><dt>Reached target first</dt><dd>{share.ToString("0.0", Invariant)}%</dd><small>{summary.Target} of the {summary.Decided} decided at the target or the stop</small></div>");
+        counts.Append(Invariant, $"<div><dt>Needed to break even</dt><dd>{(summary.BreakEven is { } needed ? needed.ToString("0.0", Invariant) + "%" : "none")}</dd><small>the mean of each decided trade's own bar</small></div>");
+        counts.Append(Invariant, $"<div><dt>Average result</dt><dd>{(summary.AverageResult is { } average ? average.ToString("+0.00;-0.00;0.00", Invariant) + " &#215; risk" : "none")}</dd><small>per finished trade</small></div>");
+        counts.Append("</dl></div>");
+
+        return counts.ToString();
+    }
+
+    // The Past picks screen's filters, one chip a status with the trades it holds, and all. None by setup.
+    public string PicksFilters(PicksSummary summary, string? status)
+    {
+        var filters = new StringBuilder();
+        var lit = status is { } asked && PickStatus.Filters.Contains(asked, StringComparer.Ordinal) ? asked : null;
+
+        filters.Append("<nav class=\"universe-filters picks-filters\" aria-label=\"Filter the trades\"><span class=\"chips-label\">Status</span>");
+        filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"status\" data-value=\"all\" aria-pressed=\"{Flag(lit is null)}\" href=\"#/picks\">All<span class=\"n\">{summary.Listed}</span></a>");
+
+        foreach (var each in PickStatus.Filters)
+        {
+            filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"status\" data-value=\"{each}\" aria-pressed=\"{Flag(each == lit)}\" href=\"#/picks?status={each}\">{PickStatus.Chip(each)}<span class=\"n\">{summary.Of(each)}</span></a>");
+        }
+
+        filters.Append("</nav>");
+
+        return filters.ToString();
+    }
+
+    // A name's own page, after the plan: how many times the live list picked it before the night drawn and
+    // how each group ended, then a row per earlier listing. A name never picked draws none of it.
+    public string OnTheListBefore(string ticker, IReadOnlyList<PickCell> earlier)
+    {
+        static string Times(int count) => count switch
+        {
+            1 => "once",
+            2 => "twice",
+            _ => count.ToString(Invariant) + " times",
+        };
+
+        var groups = new[] { PickStatus.Open, PickStatus.Target, PickStatus.Stopped, PickStatus.Time, PickStatus.Missing }
+            .Select(status => (Status: status, Count: earlier.Count(pick => pick.Status == status)))
+            .Where(group => group.Count > 0)
+            .Select(group => (group.Status == PickStatus.Open ? "still open" : PickStatus.Words(group.Status).ToLowerInvariant()) + " " + Times(group.Count));
+
+        return Formatted($"<p class=\"picked\" data-ticker=\"{Escaped(ticker)}\" data-picked=\"{earlier.Count}\">Picked {Times(earlier.Count)}: {string.Join(", ", groups)}.</p>")
+            + PicksTable(earlier, named: false);
+    }
+
+    static string DayOf(DateOnly day) => day.ToString("yyyy-MM-dd", Invariant);
+
+    static string StoredPrice(decimal? price) => price is { } held ? held.ToString(Invariant) : "none";
 
     public string Degraded(string ticker, int bars) =>
         $"<p class=\"degraded\" data-ticker=\"{Escaped(ticker)}\" data-sessions=\"{bars}\">" +

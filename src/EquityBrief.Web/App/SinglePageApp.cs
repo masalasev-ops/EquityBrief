@@ -84,6 +84,10 @@ public sealed class SinglePageApp : IComponent
     // The researched names, reached from the masthead on every screen.
     public const string ResearchedRoute = "#/researched";
 
+    // Every trade the live list recommended, section 15.17, between the universe and the researched names
+    // in the masthead. Its status filter lives in the hash, so a filtered view is a link.
+    public const string PicksRoute = "#/picks";
+
     // The queue, section 15.15, the fifth entry in the masthead.
     public const string QueueRoute = "#/queue";
 
@@ -176,7 +180,7 @@ public sealed class SinglePageApp : IComponent
         </script>
         </head>
         <body>
-        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{WatchRoute}}}" data-view="watch">Watch list</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a></nav>{{{LaneSwitch(lane)}}}<button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
+        <header class="mast" id="mast"><div class="wrap"><div class="m-id" id="identity"><a class="m-brand" href="#/">{{{Escaped(title)}}}</a></div><div class="m-right"><form class="m-search" id="search" role="search"><input id="find" type="search" list="findable" placeholder="Find a ticker or company" aria-label="Find a name by its ticker or its company's name" autocomplete="off" spellcheck="false"><datalist id="findable"></datalist></form><nav class="m-nav" aria-label="Screens"><a href="#/" data-view="tonight">Tonight</a><a href="{{{WatchRoute}}}" data-view="watch">Watch list</a><a href="{{{UniverseRoute}}}" data-view="universe">Universe</a><a href="{{{PicksRoute}}}" data-view="picks">Past picks</a><a href="{{{ResearchedRoute}}}" data-view="researched">Researched</a><a href="{{{RunRoute}}}" data-view="run">Run</a><a href="{{{QueueRoute}}}" data-view="queue">Queue</a></nav>{{{LaneSwitch(lane)}}}<button type="button" class="theme" id="theme">Dark palette</button></div></div></header>
         <main class="wrap" id="screen"></main>
         <script>
         const screen = document.getElementById('screen');
@@ -217,6 +221,10 @@ public sealed class SinglePageApp : IComponent
             const night = cut < 0 ? '' : '/' + encodeURIComponent(asked.slice(cut + 1));
             const response = await fetch('/screens/name/' + ticker + night);
             screen.innerHTML = await response.text();
+          } else if (path === '{{{PicksRoute}}}') {
+            view = 'picks';
+            const picks = await fetch('/screens/picks' + (query ? '?' + query : ''));
+            screen.innerHTML = await picks.text();
           } else if (path === '{{{ResearchedRoute}}}') {
             view = 'researched';
             const researched = await fetch('/screens/researched');
@@ -572,7 +580,8 @@ public sealed class SinglePageApp : IComponent
         SwingReadingsView? swing = null,
         GatesView? gates = null,
         FilterWhy? passed = null,
-        bool? watched = null)
+        bool? watched = null,
+        IReadOnlyList<PickCell>? earlier = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -872,6 +881,24 @@ public sealed class SinglePageApp : IComponent
                 stamp: Cards.Night(session),
                 id: "reactions",
                 region: "reactions"));
+        }
+
+        // Every earlier night the live list picked the name, after the plan and its earnings reactions: how
+        // many times and how each group ended, then a row per listing, each trade as the Past picks screen
+        // draws it and as it stood on the night this page draws. Absent for a name never picked before.
+        // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
+        if (earlier is { Count: > 0 } picked)
+        {
+            Card("on-the-list-before", "On the list before", Cards.Computed(
+                "On the list before",
+                marks.OnTheListBefore(ticker, picked) + Cards.Key(
+                    "How to read it.",
+                    Invariant($"Each row is a night the live list picked {Escaped(ticker)} before this one, on the plan that night's rule traded: bought at that night's close and followed to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions. The line runs from the stop in green to the target in orange with the buy between them, and the dot is where the price stood on the night this page draws, hollow while the trade was open and filled where it finished. A result is what the trade made in multiples of what it risked."),
+                    "What these trades did is a record of the list's picks, not a forecast for this one, and nothing on the page is decided by it. How every pick has done is on the Past picks screen."),
+                title: Invariant($"The nights the live list picked {Escaped(ticker)} before"),
+                stamp: Cards.Night(session),
+                id: "on-the-list-before",
+                region: "on-the-list-before"));
         }
 
         // What the company sells and the segment commentary, after the plan and before the
@@ -1726,6 +1753,71 @@ public sealed class SinglePageApp : IComponent
             title: "Names you follow",
             lede: Invariant($"Drawn every evening whether or not the swing filter lists them, up to {limit} names of the index."),
             region: "watch-list"));
+        region.Append("</section>");
+
+        return region.ToString();
+    }
+
+    // The Past picks screen, section 15.17: every trade the live list recommended from the swing filter's
+    // first night, counted and then drawn one to a row, newest first, under the status filter the hash
+    // carries. Only the live list's trades appear, each on the plan its night's rule traded, and the
+    // share that reached its target waits for the minimum the run page's records wait for.
+    // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
+    public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status)
+    {
+        var region = new StringBuilder();
+        var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
+        var lit = status is { } asked && PickStatus.Filters.Contains(asked, StringComparer.Ordinal) ? asked : "all";
+
+        region.Append(Invariant($"<section class=\"picks\" data-night=\"{drawn}\" data-trades=\"{summary.Listed}\" data-shown=\"{shown.Count}\" data-status=\"{lit}\">"));
+        region.Append(Cards.Masthead(
+            "Past picks",
+            "<span class=\"m-screen\">Past picks</span>",
+            night is null ? "No night is stored yet" : Invariant($"Every trade the list recommended, as of the close of {drawn}")));
+
+        if (summary.Listed == 0)
+        {
+            region.Append(Cards.Computed(
+                "Past picks",
+                "<p class=\"degraded\" data-picks=\"none\">No trade has been listed yet. The live list recommends a trade on each night the swing filter passes a name, and every one it recommends is followed here from that night on.</p>",
+                title: "How the list's picks have done",
+                stamp: Cards.Night(night),
+                region: "picks-summary"));
+            region.Append("</section>");
+
+            return region.ToString();
+        }
+
+        region.Append(Cards.Computed(
+            "Past picks",
+            marks.PicksCounts(summary) + Cards.Key(
+                "How to read it.",
+                Invariant($"A trade is listed on the night the live list drew it and stays open until a close reaches its target, a close falls through its stop, or {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions pass. A result is what the trade made in multiples of what it risked, so -1 is a full stop-out and +2 a target twice as far away as the stop."),
+                "Each trade is a fact and is always shown. A share over a handful of trades looks like evidence and is not, so it waits for the minimums, and it never appears without the share the trades needed to break even beside it."),
+            title: "How the list's picks have done",
+            lede: Invariant($"Every name the live list recommended from the swing filter's first night, each followed from the close it was listed at to its target, its stop, or the end of its {EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap} sessions."),
+            stamp: Cards.Night(night),
+            region: "picks-summary"));
+
+        var body = new StringBuilder();
+
+        body.Append(marks.PicksFilters(summary, status));
+        body.Append(Invariant($"<p class=\"list-count\" data-shown=\"{shown.Count}\" data-trades=\"{summary.Listed}\">Showing {shown.Count} of {summary.Listed} trade{(summary.Listed == 1 ? string.Empty : "s")}</p>"));
+        body.Append(shown.Count == 0
+            ? "<p class=\"degraded\" data-shown=\"none\">No trade stands in this status yet.</p>"
+            : marks.PicksTable(shown, named: true));
+        body.Append(Cards.Key(
+            "How to read the trade line.",
+            "The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished, and a price past either end sits at that end.",
+            "Only the live list's trades appear here. The alternatives being tested in the background stay hidden until one of them is promoted."));
+
+        region.Append(Cards.Computed(
+            "Past picks",
+            body.ToString(),
+            title: "Every trade, newest first",
+            lede: "Filters live in the address, so a filtered view is a link you can keep.",
+            stamp: Cards.Night(night),
+            region: "picks"));
         region.Append("</section>");
 
         return region.ToString();

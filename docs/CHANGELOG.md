@@ -8197,3 +8197,56 @@ Now:
 > 12.2's text ends: "... and the fixture's row. From the operator's ruling of 2026-09-26 the trade gate is also read from section 10's plan for the swing trade, which the live filter reads, and that plan's stop answers ahead of its trigger the question 3.4 carried (owes: The swing trade's stop ruled apart from how wide its setup band merged)."
 > | 12.4, discharged by the operator's ruling of 2026-09-25, which the operator's acceptance through 12.4's command makes the first version, the trade gate's reading and one variant moved by the ruling of 2026-09-26 (see: The swing filter's trade gate reads section 10's plan ...) |
 Why: section 10's stop sits at the setup band's low edge only where that is a typical move or more below the entry, which answers the question the obligation carried, and a spec cites no superseded decision.
+
+### 2026-09-27 - ARCHITECTURE.html - section 4 names the swing readings, the gates and the nights the live list picked a name before
+Authorised by: Section 4 of the architecture defines the report region by region, and nothing outside the corpus does
+Was:
+> A name's report is the page drawn for it: up to eighteen regions, ... A page draws a region only where it has something to draw: why the name is here only when it is on the night's list, its group where it has one, its earnings reactions where the calendar holds a print, the industry cycle where its industry's theme has been written, ... The other twelve need no paid call to be drawn, though two of them carry a part the paid model writes, the causes of the moves and the dated items the research read, and nine of the twelve change every night.
+> and no row for the swing readings, the gates or the nights the live list picked the name before.
+Now:
+> A name's report is the page drawn for it: up to twenty-one regions, ... A page draws a region only where it has something to draw: why the name is here only when it is on the night's list, its swing readings and its gates where the night stored them, its group where it has one, its earnings reactions where the calendar holds a print, the nights the live list picked it before where there were any, the industry cycle where its industry's theme has been written, ... The other fifteen need no paid call to be drawn, though two of them carry a part the paid model writes, the causes of the moves and the dated items the research read, and twelve of the fifteen change every night.
+> with rows for Its swing readings and Its gates after Tonight's figures, and for On the list before after Earnings reactions.
+Why: the operator ruled on 2026-09-27 that a name's page gains "On the list before" after the plan. Building it found that section 4 named neither the swing readings nor the gates, which the page has drawn since 12.1 and 12.2 and which no fixture page reached, so the check reading the section against the pages could not see them missing.
+
+### 2026-09-27 - ARCHITECTURE.html - section 7's mark renderer draws eight marks and the single page app the past picks
+Authorised by: Marks are defined once and every screen draws from that list
+Was:
+> turns stored values into the seven marks as SVG strings, server side, ...
+> tonight's list, the universe, a name's report and history, the run page; renders every figure from stored data
+Now:
+> turns stored values into the eight marks as SVG strings, server side, ...
+> tonight's list, the universe, the past picks, a name's report and history, the run page; renders every figure from stored data
+Why: the trade line is the eighth mark and the Past picks screen a screen the app draws, on the operator's ruling of 2026-09-27.
+
+### 2026-09-27 - ARCHITECTURE.html - section 15's screens, routes and marks gain the Past picks screen and the trade line
+Authorised by: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
+Was:
+> There are five: tonight at 15.7, the universe at 15.8, a name at 15.9, the run at 15.10 and the queue at 15.15. The queue is numbered after the sections that follow the other four rather than among them, because the numbers here are navigation and the record already cites 15.11 to 15.14.
+> ... <code>#/watch</code>, <code>#/universe</code>, <code>#/researched</code>, ...
+> Seven marks. They are defined once and every screen draws from this list.
+Now:
+> There are seven: tonight at 15.7, the universe at 15.8, a name at 15.9, the run at 15.10, the queue at 15.15, the watch list at 15.16 and the past picks at 15.17. The last three are numbered after the sections that follow the other four rather than among them, because the numbers here are navigation and the record already cites 15.11 to 15.14.
+> ... <code>#/watch</code>, <code>#/universe</code>, <code>#/picks</code>, <code>#/researched</code>, ...
+> Eight marks. They are defined once and every screen draws from this list.
+> with 15.5 gaining the trade line's row, 15.9 the row for On the list before, and 15.17 the Past picks screen.
+Why: the operator ruled on 2026-09-27 that a Past picks screen follows every trade the live list recommended, at `#/picks` between Universe and Run, with the trade line an eighth mark and a name's page gaining "On the list before". Section 15.1 had not named the watch list since 15.16 was written, and names it now.
+
+### 2026-09-27 - ARCHITECTURE.html - section 17's minimum resolved setups is the Past picks screen's too
+Authorised by: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
+Was:
+> 250 resolved setups that set a bar, spread over at least 60 distinct listing sessions, each contributing at least one, before a verdict is reported at all; 400 before a live condition may be retired (see: ...)
+> the run page must show the count beside every verdict and withhold the verdict below either floor, naming the one that is short; no page computes the retirement floor, which is read against that count
+Now:
+> 250 resolved setups that set a bar, spread over at least 60 distinct listing sessions, each contributing at least one, before a verdict is reported at all, and the same two before the Past picks screen draws the share of the live list's trades that reached their target, counted over its trades decided at the target or the stop and the nights they were listed on (see: Every trade the live list recommended is shown, ...); 400 before a live condition may be retired (see: ...)
+> the run page must show the count beside every verdict and withhold the verdict below either floor, naming the one that is short, and the Past picks screen must draw its count against both and no share below either; no page computes the retirement floor, which is read against that count
+Why: the operator ruled that the screen's share waits for the minimum the run page's reason records use, read from the code, so section 17 names it once for both.
+
+### 2026-09-27 - .claude/rules/checks.md - read-surface reads eight marks, the Past picks screen and the name page's picks before
+Authorised by: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
+Was:
+> ... each of the seven marks is asserted over a full input ...
+> ... and the blocks drawn beside a proposal and the blocks the shape command holds a later acceptance to are read off the live filter's own rows |
+Now:
+> ... each of the eight marks is asserted over a full input ...
+> ... read off the live filter's own rows; and the Past picks screen draws every trade the live list recommended from the swing filter's first night, ... and section 4 names every region the name page draws, the swing readings and the gates among them, read over a fixture page given both and a pick on the session before |
+Why: the check reaches the screen, the region and the eighth mark the operator ruled on 2026-09-27, and section 4's two rows it could not see missing.
