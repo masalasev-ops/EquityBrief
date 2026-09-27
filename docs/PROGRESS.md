@@ -28042,13 +28042,13 @@ Consequences: from the night of 2026-09-28 until items 2 and 3 land, a name's pa
 Changed:    `HOW_IT_WORKS.html`'s section 9, the example over time, in the operator's words as part 2 gives
             them; the guide carries no rule, so nothing in the specs moves with it.
 Tests:      none added here.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12QT of 12QT tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1447 of 1447 tests ran
             with none failed, migrations 0 to 47 with none pending, schema version 47, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 12QB tables, 12QC claims, 12QP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 12QR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 12QT of 12QT tests.
-            Both gates ran over the tree carrying this entry, 12QSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 42 tables, 579 claims, 579 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 589 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1447 of 1447 tests.
+            Both gates ran over the tree carrying this entry, 0c6db26, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    part 1 with items 2 and 3 after the night of 2026-09-28; items 4, 5 and 7 in the order ruled;
             part 3 after item 7.
