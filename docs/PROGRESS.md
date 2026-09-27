@@ -28166,3 +28166,200 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 34dfa98, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    part 1 with items 2 and 3 after the night of 2026-09-28; items 4, 5 and 7 in the order ruled.
+
+### 12.2 ruling - fundamentals are fetched on the night after a member reports, four readings and a business state are read every night and order the list without removing a stock, the report's numbers open on what they say, a seventh candidate skips a deteriorating business, and the lifetime count reads distinct trials   2026-09-27
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Ruled:      the operator, on 2026-09-27, in a queued item issued after the Past picks screen, a planning pass
+            approved with five corrections, and a ruling on the review the lifetime count had made due. The
+            item replaces every earlier version of it: the momentum reset candidate is withdrawn and never
+            registered, and nothing here reads the RSI or the MACD.
+            1. The ruling that no reading of the fundamentals fires a reason, gates a tranche or draws a panel
+            is superseded, its reasoning kept. It weighed fetching when a name is opened, a population the
+            operator chose, against fetching every member every night, the per-name request the nightly rule
+            forbids, and missed a third: fundamentals change only when a company reports, and the calendar
+            already holds every report date (see: No reading of the fundamentals fires a reason, gates a
+            tranche or draws a panel). The nightly rule gains a bounded carve-out in the form the new
+            member's backfill and the suspect refetch take (see: The nightly run is arithmetic only).
+            2. When fundamentals are fetched: a one-time fill for every member; then each member on the night
+            after its report date, from the calendar; where the answer does not yet carry a quarter newer than
+            the stored one, asked again on each of the five nights after and then weekly, until the quarter
+            appears or the next report date passes, the schedule ruled for a failed refetch (see: A suspect
+            name is asked for again on the five nights after it is marked and weekly after that, and its own
+            page, its row on tonight's list and the run page say so until a refetch succeeds), the run page
+            naming every member still waiting; and a new member filled on the night it joins.
+            3. Four readings, worked out every night for every member by arithmetic over the stored quarters
+            and no model, each stating the quarters it was computed over: the trajectory, sales growth and
+            operating margin on a year earlier and whether each is rising or falling; the record against the
+            analysts' estimates, a quarter with no actual being absent and never an in-line result; earnings
+            quality, operating cash flow against reported earnings; and the valuation position, the multiple
+            against the company's own range over the stored quarters. Guidance is not a reading: the provider
+            files none, and a figure from prose is not computed.
+            4. One state per member per night, improving, steady, deteriorating, not enough quarters or no
+            fundamentals yet, proposed from the trajectory, changing only when a new quarter arrives, and
+            naming the quarter it was computed from while a newer one is awaited.
+            5. Absent is never a failure. No gate reads a fundamental, so a member with no fundamentals or not
+            enough quarters is judged and listed as any other, and no rule removes a stock for absent
+            fundamentals, the candidate below skipping the state deteriorating alone.
+            6. Tonight: each row carries the state beside the trend word, with the four readings on hover;
+            among the stocks that pass, improving first, then steady, then not enough quarters and no
+            fundamentals yet, then deteriorating, each state in the existing order, and every passing stock
+            still listed and scored, the order deciding what comes first and not what is recommended (see:
+            Tonight's list is the swing filter's, and an evening is listed by the rule that listed it).
+            7. The report's numbers open on "What the numbers say": a heading carrying the state, then one
+            plain sentence per reading, written by the code from fixed patterns with the stored figures filled
+            in, a reading absent or computed over too few quarters saying so, no sentence advising buying or
+            selling, and the full table beneath, folded, as the figures behind it. The patterns are written
+            into section 4, one per reading and per direction.
+            8. A stock's page carries the summary and the four readings with the quarters behind them, dated
+            by the filing they were computed from; Past picks, the state each trade carried on its listing
+            night; the run page, the fundamentals fetched tonight and the members still waiting.
+            9. A candidate over the live filter that skips members whose state is deteriorating, scored in
+            shadow beside the others, the family becoming seven, each tested at 0.05 over 7, registered only
+            once every member holds fundamentals or is marked absent.
+            10. The documents and the guide's sections 6, 7 and 9, and the tests and mutations the item names.
+Approved:   the planning pass's twelve rulings, the corrections below replacing the parts they name.
+            R1. The fetch is a night step after the close and before the overnight queue, bounded by its own
+            limit, 15 minutes proposed, and by the daily allowance, and never by the arithmetic's deadline. The
+            readings are a night step after the swing readings and before the listings, reading the quarters
+            fetched on earlier nights, so a member reporting on a Tuesday is asked on Wednesday's night and
+            read on Thursday's.
+            R2. The fill takes at most 260 members a night, after the members reporting and waiting, in ticker
+            order, over two nights. A report's first ask is on the first session night after its date. A
+            member the provider answers with no quarter is marked absent and asked on the same schedule. A
+            fetch that would take the night past the allowance is not made and its member waits for the next.
+            R3. Items 2 and 3 land as soon as they are built after the night of 2026-09-28, with their own
+            remedy. Part 1, everything but the candidate, edits no pinned source and lands when built, and the
+            fill runs on its next two nights. The measured splits go to the operator, and part 2, the
+            candidate with the swing filter reading the state and the readings' sources joining the ones every
+            evaluator's version pins, lands after with a remedy of its own that registers the six again beside
+            the seventh at one instant. The second restart costs the nights the six run between the two
+            remedies: expected 3 or 4, those of 2026-09-29 to 2026-10-02 at most, about 6 to 8 setups at the
+            live rule's median of 2 names a night, 0.6 to 0.8% of the 504 sessions the first look reads. Part
+            2's entry records what it cost.
+            R4. The readings keep stores of their own: `reported_quarter`, one row per member per fetch per
+            quarter over the twelve newest; `quarter_ask`, one row per member per night it was asked; and
+            `fundamental_reading`, one row per member per night. `fundamentals`, its snapshot and the report
+            pass's own fetch are unchanged.
+            R5. Each fetch also asks for three years of daily closes, at a weight of 1, and works out each
+            quarter's multiple on that day's share basis, tonight's close brought to it by the stored bars' own
+            adjustment.
+            R6. The state, proposed: improving where sales stood above a year earlier and the operating margin
+            wider than a year earlier in both of the two newest quarters; deteriorating where sales stood
+            below and the margin narrower in both; steady otherwise; not enough quarters where the trajectory
+            cannot be read; and no fundamentals yet where no quarter is stored.
+            R7. The state orders the list where the list is read, from the first night whose readings are
+            stored: tonight's page, the overnight queue and the night's request. The filter's own rank is
+            unchanged and no pin moves.
+            R8. The readings join the facts file now, for a member holding them, and nothing is added for one
+            without. No prompt changes. No recording is expected to be invalidated, and one that is stops the
+            build to ask first.
+            R9. The carve-out is a decision of its own, cited from CLAUDE.md's hard rule beside the backfill
+            and the refetch, and the arithmetic-only decision stands as it is.
+            R10. Every sentence the state makes false is reworded in the same change: section 1's "What it is
+            not", section 11.2's order, section 13.5's boundary, section 15.14's line on ordering, the name
+            page's opening paragraph and the guide's section 1. The refusal to rank stays word for word.
+            R11. This entry lands first, and the builds are labelled as 12.2 corrections.
+            R12. The sentence patterns are a table of their own in section 4, placed, and held word for word to
+            the rendered sentences in both directions.
+Corrected:  the operator's five corrections to the planning pass.
+            1. Items 2 and 3 do not wait for the fill. Item 3 corrects a defect the report shows every night,
+            stops placed inside support bands in the report's own plan, and holding it about two nights so the
+            seventh candidate could share one remedy traded a correctness fix for a few nights of evidence on
+            clocks measured in years. R3 above states the sequence and the cost.
+            2. "Met" needs a tolerance, since reported and estimated earnings per share are rarely identical to
+            the cent: met within one cent or 1% of the estimate, whichever is larger, beat and missed beyond
+            it, proposed in section 17 and settled with the measured split. Worked on NFLX's committed capture,
+            its last eight quarters read 2 beats, 4 meets and 2 misses, where an exact comparison read 6 beats.
+            3. Earnings quality needs a neutral middle, since a hard cut at 1.0 labels about half the index as
+            earnings running ahead of cash: below 0.8 ran ahead of cash, 0.8 to 1.2 in line, above 1.2 more
+            than backed by cash, the band a fifth either side so a year's ordinary timing gaps read as in
+            line, proposed and settled with the measured distribution. NFLX reads 0.87, in line.
+            4. Past nights keep the order they were drawn in. Past picks stays newest first, and within any
+            night its rows follow that night's order; a night before the readings existed keeps the filter's
+            own order; tonight, the queue and the night's request use the state first from the first night the
+            readings exist. This is "an evening is listed by the rule that listed it" applied to order as well
+            as to membership, tested with one night before and one after.
+            5. Say what the state does not use. The state is read from the trajectory alone; the record, the
+            earnings quality and the valuation position are shown and never move the word, stated in the
+            decision and in the heading's pattern, "What the numbers say: {state}, read from sales and
+            operating margin alone", so a reader seeing "improving" beside "earnings ran ahead of cash" sees
+            why both can be true.
+Lifetime:   the operator's ruling on the review due at eight registered candidates (see: Holm's level passes
+            between the candidates by a graph fixed when they are registered, and every verdict shows the
+            lifetime count). A registration of the same rule after a correction, where only the version it
+            reads changed and no threshold or condition moved, counts as the same trial as the rule it
+            replaces; a rule with any condition or threshold different from every earlier one counts as a new
+            trial. The count of distinct trials is recorded on the run page beside the family's divisor, and
+            the decision states how it is used when a candidate reaches a look, so a verdict is judged against
+            every idea tried and not only the ones still running. Proposed with it and approved: a promotion
+            needs its look to cross at the lower of the level its graph gives it and 0.05 over the distinct
+            trials registered as of that look, each spent across its looks by its own spending function, and
+            retiring and leaving are read as now. It lands as a change of its own before part 1, a 12.5
+            correction, and edits no pinned source.
+Measured:   read-only, the operator's store opened immutable at schema 47 and the code at e04aa54.
+            Fundamentals: 5 members hold any, DGX, GM, HUM, NVDA and RTX, 12 filings each and 60 rows, all
+            written by the 7 fetcher runs of report passes from 2026-09-18 to 2026-09-26, the 6 that fetched
+            taking 2 to 4 seconds each with 6 to 9 archive documents; `fundamentals_snapshot` holds none.
+            A stored row carries the revenue, gross profit and net income, both margins, the growth on a year
+            earlier and the quarter's earnings per share against its estimate, and no operating income and no
+            operating cash flow. The four committed captures carry both: NFLX's quarter to 2026-06-30 an
+            operating income of 4,192,610,000 on revenue of 12,559,938,000, and an operating cash flow of
+            1,586,415,000 against net income of 3,401,414,000. The table is never updated, so the 60 held rows
+            cannot gain either.
+            The provider restates per-share figures after a split as of the day it is asked: NFLX's quarter to
+            2025-06-30 reads earnings of 0.72 a share and 4,359,170,000 shares after its 10:1 split of
+            2025-11-17, and NVDA's stored quarter to 2023-10-29 reads 0.402.
+            The calendar holds 2,462 earnings rows from 2025-09-25 to 2026-11-19. Over the 262 weekdays from
+            2025-09-25 to 2026-09-25 the members reported 1,994 times: a median of 2 a weekday, 20 or more on 35
+            of them, and 57 on the busiest, 2026-04-30. Ahead, 88 on 2026-11-04 and 209 over the five sessions
+            from 2026-10-29.
+            The night of 2026-09-25 took 10 minutes 40 seconds to its close, 23:30:07Z to 23:40:47Z, against
+            its deadline of 15.
+            The list's order is read in four places, none a pinned source: tonight's page, the overnight queue,
+            the night's request and the Past picks query.
+            The register holds 38 rows, 22 of them registrations under 16 names, which are 15 distinct trials
+            under the ruling above: phase 10's three; version 1's live filter and its five variants, each
+            registered again on 2026-09-26 with only its evaluator's pin moved, six; version 2's live filter,
+            its two registrations and the variant on the plan at the nearest bands from version 3, whose every
+            threshold and condition are version 2's, one; and version 3's live filter and the four variants
+            whose thresholds moved with it, five.
+            No earlier version of this item is in the repository, and the register holds no momentum reset
+            candidate.
+Expected:   weighted calls, to be measured after: each fill night about 252 members at 11 each, 2,767, beside
+            the night's usual 317; a peak reporting night at most 88 first asks at 11 and 121 asked again at
+            10, 2,178; an ordinary night 2 to 7 asks, 22 to 77; and a year about 22,000 beside the asks again.
+            A fetch is expected to take 1 to 2 seconds a member, about 4 to 9 minutes on a fill night.
+Predicted:  claims, from 603 and 603 PASS. The distinct-trials change adds 2, section 15.10's count of trials
+            beside the divisor and section 17's promotion level over them, giving 605, with a range of 604 to
+            606. Part 1 adds 39, giving 644 and 644 PASS with none out of scope, with a range of 636 to 654:
+            section 7's two components and their two matrix rows, section 16's three stores, section 14's two
+            steps, section 15.7's three parts, section 15.9's five, section 15.10's four, section 15.17's two,
+            section 17's ten, section 18's five and section 19.1's one. The low end reads the summary and the
+            run page's region as fewer parts, the high end each failure row as its behaviour and its surface
+            and section 17's windows as a row each, and a reworded row adds none. Part 2 adds 0 or 1. The
+            section 4 patterns are placed, and would add about 19 as a claim source.
+Opened:     at part 1, two operating rows in the second form: the state rule, met's tolerance and the
+            earnings quality bands settled from the measured splits once every member holds quarters or is
+            marked absent, read on the run page's fundamentals region; and the fetch measured on a night with
+            40 or more first asks, read on the same region.
+Consequences: four decisions are superseded where their code changes, each with its reasoning kept and its
+            citations repointed: the fundamentals ruling, cited 11 times; the list's, 49 times in 20 files; the
+            rank refusal's, 11 times, its refusal kept word for word; and the lifetime count's, 8 times. The
+            lifetime count reads 15 trials today and 16 with the seventh. Items 2 and 3 remove the breakout
+            setup and its two thresholds from every family rule, so if their remedy registers the six without
+            them, each is a new trial and the count reaches 22 with the seventh. At 15 trials a promotion needs
+            0.0033 where the window gives 0.0083, and at 16 it needs 0.0031 against 0.0071. The first look
+            cannot promote, so the bar first binds at the second, 12 blocks in.
+Changed:    this entry alone.
+Tests:      none added here.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12QT of 12QT tests ran
+            with none failed, migrations 0 to 47 with none pending, schema version 47, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 12QB tables, 12QC claims, 12QP PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 12QR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 12QT of 12QT tests.
+            Both gates ran over the tree carrying this entry, 12QSHA, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    the distinct-trials change, then part 1, then the fill and the measured splits to the operator,
+            then part 2 with its remedy; items 2 and 3 on their own schedule after the night of 2026-09-28,
+            then items 4, 5 and 7 in the order ruled.
