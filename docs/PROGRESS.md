@@ -28148,14 +28148,21 @@ Mutated:    the rule, stated before the run: the four the operator named in the 
             M4 an open trade's dot filled: red in the screen's test, the name page's and the mark's.
             Not mutated: the sessions held, the result's arithmetic, the status as of an earlier night, the
             filters and the empty store, each asserted by the tests above.
-            Results: 12PM
-Held:       12PH
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12PT of 12PT tests ran
+            Results: one run for each of the four in a detached worktree at 34dfa98, the tree carrying this
+            entry, each filtered to the tests this correction adds, each edit made there and reverted, and the
+            tree read clean after. The whole suite ran green over 34dfa98 in the gates, 1452 of 1452. M1 turned
+            the screen's test red, and the name page's and the empty store's as well, each of which holds the
+            member one gate short the mutation counts. M2 turned the screen's test red, and the name page's and
+            the minimum's as well, whose stores read the live plan's prices and outcomes. M3 turned the screen's
+            test and the minimum's red. M4 turned the screen's test, the name page's and the mark's red.
+Held:       all four red. M3 and M4 in exactly the tests predicted; M1 and M2 in the test predicted and in two
+            more each, the prediction narrower than the tests' reach, those tests holding the property too.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1452 of 1452 tests ran
             with none failed, migrations 0 to 47 with none pending, schema version 47, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 12PB tables, 12PC claims, 12PP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 12PR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 12PT of 12PT tests.
-            Both gates ran over the tree carrying this entry, 12PSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 43 tables, 603 claims, 603 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 613 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1452 of 1452 tests.
+            Both gates ran over the tree carrying this entry, 34dfa98, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    part 1 with items 2 and 3 after the night of 2026-09-28; items 4, 5 and 7 in the order ruled.
