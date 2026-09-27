@@ -27950,3 +27950,105 @@ Carried:    the remedy, the operator's command or run on their word, after the m
             and draws its list on version 2's plan at the nearest bands. Whether the guide's
             illustrative example, an alternative with a higher reward bar, is rewritten for the family as it
             now stands is the operator's to say.
+
+### 12.2 ruling - the name page draws no plan of a candidate that was not live on its night, the guide's example names no retired variant, and a Past picks screen follows every trade the list recommended   2026-09-27
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Done:       the remedy the 12.2 correction before this entry carried, run on the operator's ruling of
+            2026-09-26 that it runs before the night of 2026-09-28, once PR 253 had merged at 736f13a and with
+            no night running: `tools/migrate.ps1` applied migration 47, and the shape command's rule
+            correction closed version 2 and opened version 3 at 2026-09-27T04:18:30Z, its settings version 2's
+            with the trade input `clear`, retiring the six standing swing family candidates as rows 27 to 32
+            and registering the six for version 3 as rows 33 to 38 at that one instant on swing-filter at
+            78a5cfe3d020, the live filter's trade parameter 2 and the variant at the nearest bands' 1. Read
+            back off the store, the acceptances while live count row 13 alone, version 2's opening.
+Ruled:      the operator, on 2026-09-27, in three parts: the first lands in the same change and remedy run
+            as items 2 and 3 after the night of 2026-09-28, items 4, 5 and 7 follow in the order already set,
+            and the third is built last, after item 7, because items 2 and 3 change which trades exist and
+            where their stops sit. The second was set to land with the first, and the operator asked the same
+            day for it now, so it lands with this entry.
+            1. A variant's plan is not shown on the name page. The trade table draws three plans and marks the
+            one the check used, and the plan at the nearest bands is a registered candidate, which appears
+            nowhere until it has cleared the minimum evidence (see: Candidate conditions are registered before
+            they are scored, and scored in shadow before they are shown): drawing its entry, stop, target and
+            reward to risk for a stock is that evaluation. For a night the table draws the report's stepped
+            plan, as always, and the swing trade that night's live rule used, marked as the list's trade: the
+            plan at the nearest bands on a version 2 night and section 10's plan from version 3. No night
+            shows a candidate's plan that was not live on it. A page drawing a plan belonging to a registered
+            candidate that was not live on the night drawn fails, asserted off the rendered name page for a
+            version 2 night and a version 3 night.
+            2. The guide's section 9, the example over time: "About three years in, an alternative with a
+            higher reward bar is shown clearly beating the live filter. You promote it, and its setting
+            becomes the live one from the next night." becomes "About three years in, an alternative that
+            differs from the live filter in one setting is shown clearly beating it. You promote it, and its
+            setting becomes the live one from the next night." The market gate's sentence before it stays.
+            3. A Past picks screen: every trade the live list recommended, followed to its end, since the
+            scoring exists only as counts on the run page and no page shows how one recommended trade turned
+            out, where the listing history is the only evidence that settles whether a rule is worth keeping
+            (see: Your own listing history is kept forever). The population is every name the live filter
+            listed on a night from its first live night, with the trade from the plan that night's live rule
+            used, never a candidate's plan, the second list, which recommends nothing, or an evening before
+            the swing filter. At `#/picks` between Universe and Run, its filters in the hash. A summary card,
+            "How the list's picks have done": trades listed, still open, finished, reached target, stopped out
+            and ran out of time; below the minimum the run page's reason records use, read from the code, no
+            rate but a dashed outline stating the finished trades against the number needed; at or above it,
+            a bar of the finished trades in three steps of one neutral hue with a line at their average
+            break-even, and the share reaching target first, the share needed to break even and the average
+            result in multiples of the risk taken, always together. Filters All, Still open, Reached target,
+            Stopped out and Ran out of time, and none by setup. A table newest first: the night listed, the
+            stock linking to its page for that night, buy, stop, target, the trade line, the status in words,
+            the sessions held to its resolution or to tonight, and the result as a signed multiple of the risk
+            or "open". The trade line is an eighth mark defined once beside the other seven: stop at the left
+            as a green tick, target at the right as an orange tick, the buy a short neutral tick, and a dot for
+            the price now, hollow while open and filled where it finished, a price beyond either end sitting at
+            that end, degrading by saying what it has. Green and orange mark the stop and the target alone;
+            outcomes are words and steps of one neutral hue; not yet measured is a dashed outline. A key: the
+            trade line in two sentences, and that only the live list's trades appear, the alternatives hidden
+            until one is promoted. A name's page gains "On the list before" after the plan: a line with how
+            many times it was picked and how each group ended, then a row per earlier listing, absent where it
+            was never listed. Everything is read from stored rows by the read API, and nothing new is computed
+            at night. Section 15 gains the screen, the name page's region and the eighth mark; section 17
+            names the minimum shared with the run page; section 18 rows for a screen with no trades and a trade
+            whose outcome row is missing; a decision why each trade is shown while the rate is withheld, a
+            trade being a fact and a rate over too few trades looking like evidence and being none; the guide's
+            section 10 becomes "The screens" with a fifth card, and its section 9's first key gains "You can
+            follow every recommended trade on the Past picks screen." Tested over a constructed store with a
+            version 2 night, a version 3 night and trades in every state, every row and figure off the rendered
+            page, with four mutations: a second-list name counted, a candidate's plan drawn, the rate drawn
+            below the minimum, and an open trade's dot filled.
+Evaluated:  what the forward return filler writes for the swing filter's four horizons, read off the code at
+            736f13a and off the operator's store, read-only, as it stood after the correction. Each plan is
+            entered at the listing close, so none is never entered. On `swing` and `clear`, the capped
+            horizons, a win and a loss carry the outcome, `resolved_on`, `return_pct`, `break_even` and
+            `planned_risk`; a trade that ran out of time carries the outcome `unresolved`, `resolved_on` at the
+            cap's last session, `return_pct` to that session's close and `break_even`, and no `planned_risk`,
+            which the filler writes for a win or a loss alone. On `swing-20` and `clear-20` every decided row
+            carries all of them but `planned_risk`, which rides on the capped horizon alone. An open trade
+            carries none. The store holds 28 decided `swing` rows, 9 wins and 19 losses, each with all five
+            columns written, their `swing-20` rows with `planned_risk` null in all 28, 423 open, and no
+            `clear` row, section 10's plan being scored from the night of 2026-09-28. So `planned_risk` cannot
+            give a result for a trade that ran out of time, and the stored columns give one for every decided
+            trade without it: the result in multiples of risk is `return_pct` over the risk as a share of the
+            entry, `(swing_entry - stop) / swing_entry`, read off the trade's own `gate_result` row with the
+            stop of the plan its night's live rule used, `swing_stop` or `clear_stop`, the ratio scale-free on
+            both sides so a split since the listing moves neither. A result is measured on closes as the
+            outcome is, so a target reached on a close past it reads above the plan's own reward to risk and
+            a close through the stop below minus one. No store change is needed; the read API computes it as
+            the run page computes its shares.
+Consequences: from the night of 2026-09-28 until items 2 and 3 land, a name's page draws the plan at the
+            nearest bands, now a variant's, beside section 10's, the order the operator set. The minimum the
+            run page's reason records use is two, `ReasonVerdict.MinimumResolved` and
+            `ReasonVerdict.MinimumSessions`, 250 resolved setups across at least 60 distinct listing sessions,
+            which the screen's rate waits on.
+Changed:    `HOW_IT_WORKS.html`'s section 9, the example over time, in the operator's words as part 2 gives
+            them; the guide carries no rule, so nothing in the specs moves with it.
+Tests:      none added here.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1447 of 1447 tests ran
+            with none failed, migrations 0 to 47 with none pending, schema version 47, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 42 tables, 579 claims, 579 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 589 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1447 of 1447 tests.
+            Both gates ran over the tree carrying this entry, 0c6db26, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    part 1 with items 2 and 3 after the night of 2026-09-28; items 4, 5 and 7 in the order ruled;
+            part 3 after item 7.
