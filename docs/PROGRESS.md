@@ -28369,13 +28369,13 @@ Consequences: four decisions are superseded where their code changes, each with 
             most 0.075 in all.
 Changed:    this entry alone.
 Tests:      none added here.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12QT of 12QT tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1452 of 1452 tests ran
             with none failed, migrations 0 to 47 with none pending, schema version 47, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 12QB tables, 12QC claims, 12QP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 12QR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 12QT of 12QT tests.
-            Both gates ran over the tree carrying this entry, 12QSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 43 tables, 603 claims, 603 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 613 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1452 of 1452 tests.
+            Both gates ran over the tree carrying this entry, 0b8de93, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    the distinct-trials change, then part 1, then the fill and the measured splits to the operator,
             then part 2 with its remedy; items 2 and 3 on their own schedule after the night of 2026-09-28,
