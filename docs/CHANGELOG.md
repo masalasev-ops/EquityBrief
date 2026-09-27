@@ -8023,3 +8023,27 @@ Was:
 Now:
 > a section after the filter history's: `history-pull --from 2018-01-01 --live`, what it asks for and stores, what it costs, when to run it, and `history-pull --purge <the pull's run id>`, which removes one pull whole.
 Why: the operator's ruling of 2026-09-26; the command is theirs or run on their word.
+
+### 2026-09-26 - ARCHITECTURE.html - section 7's History pull row reads a missing session against the days at least half the names spanning each hold
+Authorised by: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+Was:
+> ...; a session one name misses against the others is named on its run log row and kept as the provider sent it, no night reads either table, ...
+Now:
+> ...; a session one name misses, a day at least half the names whose series span it hold, is named on its run log row and kept as the provider sent it, a day fewer than half hold is named apart and read as no one's missing session, no night reads either table, ...
+Why: the first pull read one name's bars on three days the exchange was closed as sessions every other name missed, and named 621 names with a missing session where 10 miss one.
+
+### 2026-09-26 - SCHEMA.md - pulled_bar: a missing session is read against the days at least half the names spanning each hold
+Authorised by: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+Was:
+> **A session missing from one name's pulled series is kept as a hole rather than refused.** The pull names it on its run log row, read against the sessions the other pulled names hold, and the reader of the series decides what a hole stops, because nothing is computed from this table on its own.
+Now:
+> **A session missing from one name's pulled series is kept as a hole rather than refused.** The pull names it on its run log row, read against the days at least half the pulled names whose series span each day hold, ... A day fewer than half of them hold is named apart on the same row and is no name's hole: the exchange's closure table covers the store's own years alone, so what places an older session is the names that traded it, and a bar the provider sent for one name on a day the exchange was closed is stored as sent.
+Why: the same.
+
+### 2026-09-26 - RUNBOOK.md - the pull names a missing session against the days at least half the names spanning each hold
+Authorised by: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+Was:
+> A name the provider does not answer, and a session one name misses against the others, are each named on its run log row and printed. Run it when no night is running.
+Now:
+> A name the provider does not answer, and a session one name misses where at least half the names spanning it hold it, are each named on its run log row and printed, and a day fewer than half hold is counted apart as no one's missing session and named on the row. Run it when no night is running.
+Why: the same.

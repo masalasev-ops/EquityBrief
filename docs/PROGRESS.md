@@ -27660,3 +27660,63 @@ Tests:      none added here; the 12.2 correction that follows adds the one that 
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
             the figures the 12.2 correction closing this batch records.
 Carried:    items 1 to 5 and 7, in the order ruled; item 6 is this batch.
+
+### 12.2 - correction: the history pull reads a missing session against the days at least half the names spanning each hold, where one name's bars on three days the exchange was closed read as a session 621 names missed   2026-09-26
+Corrects:   the 12.2 correction of 2026-09-26 that built the history pull, which read a missing session
+            against every date any pulled name held.
+Found:      by this session, reading the first pull's run log row beside the measurement it was made for:
+            the pull printed and wrote "621 names with a missing session" where 10 of the pulled series miss
+            one, and the operator ruled it corrected with the records of the ruling before this entry.
+Repaired:   `HistoryPull.HolesIn` reads a day as a session where at least half the names whose series span
+            it hold it, and as a stray where fewer do, and a hole is a session a name's series misses between
+            its own first and last. Each stray is named on the pull's run log row with the names holding it
+            and how many span it, and counted in the line the verb prints beside the names with a missing
+            session. At least half rather than more than half, so that of two names one holding a session
+            the other misses names the miss. Nothing the pull stores changes: every bar is stored as the
+            provider sent it, a stray's among them, and the first pull's row keeps what it wrote, since no
+            run log row is rewritten.
+Guarded:    `ADayFewerThanHalfTheNamesSpanningItHoldIsNamedApartAndNoOtherNameReadsAsMissingIt`, over five
+            names stated beside it, FFF's series starting on 2026-08-17 so that four span every day before
+            it: EEE alone holds a bar on 2026-07-03, the Friday Independence Day was observed on, one of the
+            four, which is a stray held by EEE with four spanning; AAA and EEE alone hold 2026-08-12, two of
+            the four, exactly half, which is a session BBB and CCC each miss; so two names with a missing
+            session and one stray, where every date any name held would give three names, AAA, BBB and CCC
+            each missing 2026-07-03. Every bar stored as sent, EEE's 48 among them, and the run log row naming
+            both holes and the stray with its holder. The earlier test's CCC is stated as one of two names
+            holding half, and it and the first test assert no stray.
+Expected:   every count is derived from the exchange's calendar over the span and the series constructed
+            beside it, not read back: 47 sessions from 2026-07-01 to 2026-09-04, 46 for BBB and CCC, 48 for
+            EEE and 15 for FFF from 2026-08-17. No fixture file is added, as for the pull.
+Written:    section 7's History pull row in `ARCHITECTURE.html`, the pulled bar note in `SCHEMA.md` and the
+            pull's section in `RUNBOOK.md`, each with its prior text in `CHANGELOG.md`; the decision the pull
+            rests on corrected in place, since what it rules is unchanged.
+Tests:      1443, from 1442: one added, none removed.
+Claims:     578, unchanged: section 7's History pull row is reworded and keeps its key.
+Pins:       the branch against `main` at d7a9450; this correction edits `HistoryPull.cs` and
+            `HistoryPullTests.cs` and no other source, neither in the twelve
+            `RuleVersionScorer.CodeVersionSources`, the twenty-one `CandidateEvaluator.EvaluationSources` or
+            the sixteen `SwingFilter.CodeVersionSources`, each read from the tree being committed.
+Mutated:    the rule, stated before the run: each property this correction lands broken one at a time, each
+            run filtered to the seven tests in `HistoryPullTests`.
+            Predicted:
+            M1 every date any name holds read as a session, the rule before this correction: red in the new
+            test alone.
+            M2 at least half read as more than half: red in the second test and the new one, each holding a
+            session exactly half the names spanning it hold.
+            M3 every name counted as spanning every day, rather than those whose series reach either side of
+            it: red in the new test alone, where FFF's later start makes 2026-08-12 two of five.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12RT of 12RT tests ran
+            with none failed, migrations 0 to 46 with none pending, schema version 46, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 12RB tables, 12RC claims, 12RP PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 12RR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 12RT of 12RT tests.
+            Both gates ran over the tree carrying this entry and the ruling before it, 12RSHA, in a
+            worktree beside the repository, and the operator's store under `data/` was not touched by
+            either. A first run of `tools/ci.ps1` over fdf7dfd went red on one test and stopped at the
+            suite: `EveryEntrySinceTheLastHostedWindowsLegRecordsTheWindowsRun`, for this entry's line
+            written as a bare placeholder without the words the check reads. The second run over 12RSHA
+            is the one recorded here.
+Carried:    the first pull's run log row keeps its 621 as written, and this entry states the figure the
+            correction gives for it, 10 names and 3 strays.
