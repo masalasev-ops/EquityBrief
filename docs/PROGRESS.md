@@ -27895,7 +27895,7 @@ Written:    section 11's trade gate and figure 11.2's key, the glossary's swing 
 Discharged: (owes: The swing trade's stop ruled apart from how wide its setup band merged), ahead of its
             trigger: section 10's stop sits at the setup band's low edge only where that is a typical move
             or more below the entry.
-Tests:      12CT, from 1443: 4 added, none removed.
+Tests:      1447, from 1443: 4 added, none removed.
 Claims:     579, from 578: section 17's Swing trade plan row, named beside phase 12's other rows beyond its
             prediction.
 Pins:       the branch against `main` at a7007be edits `FilterSettings.cs`, `SwingGates.cs` and
@@ -27925,14 +27925,22 @@ Mutated:    the rule, stated before the run: each property this correction lands
             M6 the bound counting every retirement of a live candidate: red in the correction's test and the
             bound's.
             M7 the plan clear of the noise left unscored: red in the both-plans filler test alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12CT of 12CT tests ran
+            Results: one run for each of the seven in a detached worktree at 72e4ed1, the tree carrying this
+            entry, each filtered on the operator's instruction of 2026-09-24 to the six tests named, each edit
+            made there and reverted with `git checkout -- .` and the tree read clean after. The whole suite
+            ran green over 72e4ed1 in the gates, 1447 of 1447. M1, M2 and M3 each turned the gates test red
+            alone. M4 turned the gates test and the family's first test red. M5 turned the edge half's first
+            test red on the live filter's row. M6 turned the correction's test and the bound's red. M7 turned
+            the both-plans filler test red alone. No test outside those named for a mutation went red under
+            it.
+Held:       all seven, each in the tests predicted and in no other of the six.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1447 of 1447 tests ran
             with none failed, migrations 0 to 47 with none pending, schema version 47, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 12CB tables, 12CC claims, 12CP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 12CR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 12CT of 12CT tests.
-            Both gates ran over the tree carrying this entry and the ruling before it, 12CSHA, in a worktree
+            `tools/verify-phase.ps1` green at 42 tables, 579 claims, 579 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 589 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 41
+            of 41 roster checks carried and all 41 run, 1447 of 1447 tests.
+            Both gates ran over the tree carrying this entry and the ruling before it, 72e4ed1, in a worktree
             beside the repository, and the operator's store under `data/` was not touched by either.
 Carried:    the remedy, the operator's command or run on their word, after the merge and before the night
             of 2026-09-28, when no night is running: `shape --rule-correction --trade clear --restarts 0
