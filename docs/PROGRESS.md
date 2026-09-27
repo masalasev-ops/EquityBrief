@@ -28170,7 +28170,8 @@ Carried:    part 1 with items 2 and 3 after the night of 2026-09-28; items 4, 5 
 ### 12.2 ruling - fundamentals are fetched on the night after a member reports, four readings and a business state are read every night and order the list without removing a stock, the report's numbers open on what they say, a seventh candidate skips a deteriorating business, and the lifetime count reads distinct trials   2026-09-27
 Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
 Ruled:      the operator, on 2026-09-27, in a queued item issued after the Past picks screen, a planning pass
-            approved with five corrections, and a ruling on the review the lifetime count had made due. The
+            approved with five corrections, a ruling on the review the lifetime count had made due, and an
+            addendum to the plan issued after its approval. The
             item replaces every earlier version of it: the momentum reset candidate is withdrawn and never
             registered, and nothing here reads the RSI or the MACD.
             1. The ruling that no reading of the fundamentals fires a reason, gates a tranche or draws a panel
@@ -28284,18 +28285,24 @@ Corrected:  the operator's five corrections to the planning pass.
             decision and in the heading's pattern, "What the numbers say: {state}, read from sales and
             operating margin alone", so a reader seeing "improving" beside "earnings ran ahead of cash" sees
             why both can be true.
-Lifetime:   the operator's ruling on the review due at eight registered candidates (see: Holm's level passes
-            between the candidates by a graph fixed when they are registered, and every verdict shows the
-            lifetime count). A registration of the same rule after a correction, where only the version it
-            reads changed and no threshold or condition moved, counts as the same trial as the rule it
-            replaces; a rule with any condition or threshold different from every earlier one counts as a new
-            trial. The count of distinct trials is recorded on the run page beside the family's divisor, and
-            the decision states how it is used when a candidate reaches a look, so a verdict is judged against
-            every idea tried and not only the ones still running. Proposed with it and approved: a promotion
-            needs its look to cross at the lower of the level its graph gives it and 0.05 over the distinct
-            trials registered as of that look, each spent across its looks by its own spending function, and
-            retiring and leaving are read as now. It lands as a change of its own before part 1, a 12.5
-            correction, and edits no pinned source.
+Lifetime:   the operator's ruling on the review due at eight registered candidates, and the addendum that
+            keeps Holm's method and changes what it counts (see: Holm's level passes between the candidates by
+            a graph fixed when they are registered, and every verdict shows the lifetime count). The method
+            stays: Holm's step-down, each candidate's spending across its looks, and the graph passing a
+            promoted candidate's level in equal shares to those still standing. The budget changes: the level
+            at Holm's first step is 0.05 over the distinct trials counted, shared across every one of them for
+            the life of the system, and no longer 0.05 over the candidates a window opened with, fresh for each
+            window. A distinct trial is a rule whose results were read at a look, or that is still running. A
+            registration of the same rule after a correction, where only the version it reads changed and no
+            threshold or condition moved, is the same trial as the rule it replaces; a rule with any condition
+            or threshold different from every earlier one is a new trial; and a candidate retired with no
+            result of its own ever read is not counted, as the three phase 10 candidates were retired, their
+            retirement rows saying so, since a rule that was never read cannot have been chosen on its luck. A
+            look keeps the bar it was read at, and a new trial moves the bar of the looks not yet read. The
+            count and the bar are shown on the run page beside the family's divisor, and the prior text goes
+            to CHANGELOG. The planning pass's first proposal, a promotion crossing at the lower of its graph's
+            level and 0.05 over the trials, is withdrawn by the addendum. It lands as a change of its own
+            before part 1, a 12.5 correction, and edits no pinned source.
 Measured:   read-only, the operator's store opened immutable at schema 47 and the code at e04aa54.
             Fundamentals: 5 members hold any, DGX, GM, HUM, NVDA and RTX, 12 filings each and 60 rows, all
             written by the 7 fetcher runs of report passes from 2026-09-18 to 2026-09-26, the 6 that fetched
@@ -28317,21 +28324,23 @@ Measured:   read-only, the operator's store opened immutable at schema 47 and th
             its deadline of 15.
             The list's order is read in four places, none a pinned source: tonight's page, the overnight queue,
             the night's request and the Past picks query.
-            The register holds 38 rows, 22 of them registrations under 16 names, which are 15 distinct trials
-            under the ruling above: phase 10's three; version 1's live filter and its five variants, each
-            registered again on 2026-09-26 with only its evaluator's pin moved, six; version 2's live filter,
-            its two registrations and the variant on the plan at the nearest bands from version 3, whose every
-            threshold and condition are version 2's, one; and version 3's live filter and the four variants
-            whose thresholds moved with it, five.
+            The register holds 38 rows, 22 registrations under 16 names and 16 retirements. No candidate has
+            reached a look, the first needing eight non-empty blocks of 63 sessions and the oldest registration
+            being of 2026-09-23. Every retirement was taken with no result read: phase 10's three say so in
+            words, and each swing retirement restarted 0 non-empty blocks or was followed by a registration of
+            the same rule with only its version moved. So the count is 6, the six registered at 04:18:30Z on
+            2026-09-27, six different rules, one of them version 2's live filter under the name "the swing
+            filter on the plan at the nearest bands, from version 3". Under the ruling before the addendum the
+            16 names were 15 trials.
             No earlier version of this item is in the repository, and the register holds no momentum reset
             candidate.
 Expected:   weighted calls, to be measured after: each fill night about 252 members at 11 each, 2,767, beside
             the night's usual 317; a peak reporting night at most 88 first asks at 11 and 121 asked again at
             10, 2,178; an ordinary night 2 to 7 asks, 22 to 77; and a year about 22,000 beside the asks again.
             A fetch is expected to take 1 to 2 seconds a member, about 4 to 9 minutes on a fill night.
-Predicted:  claims, from 603 and 603 PASS. The distinct-trials change adds 2, section 15.10's count of trials
-            beside the divisor and section 17's promotion level over them, giving 605, with a range of 604 to
-            606. Part 1 adds 39, giving 644 and 644 PASS with none out of scope, with a range of 636 to 654:
+Predicted:  claims, from 603 and 603 PASS. The distinct-trials change adds 2, section 15.10's count and bar
+            beside the divisor and section 17's level shared across the distinct trials, giving 605, with a
+            range of 604 to 606. Part 1 adds 39, giving 644 and 644 PASS with none out of scope, with a range of 636 to 654:
             section 7's two components and their two matrix rows, section 16's three stores, section 14's two
             steps, section 15.7's three parts, section 15.9's five, section 15.10's four, section 15.17's two,
             section 17's ten, section 18's five and section 19.1's one. The low end reads the summary and the
@@ -28345,11 +28354,19 @@ Opened:     at part 1, two operating rows in the second form: the state rule, me
 Consequences: four decisions are superseded where their code changes, each with its reasoning kept and its
             citations repointed: the fundamentals ruling, cited 11 times; the list's, 49 times in 20 files; the
             rank refusal's, 11 times, its refusal kept word for word; and the lifetime count's, 8 times. The
-            lifetime count reads 15 trials today and 16 with the seventh. Items 2 and 3 remove the breakout
-            setup and its two thresholds from every family rule, so if their remedy registers the six without
-            them, each is a new trial and the count reaches 22 with the seventh. At 15 trials a promotion needs
-            0.0033 where the window gives 0.0083, and at 16 it needs 0.0031 against 0.0071. The first look
-            cannot promote, so the bar first binds at the second, 12 blocks in.
+            count reads 6 today, each trial starting at 0.05 over 6, 0.0083, spent by the O'Brien-Fleming-type
+            function: the first look releases 0.00019, below the 1 in 256 that eight blocks can reach, so it
+            can retire a candidate and never promote one; the second releases 0.0023 in all and the last
+            0.0083. A new trial makes 7, at 0.0071, the first look releasing 0.00014 and the second 0.0019. A
+            re-registration with only its version moved changes neither, and a candidate retired unread leaves
+            the count and raises the bar of the rest. Items 2 and 3 remove the breakout setup and its two
+            thresholds from every family rule, and their remedy retires the six unread and registers six
+            without them, which leaves the count at 6; the seventh makes 7. At every look the levels the
+            counted trials hold sum to 0.05, and a trial read at a look is counted for the life of the system,
+            so no window starts with a fresh 0.05. A verdict keeps the bar it was read at, so trials
+            registered after others were read are read at the larger count while the earlier verdicts keep
+            theirs: six read at 0.05 over 6 and six registered after them, read at 0.05 over 12, come to at
+            most 0.075 in all.
 Changed:    this entry alone.
 Tests:      none added here.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12QT of 12QT tests ran
