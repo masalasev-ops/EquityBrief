@@ -1,9 +1,16 @@
 namespace EquityBrief.Core.Providers;
 
-// The three figures the numbers section states per quarter. Money, so decimal
-// here and TEXT in storage, and nullable because the provider files a quarter
-// with some of them missing rather than filing zero.
-public sealed record QuarterFigures(decimal? Revenue, decimal? GrossProfit, decimal? NetIncome);
+// The three figures the numbers section states per quarter, and the two the readings of the
+// reported quarters add: the operating income the margin is read from and the operating cash
+// flow earnings are read against. Money, so decimal here and TEXT in storage, and nullable
+// because the provider files a quarter with some of them missing rather than filing zero.
+// see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+public sealed record QuarterFigures(
+    decimal? Revenue,
+    decimal? GrossProfit,
+    decimal? NetIncome,
+    decimal? OperatingIncome = null,
+    decimal? OperatingCashFlow = null);
 
 // The balance sheet as of a filing. Five figures rather than the statement's
 // thirty, because these are the ones section 4's numbers row names and a column
@@ -139,13 +146,16 @@ public sealed record CompanyFundamentals(
     int QuartersWithNoFilingDate,
     DividendFiled? Dividend = null);
 
-// One name's fundamentals, in one request, on demand.
+// One name's fundamentals, in one request.
 //
-// Per name and off the nightly path, which is what keeps the night's per-name
-// request count at zero: the fetch happens when a name is opened and its stored
-// copy predates a filing, and never in the night's own arithmetic.
+// Per name, and never in the night's own arithmetic, which is what keeps that
+// arithmetic's per-name request count at zero. Two callers ask: a report pass,
+// when a name is opened and its stored copy predates a filing, and the night's
+// quarters step after the close, for a member on the night after it reports,
+// which is a carve-out named for it rather than a per-name call on the night.
 // see: The nightly run is arithmetic only
 // see: Everything expensive happens when a name is opened
+// see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
 public interface IFundamentalsFeed
 {
     Task<CompanyFundamentals> FundamentalsAsync(string ticker, CancellationToken cancellation = default);

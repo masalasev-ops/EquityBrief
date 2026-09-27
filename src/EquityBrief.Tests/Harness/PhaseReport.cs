@@ -116,6 +116,12 @@ internal static class PhaseReport
             "definitions the document uses, not claims it makes about the code"),
         ["4. The report, section by section, and where each part comes from"] = new Placement(
             "outside the claim scope the catalogue states; the sections it maps are asserted by the screens tables in 15"),
+        // The patterns what the numbers say is written from, which the name page's numbers claim in 15.9. The
+        // rows are text a renderer writes rather than claims about it, so they are held to the renderer's own
+        // patterns word for word in both directions instead of being counted a claim each.
+        ["What the numbers say, pattern by pattern"] = new Placement(
+            "the sentences the name page's numbers open with, each pattern held word for word to the one the renderer writes from, in both directions; what the page draws from them is claimed in 15.9",
+            Check: "read-surface"),
         // 5.4 and not 5.1. Its reason names the listings expectations and
         // `listing` is created at 5.4, so this is the third row of the same
         // family: a due point naming a checkpoint that does not produce the

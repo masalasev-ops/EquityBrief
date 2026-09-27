@@ -7,6 +7,7 @@ using EquityBrief.Worker.Filter;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Moves;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Rules;
@@ -19,6 +20,7 @@ using EquityBrief.Tests.Harness;
 using EquityBrief.Web.App;
 using EquityBrief.Worker.Bars;
 using EquityBrief.Worker.Candidates;
+using EquityBrief.Worker.Quarters;
 using EquityBrief.Worker.Research;
 using EquityBrief.Worker.Rules;
 
@@ -218,6 +220,28 @@ public class PinnedConstants
             new("The swing family", "0.05", (decimal)ReasonVerdict.Significance, "ReasonVerdict.Significance"),
             new("Swing plan outcome", "63", ForwardReturnSeries.CapOf(ForwardReturnSeries.Swing), "ForwardReturnSeries.CapOf(ForwardReturnSeries.Swing)"),
             new("Twenty-session outcome", "20", ForwardReturnSeries.CapOf(ForwardReturnSeries.SwingTwenty), "ForwardReturnSeries.CapOf(ForwardReturnSeries.SwingTwenty)"),
+            new("Quarters step", "15", (decimal)QuarterFetcher.Limit.TotalMinutes, "QuarterFetcher.Limit in minutes"),
+            new("Quarters step", "5", QuarterFetcher.RetryNights, "QuarterFetcher.RetryNights"),
+            new("Quarters step", "7", QuarterFetcher.WeeklyRetryDays, "QuarterFetcher.WeeklyRetryDays"),
+            new("Quarters fill", "260", QuarterFetcher.FillPerNight, "QuarterFetcher.FillPerNight"),
+            new("Quarter prices", "3", QuarterFetch.PriceYears, "QuarterFetch.PriceYears"),
+            new("Quarter prices", "1", ProviderWeights.HistoricalPerTicker, "ProviderWeights.HistoricalPerTicker"),
+            new("Trajectory quarters", "2", QuarterReadings.TrajectoryQuarters, "QuarterReadings.TrajectoryQuarters"),
+            new("Estimate record", "8", QuarterReadings.RecordQuarters, "QuarterReadings.RecordQuarters"),
+            new("Estimate record", "4", QuarterReadings.RecordMinimum, "QuarterReadings.RecordMinimum"),
+            new("Met tolerance", "0.01", QuarterReadings.MetCents, "QuarterReadings.MetCents"),
+            new("Met tolerance", "1", QuarterReadings.MetShare * 100, "QuarterReadings.MetShare as a percentage"),
+            new("Earnings quality", "4", QuarterReadings.QualityQuarters, "QuarterReadings.QualityQuarters"),
+            new("Earnings quality", "0.8", QuarterReadings.QualityLow, "QuarterReadings.QualityLow"),
+            new("Earnings quality", "0.8", QuarterReadings.QualityLow, "QuarterReadings.QualityLow, where the middle band starts"),
+            new("Earnings quality", "1.2", QuarterReadings.QualityHigh, "QuarterReadings.QualityHigh, where the middle band ends"),
+            new("Earnings quality", "1.2", QuarterReadings.QualityHigh, "QuarterReadings.QualityHigh"),
+            new("Valuation position", "12", QuarterFetch.Kept, "QuarterFetch.Kept"),
+            new("Valuation position", "8", QuarterReadings.ValuationMinimum, "QuarterReadings.ValuationMinimum"),
+            new("Weighted calls a quarters ask", "11", QuarterFetcher.WeightOfAnAsk, "QuarterFetcher.WeightOfAnAsk"),
+            new("Weighted calls a quarters ask", "10", ProviderWeights.Fundamentals, "ProviderWeights.Fundamentals"),
+            new("Weighted calls a quarters ask", "1", ProviderWeights.HistoricalPerTicker, "ProviderWeights.HistoricalPerTicker"),
+            new("Weighted calls a quarters ask", "10", ProviderWeights.Fundamentals, "ProviderWeights.Fundamentals, what an ask storing nothing costs"),
         ];
     }
 

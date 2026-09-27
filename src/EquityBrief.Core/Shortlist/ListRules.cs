@@ -3,7 +3,7 @@ namespace EquityBrief.Core.Shortlist;
 // The rule each evening's list was drawn by, as the store records it and every surface names it: any of
 // the six reasons firing, before the switch, and the swing filter from it. An evening the store records
 // no rule for was drawn by the reasons, which is every evening before the switch.
-// see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+// see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
 public static class ListRules
 {
     public const string Reasons = "reasons";

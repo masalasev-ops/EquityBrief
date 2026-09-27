@@ -542,7 +542,7 @@ public partial class ReadSurface
         // same words, so the page and the two sections cannot come to say different things. Each section is
         // read between its own heading and the next, so the sentence standing elsewhere in the document
         // does not stand for either of them.
-        // see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns
+        // see: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters
         var document = WebUtility.HtmlDecode(File.ReadAllText(Repository.Architecture));
 
         string Section(string heading, string next)

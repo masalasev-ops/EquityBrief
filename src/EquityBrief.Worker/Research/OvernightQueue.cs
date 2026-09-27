@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
@@ -72,6 +73,7 @@ public sealed class OvernightQueue(
         [
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
+            new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -95,15 +97,20 @@ public sealed class OvernightQueue(
     public const string AwakeReason = "EquityBrief's overnight queue is writing tonight's drafts";
 
     // A listing row is written for every name in the index every night, so the night's
-    // rows are the index that night, and the names on tonight's list lead in the swing
-    // filter's order.
-    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
-    const string MembersOnNight = @"
+    // rows are the index that night, and the names on tonight's list lead in the order
+    // the list is drawn in: improving businesses first where the night stored its
+    // readings, and the swing filter's own order within each state and on a night that
+    // stored none.
+    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
+    static readonly string MembersOnNight = @"
         SELECT l.ticker, CASE WHEN g.passed = 1 THEN 1 ELSE 0 END
         FROM listing l
         LEFT JOIN gate_result g ON g.ticker = l.ticker AND g.session_date = l.session_date
+        LEFT JOIN fundamental_reading f ON f.ticker = l.ticker AND f.session_date = l.session_date
         WHERE l.session_date = $session
-        ORDER BY CASE WHEN g.passed = 1 THEN 0 ELSE 1 END, g.rank, l.ticker;
+        ORDER BY CASE WHEN g.passed = 1 THEN 0 ELSE 1 END,
+                 CASE WHEN g.passed = 1 THEN " + FundamentalState.PlaceIn("f.state") + @" ELSE 0 END,
+                 g.rank, l.ticker;
     ";
 
     const string AppendRun = @"

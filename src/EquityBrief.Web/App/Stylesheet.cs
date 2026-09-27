@@ -221,6 +221,15 @@ span[data-last-asked-at]::before{content:none}
 .list-table td.c-nm .co{display:block;font-size:12.5px;line-height:1.25;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .list-table a.open{font-size:11px;color:var(--soft);margin-left:4px}
 .list-table td.trend-state{font-size:12.5px;color:var(--ink-2)}
+/* the state a member's reported quarters give it, beside the trend word, with what the numbers say while the word is under the pointer or has focus */
+.business{position:relative;display:inline-block;margin-left:6px;font-size:11.5px;border:1px solid var(--hair-2);border-radius:999px;padding:0 7px;color:var(--ink-2);cursor:help}
+.business .says{display:none;position:absolute;z-index:5;left:0;top:100%;margin-top:4px;width:340px;max-width:80vw;padding:8px 10px;background:var(--panel);border:1px solid var(--hair-2);border-radius:6px;font-size:12.5px;line-height:1.45;color:var(--ink);white-space:normal}
+.business:hover .says,.business:focus .says,.business:focus-within .says{display:block}
+.numbers-say{margin:0 0 12px}
+.numbers-say .says-heading{margin:0 0 4px;font:600 15px var(--serif)}
+.numbers-say .read-from{margin:0 0 6px;font-size:12.5px;color:var(--soft)}
+.numbers-say ul.says{margin:0 0 10px;padding-left:18px;font-size:14px;line-height:1.5}
+.numbers-behind summary{cursor:pointer;font-size:13px;color:var(--ink-2)}
 .list-table th.place,.list-table td.place{width:1%;padding-right:12px;text-align:right;color:var(--soft);white-space:nowrap}
 .list-table td.place{font-size:12.5px}
 .list-count{margin:0 0 10px;font-size:13.5px;color:var(--ink-2)}

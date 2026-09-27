@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-8mlg1ahkk5jaipaxrnwn49",
+  "object": "chat.completion",
+  "created": 1790525951,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The close for Microsoft Corporation is 493.95, trading within a session range between 490.15 and 495.19 with a volume of 18.88 million shares. The stock currently trades above its 20-day average of 494.34 and its 50-day average of 448.52, while remaining well above the 200-day average of 429.45. Technical indicators show a 14-day average true range of 11.19 and a relative strength index of 56.17, suggesting moderate volatility within an uptrend state. The company has beaten estimates for 8 consecutive quarters with zero misses or meets recorded in the available data.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1802,
+    "completion_tokens": 165,
+    "total_tokens": 1967,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

@@ -74,12 +74,15 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
         // log records the figure the on-demand path costs.
         Requests++;
 
+        // A refusal, as the provider's own answer to a name it will not serve, so a replayed night that
+        // asks for a member the capture does not hold records the refusal on that member and goes on.
         if (!responses.TryGetValue(ticker, out var captured))
         {
-            throw new InvalidOperationException(
+            throw new ProviderRefusal(
                 $"No captured fundamentals for {ticker}. A recorded feed answering an unknown name " +
                 "with an empty payload would look exactly like a name the provider files nothing " +
-                "for, and the fetcher would record it as fetched.");
+                "for, and the fetcher would record it as fetched.",
+                transient: false);
         }
 
         return Task.FromResult(Parse(captured, ticker));
@@ -101,6 +104,7 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
 
         var income = Statement(root, "Income_Statement");
         var sheet = Statement(root, "Balance_Sheet");
+        var cash = Statement(root, "Cash_Flow");
         var history = Earnings(root, "History");
 
         var filed = new List<FiledQuarter>();
@@ -127,6 +131,7 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
             }
 
             var balance = Quarterly(sheet).FirstOrDefault(row => Text(row.Value, "date") == quarter.Name);
+            var flow = Quarterly(cash).FirstOrDefault(row => Text(row.Value, "date") == quarter.Name);
             var print = history.FirstOrDefault(row => row.Name == quarter.Name);
 
             filed.Add(new FiledQuarter(
@@ -135,7 +140,9 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
                 new QuarterFigures(
                     Money(quarter.Value, "totalRevenue"),
                     Money(quarter.Value, "grossProfit"),
-                    Money(quarter.Value, "netIncome")),
+                    Money(quarter.Value, "netIncome"),
+                    Money(quarter.Value, "operatingIncome"),
+                    Money(flow.Value, "totalCashFromOperatingActivities")),
                 new BalanceSheet(
                     Money(balance.Value, "totalAssets"),
                     Money(balance.Value, "totalLiab"),

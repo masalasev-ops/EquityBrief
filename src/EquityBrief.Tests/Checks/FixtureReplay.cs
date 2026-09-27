@@ -17,6 +17,7 @@ using EquityBrief.Worker.Levels;
 using EquityBrief.Worker.Membership;
 using EquityBrief.Worker.News;
 using EquityBrief.Worker.Nights;
+using EquityBrief.Worker.Quarters;
 using EquityBrief.Worker.Research;
 using EquityBrief.Worker.Returns;
 using EquityBrief.Worker.Shortlist;
@@ -98,6 +99,7 @@ public class FixtureReplay
         await new LadderBuilder(night, store.DatabaseFile).RunAsync(Index, "replay-ladders");
         await new MoveAnnotator(night, store.DatabaseFile).RunAsync("replay-moves");
         await new SwingReader(night, store.DatabaseFile).RunAsync(Index, "replay-swing-readings");
+        await new FundamentalReader(night, store.DatabaseFile).RunAsync(Index, "replay-fundamental-readings");
         await new FactsAssembler(night, store.DatabaseFile).RunAsync("replay-facts");
         await new ChangeDetector(night, store.DatabaseFile).RunAsync("replay-changes");
         await new ShortlistBuilder(night, store.DatabaseFile).RunAsync(Index, "replay-listings", Night);
@@ -115,6 +117,15 @@ public class FixtureReplay
 
         // The rule versions step, over windows opened the way a person opens them, since a table nothing populates is one no expectation can be read against.
         await RuleVersionsScored.ReplayVersionsAsync(store, night);
+
+        // The quarters step, after the night's close as the night runs it, so the night's own readings read
+        // none of what it stores and the fixture's facts file is the one its recordings were made from.
+        await new QuarterFetcher(
+            RecordedFundamentalsFeed.FromFolder(Folder()),
+            RecordedHistoricalBarFeed.FromFolder(Folder()),
+            () => 0,
+            night,
+            store.DatabaseFile).RunAsync(Index, "replay-quarters");
 
         // The one stage here that is not the night's. The fundamentals fetcher runs
         // when a name is opened, so it is replayed after the night rather than

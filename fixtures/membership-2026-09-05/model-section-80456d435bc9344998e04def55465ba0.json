@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-xiyzzhoaplhf6xd7r170cf",
+  "object": "chat.completion",
+  "created": 1790525954,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Netflix Inc, a member of the Communication Services sector, closed at 76.77 with a session high of 77.73 and a low of 75.92 on a volume of 33.87 million shares. The stock trades below its 20-day average of 79.43 and 50-day average of 75.56 while remaining above the 200-day average of 86.53, indicating a range-bound trend state with immediate support edges at 76.53 and 75.56 and resistance edges at 79.43 and 78.44. Recent earnings reactions show mixed results with the latest report on 2026-07-17 showing an actual of 0.8 against an estimate of 0.79, while previous quarters included misses such as a -15.71 per cent surprise in October 2025 and a -6.82 per cent surprise in April 2026. The company maintains an operating margin of 33.4 per cent compared to 34.1 per cent a year earlier, with sales growth of 15.9 per cent for the same quarter a year before and 13.4 per cent on a year earlier basis.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1770,
+    "completion_tokens": 285,
+    "total_tokens": 2055,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

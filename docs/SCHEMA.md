@@ -56,6 +56,9 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
 | `fundamentals` | FundamentalsFetcher | none | none |
 | `fundamentals_snapshot` | FundamentalsFetcher | none | none |
+| `reported_quarter` | QuarterFetcher | none | none |
+| `quarter_ask` | QuarterFetcher | none | none |
+| `fundamental_reading` | FundamentalReader | none | FundamentalReader |
 | `news_pulse` | NewsPulseCounter | none | NewsPulseCounter |
 | `research_section` | ResearchRunner, ProseWriter | ClaimChecker | none |
 | `theme_section` | ThemeResearchRunner | ClaimChecker | none |
@@ -510,7 +513,7 @@ Grain: one row per session a night's swing filter drew the list for.
 
 Primary key: `session_date`.
 
-**The night close writes it and is its only writer, from the swing filter's step** (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it). Once the swing filter has stored its rows for the night's session, the night records that session as listed by the filter, before any later step can stop the night, and only where the filter stored rows for it. A night run again over a session records it again, and the session is then listed by the rule of the night that drew it last. An evening holding no row was listed by any of the six reasons firing, which is every evening before the switch, so every surface reading a listing reads this table beside it and names the rule. Nothing deletes a row.
+**The night close writes it and is its only writer, from the swing filter's step** (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it). Once the swing filter has stored its rows for the night's session, the night records that session as listed by the filter, before any later step can stop the night, and only where the filter stored rows for it. A night run again over a session records it again, and the session is then listed by the rule of the night that drew it last. An evening holding no row was listed by any of the six reasons firing, which is every evening before the switch, so every surface reading a listing reads this table beside it and names the rule. Nothing deletes a row.
 
 ### forward_return
 Grain: one row per listing per horizon, and one per swing filter row carrying a plan per swing horizon.
@@ -602,6 +605,73 @@ Grain: one row per ticker per fetch.
 Primary key: `ticker`, `fetched_at`.
 
 Kept forever, never updated. Every fetch the fundamentals fetcher makes writes one, whether or not it found a filing the store did not hold, in the same transaction as the filings it wrote. The six parts are the ones a `fundamentals` row carries on the newest filing alone because they are as of the fetch rather than as of a filing, and they are built by the same code for both, so a copy and the newest row written by one fetch hold the same values. A `fundamentals` row is never updated, so without this table a later fetch finding no new filing would have nowhere to put a price that has moved. The facts assembler reads the newest copy over the newest filing's own parts, and the read surface does the same for the newest copy fetched on or before the night a page is about, so an earlier night's page draws what the store held that night (see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day).
+
+### reported_quarter
+Grain: one row per ticker per fetch per quarter.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `fetched_at` | TEXT | UTC instant of the fetch |
+| `session_date` | TEXT | the night's session the fetch was made on |
+| `period_end` | TEXT | date the quarter ends, as the provider labels it |
+| `filing_date` | TEXT | date the figures were filed, null where the provider files none |
+| `report_date` | TEXT | date the quarter was reported, from the provider's earnings history |
+| `revenue`, `operating_income`, `net_income`, `operating_cash_flow` | TEXT | decimal in code, as the provider files them |
+| `eps_actual`, `eps_estimate` | TEXT | decimal in code, earnings a share and the analysts' estimate, on this fetch's per-share basis |
+| `eps_trailing` | TEXT | decimal in code, the actual earnings a share of this quarter and the three before it summed, worked out at the fetch |
+| `sales_growth` | TEXT | decimal in code, revenue against the same quarter a year earlier, worked out at the fetch |
+| `sales_growth_before` | TEXT | decimal in code, the year-earlier quarter's own growth on the year before it |
+| `operating_margin` | TEXT | decimal in code, operating income over revenue |
+| `margin_year_earlier` | TEXT | decimal in code, the year-earlier quarter's operating margin |
+| `close_after` | TEXT | decimal in code, the close on the first session after the report, from the closes this fetch asked for |
+| `close_after_session` | TEXT | the session that close is on |
+| `basis_session` | TEXT | the newest session of the closes this fetch asked for |
+| `basis_close` | TEXT | decimal in code, that session's close, which tonight's close is brought to this fetch's basis by |
+
+Primary key: `ticker`, `fetched_at`, `period_end`.
+
+Kept forever, never updated and never deleted. One fetch writes the twelve newest quarters it returns, whether or not an earlier fetch stored some of them, so a reading reads one fetch's rows and never mixes two (see: Reported quarters are stored per fetch, so every quarter a reading reads shares one fetch's per-share basis). The provider restates earnings a share after a split and adjusts its closes as of the day it is asked, so a quarter's earnings and the close after its report are on one basis only beside the other quarters the same fetch returned. The growths, the margins, the trailing earnings and the close after each report are worked out at the fetch because they read quarters and closes older than the twelve kept: the twelfth quarter's trailing earnings need three quarters before it, and a close three years back is held by no bar the store keeps. About four fetches a member a year write about 25,000 rows a year.
+
+This table is apart from `fundamentals` and the report pass's own fetch, which are unchanged. The rows `fundamentals` holds carry no operating income and no operating cash flow and are never updated, so they could never gain the two, and writing that table nightly would read the filings archive on the night after a release, often before the quarterly report exists, and change every member's facts file.
+
+### quarter_ask
+Grain: one row per ticker per night asked.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the night's session the ask was made on |
+| `asked_at` | TEXT | UTC instant |
+| `reason` | TEXT | `fill`, `joined`, `report` or `waiting`: the start's fill, a member's first night in the index, the first night after a report, or an ask again for a quarter not yet in the answer |
+| `awaited` | TEXT | the period end of the quarter asked for, null where any quarter would do |
+| `outcome` | TEXT | `stored`, `not yet posted`, `nothing returned` or `refused` |
+| `quarters` | INTEGER | the quarter rows the ask stored |
+| `weighted` | INTEGER | the weighted calls the ask spent: 10 for the fundamentals, and 1 for the closes where the answer was stored |
+| `nights` | INTEGER | the nights the member has been asked on for this quarter, this one included |
+| `next_ask` | TEXT | where the ask stored nothing, the session the member is next asked on once its asks after the first pass the retries, and null where that is the next night |
+| `detail` | TEXT | what the provider said where the ask stored nothing |
+
+Primary key: `ticker`, `session_date`.
+
+Kept forever, never updated and never deleted. It is the record the schedule reads: a member is asked on the first night after its report and, where the answer does not yet carry the quarter, on each of the five nights after and weekly after that, until the quarter appears or the next report date passes (see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted). A night run again for its session keeps the ask it made, so the insert ignores the conflict rather than asking twice. The run page reads it for who was asked tonight and why, who is still waiting and when each is asked next, and how far the fill has come.
+
+### fundamental_reading
+Grain: one row per ticker per night.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the night's session |
+| `state` | TEXT | `improving`, `steady`, `deteriorating`, `not enough quarters` or `no fundamentals yet` |
+| `read_from` | TEXT | the period end of the newest quarter the readings were read from, null where none is stored |
+| `fetched_at` | TEXT | the fetch the quarters were read from |
+| `awaited` | TEXT | the period end of a newer quarter the calendar says has been reported and the store does not yet hold |
+| `readings` | TEXT | JSON: the four readings, each with the quarters it was read over, its figures as text and what was absent where it could not be read |
+
+Primary key: `ticker`, `session_date`.
+
+Kept forever: Past picks draws the state a trade carried on its listing night, and the order a night's list was drawn in is read from that night's rows. A night reads only the quarters fetched on the nights before it, so a night run again later never reads a quarter from its future. The reader's delete removes one night's set, the night it is writing, so a night run again replaces its own rows whole and a member no longer in the index keeps none on it (see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone).
 
 ### news_pulse
 Grain: one row per ticker per date.

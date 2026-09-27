@@ -749,7 +749,7 @@ public sealed class SinglePageApp : IComponent
         // The swing readings, beneath the night's figures: each return with its place among the
         // members' returns, the recent high and the pullback from it, the volume while it came down
         // and the range's tightness, as the swing reader stored them for the night.
-        // see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns
+        // see: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters
         if (swing is not null)
         {
             Card("swing", "Its swing readings", Cards.Computed(
@@ -968,12 +968,12 @@ public sealed class SinglePageApp : IComponent
     }
 
     // What the name page is for, what it does not do, and its words, which open the page.
-    // see: No reading of the fundamentals fires a reason, gates a tranche or draws a panel
+    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
     // see: The plan places a position and never sizes one
     static string Intro(string ticker, string company) =>
         $"<section class=\"intro\" aria-label=\"About this page\"><p class=\"intro-p\">This page finds the prices {Escaped(company)} has repeatedly stopped falling or rising at, and sets out what to do if it reaches one of them again. " +
         "The chart, the levels and the plan are recomputed every evening; the written sections further down carry their own dates. " +
-        $"It carries no forecast, no view on whether {Escaped(company)} is a good business, and no opinion on how much of your money to put in.</p>" +
+        $"It carries no forecast, what it says of the business is read from {Escaped(company)}'s reported quarters by fixed rules, and it gives no opinion on how much of your money to put in.</p>" +
         $"<ul class=\"refuse\"><li>It does not predict where the price will go.</li><li>It {RankRefusal}.</li>" +
         "<li>It does not say how much to buy: the sizing near the end only divides the amount you choose to risk.</li></ul>" +
         "<details class=\"gloss\"><summary>Words used on this page</summary>" +
@@ -1359,6 +1359,11 @@ public sealed class SinglePageApp : IComponent
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
 
+        // A night whose readings of the reported quarters are stored draws its names state first, and one
+        // before them in the filter's own order, so the card says which it drew.
+        // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
+        var byState = rows.Any(row => row.Business is not null);
+
         region.Append(Invariant($"<section class=\"tonight\" data-night=\"{night:yyyy-MM-dd}\" data-index=\"{index}\" data-fired=\"{fired}\" data-rule=\"{Escaped(rule?.Rule ?? EquityBrief.Core.Shortlist.ListRules.Reasons)}\" "));
         region.Append(Invariant($"data-selected=\"{Escaped(selectedTicker ?? "none")}\">"));
 
@@ -1390,11 +1395,14 @@ public sealed class SinglePageApp : IComponent
                 "Each reason has its own column, always in the same place, so a night that is all one thing shows as one dark stripe running down one column. The one-word heads are short for at entry zone, crossed a level, breakout on volume, trend state changed, unusual volume and earnings soon; point at a head for its full name, and at a reason for the values that made it true and its record. The distance picture fixes the close at its centre line: the green block to its left is the nearest support and the orange block to its right the nearest resistance, one tick per typical day, so a block touching the centre is a name at an edge. The last line of each column is that reason's record across every name it has fired for, and a dashed one is not yet measured. Select a row to draw its plan just below the list; report opens the name's full page.",
                 (byFilter
                     ? "Every name here passed the swing filter's five gates at a price its own chart made significant, and its gates say whether it pulled back to support or broke out; the reasons beside it are context."
+                        + (byState ? " The word beside the trend is the state the company's reported quarters give it, read from sales and operating margin alone; it orders the names and removes none." : string.Empty)
                     : "Every name here has reached a price its own chart made significant, and the reason says what kind of arrival it was.")
                     + " The distance picture counts in days of the stock's own ordinary movement, so a block one tick from the centre is a distance the price often covers in a single session."),
             title: byFilter ? "Names at a buy point tonight" : "Names that fired tonight",
             lede: byFilter
-                ? "Each passed every gate of the swing filter, its trigger arrived and nothing excluded it; in the filter's order, the trade's reward to risk first, then strength, then band strength. The reasons stand beside them as context."
+                ? byState
+                    ? "Each passed every gate of the swing filter, its trigger arrived and nothing excluded it; improving businesses first, then steady, then the names whose quarters read no state, then deteriorating, each state in the filter's order, the trade's reward to risk first, then strength, then band strength. The reasons stand beside them as context."
+                    : "Each passed every gate of the swing filter, its trigger arrived and nothing excluded it; in the filter's order, the trade's reward to risk first, then strength, then band strength. The reasons stand beside them as context."
                 : "Each one has reached a price its own chart made significant. Most reasons first, then the plan's reward to risk.",
             stamp: Cards.Night(night),
             region: "list"));
@@ -1449,7 +1457,7 @@ public sealed class SinglePageApp : IComponent
     }
 
     // The refusal to rank, held once: the name page draws it, and sections 15.9 and 15.14 state it in these words.
-    // see: A page ranks no company as an investment, and a rank it draws is a return's place among the members' returns
+    // see: A page ranks no company as an investment, and the one reading of a company that orders a list is the direction of its reported quarters
     public const string RankRefusal =
         "ranks no company as an investment, and the one rank it draws is a return's place among the members' returns, a fact about the chart";
 
@@ -1517,7 +1525,8 @@ public sealed class SinglePageApp : IComponent
         OverlapView? overlap = null,
         EdgeView? edge = null,
         NearMissView? nearMisses = null,
-        IReadOnlyList<DateOnly>? held = null)
+        IReadOnlyList<DateOnly>? held = null,
+        FundamentalsView? fundamentals = null)
     {
         var region = new StringBuilder();
 
@@ -1640,6 +1649,19 @@ public sealed class SinglePageApp : IComponent
             title: "What the night could not do",
             stamp: Cards.Night(night),
             region: "stale"));
+
+        // The reported quarters the night asked for after its close, who is still waiting, and the fill.
+        // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+        if (fundamentals is { } quarters)
+        {
+            region.Append(Cards.Computed(
+                "Fundamentals",
+                marks.Fundamentals(quarters),
+                title: "The reported quarters the night asked for",
+                lede: "A member is asked on the night after it reports, and again while its new quarter is not yet posted; every member was asked once at the start.",
+                stamp: Cards.Night(night),
+                region: "fundamentals"));
+        }
 
         region.Append(Cards.Computed(
             "Overnight queue",

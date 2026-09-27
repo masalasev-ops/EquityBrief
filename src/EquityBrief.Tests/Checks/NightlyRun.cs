@@ -58,7 +58,11 @@ public partial class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Count the ordinary nights stored under the open filter version and, once they reach sixty, propose for each gate the one setting that brings its median count inside its band, writing one proposal for the version and stating the crossed trigger on the night's run log; nothing proposed is applied until the operator's command accepts it."),
 
             // 12.2, the swing filter.
-            CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it)."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it)."),
+
+            // 12.2's correction, the fundamentals item: the readings step and the quarters step.
+            CheckReach.Key(NightlyRunSteps.Heading, ArchitectureConformance.ReadingsStep),
+            CheckReach.Key(NightlyRunSteps.Heading, ArchitectureConformance.QuartersStep),
 
             // 12.1, the swing reader.
             CheckReach.Key(NightlyRunSteps.Heading, "Compute the swing readings for every member and the night's breadth: each return over 63 and over 126 sessions with its place among the members' returns, the highest high of the last 20 sessions and the pullback from it in typical days' moves, the volume while it came down, the tightness of the range, and the share of the members closing above their own 200-day average, a member read over nothing keeping its row with the reason."),
@@ -83,7 +87,7 @@ public partial class NightlyRun
             CheckReach.Key(Scope.LimitsTable, "Waiting on another writer"),
 
             // 6.10, the overnight queue, run after the close.
-            CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for every name in the index whose research is missing or stale, the names on tonight's list first in the swing filter's order (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures), until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about)."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for every name in the index whose research is missing or stale, the names on tonight's list first in the order it is drawn in (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures), until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about)."),
 
             // 5.7. The row states a figure the night is bounded by and the
             // deadline follows it by three, which is a relationship between two
@@ -93,7 +97,7 @@ public partial class NightlyRun
             CheckReach.Key(Scope.LimitsTable, "Nightly wall clock, at index size"),
 
             // 11.4, the night's own request after the queue, and the count of one it asks for.
-            CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, the first the swing filter passed, one request marked as asked by the night unless that name has one outstanding or being written and none on a night no name passed, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list)."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, improving businesses first where the night stored its readings, one request marked as asked by the night unless that name has one outstanding or being written and none on a night no name passed, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list)."),
             CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
             CheckReach.Key(Scope.FailureTable, "Bulk price feed unavailable, run log"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with a session other than the one asked for"),
@@ -1205,11 +1209,13 @@ public partial class NightlyRun
     public async Task TheOvernightQueueRunsAfterTheArithmeticHasClosedAndTheNightsRequestAfterIt()
     {
         // Section 14's order at the end of the night, read off the document, and the night
-        // running it: the close records the arithmetic's counts, the queue runs after it, and the
-        // night's own request comes last, on the night's own output and on the run log's order.
+        // running it: the close records the arithmetic's counts, the quarters step asks for the
+        // members due after it, the queue runs after that, and the night's own request comes last,
+        // on the night's own output and on the run log's order.
         var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
 
-        Assert.StartsWith("Close the arithmetic", steps[^3], StringComparison.Ordinal);
+        Assert.StartsWith("Close the arithmetic", steps[^4], StringComparison.Ordinal);
+        Assert.StartsWith("Ask the provider for the reported quarters", steps[^3], StringComparison.Ordinal);
         Assert.StartsWith("Run the overnight queue", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Ask for a report on the first name", steps[^1], StringComparison.Ordinal);
 
@@ -1220,16 +1226,19 @@ public partial class NightlyRun
         Assert.True(code == 0, error);
 
         var close = output.IndexOf("  close:", StringComparison.Ordinal);
+        var quarters = output.IndexOf("  quarters:", StringComparison.Ordinal);
         var queue = output.IndexOf("  queue:", StringComparison.Ordinal);
 
-        Assert.True(close >= 0 && queue > close, $"The queue did not run after the close: {output}");
+        Assert.True(close >= 0 && quarters > close, $"The quarters step did not run after the close: {output}");
+        Assert.True(queue > quarters, $"The queue did not run after the quarters step: {output}");
         Assert.True(output.IndexOf("  report:", StringComparison.Ordinal) > queue, $"The night's request did not run after the queue: {output}");
 
         var stages = RunLog(store, "night-with-queue").Select(row => row.Stage).ToArray();
 
         Assert.Equal("report", stages[^1]);
         Assert.Equal(OvernightQueue.Stage, stages[^2]);
-        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^3]);
+        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^3]);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^4]);
 
         // The night's last line states the queue's local calls apart from the arithmetic's,
         // read off the queue's own row.
@@ -1365,16 +1374,18 @@ public partial class NightlyRun
         var architecture = File.ReadAllText(Repository.Architecture);
         var steps = NightlyRunSteps.In(architecture);
         var close = steps.ToList().FindIndex(step => step.StartsWith("Close the arithmetic", StringComparison.Ordinal)) + 1;
+        var quarters = steps.ToList().FindIndex(step => step.StartsWith("Ask the provider for the reported quarters", StringComparison.Ordinal)) + 1;
         var queue = steps.ToList().FindIndex(step => step.StartsWith("Run the overnight queue", StringComparison.Ordinal)) + 1;
 
         Assert.Equal(steps.Count - 1, queue);
+        Assert.Equal((close + 1, close + 2), (quarters, queue));
         Assert.StartsWith("Ask for a report on the first name", steps[^1], StringComparison.Ordinal);
 
         // Section 14's note, the section with its list removed.
         var from = architecture.IndexOf("<h2>14.", StringComparison.Ordinal);
         var section = architecture[from..architecture.IndexOf("<h2>15.", from, StringComparison.Ordinal)];
 
-        Assert.Empty(NoteFaults(section, close, queue));
+        Assert.Empty(NoteFaults(section, close, quarters, queue));
 
         // The night's own list: its steps in section 14's number, each comment naming a step
         // by its number sitting on that step.
@@ -1414,9 +1425,10 @@ public partial class NightlyRun
 
         // The readers, over constructed text written without the pattern in this source.
         Assert.Equal([$"the queue at step {17}"], StepsByNumber($"the queue at step {17}.\nno step here."));
-        Assert.Empty(NoteFaults($"<p>The arithmetic, being steps {1} to {17}, and step {18} carved out.</p>", 17, 18));
-        Assert.NotEmpty(NoteFaults($"<p>The arithmetic, being steps {1} to {17}, and step {18} carved out.</p>", 16, 18));
-        Assert.NotEmpty(NoteFaults($"<p>The arithmetic, being steps {1} to {17}.</p>", 17, 18));
+        Assert.Empty(NoteFaults($"<p>The arithmetic, being steps {1} to {17}. Step {18} is carved out of the second, and step {19} out of the first.</p>", 17, 18, 19));
+        Assert.NotEmpty(NoteFaults($"<p>The arithmetic, being steps {1} to {17}. Step {18} is carved out of the second, and step {19} out of the first.</p>", 16, 18, 19));
+        Assert.NotEmpty(NoteFaults($"<p>The arithmetic, being steps {1} to {17}, and step {19} carved out.</p>", 17, 18, 19));
+        Assert.NotEmpty(NoteFaults($"<p>The arithmetic, being steps {1} to {17}.</p>", 17, 18, 19));
 
         var list = $"Step[] steps =\n[\n new(FirstStep, () => 0),\n // Section 14's step {2}, the second.\n new(\"membership\", () => 0),\n new(\"backfill\", () => 0),\n];";
 
@@ -1430,12 +1442,12 @@ public partial class NightlyRun
         [.. Regex.Matches(text, @"(?i)[^\n]{0,40}\bsteps? \d+\b").Select(match => match.Value.Trim())];
 
     // What section 14's note says of its steps against the list: the arithmetic ends at the
-    // close and the one step carved out of it is the queue.
-    static IReadOnlyList<string> NoteFaults(string section, int close, int queue)
+    // close, and the two steps carved out of it are the quarters step and then the queue.
+    static IReadOnlyList<string> NoteFaults(string section, int close, int quarters, int queue)
     {
         var note = Regex.Replace(section, "<ol>.*?</ol>", string.Empty, RegexOptions.Singleline);
         var ranges = Regex.Matches(note, @"steps [1] to (\d+)").ToArray();
-        var single = Regex.Matches(note, @"\bstep (\d+)").ToArray();
+        var single = Regex.Matches(note, @"(?i)\bstep (\d+)").Select(one => one.Groups[1].Value).ToArray();
         var faults = new List<string>();
 
         if (ranges.Length != 1 || ranges[0].Groups[1].Value != close.ToString(System.Globalization.CultureInfo.InvariantCulture))
@@ -1443,9 +1455,11 @@ public partial class NightlyRun
             faults.Add($"the note names the arithmetic as {string.Join(", ", ranges.Select(one => one.Value))} where the close is step {close}");
         }
 
-        if (single.Length != 1 || single[0].Groups[1].Value != queue.ToString(System.Globalization.CultureInfo.InvariantCulture))
+        string[] carved = [quarters.ToString(System.Globalization.CultureInfo.InvariantCulture), queue.ToString(System.Globalization.CultureInfo.InvariantCulture)];
+
+        if (!single.SequenceEqual(carved, StringComparer.Ordinal))
         {
-            faults.Add($"the note names {string.Join(", ", single.Select(one => one.Value))} where the queue is step {queue}");
+            faults.Add($"the note names step(s) {string.Join(", ", single)} where the quarters step is step {quarters} and the queue step {queue}");
         }
 
         return faults;
@@ -2126,9 +2140,10 @@ public partial class NightlyRun
 
         // Every other read asks the join date as well. Stated as a set, and a
         // site added under either form moves one of the two. The universe reads
-        // it twice: for its rows and for the one span a ticker is drawn from.
+        // it twice: for its rows and for the one span a ticker is drawn from. The
+        // readings and the quarters step each read the night's members once.
         Assert.Equal(
-            ["CalendarFetcher", "LadderBuilder", "MoveAnnotator", "NewsPulseCounter", "NightClose", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader"],
+            ["CalendarFetcher", "FundamentalReader", "LadderBuilder", "MoveAnnotator", "NewsPulseCounter", "NightClose", "QuarterFetcher", "ReadApi", "ReadApi", "ReadApi", "ShortlistBuilder", "SwingFilter", "SwingReader"],
             member.Order(StringComparer.Ordinal));
 
         // And the span form, read by nothing a night runs.

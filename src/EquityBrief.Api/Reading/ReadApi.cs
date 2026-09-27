@@ -140,7 +140,7 @@ public sealed record MoveExtremes(string Ticker, DateOnly Ended, int Sessions, d
 // see: A listing records the band strength the old order read, and the three orders are compared over the nights that recorded it
 // Whether the evening listed the name, read by the rule that listed that evening: a reason firing
 // before the switch and the swing filter passing it from the switch; and that rule.
-// see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+// see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
 public sealed record ListingRow(
     string Ticker,
     DateOnly SessionDate,
@@ -410,7 +410,40 @@ public sealed record PickRow(
     string? Company,
     decimal? ListingClose,
     DateOnly? NowOn,
-    decimal? NowClose);
+    decimal? NowClose,
+    // The state the member's reported quarters gave it on its listing night, and none on a night that
+    // stored no readings.
+    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
+    string? State = null);
+
+// One member's readings of its reported quarters on a night, as the fundamental reader stored them.
+// see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+public sealed record FundamentalReadingRow(
+    string Ticker,
+    DateOnly SessionDate,
+    string State,
+    DateOnly? ReadFrom,
+    string? FetchedAt,
+    DateOnly? Awaited,
+    string Readings);
+
+// A quarter one fetch stored, with the dates it was filed and reported on.
+public sealed record QuarterDatesRow(DateOnly PeriodEnd, DateOnly? FilingDate, DateOnly? ReportDate);
+
+// One ask the quarters step made: the member, the night, why, the quarter awaited, what came of it, the
+// quarter rows it stored and the weighted calls it spent.
+// see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+public sealed record QuarterAskRow(
+    string Ticker,
+    DateOnly SessionDate,
+    string Reason,
+    DateOnly? Awaited,
+    string Outcome,
+    int Quarters,
+    int Weighted,
+    string? Detail,
+    int Nights = 1,
+    DateOnly? NextAsk = null);
 
 // The night's market reading as the swing reader stored it.
 public sealed record MarketReadingRow(
@@ -541,6 +574,9 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.Facts, Touch.Read),
             new StoreTouch(Store.Fundamentals, Touch.Read),
             new StoreTouch(Store.FundamentalsSnapshot, Touch.Read),
+            new StoreTouch(Store.ReportedQuarter, Touch.Read),
+            new StoreTouch(Store.QuarterAsk, Touch.Read),
+            new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.NewsPulse, Touch.Read),
             new StoreTouch(Store.ResearchSection, Touch.Read),
             new StoreTouch(Store.ThemeSection, Touch.Read),
@@ -1064,7 +1100,7 @@ public sealed class ReadApi : IComponent
     // holds no filter row to read. The plan is chosen as the near misses choose it.
     // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
-    const string Picks = @"
+    static readonly string Picks = @"
         SELECT g.ticker, g.session_date,
                CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN $clear ELSE $swing END,
                g.swing_entry,
@@ -1077,15 +1113,49 @@ public sealed class ReadApi : IComponent
                (SELECT b.session_date FROM bar b WHERE b.ticker = g.ticker AND b.session_date <= $on
                 ORDER BY b.session_date DESC LIMIT 1),
                (SELECT b.close FROM bar b WHERE b.ticker = g.ticker AND b.session_date <= $on
-                ORDER BY b.session_date DESC LIMIT 1)
+                ORDER BY b.session_date DESC LIMIT 1),
+               s.state
         FROM gate_result g
         JOIN list_rule r ON r.session_date = g.session_date AND r.rule = $filter
         LEFT JOIN filter_version v ON v.version = g.version
         LEFT JOIN forward_return f
             ON f.ticker = g.ticker AND f.session_date = g.session_date
             AND f.horizon = CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN $clear ELSE $swing END
+        LEFT JOIN fundamental_reading s ON s.ticker = g.ticker AND s.session_date = g.session_date
         WHERE g.passed = 1 AND g.session_date <= $on AND ($ticker IS NULL OR g.ticker = $ticker)
-        ORDER BY g.session_date DESC, g.rank, g.ticker;
+        ORDER BY g.session_date DESC, " + EquityBrief.Core.Quarters.FundamentalState.PlaceIn("s.state") + @", g.rank, g.ticker;
+    ";
+
+    // Every member's readings on one night.
+    const string ReadingsOn = @"
+        SELECT ticker, session_date, state, read_from, fetched_at, awaited, readings
+        FROM fundamental_reading
+        WHERE session_date = $on
+        ORDER BY ticker;
+    ";
+
+    // One member's readings on the newest night at or before the one asked for.
+    const string ReadingForName = @"
+        SELECT ticker, session_date, state, read_from, fetched_at, awaited, readings
+        FROM fundamental_reading
+        WHERE ticker = $ticker AND session_date <= $on
+        ORDER BY session_date DESC
+        LIMIT 1;
+    ";
+
+    // The quarters one fetch stored, newest first, with the dates each was filed and reported on.
+    const string QuartersOfAFetch = @"
+        SELECT period_end, filing_date, report_date
+        FROM reported_quarter
+        WHERE ticker = $ticker AND fetched_at = $fetched_at
+        ORDER BY period_end DESC;
+    ";
+
+    // Every ask the quarters step has made, oldest first, which the run page reads its region from.
+    const string EveryQuarterAsk = @"
+        SELECT ticker, session_date, reason, awaited, outcome, quarters, weighted, detail, nights, next_ask
+        FROM quarter_ask
+        ORDER BY session_date, ticker;
     ";
 
     // Every current member of the index, with what the night computed for it.
@@ -2577,7 +2647,115 @@ public sealed class ReadApi : IComponent
                 reader.IsDBNull(11) ? null : reader.GetString(11),
                 Price(12),
                 Day(13),
-                Price(14)));
+                Price(14),
+                reader.IsDBNull(15) ? null : reader.GetString(15)));
+        }
+
+        return rows;
+    }
+
+    // Every member's readings of its reported quarters on one night, and none on a night the readings did
+    // not run for.
+    // see: Four readings of a member's reported quarters are worked out every night, and its state is read from sales and operating margin alone
+    public async Task<IReadOnlyList<FundamentalReadingRow>> FundamentalReadingsAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ReadingsOn;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<FundamentalReadingRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(ReadingRow(reader));
+        }
+
+        return rows;
+    }
+
+    // One member's readings on the newest night at or before the one asked for, or its newest.
+    public async Task<FundamentalReadingRow?> FundamentalReadingAsync(string ticker, DateOnly? on = null)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ReadingForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", (on ?? DateOnly.MaxValue).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync() ? ReadingRow(reader) : null;
+    }
+
+    static FundamentalReadingRow ReadingRow(Microsoft.Data.Sqlite.SqliteDataReader reader)
+    {
+        DateOnly? Day(int at) => reader.IsDBNull(at) ? null : DateOnly.ParseExact(reader.GetString(at), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        return new FundamentalReadingRow(
+            reader.GetString(0),
+            DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            reader.GetString(2),
+            Day(3),
+            reader.IsDBNull(4) ? null : reader.GetString(4),
+            Day(5),
+            reader.GetString(6));
+    }
+
+    // The quarters one fetch stored for a member, newest first, with the dates each was filed and reported on.
+    public async Task<IReadOnlyList<QuarterDatesRow>> QuartersOfAFetchAsync(string ticker, string fetchedAt)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = QuartersOfAFetch;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$fetched_at", fetchedAt);
+
+        var rows = new List<QuarterDatesRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            DateOnly? Day(int at) => reader.IsDBNull(at) ? null : DateOnly.ParseExact(reader.GetString(at), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            rows.Add(new QuarterDatesRow(Day(0)!.Value, Day(1), Day(2)));
+        }
+
+        return rows;
+    }
+
+    // Every ask the quarters step has made, oldest first.
+    // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+    public async Task<IReadOnlyList<QuarterAskRow>> QuarterAsksAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = EveryQuarterAsk;
+
+        var rows = new List<QuarterAskRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new QuarterAskRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                reader.IsDBNull(3) ? null : DateOnly.ParseExact(reader.GetString(3), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(4),
+                reader.GetInt32(5),
+                reader.GetInt32(6),
+                reader.IsDBNull(7) ? null : reader.GetString(7),
+                reader.GetInt32(8),
+                reader.IsDBNull(9) ? null : DateOnly.ParseExact(reader.GetString(9), "yyyy-MM-dd", CultureInfo.InvariantCulture)));
         }
 
         return rows;

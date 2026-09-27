@@ -1,5 +1,6 @@
 using System.Globalization;
 using EquityBrief.Core.Providers;
+using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
@@ -94,12 +95,15 @@ public static class RequestDrain
     // comes from.
     public const string FromNight = "night";
 
-    // Every name the swing filter passed on the night, in its order.
-    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
-    const string PassedOnTheNight = @"
-        SELECT ticker FROM gate_result
-        WHERE session_date = $night AND passed = 1
-        ORDER BY rank, ticker;
+    // Every name the swing filter passed on the night, in the order the list is drawn in: improving
+    // businesses first where the night stored its readings, and the filter's own order within each
+    // state and on a night that stored none.
+    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
+    static readonly string PassedOnTheNight = @"
+        SELECT g.ticker FROM gate_result g
+        LEFT JOIN fundamental_reading f ON f.ticker = g.ticker AND f.session_date = g.session_date
+        WHERE g.session_date = $night AND g.passed = 1
+        ORDER BY " + FundamentalState.PlaceIn("f.state") + @", g.rank, g.ticker;
     ";
 
     // A request for the name nobody has settled, being one outstanding or being written.

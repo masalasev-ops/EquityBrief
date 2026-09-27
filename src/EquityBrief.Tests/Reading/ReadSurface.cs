@@ -49,7 +49,8 @@ public partial class ReadSurface
     // the surface and reads it back, and never by a declaration.
     internal static CheckReach Reach => new(
         "read-surface",
-        ["fixtures/membership-2026-09-05"],
+        // The architecture too, whose section 4 pattern table this check holds to the renderer's patterns.
+        ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
             // 12.3, the Calibration region and section 17's two bands.
             CheckReach.Key("15.10 Run", "The shape clock, the ordinary nights under the open filter version against the sixty the calibration waits on"),
@@ -84,7 +85,7 @@ public partial class ReadSurface
             // overlap, and the two empty lists section 18 states.
             CheckReach.Key("15.7 Tonight", "Night header, names the swing filter listed"),
             CheckReach.Key("15.7 Tonight", "The list, one row per name on the list"),
-            CheckReach.Key("15.7 Tonight", "The list, ordered by the swing filter's reward to risk then strength then band strength"),
+            CheckReach.Key("15.7 Tonight", "The list, ordered by the state its reported quarters give it and within a state by the swing filter's reward to risk then strength then band strength"),
             CheckReach.Key("15.7 Tonight", "The list, a line naming the rule that listed the evening"),
             CheckReach.Key("15.7 Tonight", "The list, the gates with the values that decided them"),
             CheckReach.Key("15.7 Tonight", "An evening before the switch, drawn as it was listed"),
@@ -253,6 +254,15 @@ public partial class ReadSurface
             // The 12.2 correction's Past picks screen, the name page's region, the eighth mark and section
             // 18's two rows for the screen.
             .. PastPicksClaims,
+
+            // The fundamentals item's screens: the list's state, its word and its order, what the numbers say,
+            // the run page's Fundamentals region, Past picks' state and order, and the three failure rows a
+            // reader sees on a page.
+            .. FundamentalsScreenClaims,
+            "What the numbers say, pattern by pattern",
+            CheckReach.Key(Scope.FailureTable, "A member the provider returns no quarter for"),
+            CheckReach.Key(Scope.FailureTable, "A member's new quarter is not yet posted when it is asked"),
+            CheckReach.Key(Scope.FailureTable, "A night that stored no readings of the reported quarters"),
             CheckReach.Key("15.7 Tonight", "The report's state"),
             CheckReach.Key("15.9 Name", "Each move beside its group"),
             CheckReach.Key("15.9 Name", "Peers, beneath the table of the biggest moves"),

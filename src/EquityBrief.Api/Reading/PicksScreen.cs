@@ -18,7 +18,10 @@ namespace EquityBrief.Api.Reading;
 // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
 public static class PicksScreen
 {
-    // Every trade as of a night, in the order the rows came, newest first.
+    // Every trade as of a night, in the order the rows came: newest night first, and within a night the
+    // order that night's list was drawn in, improving businesses first where it stored its readings and the
+    // filter's own order where it stored none.
+    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     public static IReadOnlyList<PickCell> Cells(IReadOnlyList<PickRow> rows, DateOnly asOf) =>
         [.. rows.Select(row => Cell(row, asOf))];
 
@@ -120,6 +123,7 @@ public static class PicksScreen
             finished ? row.ReturnPct : null,
             status == PickStatus.Open ? row.NowOn : null,
             status == PickStatus.Open ? row.NowClose : null,
-            row.BreakEven);
+            row.BreakEven,
+            row.State);
     }
 }

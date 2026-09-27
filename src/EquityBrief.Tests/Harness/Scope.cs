@@ -635,7 +635,7 @@ internal static class Scope
             Verdict.Pass,
             "each gate reading an absent value fails with the reason it is absent and none passes on an absence, over constructed members and the fixture's member the night read nothing for",
             ByExpectations),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it).")] = new Scoped(
             Verdict.Pass,
             "the night runs the step after the listings and before the facts, writes a row for every member, and records its session as listed by the swing filter",
             ByNight),
@@ -827,9 +827,9 @@ internal static class Scope
             Verdict.Pass,
             "on a constructed night of forty passing the list draws the twenty first in the filter's order and no name that did not pass, read off the page against the store's gate rows in both directions, and a member the filter did not pass is drawn on no row whatever it fired",
             ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "The list, ordered by the swing filter's reward to risk then strength then band strength")] = new Scoped(
+        [CheckReach.Key("15.7 Tonight", "The list, ordered by the state its reported quarters give it and within a state by the swing filter's reward to risk then strength then band strength")] = new Scoped(
             Verdict.Pass,
-            "the rows' order is read off the page against an order worked by hand over constructed rows tied on the reward to risk and on strength, so each key of the order is the thing read",
+            "the rows' order is read off the page against an order worked by hand over constructed rows tied on the reward to risk and on strength, so each key of the order is the thing read, and over a constructed night holding one name in each state drawn improving, steady, the two reading no state, then deteriorating, whatever the filter's own rank",
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "The list, a line naming the rule that listed the evening")] = new Scoped(
             Verdict.Pass,
@@ -1966,14 +1966,14 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included, which is where the queue writing no research is a claim: the sections a pass writes are inserted by the prose writer and moved by the checker, each under its own row",
             ByAccess),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for every name in the index whose research is missing or stale, the names on tonight's list first in the swing filter's order (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures), until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for every name in the index whose research is missing or stale, the names on tonight's list first in the order it is drawn in (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures), until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about).")] = new Scoped(
             Verdict.Pass,
-            "the night runs the queue after the close has recorded the arithmetic's counts and before its own request, on its own output and on the run log's own order, and states the queue's local model calls apart from the arithmetic's none",
+            "the night runs the queue after the close has recorded the arithmetic's counts and before its own request, on its own output and on the run log's own order, and states the queue's local model calls apart from the arithmetic's none; over a copy of the fixture's night whose readings are stored the queue takes the names the filter passed improving first, the ones reading no state next in the filter's order and deteriorating last, whatever their ranks",
             ByNight),
         // 11.4, the night's own request, after the queue.
-        [CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, the first the swing filter passed, one request marked as asked by the night unless that name has one outstanding or being written and none on a night no name passed, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, improving businesses first where the night stored its readings, one request marked as asked by the night unless that name has one outstanding or being written and none on a night no name passed, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list).")] = new Scoped(
             Verdict.Pass,
-            "over the fixture's night, on which no member passes the swing filter, the night asks for no report, starts no drain, runs last with no model call and no request, and its row says why; over a constructed night it asks for the first name the filter passed in its order and no other, worked out by the test's own arithmetic off the gate rows rather than the stored rank, marked as asked by the night; a name with a request waiting gets none and the row says so, and a night run again for an earlier session asks for none",
+            "over the fixture's night, on which no member passes the swing filter, the night asks for no report, starts no drain, runs last with no model call and no request, and its row says why; over a constructed night it asks for the first name the filter passed in its order and no other, worked out by the test's own arithmetic off the gate rows rather than the stored rank, marked as asked by the night; where that night stored its readings it asks for the improving business the filter ranked below a deteriorating one, and on the same night holding no reading for the filter's first; a name with a request waiting gets none and the row says so, and a night run again for an earlier session asks for none",
             ByNight),
         [CheckReach.Key(LimitsTable, "Reports the night asks for")] = new Scoped(
             Verdict.Pass,
@@ -2643,6 +2643,165 @@ internal static class Scope
             Verdict.Pass,
             "the night runs it after the backfill, in one request on a night that follows one that ran, storing the day for the names that have not left and for no other, an announced joiner and an announced leaver included and a departed name not, and a night after one that did not run fetches the missed session first, one request more, and stores both",
             ByNight),
+
+        // The fundamentals item, a 12.2 correction: the fetch after the close, the readings, the state, the
+        // order and where each is drawn.
+        [CheckReach.Key(CatalogueTable, "Fundamental reader")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, bars, calendar and reported quarters it reads and the readings it inserts and deletes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Fundamental reader")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(CatalogueTable, "Quarter fetcher")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership and calendar it reads, the reported quarters and asks it reads and inserts and the feeds it reaches, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Quarter fetcher")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Reported quarters")] = new Scoped(
+            Verdict.Pass,
+            "one row per member per fetch per quarter over the twelve newest the answer carries, with the figures worked out at the fetch, read back off the store the fixture's replay wrote against NFLX's growths, margins and closes worked by hand from its captures",
+            ByExpectations),
+        [CheckReach.Key(StoresTable, "Quarter asks")] = new Scoped(
+            Verdict.Pass,
+            "one row per member asked, carrying why, what came of it, the quarters it stored and the weighted calls it spent, read back off the store the fixture's replay wrote, each of the four names asked once for the fill and stored",
+            ByExpectations),
+        [CheckReach.Key(StoresTable, "Fundamental readings")] = new Scoped(
+            Verdict.Pass,
+            "one row per member per night, every member of the fixture's night reading no fundamentals yet since no quarter was fetched before it, read back off the store the fixture's replay wrote, and each name's readings over its stored quarters worked by hand from its captures",
+            ByExpectations),
+        [CheckReach.Key(NightlyRunSteps.Heading, Checks.ArchitectureConformance.ReadingsStep)] = new Scoped(
+            Verdict.Pass,
+            "the night runs the step after the swing readings and before the listings, writing a row for every member, and the fixture's night reads every member as no fundamentals yet, holding no quarter fetched before it",
+            ByNight),
+        [CheckReach.Key(NightlyRunSteps.Heading, Checks.ArchitectureConformance.QuartersStep)] = new Scoped(
+            Verdict.Pass,
+            "the night runs the step after the close and before the overnight queue, the fixture's night asking for each of its four members once and storing their quarters, and a night run again for an earlier session asking for none and saying so",
+            ByNight),
+        [CheckReach.Key("15.7 Tonight", "The list, the state-first order from the first night whose readings are stored and a night before it in the filter's own order")] = new Scoped(
+            Verdict.Pass,
+            "over one store holding a night before the first readings and a night after, the earlier night's page draws the filter's own order and the later night's the state-first order over the same gate rows",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, the state its reported quarters give it beside the trend")] = new Scoped(
+            Verdict.Pass,
+            "each row's state word is drawn in its trend cell as the night stored it, and a night that stored no readings draws none",
+            ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, what the numbers say while the state is under the pointer or holds focus")] = new Scoped(
+            Verdict.Pass,
+            "the word can hold focus and carries the sentences its readings give, read back word for word, and the stylesheet shows them on hover and on focus and hides them otherwise",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "What the numbers say, a heading carrying the state and the quarter it was read from")] = new Scoped(
+            Verdict.Pass,
+            "the heading is section 4's heading pattern with the night's state, and the quarter the readings were read from stands beneath it, read back off the name's page over a constructed store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "What the numbers say, one sentence per reading written from section 4's patterns")] = new Scoped(
+            Verdict.Pass,
+            "the sentences drawn are read back word for word against sentences worked by hand from constructed readings, and each matches one of section 4's patterns",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "What the numbers say, a sentence saying so where a reading is absent or read over too few quarters")] = new Scoped(
+            Verdict.Pass,
+            "readings over too few quarters, a year lacking a figure and a member holding no quarter each draw the sentence saying so, read back word for word",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "What the numbers say, the quarters the readings read with the dates each was filed and reported on")] = new Scoped(
+            Verdict.Pass,
+            "the quarters the readings read are drawn with their filing and report dates as the fetch stored them, and only those",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "What the numbers say, the full numbers table folded beneath them")] = new Scoped(
+            Verdict.Pass,
+            "the numbers table stands inside the folded part beneath the sentences, and a night that stored no readings draws the numbers with no summary",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Fundamentals, each member the night asked for its reported quarters after the close with why it was asked and the quarter awaited, what came of it with the quarters stored and the weighted calls spent")] = new Scoped(
+            Verdict.Pass,
+            "each ask of the night is drawn with why in words, the quarter awaited, what came of it, its quarters and its weighted calls, read back against a constructed store's asks, and the line totals the weighted calls",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Fundamentals, every member still waiting for a quarter with the quarter awaited, the nights it was asked on and the next night it is asked")] = new Scoped(
+            Verdict.Pass,
+            "every member whose newest ask stored nothing is drawn with the quarter awaited, the nights asked and the next ask, and one whose newest ask stored is not",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Fundamentals, the fill, how many members hold quarters and how many are marked absent or still to be asked for the first time")] = new Scoped(
+            Verdict.Pass,
+            "the fill's three counts are read back against counts worked by hand over constructed asks and members",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Fundamentals, a line saying the candidate that skips a deteriorating business may be registered once every member holds quarters or is marked absent")] = new Scoped(
+            Verdict.Pass,
+            "the line names how many are left while any is, and says the candidate may be registered once none is",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Every trade, within a night the order that night's list was drawn in, improving businesses first where it stored readings and the filter's own order where it stored none")] = new Scoped(
+            Verdict.Pass,
+            "over a night whose readings put the filter's first name deteriorating and its second improving, Past picks draws the second first within that night, and a night that stored none draws the filter's own order",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Every trade, the state its reported quarters gave it on the night it was listed, or not read that night")] = new Scoped(
+            Verdict.Pass,
+            "each trade draws the state its listing night stored, and one listed on a night that stored none reads not read that night",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Quarters step")] = new Scoped(
+            Verdict.Pass,
+            "a member is asked on the first night after its report and on each of the five after while its quarter is not posted, then not until seven days after its last ask, a step at its limit starts no ask and an ask that would pass the allowance is not made, over constructed nights, and the constants the row states are the ones the step uses",
+            ByCost),
+        [CheckReach.Key(LimitsTable, "Quarters fill")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed index larger than a night's fill, the first night asks a reporting member and then the fill's count in ticker order and the next night the rest, and a member the provider returns nothing for is marked absent and asked again on the schedule",
+            ByCost),
+        [CheckReach.Key(LimitsTable, "Weighted calls a quarters ask")] = new Scoped(
+            Verdict.Pass,
+            "an ask storing a quarter spends the fundamentals' weight and the closes', one storing nothing the fundamentals' alone, each on its row, against the weights RUNBOOK states",
+            ByCost),
+        [CheckReach.Key(LimitsTable, "Quarter prices")] = new Scoped(
+            Verdict.Pass,
+            "each stored quarter's close after its report is the first captured close within a week after the report and the basis the newest captured close, worked by hand for NFLX from its captures",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Trajectory quarters")] = new Scoped(
+            Verdict.Pass,
+            "the trajectory reads the two newest quarters and a fetch one short or lacking a figure reads too few, over constructed quarters, and NFLX's two growths and margins are worked by hand from its capture",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Business state")] = new Scoped(
+            Verdict.Pass,
+            "each of the five states is worked by hand over constructed quarters, sales at nought or a margin equal to a year earlier reading steady, and the fixture's four names' states are worked by hand from their captures",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Estimate record")] = new Scoped(
+            Verdict.Pass,
+            "the eight newest quarters carrying both figures are counted, four being the fewest stated and three reading too few, and a quarter with no actual is never met, over constructed quarters, with NFLX's record worked by hand from its capture",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Met tolerance")] = new Scoped(
+            Verdict.Pass,
+            "a gap of exactly a cent meets and a cent more beats, and a gap of exactly the share of an estimate above a dollar meets and a step more misses, over constructed quarters",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Earnings quality")] = new Scoped(
+            Verdict.Pass,
+            "ratios of exactly each cut point read in line and a step outside each the band beyond, and a total at or below nought reads a loss, over constructed quarters, with NFLX's ratio worked by hand",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Valuation position")] = new Scoped(
+            Verdict.Pass,
+            "twelve constructed quarters place tonight's multiple in each third and on each edge, seven multiples read too few and earnings at or below nought read none, and the fixture's captures, holding one year of closes, read too few",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A member the provider returns no quarter for")] = new Scoped(
+            Verdict.Pass,
+            "a member holding no quarter reads no fundamentals yet in its trend cell and on its page, is drawn with the members reading no state rather than left off, and is named waiting on the run page with its next ask, over a constructed store",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "A member's new quarter is not yet posted when it is asked")] = new Scoped(
+            Verdict.Pass,
+            "what the numbers say names the quarter awaited and the quarter read from, and the run page lists the member waiting with the quarter awaited, the nights asked and the next ask, over a constructed store",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "The provider refuses a quarters ask")] = new Scoped(
+            Verdict.Pass,
+            "a member whose ask the feed refuses is recorded refused with the reason and asked again on the schedule, and the next member is still asked, over a constructed night",
+            ByCost),
+        [CheckReach.Key(FailureTable, "The quarters step reaches its limit or the day's allowance")] = new Scoped(
+            Verdict.Pass,
+            "a step past its limit starts no ask and one at the allowance makes none, each counting what it left on its row, and the members left are asked on the next night, over constructed nights",
+            ByCost),
+        [CheckReach.Key(FailureTable, "A night that stored no readings of the reported quarters")] = new Scoped(
+            Verdict.Pass,
+            "on a night that stored no readings tonight's rows carry no state word and are drawn in the filter's own order, a Past picks trade listed that night reads not read that night, and the name page draws its numbers with no summary",
+            ByReadSurface),
+        [CheckReach.Key(FixtureTable, "reported quarters")] = new Scoped(
+            Verdict.Pass,
+            "the fixture's replay stores each of its four names' quarters from one ask each, read against figures worked by hand from NFLX's capture, every member reads no fundamentals yet on the fixture's night, and each name's readings over its stored quarters match readings worked by hand",
+            ByExpectations),
     };
 
     // Where the plan names a subject, the due point is read from the plan and
@@ -2716,6 +2875,10 @@ internal static class Scope
         // without it, which is a claim about a surface.
         ["Base rate"] = "5.6",
 
+        // 6.1's text names the reported quarters the numbers section shows, which are the provider's
+        // quarters on the name page and not this store. The store arrives with the quarter fetcher that
+        // writes it, a 12.2 correction.
+        ["Reported quarters"] = "12.2",
     };
 
     // Components the plan does not name. The catalogue and the matrix share it.
@@ -2761,6 +2924,10 @@ internal static class Scope
         // 12.1's two, one row per member per night and one per night.
         ["Swing readings"] = "12.1",
         ["Market readings"] = "12.1",
+
+        // The fundamentals item's asks and readings, a 12.2 correction, which the plan names by what they do.
+        ["Quarter asks"] = "12.2",
+        ["Fundamental readings"] = "12.2",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -2985,6 +3152,21 @@ internal static class Scope
         [CheckReach.Key("15.17 Past picks", "Every trade, the sessions held to its resolution or to the newest night")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "Every trade, the result as a signed multiple of the risk or open")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "Every trade, a key saying how to read the trade line and that only the live list's trades appear with the alternatives hidden until one is promoted")] = "12.2",
+        // The fundamentals item's screens, a 12.2 correction, each part owed where it is drawn.
+        [CheckReach.Key("15.7 Tonight", "The list, the state-first order from the first night whose readings are stored and a night before it in the filter's own order")] = "12.2",
+        [CheckReach.Key("15.7 Tonight", "The list, the state its reported quarters give it beside the trend")] = "12.2",
+        [CheckReach.Key("15.7 Tonight", "The list, what the numbers say while the state is under the pointer or holds focus")] = "12.2",
+        [CheckReach.Key("15.9 Name", "What the numbers say, a heading carrying the state and the quarter it was read from")] = "12.2",
+        [CheckReach.Key("15.9 Name", "What the numbers say, one sentence per reading written from section 4's patterns")] = "12.2",
+        [CheckReach.Key("15.9 Name", "What the numbers say, a sentence saying so where a reading is absent or read over too few quarters")] = "12.2",
+        [CheckReach.Key("15.9 Name", "What the numbers say, the quarters the readings read with the dates each was filed and reported on")] = "12.2",
+        [CheckReach.Key("15.9 Name", "What the numbers say, the full numbers table folded beneath them")] = "12.2",
+        [CheckReach.Key("15.10 Run", "Fundamentals, each member the night asked for its reported quarters after the close with why it was asked and the quarter awaited, what came of it with the quarters stored and the weighted calls spent")] = "12.2",
+        [CheckReach.Key("15.10 Run", "Fundamentals, every member still waiting for a quarter with the quarter awaited, the nights it was asked on and the next night it is asked")] = "12.2",
+        [CheckReach.Key("15.10 Run", "Fundamentals, the fill, how many members hold quarters and how many are marked absent or still to be asked for the first time")] = "12.2",
+        [CheckReach.Key("15.10 Run", "Fundamentals, a line saying the candidate that skips a deteriorating business may be registered once every member holds quarters or is marked absent")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Every trade, within a night the order that night's list was drawn in, improving businesses first where it stored readings and the filter's own order where it stored none")] = "12.2",
+        [CheckReach.Key("15.17 Past picks", "Every trade, the state its reported quarters gave it on the night it was listed, or not read that night")] = "12.2",
         [CheckReach.Key("15.15 Queue", "Which lane would write one")] = "9.4",
         [CheckReach.Key("15.15 Queue", "When each will be written")] = "11.2",
         [CheckReach.Key("15.7 Tonight", "The report's state")] = "11.3",
@@ -3027,7 +3209,7 @@ internal static class Scope
         // 12.6's switch, each part owed where it is drawn.
         [CheckReach.Key("15.7 Tonight", "Night header, names the swing filter listed")] = "12.6",
         [CheckReach.Key("15.7 Tonight", "The list, one row per name on the list")] = "12.6",
-        [CheckReach.Key("15.7 Tonight", "The list, ordered by the swing filter's reward to risk then strength then band strength")] = "12.6",
+        [CheckReach.Key("15.7 Tonight", "The list, ordered by the state its reported quarters give it and within a state by the swing filter's reward to risk then strength then band strength")] = "12.6",
         [CheckReach.Key("15.7 Tonight", "The list, a line naming the rule that listed the evening")] = "12.6",
         [CheckReach.Key("15.7 Tonight", "The list, the gates with the values that decided them")] = "12.6",
         [CheckReach.Key("15.7 Tonight", "An evening before the switch, drawn as it was listed")] = "12.6",
@@ -3187,7 +3369,7 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Night header")] =
             ["names in the index", "names the swing filter listed", "names that fired", "the night's breadth with the share above the 50-day average beside it as context", "reports carrying fresh prose against reused", "spend", "run duration", "the harness verdict"],
         [CheckReach.Key("15.7 Tonight", "The list")] =
-            ["one row per name on the list", "ordered by the swing filter's reward to risk then strength then band strength", "at most twenty drawn", "each numbered by its place in that order", "a line above them stating how many are drawn of how many are listed", "a line naming the rule that listed the evening", "name", "close", "day change", "trend state in a word", "the distance row mark", "the reward to risk or the plan's reason for none", "the gates with the values that decided them", "the reasons as context", "beside the name a line saying so where its prices may not reflect a dividend or split"],
+            ["one row per name on the list", "ordered by the state its reported quarters give it and within a state by the swing filter's reward to risk then strength then band strength", "the state-first order from the first night whose readings are stored and a night before it in the filter's own order", "at most twenty drawn", "each numbered by its place in that order", "a line above them stating how many are drawn of how many are listed", "a line naming the rule that listed the evening", "name", "close", "day change", "trend state in a word", "the state its reported quarters give it beside the trend", "what the numbers say while the state is under the pointer or holds focus", "the distance row mark", "the reward to risk or the plan's reason for none", "the gates with the values that decided them", "the reasons as context", "beside the name a line saying so where its prices may not reflect a dividend or split"],
         // 5.8's watch list page, each row's parts as the row states them.
         [CheckReach.Key("15.16 Watch list", "Add a name")] =
             ["a box offering the names of the index", "which adds one while the list holds fewer than twenty and otherwise gives way to a line saying the limit is reached", "the same press beside a name on its own page", "a refusal with the line saying why for a name not of the index tonight or already watched or a twenty-first"],
@@ -3212,15 +3394,33 @@ internal static class Scope
         [CheckReach.Key("15.17 Past picks", "Every trade")] =
         [
             "newest first",
+            "within a night the order that night's list was drawn in, improving businesses first where it stored readings and the filter's own order where it stored none",
             "a line above the rows stating how many are shown of how many were listed",
             "the night listed",
             "the stock with a link to its page for that night",
+            "the state its reported quarters gave it on the night it was listed, or not read that night",
             "the buy and the stop and the target",
             "the trade line",
             "the status in words",
             "the sessions held to its resolution or to the newest night",
             "the result as a signed multiple of the risk or open",
             "a key saying how to read the trade line and that only the live list's trades appear with the alternatives hidden until one is promoted",
+        ],
+        // The fundamentals item's two regions, each read as the parts its row states.
+        [CheckReach.Key("15.9 Name", "What the numbers say")] =
+        [
+            "a heading carrying the state and the quarter it was read from",
+            "one sentence per reading written from section 4's patterns",
+            "a sentence saying so where a reading is absent or read over too few quarters",
+            "the quarters the readings read with the dates each was filed and reported on",
+            "the full numbers table folded beneath them",
+        ],
+        [CheckReach.Key("15.10 Run", "Fundamentals")] =
+        [
+            "each member the night asked for its reported quarters after the close with why it was asked and the quarter awaited, what came of it with the quarters stored and the weighted calls spent",
+            "every member still waiting for a quarter with the quarter awaited, the nights it was asked on and the next night it is asked",
+            "the fill, how many members hold quarters and how many are marked absent or still to be asked for the first time",
+            "a line saying the candidate that skips a deteriorating business may be registered once every member holds quarters or is marked absent",
         ],
         // 12.6. An evening before the switch, drawn as it was listed.
         [CheckReach.Key("15.7 Tonight", "An evening before the switch")] =
@@ -3576,6 +3776,7 @@ internal static class Scope
         ["peers"] = "11.6",
         ["swing readings"] = "12.1",
         ["gate results"] = "12.2",
+        ["reported quarters"] = "12.2",
         ["reactions"] = "11.7",
         ["listings"] = "5.4",
         ["facts"] = "5.3",
@@ -3627,6 +3828,12 @@ internal static class Scope
         ["No name passed the swing filter on a night"] = "12.6",
         ["No trade listed yet"] = "12.2",
         ["A trade whose outcome row is missing"] = "12.2",
+        // The fundamentals item's five, a 12.2 correction.
+        ["A member the provider returns no quarter for"] = "12.2",
+        ["A member's new quarter is not yet posted when it is asked"] = "12.2",
+        ["The provider refuses a quarters ask"] = "12.2",
+        ["The quarters step reaches its limit or the day's allowance"] = "12.2",
+        ["A night that stored no readings of the reported quarters"] = "12.2",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -3681,6 +3888,17 @@ internal static class Scope
         ["Shape acceptance bound"] = "12.4",
         ["Swing trade plan"] = "12.2",
         ["Distinct trials"] = "12.5",
+        // The fundamentals item's ten, a 12.2 correction.
+        ["Quarters step"] = "12.2",
+        ["Quarters fill"] = "12.2",
+        ["Quarter prices"] = "12.2",
+        ["Trajectory quarters"] = "12.2",
+        ["Business state"] = "12.2",
+        ["Estimate record"] = "12.2",
+        ["Met tolerance"] = "12.2",
+        ["Earnings quality"] = "12.2",
+        ["Valuation position"] = "12.2",
+        ["Weighted calls a quarters ask"] = "12.2",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)
@@ -3712,6 +3930,10 @@ internal static class Scope
         ["Classify the trend state and build the ladder"] = "4.1",
         ["Annotate the largest moves"] = "5.2",
         ["Compute the swing readings"] = "12.1",
+        // The 12.2 correction that reads the reported quarters every night and asks for them after the
+        // close, on the operator's ruling of 2026-09-27.
+        ["Read the reported quarters of every member"] = "12.2",
+        ["Ask the provider for the reported quarters"] = "12.2",
         ["Evaluate every member through the swing filter"] = "12.2",
         ["Count the ordinary nights stored under the open filter version"] = "12.4",
         ["Evaluate the list reasons"] = "5.4",

@@ -668,6 +668,7 @@ public static class SchemaMigrations
         new Migration(45, "create fundamentals_snapshot", CreateFundamentalsSnapshot),
         new Migration(46, "create pulled_bar and pulled_earnings", CreatePulledHistory),
         new Migration(47, "add gate_result's plan clear of the noise", AddClearPlan),
+        new Migration(48, "create reported_quarter, quarter_ask and fundamental_reading", CreateReportedQuarters),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -1029,7 +1030,7 @@ public static class SchemaMigrations
 
     // The rule each evening's list was drawn by, written by the night that drew it, so an evening before the
     // switch reads as listed by the reasons and one from it by the swing filter, whatever code reads it later.
-    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     const string CreateListRule = @"
         CREATE TABLE list_rule (
             session_date TEXT NOT NULL PRIMARY KEY,
@@ -1105,6 +1106,70 @@ public static class SchemaMigrations
         ALTER TABLE gate_result ADD COLUMN clear_target TEXT;
         ALTER TABLE gate_result ADD COLUMN clear_reward_to_risk REAL;
         ALTER TABLE gate_result ADD COLUMN clear_stop_moves REAL;
+    ";
+
+    // A member's reported quarters, one row per fetch per quarter, the asks that fetched them, and the
+    // readings every night works out from them.
+    //
+    // A quarter is keyed on its fetch and not on itself, because the provider restates per-share
+    // figures and adjusts its closes as of the day it is asked, so the quarters a reading reads are one
+    // fetch's and never two. The figures a fetch works out from the whole answer are kept beside the
+    // ones it copies, since they read quarters and closes older than the twelve a fetch keeps. Money
+    // and the ratios struck from it are text, which is the storage form money takes. Every table is
+    // kept for good: Past picks and a candidate read a night's readings by the night.
+    // see: Reported quarters are stored per fetch, so every quarter a reading reads shares one fetch's per-share basis
+    // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+    const string CreateReportedQuarters = @"
+        CREATE TABLE reported_quarter (
+            ticker               TEXT NOT NULL,
+            fetched_at           TEXT NOT NULL,
+            session_date         TEXT NOT NULL,
+            period_end           TEXT NOT NULL,
+            filing_date          TEXT,
+            report_date          TEXT,
+            revenue              TEXT,
+            operating_income     TEXT,
+            net_income           TEXT,
+            operating_cash_flow  TEXT,
+            eps_actual           TEXT,
+            eps_estimate         TEXT,
+            eps_trailing         TEXT,
+            sales_growth         TEXT,
+            sales_growth_before  TEXT,
+            operating_margin     TEXT,
+            margin_year_earlier  TEXT,
+            close_after          TEXT,
+            close_after_session  TEXT,
+            basis_session        TEXT,
+            basis_close          TEXT,
+            PRIMARY KEY (ticker, fetched_at, period_end)
+        ) STRICT;
+
+        CREATE TABLE quarter_ask (
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            asked_at      TEXT NOT NULL,
+            reason        TEXT NOT NULL CHECK (reason IN ('fill', 'joined', 'report', 'waiting')),
+            awaited       TEXT,
+            outcome       TEXT NOT NULL CHECK (outcome IN ('stored', 'not yet posted', 'nothing returned', 'refused')),
+            quarters      INTEGER NOT NULL,
+            weighted      INTEGER NOT NULL,
+            nights        INTEGER NOT NULL,
+            next_ask      TEXT,
+            detail        TEXT,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+
+        CREATE TABLE fundamental_reading (
+            ticker        TEXT NOT NULL,
+            session_date  TEXT NOT NULL,
+            state         TEXT NOT NULL CHECK (state IN ('improving', 'steady', 'deteriorating', 'not enough quarters', 'no fundamentals yet')),
+            read_from     TEXT,
+            fetched_at    TEXT,
+            awaited       TEXT,
+            readings      TEXT NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
     ";
 
     public static int LatestVersion => All.Max(migration => migration.Version);

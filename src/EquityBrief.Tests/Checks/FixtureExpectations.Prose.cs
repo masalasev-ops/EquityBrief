@@ -639,6 +639,32 @@ public partial class FixtureExpectations
             }
         }
 
+        // And the session after the fixture's night where the feed stops listing a member, the
+        // nightly run's own test, so the Technology members left beside it read a group of one
+        // while holding the quarters the fixture's night stored for them.
+        using (var unlisted = new TemporaryStore())
+        {
+            var (first, _, firstError) = await NightlyRun.NightAsync(unlisted, runId: "token-night-listed");
+
+            Assert.True(first == 0, firstError);
+
+            var unlistedQueued = new RecordedLocalModelFeed(Folder());
+            var feeds = NightFeeds.FromFixture(Folder());
+            var (code, _, error) = await NightlyRun.NightAsync(
+                unlisted,
+                feeds with
+                {
+                    Membership = new RebalancedMembershipFeed(feeds.Membership, members[0], null, null, drop: true),
+                    Bulk = new NextSessionBulkFeed(RecordedBulkPriceFeed.FromFolder(Folder()), new DateOnly(2026, 9, 8)),
+                },
+                "token-night-unlisted",
+                FixedClock.At(new DateTimeOffset(2026, 9, 9, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates),
+                NightQueue.FromFixture(Folder()) with { LocalModel = unlistedQueued });
+
+            Assert.True(code == 0, error);
+            asked.AddRange(unlistedQueued.Asked);
+        }
+
         var (store, document) = await WithRelease();
 
         using (store)
@@ -663,15 +689,18 @@ public partial class FixtureExpectations
         // checker refused the first, the two cases and the risks each asked once in the parts the
         // name page draws, the first answer running to its budget and the second accepted; two
         // from the queue over the fixture's night, AAPL's key and
-        // KEYS's, MSFT's and NFLX's being the replay's requests asked again; nine from the two
-        // later nights, every member's key on each and NFLX's again on the night after a miss,
-        // the checker having refused its first draft there; and one from the night after a short
-        // catch-up, the key of the member the caught-up file left out, over the facts file its
-        // missing session left it, the other three being the missed night's requests asked
-        // again; and four from the rebalance's two nights, whose Technology names each read a
-        // group of one: AAPL's key and MSFT's on the fixture's night, before KEYS joins, and
-        // KEYS's and MSFT's on the next session, AAPL having left, NFLX's on each being a request
-        // the other nights asked, since its group holds nobody either way.
+        // KEYS's, MSFT's and NFLX's being the replay's requests asked again; eight from the two
+        // later nights, every member's key on each, each member reading the quarters the
+        // fixture's night stored; and one from the night after a short catch-up, the key of the
+        // member the caught-up file left out, over the facts file its missing session left it,
+        // the other three being the missed night's requests asked again; and four from the
+        // rebalance's two nights, whose Technology names each read a group of one: AAPL's key
+        // and MSFT's on the fixture's night, before KEYS joins, and KEYS's and MSFT's on the
+        // next session, AAPL having left, NFLX's on each being a request the other nights asked,
+        // since its group holds nobody either way; and one from the session the feed stops
+        // listing AAPL, KEYS's key over the group of one the rebalance's joiner reads but with
+        // the quarters the fixture's night stored for it, which the joiner does not yet hold,
+        // MSFT's and NFLX's there being requests the rebalance asked.
         Assert.Equal(32, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 

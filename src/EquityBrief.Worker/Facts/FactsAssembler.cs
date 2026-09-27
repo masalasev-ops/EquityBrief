@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Facts;
+using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
@@ -57,6 +58,8 @@ public sealed class FactsAssembler : IComponent
             // newest filing's own, so a figure with a price in it is the newest
             // fetch's rather than the one made when the filing was first stored.
             new StoreTouch(Store.FundamentalsSnapshot, Touch.Read),
+            // The night's readings of the member's reported quarters, for a member holding them.
+            new StoreTouch(Store.FundamentalReading, Touch.Read),
             // Delete as well as Insert: a stored file for tonight that differs
             // from what the store now computes is removed and written again.
             new StoreTouch(Store.Facts, Touch.Insert | Touch.Delete),
@@ -79,6 +82,7 @@ public sealed class FactsAssembler : IComponent
     public const string FromCalendar = "calendar";
     public const string FromFundamentals = "fundamental";
     public const string FromMembership = "membership";
+    public const string FromReadings = "fundamental reading";
 
     // The fact carrying the company's name, which every prompt lists with the other facts and a
     // research pass reads to rank a document whose title names the company.
@@ -109,6 +113,14 @@ public sealed class FactsAssembler : IComponent
         WHERE f.ticker = $ticker
         ORDER BY f.filing_date DESC
         LIMIT 1;
+    ";
+
+    // The member's readings on the night its file is about, being its own last session.
+    // see: The readings join the facts file for a member holding them, and nothing is added for one without
+    const string ReadingFor = @"
+        SELECT readings FROM fundamental_reading
+        WHERE ticker = $ticker
+          AND session_date = (SELECT MAX(session_date) FROM bar WHERE ticker = $ticker);
     ";
 
     // The names holding a bar on the newest session the store has, being the
@@ -562,8 +574,72 @@ public sealed class FactsAssembler : IComponent
                 reader.GetString(0),
                 FundamentalsSnapshot.Over(reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2)))));
 
+        // The night's readings of the member's reported quarters, for a member holding quarters, so a
+        // written section may quote what "What the numbers say" draws; a member holding none adds
+        // nothing, since absent is never a failure and a file of nulls would read as figures.
+        // see: The readings join the facts file for a member holding them, and nothing is added for one without
+        await ReadAsync(connection, ReadingFor, ticker, cancellation, reader =>
+            facts.AddRange(ReadingFacts(Readings.FromJson(reader.GetString(0)))));
+
         return new Assembled(sessionDate, facts);
     }
+
+    // The night's readings, each figure a stored value named for what it is, and nothing for a member
+    // holding no quarter.
+    public static IReadOnlyList<Fact> ReadingFacts(Readings readings)
+    {
+        if (readings.State == FundamentalState.NoFundamentalsYet)
+        {
+            return [];
+        }
+
+        var facts = new List<Fact> { new("business state", readings.State, FromReadings) };
+
+        if (readings.ReadFrom is { } from)
+        {
+            facts.Add(new Fact("business state read from the quarter to", Stamp(from), FromReadings));
+        }
+
+        if (readings.Trajectory is { Absent: null, Quarters: [var newer, var older] } trajectory)
+        {
+            facts.Add(new Fact("sales growth on a year earlier", Figure(newer.SalesGrowth), FromReadings));
+            facts.Add(new Fact("sales growth on a year earlier the quarter before", Figure(older.SalesGrowth), FromReadings));
+            facts.Add(new Fact("operating margin", Figure(newer.Margin), FromReadings));
+            facts.Add(new Fact("operating margin a year earlier", Figure(newer.MarginYearEarlier), FromReadings));
+            facts.Add(new Fact("operating margin quarters in a row on the same side of a year earlier", trajectory.MarginRun.ToString(CultureInfo.InvariantCulture), FromReadings));
+
+            if (newer.SalesGrowthBefore is { } before)
+            {
+                facts.Add(new Fact("sales growth of the same quarter a year before", Figure(before), FromReadings));
+            }
+        }
+
+        if (readings.Record is { Absent: null } record)
+        {
+            facts.Add(new Fact("estimate quarters counted", record.Quarters.Count.ToString(CultureInfo.InvariantCulture), FromReadings));
+            facts.Add(new Fact("estimates beaten", record.Beat.ToString(CultureInfo.InvariantCulture), FromReadings));
+            facts.Add(new Fact("estimates met", record.Met.ToString(CultureInfo.InvariantCulture), FromReadings));
+            facts.Add(new Fact("estimates missed", record.Missed.ToString(CultureInfo.InvariantCulture), FromReadings));
+        }
+
+        if (readings.Quality is { Absent: null, Ratio: { } ratio })
+        {
+            facts.Add(new Fact("operating cash flow over net income", Figure(ratio), FromReadings));
+        }
+
+        if (readings.Valuation is { Absent: null, Multiple: { } multiple, Low: { } low, High: { } high })
+        {
+            facts.Add(new Fact("earnings multiple tonight", Figure(multiple), FromReadings));
+            facts.Add(new Fact("earnings multiple range low", Figure(low), FromReadings));
+            facts.Add(new Fact("earnings multiple range high", Figure(high), FromReadings));
+        }
+
+        return facts;
+    }
+
+    static string Figure(decimal value) => value.ToString(CultureInfo.InvariantCulture);
+
+    static string Stamp(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     // The figures on the newest stored filing, read back out of the payload and
     // named for what they are.

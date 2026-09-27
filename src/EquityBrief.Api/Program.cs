@@ -262,7 +262,8 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
             listings,
             UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
             await read.ClosesToTheNightAsync(evening),
-            gates: await read.ListRuleAsync(evening) == ListRules.Filter ? await read.GateResultsAsync(evening) : null)
+            gates: await read.ListRuleAsync(evening) == ListRules.Filter ? await read.GateResultsAsync(evening) : null,
+            readings: await read.FundamentalReadingsAsync(evening))
         : [];
 
     var at = ordered.Select((row, position) => (row.Ticker, position))
@@ -281,6 +282,11 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     // name nobody has opened holds none and the section says so, because the
     // computed sections render from the nightly store whatever this read returns.
     var fundamentals = await read.FundamentalsAsync(ticker, on);
+
+    // The night's readings of the member's reported quarters and the quarters behind them, which the
+    // numbers open with; a night before the readings existed has none and the numbers draw as they did.
+    var reading = await read.FundamentalReadingAsync(ticker, on);
+    var readQuarters = reading?.FetchedAt is { } fetched ? await read.QuartersOfAFetchAsync(ticker, fetched) : [];
 
     // The high and the low of the sessions the largest move spans, which the fact
     // strip states beside the close. A name with no annotated move has none, and
@@ -335,7 +341,9 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // no press, because nothing it is opened beside can answer one.
         export ? null : (await read.WatchedAsync()).Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
         // Every night the live list picked the name before the page's own, each trade as it stood on the page's night.
-        night is { } picked ? PicksScreen.Before(await read.PicksAsync(picked, ticker), picked) : null);
+        night is { } picked ? PicksScreen.Before(await read.PicksAsync(picked, ticker), picked) : null,
+        reading,
+        readQuarters);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -632,7 +640,7 @@ app.MapGet("/screens/tonight/{night?}", async (
 
     // The rule the night's list was drawn by, and on a night the swing filter drew it, each member's gates,
     // which order the list and say why each row is on it.
-    // see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it
+    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     var rule = await read.ListRuleAsync(dated);
     var gates = rule == ListRules.Filter ? await read.GateResultsAsync(dated) : null;
     var market = await read.MarketReadingAsync(dated);
@@ -645,7 +653,8 @@ app.MapGet("/screens/tonight/{night?}", async (
         await read.ClosesToTheNightAsync(dated),
         await read.SuspectSeriesAsync(),
         await read.ResearchedAsync(),
-        gates);
+        gates,
+        await read.FundamentalReadingsAsync(dated));
 
     // What the queue holds for each listed name, from the times the queue page states, so a
     // row and the selected name say a report is queued or being written and when.
@@ -1039,7 +1048,11 @@ app.MapGet("/screens/run/{night?}", async (
             await read.OpenFilterVersionAsync() is { } open
                 ? EdgeScreen.NearMisses(open, await read.NearMissRowsAsync(open), dated)
                 : EdgeScreen.NearMisses(null, [], dated),
-            held: held),
+            held: held,
+            fundamentals: RunScreen.Fundamentals(
+                await read.QuarterAsksAsync(),
+                [.. (await read.UniverseAsync(index, dated)).Select(member => member.Ticker)],
+                dated)),
         "text/html; charset=utf-8");
 });
 

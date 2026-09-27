@@ -1381,7 +1381,9 @@ public partial class ArchitectureConformance
         // snapshot and Regenerate Report.
         // 87 at the 12.2 correction that built the Past picks screen: its three rows, the name page's region
         // and the eighth mark.
-        Assert.Equal(87, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 89 at the 12.2 correction that reads the reported quarters: what the numbers say on the name page
+        // and the run page's Fundamentals region.
+        Assert.Equal(89, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1451,7 +1453,9 @@ public partial class ArchitectureConformance
         // they state, the name page's region and the eighth mark.
         // 286 at the 12.5 correction that shares the level across the distinct trials: the shadow region's
         // count of them and the level each starts at, beside the family's divisor.
-        Assert.Equal(286, inDocument.Length);
+        // 300 at the 12.2 correction that reads the reported quarters: the list's three new parts, what the
+        // numbers say as its five, the Fundamentals region as its four and Past picks' two.
+        Assert.Equal(300, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1514,7 +1518,9 @@ public partial class ArchitectureConformance
         // they state.
         // 273 at the 12.5 correction that shares the level across the distinct trials: the shadow region's
         // count of them and the level each starts at.
-        Assert.Equal(273, checkedElements);
+        // 287 at the 12.2 correction that reads the reported quarters: the list's three new parts, what the
+        // numbers say as its five, the run page's Fundamentals region as its four and Past picks' two.
+        Assert.Equal(287, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

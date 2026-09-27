@@ -118,6 +118,20 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.StoresTable, "Market readings"),
             CheckReach.Key(Scope.FixtureTable, "swing readings"),
 
+            // 12.2's correction, the fundamentals item: the three stores, the readings' values and the
+            // fixture's row.
+            CheckReach.Key(Scope.StoresTable, "Reported quarters"),
+            CheckReach.Key(Scope.StoresTable, "Quarter asks"),
+            CheckReach.Key(Scope.StoresTable, "Fundamental readings"),
+            CheckReach.Key(Scope.LimitsTable, "Quarter prices"),
+            CheckReach.Key(Scope.LimitsTable, "Trajectory quarters"),
+            CheckReach.Key(Scope.LimitsTable, "Business state"),
+            CheckReach.Key(Scope.LimitsTable, "Estimate record"),
+            CheckReach.Key(Scope.LimitsTable, "Met tolerance"),
+            CheckReach.Key(Scope.LimitsTable, "Earnings quality"),
+            CheckReach.Key(Scope.LimitsTable, "Valuation position"),
+            CheckReach.Key(Scope.FixtureTable, "reported quarters"),
+
             // 11.5, the floor a name's industry has to reach before it is the name's group.
             CheckReach.Key(Scope.LimitsTable, "Group floor"),
 

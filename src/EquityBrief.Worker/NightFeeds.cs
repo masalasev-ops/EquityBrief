@@ -15,19 +15,26 @@ namespace EquityBrief.Worker;
 // feed; composition code holding a client would need the carve-out to widen to
 // cover something that is not a feed
 // (see: The outward-request scan names the files that may hold a client rather than dropping the patterns).
+//
+// The seventh is one member's reported quarters, which the night asks for on the nights after a
+// member reports and on no other, the fourth carve-out the nightly rule names. It is on this record
+// because the night reaches it, so its count is the night's and the allowance it is stopped at is the
+// night's own.
+// see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
 public sealed record NightFeeds(
     IIndexMembershipFeed Membership,
     IHistoricalBarFeed Historical,
     IBulkPriceFeed Bulk,
     ICorporateActionFeed Corporate,
     IEarningsCalendarFeed Calendar,
-    INewsFeed News)
+    INewsFeed News,
+    IFundamentalsFeed Fundamentals)
 {
     // What the night cost, read off the feeds rather than stated by the caller.
     // A caller that wrote the figure would be recording its own intention.
     public int Requests =>
         Membership.Requests + Historical.Requests + Bulk.Requests + Corporate.Requests
-        + Calendar.Requests + News.Requests;
+        + Calendar.Requests + News.Requests + Fundamentals.Requests;
 
     // The same night in the units the provider bills in, which is the unit
     // `RUNBOOK.md` states the allowance in. Composed from the roles rather than
@@ -39,7 +46,8 @@ public sealed record NightFeeds(
         + (Bulk.Requests * ProviderWeights.BulkEndOfDay)
         + (Corporate.Requests * ProviderWeights.BulkEndOfDay)
         + (Calendar.Requests * ProviderWeights.EarningsCalendar)
-        + (News.Requests * ProviderWeights.News);
+        + (News.Requests * ProviderWeights.News)
+        + (Fundamentals.Requests * ProviderWeights.Fundamentals);
 
     public const string ConstituentsFile = "index-constituents.json";
 
@@ -50,7 +58,8 @@ public sealed record NightFeeds(
             RecordedBulkPriceFeed.FromFolder(folder),
             RecordedCorporateActionFeed.FromFolder(folder),
             RecordedEarningsCalendarFeed.FromFolder(folder),
-            RecordedNewsFeed.FromFolder(folder));
+            RecordedNewsFeed.FromFolder(folder),
+            RecordedFundamentalsFeed.FromFolder(folder));
 
     // The live bulk feed, from the two settings, or a refusal naming the one
     // that is missing.
@@ -76,7 +85,8 @@ public sealed record NightFeeds(
             EodhdBulkPriceFeed.Live(address, key),
             EodhdCorporateActionFeed.Live(address, key),
             EodhdEarningsCalendarFeed.Live(address, key),
-            EodhdNewsFeed.Live(address, key));
+            EodhdNewsFeed.Live(address, key),
+            EodhdFundamentalsFeed.Live(address, key));
     }
 
     // A blank base address falls back and a blank key does not. The address has
@@ -144,5 +154,6 @@ public sealed record NightFeeds(
         || Bulk is not RecordedBulkPriceFeed
         || Corporate is not RecordedCorporateActionFeed
         || Calendar is not RecordedEarningsCalendarFeed
-        || News is not RecordedNewsFeed;
+        || News is not RecordedNewsFeed
+        || Fundamentals is not RecordedFundamentalsFeed;
 }
