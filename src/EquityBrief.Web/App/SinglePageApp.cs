@@ -1525,8 +1525,7 @@ public sealed class SinglePageApp : IComponent
         OverlapView? overlap = null,
         EdgeView? edge = null,
         NearMissView? nearMisses = null,
-        IReadOnlyList<DateOnly>? held = null,
-        FundamentalsView? fundamentals = null)
+        IReadOnlyList<DateOnly>? held = null)
     {
         var region = new StringBuilder();
 
@@ -1649,19 +1648,6 @@ public sealed class SinglePageApp : IComponent
             title: "What the night could not do",
             stamp: Cards.Night(night),
             region: "stale"));
-
-        // The reported quarters the night asked for after its close, who is still waiting, and the fill.
-        // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
-        if (fundamentals is { } quarters)
-        {
-            region.Append(Cards.Computed(
-                "Fundamentals",
-                marks.Fundamentals(quarters),
-                title: "The reported quarters the night asked for",
-                lede: "A member is asked on the night after it reports, and again while its new quarter is not yet posted; every member was asked once at the start.",
-                stamp: Cards.Night(night),
-                region: "fundamentals"));
-        }
 
         region.Append(Cards.Computed(
             "Overnight queue",

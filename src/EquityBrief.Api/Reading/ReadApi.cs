@@ -430,21 +430,6 @@ public sealed record FundamentalReadingRow(
 // A quarter one fetch stored, with the dates it was filed and reported on.
 public sealed record QuarterDatesRow(DateOnly PeriodEnd, DateOnly? FilingDate, DateOnly? ReportDate);
 
-// One ask the quarters step made: the member, the night, why, the quarter awaited, what came of it, the
-// quarter rows it stored and the weighted calls it spent.
-// see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
-public sealed record QuarterAskRow(
-    string Ticker,
-    DateOnly SessionDate,
-    string Reason,
-    DateOnly? Awaited,
-    string Outcome,
-    int Quarters,
-    int Weighted,
-    string? Detail,
-    int Nights = 1,
-    DateOnly? NextAsk = null);
-
 // The night's market reading as the swing reader stored it.
 public sealed record MarketReadingRow(
     DateOnly SessionDate,
@@ -575,7 +560,6 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.Fundamentals, Touch.Read),
             new StoreTouch(Store.FundamentalsSnapshot, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
-            new StoreTouch(Store.QuarterAsk, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.NewsPulse, Touch.Read),
             new StoreTouch(Store.ResearchSection, Touch.Read),
@@ -1149,13 +1133,6 @@ public sealed class ReadApi : IComponent
         FROM reported_quarter
         WHERE ticker = $ticker AND fetched_at = $fetched_at
         ORDER BY period_end DESC;
-    ";
-
-    // Every ask the quarters step has made, oldest first, which the run page reads its region from.
-    const string EveryQuarterAsk = @"
-        SELECT ticker, session_date, reason, awaited, outcome, quarters, weighted, detail, nights, next_ask
-        FROM quarter_ask
-        ORDER BY session_date, ticker;
     ";
 
     // Every current member of the index, with what the night computed for it.
@@ -2725,37 +2702,6 @@ public sealed class ReadApi : IComponent
             DateOnly? Day(int at) => reader.IsDBNull(at) ? null : DateOnly.ParseExact(reader.GetString(at), "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
             rows.Add(new QuarterDatesRow(Day(0)!.Value, Day(1), Day(2)));
-        }
-
-        return rows;
-    }
-
-    // Every ask the quarters step has made, oldest first.
-    // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
-    public async Task<IReadOnlyList<QuarterAskRow>> QuarterAsksAsync()
-    {
-        await using var connection = Open();
-        await using var command = connection.CreateCommand();
-
-        command.CommandText = EveryQuarterAsk;
-
-        var rows = new List<QuarterAskRow>();
-
-        await using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
-        {
-            rows.Add(new QuarterAskRow(
-                reader.GetString(0),
-                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                reader.GetString(2),
-                reader.IsDBNull(3) ? null : DateOnly.ParseExact(reader.GetString(3), "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                reader.GetString(4),
-                reader.GetInt32(5),
-                reader.GetInt32(6),
-                reader.IsDBNull(7) ? null : reader.GetString(7),
-                reader.GetInt32(8),
-                reader.IsDBNull(9) ? null : DateOnly.ParseExact(reader.GetString(9), "yyyy-MM-dd", CultureInfo.InvariantCulture)));
         }
 
         return rows;

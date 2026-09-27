@@ -28786,3 +28786,45 @@ Carried:    Monday's night, the first whose readings read the fill at the settle
             pages recorded in the entry after it; "The quarters fetch measured on a peak reporting night";
             part 2, the seventh candidate with its remedy, the operator's command, and its mutation of absent
             members skipped by the candidate; items 2 and 3 after the night of 2026-09-28.
+
+### 12.2 - correction: the run page draws no Fundamentals region, its asks counted on the quarters step's line in the operational header, where the region listed every ask of the night   2026-09-27
+Corrects:   the run page's Fundamentals region 12.2's fundamentals correction built. After the fill taken by
+            hand the region drew all 503 of the night's asks as rows, and the operator said on 2026-09-27 that
+            the section can go.
+Repaired:   the region is gone: `RunScreen.Fundamentals`, the renderer's region and its three records, the
+            page's card, and the read API's reading of `quarter_ask`, which nothing else on the surface read,
+            its access declaration with it. The quarters step's own line, which the operational header already
+            drew, counts each night's asks by why each was made and what came of it and the fill still owed,
+            and section 18's three rows that named the region as their surface name that line instead. The
+            peak reporting night's obligation is read on it, off its count of members reporting.
+Measured:   nothing new.
+Guarded:    `TheRunPageCountsTheNightsQuarterAsksOnTheStepsLineAndDrawsNoRegionOfThem` in `read-surface`,
+            replacing the region's test: over a constructed store the step's line, worked by hand from three
+            asks, stands whole in the run page's operational header, and the page draws no region, no fill line
+            and no title of one.
+Written:    section 15.10's Fundamentals row and its reads clause removed, section 18's three surfaces;
+            BUILD_PLAN's 12.2 text and both quarters rows' surfaces; the runbook's fill paragraph;
+            `.claude/rules/checks.md`'s read-surface row. Each changed line's prior text in `CHANGELOG.md`.
+Tests:      1478, unchanged: the region's test is replaced by the line's, none removed on balance.
+Claims:     640, from 644: the region's four parts leave section 15.10. The checks' stated counts move with
+            them: section 15's screen rows from 89 to 88, its claims from 300 to 296 and the decomposed
+            elements from 287 to 283, and phase 12's pair from 644 to 640.
+Pins:       the branch against `main` edits no source in the three pin lists, read as before. No version
+            moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: one mutation reversing the mechanism the run page now relies on,
+            filtered to the test this correction adds.
+            Predicted:
+            F1 the operational header leaving out the quarters step's line: red in the new test.
+            Results: one run in a detached worktree at 9da0a3d, this entry's commit, filtered to the test this
+            correction adds, the edit made there and reverted, and the tree read clean after. The whole suite
+            ran green over 9da0a3d in the gates, 1478 of 1478. F1 turned the new test red.
+Held:       red in the one test predicted.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1478 of 1478 tests ran
+            with none failed, migrations 0 to 48 with none pending, schema version 48, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 640 claims, 640 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 651 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1478 of 1478 tests.
+            Both gates ran over the tree carrying this entry, 9da0a3d, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    as the entry before this.

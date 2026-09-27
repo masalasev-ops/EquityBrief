@@ -1048,11 +1048,7 @@ app.MapGet("/screens/run/{night?}", async (
             await read.OpenFilterVersionAsync() is { } open
                 ? EdgeScreen.NearMisses(open, await read.NearMissRowsAsync(open), dated)
                 : EdgeScreen.NearMisses(null, [], dated),
-            held: held,
-            fundamentals: RunScreen.Fundamentals(
-                await read.QuarterAsksAsync(),
-                [.. (await read.UniverseAsync(index, dated)).Select(member => member.Ticker)],
-                dated)),
+            held: held),
         "text/html; charset=utf-8");
 });
 

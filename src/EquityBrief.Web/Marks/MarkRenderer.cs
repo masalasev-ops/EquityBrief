@@ -459,27 +459,6 @@ public sealed record NumbersSayView(string State, string Heading, DateOnly? Read
 
 public sealed record QuarterFiled(DateOnly PeriodEnd, DateOnly? FilingDate, DateOnly? ReportDate);
 
-// One ask the quarters step made on the night the run page is about: the member, why it was asked, the
-// quarter awaited, what came of it, the quarter rows it stored and the weighted calls it spent.
-public sealed record QuarterAskCell(string Ticker, string Reason, DateOnly? Awaited, string Outcome, int Quarters, int Weighted, string? Detail);
-
-// A member still waiting for a quarter: the quarter awaited, or none where any quarter would do, how many
-// nights it has been asked on for it, the night it was last asked and the night it is next asked on, null
-// where that is the next night.
-public sealed record WaitingCell(string Ticker, DateOnly? Awaited, int Asked, DateOnly LastAsked, DateOnly? NextAsk);
-
-// The run page's Fundamentals region: the night's asks with the weighted calls they spent, the members still
-// waiting, and the fill: of the members, how many hold quarters, how many are marked absent and how many are
-// still to be asked for the first time.
-public sealed record FundamentalsView(
-    DateOnly Night,
-    IReadOnlyList<QuarterAskCell> Tonight,
-    IReadOnlyList<WaitingCell> Waiting,
-    int Members,
-    int Holding,
-    int Absent,
-    int Left);
-
 // A row the swing filter drew: its rank, the setup's family, the session its trigger arrived on, the plan
 // the trade gate read with its reward to risk and the stop's distance in typical moves, and each gate with
 // whether it passed and why.
@@ -5464,76 +5443,6 @@ public sealed class MarkRenderer : IComponent
 
     // What a Past picks row says of a night that stored no readings of the reported quarters.
     public const string NotReadThatNight = "not read that night";
-
-    // The run page's Fundamentals region: who was asked for their quarters on the night and why, with what
-    // came of each and the weighted calls it spent; who is still waiting, the quarter awaited, the nights
-    // asked and the next ask; and how far the fill has come, which the seventh candidate's registration
-    // waits on.
-    // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
-    public string Fundamentals(FundamentalsView view)
-    {
-        var region = new StringBuilder();
-
-        region.Append(Invariant, $"<section class=\"fundamentals\" data-night=\"{DayOf(view.Night)}\" data-asked=\"{view.Tonight.Count}\" data-weighted=\"{view.Tonight.Sum(ask => ask.Weighted)}\" ");
-        region.Append(Invariant, $"data-waiting=\"{view.Waiting.Count}\" data-members=\"{view.Members}\" data-holding=\"{view.Holding}\" data-absent=\"{view.Absent}\" data-left=\"{view.Left}\">");
-
-        region.Append(view.Tonight.Count == 0
-            ? "<p data-asked=\"0\">No member was asked for its quarters on this night.</p>"
-            : Formatted($"<p data-asked=\"{view.Tonight.Count}\">{view.Tonight.Count} member(s) asked for their quarters on this night, spending {view.Tonight.Sum(ask => ask.Weighted)} weighted call(s).</p>"));
-
-        if (view.Tonight.Count > 0)
-        {
-            region.Append("<div class=\"tbl-wrap\"><table class=\"asks\"><thead><tr><th>Member</th><th>Why</th><th>Quarter awaited</th><th>What came of it</th><th class=\"r\">Quarters stored</th><th class=\"r\">Weighted calls</th></tr></thead><tbody>");
-
-            foreach (var ask in view.Tonight)
-            {
-                region.Append(Invariant, $"<tr data-ticker=\"{Escaped(ask.Ticker)}\" data-reason=\"{Escaped(ask.Reason)}\" data-outcome=\"{Escaped(ask.Outcome)}\">");
-                region.Append(Invariant, $"<td>{Escaped(ask.Ticker)}</td><td>{Escaped(AskedBecause(ask.Reason))}</td>");
-                region.Append(Invariant, $"<td class=\"num\">{(ask.Awaited is { } awaited ? DayOf(awaited) : "any quarter")}</td>");
-                region.Append(Invariant, $"<td>{Escaped(ask.Outcome)}{(ask.Detail is { Length: > 0 } detail ? Formatted($" <span class=\"degraded\">{Escaped(detail)}</span>") : string.Empty)}</td>");
-                region.Append(Invariant, $"<td class=\"r num\">{ask.Quarters}</td><td class=\"r num\">{ask.Weighted}</td></tr>");
-            }
-
-            region.Append("</tbody></table></div>");
-        }
-
-        region.Append(view.Waiting.Count == 0
-            ? "<p data-waiting=\"0\">No member is waiting for a quarter.</p>"
-            : Formatted($"<p data-waiting=\"{view.Waiting.Count}\">{view.Waiting.Count} member(s) still waiting for a quarter, each asked again on the five nights after its first ask and weekly after that:</p>"));
-
-        if (view.Waiting.Count > 0)
-        {
-            region.Append("<div class=\"tbl-wrap\"><table class=\"waiting\"><thead><tr><th>Member</th><th>Quarter awaited</th><th class=\"r\">Nights asked</th><th>Last asked</th><th>Next asked</th></tr></thead><tbody>");
-
-            foreach (var waiting in view.Waiting)
-            {
-                region.Append(Invariant, $"<tr data-ticker=\"{Escaped(waiting.Ticker)}\"><td>{Escaped(waiting.Ticker)}</td>");
-                region.Append(Invariant, $"<td class=\"num\">{(waiting.Awaited is { } awaited ? DayOf(awaited) : "any quarter")}</td><td class=\"r num\">{waiting.Asked}</td>");
-                region.Append(Invariant, $"<td class=\"num\">{DayOf(waiting.LastAsked)}</td><td class=\"num\">{(waiting.NextAsk is { } next ? DayOf(next) : "the next night")}</td></tr>");
-            }
-
-            region.Append("</tbody></table></div>");
-        }
-
-        region.Append(Invariant, $"<p class=\"fill\" data-members=\"{view.Members}\" data-holding=\"{view.Holding}\" data-absent=\"{view.Absent}\" data-left=\"{view.Left}\">");
-        region.Append(Invariant, $"The fill: {view.Holding} of {view.Members} members hold quarters, {view.Absent} marked absent, {view.Left} still to be asked for the first time.</p>");
-        region.Append(view.Left == 0
-            ? "<p class=\"registration\" data-ready=\"true\">Every member holds quarters or is marked absent, so the candidate that skips a deteriorating business may be registered once you have ruled on the measured splits.</p>"
-            : Formatted($"<p class=\"registration\" data-ready=\"false\">The candidate that skips a deteriorating business may be registered once every member holds quarters or is marked absent: {view.Left} left.</p>"));
-        region.Append("</section>");
-
-        return region.ToString();
-    }
-
-    // Why a member was asked, in the words the region states it.
-    static string AskedBecause(string reason) => reason switch
-    {
-        "fill" => "the fill",
-        "joined" => "its first night in the index",
-        "report" => "the first night after its report",
-        "waiting" => "its quarter was not yet posted",
-        _ => reason,
-    };
 
     // The trades as a table, newest first: the night listed, the stock where the table holds more than one
     // name's, the buy, the stop and the target each whole on its cell, the trade line, the status in words,

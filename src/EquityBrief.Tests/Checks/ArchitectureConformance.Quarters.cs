@@ -4,10 +4,11 @@ namespace EquityBrief.Tests.Checks;
 
 public partial class ArchitectureConformance
 {
-    // The claims the fundamentals item lands, the 39 its planning pass predicted: the quarter fetcher and
-    // the fundamental reader with their catalogue and matrix rows, their three stores and two night steps,
-    // the list's three new parts, what the numbers say as its five, the run page's Fundamentals region as
-    // its four, Past picks' two, section 17's ten rows, section 18's five and the fixture's row. Section 4's
+    // The claims the fundamentals item lands, 35 of the 39 its planning pass predicted: the quarter fetcher
+    // and the fundamental reader with their catalogue and matrix rows, their three stores and two night steps,
+    // the list's three new parts, what the numbers say as its five, Past picks' two, section 17's ten rows,
+    // section 18's five and the fixture's row. The other four were the run page's Fundamentals region, which
+    // the operator had taken off the page the day it landed, the quarters step's line standing in its place. Section 4's
     // pattern table is placed rather than counted, and the list's order is a part it already had, reworded.
     // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
     //

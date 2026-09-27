@@ -256,8 +256,8 @@ public partial class ReadSurface
             .. PastPicksClaims,
 
             // The fundamentals item's screens: the list's state, its word and its order, what the numbers say,
-            // the run page's Fundamentals region, Past picks' state and order, and the three failure rows a
-            // reader sees on a page.
+            // Past picks' state and order, and the three failure rows a reader sees on a page, the quarters
+            // step's line on the run page among them.
             .. FundamentalsScreenClaims,
             "What the numbers say, pattern by pattern",
             CheckReach.Key(Scope.FailureTable, "A member the provider returns no quarter for"),
