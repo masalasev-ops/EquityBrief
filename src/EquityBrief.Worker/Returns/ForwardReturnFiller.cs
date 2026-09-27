@@ -9,7 +9,7 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Returns;
 
-public sealed record ForwardReturnOutcome(int ListingsExamined, int RowsWritten, int Matured, int Immature, int Kept, int PlansExamined = 0, int PlansNotScorable = 0);
+public sealed record ForwardReturnOutcome(int ListingsExamined, int RowsWritten, int Matured, int Immature, int Kept, int PlansExamined = 0, int PlansNotScorable = 0, int ClearPlansExamined = 0, int ClearPlansNotScorable = 0);
 
 // The forward return filler. Fills the five and twenty-one session outcomes of
 // past listings as those sessions mature, and computes the universe base rate
@@ -44,10 +44,10 @@ public sealed class ForwardReturnFiller : IComponent
         ORDER BY l.session_date, l.ticker;
     ";
 
-    // Every swing filter row carrying a plan of its own, with the swing horizons already written for it.
-    // A row whose setup found no band has no stop to score from and carries none, and a replayed row is no
-    // setup a night drew.
-    // see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context
+    // Every swing filter row carrying the plan at the nearest bands, with that plan's horizons already
+    // written for it. A row whose setup found no band has no stop to score from and carries none, and a
+    // replayed row is no setup a night drew.
+    // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
     // see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone
     const string EveryPlannedGateRow = @"
         SELECT g.ticker, g.session_date, g.swing_stop, g.swing_target, f.horizon, f.outcome
@@ -55,6 +55,17 @@ public sealed class ForwardReturnFiller : IComponent
         LEFT JOIN forward_return f
             ON f.ticker = g.ticker AND f.session_date = g.session_date AND f.horizon IN ('swing', 'swing-20')
         WHERE g.swing_stop IS NOT NULL AND g.swing_target IS NOT NULL AND g.version <> '" + EquityBrief.Core.Filter.ReplayedResults.Version + @"'
+        ORDER BY g.session_date, g.ticker;
+    ";
+
+    // Every swing filter row carrying the plan clear of the noise, the same way. A row written before the
+    // plan was stored carries none, and one whose setup band left no stop or no target carries none.
+    const string EveryClearGateRow = @"
+        SELECT g.ticker, g.session_date, g.clear_stop, g.clear_target, f.horizon, f.outcome
+        FROM gate_result g
+        LEFT JOIN forward_return f
+            ON f.ticker = g.ticker AND f.session_date = g.session_date AND f.horizon IN ('clear', 'clear-20')
+        WHERE g.clear_stop IS NOT NULL AND g.clear_target IS NOT NULL AND g.version <> '" + EquityBrief.Core.Filter.ReplayedResults.Version + @"'
         ORDER BY g.session_date, g.ticker;
     ";
 
@@ -269,64 +280,72 @@ public sealed class ForwardReturnFiller : IComponent
             }
         }
 
-        // The swing filter's rows, each scored on its own plan from the night's close, over the setup's cap
-        // and, as context read by no verdict, over twenty sessions. The calibrated bar rides on the capped
-        // horizon alone, the one a candidate's record reads. A plan whose close the night's own raw close
-        // does not sit between its stop and its target was not one the night could enter at its close,
-        // and it is counted as not scorable rather than scored from a later fill.
-        // see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context
-        var planned = await PlannedRowsAsync(connection, transaction, cancellation);
-        var notScorable = 0;
+        // The swing filter's rows, each of the two plans a row carries scored from the night's close, over
+        // the setup's cap and, as context read by no verdict, over twenty sessions. The calibrated bar rides
+        // on each plan's capped horizon alone, the one a candidate's record reads. A plan whose close the
+        // night's own raw close does not sit between its stop and its target was not one the night could
+        // enter at its close, and it is counted as not scorable rather than scored from a later fill.
+        // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
+        var (plans, notScorable) = await ScoreAsync(EveryPlannedGateRow, ForwardReturnSeries.SwingHorizons, ForwardReturnSeries.Swing);
+        var (clearPlans, clearNotScorable) = await ScoreAsync(EveryClearGateRow, ForwardReturnSeries.ClearHorizons, ForwardReturnSeries.Clear);
 
-        foreach (var row in planned)
+        async Task<(int Plans, int NotScorable)> ScoreAsync(string query, string[] horizons, string capped)
         {
-            var open = ForwardReturnSeries.SwingHorizons
-                .Where(horizon => !(row.Outcomes.TryGetValue(horizon, out var stored) && Decided(stored)))
-                .ToArray();
+            var planned = await PlannedRowsAsync(connection, transaction, query, cancellation);
+            var refused = 0;
 
-            kept += ForwardReturnSeries.SwingHorizons.Length - open.Length;
-
-            if (open.Length == 0)
+            foreach (var row in planned)
             {
-                continue;
-            }
+                var open = horizons
+                    .Where(horizon => !(row.Outcomes.TryGetValue(horizon, out var stored) && Decided(stored)))
+                    .ToArray();
 
-            var origin = await CloseOnAsync(connection, row.Ticker, row.SessionDate, cancellation);
+                kept += horizons.Length - open.Length;
 
-            if (row.Stop >= row.Target || origin is { RawClose: { } raw } && (raw < row.Stop || raw > row.Target))
-            {
-                notScorable++;
-
-                continue;
-            }
-
-            var after = origin is null ? [] : await SessionsAfterAsync(connection, row.Ticker, row.SessionDate, cancellation);
-            var rawClose = origin is null ? null : RawClose(row.Ticker, row.SessionDate, origin, row.Stop, row.Target);
-
-            foreach (var horizon in open)
-            {
-                var outcome = ForwardReturnSeries.OverSetup(
-                    after, row.Stop, row.Target, null, origin?.Close, rawClose, horizon, ForwardReturnSeries.CapOf(horizon));
-
-                var calibrated = horizon == ForwardReturnSeries.Swing
-                    ? await CalibratedAsync(connection, row.Ticker, row.SessionDate, outcome, origin, row.Stop, row.Target, after, cancellation)
-                    : Calibration.None;
-
-                if (!row.Outcomes.ContainsKey(horizon) || outcome.Outcome is not null)
+                if (open.Length == 0)
                 {
-                    await WriteAsync(connection, transaction, row.Ticker, row.SessionDate, outcome, calibrated, cancellation);
-                    written++;
+                    continue;
                 }
 
-                if (outcome.Outcome is null)
+                var origin = await CloseOnAsync(connection, row.Ticker, row.SessionDate, cancellation);
+
+                if (row.Stop >= row.Target || origin is { RawClose: { } raw } && (raw < row.Stop || raw > row.Target))
                 {
-                    immature++;
+                    refused++;
+
+                    continue;
                 }
-                else
+
+                var after = origin is null ? [] : await SessionsAfterAsync(connection, row.Ticker, row.SessionDate, cancellation);
+                var rawClose = origin is null ? null : RawClose(row.Ticker, row.SessionDate, origin, row.Stop, row.Target);
+
+                foreach (var horizon in open)
                 {
-                    matured++;
+                    var outcome = ForwardReturnSeries.OverSetup(
+                        after, row.Stop, row.Target, null, origin?.Close, rawClose, horizon, ForwardReturnSeries.CapOf(horizon));
+
+                    var calibrated = horizon == capped
+                        ? await CalibratedAsync(connection, row.Ticker, row.SessionDate, outcome, origin, row.Stop, row.Target, after, cancellation)
+                        : Calibration.None;
+
+                    if (!row.Outcomes.ContainsKey(horizon) || outcome.Outcome is not null)
+                    {
+                        await WriteAsync(connection, transaction, row.Ticker, row.SessionDate, outcome, calibrated, cancellation);
+                        written++;
+                    }
+
+                    if (outcome.Outcome is null)
+                    {
+                        immature++;
+                    }
+                    else
+                    {
+                        matured++;
+                    }
                 }
             }
+
+            return (planned.Count, refused);
         }
 
         // The base rate per horizon, over every name-night rather than over the
@@ -354,9 +373,9 @@ public sealed class ForwardReturnFiller : IComponent
 
         await transaction.CommitAsync(cancellation);
 
-        await RecordAsync(connection, runId, startedAt, listings.Count, written, matured, immature, kept, planned.Count, notScorable, cancellation);
+        await RecordAsync(connection, runId, startedAt, listings.Count, written, matured, immature, kept, plans, notScorable, clearPlans, clearNotScorable, cancellation);
 
-        return new ForwardReturnOutcome(listings.Count, written, matured, immature, kept, planned.Count, notScorable);
+        return new ForwardReturnOutcome(listings.Count, written, matured, immature, kept, plans, notScorable, clearPlans, clearNotScorable);
     }
 
     static bool Decided(string? outcome) => outcome is not null;
@@ -375,14 +394,14 @@ public sealed class ForwardReturnFiller : IComponent
                     $"{ticker}'s bar for the listing of {sessionDate} carries no raw close above " +
                     "zero, so the adjustment its plan is scored at cannot be read.");
 
-    static async Task<IReadOnlyList<PlannedRow>> PlannedRowsAsync(SqliteConnection connection, System.Data.Common.DbTransaction transaction, CancellationToken cancellation)
+    static async Task<IReadOnlyList<PlannedRow>> PlannedRowsAsync(SqliteConnection connection, System.Data.Common.DbTransaction transaction, string query, CancellationToken cancellation)
     {
         var rows = new List<PlannedRow>();
 
         await using var command = connection.CreateCommand();
 
         command.Transaction = (SqliteTransaction)transaction;
-        command.CommandText = EveryPlannedGateRow;
+        command.CommandText = query;
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
@@ -688,6 +707,8 @@ public sealed class ForwardReturnFiller : IComponent
         int kept,
         int plans,
         int notScorable,
+        int clearPlans,
+        int clearNotScorable,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -707,7 +728,8 @@ public sealed class ForwardReturnFiller : IComponent
             "$detail",
             $"{listings} listing(s), {written} row(s) written, {kept} kept as decided, " +
             $"{matured} newly matured, {immature} not yet matured; " +
-            $"{plans} swing plan(s) read, {notScorable} not scorable from the night's close");
+            $"{plans} swing plan(s) read, {notScorable} not scorable from the night's close; " +
+            $"{clearPlans} plan(s) clear of the noise read, {clearNotScorable} not scorable from the night's close");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

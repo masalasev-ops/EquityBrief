@@ -763,7 +763,7 @@ public sealed class SinglePageApp : IComponent
                 "The swing filter's gates",
                 marks.GatesTable(ticker, gates) + Cards.Key(
                     "How to read it.",
-                    "Each gate is one question the swing filter asks of every member each night, in order: the market's breadth, the trend and strength, a setup, a trigger new on the night, and a trade worth taking. A name passes only where all five pass and no exclusion applies. The trade is read two ways, from the ladder's first tranche and from the swing trade's own stop and target, and the plan the filter reads decides the gate.",
+                    "Each gate is one question the swing filter asks of every member each night, in order: the market's breadth, the trend and strength, a setup, a trigger new on the night, and a trade worth taking. A name passes only where all five pass and no exclusion applies. The trade is read three ways, from the ladder's first tranche, from the swing trade at the nearest bands and from the swing trade clear of the noise, whose stop sits at least a typical day's move below the entry and whose target sits at least two above it, and the plan marked as read decides the gate.",
                     gates.Rule == EquityBrief.Core.Shortlist.ListRules.Filter
                         ? "A failed gate names what it read and why it failed, and a name passing all five that no exclusion removes is on that evening's list."
                         : "A failed gate names what it read and why it failed. The six reasons drew that evening's list, so these answers decided nothing on it."),

@@ -359,8 +359,9 @@ public sealed record ShapeProposalRow(
 public sealed record TriggerReads(int ClockNights, IReadOnlyList<string> VersionSteps, int? ConfirmationNights, string? ConfirmationVersion);
 
 // One member's swing filter result on a night as the filter stored it: each gate's pass, the family
-// and the trigger, the trade read both ways, the exclusions, the rank among the names passing, and
-// the gates' reasons and values as stored.
+// and the trigger, the trade read three ways, the exclusions, the rank among the names passing, and
+// the gates' reasons and values as stored. The plan clear of the noise enters at the same close as the
+// plan at the nearest bands, and a row written before it was stored carries none of it.
 public sealed record GateResultRow(
     string Ticker,
     DateOnly SessionDate,
@@ -384,7 +385,11 @@ public sealed record GateResultRow(
     int? Rank,
     double? Strength,
     int? BandStrength,
-    string Gates);
+    string Gates,
+    decimal? ClearStop = null,
+    decimal? ClearTarget = null,
+    double? ClearRewardToRisk = null,
+    double? ClearStopMoves = null);
 
 // The night's market reading as the swing reader stored it.
 public sealed record MarketReadingRow(
@@ -1016,12 +1021,17 @@ public sealed class ReadApi : IComponent
     // Every row a filter version stored, each gate's answer, its exclusions and whether it passed, with
     // what its own plan came to where one was scored: the population the near misses are read over.
     // see: A gate's near misses are the setups it alone rejected, each group read against its own break-even and null and withheld below the block floor
+    // A version's rows with each setup scored on the plan the version's trade gate reads, the plan at the
+    // nearest bands where the version reads another or no version was open.
+    // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
     const string NearMissRows = @"
         SELECT g.session_date, g.market, g.trend, g.setup, g.trigger_pass, g.trade, g.exclusions, g.passed,
                f.outcome, f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings
         FROM gate_result g
+        LEFT JOIN filter_version v ON v.version = g.version
         LEFT JOIN forward_return f
-            ON f.ticker = g.ticker AND f.session_date = g.session_date AND f.horizon = $swing
+            ON f.ticker = g.ticker AND f.session_date = g.session_date
+            AND f.horizon = CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN $clear ELSE $swing END
         WHERE g.version = $version
         ORDER BY g.session_date, g.ticker;
     ";
@@ -1240,7 +1250,8 @@ public sealed class ReadApi : IComponent
                f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings
         FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.candidates') c
         LEFT JOIN forward_return f
-            ON f.ticker = g.ticker AND f.session_date = g.session_date AND f.horizon = $swing
+            ON f.ticker = g.ticker AND f.session_date = g.session_date
+            AND f.horizon = CASE json_extract(c.value, '$.values.plan') WHEN $clearPlan THEN $clear ELSE $swing END
         WHERE json_extract(c.value, '$.fired') = 1
         ORDER BY 1, 2;
     ";
@@ -1930,6 +1941,8 @@ public sealed class ReadApi : IComponent
         command.CommandText = NearMissRows;
         command.Parameters.AddWithValue("$version", version);
         command.Parameters.AddWithValue("$swing", EquityBrief.Core.Returns.ForwardReturnSeries.Swing);
+        command.Parameters.AddWithValue("$clear", EquityBrief.Core.Returns.ForwardReturnSeries.Clear);
+        command.Parameters.AddWithValue("$clearPlan", EquityBrief.Core.Filter.FilterSettings.ClearWord);
 
         var rows = new List<EquityBrief.Core.Filter.NearMissRow>();
 
@@ -2420,7 +2433,8 @@ public sealed class ReadApi : IComponent
     const string GateColumns = @"
         ticker, session_date, version, market, trend, setup, family, trigger_pass, trigger_event, trade,
         ladder_reward_to_risk, ladder_stop_moves, swing_entry, swing_stop, swing_target, swing_reward_to_risk,
-        swing_stop_moves, exclusions, passed, rank, strength, band_strength, gates";
+        swing_stop_moves, exclusions, passed, rank, strength, band_strength, gates,
+        clear_stop, clear_target, clear_reward_to_risk, clear_stop_moves";
 
     const string GateResultOn = "SELECT " + GateColumns + " FROM gate_result WHERE version <> '" + EquityBrief.Core.Filter.ReplayedResults.Version + "' AND ticker = $ticker AND session_date = $on;";
 
@@ -2499,7 +2513,11 @@ public sealed class ReadApi : IComponent
             reader.IsDBNull(19) ? null : reader.GetInt32(19),
             Real(20),
             reader.IsDBNull(21) ? null : reader.GetInt32(21),
-            reader.GetString(22));
+            reader.GetString(22),
+            Price(23),
+            Price(24),
+            Real(25),
+            Real(26));
     }
 
     // The night's market reading, and none where the night stored none.
@@ -3356,9 +3374,13 @@ public sealed class ReadApi : IComponent
         command.CommandText = CandidateSetups;
         command.Parameters.AddWithValue("$horizon", EquityBrief.Core.Returns.ForwardReturnSeries.Setup);
 
-        // A swing family candidate fires on a swing filter row, and its setup is that row's own plan.
-        // see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context
+        // A swing family candidate fires on a swing filter row, and its setup is the row's plan its own
+        // verdict names, the plan at the nearest bands where a verdict written before any other was stored
+        // names none.
+        // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
         command.Parameters.AddWithValue("$swing", EquityBrief.Core.Returns.ForwardReturnSeries.Swing);
+        command.Parameters.AddWithValue("$clear", EquityBrief.Core.Returns.ForwardReturnSeries.Clear);
+        command.Parameters.AddWithValue("$clearPlan", EquityBrief.Core.Filter.FilterSettings.ClearWord);
 
         var rows = new List<CandidateSetupRow>();
 

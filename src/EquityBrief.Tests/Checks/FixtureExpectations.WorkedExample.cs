@@ -15,7 +15,7 @@ public partial class FixtureExpectations
     static readonly DateOnly WorkedNight = new(2026, 9, 4);
 
     // The setting the counts replay an earlier session at: section 17's proposed values with the trade read
-    // from the swing trade's own plan, the plan the figures draw.
+    // from the swing trade at the nearest bands, the plan the figures draw.
     const string WorkedSetting = "market 50%, trade from the swing trade";
 
     internal sealed record WorkedFigures(string Funnel, string Name, string Resolution, NameFigure NameData, ResolutionFigure ResolutionData, IReadOnlyList<(string Gate, int Passed)> Steps, int Members);
@@ -52,6 +52,10 @@ public partial class FixtureExpectations
 
         var chosen = rows.OrderByDescending(row => row.Gates.Count(gate => gate.Passed)).ThenBy(row => row.Ticker, StringComparer.Ordinal).First();
         var setup = chosen.Gates.Single(gate => gate.Gate == SwingGates.Setup).Values;
+
+        // The figure's key says section 10's plan places the same stop and target for the name drawn, which
+        // holds only while the row stores them so.
+        Assert.Equal(chosen.Stop + "|" + chosen.Target, Query(store, $"SELECT clear_stop || '|' || clear_target FROM gate_result WHERE ticker = '{chosen.Ticker}' AND session_date = '{night}';").Single());
         var reading = Query(store, $"SELECT recent_high, depth FROM swing_reading WHERE ticker = '{chosen.Ticker}' AND session_date = '{night}';").Single().Split('|');
         var closes = Query(store, $"SELECT session_date, close FROM bar WHERE ticker = '{chosen.Ticker}' AND session_date <= '{night}' ORDER BY session_date DESC LIMIT 40;")
             .Select(row => row.Split('|'))

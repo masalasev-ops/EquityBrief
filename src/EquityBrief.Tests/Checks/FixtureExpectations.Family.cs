@@ -14,7 +14,8 @@ namespace EquityBrief.Tests.Checks;
 // and phase 10's three retirements at one instant or none.
 public partial class FixtureExpectations
 {
-    // The operator's ruled settings, which version 1 opens on and the live filter's candidate states.
+    // The operator's ruled settings as the live filter's candidate states them, the trade gate reading
+    // section 10's plan for the swing trade.
     static readonly FilterSettings Ruled = FilterSettings.Proposed with
     {
         StrengthFloor = 0.5,
@@ -25,7 +26,7 @@ public partial class FixtureExpectations
         StopHigh = 4,
         RewardToRiskFloor = 1.5,
         ArrivalSessions = 3,
-        Trade = TradeInput.Swing,
+        Trade = TradeInput.Clear,
     };
 
     static IReadOnlyDictionary<string, bool> Fires(GateInputs inputs) =>
@@ -36,67 +37,90 @@ public partial class FixtureExpectations
 
     static readonly string Live = SwingFamily.LiveCandidate("1");
 
-    // The member that passes every gate, its swing trade entered at 102 with its stop at the setup band's
-    // low edge of 100 and its target at the resistance band's low edge, its target moved to set the reward
-    // to risk: (target - 102) / 2.
+    // A variant's name as the family defined against version 1 writes it.
+    static string Variant(string name) => TheSwingFamily.Variant(name, "1");
+
+    static readonly string NearestBands = Variant(TheSwingFamily.NearestBandsName);
+
+    // The member that passes every gate on both swing plans. Entered at 102 on a typical move of 4, the
+    // setup band 100 to 104 half a move below: the plan at the nearest bands stops at 100 and section 10's
+    // at the next support band's low edge, 95, 1.75 moves below; both target the band at 120, the nearest
+    // above the close and 4.5 moves up.
+    static GateInputs FamilyPassing() =>
+        Passing() with { Bands = [new FilterBand(95m, 96m, "support", 3, true), .. Passing().Bands] };
+
+    // The same member with its target band moved to set each plan's reward to risk: (target - 102) / 7 on
+    // section 10's plan wherever the target is two typical moves or more above the entry, 110, and
+    // (target - 102) / 2 on the plan at the nearest bands.
     static GateInputs AtRewardToRisk(decimal target) =>
-        Passing() with { Bands = [new FilterBand(100m, 104m, "support", 10, true), new FilterBand(target, target + 1, "resistance", 5, true)] };
+        Passing() with { Bands = [new FilterBand(95m, 96m, "support", 3, true), new FilterBand(100m, 104m, "support", 10, true), new FilterBand(target, target + 1, "resistance", 5, true)] };
 
     [Fact]
     public void EachOfTheSixFiresOnItsOwnSideOfEverySettingItMovesAndNotAStepPastIt()
     {
         // Worked by hand. The passing member: breadth 0.75, an uptrend at strength 0.8, a pullback 3 moves
         // deep on a dry-up of 0.8 inside the band 100 to 104, its event tonight and none on the session
-        // before, and its swing trade from 102 to 120 over a stop at 100, a reward to risk of 9 with the
-        // stop 2 / 4 = 0.5 typical moves below. Every one of the six fires.
-        Assert.All(Fires(Passing()), fire => Assert.True(fire.Value, fire.Key));
-        Assert.Equal(6, Fires(Passing()).Count);
+        // before; section 10's plan from 102 to 120 over a stop at 95, 18 / 7 = 2.57 with the stop 7 / 4 =
+        // 1.75 typical moves below, and the plan at the nearest bands over a stop at 100, 18 / 2 = 9 with
+        // the stop 2 / 4 = 0.5 below. Every one of the six fires.
+        Assert.All(Fires(FamilyPassing()), fire => Assert.True(fire.Value, fire.Key));
+        Assert.Equal(6, Fires(FamilyPassing()).Count);
 
-        // Reward to risk: the live floor 1.5 at a target of 105 and not at 104.98, 1.49; the variant's 2 at
-        // 106 and not at 105.98, 1.99, which the live filter still fires on.
-        Assert.True(Fires(AtRewardToRisk(105m))[Live]);
-        Assert.False(Fires(AtRewardToRisk(104.98m))[Live]);
-        Assert.True(Fires(AtRewardToRisk(106m))[TheSwingFamily.RewardToRiskName]);
-        Assert.Equal((true, false), (Fires(AtRewardToRisk(105.98m))[Live], Fires(AtRewardToRisk(105.98m))[TheSwingFamily.RewardToRiskName]));
+        // The plan: the live filter reads section 10's, the variant the nearest bands'. The live floor of 1.5
+        // at a target of 112.5, 10.5 / 7, and not at 112.49, 1.4986. A target at 105 is 0.75 typical moves
+        // up, inside the noise for section 10's plan, which then has no target, and 3 / 2 = 1.5 on the
+        // nearest bands', which fires; at 104.98, 1.49, it does not.
+        Assert.True(Fires(AtRewardToRisk(112.5m))[Live]);
+        Assert.False(Fires(AtRewardToRisk(112.49m))[Live]);
+        Assert.Equal((false, true), (Fires(AtRewardToRisk(105m))[Live], Fires(AtRewardToRisk(105m))[NearestBands]));
+        Assert.False(Fires(AtRewardToRisk(104.98m))[NearestBands]);
+
+        // A band 0.625 typical moves above the entry, at 104.5: the nearest bands' plan targets it at 2.5 / 2
+        // = 1.25 and does not fire, and section 10's reaches past it to 120 and does.
+        var nearBand = FamilyPassing() with { Bands = [.. FamilyPassing().Bands, new FilterBand(104.5m, 104.6m, "resistance", 2, true)] };
+
+        Assert.Equal((true, false), (Fires(nearBand)[Live], Fires(nearBand)[NearestBands]));
 
         // The pullback's depth: live 1 to 5, the variant 1 to 3.
-        GateInputs Deep(double depth) => Passing() with { Reading = Passing().Reading! with { Depth = depth } };
+        GateInputs Deep(double depth) => FamilyPassing() with { Reading = FamilyPassing().Reading! with { Depth = depth } };
 
         Assert.Equal((true, false), (Fires(Deep(5.0))[Live], Fires(Deep(5.01))[Live]));
         Assert.Equal((true, false), (Fires(Deep(1.0))[Live], Fires(Deep(0.99))[Live]));
-        Assert.Equal((true, false), (Fires(Deep(3.0))[TheSwingFamily.DepthName], Fires(Deep(3.01))[TheSwingFamily.DepthName]));
+        Assert.Equal((true, false), (Fires(Deep(3.0))[Variant(TheSwingFamily.DepthName)], Fires(Deep(3.01))[Variant(TheSwingFamily.DepthName)]));
         Assert.True(Fires(Deep(3.01))[Live]);
 
         // The dry-up, which every one of the six holds at the live 1.5.
-        GateInputs Dry(double dryUp) => Passing() with { Reading = Passing().Reading! with { DryUp = dryUp } };
+        GateInputs Dry(double dryUp) => FamilyPassing() with { Reading = FamilyPassing().Reading! with { DryUp = dryUp } };
 
         Assert.All(Fires(Dry(1.49)), fire => Assert.True(fire.Value, fire.Key));
         Assert.All(Fires(Dry(1.5)), fire => Assert.False(fire.Value, fire.Key));
 
         // Strength: live 0.5, the variant two thirds.
-        Assert.Equal((true, false), (Fires(Passing() with { Strength = 0.5 })[Live], Fires(Passing() with { Strength = 0.49 })[Live]));
+        Assert.Equal((true, false), (Fires(FamilyPassing() with { Strength = 0.5 })[Live], Fires(FamilyPassing() with { Strength = 0.49 })[Live]));
         Assert.Equal(
             (true, false, true),
-            (Fires(Passing() with { Strength = 2.0 / 3.0 })[TheSwingFamily.StrengthName], Fires(Passing() with { Strength = 0.66 })[TheSwingFamily.StrengthName], Fires(Passing() with { Strength = 0.66 })[Live]));
+            (Fires(FamilyPassing() with { Strength = 2.0 / 3.0 })[Variant(TheSwingFamily.StrengthName)], Fires(FamilyPassing() with { Strength = 0.66 })[Variant(TheSwingFamily.StrengthName)], Fires(FamilyPassing() with { Strength = 0.66 })[Live]));
 
-        // The stop's distance, 0.5 to 4 typical moves: 2 / 4 = 0.5 and 2 / 0.5 = 4 fire, 2 / 4.01 and 2 / 0.49 do not.
-        Assert.Equal((true, false), (Fires(Passing() with { TypicalMove = 4 })[Live], Fires(Passing() with { TypicalMove = 4.01 })[Live]));
-        Assert.Equal((true, false), (Fires(Passing() with { TypicalMove = 0.5 })[Live], Fires(Passing() with { TypicalMove = 0.49 })[Live]));
+        // The stop's distance, 0.5 to 4 typical moves. Section 10's plan on a typical move of 0.5 stops at the
+        // setup band, 2 / 0.5 = 4 moves below, and fires, and on 0.49, 4.08 moves, does not; the nearest
+        // bands' plan on 4 stops 2 / 4 = 0.5 below and fires, and on 4.01 does not.
+        Assert.Equal((true, false), (Fires(FamilyPassing() with { TypicalMove = 0.5 })[Live], Fires(FamilyPassing() with { TypicalMove = 0.49 })[Live]));
+        Assert.Equal((true, false), (Fires(FamilyPassing() with { TypicalMove = 4 })[NearestBands], Fires(FamilyPassing() with { TypicalMove = 4.01 })[NearestBands]));
 
         // The market: the live floor 0.5 at a breadth of 0.5 and not at 0.49, which the variant that reads
         // no market fires on, as it does on a night whose breadth is not available.
-        GateInputs AtBreadth(double? share) => Passing() with { Breadth = new Breadth(100, 100, 50, share) };
+        GateInputs AtBreadth(double? share) => FamilyPassing() with { Breadth = new Breadth(100, 100, 50, share) };
 
         Assert.Equal((true, false), (Fires(AtBreadth(0.5))[Live], Fires(AtBreadth(0.49))[Live]));
-        Assert.True(Fires(AtBreadth(0.49))[TheSwingFamily.MarketOffName]);
-        Assert.True(Fires(Passing() with { Breadth = null })[TheSwingFamily.MarketOffName]);
-        Assert.False(Fires(Passing() with { Breadth = null })[Live]);
+        Assert.True(Fires(AtBreadth(0.49))[Variant(TheSwingFamily.MarketOffName)]);
+        Assert.True(Fires(FamilyPassing() with { Breadth = null })[Variant(TheSwingFamily.MarketOffName)]);
+        Assert.False(Fires(FamilyPassing() with { Breadth = null })[Live]);
 
-        // Arrival: tonight's close at the previous high of 101 is no event, and the stop 1 / 2 = 0.5 moves
-        // below. Fired on 09-04 and not 09-03 arrives one session back, inside the live window of three
-        // and outside the variant's one; fired back to 09-02 and not 09-01 arrives two back, inside the
-        // live window; fired on every session back to 09-01, it did not arrive in three.
-        GateInputs Arrived(bool on03, bool on02, bool on01) => Passing() with
+        // Arrival: tonight's close at the previous high of 101 is no event, and section 10's stop at 95, 6 / 2
+        // = 3 moves below. Fired on 09-04 and not 09-03 arrives one session back, inside the live window of
+        // three and outside the variant's one; fired back to 09-02 and not 09-01 arrives two back, inside
+        // the live window; fired on every session back to 09-01, it did not arrive in three.
+        GateInputs Arrived(bool on03, bool on02, bool on01) => FamilyPassing() with
         {
             Close = 101m,
             TypicalMove = 2,
@@ -104,19 +128,24 @@ public partial class FixtureExpectations
             Earlier = [new SessionEvent(new DateOnly(2026, 9, 3), on03), new SessionEvent(new DateOnly(2026, 9, 2), on02), new SessionEvent(new DateOnly(2026, 9, 1), on01)],
         };
 
-        Assert.Equal((true, false), (Fires(Arrived(false, false, false))[Live], Fires(Arrived(false, false, false))[TheSwingFamily.ArrivalName]));
+        Assert.Equal((true, false), (Fires(Arrived(false, false, false))[Live], Fires(Arrived(false, false, false))[Variant(TheSwingFamily.ArrivalName)]));
         Assert.True(Fires(Arrived(true, false, false))[Live]);
         Assert.False(Fires(Arrived(true, true, true))[Live]);
-        Assert.True(Fires(Passing())[TheSwingFamily.ArrivalName]);
+        Assert.True(Fires(FamilyPassing())[Variant(TheSwingFamily.ArrivalName)]);
 
         // An exclusion leaves every one of the six unfired.
-        Assert.All(Fires(Passing() with { Suspect = true }), fire => Assert.False(fire.Value, fire.Key));
+        Assert.All(Fires(FamilyPassing() with { Suspect = true }), fire => Assert.False(fire.Value, fire.Key));
 
-        // The verdict names each gate's answer, the market read, the exclusions and the session it arrived on.
+        // The verdict names each gate's answer, the market read, the exclusions, the session it arrived on
+        // and the plan its trade gate read, which is the plan its setup is scored on.
         var verdict = new SwingFilterRule().EvaluateGates(AtBreadth(0.49), SwingFilterRule.ParametersOf(Ruled, marketGate: false));
 
-        Assert.Equal(("failed", "no", "none", "tonight"), (verdict.Values[SwingGates.Market], verdict.Values["market read"], verdict.Values["exclusions"], verdict.Values["arrived"]));
+        Assert.Equal(("failed", "no", "none", "tonight", "clear"), (verdict.Values[SwingGates.Market], verdict.Values["market read"], verdict.Values["exclusions"], verdict.Values["arrived"], verdict.Values[SwingFilterRule.PlanValue]));
+        Assert.Equal("swing", new SwingFilterRule().EvaluateGates(FamilyPassing(), SwingFilterRule.ParametersOf(Ruled with { Trade = TradeInput.Swing })).Values[SwingFilterRule.PlanValue]);
         Assert.Equal(Ruled, SwingFilterRule.SettingsOf(SwingFilterRule.ParametersOf(Ruled)));
+        Assert.Equal(
+            [0.0, 1.0, 2.0],
+            [.. new[] { TradeInput.Ladder, TradeInput.Swing, TradeInput.Clear }.Select(input => SwingFilterRule.ParametersOf(Ruled with { Trade = input })[SwingFilterRule.TradeParameter])]);
     }
 
     [Fact]
@@ -144,7 +173,7 @@ public partial class FixtureExpectations
         // and a moved evaluator a fault.
         Assert.Equal([Live], ShadowColumn.ForTheFilter(standing).Select(one => one.Candidate));
 
-        var filter = ShadowColumn.EvaluateGates(ShadowColumn.ForTheFilter(standing), Passing());
+        var filter = ShadowColumn.EvaluateGates(ShadowColumn.ForTheFilter(standing), FamilyPassing());
 
         Assert.Equal((Live, true), (Assert.Single(filter.Outcomes).Candidate, filter.Outcomes[0].Fired));
 
@@ -261,16 +290,16 @@ public partial class FixtureExpectations
         Assert.All(TextRows(store, "SELECT evidence FROM candidate_register WHERE event = 'retired';"), evidence => Assert.Contains(TheSwingFamily.NothingRead, evidence, StringComparison.Ordinal));
 
         // The six are the family, each on the one evaluator at its version, the live filter stating the open
-        // version's settings and each variant those with one setting moved.
+        // version's settings and each variant those with one thing moved, named for version 1.
         Assert.Equal(
-            [Live, TheSwingFamily.RewardToRiskName, TheSwingFamily.DepthName, TheSwingFamily.MarketOffName, TheSwingFamily.StrengthName, TheSwingFamily.ArrivalName],
+            [Live, NearestBands, Variant(TheSwingFamily.DepthName), Variant(TheSwingFamily.MarketOffName), Variant(TheSwingFamily.StrengthName), Variant(TheSwingFamily.ArrivalName)],
             TextRows(store, "SELECT candidate FROM candidate_register WHERE event = 'registered' AND id > 3 ORDER BY id;"));
         Assert.All(TextRows(store, "SELECT evaluator || '|' || evaluator_version FROM candidate_register WHERE event = 'registered' AND id > 3;"), row => Assert.Equal(SwingFilterRule.EvaluatorName + "|" + new SwingFilterRule().Version, row));
         Assert.Equal(Ruled, SwingFilterRule.SettingsOf(CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{Live}';"))));
         Assert.Equal(
-            Ruled with { RewardToRiskFloor = 2 },
-            SwingFilterRule.SettingsOf(CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{TheSwingFamily.RewardToRiskName}';"))));
-        Assert.Equal(0.0, CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{TheSwingFamily.MarketOffName}';"))[SwingFilterRule.MarketGateParameter]);
+            Ruled with { Trade = TradeInput.Swing },
+            SwingFilterRule.SettingsOf(CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{NearestBands}';"))));
+        Assert.Equal(0.0, CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{Variant(TheSwingFamily.MarketOffName)}';"))[SwingFilterRule.MarketGateParameter]);
 
         // A second run is refused whole, the three no longer standing.
         Assert.Equal(1, (await RegisterVerbAt(store, familyAt.AddHours(1), RegisterVerb.TheFamily)).Code);
@@ -287,10 +316,10 @@ public partial class FixtureExpectations
         // ZZB's strength set to 0.6, above the live floor of 0.5 and below the variant's two thirds.
         store.Execute("UPDATE swing_reading SET strength = 0.6, place_short = 0.6, place_long = 0.6 WHERE ticker = 'ZZB';");
 
-        // Worked by hand under the ruled settings: ZZA, ZZB and ZZC pass every gate, their swing trades from
-        // 102 over a stop at 100 to 120 or 126, and their events tonight with none on the session before;
-        // ZZD is in a range. So ZZA and ZZC fire for all six, ZZB for all but the strength variant, and ZZD
-        // for none.
+        // Worked by hand under the ruled settings: ZZA, ZZB and ZZC pass every gate, section 10's plan from
+        // 102 over a stop at 95 to 120 or 126 and the plan at the nearest bands over a stop at 100, and their
+        // events tonight with none on the session before; ZZD is in a range. So ZZA and ZZC fire for all
+        // six, ZZB for all but the strength variant, and ZZD for none.
         var family = FamilyShadow.For(
             await new CandidateRegistrar(FixedClock.At(FilterEvening, SessionZones.UnitedStates), store.DatabaseFile).RowsAsync(),
             FilterEvening.AddMinutes(-30));
@@ -313,7 +342,7 @@ public partial class FixtureExpectations
         Assert.All(FiredOn("ZZC"), fire => Assert.True(fire.Value, fire.Key));
         Assert.All(FiredOn("ZZD"), fire => Assert.False(fire.Value, fire.Key));
         Assert.Equal(
-            [TheSwingFamily.StrengthName],
+            [Variant(TheSwingFamily.StrengthName)],
             FiredOn("ZZB").Where(fire => !fire.Value).Select(fire => fire.Key));
         Assert.Equal(6, FiredOn("ZZB").Count);
 

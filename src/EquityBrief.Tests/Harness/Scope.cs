@@ -519,7 +519,7 @@ internal static class Scope
             Verdict.Pass,
             "the family and whether the trigger's event happened are drawn as the row stores them",
             ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from the swing trade's own plan")] = new Scoped(
+        [CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked")] = new Scoped(
             Verdict.Pass,
             "each reading of the trade, its reward to risk and its stop's distance in typical moves, is drawn whole as the row stores it, the swing trade's entry, stop and target beside it",
             ByReadSurface),
@@ -635,7 +635,7 @@ internal static class Scope
             Verdict.Pass,
             "each gate reading an absent value fails with the reason it is absent and none passes on an absence, over constructed members and the fixture's member the night read nothing for",
             ByExpectations),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche and from the swing trade's own plan, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's, and an evening is listed by the rule that listed it).")] = new Scoped(
             Verdict.Pass,
             "the night runs the step after the listings and before the facts, writes a row for every member, and records its session as listed by the swing filter",
             ByNight),
@@ -811,6 +811,11 @@ internal static class Scope
         [CheckReach.Key(LimitsTable, "Twenty-session outcome")] = new Scoped(
             Verdict.Pass,
             "worked by hand over constructed bars, a target reached on the twentieth session is a win and one reached on the twenty-first is unresolved at the twentieth, and the constant the row states is the one the scorer caps at",
+            ByExpectations),
+        // The 12.2 correction's: section 17's plan clear of the noise, the plan the live trade gate reads.
+        [CheckReach.Key(LimitsTable, "Swing trade plan")] = new Scoped(
+            Verdict.Pass,
+            "worked by hand over constructed members, the stop at the setup band's low edge at one typical move below the entry and at the next support band's under it, the target at the band two typical moves above and not at one under it, the fixture's eight name-nights held to a derivation outside the repository, and the constants the row states are the ones the plan reads",
             ByExpectations),
         // 12.6's: tonight's list switched to the filter, the evening before the switch drawn as it was listed,
         // the rule's store, the run page's overlap and section 18's two rows.
@@ -1329,7 +1334,7 @@ internal static class Scope
             Verdict.Pass,
             "each reason's firings and its resolved count are recomputed in the suite from the stored listings and forward returns, and the state each record is drawn in follows from the count against the minimum rather than from a value the test supplies",
             ByReadSurface),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate, and score every swing filter row carrying a plan on that plan (see: The swing filter's setups are scored on the swing trade's own plan from the listing close, and their first twenty sessions are context).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate, and score every swing filter row on each plan it carries (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads).")] = new Scoped(
             Verdict.Pass,
             "the night runs the stage once rather than per name, and its run log row records the listings, the rows written, the rows kept as decided, the newly matured and the ones not yet matured apart",
             ByNight),
@@ -2908,7 +2913,7 @@ internal static class Scope
         // 12.2's gates and funnel, each part owed where it is drawn.
         [CheckReach.Key("15.9 Name", "Gates, each of the five gates with whether it passed and why")] = "12.2",
         [CheckReach.Key("15.9 Name", "Gates, the setup's family and whether the trigger's event happened")] = "12.2",
-        [CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from the swing trade's own plan")] = "12.2",
+        [CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked")] = "12.2",
         [CheckReach.Key("15.9 Name", "Gates, the exclusions with a key saying how to read it")] = "12.2",
         [CheckReach.Key("15.10 Run", "Swing filter funnel, how many members each gate passed in order and how many it removed")] = "12.2",
         [CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's two families")] = "12.2",
@@ -3113,7 +3118,7 @@ internal static class Scope
             ["the night's breadth with how many members it was counted over", "the share above the 50-day average beside it as context", "the index's median volume against its fifty-day average"],
         // 12.2. The name page's gates and the run page's funnel, each read as the parts its row enumerates.
         [CheckReach.Key("15.9 Name", "Gates")] =
-            ["each of the five gates with whether it passed and why", "the setup's family and whether the trigger's event happened", "the trade read from the ladder's first tranche and from the swing trade's own plan", "the exclusions with a key saying how to read it"],
+            ["each of the five gates with whether it passed and why", "the setup's family and whether the trigger's event happened", "the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked", "the exclusions with a key saying how to read it"],
         [CheckReach.Key("15.10 Run", "Swing filter funnel")] =
             ["how many members each gate passed in order and how many it removed", "the setup's two families", "what each exclusion removed and how many pass", "the version the night ran under"],
         [CheckReach.Key("15.10 Run", "Harness")] =
@@ -3508,6 +3513,7 @@ internal static class Scope
         ["Shape lever ranges"] = "12.4",
         ["Trigger arrival window"] = "12.4",
         ["Shape acceptance bound"] = "12.4",
+        ["Swing trade plan"] = "12.2",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

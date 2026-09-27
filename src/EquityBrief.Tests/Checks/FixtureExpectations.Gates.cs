@@ -60,7 +60,7 @@ public partial class FixtureExpectations
         Assert.Empty(result.Exclusions);
         Assert.True(result.Passed);
 
-        // The ladder's reading as the listing kept it, and the swing trade's own worked by hand: in at 102,
+        // The ladder's reading as the listing kept it, and the swing trade at the nearest bands worked by hand: in at 102,
         // the stop at the band's low edge of 100, the target at the lowest band above the close, 120, so
         // (120 - 102) / (102 - 100) = 9 with the stop half a typical move below.
         Assert.Equal((3m, 1.5), (result.LadderTrade.RewardToRisk!.Value, result.LadderTrade.StopInMoves!.Value));
@@ -272,13 +272,86 @@ public partial class FixtureExpectations
 
         Assert.Equal("no exit is traded, so there is no reward to measure", Reason(none, SwingGates.Trade));
 
-        // Read from the swing trade's own plan, its stop half a typical move below the entry fails where
+        // Read from the swing trade at the nearest bands, its stop half a typical move below the entry fails where
         // the ladder's passes; with its stop at 97 it sits 1.25 below at (120 - 102) / (102 - 97) = 3.6 and passes.
         var swing = FilterSettings.Proposed with { Trade = TradeInput.Swing };
 
         Assert.False(Passed(Gates(Passing(), swing), SwingGates.Trade));
         Assert.True(Passed(Gates(Passing() with { Bands = [new FilterBand(97m, 104m, "support", 10, true), new FilterBand(120m, 121m, "resistance", 5, true)] }, swing), SwingGates.Trade));
         Assert.Equal("no band above the close to set a target at", Reason(Gates(Passing() with { Bands = [new FilterBand(97m, 104m, "support", 10, true)] }, swing), SwingGates.Trade));
+    }
+
+    [Fact]
+    public void SectionTensPlanStopsAtTheSetupBandOrTheBandBeneathItAndTargetsTheLowestBandTwoTypicalMovesUp()
+    {
+        Assert.Equal((1.0, 2.0), (SwingGates.ClearStopMoves, SwingGates.ClearTargetMoves));
+
+        // Worked by hand, each entered at the close of 102 on a typical move of 4, so a typical move is 4
+        // below the entry at 98 and two are 8 above it at 110.
+        TradeReading Clear(params FilterBand[] bands) => Gates(Passing() with { Bands = bands }).ClearTrade;
+
+        FilterBand Support(decimal low, decimal high, bool anchored = true) => new(low, high, "support", 10, anchored);
+
+        FilterBand Resistance(decimal low) => new(low, low + 1, "resistance", 5, true);
+
+        // The setup band's low edge a typical move below the entry, exactly: the stop is that edge, and the
+        // target the band at 120, (120 - 102) / (102 - 98) = 4.5 with the stop one move below.
+        var atOne = Clear(Support(98m, 104m), Resistance(120m));
+
+        Assert.Equal((102m, 98m, 120m, 4.5m), (atOne.Entry!.Value, atOne.Stop!.Value, atOne.Target!.Value, atOne.RewardToRisk!.Value));
+        Assert.Equal(1.0, atOne.StopInMoves!.Value, 9);
+
+        // A hundredth closer, 0.9975 moves: the stop steps to the next support band's low edge beneath,
+        // whatever anchors it, the highest of those below, 95 over 90, so (120 - 102) / 7 = 2.5714 at 1.75.
+        var underOne = Clear(Support(90m, 91m), Support(95m, 96m, anchored: false), Support(98.01m, 104m), Resistance(120m));
+
+        Assert.Equal((95m, 120m, 2.5714m), (underOne.Stop!.Value, underOne.Target!.Value, underOne.RewardToRisk!.Value));
+        Assert.Equal(1.75, underOne.StopInMoves!.Value, 9);
+
+        // With no support band beneath, no stop is placed and the plan says why.
+        Assert.Equal(
+            "the setup band's low edge is less than a typical move below the entry and no support band sits beneath it to set a stop at",
+            Clear(Support(98.01m, 104m), Resistance(120m)).Absent);
+
+        // The step is taken once: the setup band's edge at 101 is a quarter move below, the band beneath's at
+        // 99.5 still under one, and the stop stays at 99.5, 0.625 moves below.
+        var once = Clear(Support(99m, 99.5m), Support(99.5m, 100m), Support(101m, 104m), Resistance(120m));
+
+        Assert.Equal(99.5m, once.Stop!.Value);
+        Assert.Equal(0.625, once.StopInMoves!.Value, 9);
+
+        // The target: a band exactly two moves up, at 110, is it; one at 109.99, 1.9975 moves, is inside the
+        // noise and the target is the next band up, 120; with none beyond it the plan has a stop and no target.
+        Assert.Equal(110m, Clear(Support(98m, 104m), Resistance(110m), Resistance(120m)).Target!.Value);
+        Assert.Equal(120m, Clear(Support(98m, 104m), Resistance(109.99m), Resistance(120m)).Target!.Value);
+
+        var noTarget = Clear(Support(98m, 104m), Resistance(109.99m));
+
+        Assert.Equal((98m, (decimal?)null, (decimal?)null), (noTarget.Stop!.Value, noTarget.Target, noTarget.RewardToRisk));
+        Assert.Equal("no band sits two typical moves or more above the close to set a target at", noTarget.Absent);
+
+        // No typical move places neither, and no setup band leaves nothing to stop at.
+        Assert.Equal("no typical move to place the stop and the target by", Gates(Passing() with { TypicalMove = null }).ClearTrade.Absent);
+        Assert.Equal("no setup band to set a stop at", Clear(Resistance(120m)).Absent);
+
+        // The trade gate reads it where the settings name it, and says so: at a floor of 1.5 the step beneath
+        // passes at 2.5714, and the plan at the nearest bands, 18 / 3.99 = 4.5113 at 0.9975 moves, is not read.
+        var clear = FilterSettings.Proposed with { Trade = TradeInput.Clear, RewardToRiskFloor = 1.5, StopLow = 0.5, StopHigh = 4 };
+        var read = Gates(Passing() with { Bands = [Support(90m, 91m), Support(95m, 96m, anchored: false), Support(98.01m, 104m), Resistance(120m)] }, clear);
+
+        Assert.True(Passed(read, SwingGates.Trade));
+        Assert.Equal(("clear", "2.5714"), (read.Gates.Single(gate => gate.Name == SwingGates.Trade).Values[SwingGates.TradeInputValue], read.Gates.Single(gate => gate.Name == SwingGates.Trade).Values["reward to risk"]));
+        Assert.False(Passed(Gates(Passing() with { Bands = [Support(98.01m, 104m), Resistance(120m)] }, clear), SwingGates.Trade));
+
+        // And the names passing are ordered by its reward to risk: the band beneath at 95 gives 2.5714, at 96
+        // gives 3.
+        var ranked = new[]
+        {
+            Gates(Passing() with { Ticker = "ZZA", Bands = [Support(95m, 95.5m), Support(98.01m, 104m), Resistance(120m)] }, clear),
+            Gates(Passing() with { Ticker = "ZZB", Bands = [Support(96m, 96.5m), Support(98.01m, 104m), Resistance(120m)] }, clear),
+        };
+
+        Assert.Equal(["ZZB", "ZZA"], SwingGates.Ranked(ranked, clear).Select(result => result.Ticker));
     }
 
     [Fact]
@@ -332,7 +405,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(["ZZD", "ZZB", "ZZC", "ZZA", "ZZE"], SwingGates.Ranked(results, FilterSettings.Proposed).Select(result => result.Ticker));
 
-        // Read from the swing trade's own plan the order follows its reward to risk instead: a stop at 101
+        // Read from the swing trade at the nearest bands the order follows its reward to risk instead: a stop at 101
         // gives (120 - 102) / 1 = 18, at 100 it gives 9 and at 99 it gives 6.
         var swing = new[]
         {
@@ -409,7 +482,9 @@ public partial class FixtureExpectations
                     store,
                     "SELECT market || '|' || trend || '|' || setup || '|' || trigger_pass || '|' || trade || '|' || IFNULL(family, '') || '|' || " +
                     "IFNULL(trigger_event, '') || '|' || CASE WHEN ladder_reward_to_risk IS NULL THEN '' ELSE printf('%.4f', ladder_reward_to_risk) END || '|' || IFNULL(swing_stop, '') || '|' || " +
-                    "IFNULL(swing_target, '') || '|' || CASE WHEN swing_reward_to_risk IS NULL THEN '' ELSE printf('%.4f', swing_reward_to_risk) END || '|' || IFNULL(band_strength, '') || '|' || exclusions || '|' || passed " +
+                    "IFNULL(swing_target, '') || '|' || CASE WHEN swing_reward_to_risk IS NULL THEN '' ELSE printf('%.4f', swing_reward_to_risk) END || '|' || " +
+                    "IFNULL(clear_stop, '') || '|' || IFNULL(clear_target, '') || '|' || CASE WHEN clear_reward_to_risk IS NULL THEN '' ELSE printf('%.4f', clear_reward_to_risk) END || '|' || " +
+                    "IFNULL(band_strength, '') || '|' || exclusions || '|' || passed " +
                     $"FROM gate_result WHERE ticker = '{name.Name}' AND session_date = '{night.Name}';")).Split('|');
 
                 var gates = want.GetProperty("gates");
@@ -427,6 +502,9 @@ public partial class FixtureExpectations
                         Text(want.GetProperty("swingStop")),
                         Text(want.GetProperty("swingTarget")),
                         want.GetProperty("swingRewardToRisk").ValueKind == JsonValueKind.Null ? string.Empty : decimal.Parse(want.GetProperty("swingRewardToRisk").GetString()!, CultureInfo.InvariantCulture).ToString("0.0000", CultureInfo.InvariantCulture),
+                        Text(want.GetProperty("clearStop")),
+                        Text(want.GetProperty("clearTarget")),
+                        want.GetProperty("clearRewardToRisk").ValueKind == JsonValueKind.Null ? string.Empty : decimal.Parse(want.GetProperty("clearRewardToRisk").GetString()!, CultureInfo.InvariantCulture).ToString("0.0000", CultureInfo.InvariantCulture),
                         Text(want.GetProperty("bandStrength")),
                         JsonSerializer.Serialize(want.GetProperty("exclusions").EnumerateArray().Select(one => one.GetString()!).ToArray()),
                         Flag(want.GetProperty("passed").GetBoolean()),
@@ -436,7 +514,8 @@ public partial class FixtureExpectations
                 // The figures read as statistics, within a ten-thousandth of the ones worked by hand.
                 var figures = Assert.Single(Query(
                     store,
-                    "SELECT printf('%.6f', ladder_stop_moves) || '|' || CASE WHEN swing_stop_moves IS NULL THEN '' ELSE printf('%.6f', swing_stop_moves) END || '|' || printf('%.6f', strength) " +
+                    "SELECT printf('%.6f', ladder_stop_moves) || '|' || CASE WHEN swing_stop_moves IS NULL THEN '' ELSE printf('%.6f', swing_stop_moves) END || '|' || printf('%.6f', strength) || '|' || " +
+                    "CASE WHEN clear_stop_moves IS NULL THEN '' ELSE printf('%.6f', clear_stop_moves) END " +
                     $"FROM gate_result WHERE ticker = '{name.Name}' AND session_date = '{night.Name}';")).Split('|');
 
                 Assert.InRange(Math.Abs(double.Parse(figures[0], CultureInfo.InvariantCulture) - want.GetProperty("ladderStopMoves").GetDouble()), 0, 0.0001);
@@ -445,6 +524,14 @@ public partial class FixtureExpectations
                 if (want.GetProperty("swingStopMoves").ValueKind != JsonValueKind.Null)
                 {
                     Assert.InRange(Math.Abs(double.Parse(figures[1], CultureInfo.InvariantCulture) - want.GetProperty("swingStopMoves").GetDouble()), 0, 0.0001);
+                }
+
+                // Section 10's stop is stored with its distance wherever it has one, a target or none.
+                Assert.Equal(want.GetProperty("clearStopMoves").ValueKind == JsonValueKind.Null, figures[3].Length == 0);
+
+                if (want.GetProperty("clearStopMoves").ValueKind != JsonValueKind.Null)
+                {
+                    Assert.InRange(Math.Abs(double.Parse(figures[3], CultureInfo.InvariantCulture) - want.GetProperty("clearStopMoves").GetDouble()), 0, 0.0001);
                 }
 
                 read++;

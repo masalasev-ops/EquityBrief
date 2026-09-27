@@ -72,6 +72,9 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.LimitsTable, "Swing plan outcome"),
             CheckReach.Key(Scope.LimitsTable, "Twenty-session outcome"),
 
+            // The 12.2 correction, the plan clear of the noise the live trade gate reads.
+            CheckReach.Key(Scope.LimitsTable, "Swing trade plan"),
+
             // 12.6, the rule each evening's list was drawn by.
             CheckReach.Key(Scope.StoresTable, "List rules"),
 

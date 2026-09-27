@@ -244,7 +244,7 @@ public static class TonightScreen
             gate.Rank ?? 0,
             gate.Family,
             Value(EquityBrief.Core.Filter.SwingGates.Trigger, EquityBrief.Core.Filter.SwingGates.ArrivedValue),
-            Value(EquityBrief.Core.Filter.SwingGates.Trade, "input"),
+            Value(EquityBrief.Core.Filter.SwingGates.Trade, EquityBrief.Core.Filter.SwingGates.TradeInputValue),
             Value(EquityBrief.Core.Filter.SwingGates.Trade, "reward to risk"),
             Value(EquityBrief.Core.Filter.SwingGates.Trade, "stop in typical moves"),
             [.. gates.Select(one => new FilterGate(one.Name, one.Passed, one.Reason))]);

@@ -2,13 +2,18 @@ using System.Text.Json;
 
 namespace EquityBrief.Core.Filter;
 
-// Which plan the trade gate reads: the ladder's first tranche as the night's listing kept it, or the
-// swing trade's own entry at the close, stop at the setup band's low edge and target at the nearest
-// resistance band's low edge above the close.
+// Which plan the trade gate reads: the ladder's first tranche as the night's listing kept it; the swing
+// trade at the nearest bands, entered at the close, stopped at the setup band's low edge and won at the
+// nearest band's low edge above the close; or the swing trade clear of the noise, section 10's plan,
+// entered at the close, stopped at the setup band's low edge or the next support band's below it where
+// that is less than a typical move below the entry, and won at the lowest low edge of a band two
+// typical moves or more above it.
+// see: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
 public enum TradeInput
 {
     Ladder,
     Swing,
+    Clear,
 }
 
 // The swing filter's settings: the nine thresholds its gates and its exclusion read, and which plan the
@@ -89,8 +94,31 @@ public sealed record FilterSettings(
             ["stopHigh"] = StopHigh,
             ["earningsWindowSessions"] = EarningsWindowSessions,
             ["arrivalSessions"] = ArrivalSessions,
-            ["trade"] = Trade == TradeInput.Ladder ? "ladder" : "swing",
+            ["trade"] = Word(Trade),
         });
+
+    // The trade gate's input as a version stores it and a row's values name it.
+    public const string LadderWord = "ladder";
+
+    public const string SwingWord = "swing";
+
+    public const string ClearWord = "clear";
+
+    public static string Word(TradeInput input) => input switch
+    {
+        TradeInput.Ladder => LadderWord,
+        TradeInput.Swing => SwingWord,
+        _ => ClearWord,
+    };
+
+    // The input a word names, or null for a word that names none.
+    public static TradeInput? InputOf(string? word) => word switch
+    {
+        LadderWord => TradeInput.Ladder,
+        SwingWord => TradeInput.Swing,
+        ClearWord => TradeInput.Clear,
+        _ => null,
+    };
 
     // A version's settings, every one of them named: a version missing one is refused rather than
     // read with a proposed value filled in, since a filter run on a value nobody accepted is not the
@@ -120,11 +148,6 @@ public sealed record FilterSettings(
             Number("stopHigh"),
             (int)Number("earningsWindowSessions"),
             (int)Number("arrivalSessions"),
-            trade switch
-            {
-                "ladder" => TradeInput.Ladder,
-                "swing" => TradeInput.Swing,
-                _ => throw new InvalidOperationException(FormattableString.Invariant($"A filter version's trade input is '{trade}', which is neither ladder nor swing.")),
-            });
+            InputOf(trade) ?? throw new InvalidOperationException(FormattableString.Invariant($"A filter version's trade input is '{trade}', which is not ladder, swing or clear.")));
     }
 }

@@ -667,6 +667,7 @@ public static class SchemaMigrations
         new Migration(44, "add research_request.refresh", AddResearchRequestRefresh),
         new Migration(45, "create fundamentals_snapshot", CreateFundamentalsSnapshot),
         new Migration(46, "create pulled_bar and pulled_earnings", CreatePulledHistory),
+        new Migration(47, "add gate_result's plan clear of the noise", AddClearPlan),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -1091,6 +1092,19 @@ public static class SchemaMigrations
             pull       TEXT NOT NULL,
             PRIMARY KEY (ticker, event_date)
         ) STRICT;
+    ";
+
+    // Section 10's plan for the swing trade beside the plan at the nearest bands, both entered at the
+    // night's close: the stop at the setup band's low edge, or the next support band's below it where
+    // that is less than a typical move below the entry, and the target at the lowest low edge of a band
+    // two typical moves or more above it. A row written before the column carries the nearest bands'
+    // plan alone, which is the plan every candidate standing then read.
+    // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
+    const string AddClearPlan = @"
+        ALTER TABLE gate_result ADD COLUMN clear_stop TEXT;
+        ALTER TABLE gate_result ADD COLUMN clear_target TEXT;
+        ALTER TABLE gate_result ADD COLUMN clear_reward_to_risk REAL;
+        ALTER TABLE gate_result ADD COLUMN clear_stop_moves REAL;
     ";
 
     public static int LatestVersion => All.Max(migration => migration.Version);

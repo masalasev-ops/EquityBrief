@@ -22,7 +22,8 @@ public partial class ReadSurface
         var stored = SwingRows(
             store,
             "SELECT ticker, gates, family, trigger_event, ladder_reward_to_risk, ladder_stop_moves, swing_entry, swing_stop, swing_target, " +
-            $"swing_reward_to_risk, swing_stop_moves, exclusions, passed, version FROM gate_result WHERE session_date = '{GatesNight}' ORDER BY ticker;");
+            "swing_reward_to_risk, swing_stop_moves, exclusions, passed, version, clear_stop, clear_target, clear_reward_to_risk, clear_stop_moves " +
+            $"FROM gate_result WHERE session_date = '{GatesNight}' ORDER BY ticker;");
 
         Assert.Equal(4, stored.Count);
 
@@ -48,12 +49,19 @@ public partial class ReadSurface
                 card,
                 StringComparison.Ordinal);
 
-            // The trade read both ways, each figure whole on its row.
-            Assert.Contains($"<tr data-plan=\"ladder\" data-reward-to-risk=\"{WholeOf(row[4])}\" data-stop-moves=\"{WholeOf(row[5])}\">", card, StringComparison.Ordinal);
+            // The trade read three ways, each figure whole on its row, the two swing plans entered at the one
+            // close, and the plan the trade gate read, the ladder's at section 17's proposed values, marked once.
+            Assert.Contains($"<tr data-plan=\"ladder\" data-read=\"yes\" data-reward-to-risk=\"{WholeOf(row[4])}\" data-stop-moves=\"{WholeOf(row[5])}\">", card, StringComparison.Ordinal);
             Assert.Contains(
-                $"<tr data-plan=\"swing\" data-entry=\"{Plain(row[6])}\" data-stop=\"{Plain(row[7])}\" data-target=\"{Plain(row[8])}\" data-reward-to-risk=\"{WholeOf(row[9])}\" data-stop-moves=\"{WholeOf(row[10])}\">",
+                $"<tr data-plan=\"swing\" data-read=\"no\" data-entry=\"{Plain(row[6])}\" data-stop=\"{Plain(row[7])}\" data-target=\"{Plain(row[8])}\" data-reward-to-risk=\"{WholeOf(row[9])}\" data-stop-moves=\"{WholeOf(row[10])}\">",
                 card,
                 StringComparison.Ordinal);
+            Assert.Contains(
+                $"<tr data-plan=\"clear\" data-read=\"no\" data-entry=\"{Plain(row[6])}\" data-stop=\"{Plain(row[14])}\" data-target=\"{Plain(row[15])}\" data-reward-to-risk=\"{WholeOf(row[16])}\" data-stop-moves=\"{WholeOf(row[17])}\">",
+                card,
+                StringComparison.Ordinal);
+            Assert.Single(Regex.Matches(card, "the plan the trade gate read"));
+            Assert.Contains("<td>The ladder's first tranche <span class=\"plan-read\">(the plan the trade gate read)</span></td>", card, StringComparison.Ordinal);
 
             // The exclusions, and the key closing on what to take from the gates.
             Assert.Contains($"data-exclusions=\"{string.Join(",", JsonSerializer.Deserialize<string[]>(row[11])!)}\"", card, StringComparison.Ordinal);
