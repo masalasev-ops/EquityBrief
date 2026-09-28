@@ -93,8 +93,11 @@ code{font-size:.92em}
 .np-grid .np-day{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:3px}
 .np-grid .np-day[aria-current]{background:var(--ink);color:var(--surface);border-radius:3px;text-decoration:none}
 .np-grid .np-off{color:var(--soft);opacity:.45}
-.name-watch{display:inline-block;margin-left:10px;vertical-align:middle}
-.name-watch .btn-2{font-size:12px;line-height:18px;padding:0 10px}
+/* The name page's watch press outranks the rules every posted form and its button take, and states every property they state, so it sits on the masthead's line at the small controls' size. */
+form.name-watch[method='post']{display:inline-flex;align-items:center;gap:8px;margin:0;align-self:center}
+form.name-watch[method='post'] button{font:600 12px var(--sans);color:var(--ink-2);background:transparent;border:1px solid var(--hair-2);border-radius:999px;padding:2px 10px;min-height:0;cursor:pointer}
+form.name-watch[method='post'] button:hover{color:var(--ink);border-color:var(--ink)}
+.name-watch .watching{font:600 12.5px var(--sans);color:var(--ink)}
 .watch-add{display:flex;gap:8px;align-items:center;margin:0 0 14px}
 .watch-add input{font:inherit;font-size:14px;padding:6px 10px;min-width:240px;border:1px solid var(--hair);border-radius:6px;background:var(--surface);color:var(--ink)}
 .watch-said:empty{display:none}
@@ -474,7 +477,10 @@ svg text{font-family:var(--sans)}
 .m-stop{stroke:var(--ink-2);stroke-width:1} .m-inval{stroke:var(--ink);stroke-width:2.5}
 .m-leader{stroke:var(--hair-2);stroke-width:1}
 .m-neutral{fill:var(--s1)} .m-zero{stroke:var(--soft);stroke-width:1}
-.m-mom{fill:none;stroke:var(--ink);stroke-width:1.3} .m-mom-2{fill:none;stroke:var(--s3);stroke-width:1.1} .m-hist{fill:var(--s3)}
+.m-mom{fill:none;stroke:var(--ink);stroke-width:1.4} .m-mom-2{fill:none;stroke:var(--ink-2);stroke-width:1.2;stroke-dasharray:4 3} .m-hist{fill:var(--s2)}
+.m-last{fill:var(--ink)} .m-edge-rule{stroke:var(--s2);stroke-width:1}
+.m-pane-h{font-size:13px;font-weight:600;fill:var(--ink)} .m-pane-c{font-size:12px;fill:var(--ink-2)}
+.m-rule-t{font-size:10.5px;fill:var(--soft);font-variant-numeric:tabular-nums;paint-order:stroke;stroke:var(--plot);stroke-width:3px;stroke-linejoin:round}
 .m-track{stroke:var(--s2);stroke-width:1}
 .m-dist-sup{fill:var(--sup)} .m-dist-res{fill:var(--res)}
 .m-link-sup{stroke:var(--sup);stroke-width:1.5;fill:none} .m-link-res{stroke:var(--res);stroke-width:1.5;fill:none}

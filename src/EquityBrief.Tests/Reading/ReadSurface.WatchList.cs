@@ -204,7 +204,7 @@ public partial class ReadSurface
         var tonight = await client.GetStringAsync("/screens/tonight");
 
         Assert.Contains($"<p class=\"watch-line\" data-watching=\"4\">4 name(s) watched. <a href=\"{SinglePageApp.WatchRoute}\">Open the watch list</a></p>", tonight, StringComparison.Ordinal);
-        Assert.Contains($"action=\"{SinglePageApp.UnwatchPostRoute}\" data-ticker=\"{passed}\" data-watched=\"true\"><button type=\"submit\" class=\"btn-2\">Stop watching</button>", await client.GetStringAsync($"/screens/name/{passed}"), StringComparison.Ordinal);
+        Assert.Contains($"action=\"{SinglePageApp.UnwatchPostRoute}\" data-ticker=\"{passed}\" data-watched=\"true\"><span class=\"watching\">&#9733; On your watch list</span><button type=\"submit\" aria-label=\"Take {passed} off the watch list\">Remove</button>", await client.GetStringAsync($"/screens/name/{passed}"), StringComparison.Ordinal);
         Assert.Contains($"<a href=\"{SinglePageApp.WatchRoute}\" data-view=\"watch\">Watch list</a>", await client.GetStringAsync("/"), StringComparison.Ordinal);
 
         // At twenty, the line in place of the box.
@@ -219,7 +219,16 @@ public partial class ReadSurface
         // None watched: tonight's line says so and still links here, and a name's page offers to watch it.
         store.Execute("DELETE FROM watch_list;");
 
-        Assert.Contains($"action=\"{SinglePageApp.WatchPostRoute}\" data-ticker=\"{passed}\" data-watched=\"false\"><button type=\"submit\" class=\"btn-2\">Watch</button>", await client.GetStringAsync($"/screens/name/{passed}"), StringComparison.Ordinal);
+        var offered = await client.GetStringAsync($"/screens/name/{passed}");
+
+        Assert.Contains($"action=\"{SinglePageApp.WatchPostRoute}\" data-ticker=\"{passed}\" data-watched=\"false\"><button type=\"submit\" aria-label=\"Add {passed} to the watch list\">&#9734; Add to watch list</button>", offered, StringComparison.Ordinal);
+
+        // On the masthead's line after the change on the day, and not on the line beneath it saying as of when.
+        var head = Regex.Match(offered, "<div class=\"screen-mast\"[^>]*>(.*?)<span class=\"m-asof\">(.*?)</span></div>", RegexOptions.Singleline);
+
+        Assert.True(head.Success);
+        Assert.Matches("<span class=\"m-chg\">[^<]*</span><form class=\"watch-control name-watch\"", head.Groups[1].Value);
+        Assert.DoesNotContain("watch-control", head.Groups[2].Value, StringComparison.Ordinal);
 
         Assert.Contains($"<p class=\"watch-line\" data-watching=\"0\">No name is watched yet. <a href=\"{SinglePageApp.WatchRoute}\">Add names on the watch list</a></p>", await client.GetStringAsync("/screens/tonight"), StringComparison.Ordinal);
     }

@@ -2336,16 +2336,23 @@ public partial class ReadSurface
         // independent statement rather than a second copy of one.
         string[] theFourReadings = ["rsi14", "macd", "macd_signal", "macd_hist"];
 
-        Assert.Equal(theFourReadings, groups.Select(group => group.Name).ToArray());
+        // Drawn in the order that puts the bars beneath the two lines, so the set is compared
+        // rather than the order.
+        Assert.Equal(theFourReadings.Order(StringComparer.Ordinal), groups.Select(group => group.Name).Order(StringComparer.Ordinal));
 
         // And the constant agrees with the literal, so the two are reconciled
         // once rather than the panel being free to drift from what is drawn.
         Assert.Equal(theFourReadings, IndicatorSeries.Momentum.ToArray());
         Assert.Equal(IndicatorSeries.Momentum.Count, groups.Length);
 
-        // One rule per reading, and its value is the one the arithmetic states
-        // rather than one the mark chose.
-        Assert.Equal(groups.Length, Regex.Matches(svg, "class=\"neutral-rule\"").Count);
+        // One rule per pane, relative strength's and the convergence readings' shared one, and
+        // each reading's value is the one the arithmetic states rather than one the mark chose.
+        var panes = Regex.Matches(svg, "<g class=\"pane\" data-pane=\"([^\"]+)\" data-neutral=\"([^\"]+)\">")
+            .Select(match => (Name: match.Groups[1].Value, Neutral: match.Groups[2].Value))
+            .ToArray();
+
+        Assert.Equal([("strength", "50"), ("convergence", "0")], panes);
+        Assert.Equal(panes.Length, Regex.Matches(svg, "class=\"neutral-rule\"").Count);
 
         foreach (var group in groups)
         {
@@ -2357,11 +2364,12 @@ public partial class ReadSurface
         // The RSI rule sits at 50 on an axis running 0 to 100, so it is halfway
         // down its own pane whatever the stock did. That is what a fixed range
         // buys and it is asserted rather than assumed: a reading scaled to its
-        // own values would put the rule wherever the week happened to end.
-        var rsi = Regex.Match(svg, "data-name=\"rsi14\".*?class=\"neutral-rule\" x1=\"[0-9]+\" y1=\"([0-9.]+)\"", RegexOptions.Singleline);
+        // own values would put the rule wherever the week happened to end. The
+        // plot runs from 44 to 160 and draws 3 inside each edge, so 50 is at 102.
+        var rsi = Regex.Match(svg, "data-pane=\"strength\".*?class=\"neutral-rule\" x1=\"[0-9]+\" y1=\"([0-9.]+)\"", RegexOptions.Singleline);
 
         Assert.True(rsi.Success);
-        Assert.Equal(38, double.Parse(rsi.Groups[1].Value, CultureInfo.InvariantCulture), 1);
+        Assert.Equal(102, double.Parse(rsi.Groups[1].Value, CultureInfo.InvariantCulture), 1);
     }
 
     [Fact]
