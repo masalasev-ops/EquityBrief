@@ -29485,3 +29485,112 @@ Verified:   `tools/ci.ps1` green end to end, 0 warnings, 1494 of 1494 tests ran 
             carrying this entry, 04d8084, in a worktree beside the repository, and the operator's store under
             `data/` was not touched by either.
 Carried:    the planning pass for the Run page redesign, after the preview command.
+
+### 12.3 ruling - the Run page is built whole before phase 12's sign-off, its evaluation reported as the build opens   2026-09-28
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-28, after the brief was queued behind the sign-off and the preview command:
+            "build the whole page..what's the holdup", and then "no you can build it entirely before sign off. So
+            procced and finish the entire thing".
+Ruled:      the Run page redesign is built now, ahead of phase 12's sign-off and the preview command, region by
+            region with regions 1 to 3 first, each correction meeting a checkpoint's done conditions; the brief
+            the entry before this records stands whole, the decision it narrows confirmed as recorded there.
+Evaluated:  region by region, read over the code and read-only over the operator's store on 2026-09-28.
+            1. How last night went: new. The run log already holds every row the state, the four figures and
+               the time bar read; nothing is computed at night. "Waiting to try again" arrives with the night's
+               retries, which the operator has been offered and not yet approved; until then the states are
+               finished, running, stopped, left unfinished, not yet run, never ran and no session.
+            2. The market: today's page draws the night's breadth, context share and volume ratio as a table.
+               New: the gauge, the word and the breadth line. The line is read off the stored 200-day averages,
+               which the store holds for 53 sessions from 2026-07-14, so no store is added; the word's healthy
+               point is proposed in section 17.
+            3. The funnel: today's page draws it as a table. New: the bars and the link to the night's list.
+            4. The trades: Past picks' own figures, read by the same reads. New on this page only.
+            5. New stocks: the overlap region counts tonight's names against earlier evenings. New: twenty
+               nights of bars split new and repeated, read off the stored gate results.
+            6. How the system learns: the shape and edge clocks are drawn today as tables; new are the pictures
+               and each background version's picks counted, which the shadow column stores for every member
+               every night as each candidate's `fired` with each gate's answer. On the operator's store every
+               candidate was skipped on 2026-09-24 and 2026-09-25, registered at an evaluator the code no
+               longer carried, so no pick is stored yet; the six registered on 2026-09-27 at 78a5cfe3d020 are
+               first evaluated by the night of 2026-09-28.
+            7. Compare tonight's picks: new. A candidate's picks come from the shadow column; the setting that
+               separated a stock comes from the gate the candidate's answer and the live row's disagree on, the
+               live row's stored values for that gate, and the thresholds the candidate was registered with,
+               all stored; no new store and no nightly computation.
+            8. At a checkpoint: the candidates' records drawn today; new is the row per version on one scale,
+               withheld as today before its look.
+            9. Research and spend: the operational header's priced calls today; new are the pictures.
+            10. Anything to worry about: the stale-and-failed region and the harness counts today; the check on
+                companies awaiting a quarter reads `quarter_ask` again, which the read surface stopped reading
+                when the Fundamentals region came off the page, still stored.
+            11. The detail: every table the page draws today, folded.
+            Nothing needs a new store or a nightly computation.
+Changed:    `DECISIONS.md` gains three decisions: a night's state read off its own run log rows, the market's
+            word, and the status colours. The 12.3 correction after this builds regions 1 to 3.
+Tests:      none added here; the correction after it adds the ones that hold it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with the
+            figures the 12.3 correction after it records.
+Carried:    regions 4 to 11 and the decision the brief narrows, each in a correction of its own.
+
+### 12.3 - correction: the Run page opens on how the night went, the market and the funnel, each a picture with its words beneath it, and every table it drew before is folded beneath them, where it opened on the stage table   2026-09-28
+Corrects:   12.3's Run page, on the operator's ask of 2026-09-28 and the ruling before this.
+Repaired:   the page opens on three regions. How last night went draws the night's state as its own run log rows
+            give it, read by one projection, `RunScreen.Night`: the newest run whose id is a night's, a queue's
+            pass excepted, finished where it closed, stopped where it wrote a stop before the close, running
+            where its last row is inside the deadline and left unfinished where it is older, and not yet run,
+            never ran or no session where no run of the night is stored; with the stocks the close counted, the
+            requests of every run of the night, the evening's recorded spend and the stops earlier runs wrote,
+            and a time bar of its steps in six groups. The market draws the night's breadth on a gauge with the
+            floor of the version the night ran under, the word its rule gives it, the context share and the
+            volume ratio, and a breadth line read off the stored 200-day averages by the swing readings' own
+            rule. The funnel draws a bar for the index and each check in turn with the one listed and a link to
+            the night's list. Every card the page drew before sits beneath them in a section folded shut, in the
+            order it had. Four marks: the night status, the market gauge, the breadth line and the funnel bars,
+            and the status colours in the stylesheet, blue, violet and red, in both palettes. The reader's guide's
+            Run card says what the page now draws.
+Measured:   read-only over the operator's store: the share above the 200-day average over the 53 sessions it
+            holds one for, 2026-07-14 to 2026-09-25, ran from 47.6% to 75.2% with a median of 68.7%, 41 of them at
+            or above 60% and none below 45%, which the market decision states.
+Guarded:    six tests in `read-surface`, new. `TheNightsStateIsReadOffItsOwnRunLogRowsAsTheRuleGivesIt`: each
+            state worked by hand over constructed rows, running and left unfinished at the deadline and a
+            second past it, the four figures, the groups' seconds, the headline and the line beneath.
+            `EveryStageANightWritesIsInExactlyOneGroupAndAStopIsWrittenInTheNightsOwnWords`: over the fixture's
+            whole night as the worker runs it. `TheMarketIsNamedByItsRuleAtTheFloorAndAtTheHealthyPoint`.
+            `TheRunPageOpensOnTheNightTheMarketAndTheFunnelWithEveryTableFoldedBeneath`: the order, the night,
+            the weak market at 44% against a 45% floor, the breadth line worked by hand over two sessions with a
+            name holding no average, the funnel's counts and link, and every earlier card folded.
+            `AStoppedNightSaysWhereItStoppedAndWhyInRed`. `TheRunPagesPicturesDrawInTheStatusColoursAndNeverInALevels`:
+            every rule drawing the pictures names no level token, and each status token is used by them alone.
+            The mark count, the pictures on the five surfaces and the section 17 census move with the page.
+Written:    section 15.10's answers, four rows and closing paragraph, section 15.5's four marks and count,
+            section 15.6's status colours and section 17's market label in `ARCHITECTURE.html`, and
+            `.claude/rules/checks.md`'s read-surface row, each prior text in `CHANGELOG.md`; the reader's guide's
+            Run card; the decisions by the ruling before this.
+Expected:   derived: no expectation file moves.
+Tests:      133T, from 1494: six added.
+Claims:     133C, from 650: fifteen added, the three regions as the nine parts their rows state, the folded
+            detail, the four marks and section 17's market label, each named in `ReadSurface.RunPageClaims`.
+Pins:       the branch against `main` edits `RunScreen.cs`, `ReadApi.cs`, the read surface's `Program.cs`,
+            `MarkRenderer.cs`, `SinglePageApp.cs` and `Stylesheet.cs`, adds `MarketLabel.cs`, and edits tests and
+            five documents, none of them in the twelve `RuleVersionScorer.CodeVersionSources`, the twenty-one
+            `CandidateEvaluator.EvaluationSources` or the sixteen `SwingFilter.CodeVersionSources`. No version
+            moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: each mechanism the regions rest on reversed alone, filtered to the
+            new tests.
+            Predicted:
+            N1 the steps run again counted over the run read as well as the runs before it: red in the state
+               test and the page test.
+            N2 the market's word at the floor read as weak: red in the label test.
+            N3 the gauge's value drawn in the support hue: red in the colour test.
+            N4 the moves step left out of its group: red in the stage group test.
+            Results: 133M
+Held:       133H
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 133T of 133T tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 133B tables, 133C claims, 133P PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 133R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 133T of 133T tests.
+            Both gates ran over the tree carrying this entry and the one before it, 133SHA, in a worktree
+            beside the repository, and the operator's store under `data/` was not touched by either.
+Carried:    regions 4 to 11 and the narrowed decision, in the corrections after this.

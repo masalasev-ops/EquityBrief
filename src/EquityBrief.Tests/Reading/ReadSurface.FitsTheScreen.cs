@@ -204,8 +204,10 @@ public partial class ReadSurface
         // the peers table's distance row marks on the name page and in the exported report, 41
         // from the 5.8 correction that took the listing history's strip off both, 45 from 11.6's
         // correction, a year line beside each of the fixture name's two peers on both, and 49 from
-        // the 5.8 correction that draws a year line beside each of the four names on the universe table.
-        Assert.Equal(49, pictures);
+        // the 5.8 correction that draws a year line beside each of the four names on the universe table, and
+        // 53 from the 12.3 correction that opens the Run page on its pictures: the night's status mark and time
+        // bar, the market's gauge and the funnel's bars, the fixture's sessions of averages too few for a line.
+        Assert.Equal(53, pictures);
 
         var page = screens[3].Item2;
 

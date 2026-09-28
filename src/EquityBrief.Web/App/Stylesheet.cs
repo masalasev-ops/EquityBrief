@@ -21,6 +21,11 @@ public static class Stylesheet
    --research    Neutral plum-grey. The top rule and dateline of a section written by research or taken
                  from a filing, which may be weeks old.
    --s1 to --s4  Four steps of one neutral hue, for more or less.
+   --stat, --stat-2, --stat-fill   Status: a night that finished or is running, and the Run page's pictures
+                 of counts. Two steps of one blue. Never a level.
+   --wait, --wait-fill   Waiting: a night not run yet. One violet, for waiting and nothing else.
+   --fail, --fail-fill   A failure: a night that stopped, was left unfinished or never ran. One red, for a
+                 failure alone and never for a fall in price.
    The rest are paper and ink: grounds, text, hairlines, shadow. */
 :root{
  --page:#f1efe9; --surface:#fbfaf6; --plot:#f6f4ee; --ink:#1d1f22; --ink-2:#43464b; --soft:#5f6369; --hair:#dcd8ce; --hair-2:#c9c4b7;
@@ -29,6 +34,8 @@ public static class Stylesheet
  --sup:#2e7a53; --sup-fill:rgba(46,122,83,.12); --sup-ink:#1f5b3c;
  --res:#bd631d; --res-fill:rgba(189,99,29,.12); --res-ink:#8a4511;
  --dash-ink:#6a6d71; --shadow:0 1px 2px rgba(40,34,20,.06),0 2px 8px rgba(40,34,20,.04);
+ --stat:#2f6db0; --stat-2:#8db4de; --stat-fill:rgba(47,109,176,.12);
+ --wait:#6a55a3; --wait-fill:rgba(106,85,163,.12); --fail:#b23a34; --fail-fill:rgba(178,58,52,.1);
  --serif:Charter,"Iowan Old Style",Georgia,"Times New Roman",serif;
  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
  /* The column, at its widest: the widest picture a screen draws, with the card's side padding
@@ -44,6 +51,8 @@ public static class Stylesheet
  --sup:#6fc08f; --sup-fill:rgba(111,192,143,.13); --sup-ink:#93d4ab;
  --res:#eba062; --res-fill:rgba(235,160,98,.13); --res-ink:#f2bb8c;
  --dash-ink:#a3a8ad; --shadow:0 1px 2px rgba(0,0,0,.35); color-scheme:dark;
+ --stat:#6aa9e8; --stat-2:#3f7fc0; --stat-fill:rgba(106,169,232,.14);
+ --wait:#b39ddb; --wait-fill:rgba(179,157,219,.14); --fail:#e5534b; --fail-fill:rgba(229,83,75,.14);
 }}
 :root[data-theme='dark']:not([data-eb-theme='light']),:root[data-eb-theme='dark']{
  --page:#121416; --surface:#1a1d20; --plot:#16191b; --ink:#e8e5dd; --ink-2:#c3c0b8; --soft:#9ea3a9; --hair:#2d3237; --hair-2:#3d434a;
@@ -52,6 +61,8 @@ public static class Stylesheet
  --sup:#6fc08f; --sup-fill:rgba(111,192,143,.13); --sup-ink:#93d4ab;
  --res:#eba062; --res-fill:rgba(235,160,98,.13); --res-ink:#f2bb8c;
  --dash-ink:#a3a8ad; --shadow:0 1px 2px rgba(0,0,0,.35); color-scheme:dark;
+ --stat:#6aa9e8; --stat-2:#3f7fc0; --stat-fill:rgba(106,169,232,.14);
+ --wait:#b39ddb; --wait-fill:rgba(179,157,219,.14); --fail:#e5534b; --fail-fill:rgba(229,83,75,.14);
 }
 /* The names the marks draw with, each the token of the same kind, so every mark follows the palette. */
 :root{ --muted:var(--soft); --rule:var(--hair); --panel:var(--plot); --support:var(--sup); --resistance:var(--res); }
@@ -516,6 +527,56 @@ th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .sw-res{background:var(--res-fill);border-top:1.5px solid var(--res);border-bottom:1.5px solid var(--res)}
 tr.band[data-role='support'] td:first-child::before{content:"";display:inline-block;width:12px;height:10px;margin-right:6px;vertical-align:-1px;background:var(--sup-fill);border-top:1.5px solid var(--sup);border-bottom:1.5px solid var(--sup)}
 tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline-block;width:12px;height:10px;margin-right:6px;vertical-align:-1px;background:var(--res-fill);border-top:1.5px solid var(--res);border-bottom:1.5px solid var(--res)}
+/* The Run page: the pictures on top, status in the blues, violet and red and never in a level's hue,
+   and the tables folded beneath them. */
+.run-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.run-pair>.card{margin:0}
+.night-status .ns-head{display:flex;gap:18px;align-items:center}
+.status-mark .sm-ring{stroke-width:2.5}
+.status-mark .sm-glyph{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.night-status[data-tone='ok'] .sm-ring{fill:var(--stat-fill);stroke:var(--stat)} .night-status[data-tone='ok'] .sm-glyph{stroke:var(--stat)}
+.night-status[data-tone='wait'] .sm-ring{fill:var(--wait-fill);stroke:var(--wait)} .night-status[data-tone='wait'] .sm-glyph{stroke:var(--wait)}
+.night-status[data-tone='fail'] .sm-ring{fill:var(--fail-fill);stroke:var(--fail)} .night-status[data-tone='fail'] .sm-glyph{stroke:var(--fail)}
+.night-status[data-tone='quiet'] .sm-ring{fill:var(--panel);stroke:var(--soft)} .night-status[data-tone='quiet'] .sm-glyph{stroke:var(--soft)}
+.ns-headline{font:600 28px/1.2 var(--serif);margin:2px 0}
+.night-status[data-tone='fail'] .ns-headline{color:var(--fail)}
+.ns-said{color:var(--ink-2);margin:0;max-width:78ch}
+.ns-figures{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0}
+.ns-figures .tile{background:var(--panel);border-radius:8px;padding:10px 14px}
+.ns-figures .tile b{display:block;font-size:24px;font-variant-numeric:tabular-nums}
+.ns-figures .tile span{color:var(--soft);font-size:13px}
+.step-time .caption,.breadth-line-wrap .caption{font-size:13px;color:var(--soft);margin-bottom:4px}
+.step-bar{width:100%;height:24px;display:block}
+.step-bar .sb-ran{fill:var(--stat)} .step-bar .sb-ran-2{fill:var(--stat-2)}
+.step-bar .sb-unreached{fill:none;stroke:var(--dash-ink);stroke-dasharray:4 3}
+.step-bar .sb-stopped{fill:var(--fail-fill);stroke:var(--fail);stroke-width:2;stroke-dasharray:5 4}
+.step-groups{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:4px 18px;font-size:13px;color:var(--ink-2)}
+.market-picture .mp-label{font:600 22px/1.2 var(--serif);margin:0 0 6px}
+.market-picture .mp-body{display:flex;flex-wrap:wrap;gap:18px;align-items:center}
+.market-picture .mp-figures p{margin:0 0 8px;color:var(--ink-2)} .market-picture .mp-figures b{font-size:20px;color:var(--ink);margin-right:4px}
+.market-picture .mp-rule{font-size:13px;color:var(--soft)}
+.gauge{max-width:100%;height:auto}
+.gauge .g-track{fill:none;stroke:var(--hair);stroke-width:18;stroke-linecap:round}
+.gauge .g-value{fill:none;stroke:var(--stat);stroke-width:18;stroke-linecap:round}
+.gauge .g-floor{stroke:var(--ink);stroke-width:2.5}
+.gauge .g-figure{font-size:34px;font-weight:600;fill:var(--ink)} .gauge .g-none{font-size:18px;fill:var(--soft)}
+.gauge .g-floor-text,.gauge .g-caption{font-size:12px;fill:var(--soft)}
+.breadth-line{width:100%;height:70px;display:block}
+.breadth-line .bl-floor{stroke:var(--soft);stroke-width:1;stroke-dasharray:4 4;vector-effect:non-scaling-stroke}
+.breadth-line .bl-line{fill:none;stroke:var(--stat);stroke-width:2.5;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.breadth-line .bl-last{fill:var(--stat)}
+.funnel-bars{width:100%;height:auto;display:block}
+.funnel-bars .fb-bar{fill:var(--stat)}
+.funnel-bars .fb-words{font-size:13px;font-weight:600;fill:var(--ink)} .funnel-bars .fb-count{font-size:13px;fill:var(--ink-2);font-variant-numeric:tabular-nums}
+.funnel-picture .fp-listed{margin:10px 0 0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.funnel-picture .fp-listed b{font-size:30px}
+.funnel-picture .fp-open{margin-left:auto;font-weight:600}
+.run-detail{margin-top:26px}
+.run-detail>.lbl{margin-bottom:8px}
+.run-detail details.fold{border-top:1px solid var(--hair);padding:8px 0}
+.run-detail details.fold>summary{cursor:pointer;font-weight:600;min-height:32px;padding:4px 0}
+.run-detail details.fold[open]>summary{margin-bottom:10px}
+@media (max-width:900px){ .run-pair{grid-template-columns:1fr} .ns-figures{grid-template-columns:repeat(2,minmax(0,1fr))} }
 
 @media (max-width:640px){
  :root{--gutter:14px}

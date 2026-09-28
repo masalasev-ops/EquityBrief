@@ -989,9 +989,22 @@ app.MapGet("/screens/run/{night?}", async (
     // evening wearing the clothes of a verdict.
     var everyListing = await read.ListingsAsync();
     var returns = await read.ForwardReturnsAsync();
-    var stages = RunScreen.Stages(await read.RunLogAsync(dated));
+    var log = await read.RunLogAsync(dated);
+    var stages = RunScreen.Stages(log);
     var records = RunScreen.Records(everyListing, RunScreen.Resolved(returns));
     var flips = await read.LabelReturnsAsync();
+
+    // How the night went, from its own run log rows, and the market and the funnel it drew, each read
+    // once and handed to both the pictures at the top and the tables folded beneath them.
+    // see: A night's state is read off its own run log rows, and the pages that state it read that one state
+    var how = RunScreen.Night(log, dated, clock.SessionDateAt(clock.UtcNow), clock.UtcNow, EquityBrief.Core.Providers.RetryPolicy.Standard.Deadline);
+    var funnel = RunScreen.Funnel(await read.GateResultsAsync(dated), dated, await read.ListRuleAsync(dated));
+    var market = RunScreen.Market(await read.MarketReadingAsync(dated));
+    var picture = RunScreen.Pictured(
+        dated,
+        market,
+        funnel is { } ran ? await read.FilterSettingsAsync(ran.Version) : null,
+        await read.BreadthLineAsync(dated, MarkRenderer.BreadthLineSessions));
 
     return Results.Content(
         page.RunRegion(
@@ -1037,8 +1050,8 @@ app.MapGet("/screens/run/{night?}", async (
                 RunScreen.Firings(everyListing),
                 await read.OpenFilterVersionAsync(),
                 dated),
-            RunScreen.Market(await read.MarketReadingAsync(dated)),
-            RunScreen.Funnel(await read.GateResultsAsync(dated), dated, await read.ListRuleAsync(dated)),
+            market,
+            funnel,
             RunScreen.Triggers(await read.TriggerReadsAsync(), priced),
             RunScreen.Proposal(
                 await read.LatestShapeProposalAsync(),
@@ -1057,7 +1070,9 @@ app.MapGet("/screens/run/{night?}", async (
             await read.OpenFilterVersionAsync() is { } open
                 ? EdgeScreen.NearMisses(open, await read.NearMissRowsAsync(open), dated)
                 : EdgeScreen.NearMisses(null, [], dated),
-            held: held),
+            held: held,
+            how: how,
+            picture: picture),
         "text/html; charset=utf-8");
 });
 

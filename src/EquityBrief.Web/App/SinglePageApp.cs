@@ -1503,18 +1503,11 @@ public sealed class SinglePageApp : IComponent
         return $"<p class=\"written-before-correction\" data-sessions=\"{Escaped(dates)}\">The listings for {Escaped(dates)} were written before a correction: {WrittenBeforeTheCorrectionText}.</p>";
     }
 
-    // The run page, section 15.10's seven regions, in the order that section
-    // states them.
-    //
-    // Two of the six are absent and say so. The shadow candidates need the
-    // candidate register, which phase 8 builds, and the reason records' verdict
-    // half needs resolved setups, which no checkpoint accumulates. Each is
-    // stated rather than drawn empty, because an empty region reads as a night
-    // that produced nothing.
-    //
-    // It is deliberately not a status dashboard. A page of green tiles invites a
-    // glance and this one is meant to be read, which is why every region is a
-    // table of counts rather than a light.
+    // The run page, section 15.10's regions in the order that section states them: the questions a
+    // reader asks answered top down, each a picture with a line or two of plain words beneath it, and
+    // every table the page drew before kept whole beneath them in a section folded shut, so nothing is
+    // removed. A region with nothing to draw says so rather than drawing empty, because an empty region
+    // reads as a night that produced nothing.
     public string RunRegion(
         MarkRenderer marks,
         DateOnly night,
@@ -1543,7 +1536,9 @@ public sealed class SinglePageApp : IComponent
         OverlapView? overlap = null,
         EdgeView? edge = null,
         NearMissView? nearMisses = null,
-        IReadOnlyList<DateOnly>? held = null)
+        IReadOnlyList<DateOnly>? held = null,
+        NightView? how = null,
+        MarketPicture? picture = null)
     {
         var region = new StringBuilder();
 
@@ -1557,6 +1552,48 @@ public sealed class SinglePageApp : IComponent
         // Once sixty ordinary nights are stored under the open version, the page says so before anything else.
         region.Append(shape is { } due ? marks.ShapeDue(due) : string.Empty);
 
+        // How last night went: its state from its own run log rows, the four headline figures and the time
+        // its steps took, above everything else.
+        // see: A night's state is read off its own run log rows, and the pages that state it read that one state
+        if (how is { } went)
+        {
+            region.Append(Cards.Computed(
+                "Last night",
+                marks.NightStatus(went),
+                title: "How last night went",
+                lede: "What the night's own run log says of it: its state, what it read and cost, and where its time went.",
+                stamp: Cards.Night(night),
+                region: "night"));
+        }
+
+        // The market and the funnel side by side, each a picture with its words beneath.
+        region.Append("<div class=\"run-pair\">");
+
+        if (picture is { } pictured)
+        {
+            region.Append(Cards.Computed(
+                "The market",
+                marks.MarketRegion(pictured),
+                title: "How the market stood",
+                lede: "The share of the index above its own long average, which the market gate reads, and how heavily the index traded.",
+                stamp: Cards.Night(night),
+                region: "market-picture"));
+        }
+
+        region.Append(Cards.Computed(
+            "Tonight's list",
+            marks.FunnelPicture(funnel, NightRoute + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+            title: "From the whole index to the list",
+            lede: "How many stocks passed each of the swing filter's checks in turn, down to the ones listed.",
+            stamp: Cards.Night(night),
+            region: "funnel-picture"));
+
+        region.Append("</div>");
+
+        // The detail: every table the page drew before, each in a section folded shut, so a reader checking
+        // the arithmetic finds it whole and a reader glancing does not have to scroll past it.
+        region.Append("<section class=\"run-detail\"><div class=\"lbl\">The detail, for when you want it</div>");
+        region.Append(Fold("operational", "Every step of the night, with its time and what it wrote"));
         region.Append(Cards.Computed(
             Invariant($"Run of {night:yyyy-MM-dd}"),
             "<div class=\"tbl-wrap\">" + marks.OperationalHeader(night, stages, priced) + "</div>",
@@ -1564,9 +1601,11 @@ public sealed class SinglePageApp : IComponent
             lede: "Each stage with the instant it started in UTC, how long it took, what it wrote and what it said about itself.",
             stamp: Cards.Night(night),
             region: "operational"));
+        region.Append(Folded);
 
         // The market on the night: the breadth, the share above the shorter average as context, and how
         // heavily the index traded.
+        region.Append(Fold("market", "The market and the funnel, as the tables of counts"));
         region.Append(Cards.Computed(
             Invariant($"Market of {night:yyyy-MM-dd}"),
             marks.MarketReading(market),
@@ -1585,7 +1624,9 @@ public sealed class SinglePageApp : IComponent
             region: "funnel"));
 
         region.Append(WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection));
+        region.Append(Folded);
 
+        region.Append(Fold("records", "The old list's reasons, kept as context"));
         region.Append(Cards.Computed(
             "Reason records",
             marks.ReasonRecords(records, tracks, baseRates, nights) + Cards.Key(
@@ -1596,9 +1637,11 @@ public sealed class SinglePageApp : IComponent
             lede: "The base rate sits above the rows, so no reason's figure stands alone.",
             stamp: Cards.Night(night),
             region: "records"));
+        region.Append(Folded);
 
         if (shape is { } clock)
         {
+            region.Append(Fold("calibration", "Each check's pass counts against its range, the shape proposal and the edge clock"));
             region.Append(Cards.Computed(
                 "Calibration",
                 marks.Calibration(clock, triggers ?? []) + marks.Proposal(proposal) + marks.Edge(edge) + marks.NearMisses(nearMisses) + Cards.Key(
@@ -1609,9 +1652,11 @@ public sealed class SinglePageApp : IComponent
                 lede: "Thresholds move only through the shape calibration and your rulings.",
                 stamp: Cards.Night(night),
                 region: "calibration"));
+            region.Append(Folded);
         }
 
         // The list from night to night: of tonight's names, how many were on it before.
+        region.Append(Fold("overlap", "The list from night to night, as counts"));
         region.Append(Cards.Computed(
             Invariant($"Overlap of {night:yyyy-MM-dd}"),
             marks.Overlap(overlap),
@@ -1619,7 +1664,9 @@ public sealed class SinglePageApp : IComponent
             lede: "How many of the night's names were on the list the evening before and over the five and twenty evenings before, each evening read by the rule that listed it.",
             stamp: Cards.Night(night),
             region: "overlap"));
+        region.Append(Folded);
 
+        region.Append(Fold("candidates", "The background versions: statistics and checkpoints"));
         region.Append(Cards.Computed(
             "Shadow candidates",
             marks.ShadowCandidates(shadow),
@@ -1638,8 +1685,11 @@ public sealed class SinglePageApp : IComponent
                 region: "candidates"));
         }
 
+        region.Append(Folded);
+
         if (versions is { } trend)
         {
+            region.Append(Fold("trend-versions", "Rule versions being measured on the plan's rules"));
             region.Append(Cards.Computed(
                 "The trend rule's versions",
                 marks.TrendVersions(trend),
@@ -1647,10 +1697,12 @@ public sealed class SinglePageApp : IComponent
                 lede: "A version changes the rule and no list: nothing here is drawn beside a name.",
                 stamp: Cards.Night(night),
                 region: "trend-versions"));
+            region.Append(Folded);
         }
 
         if (orders is { } comparison)
         {
+            region.Append(Fold("orders", "The order tonight's list is drawn in, against the one it replaced"));
             region.Append(Cards.Computed(
                 "Tonight's order",
                 marks.TonightsOrder(comparison),
@@ -1658,8 +1710,10 @@ public sealed class SinglePageApp : IComponent
                 lede: "Nothing is compared until every order has enough whole windows behind it.",
                 stamp: Cards.Night(night),
                 region: "orders"));
+            region.Append(Folded);
         }
 
+        region.Append(Fold("health", "What the night could not do, the overnight queue and the code checks"));
         region.Append(Cards.Computed(
             "Stale and failed",
             marks.StaleAndFailed(stale, failed, refused, fellBack),
@@ -1680,11 +1734,18 @@ public sealed class SinglePageApp : IComponent
             title: "The last phase report",
             lede: "Four counts, kept apart and never added together.",
             region: "harness"));
+        region.Append(Folded);
 
-        region.Append("</section>");
+        region.Append("</section></section>");
 
         return region.ToString();
+
+        static string Fold(string fold, string summary) =>
+            Invariant($"<details class=\"fold\" data-fold=\"{fold}\"><summary>{Escaped(summary)}</summary>");
     }
+
+    // The end of a section the Run page folds shut.
+    const string Folded = "</details>";
 
     // Section 18's banner half. The bulk price feed not answering keeps last
     // night's bars, and what a reader must not be shown is tonight's list built

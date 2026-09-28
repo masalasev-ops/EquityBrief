@@ -2780,6 +2780,76 @@ public sealed class ReadApi : IComponent
             : null;
     }
 
+    // Each name's close and 200-day average on the sessions up to a night, newest first, over as
+    // many sessions as the line draws: the rows the breadth line is counted from.
+    // Every name holding a close on the session, with its average where it holds one, so a session on
+    // which fewer than half hold an average reads none, by the swing readings' own rule.
+    const string AverageAndCloseUpTo = @"
+        SELECT b.session_date, b.close, i.value
+        FROM bar b
+        LEFT JOIN indicator i ON i.ticker = b.ticker AND i.session_date = b.session_date AND i.name = $average
+        WHERE b.session_date IN (
+              SELECT DISTINCT session_date FROM indicator
+              WHERE name = $average AND value IS NOT NULL AND session_date <= $on
+              ORDER BY session_date DESC LIMIT $sessions)
+        ORDER BY b.session_date;
+    ";
+
+    const string SettingsOfVersion = "SELECT settings FROM filter_version WHERE version = $version;";
+
+    // The breadth over the sessions up to a night that the store holds 200-day averages for, each
+    // counted by the swing readings' own rule over the names holding a close and the average that
+    // session, oldest first; fewer than asked for where the store holds fewer.
+    // see: The market on the Run page is named in one word by a stated rule that moves no gate
+    public async Task<IReadOnlyList<BreadthPoint>> BreadthLineAsync(DateOnly on, int sessions)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = AverageAndCloseUpTo;
+        command.Parameters.AddWithValue("$average", "sma" + EquityBrief.Core.Filter.SwingReadings.BreadthAverageSessions.ToString(CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$sessions", sessions);
+
+        var held = new SortedDictionary<DateOnly, (int Closes, List<(decimal Close, double Average)> Pairs)>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            var session = DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var (closes, pairs) = held.TryGetValue(session, out var found) ? found : (0, new List<(decimal Close, double Average)>());
+
+            if (!reader.IsDBNull(2))
+            {
+                pairs.Add((Money.FromStorage(reader.GetString(1)), reader.GetDouble(2)));
+            }
+
+            held[session] = (closes + 1, pairs);
+        }
+
+        return
+        [
+            .. held
+                .Select(pair => (pair.Key, Breadth: EquityBrief.Core.Filter.SwingReadings.BreadthOf(pair.Value.Closes, pair.Value.Pairs)))
+                .Where(point => point.Breadth.Share is not null)
+                .Select(point => new BreadthPoint(point.Key, point.Breadth.Share!.Value, point.Breadth.Counted)),
+        ];
+    }
+
+    // The settings a filter version holds, and none for a version the register never opened, which is
+    // how a night run on section 17's proposed values and a replayed session read.
+    public async Task<string?> FilterSettingsAsync(string version)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = SettingsOfVersion;
+        command.Parameters.AddWithValue("$version", version);
+
+        return await command.ExecuteScalarAsync() as string;
+    }
+
     // Every name's two readings for the peers table, one row per name, as the annotator last
     // wrote them.
     public async Task<IReadOnlyList<PeerReadingRow>> PeerReadingsAsync()
