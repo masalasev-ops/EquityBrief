@@ -29769,14 +29769,18 @@ Mutated:    the rule, stated before the run: the mechanism reversed alone, filte
             the tables it sits beside.
             Predicted:
             F1 every table given the name its grouping reads, with no count: red in the new test alone.
-            Results: 136M
-Held:       136H
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 136T of 136T tests ran
+            Results: one run in a detached worktree at 0f8387a, this entry's commit, filtered to the two tests,
+            the edit made there and reverted, and the tree read clean after. The whole suite ran green over
+            0f8387a in the gates, 1511 of 1511. F1 turned the new test red and left the other green.
+Held:       red in the test predicted, and in no other.
+            Read-only over the operator's store, the three table readers named every figure once for all 503
+            members' newest filings with this correction applied.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1511 of 1511 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 136B tables, 136C claims, 136P PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 136R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 136T of 136T tests.
-            Both gates ran over the tree carrying this entry, 136SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 700 claims, 700 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 711 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1511 of 1511 tests.
+            Both gates ran over the tree carrying this entry, 0f8387a, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    the night of 2026-09-28 run again once this merges.
