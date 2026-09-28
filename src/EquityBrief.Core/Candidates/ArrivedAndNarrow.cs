@@ -10,7 +10,7 @@ namespace EquityBrief.Core.Candidates;
 // rows in the family the level is divided across, and the divisor is a count of
 // what was tried.
 // see: A price that has come down into a narrow buying zone since the previous session is a candidate condition
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public sealed class ArrivedAndNarrow : CandidateEvaluator
 {
     public const string EvaluatorName = "arrived-and-narrow";
@@ -24,7 +24,7 @@ public sealed class ArrivedAndNarrow : CandidateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "76cd0d95e636";
+    public override string Version => "05418fa3e5b7";
 
     public override IReadOnlyList<string> Reads =>
         [NightValues.Close, NightValues.PreviousClose, NightValues.Zones, IndicatorSeries.Atr14];

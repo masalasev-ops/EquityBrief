@@ -23,7 +23,7 @@ namespace EquityBrief.Tests.Checks;
 // nights it would have fired, and most of those are nights no live reason
 // surfaced that name. Writing rows only for listed names would make that
 // impossible without anything announcing it.
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 //
 // It reads a store the suite built rather than the live one, because a check
 // that reads the live store is a check whose result depends on last night.

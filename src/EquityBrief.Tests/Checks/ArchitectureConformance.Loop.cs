@@ -84,8 +84,8 @@ public partial class ArchitectureConformance
             "ACandidateThatFiresOnEveryMemberReachesNoRowsReasons", "ShortlistSeries.Reasons"),
         Held("Shadow before live", "until its record has crossed the boundary of a look",
             "AFirstLookAtEightBlocksCannotCrossAtTheLevelTheFamilyIsTestedAt", "Looks.CrossedAt"),
-        Held("Shadow before live", "no evaluation of a name is shown anywhere",
-            "NoScreenCarriesAShadowEvaluationOfAName", "shadow_reasons", Named.Stored),
+        Held("Shadow before live", "no candidate's pick of a name is shown anywhere but the Run page's comparison of tonight's picks",
+            "ACandidatesPickOfANameIsDrawnInTheRunPagesComparisonAlone", "ReadApi.ShadowPicksAsync"),
         Held("Shadow before live", "A candidate's own record is drawn on the run page, beside the candidate and never beside a name",
             "TheRecordRegionStatesEachLooksPowerAndTheNumbersTheCandidateWasRegisteredWith", "MarkRenderer.CandidateRecords"),
         Held("Shadow before live", "with the nightly figure labelled as monitoring and the verdict field changed only by a look",
@@ -1319,6 +1319,7 @@ public partial class ArchitectureConformance
         .. UniverseYearClaims,
         .. Reading.ReadSurface.RunPageClaims,
         .. Reading.ReadSurface.RunMiddleClaims,
+        .. Reading.ReadSurface.RunBottomClaims,
     ];
 
     // Rows taken out of the document after phase 12's prediction, which counted each: the name page's
@@ -1416,6 +1417,7 @@ public partial class ArchitectureConformance
         .. UniverseYearClaims,
         .. Reading.ReadSurface.RunPageClaims,
         .. Reading.ReadSurface.RunMiddleClaims,
+        .. Reading.ReadSurface.RunBottomClaims,
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1448,7 +1450,7 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((550, 683), (predicted, actual));
+        Assert.Equal((550, 700), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

@@ -227,7 +227,11 @@ public sealed record ForwardReturnRow(
 // number sets and nothing else: a candidate's own record is withheld until it is
 // promoted, and a row a page never draws is a row the page has no business
 // holding.
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+// One candidate's answer on one name-night, as the shadow column stored it, beside whether the live list
+// picked the name: whether the candidate fired and each of its gate's answers with its plan.
+public sealed record ShadowPickRow(DateOnly Session, string Ticker, bool LivePassed, string Candidate, bool Fired, string Values);
+
 public sealed record CandidateRow(
     long Id,
     string Candidate,
@@ -241,9 +245,9 @@ public sealed record CandidateRow(
 // One name-night a candidate fired on, with what its setup came to.
 //
 // The name is not carried and no surface could draw one from this: what a record is over is a
-// count of setups and the sessions they were listed on, and a candidate's evaluation of a name is
-// the thing the shadow exists to keep off every screen.
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// count of setups and the sessions they were listed on, and how a candidate's pick of a name
+// turned out is the thing the shadow exists to keep off every screen until a look reads it.
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public sealed record CandidateSetupRow(
     string Candidate,
     DateOnly SessionDate,
@@ -530,12 +534,12 @@ public sealed class ReadApi : IComponent
     // Every store means every store the matrix has a column for, and from 8.4
     // that includes the candidate register: the run page states how many
     // candidates are registered and the divisor that number sets, and a count
-    // drawn on a page is a count something read. It reads the register and
-    // never a shadow evaluation of a name, which is the decision as it stands.
+    // drawn on a page is a count something read. It reads the register, and a
+    // candidate's picks only for the run page's comparison of tonight's picks.
     // Series state was the one column the row left blank until the 7.0 ruling,
     // which has the name page and tonight's list say where a name's prices may
     // not reflect a dividend or split.
-    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
     public static ComponentAccess Access => new(
         Stores:
         [
@@ -2796,6 +2800,71 @@ public sealed class ReadApi : IComponent
     ";
 
     const string SettingsOfVersion = "SELECT settings FROM filter_version WHERE version = $version;";
+
+    // Each candidate's answer on each name-night up to a night where it picked the name or the live list
+    // did, with the answer's gate values: the rows the Run page's comparison and its versions' counts read.
+    // A replayed row carries no shadow and is read by nothing here.
+    const string ShadowPicksUpTo = @"
+        SELECT g.session_date, g.ticker, g.passed, json_extract(c.value, '$.candidate'), json_extract(c.value, '$.fired'), json_extract(c.value, '$.values')
+        FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.candidates') c
+        WHERE g.session_date <= $on AND (json_extract(c.value, '$.fired') = 1 OR g.passed = 1)
+        ORDER BY g.session_date, g.ticker;
+    ";
+
+    const string EvaluatedOn = @"
+        SELECT DISTINCT json_extract(c.value, '$.candidate')
+        FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.candidates') c
+        WHERE g.session_date = $on;
+    ";
+
+    // Every candidate's picks and the live list's up to a night, as the shadow column stored them.
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+    public async Task<IReadOnlyList<ShadowPickRow>> ShadowPicksAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ShadowPicksUpTo;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<ShadowPickRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new ShadowPickRow(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(1),
+                reader.GetInt32(2) == 1,
+                reader.GetString(3),
+                !reader.IsDBNull(4) && reader.GetInt32(4) == 1,
+                reader.IsDBNull(5) ? "{}" : reader.GetString(5)));
+        }
+
+        return rows;
+    }
+
+    // The candidates a night evaluated, which a comparison names before it says a version picked nobody.
+    public async Task<IReadOnlySet<string>> EvaluatedOnAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = EvaluatedOn;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var evaluated = new HashSet<string>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            evaluated.Add(reader.GetString(0));
+        }
+
+        return evaluated;
+    }
 
     // The breadth over the sessions up to a night that the store holds 200-day averages for, each
     // counted by the swing readings' own rule over the names holding a close and the average that

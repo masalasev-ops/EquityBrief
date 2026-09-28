@@ -29652,3 +29652,92 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 7256356, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    regions 6, 7 and 8 and the narrowed decision, in the correction after this.
+
+### 12.3 - correction: the Run page draws how the system learns, compares tonight's picks with each background version's and shows each version at a checkpoint, and a candidate's picks are shown there while its outcomes wait for a look, where no page drew a candidate's pick   2026-09-28
+Corrects:   12.3's Run page, the operator's brief of 2026-09-28 continued, regions 6, 7 and 8, and the decision the
+            brief narrows, as the operator confirmed it.
+Repaired:   three regions between the freshness bars and research and spend, each read from what the store
+            holds. How the system learns draws the shape clock as a bar of the ordinary nights against the sixty
+            its calibration waits on with each check's typical count on its range, dashed and without a dot
+            until measured; the edge clock as a line from today to its two checkpoints with the blocks the live
+            list has gathered; and each version running beside the live list with what it changes, read off the
+            settings it was registered with against the live one's, the stocks it has picked up to the night,
+            the share of them the live list also picked and its blocks against the floor, with a link comparing
+            tonight's picks. Compare tonight's picks offers the versions beside the live list in a choice kept in
+            the link, and for the one chosen draws the names only the live list picked, those both picked and
+            those only the version picked, each one-sided name with the setting that made the difference read off
+            the live row's stored gate and the version's registered threshold, two overlapping rings with the
+            three counts, and over the last twenty evenings the version's picks, the share the live list also
+            picked and the evenings it picked a stock the live list did not. At a checkpoint draws a row per
+            version on one scale, locked with its trades and blocks until its first look and from it the share,
+            the break-even, the null, how far luck could move it and the verdict. Every figure is read off the
+            gate results' shadow column and the register; nothing is computed at night.
+            The decision "Candidate conditions are registered before they are scored, and scored in shadow before
+            they are shown" is superseded by "Candidate conditions are registered before they are scored, and a
+            candidate's picks are shown on the Run page while its outcomes wait for a look", the operator's
+            confirmed narrowing, and every citation of the old name in the specs and the code is repointed.
+Measured:   nothing new.
+Guarded:    five tests in `read-surface`, new. `ACandidatesPickOfANameIsDrawnInTheRunPagesComparisonAlone`: over
+            constructed gate rows, a name only a version picked is drawn in the comparison, in no other region of
+            the Run page and on no other screen, and a won trade of a version's pick draws no outcome in the
+            comparison or the versions table; section 13.3's guardrail clause now maps to it.
+            `TheComparisonDrawsEachSidesNamesWithWhatMadeTheDifferenceForAMixedAnIdenticalAndADisjointVersion`:
+            the three groups, each reason, the rings' counts and the twenty evenings' figures worked by hand for a
+            version picking some of the live list's names, all of them and none.
+            `TheVersionChosenForTheComparisonIsKeptInTheLink`: the version the link names chosen and selected,
+            the shell writing a choice back to the link and passing it to the page's read.
+            `TheLearningRegionDrawsBothClocksAndEachVersionsPicksAboveTheDetail`.
+            `ACheckpointRowIsLockedBeforeItsFirstLookAndDrawsTheShareTheBreakEvenAndTheNullFromIt`: over the nine
+            constructed blocks the edge test builds, now a helper both read. The colour test reads the new
+            pictures, the pictures and tables the five surfaces draw move with the page, and the shadow region's and the records region's withheld lines say a candidate's pick is
+            drawn in the comparison alone.
+Written:    section 15.10's three rows and the shadow candidates row, section 15.5's three marks and count,
+            section 13.3's guardrail, the glossary's shadow, section 13's boundary paragraph, figure text and every
+            citation of the superseded decision in `ARCHITECTURE.html`; the citations in `CLAUDE.md`,
+            `BUILD_PLAN.md`, `SCHEMA.md` and `RUNBOOK.md`, with RUNBOOK's registration paragraph reworded; and
+            `.claude/rules/checks.md`'s read-surface row, each prior text in `CHANGELOG.md`; the new decision and
+            the old one moved beneath it in `DECISIONS.md`; the reader's guide's Run card and its key.
+Expected:   derived: no expectation file moves.
+Tests:      1510, from 1505: five added.
+Claims:     700, from 683: seventeen added, the three regions as the fourteen parts their rows state and the three
+            marks, each named in `ReadSurface.RunBottomClaims`.
+Pins:       the citations repointed sit in sources `CandidateEvaluator.EvaluationSources` lists, `CandidateEvaluator.cs`,
+            `ShadowColumn.cs`, `FamilyShadow.cs` and `ShortlistBuilder.cs`, and in each evaluator's own, so every
+            evaluator's version moves: `swing-filter` 78a5cfe3d020 to 873513ec4ff7, `momentum-index-reading`
+            8bc44f1e4855 to 6adbc993ca97, `momentum-histogram-turn` 7277843424be to 07ccef6ca6c3,
+            `arrived-and-narrow` 76cd0d95e636 to 05418fa3e5b7, `volume-against-the-night` 4035f246e6aa to
+            ece4387e462b and `crossed-by-a-margin` 8cccb2804954 to 29ea9c92e305. None of the sixteen
+            `SwingFilter.CodeVersionSources` or the twelve `RuleVersionScorer.CodeVersionSources` is edited, so the
+            filter's code version and every rule version stand. Owed before the first night after the merge: the
+            six candidates standing on the operator's store, registered on 2026-09-27 at 78a5cfe3d020, are retired
+            and registered again with `register --moved`, or that night skips each and names it a failure on the
+            listings row. This correction merges with items 2 and 3 of the pair rulings of 2026-09-26, whose remedy
+            is the same command, so the operator runs it once.
+Mutated:    the rule, stated before the run: each mechanism the three regions rest on reversed alone, and the
+            three the brief names, filtered to the new tests and the colour test.
+            Predicted:
+            L1 the share the live list also picked counted over every version's picks rather than the version's
+               own: red in the learning region test.
+            L2 the version the link names passed over for the first after the live list: red in the comparison
+               test and the link test.
+            L3 a version below its first look drawn unlocked wherever it holds a trade: red in the checkpoint
+               test.
+            L4 the live list's ring drawn in the support hue: red in the colour test.
+            L5 the shell's choice written to the link under another name than the page reads: red in the link
+               test.
+            Results: one run each in a detached worktree at d746a63, this entry's commit, filtered to the five
+            new tests and the colour test, each edit made there and reverted, and the tree read clean after. The
+            whole suite ran green over d746a63 in the gates, 1510 of 1510. L1 turned the learning region test red;
+            L2 the comparison test and the link test; L3 the checkpoint test; L4 the colour test; L5 the link
+            test.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1510 of 1510 tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 700 claims, 700 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 711 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1510 of 1510 tests.
+            Both gates ran over the tree carrying this entry, d746a63, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    the operator's `register --moved`, run once with items 2 and 3's remedy before the first night after
+            the merge.

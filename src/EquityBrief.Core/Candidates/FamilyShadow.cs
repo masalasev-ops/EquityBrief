@@ -8,7 +8,7 @@ namespace EquityBrief.Core.Candidates;
 // once, each member's gate inputs evaluated by them, and the counts the stage's row states. A missing or
 // moved evaluator is a fault, and a member the night holds no bar for, or holds across a gap, is a
 // counted skip, by the rules the listings stage applies to its own.
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 // see: A variant of the swing filter is registered as a whole rule and runs on unchanged when the live settings move
 public sealed class FamilyShadow : IMemberShadow
 {

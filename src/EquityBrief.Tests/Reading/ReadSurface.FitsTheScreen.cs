@@ -208,8 +208,10 @@ public partial class ReadSurface
         // 53 from the 12.3 correction that opens the Run page on its pictures: the night's status mark and time
         // bar, the market's gauge and the funnel's bars, the fixture's sessions of averages too few for a line,
         // and 62 from the one that draws its trades, freshness, research and checklist: the ring, the freshness
-        // bars, the spend bar, the research bars and the checklist's five marks.
-        Assert.Equal(62, pictures);
+        // bars, the spend bar, the research bars and the checklist's five marks, and 69 from the one that draws
+        // how the system learns: the shape clock's bar, its five ranges and the edge clock's line, the fixture
+        // registering no version to compare or put at a checkpoint.
+        Assert.Equal(69, pictures);
 
         var page = screens[3].Item2;
 
@@ -290,8 +292,9 @@ public partial class ReadSurface
         // 11.9's region on the run page stating each reason's share against its target, 33 from
         // 12.3's Calibration region, which draws two where that region drew one, and 31 from the 5.8
         // correction that took the listing history's evenings off the name page and the exported
-        // report. The fixture's name holds no research, so the risks' table is not among them.
-        Assert.Equal(31, tables);
+        // report, and 32 from the 12.3 correction that draws the Run page's versions running in the
+        // background. The fixture's name holds no research, so the risks' table is not among them.
+        Assert.Equal(32, tables);
 
         // What makes the box a box. Without this the wrapper is a div and every table pushes
         // the page as it did before.

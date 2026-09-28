@@ -206,7 +206,7 @@ public sealed class SinglePageApp : IComponent
           } else if (path.startsWith('{{{RunRoute}}}')) {
             view = 'run';
             const night = encodeURIComponent(path.slice('{{{RunRoute}}}'.length));
-            const run = await fetch('/screens/run/' + night);
+            const run = await fetch('/screens/run/' + night + (query ? '?' + query : ''));
             screen.innerHTML = await run.text();
           } else if (path.startsWith('{{{UniverseRoute}}}')) {
             view = 'universe';
@@ -293,6 +293,11 @@ public sealed class SinglePageApp : IComponent
         }
         document.addEventListener('mouseover', placePop);
         document.addEventListener('focusin', placePop);
+        // The version a reader compares tonight's picks with lives in the link, so the view is one to share.
+        document.addEventListener('change', (event) => {
+          const chosen = event.target.closest ? event.target.closest('select[data-compare]') : null;
+          if (chosen) { location.hash = chosen.getAttribute('data-compare') + '?version=' + encodeURIComponent(chosen.value); }
+        });
         // A name put on the watch list or taken off it: the press names the ticker, from the box on the
         // watch list page or from the form's own, sends the page's header, and the screen is drawn again
         // with what the read surface said above the list.
@@ -1542,7 +1547,10 @@ public sealed class SinglePageApp : IComponent
         PicksSummary? trades = null,
         IReadOnlyList<FreshNight>? fresh = null,
         ResearchPicture? research = null,
-        IReadOnlyList<WorryItem>? worries = null)
+        IReadOnlyList<WorryItem>? worries = null,
+        IReadOnlyList<VersionLine>? background = null,
+        CompareView? compare = null,
+        IReadOnlyList<CheckpointRow>? checkpoints = null)
     {
         var region = new StringBuilder();
 
@@ -1620,6 +1628,44 @@ public sealed class SinglePageApp : IComponent
         }
 
         region.Append("</div>");
+
+        // How the system learns, tonight's picks compared with a version's, and each version at a checkpoint.
+        // Picks only: a version's outcomes wait for its look.
+        // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+        if (background is { } running && edge is { } judging)
+        {
+            var route = RunRoute + night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            region.Append(Cards.Computed(
+                "The learning loop",
+                marks.LearningRegion(shape, judging, running, route + "?version=" + (running.FirstOrDefault(version => !version.Live)?.Slug ?? string.Empty)),
+                title: "How the system learns",
+                lede: "Two clocks run every night, and nothing changes the list without your decision: the first tunes how many stocks pass each check, and the second judges over years whether the picks make money, by running other versions of the rules beside the live one.",
+                stamp: Cards.Night(night),
+                region: "learning-picture"));
+
+            if (compare is { } compared)
+            {
+                region.Append(Cards.Computed(
+                    "The learning loop",
+                    marks.CompareRegion(compared, route, NameRoute),
+                    title: "Compare tonight's picks",
+                    lede: "What a background version would have listed on this night, beside the live list. Picks only: how each version's trades turn out stays hidden until its checkpoint.",
+                    stamp: Cards.Night(night),
+                    region: "compare-picture"));
+            }
+
+            if (checkpoints is { } rows)
+            {
+                region.Append(Cards.Computed(
+                    "The learning loop",
+                    marks.CheckpointRegion(rows),
+                    title: "At a checkpoint",
+                    lede: "Each version's results, locked until its first checkpoint, about two years in, when a clearly worse version can be dropped; none can be promoted before the second.",
+                    stamp: Cards.Night(night),
+                    region: "checkpoint-picture"));
+            }
+        }
 
         // Research and spend beside anything to worry about.
         region.Append("<div class=\"run-pair\">");

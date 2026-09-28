@@ -12,7 +12,7 @@ namespace EquityBrief.Core.Candidates;
 // separately is what makes the divisor the truth about how many things were
 // tested.
 // see: The momentum panel is context a reader weighs, and nothing computes with it
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public sealed class MomentumHistogramTurn : CandidateEvaluator
 {
     public const string EvaluatorName = "momentum-histogram-turn";
@@ -25,7 +25,7 @@ public sealed class MomentumHistogramTurn : CandidateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "7277843424be";
+    public override string Version => "07ccef6ca6c3";
 
     public override IReadOnlyList<string> Reads => [Histogram, Previous];
 

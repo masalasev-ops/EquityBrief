@@ -53,9 +53,11 @@ public partial class ReadSurface
         ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
             // The 12.3 corrections that open the Run page on its pictures and draw its trades, freshness,
-            // research and checklist.
+            // research and checklist, how the system learns, the comparison of tonight's picks and each
+            // version at a checkpoint.
             .. RunPageClaims,
             .. RunMiddleClaims,
+            .. RunBottomClaims,
 
             // 12.3, the Calibration region and section 17's two bands.
             CheckReach.Key("15.10 Run", "The shape clock, the ordinary nights under the open filter version against the sixty the calibration waits on"),

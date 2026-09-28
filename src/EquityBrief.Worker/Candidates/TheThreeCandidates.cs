@@ -17,7 +17,7 @@ public sealed record Registration(
 // at the prompt is a rule nobody can check afterwards against the condition that ran. The command
 // names this set and writes the three rows at one instant, so each opens at a third of the level.
 // see: The three candidates are registered at one instant
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public static class TheThreeCandidates
 {
     public const string ArrivedAndNarrowName = "arrived and narrow";

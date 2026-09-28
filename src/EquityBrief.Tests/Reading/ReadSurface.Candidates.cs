@@ -181,7 +181,7 @@ public partial class ReadSurface
 
         Assert.Contains("class=\"candidate-records\"", page, StringComparison.Ordinal);
         Assert.Contains($"data-candidate=\"{Judged}\"", page, StringComparison.Ordinal);
-        Assert.Contains("no evaluation of a name is drawn here or anywhere else", page, StringComparison.Ordinal);
+        Assert.Contains("no candidate's pick of a name is drawn here, and no record is drawn beside a ticker", page, StringComparison.Ordinal);
         Assert.Contains("1 candidate condition(s) have ever been registered", page, StringComparison.Ordinal);
 
         // The region sits between the shadow count and the order comparison, which is where
