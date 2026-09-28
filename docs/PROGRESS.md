@@ -29105,8 +29105,8 @@ Guarded:    in `read-surface`, two new: `EachUniverseHeadingSaysWhatItsColumnHol
             line's test reads the shell's selector with the headings in it.
 Written:    section 15.8's table row states the part; `.claude/rules/checks.md`'s read-surface row. Each
             changed line's prior text in `CHANGELOG.md`.
-Tests:      58HT, from 1486: two added.
-Claims:     58HC, from 646, predicted 647: section 15.8's table row read as one part more, each column heading
+Tests:      1488, from 1486: two added.
+Claims:     647, from 646, predicted 647: section 15.8's table row read as one part more, each column heading
             saying what its column holds while the pointer is over it, due at 5.8, which has landed.
 Pins:       the branch against `main` edits no source in the three pin lists: `MarkRenderer.cs`,
             `SinglePageApp.cs` and `Stylesheet.cs` are in none. No version moves and nothing is owed before a
@@ -29119,14 +29119,17 @@ Mutated:    the rule, stated before the run: one mutation reversing each mechani
             H3 the recent high's window moved from 20 sessions to 21 where the swing reader keeps it: red in
                both new tests.
             H4 the sentences shown without the pointer: red in the new table test.
-            Results: 58HM
-Held:       58HH
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 58HT of 58HT tests ran
+            Results: one run each in a detached worktree at 82ec081, this entry's commit, filtered to the four
+            tests, each edit made there and reverted, and the tree read clean after. The four ran green over
+            the unmutated tree, and the whole suite ran green over 82ec081 in the gates, 1488 of 1488. H1
+            turned both new tests and the swing test red; H2 and H3 both new tests; H4 the new table test.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1488 of 1488 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 58HB tables, 58HC claims, 58HP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 58HR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 58HT of 58HT tests.
-            Both gates ran over the tree carrying this entry, 58HSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 44 tables, 647 claims, 647 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 658 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1488 of 1488 tests.
+            Both gates ran over the tree carrying this entry, 82ec081, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this.
