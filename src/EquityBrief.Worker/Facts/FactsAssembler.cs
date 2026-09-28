@@ -742,9 +742,7 @@ public sealed class FactsAssembler : IComponent
     // groups by, so a figure by market platform is not read as a segment's.
     // see: The facts file carries a quarter's growth, its earnings against the estimate and the filing's own tables with their year-earlier columns
     public static IReadOnlyList<Fact> RevenueTables(JsonElement root) =>
-        root.TryGetProperty("revenueTables", out var tables) && tables.ValueKind == JsonValueKind.Array
-            ? [.. tables.EnumerateArray().SelectMany(table => Table(table, Prefix(table)))]
-            : [];
+        [.. Prefixes(root).SelectMany(named => Table(named.Table, named.Prefix))];
 
     // Each group's growth on the same months a year before, in the segment table and the other
     // tables, as the fetcher computed it from each table's own columns, named as the table's own
@@ -758,12 +756,9 @@ public sealed class FactsAssembler : IComponent
 
         var prefixes = new Dictionary<string, string>(StringComparer.Ordinal);
 
-        if (root.TryGetProperty("revenueTables", out var tables) && tables.ValueKind == JsonValueKind.Array)
+        foreach (var (table, prefix) in Prefixes(root))
         {
-            foreach (var table in tables.EnumerateArray())
-            {
-                prefixes[table.GetProperty("report").GetString()!] = Prefix(table);
-            }
+            prefixes.TryAdd(table.GetProperty("report").GetString()!, prefix);
         }
 
         var facts = new List<Fact>();
@@ -793,10 +788,32 @@ public sealed class FactsAssembler : IComponent
         return facts;
     }
 
-    // How a table of revenue by a grouping names its figures: the segment prefix and what its title
-    // says it groups by.
-    static string Prefix(JsonElement table) =>
-        SegmentPeriods.Prefix + Grouping(table.GetProperty("title").GetString() ?? string.Empty) + " ";
+    // How each of the filing's other tables names its figures, in the order the filing states them: the
+    // segment prefix and what its title says it groups by. A grouping an earlier table already took
+    // carries the table's count among those sharing it, so two tables whose titles read alike, or say
+    // nothing of what they group by, never name one figure twice, which a facts file cannot hold.
+    static IReadOnlyList<(JsonElement Table, string Prefix)> Prefixes(JsonElement root)
+    {
+        if (!root.TryGetProperty("revenueTables", out var tables) || tables.ValueKind != JsonValueKind.Array)
+        {
+            return [];
+        }
+
+        var seen = new Dictionary<string, int>(StringComparer.Ordinal);
+        var named = new List<(JsonElement, string)>();
+
+        foreach (var table in tables.EnumerateArray())
+        {
+            var grouping = Grouping(table.GetProperty("title").GetString() ?? string.Empty);
+            var count = seen[grouping] = seen.GetValueOrDefault(grouping) + 1;
+
+            named.Add((table, count == 1
+                ? $"{SegmentPeriods.Prefix}{grouping} "
+                : $"{SegmentPeriods.Prefix}{grouping} {count.ToString(CultureInfo.InvariantCulture)} "));
+        }
+
+        return named;
+    }
 
     // What a table of revenue groups by, read off its title: "revenue by market platform" from a
     // title reading "Segment Information - Schedule of Revenue by Market Platform (Details)".
