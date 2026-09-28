@@ -669,6 +669,7 @@ public static class SchemaMigrations
         new Migration(46, "create pulled_bar and pulled_earnings", CreatePulledHistory),
         new Migration(47, "add gate_result's plan clear of the noise", AddClearPlan),
         new Migration(48, "create reported_quarter, quarter_ask and fundamental_reading", CreateReportedQuarters),
+        new Migration(49, "add peer_reading.peers", AddPeerPicks),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -790,9 +791,9 @@ public static class SchemaMigrations
     // bars or its series has a gap. The year's high is a price and is text; the distance below it
     // and the return are statistics; the bars are how many the readings were taken over, which
     // is what a return the name holds too few bars for says instead. The group is the one the
-    // name's moves are read against, so the peers table lists the members the medians were taken
+    // name's moves are read against, so the peers table lists members the medians were taken
     // over.
-    // see: Peers are shown by price alone, in section 2 beside the move table
+    // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
     const string CreatePeerReading = @"
         CREATE TABLE peer_reading (
             ticker         TEXT NOT NULL PRIMARY KEY,
@@ -1106,6 +1107,15 @@ public static class SchemaMigrations
         ALTER TABLE gate_result ADD COLUMN clear_target TEXT;
         ALTER TABLE gate_result ADD COLUMN clear_reward_to_risk REAL;
         ALTER TABLE gate_result ADD COLUMN clear_stop_moves REAL;
+    ";
+
+    // The members of a name's group its peers table draws, in the order it draws them, each with whether
+    // it shares the name's industry and how closely its daily moves followed the name's, as JSON. A row
+    // written before the column holds none, and the page says the night has not chosen them yet rather
+    // than drawing the whole group.
+    // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
+    const string AddPeerPicks = @"
+        ALTER TABLE peer_reading ADD COLUMN peers TEXT;
     ";
 
     // A member's reported quarters, one row per fetch per quarter, the asks that fetched them, and the

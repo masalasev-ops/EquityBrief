@@ -13,6 +13,9 @@ using EquityBrief.Web.Marks;
 
 namespace EquityBrief.Api.Reading;
 
+// One member a name's peers table draws, as the annotator stored it on the name's reading row.
+public sealed record StoredPick(string Ticker, bool SameIndustry, double? Likeness, int Sessions);
+
 // The projection from stored rows to what a mark takes.
 //
 // It sits between the read surface and the app because both of those have a
@@ -1098,7 +1101,8 @@ public static class NameScreen
         bool? watched = null,
         IReadOnlyList<PickCell>? earlier = null,
         FundamentalReadingRow? reading = null,
-        IReadOnlyList<QuarterDatesRow>? readQuarters = null)
+        IReadOnlyList<QuarterDatesRow>? readQuarters = null,
+        IReadOnlyList<CloseRow>? peerCloses = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1222,7 +1226,7 @@ public static class NameScreen
             new NameMast(member?.Name, member?.Sector, member?.Industry, DayChange(ticker, bars)),
             filings.Count > 0 ? filings.Max(filing => filing.FilingDate) : null,
             night,
-            Peers(ticker, universe, peerReadings, night),
+            Peers(ticker, universe, peerReadings, night, peerCloses),
             reactions is null ? null : Reactions(reactions),
             swing is null ? null : Swing(swing),
             gates is null ? null : Gates(gates) with { Rule = listing is { } held && held.SessionDate == gates.SessionDate ? held.ListedBy : ListRules.Reasons },
@@ -1332,16 +1336,40 @@ public static class NameScreen
     public static IReadOnlyList<ReactionCell> Reactions(IReadOnlyList<ReactionRow> rows) =>
         [.. rows.Select(row => new ReactionCell(row.ReportDate, row.Timing, row.Session, row.Estimate, row.Actual, row.SurprisePct, row.MovePct))];
 
+    // The members of a name's group its peers table draws, in the order the annotator stored them, and
+    // none where it stored no row for the name or chose none on it.
+    // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
+    public static IReadOnlyList<StoredPick> PickedPeers(string ticker, IReadOnlyList<PeerReadingRow>? readings)
+    {
+        var own = readings?.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal));
+
+        if (own?.Peers is not { } stored)
+        {
+            return [];
+        }
+
+        using var picks = System.Text.Json.JsonDocument.Parse(stored);
+
+        return
+        [
+            .. picks.RootElement.EnumerateArray().Select(pick => new StoredPick(
+                pick.GetProperty("ticker").GetString()!,
+                pick.GetProperty("sameIndustry").GetBoolean(),
+                pick.GetProperty("likeness").ValueKind == System.Text.Json.JsonValueKind.Number ? pick.GetProperty("likeness").GetDouble() : null,
+                pick.GetProperty("sessions").GetInt32())),
+        ];
+    }
+
     // A name's peers table: the group the annotator took its readings against, read off the
-    // name's own reading row rather than worked out again here, and every member of it with the
-    // name itself, in ticker order. The members are the universe's rows in that group on the
-    // page's night, which are the members the annotator read on the session, each with its close
-    // and trend state as the universe holds them, its readings as the annotator stored them and
-    // the cell the universe table draws its distance row mark from. The readings are one row per
-    // name and the newest night's alone, so a page for an earlier night says so rather than
-    // drawing tonight's beside that night's figures.
-    // see: Peers are shown by price alone, in section 2 beside the move table
-    public static PeersView? Peers(string ticker, IReadOnlyList<UniverseRow>? universe, IReadOnlyList<PeerReadingRow>? readings, DateOnly? night)
+    // name's own reading row rather than worked out again here, the name itself, and the members
+    // of it the annotator chose, in the order it stored them. Each is the universe's row on the
+    // page's night, with its close and trend state as the universe holds them, its readings as the
+    // annotator stored them, the cell the universe table draws its distance row mark from, and its
+    // stored closes, which the picture beside its ticker draws. The readings are one row per name
+    // and the newest night's alone, so a page for an earlier night says so rather than drawing
+    // tonight's beside that night's figures.
+    // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
+    public static PeersView? Peers(string ticker, IReadOnlyList<UniverseRow>? universe, IReadOnlyList<PeerReadingRow>? readings, DateOnly? night, IReadOnlyList<CloseRow>? closes = null)
     {
         if (universe is null || readings is null)
         {
@@ -1372,25 +1400,48 @@ public static class NameScreen
             string.Equals(own.GroupKind, EquityBrief.Core.Moves.Group.Industry, StringComparison.Ordinal) ? row.Industry : row.Sector;
 
         var cells = UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
+        var members = universe.GroupBy(row => row.Ticker, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+        var years = (closes ?? [])
+            .GroupBy(row => row.Ticker, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => new PeerYear(group.First().SessionDate, group.Last().SessionDate, [.. group.Select(row => row.Close)]), StringComparer.Ordinal);
+
+        // How many other members the group holds on the page's night, of which the table draws the ones
+        // the annotator chose.
+        var others = own.GroupName is null
+            ? 0
+            : members.Values.Count(row => !string.Equals(row.Ticker, ticker, StringComparison.Ordinal) && string.Equals(GroupOf(row), own.GroupName, StringComparison.Ordinal));
+
+        PeerCell Row(string drawn, bool isOwn, PeerLikeness? likeness)
+        {
+            var row = members.GetValueOrDefault(drawn);
+
+            return new PeerCell(
+                drawn,
+                isOwn,
+                row?.Close,
+                row?.TrendState,
+                byTicker.TryGetValue(drawn, out var reading)
+                    ? new PeerFigures(reading.SessionDate, reading.YearHigh, reading.BelowHighPct, reading.ReturnPct, reading.Bars)
+                    : null,
+                cells.TryGetValue(drawn, out var cell) ? cell : null,
+                likeness,
+                row?.Name,
+                isOwn ? null : years.GetValueOrDefault(drawn));
+        }
+
+        // A row written before the annotator chose the members draws the name alone and says so.
+        if (own.Peers is null)
+        {
+            return new PeersView(own.GroupKind, own.GroupName, [Row(ticker, true, null)], Others: others, Chosen: false);
+        }
 
         PeerCell[] rows =
         [
-            .. universe
-                .Where(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)
-                    || (own.GroupName is not null && string.Equals(GroupOf(row), own.GroupName, StringComparison.Ordinal)))
-                .OrderBy(row => row.Ticker, StringComparer.Ordinal)
-                .Select(row => new PeerCell(
-                    row.Ticker,
-                    string.Equals(row.Ticker, ticker, StringComparison.Ordinal),
-                    row.Close,
-                    row.TrendState,
-                    byTicker.TryGetValue(row.Ticker, out var reading)
-                        ? new PeerFigures(reading.SessionDate, reading.YearHigh, reading.BelowHighPct, reading.ReturnPct, reading.Bars)
-                        : null,
-                    cells.TryGetValue(row.Ticker, out var cell) ? cell : null)),
+            Row(ticker, true, null),
+            .. PickedPeers(ticker, readings).Select(pick => Row(pick.Ticker, false, new PeerLikeness(pick.SameIndustry, pick.Likeness, pick.Sessions))),
         ];
 
-        return new PeersView(own.GroupKind, own.GroupName, rows);
+        return new PeersView(own.GroupKind, own.GroupName, rows, Others: others);
     }
 
     // The change on the day the masthead states, off the two newest stored closes, by the

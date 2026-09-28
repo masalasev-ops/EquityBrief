@@ -13,7 +13,7 @@ public sealed record PeerReading(DateOnly Session, decimal YearHigh, double Belo
 
 // The peers table's two readings, a pure function of a session-ordered series as the move
 // arithmetic is, so the annotator reads and writes and this decides.
-// see: Peers are shown by price alone, in section 2 beside the move table
+// see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
 public static class PeerReadings
 {
     // The sessions the return is taken over. Sixty is a quarter of a year of trading, the span a

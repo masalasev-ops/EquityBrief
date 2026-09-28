@@ -1,7 +1,7 @@
 {
  "stage": "peers",
  "derivation": "derived",
- "derivedFrom": "the captured bars read through the rules the replay applies, not from a run. The backfill stores each current member's year ending on 2026-09-04; the fetch stores the 2026-09-08 bulk row for each and drops every session more than a year before the newest, which is 2025-09-05; the corporate action check, run as of 2026-08-10, refetches AAPL, the one current member an action landed on, deleting its bars and writing back the year ending on 2026-08-10. Over the bars that leaves each name, every price scaled by the adjusted close over the close, the year's high is the highest high, the distance below it is the gap from the newest close in per cent of the high, and the return is the newest close against the close sixty sessions before it. Computed outside this repository from the captured payloads, so a component that read the wrong bars would not agree with it. AAPL's readings rest on 234 bars ending 2026-08-10 and the other three on 252 ending 2026-09-08, because the replay's action check refetches AAPL as of 2026-08-10. No fixture name holds fewer bars than the window, so the not-available case is constructed in the suite.",
+ "derivedFrom": "the captured bars read through the rules the replay applies, not from a run. The backfill stores each current member's year ending on 2026-09-04; the fetch stores the 2026-09-08 bulk row for each and drops every session more than a year before the newest, which is 2025-09-05; the corporate action check, run as of 2026-08-10, refetches AAPL, the one current member an action landed on, deleting its bars and writing back the year ending on 2026-08-10. Over the bars that leaves each name, every price scaled by the adjusted close over the close, the year's high is the highest high, the distance below it is the gap from the newest close in per cent of the high, and the return is the newest close against the close sixty sessions before it. Computed outside this repository from the captured payloads, so a component that read the wrong bars would not agree with it. AAPL's readings rest on 234 bars ending 2026-08-10 and the other three on 252 ending 2026-09-08, because the replay's action check refetches AAPL as of 2026-08-10. No fixture name holds fewer bars than the window, so the not-available case is constructed in the suite. The members each name's table draws are its group's others, none sharing its industry, ordered by the correlation of the two names' daily returns, each session's adjusted close against the one before it, along the name's own stored sessions wherever the member holds both closes: AAPL's 234 sessions share 231 returns with KEYS and with MSFT, since those two hold nothing before 2025-09-08, and KEYS and MSFT share 251. Worked outside this repository from the same rebuilt series.",
  "tables": [
   "peer_reading"
  ],
@@ -44,22 +44,38 @@
    "returnPct": -5.5371
   }
  },
+ "picks": {
+  "note": "the members each name's peers table draws, in order, with whether each shares the name's industry, the correlation of their daily returns and how many returns both hold",
+  "AAPL": [
+   { "ticker": "KEYS", "sameIndustry": false, "likeness": 0.117247, "sessions": 231 },
+   { "ticker": "MSFT", "sameIndustry": false, "likeness": 0.105038, "sessions": 231 }
+  ],
+  "KEYS": [
+   { "ticker": "AAPL", "sameIndustry": false, "likeness": 0.117247, "sessions": 231 },
+   { "ticker": "MSFT", "sameIndustry": false, "likeness": -0.033375, "sessions": 251 }
+  ],
+  "MSFT": [
+   { "ticker": "AAPL", "sameIndustry": false, "likeness": 0.105038, "sessions": 231 },
+   { "ticker": "KEYS", "sameIndustry": false, "likeness": -0.033375, "sessions": 251 }
+  ],
+  "NFLX": []
+ },
  "groups": {
-  "note": "each name's group as the moves expectation derives it, which the peers table lists with the name itself marked, in ticker order",
+  "note": "each name's group as the moves expectation derives it, which the peers table draws with the name itself first and marked, then the picks in their order",
   "AAPL": [
    "AAPL",
    "KEYS",
    "MSFT"
   ],
   "KEYS": [
-   "AAPL",
    "KEYS",
+   "AAPL",
    "MSFT"
   ],
   "MSFT": [
+   "MSFT",
    "AAPL",
-   "KEYS",
-   "MSFT"
+   "KEYS"
   ],
   "NFLX": [
    "NFLX"

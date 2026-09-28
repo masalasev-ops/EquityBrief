@@ -41,6 +41,68 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public void ThePeersDrawnAreTheIndustrysFirstThenTheMostAlikeAndTenAtMost()
+    {
+        // Closes alternating between two prices, so every daily return is one of two figures worked by
+        // hand: a member alternating in step with the name moved with it exactly, a likeness of 1, and one
+        // alternating against it moved exactly the other way, -1. Seventy sessions give sixty-nine returns.
+        var first = new DateOnly(2026, 1, 1);
+
+        IReadOnlyDictionary<DateOnly, decimal> Alternating(decimal low, decimal high, bool inStep, int sessions = 70) =>
+            Enumerable.Range(70 - sessions, sessions).ToDictionary(day => first.AddDays(day), day => (day % 2 == 0) == inStep ? low : high);
+
+        GroupMember Member(string ticker, string industry) => new(ticker, "Tech", industry);
+
+        var closes = new Dictionary<string, IReadOnlyDictionary<DateOnly, decimal>>(StringComparer.Ordinal)
+        {
+            ["ZZNM"] = Alternating(100m, 101m, true),
+            ["SAME"] = Alternating(100m, 101m, false),
+            ["TWIN"] = Alternating(100m, 101m, true),
+            ["OPPO"] = Alternating(200m, 202m, false),
+            ["SHRT"] = Alternating(10m, 10.1m, true, sessions: 60),
+            ["EDGE"] = Alternating(10m, 10.1m, true, sessions: 61),
+        };
+
+        // At the floor and one short of it: sixty-one closes share sixty returns with the name and read
+        // a likeness, sixty share fifty-nine and read none, with the count.
+        Assert.Equal(60, PeerPicks.FewestSessions);
+        Assert.Equal((1.0, 60), (Math.Round(PeerPicks.Likeness(closes["ZZNM"], closes["EDGE"]).Likeness!.Value, 9), PeerPicks.Likeness(closes["ZZNM"], closes["EDGE"]).Sessions));
+        Assert.Equal(((double?)null, 59), PeerPicks.Likeness(closes["ZZNM"], closes["SHRT"]));
+        Assert.Equal(-1.0, PeerPicks.Likeness(closes["ZZNM"], closes["OPPO"]).Likeness!.Value, 9);
+
+        // The name's industry holds one other member, below the group floor, so its group is its sector.
+        // The member sharing its industry comes first whatever its likeness, then the members holding one,
+        // the higher first, and the member sharing too few sessions last.
+        GroupMember[] members =
+        [
+            Member("ZZNM", "Tools"), Member("SAME", "Tools"), Member("TWIN", "Chips"), Member("OPPO", "Chips"), Member("SHRT", "Chips"),
+        ];
+
+        var group = Groups.Of("ZZNM", members);
+        var picks = PeerPicks.Of("ZZNM", group, members, closes);
+
+        Assert.Equal(Group.Sector, group.Kind);
+        Assert.Equal(["SAME", "TWIN", "OPPO", "SHRT"], picks.Select(pick => pick.Ticker).ToArray());
+        Assert.Equal([true, false, false, false], picks.Select(pick => pick.SameIndustry).ToArray());
+        Assert.Equal([-1.0, 1.0, -1.0], picks.Take(3).Select(pick => Math.Round(pick.Likeness!.Value, 9)).ToArray());
+        Assert.Equal((null, 59), (picks[3].Likeness, picks[3].Sessions));
+
+        // Twelve members closing as the name closes besides, so their likeness is TWIN's to the last digit:
+        // ten are drawn, the one sharing its industry first and then nine of the thirteen tied at 1, the tie
+        // settled by the ticker.
+        foreach (var at in Enumerable.Range(1, 12))
+        {
+            closes[$"A{at:00}"] = Alternating(100m, 101m, true);
+        }
+
+        GroupMember[] crowded = [.. members, .. Enumerable.Range(1, 12).Select(at => Member($"A{at:00}", "Chips"))];
+        var drawn = PeerPicks.Of("ZZNM", Groups.Of("ZZNM", crowded), crowded, closes);
+
+        Assert.Equal(10, PeerPicks.Shown);
+        Assert.Equal(["SAME", "A01", "A02", "A03", "A04", "A05", "A06", "A07", "A08", "A09"], drawn.Select(pick => pick.Ticker).ToArray());
+    }
+
+    [Fact]
     public async Task TheFixturesPeerReadingsAreTheOnesWorkedByHandFromTheCapturedBars()
     {
         var expected = Expected("peers");
@@ -88,6 +150,25 @@ public partial class FixtureExpectations
         }
 
         Assert.Equal(4, read);
+
+        // The members each name's table draws, in order, as worked by hand from the rebuilt series: the
+        // likeness to the sixth place and the returns both hold exactly.
+        foreach (var name in expected.GetProperty("picks").EnumerateObject().Where(entry => entry.Name != "note"))
+        {
+            using var stored = System.Text.Json.JsonDocument.Parse(Assert.Single(Query(store, $"SELECT peers FROM peer_reading WHERE ticker = '{name.Name}';")));
+
+            var want = name.Value.EnumerateArray().ToArray();
+            var have = stored.RootElement.EnumerateArray().ToArray();
+
+            Assert.Equal(want.Select(pick => pick.GetProperty("ticker").GetString()), have.Select(pick => pick.GetProperty("ticker").GetString()));
+
+            foreach (var (expectedPick, storedPick) in want.Zip(have))
+            {
+                Assert.Equal(expectedPick.GetProperty("sameIndustry").GetBoolean(), storedPick.GetProperty("sameIndustry").GetBoolean());
+                Assert.Equal(expectedPick.GetProperty("sessions").GetInt32(), storedPick.GetProperty("sessions").GetInt32());
+                Assert.InRange(Math.Abs(expectedPick.GetProperty("likeness").GetDouble() - storedPick.GetProperty("likeness").GetDouble()), 0, 0.000001);
+            }
+        }
 
         // One row per name the store holds bars for, and none for any other.
         Assert.Equal(

@@ -298,6 +298,12 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     // cycle among them is the theme's, read for the industry the index names the member in.
     var written = await read.WrittenSectionsAsync(ticker, on);
 
+    // The index on the page's night and every name's two readings, which the peers table draws for the
+    // members of the name's group the night chose, and those members' stored closes, which the picture
+    // beside each one's ticker draws. The readings are the newest night's alone, so an earlier night reads none.
+    var peerReadings = on is null ? await read.PeerReadingsAsync() : [];
+    var peerCloses = await read.ClosesAsync([.. NameScreen.PickedPeers(ticker, peerReadings).Select(pick => pick.Ticker)]);
+
     var region = NameScreen.Region(
         page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves,
         fundamentals,
@@ -326,10 +332,8 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // The membership row the masthead names the company, its sector and industry from.
         universe.FirstOrDefault(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
         on,
-        // The index on the page's night and every name's two readings, which the peers table
-        // draws for the members of the name's group.
         universe,
-        on is null ? await read.PeerReadingsAsync() : [],
+        peerReadings,
         // The name's earnings reaction record as of the page's night.
         await read.ReactionsAsync(ticker, on),
         NameScreen.NotAMemberOn(ticker, groupsReadOn, membersThen),
@@ -343,7 +347,8 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // Every night the live list picked the name before the page's own, each trade as it stood on the page's night.
         night is { } picked ? PicksScreen.Before(await read.PicksAsync(picked, ticker), picked) : null,
         reading,
-        readQuarters);
+        readQuarters,
+        peerCloses);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }

@@ -357,16 +357,35 @@ public sealed record MoveCell(DateOnly SessionDate, int Sessions, double ChangeP
 public sealed record MoveGroup(string Kind, string? Name, int Members, int Counted, double? Median, DateOnly? NotAMemberOn = null);
 
 // A name's peers table as the page is given it: the group the name's moves are read against,
-// none where the store holds no readings for the name, and a row for every member of it and for
-// the name itself, in ticker order. `Kept` says the readings are the newest night's alone, which
-// a page drawn for an earlier night states rather than drawing them.
-// see: Peers are shown by price alone, in section 2 beside the move table
-public sealed record PeersView(string? GroupKind, string? GroupName, IReadOnlyList<PeerCell> Rows, bool Kept = true, bool Member = true);
+// none where the store holds no readings for the name, and a row for the name itself and for each
+// member of it the night chose, in the order it chose them. `Kept` says the readings are the newest
+// night's alone, which a page drawn for an earlier night states rather than drawing them. `Others`
+// is how many other members the group holds, of which the rows are the ones the night chose, and
+// `Chosen` is false on a row written before the night chose any.
+// see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
+public sealed record PeersView(string? GroupKind, string? GroupName, IReadOnlyList<PeerCell> Rows, bool Kept = true, bool Member = true, int Others = 0, bool Chosen = true);
 
 // One row of a peers table: a member of the name's group, or the name itself, marked, with its
 // close and trend state as the universe table holds them, the two readings the annotator stored
-// for it, and the cell the distance row mark is drawn from.
-public sealed record PeerCell(string Ticker, bool Own, decimal? Close, string? TrendState, PeerFigures? Readings, UniverseCell? Distance);
+// for it, the cell the distance row mark is drawn from, how closely its daily moves followed the
+// name's with whether it shares the name's industry, the company's name, and its stored closes.
+public sealed record PeerCell(
+    string Ticker,
+    bool Own,
+    decimal? Close,
+    string? TrendState,
+    PeerFigures? Readings,
+    UniverseCell? Distance,
+    PeerLikeness? Likeness = null,
+    string? Company = null,
+    PeerYear? Year = null);
+
+// How closely a member's daily moves followed the name's, as the annotator stored it: none where the
+// two share fewer daily returns than the floor, with how many they share.
+public sealed record PeerLikeness(bool SameIndustry, double? Value, int Sessions);
+
+// A member's stored closes in session order, from the first session to the last.
+public sealed record PeerYear(DateOnly From, DateOnly To, IReadOnlyList<decimal> Closes);
 
 // The two readings as the annotator stored them for a name, with the bars they were read over.
 public sealed record PeerFigures(DateOnly Session, decimal YearHigh, double BelowHighPct, double? ReturnPct, int Bars);
@@ -4674,17 +4693,21 @@ public sealed class MarkRenderer : IComponent
             + "</td>";
     }
 
-    // Section 2's peers table: every member of the name's group by price alone, in ticker order
-    // with the name's own row marked, each with its close, how far it sits below the stored
-    // year's high, its return over the window, its trend state and the distance row mark. It
-    // lists and ranks none, and draws every figure as the store holds it: the order is the one
-    // the rows arrive in and nothing here sorts, filters or works a figure out.
-    // see: Peers are shown by price alone, in section 2 beside the move table
+    // Section 2's peers table: the name's own row, marked, then the members of its group the night
+    // chose, ten at most, those sharing its industry first and then by how closely each one's daily
+    // moves followed the name's, each with that likeness, its close, how far it sits below the stored
+    // year's high, its return over the window, its trend state and the distance row mark. Each ticker
+    // opens its own page and draws its year beside it while the pointer is over it or it has focus.
+    // The order is one of likeness, which says nothing of which company is the better, and every
+    // figure is drawn as the store holds it: the order is the one the rows arrive in and nothing here
+    // sorts, filters or works a figure out.
+    // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
     // see: A screen reads and renders, and computes nothing
     public string PeersTable(string ticker, PeersView peers)
     {
         var table = new StringBuilder();
-        var others = peers.Rows.Count(row => !row.Own);
+        var shown = peers.Rows.Count(row => !row.Own);
+        var others = Math.Max(peers.Others, shown);
 
         table.Append(Invariant, $"<div class=\"peers\" data-ticker=\"{Escaped(ticker)}\" data-group-kind=\"{Escaped(peers.GroupKind ?? string.Empty)}\" data-group-name=\"{Escaped(peers.GroupName ?? string.Empty)}\" data-others=\"{others}\">");
 
@@ -4713,19 +4736,34 @@ public sealed class MarkRenderer : IComponent
             ? $"the {Escaped(name)} {Escaped(kind)}"
             : $"a {Escaped(kind)} its membership row does not name";
 
+        var followed = Formatted($"how closely each one's daily moves followed {Escaped(ticker)}'s over the sessions both hold");
+
         table.Append(others == 0
             ? $"<p class=\"peers-group\" data-peers=\"alone\">{named} holds no other member, so the table holds {Escaped(ticker)} alone.</p>"
-            : Formatted($"<p class=\"peers-group\" data-peers=\"group\">{Escaped(ticker)} and the {others} other members of {named}, in ticker order.</p>"));
+            : !peers.Chosen
+                ? Formatted($"<p class=\"peers-group\" data-peers=\"not-chosen\">{named} holds {others} other members, and the night has not yet chosen the ones this table draws, which it does from its next run.</p>")
+                : shown == others
+                    ? Formatted($"<p class=\"peers-group\" data-peers=\"group\">{Escaped(ticker)} and the {others} other members of {named}, those sharing its industry first, then by {followed}.</p>")
+                    : Formatted($"<p class=\"peers-group\" data-peers=\"group\">{Escaped(ticker)} and {shown} of the {others} other members of {named}: those sharing its industry first, then the ones whose daily moves followed {Escaped(ticker)}'s most closely over the sessions both hold.</p>"));
 
-        table.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"peers-table\" data-rows=\"{peers.Rows.Count}\">");
-        table.Append(Invariant, $"<tr><th>Name</th><th>Close</th><th>Below the year's high</th><th>Return over {EquityBrief.Core.Moves.PeerReadings.ReturnWindow} sessions</th><th>Trend</th><th>Distance</th></tr>");
+        table.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"peers-table\" data-rows=\"{peers.Rows.Count}\" data-others=\"{others}\">");
+        table.Append(Invariant, $"<tr><th>Name</th><th class=\"r\">Moved with it</th><th>Close</th><th>Below the year's high</th><th>Return over {EquityBrief.Core.Moves.PeerReadings.ReturnWindow} sessions</th><th>Trend</th><th>Distance</th></tr>");
 
         foreach (var row in peers.Rows)
         {
+            var company = row.Company is { Length: > 0 } called ? Formatted($" <span class=\"co\">{Escaped(called)}</span>") : string.Empty;
+            var industry = row.Likeness is { SameIndustry: true } ? " <span class=\"pill same-industry\">same industry</span>" : string.Empty;
+
             table.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-own=\"{(row.Own ? "true" : "false")}\">");
             table.Append(row.Own
-                ? Formatted($"<td class=\"peer own\"><b>{Escaped(row.Ticker)}</b> <span class=\"own-mark\">this name</span></td>")
-                : Formatted($"<td class=\"peer\">{Escaped(row.Ticker)}</td>"));
+                ? Formatted($"<td class=\"peer own\"><b>{Escaped(row.Ticker)}</b> <span class=\"own-mark\">this name</span>{company}</td>")
+                : Formatted($"<td class=\"peer\"><a class=\"peer-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{company}{industry}<span class=\"peer-pop\" role=\"tooltip\">{YearLine(row.Ticker, row.Year, row.Distance?.NearestSupport, row.Distance?.NearestResistance)}</span></td>"));
+            table.Append(row.Likeness switch
+            {
+                null => "<td class=\"r num likeness\" data-likeness=\"\" data-sessions=\"\"></td>",
+                { Value: { } value } alike => Formatted($"<td class=\"r num likeness\" data-likeness=\"{value.ToString("R", Invariant)}\" data-sessions=\"{alike.Sessions}\">{value.ToString("0.00;-0.00", Invariant)}</td>"),
+                { } alike => Formatted($"<td class=\"r num likeness\" data-likeness=\"\" data-sessions=\"{alike.Sessions}\"><span class=\"degraded\">too few sessions shared, {alike.Sessions}</span></td>"),
+            });
             table.Append(row.Close is { } close
                 ? Formatted($"<td class=\"r num\" data-close=\"{close.ToString(Invariant)}\">{Figures.Price(close)}</td>")
                 : "<td class=\"r num\" data-close=\"\">not computed</td>");
@@ -4751,6 +4789,86 @@ public sealed class MarkRenderer : IComponent
         table.Append("</table></div></div>");
 
         return table.ToString();
+    }
+
+    const int YearWidth = 380;
+    const int YearHeight = 150;
+    const int YearTop = 30;
+    const int YearRight = 118;
+    const int YearLabelGap = 13;
+
+    // The year line: a name's stored closes as one line, with its nearest support and its nearest
+    // resistance drawn across it in their own hues and named at the right with their prices, and the
+    // last close marked. It is what a peers table draws beside a member's ticker while the pointer is
+    // over it or it has focus, so the member's year is read without leaving the page. The scale takes
+    // in both bands as well as the closes, since a band drawn off the picture is the one thing the
+    // reader looked for. A name holding fewer closes than a line needs says so and draws nothing,
+    // which is section 15.5's rule for every mark.
+    // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
+    public string YearLine(string ticker, PeerYear? year, decimal? support, decimal? resistance)
+    {
+        if (year is null || year.Closes.Count < FewestBars)
+        {
+            return Formatted($"<span class=\"degraded year-line-none\" data-ticker=\"{Escaped(ticker)}\" data-closes=\"{year?.Closes.Count ?? 0}\">{Escaped(ticker)} holds {year?.Closes.Count ?? 0} stored close(s), too few to draw its year.</span>");
+        }
+
+        var prices = year.Closes.Select(PlotValue).ToList();
+
+        prices.AddRange(new[] { support, resistance }.Where(band => band is not null).Select(band => PlotValue(band!.Value)));
+
+        var low = prices.Min();
+        var high = prices.Max();
+        var span = high - low > 0 ? high - low : 1;
+        double plotWidth = YearWidth - YearRight - 4;
+        var step = plotWidth / (year.Closes.Count - 1);
+
+        double Y(decimal price) => YearTop + (YearHeight - YearTop - 6) * (1 - ((PlotValue(price) - low) / span));
+
+        var svg = new StringBuilder();
+
+        svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {YearWidth} {YearHeight}\" width=\"{YearWidth}\" height=\"{YearHeight}\" role=\"img\" class=\"year-line\" data-ticker=\"{Escaped(ticker)}\" data-closes=\"{year.Closes.Count}\">");
+        svg.Append(Invariant, $"<title>{Escaped(ticker)}, {year.Closes.Count} stored closes from {year.From:yyyy-MM-dd} to {year.To:yyyy-MM-dd}</title>");
+        svg.Append(Invariant, $"<text class=\"m-pane-h\" x=\"4\" y=\"14\">{Escaped(ticker)}, {year.Closes.Count} closes to {year.To:yyyy-MM-dd}</text>");
+        svg.Append(Invariant, $"<rect class=\"m-plot\" x=\"4\" y=\"{YearTop - 4}\" width=\"{plotWidth}\" height=\"{YearHeight - YearTop}\"/>");
+
+        // Each band's rule across the plot and its name at the right, the two names set at least a line
+        // apart where the bands sit close, so neither is written over the other.
+        var labels = new List<(double At, string Side, string Named)>();
+
+        foreach (var (price, side, named) in new[] { (resistance, "res", "resistance"), (support, "sup", "support") })
+        {
+            if (price is { } band)
+            {
+                svg.Append(Invariant, $"<line class=\"m-edge-{side}\" data-{named}=\"{band.ToString(Invariant)}\" x1=\"4\" y1=\"{Number(Y(band))}\" x2=\"{4 + plotWidth}\" y2=\"{Number(Y(band))}\"/>");
+                labels.Add((Y(band) + 4, side, Formatted($"{named} {Price(band)}")));
+            }
+        }
+
+        if (labels.Count == 2 && labels[1].At - labels[0].At < YearLabelGap)
+        {
+            var middle = (labels[0].At + labels[1].At) / 2;
+
+            labels[0] = labels[0] with { At = middle - (YearLabelGap / 2.0) };
+            labels[1] = labels[1] with { At = middle + (YearLabelGap / 2.0) };
+        }
+
+        foreach (var (at, side, named) in labels)
+        {
+            svg.Append(Invariant, $"<text class=\"m-legend-t m-legend-{side}\" x=\"{8 + plotWidth}\" y=\"{Number(at)}\">{named}</text>");
+        }
+
+        var line = new StringBuilder();
+
+        for (var at = 0; at < year.Closes.Count; at++)
+        {
+            line.Append(at == 0 ? 'M' : 'L').Append(Number(4 + (step * at))).Append(' ').Append(Number(Y(year.Closes[at]))).Append(' ');
+        }
+
+        svg.Append(Invariant, $"<path class=\"m-mom\" d=\"{line.ToString().Trim()}\"/>");
+        svg.Append(Invariant, $"<circle class=\"m-last\" data-close=\"{year.Closes[^1].ToString(Invariant)}\" cx=\"{Number(4 + plotWidth)}\" cy=\"{Number(Y(year.Closes[^1]))}\" r=\"2.6\"/>");
+        svg.Append("</svg>");
+
+        return svg.ToString();
     }
 
     // Section 4's earnings reaction record, beside the earnings setups: one row per print over the
