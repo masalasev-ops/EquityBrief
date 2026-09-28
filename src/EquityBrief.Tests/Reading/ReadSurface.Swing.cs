@@ -144,7 +144,7 @@ public partial class ReadSurface
 
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/universe"));
 
-        Assert.Contains("<th>Strength</th><th>Pullback</th><th>Dry-up</th><th>Tightness</th>", page, StringComparison.Ordinal);
+        Assert.Matches("data-heading=\"Strength\">.*?</th><th [^>]*data-heading=\"Pullback\">.*?</th><th [^>]*data-heading=\"Dry-up\">.*?</th><th [^>]*data-heading=\"Tightness\">", page);
 
         var stored = SwingRows(
             store,

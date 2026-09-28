@@ -4959,7 +4959,7 @@ public sealed class MarkRenderer : IComponent
         // shape that means one thing on one row and another on the next says
         // nothing about the column. Four typical days either side, clamped, so a
         // name far from everything sits at the edge rather than off it.
-        const double Span = 4;
+        const double Span = DistanceSpan;
 
         var mark = new StringBuilder();
 
@@ -5092,6 +5092,28 @@ public sealed class MarkRenderer : IComponent
         return strip.ToString();
     }
 
+    // What each of the universe table's columns holds, in the order the columns are drawn, said in the
+    // column's heading so a reader learns how to read a column without leaving the table. The windows
+    // are the swing reader's and the indicator engine's own, read from where each keeps them.
+    public static IReadOnlyList<(string Heading, string Says)> UniverseHeadings { get; } =
+    [
+        ("Name", "The stock's ticker, which opens its own page, with the company beneath it. Hold the pointer over the name to see its year of closes with its nearest support and resistance."),
+        ("Sector", "The sector the index files the company under."),
+        ("Close", "The stock's closing price on the night the table is drawn for."),
+        ("Trend", "The chart's trend in a word. Uptrend: the close is above its 50-day average, the 50-day is above the 200-day, and the latest swing low is above the one before it. Downtrend: the mirror of that. Range: every input is there and neither holds. Not classified: too little history to read one."),
+        ("Distance", Formatted($"How far the close sits from its nearest support below and its nearest resistance above, in typical days' moves, a typical day's move being the stock's average true range over {EquityBrief.Core.Indicators.IndicatorSeries.Wilder} sessions. S is the gap between the close and the top of the support band, R the gap between the close and the bottom of the resistance band, so 0.0 means the close is at that band's edge. In the picture the close is the centre line, support is green to the left and resistance orange to the right, one tick per typical day, and an arrow marks a band more than {DistanceSpan} away.")),
+        ("Sessions to earnings", "Trading sessions from the night to the company's next dated earnings report on the calendar."),
+        ("Strength", Formatted($"How the stock's returns compare with the rest of the index: the average of where its return over the last {SwingReadings.ReturnShortSessions} sessions and over the last {SwingReadings.ReturnLongSessions} sits among every other member's. 90% means that across the two it beat nine in ten of them.")),
+        ("Pullback", Formatted($"How far the close sits below the highest high of the last {SwingReadings.HighWindow} sessions, in typical days' moves.")),
+        ("Dry-up", "The median daily volume since that high against the stock's 50-day average volume. Below 1 means trading thinned out on the way down."),
+        ("Tightness", Formatted($"The mean true range, a day's full span of movement, of the last {SwingReadings.TightShortSessions} sessions against the last {SwingReadings.TightLongSessions}. Below 1 means the price has been moving in a narrower range lately.")),
+        ("Last on the list", "The last evening the stock was on tonight's list, or never."),
+        ("Sixty evenings", "One column for each of the last sixty sessions: a solid bar on an evening the stock was on the list and a thin line on one it was not. Before the swing filter's first night an evening's list held every stock any reason fired for, which was most of the index."),
+    ];
+
+    // How many typical days either side of the close the distance row draws before a band becomes an arrow.
+    public const int DistanceSpan = 4;
+
     // The universe table, section 15.8's second region.
     //
     // Every name in the index, in the order the projection put them, which is by
@@ -5105,8 +5127,17 @@ public sealed class MarkRenderer : IComponent
 
         table.Append("<div class=\"tbl-wrap\">");
         table.Append(Formatted($"<table class=\"universe-table\" data-rows=\"{rows.Count}\">"));
-        table.Append("<tr><th>Name</th><th>Sector</th><th>Close</th><th>Trend</th><th>Distance</th>");
-        table.Append("<th>Sessions to earnings</th><th>Strength</th><th>Pullback</th><th>Dry-up</th><th>Tightness</th><th>Last on the list</th><th>Sixty evenings</th></tr>");
+
+        // Each heading carries what its column holds, which the stylesheet shows while the pointer is
+        // over the heading or it has the focus.
+        table.Append("<tr>");
+
+        foreach (var (heading, says) in UniverseHeadings)
+        {
+            table.Append(Formatted($"<th class=\"tipped\" tabindex=\"0\" data-heading=\"{Escaped(heading)}\"><span class=\"th-t\">{Escaped(heading)}</span><span class=\"head-tip\" role=\"tooltip\">{Escaped(says)}</span></th>"));
+        }
+
+        table.Append("</tr>");
 
         foreach (var row in rows)
         {

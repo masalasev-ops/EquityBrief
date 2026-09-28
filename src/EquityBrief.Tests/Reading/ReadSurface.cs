@@ -274,6 +274,7 @@ public partial class ReadSurface
             CheckReach.Key("15.9 Name", "Peers, each ticker a link to its own page that draws its year line while the pointer is over it"),
             CheckReach.Key("15.5 The mark vocabulary", "Year line"),
             CheckReach.Key("15.8 Universe", "The table, each ticker a link to its own page that draws its year line while the pointer is over it"),
+            CheckReach.Key("15.8 Universe", "The table, each column heading saying what its column holds while the pointer is over it"),
             CheckReach.Key("15.9 Name", "Peers, how far it sits below the stored year's high"),
             CheckReach.Key("15.9 Name", "Peers, its return over sixty sessions"),
             CheckReach.Key("15.9 Name", "Peers, its trend state"),
