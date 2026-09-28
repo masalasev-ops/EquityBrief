@@ -1122,6 +1122,23 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Event session share"),
     ];
 
+    // 11.6's correction on the operator's ruling of 2026-09-27: the peers row's six parts naming the ten it
+    // draws, their order, the likeness, the industry mark, the close and the link with its year line, the year
+    // line as the ninth mark, and section 17's two rows for how many are drawn and the likeness's floor.
+    // Declared before the lists that take it in, which are built in the order they are written.
+    static readonly string[] GroupOfTenClaims =
+    [
+        CheckReach.Key("15.9 Name", "Peers, the name's own row marked and then at most ten members of its group by price alone"),
+        CheckReach.Key("15.9 Name", "Peers, those sharing its industry first and then by how closely each one's daily moves followed the name's"),
+        CheckReach.Key("15.9 Name", "Peers, each row carrying how closely it moved with the name"),
+        CheckReach.Key("15.9 Name", "Peers, whether it shares the name's industry"),
+        CheckReach.Key("15.9 Name", "Peers, the close"),
+        CheckReach.Key("15.9 Name", "Peers, each ticker a link to its own page that draws its year line while the pointer is over it"),
+        CheckReach.Key("15.5 The mark vocabulary", "Year line"),
+        CheckReach.Key(Scope.LimitsTable, "Peers drawn"),
+        CheckReach.Key(Scope.LimitsTable, "Peer likeness floor"),
+    ];
+
     // Phase 12's rows, each written by the checkpoint that draws or asserts it, so none reads as out
     // of scope: 12.1's swing reader and its two stores, its night step, the readings drawn on
     // tonight's header, the universe table, the name page and the run page, section 17's four
@@ -1285,13 +1302,21 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.10 Run", "Shadow candidates, the count of distinct trials and the level each starts at beside it"),
         CheckReach.Key(Scope.LimitsTable, "Distinct trials"),
         .. FundamentalsClaims,
+        .. GroupOfTenClaims,
     ];
 
     // Rows taken out of the document after phase 12's prediction, which counted each: the name page's
-    // listing history, which 5.8's correction took off the page on the operator's ruling of 2026-09-26.
+    // listing history, which 5.8's correction took off the page on the operator's ruling of 2026-09-26, and
+    // the four parts the peers row no longer states, every member in ticker order ranking none and the
+    // close as the first of each row's figures, which 11.6's correction replaced on the operator's ruling
+    // of 2026-09-27.
     static readonly string[] TakenOutAfterPhaseTwelve =
     [
         CheckReach.Key("15.9 Name", "Listing history"),
+        CheckReach.Key("15.9 Name", "Peers, every member of the name's group by price alone"),
+        CheckReach.Key("15.9 Name", "Peers, in ticker order with the name's own row marked"),
+        CheckReach.Key("15.9 Name", "Peers, ranking none"),
+        CheckReach.Key("15.9 Name", "Peers, each row carrying the close"),
     ];
 
     // Rows phase 12 took out of the document: 11.9's region stating each reason's share against its
@@ -1325,7 +1350,8 @@ public partial class ArchitectureConformance
     // the twenty clauses they state, the name page's region, the eighth mark and section 18's two rows, and
     // the count of distinct trials a 12.5 correction built on the operator's ruling of the same day, beside
     // the family's divisor and as a row of section 17, and the fundamentals item a 12.2 correction built on
-    // the operator's ruling of the same day, its 35 claims each named in its own list.
+    // the operator's ruling of the same day, its 35 claims each named in its own list, and the peers table
+    // of ten 11.6's correction built on the operator's ruling of the same day, its nine claims named in theirs.
     static readonly string[] PhaseTwelveBeyondThePrediction =
     [
         CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
@@ -1365,6 +1391,7 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.10 Run", "Shadow candidates, the count of distinct trials and the level each starts at beside it"),
         CheckReach.Key(Scope.LimitsTable, "Distinct trials"),
         .. FundamentalsClaims,
+        .. GroupOfTenClaims,
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1397,7 +1424,7 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((550, 640), (predicted, actual));
+        Assert.Equal((550, 645), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before
@@ -1551,7 +1578,15 @@ public partial class ArchitectureConformance
 
         Assert.All([.. fixtureRows, .. addendum.Except(PhaseTwelveRemoved)], key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
-        var expected = Predicted + readAsParts.Sum(key => Scope.ElementsOf(key).Count - 1) + fixtureRows.Length + addendum.Length;
+        // A row's parts are counted as they stood at phase 11: those it states now that phase 12 did not add,
+        // and those phase 12 took out of it.
+        var expected = Predicted
+            + readAsParts.Sum(key =>
+                Scope.ElementsOf(key).Count(element => !PhaseTwelveRows.Contains(key + ", " + element))
+                + TakenOutAfterPhaseTwelve.Count(taken => taken.StartsWith(key + ", ", StringComparison.Ordinal))
+                - 1)
+            + fixtureRows.Length
+            + addendum.Length;
 
         // Phase 12's rows came after the phase this pair is about, each named where it was added, and
         // the rows it took out are named too, 11.9's region among them.

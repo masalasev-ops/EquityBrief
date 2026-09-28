@@ -277,6 +277,19 @@ public sealed class SinglePageApp : IComponent
           paintTheme();
         }
         addEventListener('hashchange', show);
+        // A peer's year, shown by the stylesheet while its cell is under the pointer or holds the focus,
+        // placed beside the cell: beneath it where the window has room and above it where it does not.
+        function placePeer(event) {
+          const cell = event.target.closest ? event.target.closest('.peers-table td.peer') : null;
+          const pop = cell ? cell.querySelector('.peer-pop') : null;
+          if (!pop) { return; }
+          const box = cell.getBoundingClientRect();
+          const tall = pop.offsetHeight || 150;
+          pop.style.left = Math.max(8, Math.min(box.left, innerWidth - (pop.offsetWidth || 340) - 8)) + 'px';
+          pop.style.top = (box.bottom + tall + 8 < innerHeight ? box.bottom + 4 : Math.max(8, box.top - tall - 4)) + 'px';
+        }
+        document.addEventListener('mouseover', placePeer);
+        document.addEventListener('focusin', placePeer);
         // A name put on the watch list or taken off it: the press names the ticker, from the box on the
         // watch list page or from the form's own, sends the page's header, and the screen is drawn again
         // with what the read surface said above the list.
@@ -799,17 +812,18 @@ public sealed class SinglePageApp : IComponent
             id: "how-it-got-here",
             region: "how-it-got-here"));
 
-        // The peers, beneath the table of the biggest moves: every member of the group those
-        // moves are read against, by price alone and in ticker order, ranking none.
-        // see: Peers are shown by price alone, in section 2 beside the move table
+        // The peers, beneath the table of the biggest moves: ten at most of the group those moves
+        // are read against, by price alone, those sharing the name's industry first and then by how
+        // closely each one's daily moves followed the name's.
+        // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
         if (peers is not null)
         {
             Card("peers", "Its group, by price", Cards.Computed(
                 "Its group, by price",
                 marks.PeersTable(ticker, peers) + Cards.Key(
                     "How to read it.",
-                    Invariant($"Every member of the group the moves above are read against, in ticker order with {Escaped(ticker)} marked. Each row gives the last stored close, how far it sits below the highest price among the bars the store holds for it, its return over the last {EquityBrief.Core.Moves.PeerReadings.ReturnWindow} sessions, its trend and where the close sits between its nearest bands, in typical days, all computed from the stored daily bars. A name holding too few bars for the return says how many it holds rather than giving one over fewer sessions."),
-                    "The table lists and ranks none: a peer sitting further below its high is not a better or a worse name, and nothing on the page is decided by this table."),
+                    Invariant($"{Escaped(ticker)} first, then at most {EquityBrief.Core.Moves.PeerPicks.Shown} members of the group the moves above are read against: those sharing its industry first, then the ones whose daily moves followed {Escaped(ticker)}'s most closely. Moved with it is the correlation of the two names' daily returns over the sessions both hold: 1 is in step every day, 0 is no relation and a negative figure moved the other way, and a pair sharing fewer than {EquityBrief.Core.Moves.PeerPicks.FewestSessions} sessions says how many rather than giving one. Each row gives the last stored close, how far it sits below the highest price among the bars the store holds for it, its return over the last {EquityBrief.Core.Moves.PeerReadings.ReturnWindow} sessions, its trend and where the close sits between its nearest bands, in typical days, all computed from the stored daily bars. A ticker opens its own page, and holding the pointer over it draws its year of closes with its nearest bands."),
+                    "The order is how closely each moved with this name, not which is the better company, and nothing on the page is decided by this table."),
                 title: "Its group, by price alone",
                 stamp: Cards.Night(session),
                 id: "peers",

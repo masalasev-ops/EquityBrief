@@ -302,8 +302,9 @@ public sealed record MoveRow(
 
 // A name's two readings for the peers table as the annotator stored them: the session they were
 // taken at, the group the name's moves are read against, the year's high and the distance below
-// it, the return over the window, null where the name holds too few bars for it, and how many
-// bars both were read over.
+// it, the return over the window, null where the name holds too few bars for it, how many bars
+// both were read over, and the members of its group its peers table draws, as the JSON the
+// annotator wrote, null on a row written before the annotator chose them.
 public sealed record PeerReadingRow(
     string Ticker,
     DateOnly SessionDate,
@@ -312,7 +313,8 @@ public sealed record PeerReadingRow(
     decimal YearHigh,
     double BelowHighPct,
     double? ReturnPct,
-    int Bars);
+    int Bars,
+    string? Peers = null);
 
 // One name's swing readings on a night as the swing reader stored them, and the reason it read
 // nothing where it did.
@@ -960,9 +962,18 @@ public sealed class ReadApi : IComponent
 
     // Every name's two readings, which a name's peers table draws for the members of its group.
     const string EveryPeerReading = @"
-        SELECT ticker, session_date, group_kind, group_name, year_high, below_high_pct, return_pct, bars
+        SELECT ticker, session_date, group_kind, group_name, year_high, below_high_pct, return_pct, bars, peers
         FROM peer_reading
         ORDER BY ticker;
+    ";
+
+    // Every stored close of the names given, in session order, which the picture drawn beside each
+    // member of a peers table reads.
+    const string ClosesOfNames = @"
+        SELECT ticker, session_date, close
+        FROM bar
+        WHERE ticker IN (SELECT value FROM json_each($tickers))
+        ORDER BY ticker, session_date;
     ";
 
     // A name's earnings reaction record, oldest print first, as of the night the page shows.
@@ -2792,7 +2803,37 @@ public sealed class ReadApi : IComponent
                 Money.FromStorage(reader.GetString(4)),
                 reader.GetDouble(5),
                 reader.IsDBNull(6) ? null : reader.GetDouble(6),
-                reader.GetInt32(7)));
+                reader.GetInt32(7),
+                reader.IsDBNull(8) ? null : reader.GetString(8)));
+        }
+
+        return rows;
+    }
+
+    // The stored closes of the names given, each name's in session order.
+    public async Task<IReadOnlyList<CloseRow>> ClosesAsync(IReadOnlyList<string> tickers)
+    {
+        if (tickers.Count == 0)
+        {
+            return [];
+        }
+
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ClosesOfNames;
+        command.Parameters.AddWithValue("$tickers", System.Text.Json.JsonSerializer.Serialize(tickers));
+
+        var rows = new List<CloseRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new CloseRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Money.FromStorage(reader.GetString(2))));
         }
 
         return rows;

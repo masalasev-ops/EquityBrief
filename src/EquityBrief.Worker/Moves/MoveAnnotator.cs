@@ -100,10 +100,10 @@ public sealed class MoveAnnotator : IComponent
           AND report_date NOT IN (SELECT value FROM json_each($kept));
     ";
 
-    // A name's two readings, one row per name, replaced every night.
+    // A name's two readings and the members its peers table draws, one row per name, replaced every night.
     const string UpsertReading = @"
-        INSERT INTO peer_reading (ticker, session_date, group_kind, group_name, year_high, below_high_pct, return_pct, bars)
-        VALUES ($ticker, $session_date, $group_kind, $group_name, $year_high, $below_high_pct, $return_pct, $bars)
+        INSERT INTO peer_reading (ticker, session_date, group_kind, group_name, year_high, below_high_pct, return_pct, bars, peers)
+        VALUES ($ticker, $session_date, $group_kind, $group_name, $year_high, $below_high_pct, $return_pct, $bars, $peers)
         ON CONFLICT (ticker) DO UPDATE SET
             session_date = excluded.session_date,
             group_kind = excluded.group_kind,
@@ -111,7 +111,8 @@ public sealed class MoveAnnotator : IComponent
             year_high = excluded.year_high,
             below_high_pct = excluded.below_high_pct,
             return_pct = excluded.return_pct,
-            bars = excluded.bars;
+            bars = excluded.bars,
+            peers = excluded.peers;
     ";
 
     // The readings of a name the gap stop withheld tonight, and of a name that holds no bars
@@ -205,7 +206,10 @@ public sealed class MoveAnnotator : IComponent
 
         var tickers = await TickersAsync(connection, cancellation);
         var series = await AllBarsAsync(connection, cancellation);
-        var closes = series.ToDictionary(pair => pair.Key, pair => pair.Value.ToDictionary(bar => bar.SessionDate, bar => bar.Close), StringComparer.Ordinal);
+        var closes = series.ToDictionary(
+            pair => pair.Key,
+            pair => (IReadOnlyDictionary<DateOnly, decimal>)pair.Value.ToDictionary(bar => bar.SessionDate, bar => bar.Close),
+            StringComparer.Ordinal);
         var members = await MembersAsync(connection, clock.SessionDateAt(clock.UtcNow), cancellation);
         var prints = await PastPrintsAsync(connection, clock.SessionDateAt(clock.UtcNow), cancellation);
         var written = 0;
@@ -266,11 +270,13 @@ public sealed class MoveAnnotator : IComponent
             }
 
             // The name's two readings for the peers table, over the same bars and beside the
-            // group its moves are read against, so the table lists the members the medians were
-            // taken over.
-            // see: Peers are shown by price alone, in section 2 beside the move table
+            // group its moves are read against, and the members of that group the table draws,
+            // so it lists members the medians were taken over.
+            // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
             if (PeerReadings.Of(peerBars) is { } reading)
             {
+                var picks = PeerPicks.Of(ticker, group, members, closes);
+
                 await using var command = connection.CreateCommand();
 
                 command.Transaction = (SqliteTransaction)transaction;
@@ -283,6 +289,15 @@ public sealed class MoveAnnotator : IComponent
                 command.Parameters.AddWithValue("$below_high_pct", reading.BelowHighPct);
                 command.Parameters.AddWithValue("$return_pct", (object?)reading.ReturnPct ?? DBNull.Value);
                 command.Parameters.AddWithValue("$bars", reading.Bars);
+                command.Parameters.AddWithValue(
+                    "$peers",
+                    System.Text.Json.JsonSerializer.Serialize(picks.Select(pick => new
+                    {
+                        ticker = pick.Ticker,
+                        sameIndustry = pick.SameIndustry,
+                        likeness = pick.Likeness,
+                        sessions = pick.Sessions,
+                    })));
 
                 await command.ExecuteNonQueryAsync(cancellation);
 
@@ -496,7 +511,7 @@ public sealed class MoveAnnotator : IComponent
     }
 
     // A name's close on a session, or none where the name holds no bar for it.
-    static decimal? CloseOn(IReadOnlyDictionary<string, Dictionary<DateOnly, decimal>> closes, string ticker, DateOnly session) =>
+    static decimal? CloseOn(IReadOnlyDictionary<string, IReadOnlyDictionary<DateOnly, decimal>> closes, string ticker, DateOnly session) =>
         closes.TryGetValue(ticker, out var byDate) && byDate.TryGetValue(session, out var close) ? close : null;
 
     async Task RecordAsync(

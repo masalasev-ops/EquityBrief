@@ -303,21 +303,31 @@ internal static class Scope
             Verdict.Pass,
             "the peers card is drawn on the name's page immediately after the card holding the table of the biggest moves, read off the page's own markup",
             ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Peers, every member of the name's group by price alone")] = new Scoped(
+        // 11.6's correction on the operator's ruling of 2026-09-27: the name and at most ten members of its
+        // group, those sharing its industry first and then the most alike, each with its likeness and its year.
+        [CheckReach.Key("15.9 Name", "Peers, the name's own row marked and then at most ten members of its group by price alone")] = new Scoped(
             Verdict.Pass,
-            "every member of the group the name's readings were taken against is a row of the table and no other name is, read off each fixture name's page against the members the moves expectation derives by hand",
+            "the name's own row is drawn first and is the one marked, then the members the annotator stored for it and no other name, read off each fixture name's page against the members worked by hand from the captured bars, and ten of a constructed group of sixteen are chosen",
             ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Peers, in ticker order with the name's own row marked")] = new Scoped(
+        [CheckReach.Key("15.9 Name", "Peers, those sharing its industry first and then by how closely each one's daily moves followed the name's")] = new Scoped(
             Verdict.Pass,
-            "the rows are in ticker order and exactly one of them, the name's own, is marked, read off each fixture name's page",
+            "the members are drawn in the order the annotator stored them, a member sharing the name's industry first whatever its likeness and then the higher likeness first, a member sharing too few sessions last and a tie settled by the ticker, worked by hand over constructed closes and read off each fixture page against the order worked from the captured bars",
             ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Peers, ranking none")] = new Scoped(
+        [CheckReach.Key("15.9 Name", "Peers, each row carrying how closely it moved with the name")] = new Scoped(
             Verdict.Pass,
-            "no row carries a rank, a place or a number of its own, and the order is the tickers' whatever the figures, read off constructed rows whose figures run against their tickers",
+            "each member's likeness is the annotator's stored correlation of the two names' daily returns, drawn to two places and whole on its element with the returns both hold, read off each fixture page against the store and against figures worked by hand from the captured bars, and a member sharing too few sessions says so with the count",
             ByReadSurface),
-        [CheckReach.Key("15.9 Name", "Peers, each row carrying the close")] = new Scoped(
+        [CheckReach.Key("15.9 Name", "Peers, whether it shares the name's industry")] = new Scoped(
+            Verdict.Pass,
+            "a member sharing the name's industry carries a mark saying so and one that does not carries none, over constructed rows",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Peers, the close")] = new Scoped(
             Verdict.Pass,
             "each row's close is the universe row's stored close for its ticker, read off the page against the store",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Peers, each ticker a link to its own page that draws its year line while the pointer is over it")] = new Scoped(
+            Verdict.Pass,
+            "each member's ticker links to its own page and carries its year line drawn over every close the store holds for it, read off each fixture page against the store, the name's own row linking nowhere",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Peers, how far it sits below the stored year's high")] = new Scoped(
             Verdict.Pass,
@@ -880,9 +890,17 @@ internal static class Scope
             Verdict.Pass,
             "a return is taken over sixty sessions and a series one short of the window and the close it is measured from has none, over constructed bars, and the constant the row states is the one the reading uses",
             ByExpectations),
+        [CheckReach.Key(LimitsTable, "Peers drawn")] = new Scoped(
+            Verdict.Pass,
+            "a constructed group of sixteen others draws ten, the member sharing the name's industry and nine of the thirteen tied, and the constant the row states is the one the choice reads",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Peer likeness floor")] = new Scoped(
+            Verdict.Pass,
+            "sixty-one closes share sixty daily returns with the name and read a likeness, and sixty share fifty-nine and read none with the count, over constructed closes, and the constant the row states is the one the reading uses",
+            ByExpectations),
         [CheckReach.Key(StoresTable, "Peer readings")] = new Scoped(
             Verdict.Pass,
-            "one row per name carrying the session, the group, the year's high, the distance below it, the return and the bars, each read back off the store the fixture's replay wrote against readings worked by hand from the captured bars",
+            "one row per name carrying the session, the group, the year's high, the distance below it, the return, the bars and the members its table draws with each one's likeness, each read back off the store the fixture's replay wrote against figures worked by hand from the captured bars",
             ByExpectations),
         [CheckReach.Key(FixtureTable, "peers")] = new Scoped(
             Verdict.Pass,
@@ -1469,6 +1487,10 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Trade line")] = new Scoped(
             Verdict.Pass,
             "over a full input the stop, the buy and the target are drawn at their places on the line by the prices' ratios to the buy and the dot hollow for an open trade and filled for a finished one, a price past either end sits at that end, and over the inputs it degrades on it draws no line or no dot and says what it lacks",
+            ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Year line")] = new Scoped(
+            Verdict.Pass,
+            "over a full input the closes are one line with the nearest support and the nearest resistance drawn across it in their hues and named with their prices set a line apart where the two sit close, and over an input of fewer than two closes it draws nothing and says how many it holds",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "On the list before")] = new Scoped(
             Verdict.Pass,
@@ -2544,7 +2566,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key("15.5 The mark vocabulary", "Momentum panel")] = new Scoped(
             Verdict.Pass,
-            "each reading is drawn on its own small axis with its neutral rule across it, counted off the rendered markup, and the rule's value is read from the arithmetic that defines the reading rather than chosen by the mark",
+            "relative strength is drawn on an axis of its own and the three convergence readings on one, each axis with one neutral rule across it counted off the rendered markup, relative strength's edges at 70 and 30 drawn and named, and each rule's value read from the arithmetic that defines the reading rather than chosen by the mark",
             ByReadSurface),
         [CheckReach.Key(FailureTable, "Fewer than 200 bars for a new index member, nn bars")] = new Scoped(
             Verdict.Pass,
@@ -3115,6 +3137,7 @@ internal static class Scope
         [CheckReach.Key("15.16 Watch list", "Take it out")] = "5.8",
         // The 12.2 correction's Past picks screen, the name page's region and the eighth mark.
         [CheckReach.Key("15.5 The mark vocabulary", "Trade line")] = "12.2",
+        [CheckReach.Key("15.5 The mark vocabulary", "Year line")] = "11.6",
         [CheckReach.Key("15.9 Name", "On the list before")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, the trades listed with the nights they were listed on")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many are still open and how many finished")] = "12.2",
@@ -3232,10 +3255,12 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average")] = "12.1",
         // 11.6 read the Peers row as its parts, each owed where the table is drawn.
         [CheckReach.Key("15.9 Name", "Peers, beneath the table of the biggest moves")] = "11.6",
-        [CheckReach.Key("15.9 Name", "Peers, every member of the name's group by price alone")] = "11.6",
-        [CheckReach.Key("15.9 Name", "Peers, in ticker order with the name's own row marked")] = "11.6",
-        [CheckReach.Key("15.9 Name", "Peers, ranking none")] = "11.6",
-        [CheckReach.Key("15.9 Name", "Peers, each row carrying the close")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, the name's own row marked and then at most ten members of its group by price alone")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, those sharing its industry first and then by how closely each one's daily moves followed the name's")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, each row carrying how closely it moved with the name")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, whether it shares the name's industry")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, the close")] = "11.6",
+        [CheckReach.Key("15.9 Name", "Peers, each ticker a link to its own page that draws its year line while the pointer is over it")] = "11.6",
         [CheckReach.Key("15.9 Name", "Peers, how far it sits below the stored year's high")] = "11.6",
         [CheckReach.Key("15.9 Name", "Peers, its return over sixty sessions")] = "11.6",
         [CheckReach.Key("15.9 Name", "Peers, its trend state")] = "11.6",
@@ -3316,8 +3341,8 @@ internal static class Scope
     // asserted where it exists and only what does not stays out of scope.
     //
     // The decomposition lives here rather than in the document, and that is
-    // deliberate. Section 15.5 opens by stating eight marks and the table has
-    // eight rows; splitting the row into four would make the document disagree
+    // deliberate. Section 15.5 opens by stating nine marks and the table has
+    // nine rows; splitting the row into four would make the document disagree
     // with itself and would turn one mark into four in a vocabulary whose whole
     // point is that a mark is defined once. So the row stays one row and the
     // harness reads it as four claims.
@@ -3412,10 +3437,10 @@ internal static class Scope
             ["the level chart", "the volume profile beside it on the same price axis", "the momentum panel beneath", "the level summary table with each band's members and dates"],
         [CheckReach.Key("15.9 Name", "The plan")] =
             ["the plan column mark", "the tranche table with conditions and stops", "the exit table with actions", "the earnings setups", "the sizing arithmetic"],
-        // 11.6. The row names the table's place, its population, its order and its five
-        // columns, and a verdict over it whole would pass with one column undrawn.
+        // 11.6. The row names the table's place, its population, its order, its seven columns and
+        // the link each ticker carries, and a verdict over it whole would pass with one column undrawn.
         [CheckReach.Key("15.9 Name", "Peers")] =
-            ["beneath the table of the biggest moves", "every member of the name's group by price alone", "in ticker order with the name's own row marked", "ranking none", "each row carrying the close", "how far it sits below the stored year's high", "its return over sixty sessions", "its trend state", "the distance row mark", "a key saying how to read it"],
+            ["beneath the table of the biggest moves", "the name's own row marked and then at most ten members of its group by price alone", "those sharing its industry first and then by how closely each one's daily moves followed the name's", "each row carrying how closely it moved with the name", "whether it shares the name's industry", "the close", "how far it sits below the stored year's high", "its return over sixty sessions", "its trend state", "the distance row mark", "each ticker a link to its own page that draws its year line while the pointer is over it", "a key saying how to read it"],
         // 11.7. The row names the record's place, its population, the seven things each row
         // carries, how a print with no estimate is drawn and its key.
         // 11.8. The row names the part's place, the filing it is read from, the five values and
@@ -3841,6 +3866,8 @@ internal static class Scope
         ["Reports the night asks for"] = "11.4",
         ["Group floor"] = "11.5",
         ["Peer return window"] = "11.6",
+        ["Peers drawn"] = "11.6",
+        ["Peer likeness floor"] = "11.6",
         ["Relative strength windows"] = "12.1",
         ["Pullback depth"] = "12.2",
         ["Volume dry-up"] = "12.2",

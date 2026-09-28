@@ -135,8 +135,11 @@ public partial class FixtureExpectations
             // 11.5, the floor a name's industry has to reach before it is the name's group.
             CheckReach.Key(Scope.LimitsTable, "Group floor"),
 
-            // 11.6, the peers table's window, its store and its fixture row.
+            // 11.6, the peers table's window, how many it draws and the floor its likeness is read over,
+            // its store and its fixture row.
             CheckReach.Key(Scope.LimitsTable, "Peer return window"),
+            CheckReach.Key(Scope.LimitsTable, "Peers drawn"),
+            CheckReach.Key(Scope.LimitsTable, "Peer likeness floor"),
             CheckReach.Key(Scope.StoresTable, "Peer readings"),
             CheckReach.Key(Scope.FixtureTable, "peers"),
 

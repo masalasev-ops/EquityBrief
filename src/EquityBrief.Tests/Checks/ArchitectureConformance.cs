@@ -1383,7 +1383,8 @@ public partial class ArchitectureConformance
         // and the eighth mark.
         // 89 at the 12.2 correction that reads the reported quarters: what the numbers say on the name page
         // and the run page's Fundamentals region. 88 when the operator had that region taken off the run page.
-        Assert.Equal(88, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 89 at 11.6's correction that draws ten of the group: the year line, the ninth mark.
+        Assert.Equal(89, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1456,7 +1457,10 @@ public partial class ArchitectureConformance
         // 300 at the 12.2 correction that reads the reported quarters: the list's three new parts, what the
         // numbers say as its five, the Fundamentals region as its four and Past picks' two. 296 when the
         // operator had the Fundamentals region taken off the run page.
-        Assert.Equal(296, inDocument.Length);
+        // 299 at 11.6's correction that draws ten of the group: the peers row's four parts that named every
+        // member in ticker order and the close leave, its six naming the ten, their order, the likeness, the
+        // industry mark, the close and the link arrive, and the year line joins as the ninth mark.
+        Assert.Equal(299, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1522,7 +1526,9 @@ public partial class ArchitectureConformance
         // 287 at the 12.2 correction that reads the reported quarters: the list's three new parts, what the
         // numbers say as its five, the run page's Fundamentals region as its four and Past picks' two. 283
         // when the operator had the Fundamentals region taken off the run page.
-        Assert.Equal(283, checkedElements);
+        // 285 at 11.6's correction that draws ten of the group: the peers row's four parts that named every
+        // member in ticker order and the close leave and its six naming the ten and what each row carries arrive.
+        Assert.Equal(285, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

@@ -170,6 +170,8 @@ public class PinnedConstants
             new("Reports the night asks for", "1", RequestDrain.NightAsksFor, "RequestDrain.NightAsksFor"),
             new("Group floor", "5", Groups.Floor, "Groups.Floor"),
             new("Peer return window", "60", PeerReadings.ReturnWindow, "PeerReadings.ReturnWindow"),
+            new("Peers drawn", "10", PeerPicks.Shown, "PeerPicks.Shown"),
+            new("Peer likeness floor", "60", PeerPicks.FewestSessions, "PeerPicks.FewestSessions"),
             new("Relative strength windows", "63", SwingReadings.ReturnShortSessions, "SwingReadings.ReturnShortSessions"),
             new("Relative strength windows", "126", SwingReadings.ReturnLongSessions, "SwingReadings.ReturnLongSessions"),
             new("Recent high window", "20", SwingReadings.HighWindow, "SwingReadings.HighWindow"),

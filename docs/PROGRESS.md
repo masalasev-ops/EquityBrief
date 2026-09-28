@@ -28889,3 +28889,80 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 1d543f1, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this.
+
+### 11.6 - correction: a name's peers table draws ten of its group at most, those sharing its industry first and then the members whose daily moves followed it most closely, each ticker opening its own page with its year drawn beside it, where the table drew every member of the group in ticker order   2026-09-28
+Corrects:   the peers table 11.6 built, on the operator's ask of 2026-09-27 read off AAPL's page: "there are too
+            many names being shown in group. It should just list top10 max of its competitors or something
+            otherwise it's just lengthening the page way too much. Also the names in the group should be
+            clickable to take us to it's page and hovering over it should show it's chart perhaps". AAPL's industry
+            holds no other member, so its group is its sector and the table drew 86 rows; measured read-only on
+            the operator's store, two names in three drew more than eleven, the median fifteen. Asked to choose,
+            the operator took the name's industry first and then the most alike, over the most alike alone and
+            over the ten largest, whose size the store does not hold.
+Ruled:      "Peers are shown by price alone, ten at most with the name's industry first and then the members
+            whose daily moves followed it most closely" supersedes "Peers are shown by price alone, in section 2
+            beside the move table", which moves to Previously decided with its reasoning, every citation of it
+            repointed.
+Repaired:   the move annotator chooses, for every name each night, at most ten members of the group its moves
+            are read against: those sharing its industry first, then the rest, each part by the correlation of
+            the two names' daily returns over the sessions both hold along the name's stored year, a member
+            sharing fewer than sixty returns after the rest with its count, a tie settled by the ticker. The choice
+            is written on the name's peer reading row, a column of its own added by migration 49, and the page
+            draws the name's own row and then the chosen members in that order, each with how closely it moved
+            with the name, whether it shares its industry, and the company, its ticker a link to its own page. The
+            year line, the ninth mark, draws a member's stored closes with its nearest support and resistance
+            named, beside its ticker while the pointer is over it or it has the focus, placed by the shell's
+            script beside the cell. A row written before migration 49 draws the name alone and says the night
+            has not chosen yet. The momentum panel's verdict in the harness now says what 5.8's correction draws.
+Measured:   read-only on the operator's store, the likeness reads 0.87 for KLAC with LRCX, 0.84 for XOM with
+            CVX, 0.86 for V with MA and 0.88 for HD with LOW, and AAPL's highest is 0.26, CPAY's, AAPL having moved
+            with no other member much over the stored year (0.13 with MSFT). On the preview's copy the annotator
+            chose ten for AAPL matching those worked outside the repository to the fourth place.
+Guarded:    `ThePeersDrawnAreTheIndustrysFirstThenTheMostAlikeAndTenAtMost` in `fixture-expectations`, new: over
+            closes alternating between two prices, so every likeness is 1 or -1 by hand, the member sharing the
+            industry first at -1, the member sharing too few returns last, ten of sixteen with a tie settled by the
+            ticker, and a likeness read over sixty shared returns and not over fifty-nine. The fixture's peers
+            expectation carries each name's members, their order, their likeness to the sixth place and the
+            returns they share, worked outside the repository from the captured bars, and the replay's store is
+            read against it. In `read-surface`: `ThePageDrawsTheMembersTheNightChoseInTheOrderItStoredThemAndNoOther`,
+            new, over constructed rows whose stored order runs against their tickers;
+            `TheYearLineDrawsTheClosesWithTheNearestBandsNamedAndSaysSoWhereItHoldsTooFew`, new, its heights
+            worked by hand; the table's test over constructed rows and the fixture's page test, each reading the
+            likeness, the link and the year line. The pictures the five surfaces draw, none stretched, move from
+            41 to 45, a year line beside each of the fixture name's two peers on its page and in its report.
+Written:    DECISIONS as above; section 2's group row, section 7's move annotator and mark renderer rows,
+            section 15.5's count and its year line row, section 15.9's peers row, section 17's peer return window
+            citation and its two new rows, and section 19.1's peers row; SCHEMA's `peers` column; BUILD_PLAN's
+            11.6 text; `.claude/rules/checks.md`'s fixture-expectations and read-surface rows. Each changed line's
+            prior text in `CHANGELOG.md`.
+Tests:      116PT, from 1479: three added.
+Claims:     116PC, from 640, predicted 645: the peers row's six new parts, the year line and section 17's two
+            rows arrive, and the row's four parts that named every member in ticker order and the close as the
+            first figure leave. The checks' stated counts move with them: section 15's screen rows from 88 to 89,
+            its claims from 296 to 299 and the decomposed elements from 283 to 285, and phase 12's pair from 640
+            to 645, the eleven-zero pair counting the row's parts as they stood at phase 11.
+Pins:       the branch against `main` edits no source in the three pin lists: `MoveAnnotator.cs`, `PeerPicks.cs`
+            and the page's files are in none. No version moves.
+Owed:       migration 49, which the next night's first step applies before its move annotator writes the
+            members. The app on 5152 reads the new column, so it is restarted on this code only once the store is
+            at 49, by the night or by `tools/migrate.ps1`.
+Mutated:    the rule, stated before the run: one mutation reversing each rule the choice or the page now relies
+            on, filtered to the tests this correction adds or changes.
+            Predicted:
+            G1 the industry part of the order dropped: red in the new fixture-expectations test.
+            G2 the likeness order reversed, the lower first: red in the new fixture-expectations test, the
+               fixture's peer readings test and the fixture's page test.
+            G3 the ten removed, every member chosen: red in the new fixture-expectations test.
+            G4 the floor read one higher, sixty returns reading none: red in the new fixture-expectations test.
+            G5 the page drawing the chosen members in ticker order: red in the new page test.
+            Results: 116PM
+Held:       116PH
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 116PT of 116PT tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 116PB tables, 116PC claims, 116PP PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 116PR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 116PT of 116PT tests.
+            Both gates ran over the tree carrying this entry, 116PSHA, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    as the entry before this.

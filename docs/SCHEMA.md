@@ -335,10 +335,11 @@ Grain: one row per ticker, the newest night's.
 | `below_high_pct` | REAL | how far the newest close sits below `year_high`, in per cent of it |
 | `return_pct` | REAL | the newest close against the close sixty sessions before it, in per cent; null where the name holds fewer bars than that and the one it is measured from |
 | `bars` | INTEGER | how many bars both readings were read over |
+| `peers` | TEXT | JSON: the members of the group the name's peers table draws, in the order it draws them, ten at most, each with `ticker`, `sameIndustry`, `likeness`, the correlation of the two names' daily returns over the sessions both hold, null where they share fewer than sixty, and `sessions`, how many they share; null on a row written before migration 49 |
 
 Primary key: `ticker`.
 
-**The move annotator writes it over the bars it already reads for the moves, and is its own deleter** (see: Every computed table's writer is its own deleter) (see: Peers are shown by price alone, in section 2 beside the move table). A row is replaced every night rather than kept by night, so a name's page for an earlier night says the readings are the newest night's and draws none. The annotator deletes the row of a name the gap stop withheld that night and of a name holding no bars, since a row left standing would be read beside a close it was not taken at. Nothing reads it but the peers table: no reason, gate, plan or candidate evaluator.
+**The move annotator writes it over the bars it already reads for the moves, and is its own deleter** (see: Every computed table's writer is its own deleter) (see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely). A row is replaced every night rather than kept by night, so a name's page for an earlier night says the readings are the newest night's and draws none. The annotator deletes the row of a name the gap stop withheld that night and of a name holding no bars, since a row left standing would be read beside a close it was not taken at. Nothing reads it but the peers table: no reason, gate, plan or candidate evaluator.
 
 ### earnings_reaction
 Grain: one row per ticker and print over the calendar's year behind.

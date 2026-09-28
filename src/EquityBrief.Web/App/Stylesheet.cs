@@ -481,6 +481,14 @@ svg text{font-family:var(--sans)}
 .m-last{fill:var(--ink)} .m-edge-rule{stroke:var(--s2);stroke-width:1}
 .m-pane-h{font-size:13px;font-weight:600;fill:var(--ink)} .m-pane-c{font-size:12px;fill:var(--ink-2)}
 .m-rule-t{font-size:10.5px;fill:var(--soft);font-variant-numeric:tabular-nums;paint-order:stroke;stroke:var(--plot);stroke-width:3px;stroke-linejoin:round}
+/* A peer's year, drawn beside its ticker while the pointer is over the cell or the ticker has focus. It is
+   fixed to the window rather than to the table, whose box scrolls sideways and would cut it off, and the
+   shell's script places it beside the cell it belongs to. */
+.peers-table .peer-link{font-weight:700;letter-spacing:.02em}
+.peers-table .same-industry{margin-left:6px}
+.peer-pop{display:none;position:fixed;z-index:40;background:var(--surface);border:1px solid var(--hair-2);border-radius:8px;box-shadow:var(--shadow);padding:8px}
+.peer:hover .peer-pop,.peer:focus-within .peer-pop{display:block}
+.peer-pop svg{display:block;max-width:none}
 .m-track{stroke:var(--s2);stroke-width:1}
 .m-dist-sup{fill:var(--sup)} .m-dist-res{fill:var(--res)}
 .m-link-sup{stroke:var(--sup);stroke-width:1.5;fill:none} .m-link-res{stroke:var(--res);stroke-width:1.5;fill:none}

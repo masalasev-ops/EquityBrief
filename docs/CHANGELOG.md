@@ -8638,3 +8638,56 @@ Was:
 Now:
 > | `read-surface` | ... and the small controls, the one on a row of tonight's list asking for a report, the queue's taking one out and a name page's press to watch the name, which stands on the masthead's line after the change on the day, are drawn by the rules written for them, ... and Past picks draws ... in the order that night was drawn in; and the momentum panel draws relative strength on one axis with its rules at 70, 50 and 30 drawn and named, and the convergence line, its signal line and the gap between them on a second with one zero rule, each axis headed by where its readings stood at the last session drawn and boxed where none of its readings holds a value, read back off constructed readings worked by hand |
 Why: the watch press was drawn at the size of a page's main press because the rule every posted form's button takes outranked its own, and the operator asked on 2026-09-27 for it placed and sized as the small control it is; the momentum panel was redrawn on the operator's choice the same day.
+
+### 2026-09-28 - ARCHITECTURE.html - the peers table draws ten of the group, its industry first and then the most alike, and the year line is the ninth mark
+Authorised by: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
+Was:
+> | Its group, by price | Every member of the name's group by price alone, in ticker order with the name's own row marked: the close, the distance below the year's high, the return over sixty sessions, the trend state and the distance row mark | The peers' two readings computed by the move annotator from the bars and the membership (see: Peers are shown by price alone, in section 2 beside the move table) | free | nightly |
+> | **Move annotator** | ... | writes each name's two readings for the peers table beside the group its moves are read against, and writes each print's earnings reaction over the calendar's year behind |
+> | **Mark renderer** | ... | turns stored values into the eight marks as SVG strings, ... |
+> Eight marks. They are defined once and every screen draws from this list. ...
+> (no Year line row in section 15.5)
+> | Peers | beneath the table of the biggest moves: every member of the name's group by price alone, in ticker order with the name's own row marked, ranking none; each row carrying the close, how far it sits below the stored year's high, its return over sixty sessions, its trend state, and the distance row mark; and a key saying how to read it (see: Peers are shown by price alone, in section 2 beside the move table) |
+> | Peer return window | 60 sessions, ... (see: Peers are shown by price alone, in section 2 beside the move table) | ... |
+> (no Peers drawn and no Peer likeness floor rows in section 17)
+> | peers | each name's distance below the stored year's high and its return over sixty sessions, with the bars both were read over, and the members its peers table lists | section 7's move annotator |
+Now:
+> | Its group, by price | The name's own row marked and then at most ten members of its group by price alone, those sharing its industry first and then by how closely each one's daily moves followed the name's: how closely it moved with the name, the close, the distance below the year's high, the return over sixty sessions, the trend state and the distance row mark | The peers' two readings and the members chosen, computed by the move annotator from the bars and the membership (see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely) | free | nightly |
+> | **Move annotator** | ... | writes each name's two readings for the peers table beside the group its moves are read against and the members of that group the table draws with how closely each one's daily moves followed the name's, and writes each print's earnings reaction over the calendar's year behind |
+> | **Mark renderer** | ... | turns stored values into the nine marks as SVG strings, ... |
+> Nine marks. They are defined once and every screen draws from this list. ...
+> | **Year line** | A name's stored closes as one line with its nearest support and its nearest resistance drawn across it in their own hues and named with their prices. It is drawn beside a member's ticker in a peers table while the pointer is over it or it has the focus, so a member's year is read without leaving the page (see: ...). | Name |
+> | Peers | beneath the table of the biggest moves: the name's own row marked and then at most ten members of its group by price alone, those sharing its industry first and then by how closely each one's daily moves followed the name's; each row carrying how closely it moved with the name, whether it shares the name's industry, the close, how far it sits below the stored year's high, its return over sixty sessions, its trend state, and the distance row mark; each ticker a link to its own page that draws its year line while the pointer is over it; and a key saying how to read it (see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely) |
+> | Peer return window | 60 sessions, ... (see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely) | ... |
+> | Peers drawn | 10 other members of a name's group at most, ... | the operator's of 2026-09-27: ... | fixture-expectations, over a constructed group of sixteen |
+> | Peer likeness floor | 60 daily returns both names hold before the correlation of their daily moves is read, ... | a quarter of a year of trading, ... | fixture-expectations, over constructed closes at the floor and one short of it |
+> | peers | each name's distance below the stored year's high and its return over sixty sessions, with the bars both were read over, and the members its peers table draws in their order with how closely each one's daily moves followed the name's | section 7's move annotator |
+Why: the operator asked on 2026-09-27, reading AAPL's page, for the group table to list ten of its competitors at most rather than all eighty-six, each ticker opening its own page and its chart drawn while the pointer is over it, and chose the industry first and then the most alike.
+
+### 2026-09-28 - SCHEMA.md - peer_reading carries the members its peers table draws
+Authorised by: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
+Was:
+> (no `peers` column in `peer_reading`)
+> **The move annotator writes it ...** (see: Every computed table's writer is its own deleter) (see: Peers are shown by price alone, in section 2 beside the move table).
+Now:
+> | `peers` | TEXT | JSON: the members of the group the name's peers table draws, in the order it draws them, ten at most, each with `ticker`, `sameIndustry`, `likeness`, ... and `sessions`, how many they share; null on a row written before migration 49 |
+> **The move annotator writes it ...** (see: Every computed table's writer is its own deleter) (see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely).
+Why: the annotator chooses the members the table draws, and the choice is a stored value the page reads rather than works out.
+
+### 2026-09-28 - BUILD_PLAN.md - 11.6's peers table draws ten of the group
+Authorised by: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
+Was:
+> ... Section 2 on a name page draws the peers table under the move table, every member of the name's group by price alone in ticker order with the name's own row marked, carrying the close, the distance below the high, the return, the trend state and the distance row mark (see: Peers are shown by price alone, in section 2 beside the move table).
+Now:
+> ... Section 2 on a name page draws the peers table under the move table, the name's own row marked and then at most ten members of its group by price alone, those sharing its industry first and then by how closely each one's daily moves followed the name's, carrying that likeness, the close, the distance below the high, the return, the trend state and the distance row mark (see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely).
+Why: the decision the checkpoint's text cited was superseded on the operator's ruling of 2026-09-27.
+
+### 2026-09-28 - .claude/rules/checks.md - fixture-expectations and read-surface reach the ten a peers table draws
+Authorised by: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
+Was:
+> | `fixture-expectations` | ... read off the peer readings the replay stored, one row for every name holding bars; and each print's ... |
+> | `read-surface` | ... each of the eight marks ... and a name's peers table is drawn beneath the table of the biggest moves, every member of the group its readings were taken against and the name itself in ticker order with the name's own row marked, ranking none, each row's close, ... and a group holding nobody, a name holding no readings, or a page for an earlier night saying so; ... |
+Now:
+> | `fixture-expectations` | ... read off the peer readings the replay stored, one row for every name holding bars; and the members a peers table draws are worked by hand over constructed closes, ... and each fixture name's members, their order and their likeness are worked by hand from the captured bars and read off the peer readings the replay stored; and each print's ... |
+> | `read-surface` | ... each of the nine marks ... and a name's peers table is drawn beneath the table of the biggest moves, the name's own row first and marked and then the members the annotator chose in the order it stored them and no other, each member's likeness whole on its element as stored, its ticker opening its own page and its year line drawn over every close the store holds for it, ... and a group holding nobody, a name holding no readings, a row the night has not chosen members for, or a page for an earlier night saying so, and the year line draws a name's closes with its nearest bands named at heights worked by hand, ...; ... |
+Why: the checks reach the table the operator's ruling of 2026-09-27 asked for and the mark it added.
