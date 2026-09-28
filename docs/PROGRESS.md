@@ -29624,8 +29624,8 @@ Guarded:    five tests in `read-surface`, new: the freshness split worked by han
 Written:    section 15.10's four rows and section 15.5's four marks in `ARCHITECTURE.html` and
             `.claude/rules/checks.md`'s read-surface row, each prior text in `CHANGELOG.md`.
 Expected:   derived: no expectation file moves.
-Tests:      134T, from 1500: five added.
-Claims:     134C, from 665: eighteen added, the four regions as the fourteen parts their rows state and the four
+Tests:      1505, from 1500: five added.
+Claims:     683, from 665: eighteen added, the four regions as the fourteen parts their rows state and the four
             marks, each named in `ReadSurface.RunMiddleClaims`.
 Pins:       the branch against `main` edits `RunScreen.cs`, the read surface's `Program.cs`, `MarkRenderer.cs`,
             `SinglePageApp.cs` and `Stylesheet.cs`, tests and three documents, none of them in the three pin
@@ -29638,14 +29638,17 @@ Mutated:    the rule, stated before the run: each mechanism the four regions res
             M2 each evening's repeated names counted against itself: red in the freshness test.
             M3 the ring's track drawn whole below the minimum: red in the trades test.
             M4 a paid call a cap refused counted as a report: red in the research test.
-            Results: 134M
-Held:       134H
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 134T of 134T tests ran
+            Results: one run each in a detached worktree at 7256356, this entry's commit, filtered to the five
+            new tests, each edit made there and reverted, and the tree read clean after. The whole suite ran
+            green over 7256356 in the gates, 1505 of 1505. M1 turned the checklist test and the page test red;
+            M2 the freshness test; M3 the trades test; M4 the research test.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1505 of 1505 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 134B tables, 134C claims, 134P PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 134R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 134T of 134T tests.
-            Both gates ran over the tree carrying this entry, 134SHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 44 tables, 683 claims, 683 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 694 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1505 of 1505 tests.
+            Both gates ran over the tree carrying this entry, 7256356, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    regions 6, 7 and 8 and the narrowed decision, in the correction after this.
