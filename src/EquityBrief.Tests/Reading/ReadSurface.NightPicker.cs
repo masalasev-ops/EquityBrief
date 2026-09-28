@@ -103,7 +103,7 @@ public partial class ReadSurface
     // the record starts on the newest and a link opening it, and no page of the evening; the newest draws
     // its page with a calendar holding the newest alone; and read with the filter's night taken out, the
     // store is one the filter never listed, and the night before draws its own page again.
-    // see: The dated screens open from the swing filter's first night, and an evening before it is not drawn
+    // see: The dated screens open from the swing filter's first night, and no evening before it is drawn
     [Fact]
     public async Task TheDatedScreensOpenFromTheSwingFiltersFirstNight()
     {

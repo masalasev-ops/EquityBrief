@@ -603,7 +603,7 @@ app.MapGet("/screens/tonight/{night?}", async (
     }
 
     // The record starts on the swing filter's first night, and an evening before it is not drawn.
-    // see: The dated screens open from the swing filter's first night, and an evening before it is not drawn
+    // see: The dated screens open from the swing filter's first night, and no evening before it is drawn
     var first = await read.FirstFilterNightAsync();
     var held = (await read.NightsAsync()).Where(one => first is not { } from || one >= from).ToArray();
 
@@ -966,7 +966,7 @@ app.MapGet("/screens/run/{night?}", async (
     }
 
     // The record starts on the swing filter's first night, and a night before it is not drawn.
-    // see: The dated screens open from the swing filter's first night, and an evening before it is not drawn
+    // see: The dated screens open from the swing filter's first night, and no evening before it is drawn
     var first = await read.FirstFilterNightAsync();
     var held = (await read.NightsAsync()).Where(one => first is not { } from || one >= from).ToArray();
 

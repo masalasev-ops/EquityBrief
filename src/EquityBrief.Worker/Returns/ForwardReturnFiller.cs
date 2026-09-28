@@ -48,7 +48,7 @@ public sealed class ForwardReturnFiller : IComponent
     // written for it. A row whose setup found no band has no stop to score from and carries none, and a
     // replayed row is no setup a night drew.
     // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
-    // see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone
+    // see: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them
     const string EveryPlannedGateRow = @"
         SELECT g.ticker, g.session_date, g.swing_stop, g.swing_target, f.horizon, f.outcome
         FROM gate_result g

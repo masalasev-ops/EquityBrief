@@ -1856,7 +1856,7 @@ public sealed class SinglePageApp : IComponent
     // An evening before the swing filter's first night, which neither dated screen draws: the record
     // starts on the first night the filter listed, and the line says so and opens it. The screen's own
     // calendar sits in its header, over the nights from that one on.
-    // see: The dated screens open from the swing filter's first night, and an evening before it is not drawn
+    // see: The dated screens open from the swing filter's first night, and no evening before it is drawn
     public static string BeforeTheRecord(DateOnly asked, DateOnly first, string title, string route, string newest, IReadOnlyList<DateOnly> held) =>
         Invariant($"<section class=\"before-the-record\" data-night=\"{asked:yyyy-MM-dd}\" data-first=\"{first:yyyy-MM-dd}\">")
         + Cards.Masthead(title, Invariant($"<span class=\"m-screen\">{Escaped(title)}</span>"), Invariant($"The record starts on {first:yyyy-MM-dd}") + Cards.NightPicker(first, held, route, newest))

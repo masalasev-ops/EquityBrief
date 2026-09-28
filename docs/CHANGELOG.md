@@ -8771,3 +8771,52 @@ Was:
 Now:
 > | `read-surface` | ... and every heading of tonight's list and of a peers table on the fixture's screens carries one; and every panel the stylesheet shows while the pointer is over its holder is hidden by one rule that fixes it to the window, by none that places it inside its holder, and is placed by the shell's script, so a panel drawn in a table's sideways-scrolling box floats over the page; and a name's earnings reaction record ... |
 Why: the operator found on 2026-09-28 that holding the pointer over a reason on tonight's list grew a scrollbar around the table and cut the reason's values off.
+
+### 2026-09-28 - DECISIONS.md - the swing filter's replayed results are removed once no night can read them
+Authorised by: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them
+Was:
+> **The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone** ... no page draws one, and the filler scores no replayed plan. ...
+Now:
+> **The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them**, with the original reasoning kept at its head, Past picks named among the readers that pass a replayed result by, and the operator's ruling of 2026-09-28 and the `--remove` command added; the entry above moves to "Previously decided" with its reasoning intact.
+Why: the operator ruled on 2026-09-28 that nights the list never showed must not appear on Past picks or count in any shape window, and asked for the command that removes them.
+
+### 2026-09-28 - DECISIONS.md - the dated screens' entry no longer says the replayed answers stay
+Authorised by: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them
+Was:
+> **The dated screens open from the swing filter's first night, and an evening before it is not drawn** ... Nothing is deleted. ... the swing filter's replayed answers for the sessions before its first night stay too, read by the trigger's arrival alone and drawn by no page (see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone). ...
+Now:
+> **The dated screens open from the swing filter's first night, and no evening before it is drawn** ... Nothing a night wrote is deleted. ... The swing filter's replayed answers for the sessions before its first night were written by a command and not by a night; they are read by the trigger's arrival alone, drawn by no page, and removed on the operator's command once no night can read them (see: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them). ...; the entry above moves to "Previously decided" with its reasoning intact.
+Why: the entry said the replayed answers stay, which the ruling of the same day ends.
+
+### 2026-09-28 - ARCHITECTURE.html - the filter history component takes its replayed results out, and two citations repointed
+Authorised by: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them
+Was:
+> | Filter history | ... which the trigger's arrival reads and no clock, page or scored setup does; a session already holding results and the night's own session are refused (see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone) |
+> The sessions before the filter's first stored night hold no results of their own, and theirs can be replayed and stored for the arrival alone (see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone).
+> ... with a link opening it (see: The dated screens open from the swing filter's first night, and an evening before it is not drawn). ...
+Now:
+> | Filter history | ... which the trigger's arrival reads and no clock, page or scored setup does; a session already holding results and the night's own session are refused; and it takes out the replayed results of the sessions its command names once no night can read them, leaving a night's own results and refusing a session a night can still read (see: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them) |
+> The sessions before the filter's first stored night hold no results of their own, and theirs can be replayed and stored for the arrival alone and taken out once no night can read them (see: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them).
+> ... with a link opening it (see: The dated screens open from the swing filter's first night, and no evening before it is drawn). ...
+Why: the component gains the removal the ruling asks for, and each citation names the decision that now stands.
+
+### 2026-09-28 - SCHEMA.md - FilterHistory deletes the replayed rows of gate_result it wrote
+Authorised by: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them
+Was:
+> | `gate_result` | SwingFilter, FilterHistory | none | SwingFilter |
+> | `version` | TEXT | ... or `replayed` on a session before the filter's first stored night whose results `FilterHistory` replayed under the open version's settings, which the trigger's arrival reads and nothing else does |
+> **The swing filter writes it and is its own deleter** (see: Every computed table's writer is its own deleter), and the only delete is a night run again replacing its own rows. Nothing is dropped by age: ...
+Now:
+> | `gate_result` | SwingFilter, FilterHistory | none | SwingFilter, FilterHistory |
+> | `version` | TEXT | ... which the trigger's arrival reads and nothing else does, and which `FilterHistory` removes on the operator's command once no night can read them |
+> **The swing filter writes it and is its own deleter** (see: Every computed table's writer is its own deleter), and its only delete is a night run again replacing its own rows. `FilterHistory` deletes only the replayed rows it wrote, on the operator's command, for sessions no night can read any longer, and never a night's own row (see: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them). Nothing is dropped by age: ...
+Why: the removal is a delete, and a delete is declared where every other writer of the table is.
+
+### 2026-09-28 - RUNBOOK.md - the command that removes the replayed results
+Authorised by: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them
+Was:
+> ... which the trigger's arrival reads and no clock, page or scored setup does (see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone). ... Run it when no night is running.
+Now:
+> ... (see: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them). ... Run it when no night is running.
+> Once no night can read them, take the replayed results out. On the operator's store that is any time after the night of 2026-09-29 has finished: `filter-history --remove --from 2026-09-21 --through 2026-09-23`, with what it removes, prints and writes on the run log, and what it refuses.
+Why: the ruling asks for the line to run and when it can be run.

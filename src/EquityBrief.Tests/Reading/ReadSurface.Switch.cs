@@ -218,7 +218,7 @@ public partial class ReadSurface
 
         // The record starts on the switch, so the evening before it is not drawn, and the line says where
         // the record starts.
-        // see: The dated screens open from the swing filter's first night, and an evening before it is not drawn
+        // see: The dated screens open from the swing filter's first night, and no evening before it is drawn
         Assert.Contains(
             $"<section class=\"before-the-record\" data-night=\"{BeforeTheSwitch}\" data-first=\"{TheSwitch}\">",
             await client.GetStringAsync($"/screens/tonight/{BeforeTheSwitch}"),
