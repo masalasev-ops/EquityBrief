@@ -852,6 +852,10 @@ app.MapGet("/screens/universe", async (
         sector,
         int.TryParse(request.Query["page"].FirstOrDefault(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var asked) ? asked : null);
 
+    // The stored closes of the names the page draws and of no other, each drawn as its year line
+    // beside its ticker.
+    var drawn = UniverseScreen.WithYears(shown.Page, await read.ClosesAsync([.. shown.Page.Select(cell => cell.Ticker)]));
+
     return Results.Content(
         page.UniverseRegion(
             marks,
@@ -859,7 +863,7 @@ app.MapGet("/screens/universe", async (
             UniverseScreen.Sectors(cells),
             trend,
             sector,
-            shown.Page,
+            drawn,
             shown.At,
             UniverseScreen.PageSize,
             TonightScreen.WrittenBeforeTheCorrection(history.Values.SelectMany(rows => rows)),

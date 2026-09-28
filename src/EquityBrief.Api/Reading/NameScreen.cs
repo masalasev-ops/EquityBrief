@@ -1401,9 +1401,7 @@ public static class NameScreen
 
         var cells = UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal);
         var members = universe.GroupBy(row => row.Ticker, StringComparer.Ordinal).ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
-        var years = (closes ?? [])
-            .GroupBy(row => row.Ticker, StringComparer.Ordinal)
-            .ToDictionary(group => group.Key, group => new PeerYear(group.First().SessionDate, group.Last().SessionDate, [.. group.Select(row => row.Close)]), StringComparer.Ordinal);
+        var years = UniverseScreen.Years(closes ?? []);
 
         // How many other members the group holds on the page's night, of which the table draws the ones
         // the annotator chose.

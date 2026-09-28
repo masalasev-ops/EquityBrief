@@ -202,9 +202,10 @@ public partial class ReadSurface
 
         // The population the loop above ran over: 37 pictures over the five surfaces, 43 from 11.6,
         // the peers table's distance row marks on the name page and in the exported report, 41
-        // from the 5.8 correction that took the listing history's strip off both, and 45 from 11.6's
-        // correction, a year line beside each of the fixture name's two peers on both.
-        Assert.Equal(45, pictures);
+        // from the 5.8 correction that took the listing history's strip off both, 45 from 11.6's
+        // correction, a year line beside each of the fixture name's two peers on both, and 49 from
+        // the 5.8 correction that draws a year line beside each of the four names on the universe table.
+        Assert.Equal(49, pictures);
 
         var page = screens[3].Item2;
 

@@ -1139,6 +1139,13 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Peer likeness floor"),
     ];
 
+    // 5.8's correction on the operator's ask of 2026-09-28: the universe table's part drawing each ticker's
+    // year line while the pointer is over it. Declared before the lists that take it in.
+    static readonly string[] UniverseYearClaims =
+    [
+        CheckReach.Key("15.8 Universe", "The table, each ticker a link to its own page that draws its year line while the pointer is over it"),
+    ];
+
     // Phase 12's rows, each written by the checkpoint that draws or asserts it, so none reads as out
     // of scope: 12.1's swing reader and its two stores, its night step, the readings drawn on
     // tonight's header, the universe table, the name page and the run page, section 17's four
@@ -1303,6 +1310,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Distinct trials"),
         .. FundamentalsClaims,
         .. GroupOfTenClaims,
+        .. UniverseYearClaims,
     ];
 
     // Rows taken out of the document after phase 12's prediction, which counted each: the name page's
@@ -1351,7 +1359,8 @@ public partial class ArchitectureConformance
     // the count of distinct trials a 12.5 correction built on the operator's ruling of the same day, beside
     // the family's divisor and as a row of section 17, and the fundamentals item a 12.2 correction built on
     // the operator's ruling of the same day, its 35 claims each named in its own list, and the peers table
-    // of ten 11.6's correction built on the operator's ruling of the same day, its nine claims named in theirs.
+    // of ten 11.6's correction built on the operator's ruling of the same day, its nine claims named in theirs,
+    // and the universe table's year line 5.8's correction built on the operator's ask of 2026-09-28.
     static readonly string[] PhaseTwelveBeyondThePrediction =
     [
         CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
@@ -1392,6 +1401,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Distinct trials"),
         .. FundamentalsClaims,
         .. GroupOfTenClaims,
+        .. UniverseYearClaims,
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1424,7 +1434,7 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((550, 645), (predicted, actual));
+        Assert.Equal((550, 646), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

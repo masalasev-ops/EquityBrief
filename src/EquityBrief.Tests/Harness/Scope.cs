@@ -248,6 +248,10 @@ internal static class Scope
             Verdict.Pass,
             "the strip over the window is drawn from the stored listings",
             ByReadSurface),
+        [CheckReach.Key("15.8 Universe", "The table, each ticker a link to its own page that draws its year line while the pointer is over it")] = new Scoped(
+            Verdict.Pass,
+            "each row's name cell links to the name's page and carries its year line drawn over every close the store holds for it with its own nearest bands, read off the table and one sector of it against the store, shown by the stylesheet while the cell is under the pointer or holds the focus",
+            ByReadSurface),
         [CheckReach.Key("15.8 Universe", "The table, sorted by distance to the nearest level ascending")] = new Scoped(
             Verdict.Pass,
             "the rows are ordered by distance to the nearest level, read off the markup",
@@ -3014,6 +3018,7 @@ internal static class Scope
         [CheckReach.Key("15.8 Universe", "Sector strip, how many are in an uptrend")] = "5.1",
         [CheckReach.Key("15.8 Universe", "The table, every name in the index")] = "5.1",
         [CheckReach.Key("15.8 Universe", "The table, the listing strip over sixty sessions")] = "5.4",
+        [CheckReach.Key("15.8 Universe", "The table, each ticker a link to its own page that draws its year line while the pointer is over it")] = "5.8",
         [CheckReach.Key("15.8 Universe", "The table, sorted by distance to the nearest level ascending")] = "5.1",
         [CheckReach.Key("15.8 Universe", "The table, paged")] = "5.8",
         [CheckReach.Key("15.8 Universe", "The table, name")] = "5.1",
@@ -3428,7 +3433,7 @@ internal static class Scope
         [CheckReach.Key("15.8 Universe", "Sector strip")] =
             ["one line per sector", "how many are on tonight's list", "names", "how many are in an uptrend"],
         [CheckReach.Key("15.8 Universe", "The table")] =
-            ["every name in the index", "the listing strip over sixty sessions", "sorted by distance to the nearest level ascending", "paged", "name", "sector", "close", "trend state", "the distance row mark", "sessions until earnings", "relative strength", "the pullback from the recent high in typical days", "the volume while it came down", "the tightness of the range", "the evening last on the list"],
+            ["every name in the index", "the listing strip over sixty sessions", "sorted by distance to the nearest level ascending", "paged", "name", "sector", "close", "trend state", "the distance row mark", "sessions until earnings", "relative strength", "the pullback from the recent high in typical days", "the volume while it came down", "the tightness of the range", "the evening last on the list", "each ticker a link to its own page that draws its year line while the pointer is over it"],
         [CheckReach.Key("15.9 Name", "Prices may be out of date")] =
             ["one line saying its prices may not reflect a recent dividend or split", "when the refetch was last tried and why it failed", "above everything the page draws from those prices"],
         [CheckReach.Key("15.9 Name", "Fact strip")] =
