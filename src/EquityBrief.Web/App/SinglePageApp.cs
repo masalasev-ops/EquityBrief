@@ -277,20 +277,20 @@ public sealed class SinglePageApp : IComponent
           paintTheme();
         }
         addEventListener('hashchange', show);
-        // A name's year in the peers table or the universe table, shown by the stylesheet while its cell
-        // is under the pointer or holds the focus, placed beside the cell: beneath it where the window
-        // has room and above it where it does not.
-        function placeYear(event) {
-          const cell = event.target.closest ? event.target.closest('.peers-table td.peer, .universe-table td.c-nm') : null;
-          const pop = cell ? cell.querySelector('.peer-pop') : null;
+        // A name's year in the peers table or the universe table, and what a universe column holds in
+        // its heading, shown by the stylesheet while the cell is under the pointer or holds the focus,
+        // placed beside the cell: beneath it where the window has room and above it where it does not.
+        function placePop(event) {
+          const cell = event.target.closest ? event.target.closest('.peers-table td.peer, .universe-table td.c-nm, .universe-table th.tipped') : null;
+          const pop = cell ? cell.querySelector('.peer-pop, .head-tip') : null;
           if (!pop) { return; }
           const box = cell.getBoundingClientRect();
           const tall = pop.offsetHeight || 150;
           pop.style.left = Math.max(8, Math.min(box.left, innerWidth - (pop.offsetWidth || 340) - 8)) + 'px';
           pop.style.top = (box.bottom + tall + 8 < innerHeight ? box.bottom + 4 : Math.max(8, box.top - tall - 4)) + 'px';
         }
-        document.addEventListener('mouseover', placeYear);
-        document.addEventListener('focusin', placeYear);
+        document.addEventListener('mouseover', placePop);
+        document.addEventListener('focusin', placePop);
         // A name put on the watch list or taken off it: the press names the ticker, from the box on the
         // watch list page or from the form's own, sends the page's header, and the screen is drawn again
         // with what the read surface said above the list.

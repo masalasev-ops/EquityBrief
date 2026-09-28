@@ -489,6 +489,13 @@ svg text{font-family:var(--sans)}
 .peer-pop{display:none;position:fixed;z-index:40;background:var(--surface);border:1px solid var(--hair-2);border-radius:8px;box-shadow:var(--shadow);padding:8px}
 .peer:hover .peer-pop,.peer:focus-within .peer-pop,.universe-table td.c-nm:hover .peer-pop,.universe-table td.c-nm:focus-within .peer-pop{display:block}
 .peer-pop svg{display:block;max-width:none}
+/* A column heading's account of what its column holds, shown while the pointer is over the heading or it has
+   the focus, fixed to the window and placed by the shell's script as a name's year is. It sets its own type,
+   since a heading's capitals and tracking would otherwise carry into the sentence. */
+th.tipped{cursor:help}
+th.tipped .th-t{border-bottom:1px dotted var(--soft)}
+.head-tip{display:none;position:fixed;z-index:40;width:max-content;max-width:320px;background:var(--surface);border:1px solid var(--hair-2);border-radius:8px;box-shadow:var(--shadow);padding:8px 10px;font:400 13px/1.45 var(--sans);letter-spacing:normal;text-transform:none;color:var(--ink);white-space:normal;text-align:left}
+th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}
 .m-track{stroke:var(--s2);stroke-width:1}
 .m-dist-sup{fill:var(--sup)} .m-dist-res{fill:var(--res)}
 .m-link-sup{stroke:var(--sup);stroke-width:1.5;fill:none} .m-link-res{stroke:var(--res);stroke-width:1.5;fill:none}

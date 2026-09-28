@@ -8727,3 +8727,19 @@ Was:
 Now:
 > | `read-surface` | ... and says how many closes it holds where it holds fewer than two; and the universe table's name cell carries the name's year line drawn over every close the store holds for it with its own nearest bands, read back off the whole table and one sector of it against the store, one to each row drawn and none elsewhere, and each row of a page carries its own name's closes and no other; and a name's earnings reaction record ... |
 Why: the check reaches the part the operator's ask of 2026-09-28 added.
+
+### 2026-09-28 - ARCHITECTURE.html - each universe column heading says what its column holds while the pointer is over it
+Authorised by: Every figure carries a plain-language key
+Was:
+> | The table | ... each ticker a link to its own page that draws its year line while the pointer is over it (see: Marks are defined once and every screen draws from that list) |
+Now:
+> | The table | ... each ticker a link to its own page that draws its year line while the pointer is over it (see: Marks are defined once and every screen draws from that list); each column heading saying what its column holds while the pointer is over it (see: Every figure carries a plain-language key) |
+Why: the operator asked on 2026-09-28, reading the universe page, for most of its headings to explain what they mean when the pointer is over them.
+
+### 2026-09-28 - .claude/rules/checks.md - read-surface reaches what the universe headings say
+Authorised by: Every figure carries a plain-language key
+Was:
+> | `read-surface` | ... one to each row drawn and none elsewhere, and each row of a page carries its own name's closes and no other; and a name's earnings reaction record ... |
+Now:
+> | `read-surface` | ... one to each row drawn and none elsewhere, and each row of a page carries its own name's closes and no other, and each of the table's column headings says what its column holds, one heading for each column a row draws, read back word for word against sentences written with the windows as numbers, off a constructed table and off the fixture's screen; and a name's earnings reaction record ... |
+Why: the check reaches the part the operator's ask of 2026-09-28 added.
