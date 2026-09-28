@@ -223,9 +223,11 @@ span[data-last-asked-at]::before{content:none}
 .list-table td.c-nm .co{display:block;font-size:12.5px;line-height:1.25;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .list-table a.open{font-size:11px;color:var(--soft);margin-left:4px}
 .list-table td.trend-state{font-size:12.5px;color:var(--ink-2)}
-/* the state a member's reported quarters give it, beside the trend word, with what the numbers say while the word is under the pointer or has focus */
+/* the state a member's reported quarters give it, beside the trend word, with what the numbers say while the word is under the pointer or has focus.
+   The sentences are fixed to the window rather than to the table, whose box scrolls sideways and would grow a scrollbar
+   around them and cut them off, and the shell's script places them beside the word. */
 .business{position:relative;display:inline-block;margin-left:6px;font-size:11.5px;border:1px solid var(--hair-2);border-radius:999px;padding:0 7px;color:var(--ink-2);cursor:help}
-.business .says{display:none;position:absolute;z-index:5;left:0;top:100%;margin-top:4px;width:340px;max-width:80vw;padding:8px 10px;background:var(--panel);border:1px solid var(--hair-2);border-radius:6px;font-size:12.5px;line-height:1.45;color:var(--ink);white-space:normal}
+.business .says{display:none;position:fixed;z-index:40;width:340px;max-width:80vw;padding:8px 10px;background:var(--panel);border:1px solid var(--hair-2);border-radius:6px;font-size:12.5px;line-height:1.45;color:var(--ink);white-space:normal}
 .business:hover .says,.business:focus .says,.business:focus-within .says{display:block}
 .numbers-say{margin:0 0 12px}
 .numbers-say .says-heading{margin:0 0 4px;font:600 15px var(--serif)}
@@ -239,12 +241,13 @@ span[data-last-asked-at]::before{content:none}
    It is shown while the reason is under the pointer and goes as the pointer leaves, and it is
    shown to a keyboard on focus, which is `focus-visible` rather than `focus` so that a click
    does not pin it open. The values are drawn in the panel rather than put in a title
-   attribute, which is a native tooltip a touch screen cannot reach at all. */
+   attribute, which is a native tooltip a touch screen cannot reach at all. The panel is fixed
+   to the window rather than to the table, whose box scrolls sideways and would grow a scrollbar
+   around it and cut it off, and the shell's script places it beside the reason. */
 .list-table .reason{position:relative}
 .list-table .reason>.r-head{display:flex;align-items:center;justify-content:center;height:28px;padding:0 3px;background:var(--s4);color:var(--surface);font:600 10.5px/1 var(--sans);cursor:help}
-.list-table .reason .why{display:none;position:absolute;z-index:10;top:32px;left:-4px;width:280px;background:var(--ink);color:var(--surface);padding:9px 11px;border-radius:6px;font:400 12px/1.45 var(--sans);text-align:left;white-space:normal}
+.list-table .reason .why{display:none;position:fixed;z-index:40;width:280px;background:var(--ink);color:var(--surface);padding:9px 11px;border-radius:6px;font:400 12px/1.45 var(--sans);text-align:left;white-space:normal}
 .list-table .reason:hover .why,.list-table .reason:focus-visible .why{display:block}
-.list-table td.rz:nth-last-child(-n+3) .reason .why{left:auto;right:-4px}
 .list-table .why-fired{margin:0 0 6px;font-weight:600}
 .list-table .why-fired::first-letter{text-transform:uppercase}
 .list-table .reason-values{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;margin:0}
