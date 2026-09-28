@@ -29343,3 +29343,145 @@ Carried:    the command on the operator's store, on their word, any time after t
             finished and while no night runs:
             `dotnet run --project src/EquityBrief.Worker -- filter-history --remove --from 2026-09-21 --through 2026-09-23`.
             Run before then it refuses 2026-09-23 and writes nothing.
+
+### 12.3 ruling - the Run page is redesigned to show everything the night does at a glance, queued behind phase 12's sign-off and the preview command   2026-09-28
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-28: "I am not removing the checkpoint. I just want to see everything that is
+            happening in as much visually friendly manner as possible." The mockup is the operator's canvas "Run
+            page redesign mockup", https://claude.ai/artifact/R6pYJGynuAdm6bPtMcAPyd, four frames: a normal
+            night, a stopped night, the first checkpoint, and the version comparison. Every figure in it is a
+            placeholder and none may be copied as a value.
+Queued:     at a glance, the brief whole beneath:
+            - Principles: each region answers one question, picture first with a line or two of plain words,
+              nothing removed; every figure read from the store by the read API; green and orange kept for
+              price levels, status in blues, violet for waiting, red for a failure alone, and not yet measured
+              a dashed outline; every chart a mark in `MarkRenderer`; a reader's choice kept in the hash.
+            - Regions 1 to 11: how last night went; the market; from the index to tonight's list; how the
+              list's trades are going; whether the list finds new stocks; how the system learns; compare
+              tonight's picks; at a checkpoint; research and spend; anything to worry about; the detail, folded.
+            - The rule narrowed: a candidate's picks are shown in regions 6 and 7, and its outcomes stay
+              withheld until a checkpoint unlocks them; a version is promoted only by its test at a look.
+            - Before building: an evaluation report, region by region, of what today's page reads and what is
+              new, and of whether each candidate's picks and the separating setting come from what is stored.
+            - The split: the first build checkpoint delivers regions 1 to 3 on screen.
+            - Documents, tests and mutations: as the brief states them.
+Brief:      the operator's words, whole. One edit is made and marked [edited]: the decision to supersede is
+            named as the operator confirmed it, and nothing else in the text changes.
+            > Queued: the Run page redesigned. A planning pass first, placed after phase 12's sign-off; state
+            > where it sits relative to the preview command and ask before building.
+            >
+            > The operator's words: "I am not removing the checkpoint. I just want to see everything that is
+            > happening in as much visually friendly manner as possible." The mockup is the operator's canvas
+            > "Run page redesign mockup", four frames: a normal night, a stopped night, the first checkpoint,
+            > and the version comparison. Every figure in it is a placeholder and none may be copied as a value.
+            >
+            > === Principles ===
+            > - The page answers the questions a reader asks, top down, one region each, with the picture first
+            >   and a line or two of plain words beneath it. Nothing is removed: today's tables move into folded
+            >   sections at the bottom.
+            > - Every figure is read from the store by the read API. Nothing new is computed at night unless the
+            >   planning pass names it and says why.
+            > - Green and orange stay reserved for price levels. Status uses blues, violet for waiting, and red
+            >   only for a failure. Not yet measured is a dashed outline.
+            > - Every chart is a mark: server-rendered SVG, defined once in MarkRenderer, degrading by saying
+            >   what it has, as the existing marks do. No framework and no build step. Real controls, keyboard
+            >   reachable, both themes.
+            > - Any choice a reader makes, such as the version compared, lives in the hash so the view is a link.
+            >
+            > === The regions, in order ===
+            > 1. How last night went. A status mark and a headline, from the same state the retry notice is
+            >    being built on, never a second source: finished, running, waiting to try again, unfinished, or
+            >    never ran. Four headline figures: stocks read, provider requests, research spend, steps retried.
+            >    A time bar of the night's steps in about six named groups; state the grouping.
+            > 2. The market. A gauge of the share of the index above its 200-day average with the 45% point
+            >    marked, the share above the 50-day, the index's volume against its 50-day average, and a
+            >    60-night breadth line. A one-word label, healthy, mixed or weak, by a stated rule: weak below
+            >    45% as ruled, and propose the point between mixed and healthy, marked proposed in section 17.
+            > 3. From the index to tonight's list. A funnel of how many stocks passed each check and the
+            >    exclusions, down to the number listed, linking to Tonight.
+            > 4. How the list's trades are going. The live list only: still open, reached target, stopped out,
+            >    ran out of time, and a ring of finished trades against the minimum before a win rate is drawn,
+            >    read from the code. At or above the minimum, the three figures together as Past picks draws
+            >    them. Links to Past picks.
+            > 5. Is the list finding new stocks. Twenty nights of bars, new against also on the night before,
+            >    with tonight's split in words.
+            > 6. How the system learns, with that heading. The shape clock as progress toward its sixty ordinary
+            >    nights, and each check's median pass count against its band as a range and a dot, dashed until
+            >    there is data. The edge clock as a timeline: today, checkpoint 1 at about two years, which can
+            >    drop a version, and checkpoint 2 at about three, which can promote one, with blocks so far.
+            >    Then every background version in plain words: what it changes, trades so far, the share of its
+            >    picks the live list also picked, evidence gathered, and a tag saying which checkpoint unlocks
+            >    its results. A button opens region 7.
+            > 7. Compare tonight's picks. A dropdown of the background versions. For the one chosen: the stocks
+            >    only the live list picked, the stocks both picked, and the stocks only that version picked, each
+            >    linking to its name page. For every stock in the first and third groups, one line naming the
+            >    setting that made the difference, read from the gate results already stored, for example
+            >    "dipped more than 3 normal days". An overlap diagram of the three counts, and for the last 20
+            >    nights: stocks the version picked, the share also on the live list, and the nights it picked
+            >    something the live list did not. Picks only.
+            > 8. At a checkpoint. One row per version on a 0 to 100% scale: the share of its trades that reached
+            >    target, the break-even they needed, what a version with no skill scored from the same starts,
+            >    and the interval luck alone could move it, with the verdict in words. Before its checkpoint each
+            >    row is a dashed, locked outline with trades so far and blocks gathered.
+            > 9. Research and spend. Spend against the monthly limit, passes per night over seven nights,
+            >    reports written by the paid model and drafts written overnight.
+            > 10. Anything to worry about. A short checklist, each item plain and each turning red with its
+            >     reason when it fails: every stock has today's prices, every step finished, no research
+            >     document refused, no section fell back, every company awaiting a quarter on schedule. The code
+            >     checks' four counts beneath.
+            > 11. The detail. Today's stage table, the shape table, the candidates' records, the rule versions
+            >     and the old reasons, each folded.
+            >
+            > === The rule this changes ===
+            > Supersede "Candidate conditions are registered before they are scored, and scored in shadow
+            > before they are shown" [edited: the brief named "A candidate's record is withheld until it is
+            > promoted", which no decision carries, and the operator confirmed this one on 2026-09-28],
+            > reasoning kept, prior text to CHANGELOG. What changes: a candidate's picks, the stocks it would
+            > list on a night, are shown in region 7 and counted in region 6. What stays: its outcomes, any
+            > figure computed from how its trades turned out, are withheld until a checkpoint unlocks them, and
+            > a version is promoted only by its test at a checkpoint. A candidate's picks never appear on
+            > Tonight, on a name page or on Past picks. State in the decision why showing picks does not weaken
+            > the test: promotion still happens only at a look by the stated rule.
+            >
+            > === Before building ===
+            > Evaluate first and report: for each region, what today's page already reads and what is new.
+            > Confirm that each candidate's picks per night are derivable from the shadow column already stored
+            > for every member, and that the setting that separated a stock is derivable from stored gate
+            > results. Name anything that needs a nightly computation or a new store.
+            >
+            > Split the work so the first checkpoint delivers regions 1 to 3 on screen.
+            >
+            > === Documents ===
+            > ARCHITECTURE.html section 15.10 rewritten region by region, the new marks added to section 15.5,
+            > section 17 for the proposed market label point, rules stated for any day. HOW_IT_WORKS.html:
+            > section 10's Run card describes the page in one sentence, and section 9 gains one sentence that
+            > any version's picks can be compared with the live list's while their results stay hidden until a
+            > checkpoint.
+            >
+            > === Tests ===
+            > Each region asserted off the rendered page over a constructed night, including a stopped night, an
+            > empty list, a version identical to the live list and one disjoint from it, and a checkpoint before
+            > and after it unlocks. A test fails if any figure computed from a candidate's outcomes appears
+            > before its checkpoint, or if a candidate's picks appear anywhere but regions 6 and 7. Mutations: a
+            > candidate's outcome drawn early, the dropdown's choice not reaching the hash, and a green or orange
+            > used outside a level.
+Placed:     after tonight's night and the work that follows it (its record, items 2 and 3 with the operator's
+            remedy, the night's deadline at an hour and the version cap kept at 18 riding the same remedy); the
+            night's retries, the notice on tonight's page and the restart press, once the operator answers
+            that plan, since region 1 reads the state that notice is built on; phase 12's sign-off, in a fresh
+            session; the preview command, queued on 2026-09-25 for after the sign-off, which reads nothing the
+            redesign changes and lets the redesign be looked at over a store copy; and then this planning
+            pass. Fundamentals part 2, item 5, item 7 and the peak reporting night keep their own triggers.
+Noted:      the decision to narrow is "Candidate conditions are registered before they are scored, and scored in
+            shadow before they are shown", confirmed by the operator on 2026-09-28; the planning pass also
+            states every other entry and citation saying a candidate's evaluation of a name is shown nowhere,
+            since those change with it. The pass's first report is the evaluation alone, and nothing is built
+            before the operator approves its plan.
+Changed:    nothing.
+Tests:      none added.
+Verified:   `tools/ci.ps1` green end to end, 0 warnings, 1494 of 1494 tests ran with none failed, and
+            `tools/verify-phase.ps1` green at 44 tables, 650 claims, 650 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 661 placements and verdicts reconciled, 1494 of 1494 tests, both over the tree
+            carrying this entry, 04d8084, in a worktree beside the repository, and the operator's store under
+            `data/` was not touched by either.
+Carried:    the planning pass for the Run page redesign, after the preview command.
