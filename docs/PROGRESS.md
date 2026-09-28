@@ -29220,8 +29220,8 @@ Guarded:    `EveryPanelShownOnHoverIsFixedToTheWindowAndPlacedByTheShell` in `re
 Written:    `.claude/rules/checks.md`'s read-surface row, its prior text in `CHANGELOG.md`. No section of the
             architecture changes: section 15.7 already says a reason's values are drawn beside it while it is
             under the pointer, which the page now does.
-Tests:      58PT, from 1492: one added.
-Claims:     58PC, from 650, predicted unchanged.
+Tests:      1493, from 1492: one added.
+Claims:     650, from 650, predicted unchanged.
 Pins:       the branch against `main` edits no source in the three pin lists: `SinglePageApp.cs` and
             `Stylesheet.cs` are in none. No version moves and nothing is owed before a night.
 Mutated:    the rule, stated before the run: one mutation reversing each mechanism the panels rely on, filtered
@@ -29231,14 +29231,17 @@ Mutated:    the rule, stated before the run: one mutation reversing each mechani
             P2 a business's sentences left out of the shell's placing: red in the new test and the headings
                test.
             P3 a reason left out of the holders the shell places a panel beside: red in the year line test.
-            Results: 58PM
-Held:       58PH
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 58PT of 58PT tests ran
+            Results: one run each in a detached worktree at caebe79, this entry's commit, filtered to the
+            three tests, each edit made there and reverted, and the tree read clean after. The three ran green
+            over the unmutated tree, and the whole suite ran green over caebe79 in the gates, 1493 of 1493. P1
+            turned the new test red; P2 the new test and the headings test; P3 the year line test.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1493 of 1493 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 58PB tables, 58PC claims, 58PP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 58PR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 58PT of 58PT tests.
-            Both gates ran over the tree carrying this entry, 58PSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 44 tables, 650 claims, 650 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 661 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1493 of 1493 tests.
+            Both gates ran over the tree carrying this entry, caebe79, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this.
