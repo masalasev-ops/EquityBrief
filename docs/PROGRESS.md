@@ -29047,8 +29047,8 @@ Guarded:    in `read-surface`, three new: `TheUniverseTableDrawsEachNamesYearInI
 Written:    section 15.8's table row states the part; section 15.5's year line row names the universe table
             and adds it to the screens the mark is used by; `.claude/rules/checks.md`'s read-surface row. Each
             changed line's prior text in `CHANGELOG.md`.
-Tests:      58UT, from 1483: three added.
-Claims:     58UC, from 645, predicted 646: section 15.8's table row read as one part more, each ticker a link
+Tests:      1486, from 1483: three added.
+Claims:     646, from 645, predicted 646: section 15.8's table row read as one part more, each ticker a link
             to its own page that draws its year line while the pointer is over it, due at 5.8, which has landed.
             Section 15.5's row is one claim before and after.
 Pins:       the branch against `main` edits no source in the three pin lists: `MarkRenderer.cs`,
@@ -29065,14 +29065,18 @@ Mutated:    the rule, stated before the run: one mutation reversing each mechani
             U3 every row of a page given the first row's closes: red in the new page test and the new store
                test.
             U4 the stylesheet's rule showing the universe cell's year taken out: red in the new table test.
-            Results: 58UM
-Held:       58UH
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 58UT of 58UT tests ran
+            Results: one run each in a detached worktree at 0470c62, this entry's commit, filtered to the six
+            tests, each edit made there and reverted, and the tree read clean after. The six ran green over
+            the unmutated tree, and the whole suite ran green over 0470c62 in the gates, 1486 of 1486. U1
+            turned the new table test, the new store test and the picture count red; U2 the new store test
+            and the picture count; U3 the new page test and the new store test; U4 the new table test.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1486 of 1486 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 58UB tables, 58UC claims, 58UP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 58UR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 58UT of 58UT tests.
-            Both gates ran over the tree carrying this entry, 58USHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 44 tables, 646 claims, 646 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 657 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1486 of 1486 tests.
+            Both gates ran over the tree carrying this entry, 0470c62, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this.
