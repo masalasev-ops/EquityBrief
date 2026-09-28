@@ -28935,8 +28935,8 @@ Written:    DECISIONS as above; section 2's group row, section 7's move annotato
             citation and its two new rows, and section 19.1's peers row; SCHEMA's `peers` column; BUILD_PLAN's
             11.6 text; `.claude/rules/checks.md`'s fixture-expectations and read-surface rows. Each changed line's
             prior text in `CHANGELOG.md`.
-Tests:      116PT, from 1479: three added.
-Claims:     116PC, from 640, predicted 645: the peers row's six new parts, the year line and section 17's two
+Tests:      1482, from 1479: three added.
+Claims:     645, from 640, as predicted: the peers row's six new parts, the year line and section 17's two
             rows arrive, and the row's four parts that named every member in ticker order and the close as the
             first figure leave. The checks' stated counts move with them: section 15's screen rows from 88 to 89,
             its claims from 296 to 299 and the decomposed elements from 283 to 285, and phase 12's pair from 640
@@ -28955,14 +28955,18 @@ Mutated:    the rule, stated before the run: one mutation reversing each rule th
             G3 the ten removed, every member chosen: red in the new fixture-expectations test.
             G4 the floor read one higher, sixty returns reading none: red in the new fixture-expectations test.
             G5 the page drawing the chosen members in ticker order: red in the new page test.
-            Results: 116PM
-Held:       116PH
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 116PT of 116PT tests ran
+            Results: one run each in a detached worktree at d09dbb5, this entry's commit, filtered to the seven
+            tests this correction adds or changes, each edit made there and reverted, and the tree read clean
+            after. The whole suite ran green over d09dbb5 in the gates, 1482 of 1482. G1, G3 and G4 turned the
+            new fixture-expectations test red; G2 that test, the fixture's peer readings test and the fixture's
+            page test; G5 the new page test.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1482 of 1482 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 116PB tables, 116PC claims, 116PP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 116PR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 116PT of 116PT tests.
-            Both gates ran over the tree carrying this entry, 116PSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 44 tables, 645 claims, 645 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 656 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1482 of 1482 tests.
+            Both gates ran over the tree carrying this entry, d09dbb5, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this.
