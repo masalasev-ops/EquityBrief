@@ -28828,3 +28828,64 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 9da0a3d, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this.
+
+### 5.8 - correction: a name page's watch press stands on the masthead's line at the small controls' size, the page's words are headed as its glossary, and the momentum panel draws two axes each headed by what it reads and means, where the press was drawn at a page's main press's size beneath the name and four strips said nothing of how they are read   2026-09-27
+Corrects:   three parts of the name page 5.8 built, on the operator's asks of 2026-09-27, read off AAPL's page:
+            "if this is supposed to add to watchlist, then this is really very badly placed and sized", the
+            glossary "should simply state glossary of terms", and "I am completely unsure how to use these in
+            the chart. What is the user supposed to derive from momentum signal line etc". Asked to choose, the
+            operator chose two axes with a heading saying what each means over taking the panel off or
+            rewording its key alone.
+Repaired:   the watch press had a rule of its own that never applied: the rule every posted form's button
+            takes outranked it, so the press was drawn at 44 pixels in the accent's fill, and the rule every
+            posted form takes pushed it below the line it sat on. Its rule now outranks both and states every
+            property they state, the press stands on the masthead's line after the change on the day rather
+            than on the line beneath it, and it reads "Add to watch list", or, for a name watched, "On your
+            watch list" beside a press reading "Remove". The page's words are headed "Glossary of terms". The
+            momentum panel draws relative strength on one axis, its rule at 50 and its edges at 70 and 30
+            drawn and named at the axis's left edge, and the convergence line, its signal line dashed and the
+            gap between them as bars on a second axis with one zero rule, so a crossing is drawn where it
+            happens rather than across two strips. Each axis is headed by what it reads, where each reading
+            stood at the last session drawn and what it means in the words section 5 reads them by, and the
+            key beneath says how each is read beside the bands. Nothing reads the panel, as before.
+Measured:   nothing new.
+Guarded:    `TheMomentumPanelDrawsTheConvergenceLineItsSignalAndTheirGapOnOneAxisAndNamesRelativeStrengthsEdges`
+            in `read-surface`, new: over forty constructed sessions with the engine's warm-ups, the two axes,
+            the readings on each, the one zero rule, the bars drawn beneath the lines, the dashed signal line,
+            the dashed box counting the 26 sessions none of the three holds rather than the 34 before the
+            signal line, both headings' values worked by hand, and the edges' heights at 70 and 30 read against
+            the plot the pane draws. The cascade test over the small controls reads the watch press in both
+            states on the masthead's line, and the watch list's test reads the press on that line and not on
+            the one beneath it. `EveryMomentumReadingDrawsItsNeutralRule` reads one rule per axis, at 102 for
+            relative strength's 50, and the glossary's test reads its new heading.
+Written:    section 15.5's momentum panel row; `.claude/rules/checks.md`'s read-surface row. Each changed line's
+            prior text in `CHANGELOG.md`.
+Tests:      1479, from 1478: the momentum panel's test is added.
+Claims:     640, from 640, as predicted: section 15.5's row is reworded and section 15.9 names the chart's
+            momentum panel as it did.
+Pins:       the branch against `main` edits no source in the three pin lists: `MarkRenderer.cs`,
+            `SinglePageApp.cs` and `Stylesheet.cs` are in none. No version moves and nothing is owed before a
+            night.
+Mutated:    the rule, stated before the run: one mutation reversing each mechanism the page now relies on,
+            filtered to the tests this correction adds or changes.
+            Predicted:
+            W1 the watch press's rule written at the specificity it had, `.name-watch button`: red in the
+               cascade test over the small controls.
+            W2 the watch press drawn on the line beneath the name again: red in the watch list's test.
+            W3 each convergence reading drawn on an axis of its own: red in the new momentum test and in
+               `EveryMomentumReadingDrawsItsNeutralRule`.
+            Results: one run each in a detached worktree at 1d543f1, this entry's commit, filtered to the six
+            tests this correction adds or changes, each edit made there and reverted, and the tree read clean
+            after. The six ran green over the unmutated tree, and the whole suite ran green over 1d543f1 in the
+            gates, 1479 of 1479. W1 turned the cascade test red, W2 the watch list's test, and W3 the new
+            momentum test and `EveryMomentumReadingDrawsItsNeutralRule`.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1479 of 1479 tests ran
+            with none failed, migrations 0 to 48 with none pending, schema version 48, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 640 claims, 640 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 651 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1479 of 1479 tests.
+            Both gates ran over the tree carrying this entry, 1d543f1, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    as the entry before this.

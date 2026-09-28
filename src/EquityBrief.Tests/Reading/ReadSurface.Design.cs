@@ -244,7 +244,7 @@ public partial class ReadSurface
 
         // And the line begins past the box rather than running across it.
         var box = Regex.Match(gap.Groups[2].Value, "<rect class=\"m-absent\" x=\"([0-9.]+)\" y=\"[0-9.]+\" width=\"([0-9.]+)\"");
-        var start = Regex.Match(panel, "<path d=\"M([0-9.]+) ");
+        var start = Regex.Match(panel, "<path class=\"m-mom\" d=\"M([0-9.]+) ");
 
         Assert.True(At(start) > At(box) + At(box, 2), $"The line starts at {At(start)}, inside the box ending at {At(box) + At(box, 2)}.");
 
@@ -254,6 +254,81 @@ public partial class ReadSurface
         Assert.Equal(3, Regex.Matches(hist, "class=\"m-hist\"").Count);
         Assert.DoesNotContain("<path", hist, StringComparison.Ordinal);
         Assert.Contains("data-sessions=\"1\"", hist, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheMomentumPanelDrawsTheConvergenceLineItsSignalAndTheirGapOnOneAxisAndNamesRelativeStrengthsEdges()
+    {
+        // Forty sessions whose warm-ups end where the engine's do: relative strength from the
+        // fifteenth, the line from the twenty-seventh, its signal and the gap from the thirty-fifth.
+        // Every figure below is read off these values by hand.
+        const int Sessions = 40;
+
+        double?[] From(int first, Func<int, double> value) =>
+            [.. Enumerable.Range(0, Sessions).Select(at => at < first ? (double?)null : value(at))];
+
+        var panel = new MarkRenderer().MomentumPanel("TEST",
+        [
+            new MomentumReading("rsi14", From(14, at => 50 + (at % 10)), 50, 0, 100),
+            new MomentumReading("macd", From(26, at => at / 25.0), 0, null, null),
+            new MomentumReading("macd_signal", From(34, _ => 1.2), 0, null, null),
+            new MomentumReading("macd_hist", From(34, _ => 0.36), 0, null, null),
+        ]);
+
+        string Pane(string name) =>
+            Regex.Match(panel, $"<g class=\"pane\" data-pane=\"{name}\"(.*?)(?=<g class=\"pane\"|</svg>)", RegexOptions.Singleline).Groups[1].Value;
+
+        string[] Readings(string pane) =>
+            [.. Regex.Matches(pane, "<g class=\"reading\" data-name=\"([^\"]+)\"").Select(match => match.Groups[1].Value).Order(StringComparer.Ordinal)];
+
+        // Two axes, not four: relative strength alone, and the three convergence readings on one.
+        Assert.Equal(["strength", "convergence"], Regex.Matches(panel, "<g class=\"pane\" data-pane=\"([^\"]+)\"").Select(match => match.Groups[1].Value).ToArray());
+
+        var strength = Pane("strength");
+        var convergence = Pane("convergence");
+
+        Assert.Equal(["rsi14"], Readings(strength));
+        Assert.Equal(["macd", "macd_hist", "macd_signal"], Readings(convergence));
+
+        // One zero rule the three are read against, the bars drawn before the two lines so the
+        // lines cross over them, and the signal line apart from the line by its own dashed stroke.
+        Assert.Single(Regex.Matches(convergence, "class=\"neutral-rule\""));
+        Assert.True(convergence.IndexOf("class=\"m-hist\"", StringComparison.Ordinal) < convergence.IndexOf("<path class=\"m-mom\"", StringComparison.Ordinal));
+        Assert.Single(Regex.Matches(Regex.Match(convergence, "data-name=\"macd\".*?</g>", RegexOptions.Singleline).Value, "<path class=\"m-mom\" "));
+        Assert.Single(Regex.Matches(Regex.Match(convergence, "data-name=\"macd_signal\".*?</g>", RegexOptions.Singleline).Value, "<path class=\"m-mom-2\" "));
+
+        // The sessions no reading of the pane holds are the dashed box: twenty-six before the
+        // line begins, not the thirty-four before the signal line does.
+        Assert.Equal("26", Regex.Match(convergence, "<g class=\"not-computed\" data-sessions=\"(\\d+)\"").Groups[1].Value);
+        Assert.Equal("14", Regex.Match(strength, "<g class=\"not-computed\" data-sessions=\"(\\d+)\"").Groups[1].Value);
+
+        // Each heading states where its readings stood at the last session: 50 + 39 % 10 is 59,
+        // and 39 / 25 is 1.56, whose gap to a signal of 1.2 is the 0.36 the bars hold.
+        Assert.Contains(">Relative strength over 14 sessions (rsi14): 59 at the last session drawn</text>", strength, StringComparison.Ordinal);
+        Assert.Contains(">Trend momentum (macd, the solid line) and its signal line (macd_signal, dashed): the line 1.56, its signal line 1.2 and the gap 0.36 at the last session drawn</text>", convergence, StringComparison.Ordinal);
+
+        // Relative strength's two edges are drawn and named with its balanced rule, at the
+        // heights 70, 30 and 50 take on an axis running 0 to 100: the plot's top edge plus its
+        // height, less 3, less the value's share of the height less 6.
+        var plot = Regex.Match(strength, "<rect class=\"m-plot\" x=\"[0-9]+\" y=\"([0-9]+)\" width=\"[0-9]+\" height=\"([0-9]+)\"/>");
+        var top = double.Parse(plot.Groups[1].Value, CultureInfo.InvariantCulture);
+        var tall = double.Parse(plot.Groups[2].Value, CultureInfo.InvariantCulture);
+        double Height(double value) => top + tall - 3 - (value / 100 * (tall - 6));
+
+        var edges = Regex.Matches(strength, "<line class=\"m-edge-rule\" x1=\"[0-9]+\" y1=\"([0-9.]+)\"")
+            .Select(match => double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture))
+            .ToArray();
+
+        Assert.Equal(2, edges.Length);
+        Assert.Equal(Height(70), edges[0], 1);
+        Assert.Equal(Height(30), edges[1], 1);
+
+        foreach (var named in new[] { "70, stretched upward", "30, stretched downward", "50, balanced" })
+        {
+            Assert.Contains($">{named}</text>", strength, StringComparison.Ordinal);
+        }
+
+        Assert.DoesNotContain("m-edge-rule", convergence, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -569,7 +644,7 @@ public partial class ReadSurface
             Regex.Matches(read, Regex.Escape(SinglePageApp.RankRefusal)).Count);
         Assert.Contains("<li>It does not say how much to buy: the sizing near the end only divides the amount you choose to risk.</li>", page, StringComparison.Ordinal);
 
-        var glossary = Regex.Match(page, "<details class=\"gloss\"><summary>Words used on this page</summary>(.*?)</details>", RegexOptions.Singleline);
+        var glossary = Regex.Match(page, "<details class=\"gloss\"><summary>Glossary of terms</summary>(.*?)</details>", RegexOptions.Singleline);
 
         Assert.True(glossary.Success);
         Assert.Equal(10, Regex.Matches(glossary.Groups[1].Value, "<dt>").Count);

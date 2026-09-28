@@ -682,6 +682,7 @@ public sealed class SinglePageApp : IComponent
         identity.Append(mast?.DayChangePct is { } change
             ? Invariant($"<span class=\"m-chg\">{change.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)}% on the day</span>")
             : string.Empty);
+        identity.Append(watched is { } held ? WatchControl(ticker, held) : string.Empty);
 
         var asOf = session is { } last
             ? Invariant($"As of the close of {last:yyyy-MM-dd}, the last stored price{(suspect is null ? string.Empty : ". Prices may be out of date; see below")}")
@@ -691,7 +692,7 @@ public sealed class SinglePageApp : IComponent
             ? Invariant($" · <a href=\"#/universe?sector={Uri.EscapeDataString(sector)}\">{Escaped(sector)}</a>{(mast.Industry is { Length: > 0 } industry ? Invariant($", {Escaped(industry)}") : string.Empty)}")
             : string.Empty;
 
-        region.Append(Cards.Masthead(ticker, identity.ToString(), asOf + (watched is { } held ? WatchControl(ticker, held) : string.Empty)));
+        region.Append(Cards.Masthead(ticker, identity.ToString(), asOf));
 
         // What the page is for and what it refuses to do, before any figure, and the words it
         // uses beneath that. First, so a reader meets the refusals before the first number.
@@ -841,7 +842,7 @@ public sealed class SinglePageApp : IComponent
         chart.Append("<div class=\"fig\">").Append(marks.MomentumPanel(ticker, readings)).Append("</div>");
         chart.Append(Cards.Key(
             "Context, not a signal.",
-            "Each reading is drawn on its own scale with its neutral rule. Relative strength usually sits inside its shaded band, and the momentum bars read against their zero rule: above it is strengthening and below it weakening.",
+            "Relative strength compares the size of the stock's recent up days with its recent down days, on a scale of 0 to 100. The momentum line is the gap between a fast and a slow average of the price and its signal line a slower average of that gap, so the bars show whether the gap is widening or narrowing. Read them beside the bands: near a support band, relative strength at or under 30, or bars below zero shrinking toward it, says the fall is losing force, and near a resistance band, 70 or over, or bars above zero shrinking, says the rise is.",
             "Nothing in the plan or the list reads these. When they and the bands disagree, the plan follows the bands."));
         chart.Append("<div class=\"sub\">Levels</div>");
         chart.Append("<div class=\"tbl-wrap\">").Append(marks.LevelSummary(ticker, summary, absent, bars.Count > 0 ? bars[^1].Close : null)).Append("</div>");
@@ -976,7 +977,7 @@ public sealed class SinglePageApp : IComponent
         $"It carries no forecast, what it says of the business is read from {Escaped(company)}'s reported quarters by fixed rules, and it gives no opinion on how much of your money to put in.</p>" +
         $"<ul class=\"refuse\"><li>It does not predict where the price will go.</li><li>It {RankRefusal}.</li>" +
         "<li>It does not say how much to buy: the sizing near the end only divides the amount you choose to risk.</li></ul>" +
-        "<details class=\"gloss\"><summary>Words used on this page</summary>" +
+        "<details class=\"gloss\"><summary>Glossary of terms</summary>" +
         Cards.Words(
             ("Support", "A price below the current one where this stock has repeatedly stopped falling and turned back up."),
             ("Resistance", "A price above the current one where this stock has repeatedly stopped rising and turned back down."),
@@ -1702,11 +1703,15 @@ public sealed class SinglePageApp : IComponent
             ? Invariant($"<p class=\"watch-line\" data-watching=\"0\">No name is watched yet. <a href=\"{WatchRoute}\">Add names on the watch list</a></p>")
             : Invariant($"<p class=\"watch-line\" data-watching=\"{watching}\">{watching} name(s) watched. <a href=\"{WatchRoute}\">Open the watch list</a></p>");
 
-    // A name page's press to watch the name or stop watching it, which sits beside the name in the header.
+    // A name page's press to put the name on the watch list or take it off, on the masthead's line after the
+    // change on the day and at the small controls' size. A watched name says so beside the press taking it off,
+    // so the press never has to be read to learn which of the two the name is.
     // see: The watch list is the operator's own, up to twenty names of the index, on a page of its own
     public static string WatchControl(string ticker, bool watched) =>
         Invariant($"<form class=\"watch-control name-watch\" method=\"post\" action=\"{(watched ? UnwatchPostRoute : WatchPostRoute)}\" data-ticker=\"{Escaped(ticker)}\" data-watched=\"{(watched ? "true" : "false")}\">")
-        + Invariant($"<button type=\"submit\" class=\"btn-2\">{(watched ? "Stop watching" : "Watch")}</button></form>");
+        + (watched
+            ? Invariant($"<span class=\"watching\">&#9733; On your watch list</span><button type=\"submit\" aria-label=\"Take {Escaped(ticker)} off the watch list\">Remove</button></form>")
+            : Invariant($"<button type=\"submit\" aria-label=\"Add {Escaped(ticker)} to the watch list\">&#9734; Add to watch list</button></form>"));
 
     // The watch list page: the names the operator follows, each drawn from the night's own rows whether or
     // not the list holds it with what the swing filter said of it, a box to add a name of the index while

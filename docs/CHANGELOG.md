@@ -8622,3 +8622,19 @@ Was:
 Now:
 > | `read-surface` | ... the run page draws the quarters step's line in its operational header and no region of the night's asks; and Past picks draws ... |
 Why: the check reaches what the run page draws after the operator had the region taken off it.
+
+### 2026-09-27 - ARCHITECTURE.html - the momentum panel draws two axes, each headed by what it reads and means
+Authorised by: The momentum panel is context a reader weighs, and nothing computes with it
+Was:
+> | **Momentum panel** | The momentum readings on their own small axes beneath the chart, each with its neutral rule drawn. A number like 53 means nothing without the band it sits in. The neutral rules are reading conventions this panel draws and no component applies (see: ...). | Name |
+Now:
+> | **Momentum panel** | The momentum readings beneath the chart on two small axes. Relative strength has one to itself with its neutral rule at 50 and its edges at 70 and 30 drawn and named. The convergence line and its signal line share the other with the gap between them drawn as bars about its zero rule, so a crossing is drawn where it happens. Each axis is headed by what it reads and where each reading stood at the last session drawn and what it means in words. A number like 53 means nothing without the band it sits in. The rules are reading conventions this panel draws and no component applies (see: ...). | Name |
+Why: the operator said on 2026-09-27 they were completely unsure how to use the four strips, and what a reader was supposed to take from the momentum and its signal line, and chose the two axes with a heading saying what each means.
+
+### 2026-09-27 - .claude/rules/checks.md - read-surface reaches the watch press's rule and the momentum panel's two axes
+Authorised by: The watch list is the operator's own, up to twenty names of the index, on a page of its own
+Was:
+> | `read-surface` | ... and the two small controls, the one on a row of tonight's list asking for a report and the queue's taking one out, are drawn by the rules written for them, ... and Past picks draws each trade's state on its listing night, a night before the readings reading not read that night, each night's trades in the order that night was drawn in |
+Now:
+> | `read-surface` | ... and the small controls, the one on a row of tonight's list asking for a report, the queue's taking one out and a name page's press to watch the name, which stands on the masthead's line after the change on the day, are drawn by the rules written for them, ... and Past picks draws ... in the order that night was drawn in; and the momentum panel draws relative strength on one axis with its rules at 70, 50 and 30 drawn and named, and the convergence line, its signal line and the gap between them on a second with one zero rule, each axis headed by where its readings stood at the last session drawn and boxed where none of its readings holds a value, read back off constructed readings worked by hand |
+Why: the watch press was drawn at the size of a page's main press because the rule every posted form's button takes outranked its own, and the operator asked on 2026-09-27 for it placed and sized as the small control it is; the momentum panel was redrawn on the operator's choice the same day.

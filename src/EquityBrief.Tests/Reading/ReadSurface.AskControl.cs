@@ -8,8 +8,9 @@ using EquityBrief.Web.Marks;
 namespace EquityBrief.Tests.Reading;
 
 // read-surface, 9.1: the control on a row of tonight's list that asks for a report, set
-// apart from the label beside it saying the name holds none; and 9.3: that control and the
-// queue's control taking a report out, each drawn by the rule written for it.
+// apart from the label beside it saying the name holds none; 9.3: that control and the
+// queue's control taking a report out, each drawn by the rule written for it; and 5.8: a name
+// page's press to watch the name, drawn by its own rule on the masthead's line.
 //
 // The suite has no browser, so the rule that lays the control out is found the way a
 // browser finds it: every rule the stylesheet states is matched against the control and
@@ -219,7 +220,7 @@ public partial class ReadSurface
     [Fact]
     public void TheControlsAskingForAReportAndTakingOneOutAreDrawnByTheirOwnRules()
     {
-        // Each of the two small controls has a rule of its own, and the page draws it by that
+        // Each of the small controls has a rule of its own, and the page draws it by that
         // rule only where the rule outranks every rule written for buttons and states every
         // property one of them states. A property the small rule leaves out is drawn at the
         // other rule's value, and a rule it merely equals, stated after it, wins every property
@@ -239,7 +240,21 @@ public partial class ReadSurface
 
         Assert.True(card >= 0, "tonight's page draws no selected name's card");
 
-        foreach (var (screen, markup, control, from) in new[] { ("tonight's list", list, "ask", 0), ("the queue", queue, "withdraw-control", 0), ("the selected name", page, "ask", card) })
+        // A name page's press to watch the name, in both of its states, as the shell draws it: on the
+        // masthead's line, which holds what the page's own head holds.
+        static string OnTheMasthead(bool watched) =>
+            "<header class=\"mast\" id=\"mast\"><div class=\"wrap\"><div class=\"m-id\" id=\"identity\"><span class=\"m-chg\">+1.00% on the day</span>"
+            + SinglePageApp.WatchControl("ZZZZ", watched)
+            + "</div></div></header>";
+
+        foreach (var (screen, markup, control, from) in new[]
+        {
+            ("tonight's list", list, "ask", 0),
+            ("the queue", queue, "withdraw-control", 0),
+            ("the selected name", page, "ask", card),
+            ("a name page not watching the name", OnTheMasthead(false), "name-watch", 0),
+            ("a name page watching the name", OnTheMasthead(true), "name-watch", 0),
+        })
         {
             var form = new Regex($"<form class=\"(?:[^\"]* )?{Regex.Escape(control)}(?: [^\"]*)?\"[^>]*>").Match(markup, from);
 

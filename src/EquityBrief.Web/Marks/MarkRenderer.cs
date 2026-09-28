@@ -1323,20 +1323,25 @@ public sealed class MarkRenderer : IComponent
     const string SupportHue = "var(--support, #2f7d4f)";
     const string ResistanceHue = "var(--resistance, #b5651d)";
 
-    const int ReadingHeight = 64;
-    const int ReadingGap = 10;
+    const int PaneTitle = 22;
+    const int PaneLine = 16;
+    const int PaneGap = 22;
 
-    // The momentum panel. One small axis per reading, each with its neutral rule
-    // drawn across it.
+    // The momentum panel. Relative strength on one small axis, and the convergence line
+    // with its signal line and the gap between them on a second, each pane headed by what
+    // it reads, what it means and where it stood at the last session drawn.
     //
-    // The rule is the point of the mark rather than decoration. Section 5 says
-    // an RSI near 50 is balanced and above 70 is stretched, so a reading drawn
-    // without its rule is a line whose height means nothing, and the panel would
-    // be four squiggles a reader has to bring their own conventions to.
+    // The rules are the point of the mark rather than decoration. Section 5 says an RSI
+    // near 50 is balanced, above 70 stretched upward and below 30 stretched downward, so
+    // its pane draws and names all three; a reading drawn without them is a line whose
+    // height means nothing, which a reader has to bring their own conventions to.
     //
-    // Each reading is scaled on its own axis. A MACD is in the stock's money and
-    // an RSI is a score out of a hundred, so one shared scale would flatten
-    // whichever of them has the smaller numbers into a straight line.
+    // The three convergence readings share an axis because they are one quantity read
+    // three ways: the signal line is read where the line crosses it and the bars are the
+    // gap between the two, so drawn apart the crossing is on no pane at all. Relative
+    // strength is a score out of a hundred and the line is in the stock's money, so the
+    // two keep an axis each, since one shared scale would flatten whichever has the
+    // smaller numbers into a straight line.
     public string MomentumPanel(string ticker, IReadOnlyList<MomentumReading> readings)
     {
         if (readings.Count == 0)
@@ -1345,7 +1350,14 @@ public sealed class MarkRenderer : IComponent
                 $"{Escaped(ticker)} has no momentum readings stored.</p>";
         }
 
-        var height = (readings.Count * ReadingHeight) + ((readings.Count - 1) * ReadingGap);
+        var panes = readings.GroupBy(reading => PaneOf(reading.Name), StringComparer.Ordinal).ToArray();
+
+        // A pane's heading is its title and the lines saying what it means, and its plot is
+        // taller where the three convergence readings share it, so a crossing has room.
+        int Head(string pane) => PaneTitle + (PaneMeaning(pane).Length * PaneLine) + 6;
+        int Plot(IEnumerable<MomentumReading> pane) => pane.All(reading => reading.Floor is not null && reading.Ceiling is not null) ? 116 : 124;
+
+        var height = panes.Sum(pane => Head(pane.Key) + Plot(pane)) + ((panes.Length - 1) * PaneGap);
         var svg = new StringBuilder();
 
         svg.Append(Invariant, $"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 {Width} {height}\" ");
@@ -1353,104 +1365,164 @@ public sealed class MarkRenderer : IComponent
         // so a session is at one distance across the two and nothing here is drawn
         // larger than it was made.
         svg.Append(Invariant, $"width=\"{Width}\" height=\"{height}\" role=\"img\" class=\"momentum-panel\" data-ticker=\"{Escaped(ticker)}\" ");
-        svg.Append(Invariant, $"data-readings=\"{readings.Count}\">");
-        svg.Append(Invariant, $"<title>{Escaped(ticker)}, {readings.Count} momentum reading(s)</title>");
-        svg.Append(Invariant, $"<desc>Each reading on its own small axis with its neutral rule drawn across it.</desc>");
+        svg.Append(Invariant, $"data-readings=\"{readings.Count}\" data-panes=\"{panes.Length}\">");
+        svg.Append(Invariant, $"<title>{Escaped(ticker)}, {readings.Count} momentum reading(s) on {panes.Length} axis(es)</title>");
+        svg.Append("<desc>Relative strength on its own axis, and the convergence line with its signal line and the gap between them on a second, each with its rules drawn and named.</desc>");
 
-        for (var index = 0; index < readings.Count; index++)
+        var top = 0;
+
+        foreach (var pane in panes)
         {
-            var reading = readings[index];
-            var top = index * (ReadingHeight + ReadingGap);
-            var drawn = reading.Values.Where(value => value is not null).Select(value => value!.Value).ToArray();
+            var members = pane.ToArray();
+            var plotTop = top + Head(pane.Key);
+            var plotHeight = Plot(members);
+            var sessions = members.Max(reading => reading.Values.Count);
+            var neutral = members[0].Neutral;
+            var drawn = members.SelectMany(reading => reading.Values).OfType<double>().ToArray();
+            var bounded = members.All(reading => reading.Floor is not null && reading.Ceiling is not null);
 
-            // The axis takes in the neutral rule as well as the values, because
-            // a rule outside the scale is a rule drawn off the pane, and a
-            // reading that never crossed its rule is exactly the case a reader
-            // most wants to see.
-            var low = reading.Floor ?? Math.Min(drawn.Length > 0 ? drawn.Min() : reading.Neutral, reading.Neutral);
-            var high = reading.Ceiling ?? Math.Max(drawn.Length > 0 ? drawn.Max() : reading.Neutral, reading.Neutral);
+            // The axis takes in the neutral rule as well as the values, because a rule
+            // outside the scale is a rule drawn off the pane, and a reading that never
+            // crossed its rule is exactly the case a reader most wants to see.
+            var low = bounded ? members.Min(reading => reading.Floor!.Value) : Math.Min(drawn.Length > 0 ? drawn.Min() : neutral, neutral);
+            var high = bounded ? members.Max(reading => reading.Ceiling!.Value) : Math.Max(drawn.Length > 0 ? drawn.Max() : neutral, neutral);
             var span = high - low > 0 ? high - low : 1;
 
-            double Y(double value) => top + ReadingHeight - 2 - ((value - low) / span * (ReadingHeight - 16));
+            double Y(double value) => plotTop + plotHeight - 3 - ((value - low) / span * (plotHeight - 6));
 
-            var slot = (double)(Width - (2 * Margin)) / Math.Max(reading.Values.Count, 1);
+            var slot = (double)(Width - (2 * Margin)) / Math.Max(sessions, 1);
 
-            svg.Append(Invariant, $"<g class=\"reading\" data-name=\"{Escaped(reading.Name)}\" ");
-            svg.Append(Invariant, $"data-neutral=\"{Number(reading.Neutral)}\" data-values=\"{drawn.Length}\">");
+            svg.Append(Invariant, $"<g class=\"pane\" data-pane=\"{Escaped(pane.Key)}\" data-neutral=\"{Number(neutral)}\">");
 
-            svg.Append(Invariant, $"<rect class=\"m-plot\" x=\"{Margin}\" y=\"{top + 14}\" width=\"{Width - (2 * Margin)}\" height=\"{ReadingHeight - 14}\"/>");
-
-            // A reading on a fixed scale carries the range it usually sits in, which is a
-            // reading convention the panel draws and nothing computes with.
-            // see: The momentum panel is context a reader weighs, and nothing computes with it
-            if (reading.Floor is { } floor && reading.Ceiling is { } ceiling)
+            // The heading: what the pane reads and each reading's value at the last session
+            // drawn, then what the pane means in words.
+            var last = members
+                .Where(reading => reading.Values.Count > 0 && reading.Values[^1] is not null)
+                .Select(reading => (ReadingPart(reading.Name) + " " + Number(reading.Values[^1]!.Value)).Trim())
+                .ToArray();
+            var stood = last.Length switch
             {
-                var usualLow = floor + ((ceiling - floor) * 0.3);
-                var usualHigh = floor + ((ceiling - floor) * 0.7);
+                0 => "no reading at the last session drawn",
+                1 => last[0] + " at the last session drawn",
+                _ => string.Join(", ", last[..^1]) + " and " + last[^1] + " at the last session drawn",
+            };
+
+            svg.Append(Invariant, $"<text class=\"m-pane-h\" x=\"{Margin}\" y=\"{top + 14}\">{Escaped(TitleOf(pane.Key))}: {Escaped(stood)}</text>");
+
+            var line = top + PaneTitle + 10;
+
+            foreach (var said in PaneMeaning(pane.Key))
+            {
+                svg.Append(Invariant, $"<text class=\"m-pane-c\" x=\"{Margin}\" y=\"{line}\">{Escaped(said)}</text>");
+                line += PaneLine;
+            }
+
+            svg.Append(Invariant, $"<rect class=\"m-plot\" x=\"{Margin}\" y=\"{plotTop}\" width=\"{Width - (2 * Margin)}\" height=\"{plotHeight}\"/>");
+
+            // A pane on a fixed scale carries the range its reading usually sits in and the
+            // two edges section 5 names, which are reading conventions the panel draws and
+            // nothing computes with.
+            // see: The momentum panel is context a reader weighs, and nothing computes with it
+            var rules = new List<(double At, string Named)>();
+
+            if (bounded)
+            {
+                var usualLow = low + (span * 0.3);
+                var usualHigh = low + (span * 0.7);
 
                 svg.Append(Invariant, $"<rect class=\"m-neutral\" x=\"{Margin}\" y=\"{Number(Y(usualHigh))}\" width=\"{Width - (2 * Margin)}\" height=\"{Number(Y(usualLow) - Y(usualHigh))}\"/>");
-            }
 
-            // The rule first, so the reading is drawn over it.
-            svg.Append(Invariant, $"<line class=\"neutral-rule\" x1=\"{Margin}\" y1=\"{Number(Y(reading.Neutral))}\" ");
-            svg.Append(Invariant, $"x2=\"{Width - Margin}\" y2=\"{Number(Y(reading.Neutral))}\" ");
-            svg.Append(Invariant, $"stroke=\"var(--rule, #d8d8d8)\" stroke-width=\"1\" stroke-dasharray=\"3 3\"/>");
-            svg.Append(Invariant, $"<text x=\"{Margin}\" y=\"{Number(top + 10)}\" fill=\"var(--muted, #6a6a6a)\" font-size=\"10\">");
-            svg.Append(Invariant, $"{Escaped(ReadingName(reading.Name))}, neutral at {Number(reading.Neutral)}</text>");
-
-            if (reading.Name == "macd_hist")
-            {
-                // The gap between the two lines, as bars either side of its rule: above
-                // is strengthening and below is weakening.
-                for (var at = 0; at < reading.Values.Count; at++)
+                foreach (var (edge, named) in new[] { (usualHigh, "stretched upward"), (usualLow, "stretched downward") })
                 {
-                    if (reading.Values[at] is { } bar)
-                    {
-                        var y = Y(bar);
-                        var zero = Y(reading.Neutral);
-
-                        svg.Append(Invariant, $"<rect class=\"m-hist\" x=\"{Number(Margin + (slot * at) + (slot * 0.18))}\" y=\"{Number(Math.Min(y, zero))}\" width=\"{Number(slot * 0.64)}\" height=\"{Number(Math.Abs(zero - y))}\"/>");
-                    }
-                }
-            }
-            else
-            {
-                // One path per unbroken run, for the reason the averages break: a
-                // reading has no value until its warm-up ends.
-                var run = new StringBuilder();
-
-                for (var at = 0; at <= reading.Values.Count; at++)
-                {
-                    var value = at < reading.Values.Count ? reading.Values[at] : null;
-
-                    if (value is { } point)
-                    {
-                        run.Append(run.Length == 0 ? 'M' : 'L')
-                            .Append(Number(Margin + (slot * at) + (slot / 2)))
-                            .Append(' ')
-                            .Append(Number(Y(point)))
-                            .Append(' ');
-
-                        continue;
-                    }
-
-                    if (run.Length > 0)
-                    {
-                        svg.Append(Invariant, $"<path d=\"{run.ToString().Trim()}\" fill=\"none\" ");
-                        svg.Append(Invariant, $"stroke=\"var(--ink, #1c1c1c)\" stroke-width=\"1.2\"/>");
-                        run.Clear();
-                    }
+                    svg.Append(Invariant, $"<line class=\"m-edge-rule\" x1=\"{Margin}\" y1=\"{Number(Y(edge))}\" x2=\"{Width - Margin}\" y2=\"{Number(Y(edge))}\"/>");
+                    rules.Add((edge, Number(edge) + ", " + named));
                 }
             }
 
-            // Sessions with no reading are a dashed box saying how many, never a stretch of
-            // pane that reads as a quiet reading.
+            // The neutral rule, once for the pane, since every reading on it is read against
+            // the same value, and before the readings so they are drawn over it.
+            svg.Append(Invariant, $"<line class=\"neutral-rule\" x1=\"{Margin}\" y1=\"{Number(Y(neutral))}\" ");
+            svg.Append(Invariant, $"x2=\"{Width - Margin}\" y2=\"{Number(Y(neutral))}\" ");
+            svg.Append("stroke=\"var(--rule, #d8d8d8)\" stroke-width=\"1\" stroke-dasharray=\"3 3\"/>");
+            rules.Add((neutral, Number(neutral) + (bounded ? ", balanced" : string.Empty)));
+
+            // The bars first, so the two lines are drawn over the gap between them.
+            foreach (var reading in members.OrderBy(reading => reading.Name == "macd_hist" ? 0 : 1))
+            {
+                var values = reading.Values.OfType<double>().Count();
+
+                svg.Append(Invariant, $"<g class=\"reading\" data-name=\"{Escaped(reading.Name)}\" ");
+                svg.Append(Invariant, $"data-neutral=\"{Number(reading.Neutral)}\" data-values=\"{values}\">");
+
+                if (reading.Name == "macd_hist")
+                {
+                    // The gap between the two lines, as bars either side of the rule: above
+                    // is strengthening and below is weakening.
+                    for (var at = 0; at < reading.Values.Count; at++)
+                    {
+                        if (reading.Values[at] is { } bar)
+                        {
+                            var y = Y(bar);
+                            var zero = Y(reading.Neutral);
+
+                            svg.Append(Invariant, $"<rect class=\"m-hist\" x=\"{Number(Margin + (slot * at) + (slot * 0.18))}\" y=\"{Number(Math.Min(y, zero))}\" width=\"{Number(slot * 0.64)}\" height=\"{Number(Math.Abs(zero - y))}\"/>");
+                        }
+                    }
+                }
+                else
+                {
+                    // One path per unbroken run, for the reason the averages break: a
+                    // reading has no value until its warm-up ends. The signal line is
+                    // dashed, so the two lines read apart where they cross.
+                    var style = reading.Name == "macd_signal" ? "m-mom-2" : "m-mom";
+                    var run = new StringBuilder();
+
+                    for (var at = 0; at <= reading.Values.Count; at++)
+                    {
+                        var value = at < reading.Values.Count ? reading.Values[at] : null;
+
+                        if (value is { } point)
+                        {
+                            run.Append(run.Length == 0 ? 'M' : 'L')
+                                .Append(Number(Margin + (slot * at) + (slot / 2)))
+                                .Append(' ')
+                                .Append(Number(Y(point)))
+                                .Append(' ');
+
+                            continue;
+                        }
+
+                        if (run.Length > 0)
+                        {
+                            svg.Append(Invariant, $"<path class=\"{style}\" d=\"{run.ToString().Trim()}\"/>");
+                            run.Clear();
+                        }
+                    }
+
+                    if (reading.Values.Count > 0 && reading.Values[^1] is { } newest)
+                    {
+                        svg.Append(Invariant, $"<circle class=\"m-last\" cx=\"{Number(Margin + (slot * (reading.Values.Count - 1)) + (slot / 2))}\" cy=\"{Number(Y(newest))}\" r=\"2.6\"/>");
+                    }
+                }
+
+                svg.Append("</g>");
+            }
+
+            // Each rule named at the pane's left edge, over the oldest sessions, so no name is
+            // written across the newest, which are the ones read against the bands tonight.
+            foreach (var (at, named) in rules)
+            {
+                svg.Append(Invariant, $"<text class=\"m-rule-t\" x=\"{Margin + 4}\" y=\"{Number(Y(at) - 3)}\">{Escaped(named)}</text>");
+            }
+
+            // Sessions no reading of the pane has a value for are a dashed box saying how
+            // many, never a stretch of pane that reads as a quiet reading.
             // see: Not yet measured is drawn as a dashed outline, never as a pale value
             var gapStart = -1;
 
-            for (var at = 0; at <= reading.Values.Count; at++)
+            for (var at = 0; at <= sessions; at++)
             {
-                var missing = at < reading.Values.Count && reading.Values[at] is null;
+                var missing = at < sessions && members.All(reading => at >= reading.Values.Count || reading.Values[at] is null);
 
                 if (missing && gapStart < 0)
                 {
@@ -1461,11 +1533,11 @@ public sealed class MarkRenderer : IComponent
                     var from = Margin + (slot * gapStart);
                     var wide = slot * (at - gapStart);
 
-                    svg.Append(Invariant, $"<g class=\"not-computed\" data-sessions=\"{at - gapStart}\"><rect class=\"m-absent\" x=\"{Number(from + 0.6)}\" y=\"{top + 15}\" width=\"{Number(Math.Max(wide - 1.2, 1))}\" height=\"{ReadingHeight - 16}\"/>");
+                    svg.Append(Invariant, $"<g class=\"not-computed\" data-sessions=\"{at - gapStart}\"><rect class=\"m-absent\" x=\"{Number(from + 0.6)}\" y=\"{plotTop + 1}\" width=\"{Number(Math.Max(wide - 1.2, 1))}\" height=\"{plotHeight - 2}\"/>");
 
                     if (wide > 190)
                     {
-                        svg.Append(Invariant, $"<text class=\"m-absent-s\" x=\"{Number(from + 8)}\" y=\"{top + 14 + ((ReadingHeight - 14) / 2) + 4}\">{at - gapStart} of {reading.Values.Count} sessions: not yet computed</text>");
+                        svg.Append(Invariant, $"<text class=\"m-absent-s\" x=\"{Number(from + 8)}\" y=\"{plotTop + (plotHeight / 2) + 4}\">{at - gapStart} of {sessions} sessions: not yet computed</text>");
                     }
 
                     svg.Append("</g>");
@@ -1474,6 +1546,8 @@ public sealed class MarkRenderer : IComponent
             }
 
             svg.Append("</g>");
+
+            top = plotTop + plotHeight + PaneGap;
         }
 
         svg.Append("</svg>");
@@ -1481,13 +1555,43 @@ public sealed class MarkRenderer : IComponent
         return svg.ToString();
     }
 
-    // A reading's name as a reader says it, with the name the store holds it under.
-    static string ReadingName(string name) => name switch
+    // The axis a reading is drawn on: relative strength on its own, and the convergence line,
+    // its signal line and the gap between them on one.
+    static string PaneOf(string name) => name switch
     {
-        "rsi14" => "Relative strength over 14 sessions (rsi14)",
-        "macd" => "Trend momentum (macd)",
-        "macd_signal" => "Its signal line (macd_signal)",
-        "macd_hist" => "Momentum against its signal (macd_hist)",
+        "rsi14" => "strength",
+        "macd" or "macd_signal" or "macd_hist" => "convergence",
+        _ => name,
+    };
+
+    // A pane's name as a reader says it, with the names the store holds its readings under.
+    static string TitleOf(string pane) => pane switch
+    {
+        "strength" => "Relative strength over 14 sessions (rsi14)",
+        "convergence" => "Trend momentum (macd, the solid line) and its signal line (macd_signal, dashed)",
+        _ => pane,
+    };
+
+    // What a pane's readings mean, in the words section 5 reads them by, a line of the pane's
+    // heading each so none runs past the picture's width.
+    static string[] PaneMeaning(string pane) => pane switch
+    {
+        "strength" => ["It runs from 0 to 100. Above 70 the stock has risen fast and is stretched upward, below 30 it has fallen fast and is stretched downward, and the shaded middle is where it usually sits."],
+        "convergence" =>
+        [
+            "The solid line is the gap between a fast and a slow average of the price, and the dashed line is a slower average of that gap.",
+            "The bars (macd_hist) are the distance between the two lines: above zero the move is strengthening, below zero it is weakening, and a crossing is where the bars change side.",
+        ],
+        _ => [],
+    };
+
+    // How a reading's value at the last session is named in its pane's heading.
+    static string ReadingPart(string name) => name switch
+    {
+        "rsi14" => string.Empty,
+        "macd" => "the line",
+        "macd_signal" => "its signal line",
+        "macd_hist" => "the gap",
         _ => name,
     };
 
