@@ -29162,8 +29162,8 @@ Guarded:    in `read-surface`, four new: `TonightsListSaysInEachHeadingWhatItsCo
             state test reads its heading by name.
 Written:    section 15.7's list row, section 15.9's peers row and section 15.17's table row each state the part;
             `.claude/rules/checks.md`'s read-surface row. Each changed line's prior text in `CHANGELOG.md`.
-Tests:      58TT, from 1488: four added.
-Claims:     58TC, from 647, predicted 650: the three rows read as one part more each, each column heading
+Tests:      1492, from 1488: four added.
+Claims:     650, from 647, predicted 650: the three rows read as one part more each, each column heading
             saying what its column holds while the pointer is over it, due at 5.8, which has landed.
 Pins:       the branch against `main` edits no source in the three pin lists: `MarkRenderer.cs`,
             `SinglePageApp.cs` and `Stylesheet.cs` are in none. No version moves and nothing is owed before a
@@ -29179,14 +29179,20 @@ Mutated:    the rule, stated before the run: one mutation reversing each mechani
             T4 the stock's heading drawn on a name page's Past picks table too: red in the new picks test.
             T5 the unusual volume multiple moved from 2 to 3 where the shortlist keeps it: red in the new
                tonight test.
-            Results: 58TM
-Held:       58TH
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 58TT of 58TT tests ran
+            Results: one run each in a detached worktree at e57cce9, this entry's commit, filtered to the nine
+            tests, each edit made there and reverted, and the tree read clean after. The nine ran green over
+            the unmutated tree, and the whole suite ran green over e57cce9 in the gates, 1492 of 1492. T1
+            turned the new tonight test, the new screens test and the design test red; T2 the new tonight
+            test, the switch test over an evening before the switch, and the list count test, which was not
+            predicted: the extra heading moved the reasons' columns past the footer's label, whose span the
+            test reads off the headings; T3 the new peers test; T4 the new picks test; T5 the new tonight test.
+Held:       red in every test predicted; T2 red in one more, the list count test, for the reason above.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1492 of 1492 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 58TB tables, 58TC claims, 58TP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 58TR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 58TT of 58TT tests.
-            Both gates ran over the tree carrying this entry, 58TSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 44 tables, 650 claims, 650 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 661 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1492 of 1492 tests.
+            Both gates ran over the tree carrying this entry, e57cce9, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this.
