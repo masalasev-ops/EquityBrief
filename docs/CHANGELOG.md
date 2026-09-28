@@ -8743,3 +8743,23 @@ Was:
 Now:
 > | `read-surface` | ... one to each row drawn and none elsewhere, and each row of a page carries its own name's closes and no other, and each of the table's column headings says what its column holds, one heading for each column a row draws, read back word for word against sentences written with the windows as numbers, off a constructed table and off the fixture's screen; and a name's earnings reaction record ... |
 Why: the check reaches the part the operator's ask of 2026-09-28 added.
+
+### 2026-09-28 - ARCHITECTURE.html - each column heading of tonight's list, the peers table and Past picks' table says what its column holds while the pointer is over it
+Authorised by: Every figure carries a plain-language key
+Was:
+> | The list | ... the reasons as context, and beside the name a line saying so where its prices may not reflect a dividend or split |
+> | Peers | ... each ticker a link to its own page that draws its year line while the pointer is over it; and a key saying how to read it (see: ...) |
+> | Every trade | ... the result as a signed multiple of the risk or open; a key saying how to read the trade line and that only the live list's trades appear with the alternatives hidden until one is promoted |
+Now:
+> | The list | ... the reasons as context, and beside the name a line saying so where its prices may not reflect a dividend or split; each column heading saying what its column holds while the pointer is over it (see: Every figure carries a plain-language key) |
+> | Peers | ... each ticker a link to its own page that draws its year line while the pointer is over it; each column heading saying what its column holds while the pointer is over it (see: Every figure carries a plain-language key); and a key saying how to read it (see: ...) |
+> | Every trade | ... the result as a signed multiple of the risk or open; each column heading saying what its column holds while the pointer is over it (see: Every figure carries a plain-language key); a key saying how to read the trade line and that only the live list's trades appear with the alternatives hidden until one is promoted |
+Why: the operator asked on 2026-09-28, once the universe page's headings said what their columns hold, for tonight's list, the peers table and Past picks to do the same.
+
+### 2026-09-28 - .claude/rules/checks.md - read-surface reaches what the headings of tonight's list, the peers table and Past picks' table say
+Authorised by: Every figure carries a plain-language key
+Was:
+> | `read-surface` | ... read back word for word against sentences written with the windows as numbers, off a constructed table and off the fixture's screen; and a name's earnings reaction record ... |
+Now:
+> | `read-surface` | ... read back word for word against sentences written with the windows as numbers, off a constructed table and off the fixture's screen; and each column heading of tonight's list on an evening of either rule, of a peers table and of a Past picks table with the stock's column and without says what its column holds, read back word for word against sentences written with the windows and thresholds as numbers, and every heading of tonight's list and of a peers table on the fixture's screens carries one; and a name's earnings reaction record ... |
+Why: the check reaches the part the operator's ask of 2026-09-28 added.

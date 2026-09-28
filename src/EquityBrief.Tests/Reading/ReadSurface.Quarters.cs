@@ -309,6 +309,6 @@ public partial class ReadSurface
             Assert.Contains($"<td class=\"state-then\" data-state=\"none\"><span class=\"degraded\">{MarkRenderer.NotReadThatNight}</span></td>", PickRowOf(page, ticker, BeforeTheReadings), StringComparison.Ordinal);
         }
 
-        Assert.Contains("<th>Business that night</th>", page, StringComparison.Ordinal);
+        Assert.Contains("data-heading=\"Business that night\"", page, StringComparison.Ordinal);
     }
 }

@@ -29133,3 +29133,60 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 82ec081, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this.
+
+### 5.8 - correction: each column heading of tonight's list, a peers table and a Past picks table says what its column holds while the pointer is over it or it has the focus, as the universe table's do, where those headings named their columns alone   2026-09-28
+Corrects:   tonight's list, the peers table and Past picks' table, on the operator's ask of 2026-09-28, given
+            once the universe table's headings said what their columns hold and asked whether the other
+            tables should: "Yes please".
+Repaired:   every heading of the three tables carries a sentence saying what its column holds, drawn as the
+            universe table's are, the stylesheet showing it while the pointer is over the heading or it
+            holds the focus and the shell's script placing any such heading's sentence beside it. The trend
+            and distance columns say what the universe table's say, from one sentence each. Tonight's list
+            says what its gates' column holds on an evening the swing filter listed alone, and each reason's
+            column keeps its short name and says in its sentence the reason's full name, when it fires as
+            the architecture's table of reasons states it, with the earnings horizon and the volume multiple
+            read from where the shortlist keeps them, what a mark in the column means, and that the reasons
+            are context on an evening the swing filter listed; its native title, which drew a second tooltip,
+            is gone. A peers table reads the likeness floor and the return's window from where the move
+            annotator keeps them. A Past picks table says what the stock's column holds where it draws one,
+            and on a name's page says the night opens that night's page.
+Measured:   nothing new.
+Guarded:    in `read-surface`, four new: `TonightsListSaysInEachHeadingWhatItsColumnHoldsOnAnEveningOfEitherRule`,
+            `APeersTableSaysInEachHeadingWhatItsColumnHolds` and
+            `APastPicksTableSaysInEachHeadingWhatItsColumnHoldsWithTheStocksColumnOrWithout`, each over a
+            constructed table with every sentence read word for word against sentences written in the test with
+            each window and threshold as a number, one heading for each column a row draws; and
+            `TonightsListAndAPeersTableDrawEveryHeadingWithWhatItsColumnHoldsOnTheirScreens` over the fixture's
+            screens. The design test reads the six reasons' headings by their names, the switch tests read the
+            gates' heading by its name, the list count test reads each heading's first class, and Past picks'
+            state test reads its heading by name.
+Written:    section 15.7's list row, section 15.9's peers row and section 15.17's table row each state the part;
+            `.claude/rules/checks.md`'s read-surface row. Each changed line's prior text in `CHANGELOG.md`.
+Tests:      58TT, from 1488: four added.
+Claims:     58TC, from 647, predicted 650: the three rows read as one part more each, each column heading
+            saying what its column holds while the pointer is over it, due at 5.8, which has landed.
+Pins:       the branch against `main` edits no source in the three pin lists: `MarkRenderer.cs`,
+            `SinglePageApp.cs` and `Stylesheet.cs` are in none. No version moves and nothing is owed before a
+            night.
+Mutated:    the rule, stated before the run: one mutation reversing each mechanism the headings rely on,
+            filtered to the four tests this correction adds and the five it changes.
+            Predicted:
+            T1 the reasons' headings drawn as their short names alone: red in the new tonight test, the new
+               screens test and the design test.
+            T2 the gates' heading drawn on an evening the reasons listed too: red in the new tonight test and
+               the switch test over an evening before the switch.
+            T3 the peers table's close and below the year's high sentences swapped: red in the new peers test.
+            T4 the stock's heading drawn on a name page's Past picks table too: red in the new picks test.
+            T5 the unusual volume multiple moved from 2 to 3 where the shortlist keeps it: red in the new
+               tonight test.
+            Results: 58TM
+Held:       58TH
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 58TT of 58TT tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 58TB tables, 58TC claims, 58TP PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 58TR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 58TT of 58TT tests.
+            Both gates ran over the tree carrying this entry, 58TSHA, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    as the entry before this.

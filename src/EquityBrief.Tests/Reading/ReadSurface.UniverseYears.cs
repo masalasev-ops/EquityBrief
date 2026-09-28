@@ -44,7 +44,7 @@ public partial class ReadSurface
 
         // Shown while the pointer is over the name's cell or it has focus, and placed beside it by the shell.
         Assert.Contains(".universe-table td.c-nm:hover .peer-pop,.universe-table td.c-nm:focus-within .peer-pop{display:block}", Stylesheet.Css, StringComparison.Ordinal);
-        Assert.Contains("event.target.closest('.peers-table td.peer, .universe-table td.c-nm, .universe-table th.tipped')", new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
+        Assert.Contains("event.target.closest('.peers-table td.peer, .universe-table td.c-nm, th.tipped')", new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
     }
 
     [Fact]

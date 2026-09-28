@@ -2574,12 +2574,24 @@ public sealed class MarkRenderer : IComponent
         list.Append("</p>");
 
         list.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table\" data-rows=\"{shown.Length}\">");
-        list.Append("<thead><tr><th class=\"place\">#</th><th>Name</th><th class=\"r\">Close</th><th class=\"r\">Day</th><th>Trend</th><th class=\"c\">Distance to levels</th><th class=\"r\">Reward to risk</th>");
-        list.Append(byFilter ? "<th>Gates</th>" : string.Empty);
+        // Each heading carries what its column holds, a reason's column under its short name with its
+        // full name in the sentence.
+        list.Append("<thead><tr>");
+
+        foreach (var (heading, says) in TonightHeadings(byFilter))
+        {
+            list.Append(TippedHeading(heading, says, heading switch
+            {
+                "#" => "place",
+                "Close" or "Day" or "Reward to risk" => "r",
+                "Distance to levels" => "c",
+                _ => null,
+            }));
+        }
 
         foreach (var column in columns)
         {
-            list.Append(Invariant, $"<th class=\"rz\"><abbr title=\"{Escaped(column)}\">{Escaped(Head(column))}</abbr></th>");
+            list.Append(TippedHeading(column, ReasonSays(column), "rz", Head(column)));
         }
 
         list.Append("</tr></thead><tbody>");
@@ -4750,7 +4762,14 @@ public sealed class MarkRenderer : IComponent
                     : Formatted($"<p class=\"peers-group\" data-peers=\"group\">{Escaped(ticker)} and {shown} of the {others} other members of {named}: those sharing its industry first, then the ones whose daily moves followed {Escaped(ticker)}'s most closely over the sessions both hold.</p>"));
 
         table.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"peers-table\" data-rows=\"{peers.Rows.Count}\" data-others=\"{others}\">");
-        table.Append(Invariant, $"<tr><th>Name</th><th class=\"r\">Moved with it</th><th>Close</th><th>Below the year's high</th><th>Return over {EquityBrief.Core.Moves.PeerReadings.ReturnWindow} sessions</th><th>Trend</th><th>Distance</th></tr>");
+        table.Append("<tr>");
+
+        foreach (var (heading, says) in PeersHeadings)
+        {
+            table.Append(TippedHeading(heading, says, heading == "Moved with it" ? "r" : null));
+        }
+
+        table.Append("</tr>");
 
         foreach (var row in peers.Rows)
         {
@@ -5092,6 +5111,17 @@ public sealed class MarkRenderer : IComponent
         return strip.ToString();
     }
 
+    // What a trend column holds, said alike wherever a table draws one.
+    public const string TrendSays = "The chart's trend in a word. Uptrend: the close is above its 50-day average, the 50-day is above the 200-day, and the latest swing low is above the one before it. Downtrend: the mirror of that. Range: every input is there and neither holds. Not classified: too little history to read one.";
+
+    // What a column drawing the distance row holds, said alike wherever a table draws one.
+    public static string DistanceSays { get; } = Formatted($"How far the close sits from its nearest support below and its nearest resistance above, in typical days' moves, a typical day's move being the stock's average true range over {EquityBrief.Core.Indicators.IndicatorSeries.Wilder} sessions. S is the gap between the close and the top of the support band, R the gap between the close and the bottom of the resistance band, so 0.0 means the close is at that band's edge. In the picture the close is the centre line, support is green to the left and resistance orange to the right, one tick per typical day, and an arrow marks a band more than {DistanceSpan} away.");
+
+    // A column heading carrying what its column holds, which the stylesheet shows while the pointer is over
+    // the heading or it has the focus. The words the heading shows are its name unless it is drawn short.
+    static string TippedHeading(string heading, string says, string? classes = null, string? shown = null) =>
+        Formatted($"<th class=\"{(classes is null ? string.Empty : classes + " ")}tipped\" tabindex=\"0\" data-heading=\"{Escaped(heading)}\"><span class=\"th-t\">{Escaped(shown ?? heading)}</span><span class=\"head-tip\" role=\"tooltip\">{Escaped(says)}</span></th>");
+
     // What each of the universe table's columns holds, in the order the columns are drawn, said in the
     // column's heading so a reader learns how to read a column without leaving the table. The windows
     // are the swing reader's and the indicator engine's own, read from where each keeps them.
@@ -5100,8 +5130,8 @@ public sealed class MarkRenderer : IComponent
         ("Name", "The stock's ticker, which opens its own page, with the company beneath it. Hold the pointer over the name to see its year of closes with its nearest support and resistance."),
         ("Sector", "The sector the index files the company under."),
         ("Close", "The stock's closing price on the night the table is drawn for."),
-        ("Trend", "The chart's trend in a word. Uptrend: the close is above its 50-day average, the 50-day is above the 200-day, and the latest swing low is above the one before it. Downtrend: the mirror of that. Range: every input is there and neither holds. Not classified: too little history to read one."),
-        ("Distance", Formatted($"How far the close sits from its nearest support below and its nearest resistance above, in typical days' moves, a typical day's move being the stock's average true range over {EquityBrief.Core.Indicators.IndicatorSeries.Wilder} sessions. S is the gap between the close and the top of the support band, R the gap between the close and the bottom of the resistance band, so 0.0 means the close is at that band's edge. In the picture the close is the centre line, support is green to the left and resistance orange to the right, one tick per typical day, and an arrow marks a band more than {DistanceSpan} away.")),
+        ("Trend", TrendSays),
+        ("Distance", DistanceSays),
         ("Sessions to earnings", "Trading sessions from the night to the company's next dated earnings report on the calendar."),
         ("Strength", Formatted($"How the stock's returns compare with the rest of the index: the average of where its return over the last {SwingReadings.ReturnShortSessions} sessions and over the last {SwingReadings.ReturnLongSessions} sits among every other member's. 90% means that across the two it beat nine in ten of them.")),
         ("Pullback", Formatted($"How far the close sits below the highest high of the last {SwingReadings.HighWindow} sessions, in typical days' moves.")),
@@ -5109,6 +5139,72 @@ public sealed class MarkRenderer : IComponent
         ("Tightness", Formatted($"The mean true range, a day's full span of movement, of the last {SwingReadings.TightShortSessions} sessions against the last {SwingReadings.TightLongSessions}. Below 1 means the price has been moving in a narrower range lately.")),
         ("Last on the list", "The last evening the stock was on tonight's list, or never."),
         ("Sixty evenings", "One column for each of the last sixty sessions: a solid bar on an evening the stock was on the list and a thin line on one it was not. Before the swing filter's first night an evening's list held every stock any reason fired for, which was most of the index."),
+    ];
+
+    // What each of tonight's list's columns holds before its reason columns, in the order they are drawn,
+    // the gates' column among them on an evening the swing filter listed.
+    public static IReadOnlyList<(string Heading, string Says)> TonightHeadings(bool byFilter) =>
+    [
+        ("#", "The row's place in the order the list is drawn in, counted from one."),
+        ("Name", "The ticker selects the row and draws its plan and levels beneath the list. Beside it, report opens the stock's written report, or not written opens its page where no report is written yet, and the company is named beneath."),
+        ("Close", "The stock's closing price on the evening."),
+        ("Day", "How far the close moved on the day against the close before it, in per cent."),
+        ("Trend", TrendSays + " Beside it, where the night read one, the state the company's reported quarters gave it, with what its numbers say under the pointer."),
+        ("Distance to levels", DistanceSays),
+        ("Reward to risk", "How far the plan's target sits above its buy against how far its stop sits below it, so 2.00 means twice as much to gain as to lose. It is a fact about the chart and not a chance of anything. Where the plan states none, the row says why."),
+        .. byFilter
+            ? new[] { ("Gates", "How the swing filter passed the stock: the setup's family, the session its trigger arrived on, and the plan the trade gate read with its reward to risk and how far its stop sits below the entry in typical days' moves. Hold the pointer on the cell for each gate's reason.") }
+            : Array.Empty<(string, string)>(),
+    ];
+
+    // What a reason column of tonight's list holds: the reason's full name and when it fires, as the
+    // architecture's table of reasons states it, what a mark in the column means, and that on an evening the
+    // swing filter listed the reasons are context. A reason this file does not know is named with the rest.
+    public static string ReasonSays(string reason)
+    {
+        var fires = reason switch
+        {
+            ShortlistSeries.AtEntryZone => " fires when the close is inside one of the plan's buying zones.",
+            ShortlistSeries.CrossedALevel => " fires when the close moved through a band's edge it was on the other side of the session before.",
+            ShortlistSeries.BreakoutOnVolume => " fires when the close is above a band that sat at or above the previous close, on volume above the 50-day average.",
+            ShortlistSeries.TrendStateChanged => " fires when the trend's word differs from the night before.",
+            ShortlistSeries.UnusualVolume => Formatted($" fires when the day's volume is above {ShortlistSeries.UnusualVolumeMultiple:0.##} times the 50-day average."),
+            ShortlistSeries.EarningsSoon => Formatted($" fires when the next earnings report is within {ShortlistSeries.EarningsHorizonSessions} sessions on the exchange's calendar."),
+            _ => ".",
+        };
+
+        return char.ToUpperInvariant(reason[0]) + reason[1..] + fires + " A mark on a row means it fired for the stock that evening, and holding the pointer on the mark shows the values it fired on. Where the swing filter listed the evening, the reasons are context and chose no row.";
+    }
+
+    // What each of a peers table's columns holds, in the order they are drawn.
+    public static IReadOnlyList<(string Heading, string Says)> PeersHeadings { get; } =
+    [
+        ("Name", "The first row is this page's stock, then at most ten of its group, those sharing its industry first. Each ticker opens its own page, and holding the pointer over it draws its year of closes with its nearest support and resistance."),
+        ("Moved with it", Formatted($"How closely the stock's daily moves followed this page's stock over the sessions both hold: 1 is in step every day, 0 is no relation, and a negative figure moved the other way. A pair sharing fewer than {EquityBrief.Core.Moves.PeerPicks.FewestSessions} sessions says how many instead.")),
+        ("Close", "The stock's last stored close."),
+        ("Below the year's high", "How far the close sits below the highest price among the bars the store holds for it, in per cent, with that high and how many bars it was read over."),
+        (Formatted($"Return over {EquityBrief.Core.Moves.PeerReadings.ReturnWindow} sessions"), Formatted($"The change in the close over the last {EquityBrief.Core.Moves.PeerReadings.ReturnWindow} sessions, in per cent.")),
+        ("Trend", TrendSays),
+        ("Distance", DistanceSays),
+    ];
+
+    // What each of a Past picks table's columns holds, in the order they are drawn: the stock's column only
+    // where the table holds more than one name's trades, and the night linking to the name's page for that
+    // night where it does not.
+    public static IReadOnlyList<(string Heading, string Says)> PicksHeadings(bool named) =>
+    [
+        ("Night listed", named
+            ? "The evening the live list recommended the trade. It is taken as bought at that evening's close."
+            : "The evening the live list recommended the trade. It is taken as bought at that evening's close, and the date opens this stock's page as it stood that night."),
+        .. named ? new[] { ("Stock", "The stock, which opens its page as it stood on the night listed.") } : Array.Empty<(string, string)>(),
+        ("Business that night", "The state the company's reported quarters gave it on the evening it was listed, or not read that night where none was stored yet."),
+        ("Buy", "The price the plan buys at."),
+        ("Stop", "The price the plan sells at to cut the loss."),
+        ("Target", "The price the plan takes its gain at."),
+        ("Trade", "The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
+        ("Status", "What became of the trade: open, reached target, stopped out, or ran out of time where its holding limit passed before either."),
+        ("Sessions held", "Trading sessions from the night listed to the session it finished on, or to the night drawn while it is still open."),
+        ("Result", "What the trade came to in multiples of the risk it took, the fall from the buy to the stop: +2.00 made twice that risk and -1.00 lost it, and a close through the stop can read below -1. Open while the trade runs."),
     ];
 
     // How many typical days either side of the close the distance row draws before a band becomes an arrow.
@@ -5134,7 +5230,7 @@ public sealed class MarkRenderer : IComponent
 
         foreach (var (heading, says) in UniverseHeadings)
         {
-            table.Append(Formatted($"<th class=\"tipped\" tabindex=\"0\" data-heading=\"{Escaped(heading)}\"><span class=\"th-t\">{Escaped(heading)}</span><span class=\"head-tip\" role=\"tooltip\">{Escaped(says)}</span></th>"));
+            table.Append(TippedHeading(heading, says));
         }
 
         table.Append("</tr>");
@@ -5710,9 +5806,14 @@ public sealed class MarkRenderer : IComponent
     {
         var table = new StringBuilder();
 
-        table.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"picks-table\" data-rows=\"{rows.Count}\"><thead><tr><th>Night listed</th>");
-        table.Append(named ? "<th>Stock</th>" : string.Empty);
-        table.Append("<th>Business that night</th><th class=\"r\">Buy</th><th class=\"r\">Stop</th><th class=\"r\">Target</th><th>Trade</th><th>Status</th><th class=\"r\">Sessions held</th><th class=\"r\">Result</th></tr></thead><tbody>");
+        table.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"picks-table\" data-rows=\"{rows.Count}\"><thead><tr>");
+
+        foreach (var (heading, says) in PicksHeadings(named))
+        {
+            table.Append(TippedHeading(heading, says, heading is "Buy" or "Stop" or "Target" or "Sessions held" or "Result" ? "r" : null));
+        }
+
+        table.Append("</tr></thead><tbody>");
 
         foreach (var row in rows)
         {

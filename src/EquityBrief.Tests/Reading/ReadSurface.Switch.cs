@@ -194,7 +194,7 @@ public partial class ReadSurface
         // trade the gate read, and the reward to risk drawn being the trade's, its figures to the hundredth
         // as the reward to risk column draws them: the first row's 3.25 and 1.2 worked by hand, and never the
         // figure as the gate stored it.
-        Assert.Contains("<th>Gates</th>", list, StringComparison.Ordinal);
+        Assert.Contains("data-heading=\"Gates\"", list, StringComparison.Ordinal);
         Assert.Contains("pullback, arrived tonight; the swing trade clear of the noise, reward to risk 3.25, its stop 1.20 typical moves below the entry", WordsOf(RowOf(list, drawn[0])), StringComparison.Ordinal);
         Assert.DoesNotContain("trade at ", list, StringComparison.Ordinal);
 
@@ -236,7 +236,7 @@ public partial class ReadSurface
         Assert.Equal(["Z41", "Z43", "Z40", "Z44", "Z42", "Z00"], DrawnTickers(list));
         Assert.Contains("data-rule=\"reasons\">This evening was " + ListRules.ByReasons + ".</p>", list, StringComparison.Ordinal);
         Assert.StartsWith("Showing all 6 names that fired.", WordsOf(Regex.Match(list, "<p class=\"list-count\"[^>]*>.*?</p>", RegexOptions.Singleline).Value), StringComparison.Ordinal);
-        Assert.DoesNotContain("<th>Gates</th>", list, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-heading=\"Gates\"", list, StringComparison.Ordinal);
         Assert.Contains("data-listed=\"none\"", page, StringComparison.Ordinal);
 
         // The card says the order it was drawn in, and says it of this evening's rule.

@@ -277,11 +277,11 @@ public sealed class SinglePageApp : IComponent
           paintTheme();
         }
         addEventListener('hashchange', show);
-        // A name's year in the peers table or the universe table, and what a universe column holds in
-        // its heading, shown by the stylesheet while the cell is under the pointer or holds the focus,
+        // A name's year in the peers table or the universe table, and what a column holds in its
+        // heading, shown by the stylesheet while the cell is under the pointer or holds the focus,
         // placed beside the cell: beneath it where the window has room and above it where it does not.
         function placePop(event) {
-          const cell = event.target.closest ? event.target.closest('.peers-table td.peer, .universe-table td.c-nm, .universe-table th.tipped') : null;
+          const cell = event.target.closest ? event.target.closest('.peers-table td.peer, .universe-table td.c-nm, th.tipped') : null;
           const pop = cell ? cell.querySelector('.peer-pop, .head-tip') : null;
           if (!pop) { return; }
           const box = cell.getBoundingClientRect();

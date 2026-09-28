@@ -68,7 +68,7 @@ public partial class ReadSurface
             // The place has a head of its own, and the footer's label spans every column before
             // the first reason, so each reason's record still stands under its own column.
             var head = Regex.Match(list, "<thead><tr>(?<cells>.*?)</tr></thead>", RegexOptions.Singleline).Groups["cells"].Value;
-            var heads = Regex.Matches(head, "<th(?: class=\"(?<class>[^\"]*)\")?[^>]*>").Select(cell => cell.Groups["class"].Value).ToArray();
+            var heads = Regex.Matches(head, "<th(?: class=\"(?<class>[^\"]*)\")?[^>]*>").Select(cell => cell.Groups["class"].Value.Split(' ')[0]).ToArray();
 
             Assert.Equal("place", heads[0]);
 
