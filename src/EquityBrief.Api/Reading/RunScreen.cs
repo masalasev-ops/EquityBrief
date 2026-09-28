@@ -1152,6 +1152,137 @@ public static class RunScreen
     // see: A pass starts only where the longest pass the store holds would end before a peak window opens
     public static PricedCalls Priced(IReadOnlyList<(string RunId, decimal Spend)> spends, int atPeak = 0) =>
         new(spends.Count, spends.Select(call => call.RunId).Distinct(StringComparer.Ordinal).Count(), spends.Sum(call => call.Spend), atPeak);
+
+    // The night's steps in six groups, in the order the night runs them, which the Run page's time bar
+    // draws. Every stage a night writes is in exactly one group, which `read-surface` asserts against the
+    // worker's own steps, so a step added to the night without a group fails there.
+    public static IReadOnlyList<(string Name, IReadOnlyList<string> Stages)> StepGroups { get; } =
+    [
+        ("Prices and calendar", ["migrate", "membership", "backfill", "fetch", "actions", "calendar"]),
+        ("Indicators and levels", ["indicators", "swings", "volume-profile", "levels"]),
+        ("Plans and moves", ["ladders", "moves"]),
+        ("Readings and the list", ["swing-readings", "fundamental-readings", "listings", "swing-filter", "shape-proposal"]),
+        ("Records", ["facts", "changes", "forward-returns", "news-pulse", "rule-versions", "close"]),
+        ("After the close", ["quarters", QueueStage, "report"]),
+    ];
+
+    // The words a night's stop is written with, beside `ok`. The read surface holds no reference to the
+    // worker, so they are stated here and `nightly-run` asserts they are the night close's own.
+    public static IReadOnlyList<string> StopOutcomes { get; } = ["failed", "stopped", "refused"];
+
+    // The stage the night closes its arithmetic on.
+    public const string CloseStage = "close";
+
+    // The run id every night the scheduler or a person starts carries, and the part a queue's pass adds to
+    // it, whose rows are that pass's and not the night's.
+    const string NightPrefix = "night-";
+    const string QueuePass = "-queue-";
+
+    // How a night went, from its own run log rows alone. The night's runs are those whose id is a night's,
+    // the newest by the instant its id carries; a night run again for its session is one of them. Its state:
+    // finished where the newest closed its arithmetic; stopped where it wrote a stop before that; running
+    // where it wrote neither and its last row is inside the night's deadline; left unfinished where its last
+    // row is older than that and nothing said why; and where no run of the night is stored, not yet run on
+    // the session the clock is in and never ran on one before it, or no session on a day the exchange did
+    // not trade. The notice on tonight's page reads this same state.
+    // see: A night's state is read off its own run log rows, and the pages that state it read that one state
+    public static NightView Night(IReadOnlyList<RunStageRow> log, DateOnly session, DateOnly today, DateTimeOffset now, TimeSpan deadline)
+    {
+        var runs = log
+            .Where(row => row.RunId.StartsWith(NightPrefix, StringComparison.Ordinal) && !row.RunId.Contains(QueuePass, StringComparison.Ordinal))
+            .GroupBy(row => row.RunId, StringComparer.Ordinal)
+            .OrderBy(run => RunInstant(run.Key) ?? run.Min(row => row.StartedAt))
+            .ToArray();
+
+        var spend = log.Sum(row => decimal.TryParse(row.Spend, NumberStyles.Number, CultureInfo.InvariantCulture, out var paid) ? paid : 0m);
+        var groups = StepGroups;
+
+        if (runs.Length == 0)
+        {
+            var state = !Traded(session) ? NightStates.NoSession : session >= today ? NightStates.NotYet : NightStates.NeverRan;
+
+            return new NightView(
+                session, state, null, null, null, null, null, deadline.TotalMinutes, null, 0, spend, 0, null,
+                [.. groups.Select(group => new StepGroupView(group.Name, group.Stages.Count, 0, 0, false))]);
+        }
+
+        var last = runs[^1].ToArray();
+        var afterTheClose = groups[^1].Stages;
+        var close = last.FirstOrDefault(row => row.Stage == CloseStage && row.Outcome == Ok);
+        var stop = last.FirstOrDefault(row => StopOutcomes.Contains(row.Outcome) && !afterTheClose.Contains(row.Stage));
+        var afterStop = last.FirstOrDefault(row => StopOutcomes.Contains(row.Outcome) && afterTheClose.Contains(row.Stage));
+        var started = last.Min(row => row.StartedAt);
+        var written = last.Max(row => row.EndedAt);
+        var arithmetic = last.Where(row => !afterTheClose.Contains(row.Stage)).ToArray();
+
+        var nightState =
+            last.Any(row => row.Outcome == NoSession) ? NightStates.NoSession
+            : close is not null ? NightStates.Finished
+            : stop is not null ? NightStates.Stopped
+            : now - written <= deadline ? NightStates.Running
+            : NightStates.Unfinished;
+
+        var stoppedAt = nightState switch
+        {
+            NightStates.Stopped => stop!.Stage,
+            NightStates.Running or NightStates.Unfinished => last.MaxBy(row => row.EndedAt)!.Stage,
+            _ => null,
+        };
+
+        return new NightView(
+            session,
+            nightState,
+            stoppedAt,
+            nightState == NightStates.Stopped ? stop!.Detail : null,
+            started,
+            written,
+            arithmetic.Length == 0 ? null : (arithmetic.Max(row => row.EndedAt) - started).TotalSeconds,
+            deadline.TotalMinutes,
+            close is not null && Regex.Match(close.Detail, @"^(\d+) name\(s\) computed") is { Success: true } computed
+                ? int.Parse(computed.Groups[1].Value, CultureInfo.InvariantCulture)
+                : null,
+            runs.Sum(run => run.Sum(row => row.NetworkRequests)),
+            spend,
+            runs[..^1].Sum(run => run.Count(row => StopOutcomes.Contains(row.Outcome))),
+            nightState == NightStates.Finished && afterStop is not null ? $"{afterStop.Stage} {afterStop.Outcome}: {afterStop.Detail}" : null,
+            [
+                .. groups.Select(group =>
+                {
+                    var reached = last.Where(row => group.Stages.Contains(row.Stage)).ToArray();
+
+                    return new StepGroupView(
+                        group.Name,
+                        group.Stages.Count,
+                        reached.Select(row => row.Stage).Distinct(StringComparer.Ordinal).Count(),
+                        reached.Sum(row => (row.EndedAt - row.StartedAt).TotalSeconds),
+                        nightState == NightStates.Stopped && group.Stages.Contains(stoppedAt!));
+                }),
+            ]);
+
+        static DateTimeOffset? RunInstant(string runId) =>
+            runId.Length >= NightPrefix.Length + 16
+                && DateTimeOffset.TryParseExact(runId.Substring(NightPrefix.Length, 16), "yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var at)
+                ? at
+                : null;
+
+        static bool Traded(DateOnly day)
+        {
+            try
+            {
+                return EquityBrief.Core.Bars.ExchangeClosures.IsSession(day);
+            }
+            catch (InvalidOperationException)
+            {
+                return true;
+            }
+        }
+    }
+
+    // The market as the Run page pictures it: the night's stored reading, the floor of the market gate the
+    // version the night ran under holds, and the breadth line over the sessions up to the night.
+    // see: The market on the Run page is named in one word by a stated rule that moves no gate
+    public static MarketPicture Pictured(DateOnly session, MarketView? night, string? settings, IReadOnlyList<BreadthPoint> line) =>
+        new(session, night, (settings is null ? FilterSettings.Proposed : FilterSettings.Read(settings)).BreadthFloor, line);
 }
 
 // One resolved setup, as the record counts it.

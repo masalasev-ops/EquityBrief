@@ -182,6 +182,8 @@ public class PinnedConstants
             new("Market gate", "50", (decimal)FilterSettings.ProposedBreadthFloor * 100, "FilterSettings.ProposedBreadthFloor as a percentage"),
             new("Market gate", "45", (decimal)FilterCounts.LowerBreadthFloor * 100, "FilterCounts.LowerBreadthFloor as a percentage"),
             new("Market gate", "50", (decimal)FilterSettings.ProposedBreadthFloor * 100, "FilterSettings.ProposedBreadthFloor as a percentage, the second floor counted"),
+            new("Market label", "60", (decimal)MarketLabel.HealthyFrom * 100, "MarketLabel.HealthyFrom as a percentage"),
+            new("Market label", "200", SwingReadings.BreadthAverageSessions, "SwingReadings.BreadthAverageSessions"),
             new("Pullback depth", "2", (decimal)FilterSettings.ProposedDepthLow, "FilterSettings.ProposedDepthLow"),
             new("Pullback depth", "5", (decimal)FilterSettings.ProposedDepthHigh, "FilterSettings.ProposedDepthHigh"),
             new("Volume dry-up", "1.0", (decimal)FilterSettings.ProposedDryUpCeiling, "FilterSettings.ProposedDryUpCeiling"),

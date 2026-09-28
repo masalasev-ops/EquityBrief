@@ -347,6 +347,52 @@ public sealed record MarketView(
     int VolumeCounted,
     double? MedianVolumeRatio);
 
+// One session's share of the members holding a close and a 200-day average that closed above it, read
+// off the stored averages, which is what the Run page's breadth line draws.
+public sealed record BreadthPoint(DateOnly Session, double Share, int Counted);
+
+// The market as the Run page pictures it: the night's stored reading, the floor of the market gate the
+// night ran under, and the breadth over the sessions before it that the store holds averages for.
+// see: The market on the Run page is named in one word by a stated rule that moves no gate
+public sealed record MarketPicture(DateOnly Session, MarketView? Night, double Floor, IReadOnlyList<BreadthPoint> Line);
+
+// The states a night can be in, as the Run page and the notice on tonight's page name them.
+// see: A night's state is read off its own run log rows, and the pages that state it read that one state
+public static class NightStates
+{
+    public const string Finished = "finished";
+    public const string Running = "running";
+    public const string Stopped = "stopped";
+    public const string Unfinished = "left unfinished";
+    public const string NotYet = "not yet run";
+    public const string NeverRan = "never ran";
+    public const string NoSession = "no session";
+}
+
+// One group of the night's steps as the Run page's time bar draws it: the steps in it, how many of
+// them the night reached, the seconds they took, and whether the night stopped inside it.
+public sealed record StepGroupView(string Name, int Steps, int Reached, double Seconds, bool Stopped);
+
+// How a night went, read off its own run log rows alone: its state, where it stopped and why, when it
+// started and how long its arithmetic took against its deadline, the four headline figures, and its
+// steps in groups. The notice on tonight's page reads the same state.
+// see: A night's state is read off its own run log rows, and the pages that state it read that one state
+public sealed record NightView(
+    DateOnly Session,
+    string State,
+    string? StoppedAt,
+    string? Reason,
+    DateTimeOffset? Started,
+    DateTimeOffset? LastWritten,
+    double? Seconds,
+    double DeadlineMinutes,
+    int? StocksRead,
+    int ProviderRequests,
+    decimal ResearchSpend,
+    int StepsRetried,
+    string? AfterTheClose,
+    IReadOnlyList<StepGroupView> Groups);
+
 // One of a name's biggest moves, as the table is given it. `Cause` is the text of
 // the accepted cause section that names this move, and null where no sentence of
 // it does: a researched claim, which arrives with the pass that writes it.
@@ -5970,6 +6016,328 @@ public sealed class MarkRenderer : IComponent
         $"<p class=\"degraded\" data-ticker=\"{Escaped(ticker)}\" data-sessions=\"{bars}\">" +
         $"{Escaped(ticker)} has {bars} stored session{(bars == 1 ? string.Empty : "s")}, " +
         $"and a chart needs at least {FewestBars}.</p>";
+
+    // The headline each state of a night is named by, in the words the Run page draws.
+    public static string NightHeadline(NightView night) => night.State switch
+    {
+        NightStates.Finished => "Finished",
+        NightStates.Running => "Running",
+        NightStates.Stopped => "Stopped at " + night.StoppedAt,
+        NightStates.Unfinished => "Left unfinished",
+        NightStates.NotYet => "Not run yet",
+        NightStates.NeverRan => "Never ran",
+        _ => "No session",
+    };
+
+    // The line beneath the headline, saying what the state rests on in plain words.
+    public static string NightSaid(NightView night)
+    {
+        var day = night.Session.ToString("ddd yyyy-MM-dd", Invariant);
+        var started = night.Started is { } at ? at.UtcDateTime.ToString("HH:mm", Invariant) + " UTC" : string.Empty;
+        var written = night.LastWritten is { } last ? last.UtcDateTime.ToString("HH:mm", Invariant) + " UTC" : string.Empty;
+
+        var said = night.State switch
+        {
+            NightStates.Finished => Formatted($"Started {started} and closed its arithmetic in {Span(night.Seconds ?? 0)}, inside its {night.DeadlineMinutes:0}-minute deadline."),
+            NightStates.Running => Formatted($"Started {started}; the last step written was {night.StoppedAt} at {written}. Until it finishes, tonight's list is the one before it."),
+            NightStates.Stopped => Formatted($"It stopped at {night.StoppedAt}: {night.Reason}"),
+            NightStates.Unfinished => Formatted($"Its last step written was {night.StoppedAt} at {written}, and no step recorded a stop, so the night ended without saying why, a machine asleep or a task ended among the causes."),
+            NightStates.NotYet => Formatted($"No night has run for {day} yet."),
+            NightStates.NeverRan => Formatted($"No night ran for {day}: the run log holds none of its steps."),
+            _ => Formatted($"The exchange did not trade on {day}, so the night fetched nothing and exited clean."),
+        };
+
+        if (night.StepsRetried > 0)
+        {
+            said += Formatted($" Before this run, {night.StepsRetried} step(s) of the night stopped and the night was run again.");
+        }
+
+        if (night.AfterTheClose is { } after)
+        {
+            said += " After the close, " + after;
+        }
+
+        return said;
+
+        static string Span(double seconds) =>
+            seconds >= 60
+                ? Formatted($"{(int)(seconds / 60)} min {(int)(seconds % 60)} s")
+                : Formatted($"{(int)seconds} s");
+    }
+
+    // The kind of status a night's state is drawn as: blue for a night that finished or is running,
+    // violet for one that is waiting, red for a failure alone, and the page's own ink for a day with no
+    // session. Green and orange are the levels' and never a status.
+    // see: Status is drawn in blues with violet for a wait and red for a failure alone
+    public static string NightTone(string state) => state switch
+    {
+        NightStates.Finished or NightStates.Running => "ok",
+        NightStates.NotYet => "wait",
+        NightStates.Stopped or NightStates.Unfinished or NightStates.NeverRan => "fail",
+        _ => "quiet",
+    };
+
+    // How last night went, section 15.10's first region: the status mark and the headline for the state
+    // the night's run log gives it, the line saying what that rests on, the four headline figures and the
+    // time bar of the night's steps in their six groups, with where a stopped night stopped.
+    // see: A night's state is read off its own run log rows, and the pages that state it read that one state
+    public string NightStatus(NightView night)
+    {
+        var tone = NightTone(night.State);
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"night-status\" data-state=\"{Escaped(night.State)}\" data-tone=\"{tone}\" data-session=\"{night.Session:yyyy-MM-dd}\" ");
+        region.Append(Invariant, $"data-stocks-read=\"{(night.StocksRead is { } read ? read.ToString(Invariant) : "none")}\" data-requests=\"{night.ProviderRequests}\" ");
+        region.Append(Invariant, $"data-spend=\"{night.ResearchSpend.ToString(Invariant)}\" data-retried=\"{night.StepsRetried}\">");
+
+        region.Append("<div class=\"ns-head\">");
+        region.Append(Invariant, $"<svg class=\"status-mark\" viewBox=\"0 0 64 64\" width=\"64\" height=\"64\" role=\"img\" aria-label=\"{Escaped(NightHeadline(night))}\">");
+        region.Append("<circle cx=\"32\" cy=\"32\" r=\"29\" class=\"sm-ring\"></circle>");
+        region.Append(tone switch
+        {
+            "ok" when night.State == NightStates.Finished => "<path class=\"sm-glyph\" d=\"M19 33 L28 42 L45 23\"></path>",
+            "ok" or "wait" => "<path class=\"sm-glyph\" d=\"M32 16 V33 L42 39\"></path>",
+            "fail" => "<path class=\"sm-glyph\" d=\"M32 16 V36 M32 45 V47\"></path>",
+            _ => "<path class=\"sm-glyph\" d=\"M20 32 H44\"></path>",
+        });
+        region.Append("</svg><div>");
+        region.Append(Invariant, $"<div class=\"lbl\">The night of {night.Session:ddd yyyy-MM-dd}</div>");
+        region.Append(Invariant, $"<p class=\"ns-headline\">{Escaped(NightHeadline(night))}</p>");
+        region.Append(Invariant, $"<p class=\"ns-said\">{Escaped(NightSaid(night))}</p>");
+        region.Append("</div></div>");
+
+        region.Append("<div class=\"ns-figures\">");
+        region.Append(Tile("stocks read", night.StocksRead is { } stocks ? stocks.ToString(Invariant) : "none", "stocks read"));
+        region.Append(Tile("provider requests", night.ProviderRequests.ToString(Invariant), "provider requests"));
+        region.Append(Tile("research spend", SpendVerdict.Money(night.ResearchSpend), "spent on research"));
+        region.Append(Tile("steps retried", night.StepsRetried.ToString(Invariant), "steps run again"));
+        region.Append("</div>");
+
+        region.Append(StepBar(night));
+        region.Append("</div>");
+
+        return region.ToString();
+
+        static string Tile(string figure, string value, string words) =>
+            Formatted($"<div class=\"tile\" data-figure=\"{figure}\"><b>{Escaped(value)}</b><span>{words}</span></div>");
+    }
+
+    // The time bar of the night's steps: one segment for each group the night reached, as wide as its
+    // share of the seconds the night's steps took, a group it did not reach as a dashed outline, and the
+    // group a stopped night stopped in outlined as a failure; each group named with its seconds beneath.
+    static string StepBar(NightView night)
+    {
+        const double Wide = 1000;
+        const double Unreached = 70;
+        const double Least = 18;
+
+        var reached = night.Groups.Where(group => group.Reached > 0).ToArray();
+        var left = Wide - ((night.Groups.Count - reached.Length) * Unreached);
+        var seconds = reached.Sum(group => group.Seconds);
+        var bar = new StringBuilder();
+
+        bar.Append(Invariant, $"<div class=\"step-time\"><div class=\"caption\">Where the time went</div>");
+        bar.Append(Invariant, $"<svg class=\"step-bar\" viewBox=\"0 0 {Wide} 24\" preserveAspectRatio=\"none\" role=\"img\" aria-label=\"The night's steps in {night.Groups.Count} groups\">");
+
+        var at = 0.0;
+        var index = 0;
+
+        foreach (var group in night.Groups)
+        {
+            var width = group.Reached == 0
+                ? Unreached
+                : Math.Max(Least, seconds > 0 ? left * group.Seconds / seconds : left / reached.Length);
+
+            width = Math.Min(width, Wide - at);
+
+            var kind = group.Stopped ? "stopped" : group.Reached == 0 ? "unreached" : index % 2 == 0 ? "ran" : "ran-2";
+
+            bar.Append(Invariant, $"<rect class=\"sb-{kind}\" data-group=\"{Escaped(group.Name)}\" data-seconds=\"{Number(group.Seconds)}\" x=\"{Number(at + 2)}\" y=\"2\" width=\"{Number(Math.Max(width - 4, 1))}\" height=\"20\" rx=\"3\"></rect>");
+            at += width;
+            index++;
+        }
+
+        bar.Append("</svg><ol class=\"step-groups\">");
+
+        foreach (var group in night.Groups)
+        {
+            var said = group.Stopped
+                ? "stopped here"
+                : group.Reached == 0
+                    ? "not reached"
+                    : Formatted($"{Number(group.Seconds)} s");
+
+            bar.Append(Invariant, $"<li data-group=\"{Escaped(group.Name)}\" data-reached=\"{group.Reached}\"><b>{Escaped(group.Name)}</b> {said}</li>");
+        }
+
+        bar.Append("</ol></div>");
+
+        return bar.ToString();
+    }
+
+    // The market, section 15.10's second region: the one-word label its rule gives the night's breadth,
+    // a gauge of that breadth with the market gate's floor marked, the share above the shorter average and
+    // the index's volume against its own, the rule in words, and the breadth line over the sessions up to
+    // the night that the store holds averages for.
+    // see: The market on the Run page is named in one word by a stated rule that moves no gate
+    public string MarketRegion(MarketPicture picture)
+    {
+        var night = picture.Night;
+        var breadth = night?.Breadth;
+        var label = MarketLabel.For(breadth, picture.Floor);
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"market-picture\" data-session=\"{picture.Session:yyyy-MM-dd}\" data-breadth=\"{Whole(breadth)}\" data-floor=\"{picture.Floor.ToString("R", Invariant)}\" data-healthy-from=\"{MarketLabel.HealthyFrom.ToString("R", Invariant)}\" data-label=\"{label}\" data-line=\"{picture.Line.Count}\">");
+        region.Append(Invariant, $"<p class=\"mp-label\">{(label == MarketLabel.NotRead ? "The market was not read" : "A " + label + " market")}</p>");
+        region.Append("<div class=\"mp-body\">");
+        region.Append(Gauge(breadth, picture.Floor));
+        region.Append("<div class=\"mp-figures\">");
+        region.Append(Invariant, $"<p data-part=\"context\"><b>{(night?.BreadthContext is { } context ? Formatted($"{context * 100:0}%") : "none")}</b> above their {SwingReadings.ContextAverageSessions}-day average</p>");
+        region.Append(Invariant, $"<p data-part=\"volume\"><b>{(night?.MedianVolumeRatio is { } ratio ? Formatted($"{ratio:0.00}&#215;") : "none")}</b> the index's usual volume, its median against the fifty-day average</p>");
+        region.Append("</div></div>");
+        region.Append(Invariant, $"<p class=\"mp-rule\">Weak below {picture.Floor * 100:0}%, the market gate's floor, where the list lists nobody; healthy from {MarketLabel.HealthyFrom * 100:0}%; mixed between.</p>");
+        region.Append(BreadthLine(picture));
+        region.Append("</div>");
+
+        return region.ToString();
+
+        static string Gauge(double? share, double floor)
+        {
+            const double Cx = 130;
+            const double Cy = 132;
+            const double Radius = 98;
+
+            (double X, double Y) At(double fraction, double radius) =>
+                (Cx + (radius * Math.Cos(Math.PI * (1 - fraction))), Cy - (radius * Math.Sin(Math.PI * (1 - fraction))));
+
+            var gauge = new StringBuilder();
+            var (tickX1, tickY1) = At(floor, Radius - 14);
+            var (tickX2, tickY2) = At(floor, Radius + 14);
+            var (textX, textY) = At(floor, Radius + 26);
+
+            gauge.Append(Invariant, $"<svg class=\"gauge\" viewBox=\"0 0 260 170\" width=\"260\" height=\"170\" role=\"img\" aria-label=\"{(share is { } read ? Formatted($"{read * 100:0.0}%") : "no share")} of the members above their {SwingReadings.BreadthAverageSessions}-day average, the market gate's floor at {floor * 100:0}%\">");
+            gauge.Append(Invariant, $"<path class=\"g-track\" d=\"M{Number(Cx - Radius)} {Number(Cy)} A{Number(Radius)} {Number(Radius)} 0 0 1 {Number(Cx + Radius)} {Number(Cy)}\"></path>");
+
+            if (share is { } value)
+            {
+                var (x, y) = At(Math.Clamp(value, 0.001, 1), Radius);
+
+                gauge.Append(Invariant, $"<path class=\"g-value\" d=\"M{Number(Cx - Radius)} {Number(Cy)} A{Number(Radius)} {Number(Radius)} 0 0 1 {Number(x)} {Number(y)}\"></path>");
+                gauge.Append(Invariant, $"<text class=\"g-figure\" x=\"{Number(Cx)}\" y=\"{Number(Cy - 12)}\" text-anchor=\"middle\">{value * 100:0}%</text>");
+            }
+            else
+            {
+                gauge.Append(Invariant, $"<text class=\"g-none\" x=\"{Number(Cx)}\" y=\"{Number(Cy - 12)}\" text-anchor=\"middle\">not read</text>");
+            }
+
+            gauge.Append(Invariant, $"<line class=\"g-floor\" x1=\"{Number(tickX1)}\" y1=\"{Number(tickY1)}\" x2=\"{Number(tickX2)}\" y2=\"{Number(tickY2)}\"></line>");
+            gauge.Append(Invariant, $"<text class=\"g-floor-text\" x=\"{Number(textX)}\" y=\"{Number(Math.Max(textY + 4, 10))}\" text-anchor=\"middle\">{floor * 100:0}%</text>");
+            gauge.Append(Invariant, $"<text class=\"g-caption\" x=\"{Number(Cx)}\" y=\"{Number(Cy + 22)}\" text-anchor=\"middle\">above their {SwingReadings.BreadthAverageSessions}-day average</text>");
+            gauge.Append("</svg>");
+
+            return gauge.ToString();
+        }
+    }
+
+    // The breadth line: the share above the 200-day average on each session up to the night that the
+    // store holds averages for, the market gate's floor dashed across it, and the newest point marked; a
+    // line over fewer sessions than the sixty it draws says how many it holds.
+    static string BreadthLine(MarketPicture picture)
+    {
+        const double Wide = 520;
+        const double High = 70;
+
+        var line = new StringBuilder();
+        var points = picture.Line;
+
+        line.Append(Invariant, $"<div class=\"breadth-line-wrap\"><div class=\"caption\">The last {points.Count} night(s) the store holds averages for");
+        line.Append(points.Count < BreadthLineSessions && points.Count > 0
+            ? ", from " + points[0].Session.ToString("yyyy-MM-dd", Invariant) + Formatted($", of the {BreadthLineSessions} the line draws</div>")
+            : "</div>");
+
+        if (points.Count < 2)
+        {
+            line.Append("<p class=\"degraded\" data-breadth-line=\"none\">too few sessions hold a 200-day average to draw a line</p></div>");
+
+            return line.ToString();
+        }
+
+        // The scale spans the shares drawn and the floor, a tenth beyond each end, so a line that moves by
+        // a few points is not drawn flat against a scale from nought to one.
+        var low = Math.Max(0, Math.Min(picture.Floor, points.Min(point => point.Share)) - 0.1);
+        var high = Math.Min(1, Math.Max(picture.Floor, points.Max(point => point.Share)) + 0.1);
+
+        double X(int at) => at * Wide / (points.Count - 1);
+        double Y(double share) => High - 4 - ((share - low) / (high - low) * (High - 8));
+
+        line.Append(Invariant, $"<svg class=\"breadth-line\" viewBox=\"0 0 {Wide} {High}\" preserveAspectRatio=\"none\" role=\"img\" aria-label=\"The share above the {SwingReadings.BreadthAverageSessions}-day average over {points.Count} sessions\">");
+        line.Append(Invariant, $"<line class=\"bl-floor\" x1=\"0\" y1=\"{Number(Y(picture.Floor))}\" x2=\"{Wide}\" y2=\"{Number(Y(picture.Floor))}\"></line>");
+        line.Append(Invariant, $"<polyline class=\"bl-line\" points=\"{string.Join(' ', points.Select((point, at) => Number(X(at)) + "," + Number(Y(point.Share))))}\"></polyline>");
+        line.Append(Invariant, $"<circle class=\"bl-last\" cx=\"{Number(X(points.Count - 1))}\" cy=\"{Number(Y(points[^1].Share))}\" r=\"4\"></circle>");
+        line.Append("</svg></div>");
+
+        return line.ToString();
+    }
+
+    // How many sessions the breadth line draws at most.
+    public const int BreadthLineSessions = 60;
+
+    // The words a gate is named by in the Run page's funnel.
+    public static string FunnelWords(string gate) => gate switch
+    {
+        SwingGates.Market => "The market gate open",
+        SwingGates.Trend => "In an uptrend and strong enough",
+        SwingGates.Setup => "A pullback into support",
+        SwingGates.Trigger => "A fresh buy signal",
+        SwingGates.Trade => "A trade worth taking",
+        _ => gate,
+    };
+
+    // From the index to tonight's list, section 15.10's third region: a bar for the whole index, one for
+    // the members through each gate in order, and one for those left after the exclusions, each with its
+    // count, the names listed in words, and a link opening tonight's list for the night.
+    public string FunnelPicture(FunnelView? funnel, string tonight)
+    {
+        if (funnel is null)
+        {
+            return "<p class=\"degraded\" data-funnel-picture=\"none\">no swing filter results are stored for this night, so there is no funnel to draw</p>";
+        }
+
+        const double Words = 230;
+        const double Wide = 260;
+        const double Row = 34;
+
+        var bars = new List<(string Step, string Words, int Count)> { ("members", "The whole index", funnel.Members) };
+
+        bars.AddRange(funnel.Steps.Select(step => (step.Gate, FunnelWords(step.Gate), step.Passed)));
+        bars.Add(("excluded", "Not excluded", funnel.Passing));
+
+        var picture = new StringBuilder();
+
+        picture.Append(Invariant, $"<div class=\"funnel-picture\" data-session=\"{funnel.Session:yyyy-MM-dd}\" data-members=\"{funnel.Members}\" data-passing=\"{funnel.Passing}\" data-rule=\"{Escaped(funnel.Rule)}\">");
+        picture.Append(Invariant, $"<svg class=\"funnel-bars\" viewBox=\"0 0 {Words + Wide + 60} {bars.Count * Row}\" role=\"img\" aria-label=\"How many members passed each check, from {funnel.Members} to {funnel.Passing}\">");
+
+        for (var at = 0; at < bars.Count; at++)
+        {
+            var (step, words, count) = bars[at];
+            var width = funnel.Members == 0 ? 0 : Math.Max(3, Wide * count / funnel.Members);
+            var y = at * Row;
+
+            picture.Append(Invariant, $"<g data-step=\"{Escaped(step)}\" data-count=\"{count}\">");
+            picture.Append(Invariant, $"<text class=\"fb-words\" x=\"0\" y=\"{Number(y + (Row / 2) + 5)}\">{Escaped(words)}</text>");
+            picture.Append(Invariant, $"<rect class=\"fb-bar\" x=\"{Words}\" y=\"{Number(y + 5)}\" width=\"{Number(width)}\" height=\"{Number(Row - 10)}\" rx=\"3\"></rect>");
+            picture.Append(Invariant, $"<text class=\"fb-count\" x=\"{Number(Words + Wide + 56)}\" y=\"{Number(y + (Row / 2) + 5)}\" text-anchor=\"end\">{count}</text></g>");
+        }
+
+        picture.Append("</svg>");
+        picture.Append(Invariant, $"<p class=\"fp-listed\"><b>{funnel.Passing}</b> ");
+        picture.Append(funnel.Rule == ListRules.Filter
+            ? Formatted($"stock(s) on this night's list. <a class=\"fp-open\" href=\"{Escaped(tonight)}\">Open the list &#8594;</a></p>")
+            : Formatted($"stock(s) passed, and the six reasons drew this evening's list. <a class=\"fp-open\" href=\"{Escaped(tonight)}\">Open the list &#8594;</a></p>"));
+        picture.Append("</div>");
+
+        return picture.ToString();
+    }
 
     static string Escaped(string text) =>
         text.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");

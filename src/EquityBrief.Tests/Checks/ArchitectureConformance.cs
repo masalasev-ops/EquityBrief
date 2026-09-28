@@ -1384,7 +1384,9 @@ public partial class ArchitectureConformance
         // 89 at the 12.2 correction that reads the reported quarters: what the numbers say on the name page
         // and the run page's Fundamentals region. 88 when the operator had that region taken off the run page.
         // 89 at 11.6's correction that draws ten of the group: the year line, the ninth mark.
-        Assert.Equal(89, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 97 at the 12.3 correction that opens the Run page on its pictures: its first three regions, the folded
+        // detail and the four marks they draw.
+        Assert.Equal(97, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1464,7 +1466,9 @@ public partial class ArchitectureConformance
         // 301 at the 5.8 correction whose headings say what each universe column holds: the table's part stating it.
         // 304 at the 5.8 correction whose headings say what each column of tonight's list, the peers table and
         // Past picks' table holds: each row's part stating it.
-        Assert.Equal(304, inDocument.Length);
+        // 318 at the 12.3 correction that opens the Run page on its pictures: its first three regions as the nine
+        // parts their rows state, the folded detail and the four marks.
+        Assert.Equal(318, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1536,7 +1540,9 @@ public partial class ArchitectureConformance
         // 287 at the 5.8 correction whose headings say what each universe column holds: the table's part stating it.
         // 290 at the 5.8 correction whose headings say what each column of tonight's list, the peers table and
         // Past picks' table holds: each row's part stating it.
-        Assert.Equal(290, checkedElements);
+        // 299 at the 12.3 correction that opens the Run page on its pictures: its first three regions as the nine
+        // parts their rows state.
+        Assert.Equal(299, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

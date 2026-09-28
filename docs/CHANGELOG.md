@@ -8820,3 +8820,52 @@ Now:
 > ... (see: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them). ... Run it when no night is running.
 > Once no night can read them, take the replayed results out. On the operator's store that is any time after the night of 2026-09-29 has finished: `filter-history --remove --from 2026-09-21 --through 2026-09-23`, with what it removes, prints and writes on the run log, and what it refuses.
 Why: the ruling asks for the line to run and when it can be run.
+
+### 2026-09-28 - ARCHITECTURE.html - section 15.10 opens on how the night went, the market and the funnel, with every table folded beneath them
+Authorised by: A night's state is read off its own run log rows, and the pages that state it read that one state
+Was:
+> <p><b>Answers:</b> did last night work, what did it cost, and is any reason worth anything.</p>
+> (the table opened on the operational header)
+> <p>This is the evidence page, and it is deliberately not styled as a status dashboard. A page of green tiles invites a glance; this one is meant to be read.</p>
+Now:
+> <p><b>Answers:</b> how did last night go, how did the market stand, how did the index come down to the list, and what did it cost; top down, one question to a region, each a picture with a line or two of plain words beneath it.</p>
+> | How last night went | a status mark and a headline naming the night's state as its own run log rows give it; four headline figures ...; a time bar of the night's steps in six named groups ... |
+> | The market | a one-word label read by a stated rule; a gauge ...; the share above the 50-day average and the index's volume ...; a line of that share over the sixty sessions ... |
+> | From the index to tonight's list | a funnel of how many members passed each of the filter's checks in turn ...; the count listed with a link opening tonight's list |
+> | The detail | every region below this row, each in a section folded shut beneath the pictures so a table the page drew before is kept whole |
+> <p>The page answers its questions top down, one region to a question, the picture first ... Status is drawn in blues, a wait in violet and a failure in red, because green and orange are the levels' (see: Status is drawn in blues with violet for a wait and red for a failure alone). Every figure is read from the store by the read API, and nothing is computed at night for the page.</p>
+Why: the operator asked on 2026-09-28 to "see everything that is happening in as much visually friendly manner as possible", with nothing removed.
+
+### 2026-09-28 - ARCHITECTURE.html - section 15.5 gains the four marks the Run page's first regions draw
+Authorised by: Status is drawn in blues with violet for a wait and red for a failure alone
+Was:
+> <p>Nine marks. ...
+Now:
+> <p>Thirteen marks. ...
+> | Night status | ... | Run |
+> | Market gauge | ... | Run |
+> | Breadth line | ... | Run |
+> | Funnel bars | ... | Run |
+Why: every picture a screen draws is a mark defined once.
+
+### 2026-09-28 - ARCHITECTURE.html - section 15.6 says what the status colours mean
+Authorised by: Status is drawn in blues with violet for a wait and red for a failure alone
+Was: section 15.6 stated the two level hues, one ramp and the dashed outline, and no status colour.
+Now:
+> <h4>Status is drawn in blues, a wait in violet and a failure in red</h4> ...
+Why: the Run page's pictures draw a status, and green and orange stay the levels'.
+
+### 2026-09-28 - ARCHITECTURE.html - section 17's market label
+Authorised by: The market on the Run page is named in one word by a stated rule that moves no gate
+Was: section 17 stated the market gate's floor and no word for the market.
+Now:
+> | Market label | weak below the floor of the market gate the night ran under; healthy with 60% of the members or more above their 200-day average, proposed; mixed between. ... |
+Why: the operator asked for the point between mixed and healthy proposed and marked so.
+
+### 2026-09-28 - .claude/rules/checks.md - read-surface reaches the Run page's first three regions
+Authorised by: A night's state is read off its own run log rows, and the pages that state it read that one state
+Was:
+> | `read-surface` | ... each of the nine marks is asserted ...; and every panel the stylesheet shows ... floats over the page; and a name's earnings reaction record ... |
+Now:
+> | `read-surface` | ... each of the thirteen marks is asserted ...; and every panel the stylesheet shows ... floats over the page; and the Run page opens on how the night went, the market and the funnel, above every table it drew before, each of which is read back inside a section folded shut: ...; and a name's earnings reaction record ... |
+Why: the check reaches the regions the operator's ask of 2026-09-28 added.
