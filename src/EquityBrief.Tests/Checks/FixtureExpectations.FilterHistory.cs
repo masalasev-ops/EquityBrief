@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Checks;
 // The swing filter's results replayed for the sessions before its first stored night, over the fixture's
 // two nights, 2026-09-03 and 2026-09-04, whose own results the night stored. The two sessions before the
 // first, 2026-09-01 and 2026-09-02, hold none, and are the ones the command may replay.
-// see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone
+// see: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them
 public partial class FixtureExpectations
 {
     static readonly string[] BeforeTheNights = ["2026-09-01", "2026-09-02"];
@@ -113,6 +113,94 @@ public partial class FixtureExpectations
 
         Assert.Equal(1, again.Exit);
         Assert.Contains("2026-09-01, 2026-09-02 already hold the filter's results", again.Error, StringComparison.Ordinal);
+    }
+
+    // Removed as a person removes them: the replayed results of the sessions named are taken out and nothing
+    // else, a night's own row on one of those sessions staying, and one run log row by hand names each session
+    // with its count and the names that passed. The night after the fixture's second reads the three sessions
+    // before it, and the night of 2026-09-04 run again reads 2026-09-01 to 2026-09-03, so a range reaching
+    // 2026-09-01 is refused naming the sessions kept; a range holding no replayed result and a range not named
+    // are refused too, and a refusal writes nothing.
+    [Fact]
+    public async Task TheFilterHistoryRemovesReplayedResultsAloneAndRefusesASessionANightCanStillRead()
+    {
+        using var store = await WithTwoNights();
+
+        OpenVersion(store);
+
+        Assert.Equal(0, (await History(store, "--from", "2026-08-27", "--through", BeforeTheNights[1])).Exit);
+
+        string Replayed() => string.Join(";", Query(store, $"SELECT session_date || '|' || COUNT(*) FROM gate_result WHERE version = '{ReplayedResults.Version}' GROUP BY session_date ORDER BY 1;"));
+        string Nights() => string.Join(";", Query(store, $"SELECT session_date || '|' || version || '|' || COUNT(*) FROM gate_result WHERE version <> '{ReplayedResults.Version}' GROUP BY session_date, version ORDER BY 1;"));
+        string Runs() => string.Join(";", Query(store, "SELECT COUNT(*) FROM run_log;"));
+
+        Assert.Equal(
+            ["2026-08-27", "2026-08-28", "2026-08-31", "2026-09-01", "2026-09-02"],
+            Query(store, $"SELECT DISTINCT session_date FROM gate_result WHERE version = '{ReplayedResults.Version}' ORDER BY 1;"));
+
+        // One replayed row taken as a night's own, which a removal leaves where it is.
+        var own = Query(store, "SELECT MIN(ticker) FROM gate_result WHERE session_date = '2026-08-28';").Single();
+
+        store.Execute($"UPDATE gate_result SET version = '2' WHERE ticker = '{own}' AND session_date = '2026-08-28';");
+
+        // And one replayed row taken as passing, so the names a removal says are read and not only a count;
+        // the fixture's replayed sessions before its nights pass nobody.
+        var passer = Query(store, $"SELECT MAX(ticker) FROM gate_result WHERE version = '{ReplayedResults.Version}' AND session_date = '2026-08-27';").Single();
+
+        store.Execute($"UPDATE gate_result SET passed = 1 WHERE ticker = '{passer}' AND session_date = '2026-08-27';");
+
+        var (replayed, nights, runs) = (Replayed(), Nights(), Runs());
+
+        foreach (var (args, exit, said) in new[]
+        {
+            (new[] { "--from", "2026-08-31", "--through", BeforeTheNights[1] }, 1, "2026-09-01, 2026-09-02 may still be read by a night: the trigger's arrival reads 3 session(s) before a night"),
+            (new[] { "--from", "2026-08-24", "--through", "2026-08-26" }, 1, "no replayed result is stored between 2026-08-24 and 2026-08-26"),
+            (new[] { "--from", "2026-08-27" }, 2, "name the sessions to remove the replayed results of"),
+        })
+        {
+            var refused = await History(store, ["--remove", .. args]);
+
+            Assert.Equal(exit, refused.Exit);
+            Assert.Contains(said, refused.Error, StringComparison.Ordinal);
+        }
+
+        Assert.Equal((replayed, nights, runs), (Replayed(), Nights(), Runs()));
+
+        // What the three sessions held, each named with its count and the names passing.
+        var held = string.Join("; ", ((string[])["2026-08-27", "2026-08-28", "2026-08-31"]).Select(session =>
+        {
+            var passing = Query(store, $"SELECT ticker FROM gate_result WHERE version = '{ReplayedResults.Version}' AND session_date = '{session}' AND passed = 1 ORDER BY ticker;");
+            var count = Query(store, $"SELECT COUNT(*) FROM gate_result WHERE version = '{ReplayedResults.Version}' AND session_date = '{session}';").Single();
+
+            return $"{session}, {count} result(s), " + (passing.Count == 0 ? "none passing" : $"{passing.Count} passing ({string.Join(", ", passing)})");
+        }));
+        Assert.Contains($"2026-08-27, ", held, StringComparison.Ordinal);
+        Assert.Contains($"passing ({passer}", held, StringComparison.Ordinal);
+
+        var total = Query(store, $"SELECT COUNT(*) FROM gate_result WHERE version = '{ReplayedResults.Version}' AND session_date BETWEEN '2026-08-27' AND '2026-08-31';").Single();
+        var kept = string.Join(";", replayed.Split(';').Where(session => string.CompareOrdinal(session, "2026-09-01") >= 0));
+
+        Assert.Equal(2, kept.Split(';').Length);
+
+        var removed = await History(store, "--remove", "--from", "2026-08-27", "--through", "2026-08-31");
+
+        Assert.Equal(0, removed.Exit);
+        Assert.Equal($"{total} replayed result(s) of 3 session(s) removed: {held}", removed.Output.Trim());
+
+        Assert.Equal(kept, Replayed());
+        Assert.Equal(nights, Nights());
+        Assert.Equal(["2"], Query(store, $"SELECT version FROM gate_result WHERE ticker = '{own}' AND session_date = '2026-08-28';"));
+
+        // Its run log row, by hand and never a night, saying what it removed.
+        Assert.Equal(
+            [$"{FilterHistory.RemovalStage}|ok|0|{removed.Output.Trim()}"],
+            Query(store, $"SELECT stage || '|' || outcome || '|' || rows_written || '|' || detail FROM run_log WHERE run_id GLOB '{FilterHistory.RunPrefix}*' AND stage = '{FilterHistory.RemovalStage}';"));
+
+        // Removed once, a session has nothing left to remove.
+        var again = await History(store, "--remove", "--from", "2026-08-27", "--through", "2026-08-31");
+
+        Assert.Equal(1, again.Exit);
+        Assert.Contains("no replayed result is stored between 2026-08-27 and 2026-08-31", again.Error, StringComparison.Ordinal);
     }
 
     // The trigger's arrival reads a replayed session, and nothing else does. Before the replay, the night

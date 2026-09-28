@@ -29245,3 +29245,101 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, caebe79, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this.
+
+### 12.6 ruling - the swing filter's replayed results for 2026-09-21 to 2026-09-23 come out of the store once no night can read them   2026-09-28
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-28: "Nights the list never showed must not appear on Past picks or count
+            in any shape window. Write the command that removes them and records what it removed on the run
+            log, state what reads those rows today, and give me the line to run."
+Held:       read-only over the operator's store on 2026-09-28: 1,511 results stored as `replayed` by the one
+            `filter history` run of 2026-09-25 19:59Z, 504 on 2026-09-21 with none passing, 504 on 2026-09-22
+            with KDP passing, and 503 on 2026-09-23 with BDX, BRK-B, SJM and VEEV passing; no list rule is
+            recorded for any of the three sessions, and no swing outcome is scored for them.
+Read today: by the night's trigger arrival alone, `SwingFilter`'s read of the events stored for the sessions
+            before a night. The arrival window of version 2 is three sessions, so the night of 2026-09-28
+            reads 2026-09-23, and so would that night run again; the night of 2026-09-29 reads none of the
+            three. Every other reader passes them by: Past picks reads only a session the list rule records as
+            the filter's, and none of the three has one; the shape clock, the run page's shape half and the
+            shape command count only the nights of the open version, and `replayed` is none; the near misses
+            read one version's rows; the name page and tonight's page read no replayed result; the filler
+            scores no replayed plan; a candidate's record reads the shadow column, which a replayed row does
+            not carry; the listings' readers join a result to its evening but read the reasons on an evening
+            no list rule records; and the overnight queue, the night's request and the night close read the
+            night's own session alone. So none of them appears on Past picks or counts in a shape window
+            today, and removing them makes that hold by construction.
+Ruled:      the replayed results come out on the operator's command once no night can read them (see: The
+            swing filter's results are replayed for the sessions before its first stored night for the
+            trigger's arrival alone, and removed once no night can read them). A night's own results stay, and
+            the evenings of 2026-09-21 to 2026-09-23 keep the listings their nights wrote.
+Changed:    `DECISIONS.md`: the replay's entry and the dated screens' entry are each superseded by one that
+            says the replayed results are removed once no night can read them, the two moving to Previously
+            decided with their reasoning. The 12.6 correction that follows builds the command.
+Tests:      none added here; the 12.6 correction that follows adds the one that holds it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, with
+            the figures the 12.6 correction after it records.
+Carried:    nothing.
+
+### 12.6 - correction: the filter history command takes out the replayed results of the sessions it names once no night can read them, where nothing removed them   2026-09-28
+Corrects:   12.6's filter history, which could replay the sessions before the swing filter's first stored night
+            and had no way to take them out, so the operator's ruling of this date had no command to run.
+Repaired:   `filter-history --remove --from <yyyy-MM-dd> --through <yyyy-MM-dd>` takes out the results stored as
+            `replayed` on the sessions named and nothing else, a night's own results on those sessions staying,
+            in one transaction with one run log row under `filter history removal` and a run id beginning
+            `filter-history-`, which the run page draws as run by hand. The row and the printed line name each
+            session with its count of results and the names among them that passed, and rows written is
+            nought. A range holding no replayed result is refused, and so is a range holding a session a night
+            can still read, naming each: the trigger's arrival reads each member's sessions before the night
+            as far back as the open version's window or a standing candidate's reaches, so every session among
+            each member's newest bars that far back and one more is kept, which covers the night after the
+            newest session and the newest night run again. A refusal writes nothing. `FilterHistory` declares
+            the delete, and `SCHEMA.md` names it beside the swing filter as a deleter of `gate_result`.
+Measured:   nothing new; what the rows hold and what reads them is the ruling's.
+Guarded:    `TheFilterHistoryRemovesReplayedResultsAloneAndRefusesASessionANightCanStillRead` in
+            `fixture-expectations`, new: over the two-night fixture, with five sessions replayed from
+            2026-08-27, one of them holding a night's own row and one replayed row taken as passing, since the
+            fixture's replayed sessions pass nobody, run as a person runs it: a range reaching
+            2026-09-01, which the night of 2026-09-04 run again reads, is refused naming 2026-09-01 and
+            2026-09-02; a range holding no replayed result and a range not named are refused; a refusal writes
+            nothing; the removal of 2026-08-27 to 2026-08-31 takes out their replayed results alone, the
+            night's own row and the nights' results staying, and its printed line and its run log row each name
+            the three sessions with their counts and passing names, read off the store before it ran; and a
+            second removal finds nothing to remove.
+Written:    the component catalogue's filter history row and two citations in `ARCHITECTURE.html`, the
+            ownership row, the version column and the deleter's paragraph in `SCHEMA.md`, and the command in
+            `RUNBOOK.md`, each spec's prior text in `CHANGELOG.md`; the decisions by the ruling of this batch.
+            Every citation of the two superseded entries in the specs, the code and the tests is repointed.
+Expected:   derived: no expectation file moves.
+Tests:      1494, from 1493: one added.
+Claims:     650, from 650, predicted unchanged: the catalogue row and the two citations are reworded and
+            add no part.
+Pins:       the branch against `main` edits `FilterHistory.cs`, `ReplayedResults.cs`, `ForwardReturnFiller.cs`,
+            the worker's and the read surface's `Program.cs`, `ReadApi.cs`, `SinglePageApp.cs`, tests and five
+            documents, none of them in the twelve `RuleVersionScorer.CodeVersionSources`, the twenty-one
+            `CandidateEvaluator.EvaluationSources` or the sixteen `SwingFilter.CodeVersionSources`, each read
+            from the tree being committed. No version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: each guard the removal rests on taken away alone, filtered to the
+            new test.
+            Predicted:
+            R1 the delete taking every row of a session, a night's own among them: red in the new test.
+            R2 a session a night can still read removed rather than refused: red in the new test.
+            R3 the passing names left out of what the removal says: red in the new test.
+            Results: the first run, in a detached worktree at f9e98a0, filtered to the new test, each edit
+            made there and reverted: R1 and R2 turned it red, and R3 survived, because the fixture's replayed
+            sessions pass nobody, so every session a removal named read "none passing" whatever the code did
+            with names. The test now takes one replayed row as passing and reads its name in what the removal
+            says, in 23f037a. Run again there, each edit made and reverted and the tree read clean after, R1,
+            R2 and R3 each turned the new test red. The whole suite ran green over both trees in the gates,
+            1494 of 1494.
+Held:       all three at 23f037a; R3 not at f9e98a0, repaired as above.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1494 of 1494 tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 650 claims, 650 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 661 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1494 of 1494 tests.
+            Both gates ran over the tree carrying this entry and the one before it, 23f037a, in a worktree
+            beside the repository, and the operator's store under `data/` was not touched by either.
+Carried:    the command on the operator's store, on their word, any time after the night of 2026-09-29 has
+            finished and while no night runs:
+            `dotnet run --project src/EquityBrief.Worker -- filter-history --remove --from 2026-09-21 --through 2026-09-23`.
+            Run before then it refuses 2026-09-23 and writes nothing.

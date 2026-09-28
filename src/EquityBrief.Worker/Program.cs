@@ -64,7 +64,8 @@ static int NoVerb()
         "--evidence <text>' with '--trade ladder' or '--trade swing' opens settings the operator ruled, '--restarts <blocks>' states " +
         "the live filter's blocks an acceptance restarts, and '--reject <proposal> --reason <text>' records a proposal's rejection, and " +
         "'filter-history --from <yyyy-MM-dd> --through <yyyy-MM-dd>' replays the swing filter's results for sessions before its " +
-        "first stored night, for the trigger's arrival alone, and " +
+        "first stored night, for the trigger's arrival alone, with '--remove' taking those sessions' replayed results out once no " +
+        "night can read them, and " +
         "'history-pull --from <yyyy-MM-dd>' stores the daily bars and earnings prints of every name the index held from that " +
         "date to tonight apart from the store's own, each row marked by its pull, with '--purge <pull>' removing a pull whole, and " +
         "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill. '--live' " +
@@ -134,9 +135,9 @@ static async Task<int> Shape(string[] args)
         Console.Error);
 }
 
-// The swing filter's results replayed for sessions before its first stored night, by hand and never from
-// the night. The verb's work is in `FilterHistory`, so a test runs the verb a person runs.
-// see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone
+// The swing filter's results replayed for sessions before its first stored night, and removed, by hand and
+// never from the night. The verb's work is in `FilterHistory`, so a test runs the verb a person runs.
+// see: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them
 static async Task<int> FilterHistoryRun(string[] args)
 {
     var configuration = Configuration();

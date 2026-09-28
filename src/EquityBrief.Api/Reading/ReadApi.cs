@@ -2172,7 +2172,7 @@ public sealed class ReadApi : IComponent
 
     // The first night the swing filter listed, from which the dated screens open, or none on a store it
     // has never listed.
-    // see: The dated screens open from the swing filter's first night, and an evening before it is not drawn
+    // see: The dated screens open from the swing filter's first night, and no evening before it is drawn
     public async Task<DateOnly?> FirstFilterNightAsync()
     {
         await using var connection = Open();

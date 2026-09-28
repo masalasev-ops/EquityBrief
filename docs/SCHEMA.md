@@ -47,7 +47,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `earnings_reaction` | MoveAnnotator | MoveAnnotator | MoveAnnotator |
 | `swing_reading` | SwingReader | none | SwingReader |
 | `market_reading` | SwingReader | SwingReader | SwingReader |
-| `gate_result` | SwingFilter, FilterHistory | none | SwingFilter |
+| `gate_result` | SwingFilter, FilterHistory | none | SwingFilter, FilterHistory |
 | `filter_version` | ShapeCommand | ShapeCommand | none |
 | `shape_proposal` | ShapeProposer | ShapeCommand | none |
 | `listing` | ShortlistBuilder | ShortlistBuilder | none |
@@ -411,7 +411,7 @@ Grain: one row per index member per night.
 |---|---|---|
 | `ticker` | TEXT | |
 | `session_date` | TEXT | the night |
-| `version` | TEXT | the open filter version the night ran under, or `none` where none was open and it ran on section 17's proposed values, or `replayed` on a session before the filter's first stored night whose results `FilterHistory` replayed under the open version's settings, which the trigger's arrival reads and nothing else does |
+| `version` | TEXT | the open filter version the night ran under, or `none` where none was open and it ran on section 17's proposed values, or `replayed` on a session before the filter's first stored night whose results `FilterHistory` replayed under the open version's settings, which the trigger's arrival reads and nothing else does, and which `FilterHistory` removes on the operator's command once no night can read them |
 | `code` | TEXT | the pin of the filter's code the row was written by |
 | `market` | INTEGER | 1 where the market gate passed |
 | `trend` | INTEGER | 1 where the trend and strength gate passed |
@@ -441,7 +441,7 @@ Grain: one row per index member per night.
 
 Primary key: `(ticker, session_date)`.
 
-**The swing filter writes it and is its own deleter** (see: Every computed table's writer is its own deleter), and the only delete is a night run again replacing its own rows. Nothing is dropped by age: a gate's near misses are read over the years the edge clock needs, and the readings behind a row are dropped after one.
+**The swing filter writes it and is its own deleter** (see: Every computed table's writer is its own deleter), and its only delete is a night run again replacing its own rows. `FilterHistory` deletes only the replayed rows it wrote, on the operator's command, for sessions no night can read any longer, and never a night's own row (see: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them). Nothing is dropped by age: a gate's near misses are read over the years the edge clock needs, and the readings behind a row are dropped after one.
 
 ### filter_version
 Grain: one row per version of the swing filter's settings.

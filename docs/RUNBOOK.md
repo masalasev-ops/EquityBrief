@@ -330,7 +330,15 @@ dotnet run --project src/EquityBrief.Worker -- filter-history --from 2026-09-21 
 tools/nightly.ps1 --session 2026-09-24
 ```
 
-Each session is replayed under the open version's settings and stored under the version `replayed`, which the trigger's arrival reads and no clock, page or scored setup does (see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone). A session already holding results, the night's own session and a range holding no session are each refused with nothing written. Each run is one row on the run log under `filter history` and a run id beginning `filter-history-`, which the run page draws as run by hand. Run it when no night is running.
+Each session is replayed under the open version's settings and stored under the version `replayed`, which the trigger's arrival reads and no clock, page or scored setup does (see: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them). A session already holding results, the night's own session and a range holding no session are each refused with nothing written. Each run is one row on the run log under `filter history` and a run id beginning `filter-history-`, which the run page draws as run by hand. Run it when no night is running.
+
+Once no night can read them, take the replayed results out. On the operator's store that is any time after the night of 2026-09-29 has finished:
+
+```
+dotnet run --project src/EquityBrief.Worker -- filter-history --remove --from 2026-09-21 --through 2026-09-23
+```
+
+It removes the replayed results of the sessions named and nothing else, a night's own results staying, and prints and writes on the run log each session it removed with its count and the names among them that passed, under `filter history removal` and a run id beginning `filter-history-`. A session a night can still read is refused whole, naming it: the trigger's arrival reads each member's sessions before the night as far back as the open version's window or a standing candidate's reaches, three on version 2, so each member's newest four bars are kept, which covers both the night after the newest session the store holds and the newest night run again. A range holding no replayed result is refused too, and a refusal writes nothing. Run it when no night is running.
 
 ### Pulling history before the store's year
 

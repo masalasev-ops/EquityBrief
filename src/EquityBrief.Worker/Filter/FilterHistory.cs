@@ -1,26 +1,38 @@
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Bars;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Worker.Candidates;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Filter;
 
 public sealed record FilterHistoryOutcome(string Version, IReadOnlyList<DateOnly> Replayed, IReadOnlyList<DateOnly> Unreadable, int RowsWritten);
 
+// One session's replayed results as a removal took them out: how many there were and the names among
+// them that passed every gate.
+public sealed record RemovedSession(DateOnly Session, int Results, IReadOnlyList<string> Passed);
+
 // The swing filter's results for sessions before its first stored night, replayed and stored so a later
-// night can read whether a trigger had fired on the sessions before it.
+// night can read whether a trigger had fired on the sessions before it, and removed on the operator's word
+// once no night can read them.
 //
 // Each session is replayed by the filter counts, from the bars, bands and plans the store holds as of that
 // session, under the open version's settings, and every member's result is stored under the replayed
 // version, which no clock, no scored setup and no page reads. A session that already holds results, or
 // that the night can still run again, is refused whole, and nothing is written: a session's results are
 // written by the night that drew it wherever a night can.
-// see: The swing filter's results are replayed for the sessions before its first stored night, for the trigger's arrival alone
+//
+// A removal takes out the replayed results alone, never a night's own. A session a night can still read
+// is refused whole: the trigger's arrival reads the sessions each member holds before the night, as far
+// back as the open version's window or a standing candidate's reaches, and the night run again for the
+// newest session reads the same, so every session among each member's newest bars that far back is kept.
+// see: The swing filter's results are replayed for the sessions before its first stored night for the trigger's arrival alone, and removed once no night can read them
 public sealed class FilterHistory : IComponent
 {
     public static ComponentAccess Access => new(
@@ -28,7 +40,7 @@ public sealed class FilterHistory : IComponent
         [
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.FilterVersion, Touch.Read),
-            new StoreTouch(Store.GateResult, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.GateResult, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: []);
@@ -37,11 +49,31 @@ public sealed class FilterHistory : IComponent
 
     public const string Stage = "filter history";
 
+    public const string RemovalStage = "filter history removal";
+
     const string OpenVersion = "SELECT version, settings FROM filter_version WHERE closed_at IS NULL ORDER BY opened_at DESC LIMIT 1;";
 
     const string NewestSession = "SELECT MAX(session_date) FROM bar;";
 
     const string HeldSessions = "SELECT DISTINCT session_date FROM gate_result;";
+
+    // The replayed results between two sessions, one row each, with whether each passed.
+    const string ReplayedBetween = @"
+        SELECT session_date, ticker, passed FROM gate_result
+        WHERE version = $replayed AND session_date BETWEEN $from AND $through
+        ORDER BY session_date, ticker;
+    ";
+
+    // Every session among each member's newest bars, as many as the night reads behind its own and one
+    // more, so a night run again for the newest session and the night after it are both covered.
+    const string SessionsANightReads = @"
+        SELECT DISTINCT session_date FROM (
+            SELECT session_date, ROW_NUMBER() OVER (PARTITION BY ticker ORDER BY session_date DESC) AS place
+            FROM bar)
+        WHERE place <= $reach + 1;
+    ";
+
+    const string DeleteReplayedOn = "DELETE FROM gate_result WHERE version = $replayed AND session_date = $session;";
 
     const string Insert = @"
         INSERT INTO gate_result (
@@ -76,7 +108,8 @@ public sealed class FilterHistory : IComponent
 
     public static string RunIdAt(DateTimeOffset at) => FormattableString.Invariant($"{RunPrefix}{at:yyyyMMddTHHmmss.fffffffZ}");
 
-    // The verb a person runs: `filter-history --from <yyyy-MM-dd> --through <yyyy-MM-dd>`.
+    // The verb a person runs: `filter-history --from <yyyy-MM-dd> --through <yyyy-MM-dd>`, and with
+    // `--remove` the replayed results of those sessions taken out.
     public static async Task<int> RunAsync(string[] args, IClock clock, string databaseFile, TextWriter output, TextWriter error)
     {
         DateOnly? Day(string name) =>
@@ -85,15 +118,28 @@ public sealed class FilterHistory : IComponent
                 ? day
                 : null;
 
+        var removing = args.Contains("--remove", StringComparer.Ordinal);
+
         if (Day("--from") is not { } from || Day("--through") is not { } through || through < from)
         {
-            error.WriteLine("filter-history: name the sessions to replay with '--from <yyyy-MM-dd> --through <yyyy-MM-dd>', the first on or before the last.");
+            error.WriteLine($"filter-history: name the sessions to {(removing ? "remove the replayed results of" : "replay")} with '--from <yyyy-MM-dd> --through <yyyy-MM-dd>', the first on or before the last.");
 
             return 2;
         }
 
         try
         {
+            if (removing)
+            {
+                // The family standing now, whose widest arrival a night would read back as far as.
+                var family = FamilyShadow.For(await new CandidateRegistrar(clock, databaseFile).RowsAsync(), clock.UtcNow);
+                var removed = await new FilterHistory(clock, databaseFile).RemoveAsync(from, through, family.ArrivalReach, RunIdAt(clock.UtcNow));
+
+                output.WriteLine(Said(removed));
+
+                return 0;
+            }
+
             var outcome = await new FilterHistory(clock, databaseFile).ReplayAsync(VerbArguments.Value(args, "--index") ?? "GSPC", from, through, RunIdAt(clock.UtcNow));
 
             output.WriteLine(Said(outcome));
@@ -186,6 +232,110 @@ public sealed class FilterHistory : IComponent
             return outcome;
         }
     }
+
+    // Takes out the replayed results of the sessions between two dates and says what it took on the run
+    // log. A range holding none is refused, and so is one holding a session a night can still read, and a
+    // refusal writes nothing.
+    public async Task<IReadOnlyList<RemovedSession>> RemoveAsync(DateOnly from, DateOnly through, int familyReach, string runId, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var sessions = new SortedDictionary<DateOnly, (int Results, List<string> Passed)>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = ReplayedBetween;
+            command.Parameters.AddWithValue("$replayed", ReplayedResults.Version);
+            command.Parameters.AddWithValue("$from", Stamp(from));
+            command.Parameters.AddWithValue("$through", Stamp(through));
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                var session = Date(reader.GetString(0));
+                var held = sessions.TryGetValue(session, out var found) ? found : (Results: 0, Passed: new List<string>());
+
+                if (reader.GetInt32(2) == 1)
+                {
+                    held.Passed.Add(reader.GetString(1));
+                }
+
+                sessions[session] = (held.Results + 1, held.Passed);
+            }
+        }
+
+        if (sessions.Count == 0)
+        {
+            throw new InvalidOperationException(FormattableString.Invariant($"no replayed result is stored between {from:yyyy-MM-dd} and {through:yyyy-MM-dd}, so there is nothing to remove."));
+        }
+
+        var reach = Math.Max((await VersionAsync(connection, cancellation))?.Settings.ArrivalSessions ?? FilterSettings.Proposed.ArrivalSessions, familyReach);
+        var read = new HashSet<DateOnly>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = SessionsANightReads;
+            command.Parameters.AddWithValue("$reach", reach);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                read.Add(Date(reader.GetString(0)));
+            }
+        }
+
+        if (sessions.Keys.Where(read.Contains).ToArray() is { Length: > 0 } kept)
+        {
+            throw new InvalidOperationException(
+                $"{string.Join(", ", kept.Select(Stamp))} may still be read by a night: the trigger's arrival reads {reach} session(s) before a night, " +
+                "and the night after the newest the store holds, or that night run again, reads each member's sessions that far back. " +
+                "They can be removed once a later night is stored.");
+        }
+
+        var removed = sessions.Select(pair => new RemovedSession(pair.Key, pair.Value.Results, pair.Value.Passed)).ToArray();
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var session in removed)
+        {
+            await using var delete = connection.CreateCommand();
+
+            delete.Transaction = transaction;
+            delete.CommandText = DeleteReplayedOn;
+            delete.Parameters.AddWithValue("$replayed", ReplayedResults.Version);
+            delete.Parameters.AddWithValue("$session", Stamp(session.Session));
+
+            await delete.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await using var log = connection.CreateCommand();
+
+        log.Transaction = transaction;
+        log.CommandText = AppendRun;
+        log.Parameters.AddWithValue("$run_id", runId);
+        log.Parameters.AddWithValue("$stage", RemovalStage);
+        log.Parameters.AddWithValue("$started_at", Instant(startedAt));
+        log.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));
+        log.Parameters.AddWithValue("$outcome", "ok");
+        log.Parameters.AddWithValue("$rows_written", 0);
+        log.Parameters.AddWithValue("$detail", Said(removed));
+
+        await log.ExecuteNonQueryAsync(cancellation);
+        await transaction.CommitAsync(cancellation);
+
+        return removed;
+    }
+
+    public static string Said(IReadOnlyList<RemovedSession> removed) =>
+        $"{removed.Sum(session => session.Results)} replayed result(s) of {removed.Count} session(s) removed: "
+        + string.Join("; ", removed.Select(session =>
+            $"{Stamp(session.Session)}, {session.Results} result(s), " +
+            (session.Passed.Count == 0 ? "none passing" : $"{session.Passed.Count} passing ({string.Join(", ", session.Passed)})")));
 
     public static string Said(FilterHistoryOutcome outcome) =>
         $"{outcome.Replayed.Count} session(s) replayed under version {outcome.Version}'s settings, {outcome.RowsWritten} result(s) stored as {ReplayedResults.Version}"
