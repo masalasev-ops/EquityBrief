@@ -155,7 +155,10 @@ public sealed record UniverseCell(
     double? Strength = null,
     double? Depth = null,
     double? DryUp = null,
-    double? Tightness = null);
+    double? Tightness = null,
+    // The name's stored closes, which the table draws as its year line beside the ticker while the
+    // pointer is over it, and null where none were read for it.
+    PeerYear? Year = null);
 
 // One trade the live list recommended, as the Past picks screen and a name's own page draw it: the night
 // it was listed, the name, the plan's buy, stop and target, what became of it as of the night drawn, the
@@ -4799,8 +4802,8 @@ public sealed class MarkRenderer : IComponent
 
     // The year line: a name's stored closes as one line, with its nearest support and its nearest
     // resistance drawn across it in their own hues and named at the right with their prices, and the
-    // last close marked. It is what a peers table draws beside a member's ticker while the pointer is
-    // over it or it has focus, so the member's year is read without leaving the page. The scale takes
+    // last close marked. It is what the peers table and the universe table draw beside a ticker while the
+    // pointer is over it or it has focus, so the name's year is read without leaving the page. The scale takes
     // in both bands as well as the closes, since a band drawn off the picture is the one thing the
     // reader looked for. A name holding fewer closes than a line needs says so and draws nothing,
     // which is section 15.5's rule for every mark.
@@ -5110,13 +5113,15 @@ public sealed class MarkRenderer : IComponent
             table.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-sector=\"{Escaped(row.Sector)}\" ");
             table.Append(Invariant, $"data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\">");
 
-            // The ticker is the way to the name's page, with the company's name beneath it and
-            // the day its research was written where it holds any.
+            // The ticker is the way to the name's page, with the company's name beneath it, the
+            // day its research was written where it holds any, and its year line with its nearest
+            // bands, which the stylesheet shows while the pointer is over the cell or it has focus.
             table.Append(Invariant, $"<td class=\"c-nm\"><a class=\"tk\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
             table.Append(row.Name is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty);
             table.Append(row.Researched is { } written
-                ? $"<span class=\"researched-on\" data-researched=\"{written.ToString("yyyy-MM-dd", Invariant)}\">researched {written.ToString("yyyy-MM-dd", Invariant)}</span></td>"
-                : "</td>");
+                ? $"<span class=\"researched-on\" data-researched=\"{written.ToString("yyyy-MM-dd", Invariant)}\">researched {written.ToString("yyyy-MM-dd", Invariant)}</span>"
+                : string.Empty);
+            table.Append(Formatted($"<span class=\"peer-pop\" role=\"tooltip\">{YearLine(row.Ticker, row.Year, row.NearestSupport, row.NearestResistance)}</span></td>"));
             table.Append(Formatted($"<td>{Escaped(row.Sector)}</td>"));
             // The close, drawn at the places a price is read at with the stored value on the
             // cell. A name the night computed nothing for says so rather than showing a zero.

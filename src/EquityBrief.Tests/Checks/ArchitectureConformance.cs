@@ -1460,7 +1460,8 @@ public partial class ArchitectureConformance
         // 299 at 11.6's correction that draws ten of the group: the peers row's four parts that named every
         // member in ticker order and the close leave, its six naming the ten, their order, the likeness, the
         // industry mark, the close and the link arrive, and the year line joins as the ninth mark.
-        Assert.Equal(299, inDocument.Length);
+        // 300 at the 5.8 correction that draws each universe ticker's year line: the table's part stating it.
+        Assert.Equal(300, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1528,7 +1529,8 @@ public partial class ArchitectureConformance
         // when the operator had the Fundamentals region taken off the run page.
         // 285 at 11.6's correction that draws ten of the group: the peers row's four parts that named every
         // member in ticker order and the close leave and its six naming the ten and what each row carries arrive.
-        Assert.Equal(285, checkedElements);
+        // 286 at the 5.8 correction that draws each universe ticker's year line: the table's part stating it.
+        Assert.Equal(286, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

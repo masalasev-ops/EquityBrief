@@ -8709,3 +8709,21 @@ Was:
 Now:
 > ... retention drops a print with its bars (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone); ...
 Why: the decision the checkpoint's text cited was superseded on the operator's ruling of 2026-09-28.
+
+### 2026-09-28 - ARCHITECTURE.html - the universe table draws each ticker's year line while the pointer is over it
+Authorised by: Marks are defined once and every screen draws from that list
+Was:
+> | The table | ... the evening last on the list, and the listing strip over sixty sessions |
+> | Year line | ... It is drawn beside a member's ticker in a peers table while the pointer is over it or it has the focus, so a member's year is read without leaving the page (see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely). | Name |
+Now:
+> | The table | ... the evening last on the list, and the listing strip over sixty sessions; each ticker a link to its own page that draws its year line while the pointer is over it (see: Marks are defined once and every screen draws from that list) |
+> | Year line | ... It is drawn beside a ticker in a peers table and in the universe table while the pointer is over it or it has the focus, so a name's year is read without leaving the page (see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely). | Name, Universe |
+Why: the operator asked on 2026-09-28 that holding the pointer over a stock on the universe page draw its chart as holding it over a ticker in a name's peers table does.
+
+### 2026-09-28 - .claude/rules/checks.md - read-surface reaches the universe table's year line
+Authorised by: Marks are defined once and every screen draws from that list
+Was:
+> | `read-surface` | ... and says how many closes it holds where it holds fewer than two; and a name's earnings reaction record ... |
+Now:
+> | `read-surface` | ... and says how many closes it holds where it holds fewer than two; and the universe table's name cell carries the name's year line drawn over every close the store holds for it with its own nearest bands, read back off the whole table and one sector of it against the store, one to each row drawn and none elsewhere, and each row of a page carries its own name's closes and no other; and a name's earnings reaction record ... |
+Why: the check reaches the part the operator's ask of 2026-09-28 added.

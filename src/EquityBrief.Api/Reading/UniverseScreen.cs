@@ -116,6 +116,23 @@ public static class UniverseScreen
     // rows the filters left, which is what the nav states.
     public sealed record Shown(IReadOnlyList<UniverseCell> Page, int At, int Rows);
 
+    // Each name's stored closes as the year its line draws, in session order, from the first
+    // session it holds to the last. A name the closes hold nothing for is absent rather than an
+    // empty year.
+    public static IReadOnlyDictionary<string, PeerYear> Years(IReadOnlyList<CloseRow> closes) =>
+        closes
+            .GroupBy(row => row.Ticker, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => new PeerYear(group.First().SessionDate, group.Last().SessionDate, [.. group.Select(row => row.Close)]), StringComparer.Ordinal);
+
+    // The rows a page draws, each carrying its year where the closes hold one. Read for the page
+    // alone, since a year is drawn only beside a row on it.
+    public static IReadOnlyList<UniverseCell> WithYears(IReadOnlyList<UniverseCell> page, IReadOnlyList<CloseRow> closes)
+    {
+        var years = Years(closes);
+
+        return [.. page.Select(cell => cell with { Year = years.GetValueOrDefault(cell.Ticker) })];
+    }
+
     // A cell with the name's swing readings as the swing reader stored them for the night, and
     // without them where it stored none.
     static UniverseCell WithReadings(UniverseCell cell, IReadOnlyDictionary<string, SwingReadingRow>? readings) =>

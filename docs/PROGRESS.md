@@ -29024,3 +29024,59 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, b90f270, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this, less item 4.
+
+### 5.8 - correction: the universe table draws each name's year line beside its ticker while the pointer is over it, as a name's peers table does, where the table drew the ticker alone   2026-09-28
+Corrects:   the universe table 5.8 built, on the operator's ask of 2026-09-28: "in the universe page hovering
+            over the stocks should also show the chart just like hovering over a ticker in AAPL's group table".
+Repaired:   each row's name cell carries the name's year line, the ninth mark, drawn over every close the
+            store holds for it with its own nearest support and resistance, which the stylesheet shows while
+            the pointer is over the cell or it holds the focus and the shell's script places beside the cell,
+            as the peers table's are. The route reads the closes of the rows the page draws and of no other
+            name, so a page of fifty reads fifty names' closes and not the index's. The closes become a year
+            in one place, which the peers table now reads too, so the two tables draw one name's year alike.
+            A name the store holds too few closes for says so in the cell's picture, as the mark does
+            everywhere.
+Measured:   nothing new.
+Guarded:    in `read-surface`, three new: `TheUniverseTableDrawsEachNamesYearInItsOwnNameCellAndSaysSoWhereItHoldsTooFew`
+            over two constructed rows, the stylesheet's rule and the shell's placing read beside them;
+            `EachRowOfAPageCarriesItsOwnNamesClosesAndNoOther` over a page of two and closes of three; and
+            `EachRowTheUniverseScreenDrawsCarriesItsOwnYearFromTheStore`, every row of the whole table and of
+            one sector read back against the store, one picture to each row drawn and none elsewhere. The
+            picture count of `NoPictureAScreenDrawsIsStretchedToFillWhatHoldsItAndNoneIsWrittenOver` moves
+            from 45 to 49, a year line beside each of the four names on the universe table.
+Written:    section 15.8's table row states the part; section 15.5's year line row names the universe table
+            and adds it to the screens the mark is used by; `.claude/rules/checks.md`'s read-surface row. Each
+            changed line's prior text in `CHANGELOG.md`.
+Tests:      1486, from 1483: three added.
+Claims:     646, from 645, predicted 646: section 15.8's table row read as one part more, each ticker a link
+            to its own page that draws its year line while the pointer is over it, due at 5.8, which has landed.
+            Section 15.5's row is one claim before and after.
+Pins:       the branch against `main` edits no source in the three pin lists: `MarkRenderer.cs`,
+            `SinglePageApp.cs`, `Stylesheet.cs`, `UniverseScreen.cs`, `NameScreen.cs` and `Program.cs` are in
+            none. No version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: one mutation reversing each mechanism the table now relies on,
+            filtered to the three tests this correction adds, the picture count it changes and the two over
+            the peers table whose closes now become a year in the same place.
+            Predicted:
+            U1 the name cell drawing no year line: red in the new table test, the new store test and the
+               picture count.
+            U2 the route drawing its page without reading the page's closes: red in the new store test and
+               the picture count.
+            U3 every row of a page given the first row's closes: red in the new page test and the new store
+               test.
+            U4 the stylesheet's rule showing the universe cell's year taken out: red in the new table test.
+            Results: one run each in a detached worktree at 0470c62, this entry's commit, filtered to the six
+            tests, each edit made there and reverted, and the tree read clean after. The six ran green over
+            the unmutated tree, and the whole suite ran green over 0470c62 in the gates, 1486 of 1486. U1
+            turned the new table test, the new store test and the picture count red; U2 the new store test
+            and the picture count; U3 the new page test and the new store test; U4 the new table test.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1486 of 1486 tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 646 claims, 646 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 657 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1486 of 1486 tests.
+            Both gates ran over the tree carrying this entry, 0470c62, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    as the entry before this.
