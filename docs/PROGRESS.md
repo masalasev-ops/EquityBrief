@@ -28858,10 +28858,10 @@ Guarded:    `TheMomentumPanelDrawsTheConvergenceLineItsSignalAndTheirGapOnOneAxi
             states on the masthead's line, and the watch list's test reads the press on that line and not on
             the one beneath it. `EveryMomentumReadingDrawsItsNeutralRule` reads one rule per axis, at 102 for
             relative strength's 50, and the glossary's test reads its new heading.
-Written:    section 6's momentum panel row; `.claude/rules/checks.md`'s read-surface row. Each changed line's
+Written:    section 15.5's momentum panel row; `.claude/rules/checks.md`'s read-surface row. Each changed line's
             prior text in `CHANGELOG.md`.
-Tests:      58WT, from 1478: the momentum panel's test is added.
-Claims:     58WC, from 640, predicted unchanged: section 6's row is reworded and section 15.9 names the chart's
+Tests:      1479, from 1478: the momentum panel's test is added.
+Claims:     640, from 640, as predicted: section 15.5's row is reworded and section 15.9 names the chart's
             momentum panel as it did.
 Pins:       the branch against `main` edits no source in the three pin lists: `MarkRenderer.cs`,
             `SinglePageApp.cs` and `Stylesheet.cs` are in none. No version moves and nothing is owed before a
@@ -28874,14 +28874,18 @@ Mutated:    the rule, stated before the run: one mutation reversing each mechani
             W2 the watch press drawn on the line beneath the name again: red in the watch list's test.
             W3 each convergence reading drawn on an axis of its own: red in the new momentum test and in
                `EveryMomentumReadingDrawsItsNeutralRule`.
-            Results: 58WM
-Held:       58WH
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 58WT of 58WT tests ran
+            Results: one run each in a detached worktree at 1d543f1, this entry's commit, filtered to the six
+            tests this correction adds or changes, each edit made there and reverted, and the tree read clean
+            after. The six ran green over the unmutated tree, and the whole suite ran green over 1d543f1 in the
+            gates, 1479 of 1479. W1 turned the cascade test red, W2 the watch list's test, and W3 the new
+            momentum test and `EveryMomentumReadingDrawsItsNeutralRule`.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1479 of 1479 tests ran
             with none failed, migrations 0 to 48 with none pending, schema version 48, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 58WB tables, 58WC claims, 58WP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 58WR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 58WT of 58WT tests.
-            Both gates ran over the tree carrying this entry, 58WSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 44 tables, 640 claims, 640 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 651 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1479 of 1479 tests.
+            Both gates ran over the tree carrying this entry, 1d543f1, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this.
