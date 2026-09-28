@@ -543,6 +543,20 @@ static async Task<IReadOnlyList<SpentRow>> SpentOn(ReadApi read, DateOnly night)
     return await read.SpentRowsAsync(from, to);
 }
 
+// The run log of each of the seven nights up to a night that the store holds an evening for, oldest first,
+// which the Run page's research region counts over.
+static async Task<IReadOnlyList<(DateOnly Night, IReadOnlyList<RunStageRow> Log)>> WeekOf(ReadApi read, DateOnly night)
+{
+    var week = new List<(DateOnly, IReadOnlyList<RunStageRow>)>();
+
+    foreach (var held in (await read.NightsAsync()).Where(one => one <= night).OrderDescending().Take(7).Order())
+    {
+        week.Add((held, await read.RunLogAsync(held)));
+    }
+
+    return week;
+}
+
 // The phase report the harness last wrote, read as text and handed to the
 // projection rather than opened by it, so nothing on the read surface reaches
 // the filesystem for a store it does not own. A machine with no report says so
@@ -948,6 +962,7 @@ app.MapGet("/screens/run/{night?}", async (
     ReadApi read,
     MarkRenderer marks,
     SinglePageApp page,
+    SpendCaps caps,
     IClock clock) =>
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
@@ -1072,7 +1087,18 @@ app.MapGet("/screens/run/{night?}", async (
                 : EdgeScreen.NearMisses(null, [], dated),
             held: held,
             how: how,
-            picture: picture),
+            picture: picture,
+            trades: PicksScreen.Summary(PicksScreen.Cells(await read.PicksAsync(dated), dated)),
+            fresh: RunScreen.Freshness(everyListing, dated, first),
+            research: new ResearchPicture(
+                TonightScreen.Spend(dated, await SpentOn(read, dated), caps),
+                RunScreen.Research(await WeekOf(read, dated))),
+            worries: RunScreen.Worries(
+                await read.StaleNamesAsync(index, dated),
+                how,
+                RunScreen.Refused(await read.RefusedDocumentsAsync(dated)),
+                RunScreen.FellBack(await read.FellBackAsync(dated)),
+                log)),
         "text/html; charset=utf-8");
 });
 

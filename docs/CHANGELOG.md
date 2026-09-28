@@ -8869,3 +8869,22 @@ Was:
 Now:
 > | `read-surface` | ... each of the thirteen marks is asserted ...; and every panel the stylesheet shows ... floats over the page; and the Run page opens on how the night went, the market and the funnel, above every table it drew before, each of which is read back inside a section folded shut: ...; and a name's earnings reaction record ... |
 Why: the check reaches the regions the operator's ask of 2026-09-28 added.
+
+### 2026-09-28 - ARCHITECTURE.html - section 15.10's trades, freshness, research and checklist, and their four marks
+Authorised by: A night's state is read off its own run log rows, and the pages that state it read that one state
+Was: section 15.10 drew the funnel's region and then the detail; section 15.5 opened "Thirteen marks."
+Now:
+> | How the list's trades are going | the live list's trades still open and those that reached the target or were stopped out or ran out of time; a ring of the trades decided against the minimum a share waits on; the share and the break-even and the average result together once both minimums are met as Past picks draws them; a link opening Past picks ... |
+> | Is the list finding new stocks | a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed; the night's split in words |
+> | Research and spend | the month's spend against the month cap; the reports the paid model wrote on each of the last seven nights; the reports and the overnight drafts written over those nights |
+> | Anything to worry about | a checklist of plain items each turning red with its reason where it fails; every stock holding the night's prices and every step of the night finished; no research document refused and no section fallen back; every company awaiting a quarter asked on schedule; the four harness counts beneath |
+> <p>Seventeen marks. ... with the Trades ring, Freshness bars, Research bars and Checklist rows added.
+Why: the operator's brief of 2026-09-28 names these regions, and every picture a screen draws is a mark defined once.
+
+### 2026-09-28 - .claude/rules/checks.md - read-surface reaches the Run page's trades, freshness, research and checklist
+Authorised by: A night's state is read off its own run log rows, and the pages that state it read that one state
+Was:
+> | `read-surface` | ... each of the thirteen marks is asserted ...; and every rule drawing those pictures names no level's hue, each status colour drawn by them alone; and a name's earnings reaction record ... |
+Now:
+> | `read-surface` | ... each of the seventeen marks is asserted ...; and every rule drawing those pictures names no level's hue, each status colour drawn by them alone; and the Run page draws how the list's trades are going from Past picks' own summary, ...; and a name's earnings reaction record ... |
+Why: the check reaches the regions this correction adds.

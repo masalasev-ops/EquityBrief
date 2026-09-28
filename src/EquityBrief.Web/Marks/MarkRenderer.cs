@@ -393,6 +393,30 @@ public sealed record NightView(
     string? AfterTheClose,
     IReadOnlyList<StepGroupView> Groups);
 
+// One evening of the list as the Run page's freshness bars draw it: the names it listed and how many of them
+// were on the list the evening before, each evening read by the rule that listed it.
+public sealed record FreshNight(DateOnly Session, int Listed, int Repeated)
+{
+    public int New => Listed - Repeated;
+}
+
+// One night of research as the Run page draws it: the passes the paid model wrote that night and the drafts
+// the overnight queue wrote.
+public sealed record ResearchNight(DateOnly Session, int PaidPasses, int Drafts);
+
+// Research and spend as the Run page pictures them: the night's spend against the caps and the seven nights
+// up to it.
+public sealed record ResearchPicture(NightSpend Spend, IReadOnlyList<ResearchNight> Nights);
+
+// One item of the Run page's checklist: what it asks, whether it held, and where it failed or could not be
+// read, why.
+public sealed record WorryItem(string Item, string State, string? Why)
+{
+    public const string Held = "held";
+    public const string Failed = "failed";
+    public const string NotRead = "not read";
+}
+
 // One of a name's biggest moves, as the table is given it. `Cause` is the text of
 // the accepted cause section that names this move, and null where no sentence of
 // it does: a researched claim, which arrives with the pass that writes it.
@@ -6337,6 +6361,168 @@ public sealed class MarkRenderer : IComponent
         picture.Append("</div>");
 
         return picture.ToString();
+    }
+
+    // How the list's trades are going, section 15.10's fourth region: the live list's trades by where each
+    // stands, a ring of the trades decided at the target or the stop against the minimum a share waits on,
+    // drawn as a dashed outline until it is met, and from then the share, the break-even and the average
+    // result together as Past picks draws them, with a link to Past picks.
+    // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
+    public string TradesRegion(PicksSummary summary, string picks)
+    {
+        const double Radius = 56;
+        var circumference = 2 * Math.PI * Radius;
+        var decided = Math.Min(summary.Decided, summary.MinimumDecided);
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"trades-picture\" data-listed=\"{summary.Listed}\" data-open=\"{summary.Open}\" data-target=\"{summary.Target}\" data-stopped=\"{summary.Stopped}\" data-time=\"{summary.Time}\" data-decided=\"{summary.Decided}\" data-needed=\"{summary.MinimumDecided}\" data-met=\"{(summary.TargetShare is null ? "false" : "true")}\">");
+        region.Append("<div class=\"tp-body\">");
+        region.Append(Invariant, $"<svg class=\"trades-ring\" viewBox=\"0 0 150 150\" width=\"150\" height=\"150\" role=\"img\" aria-label=\"{summary.Decided} of the {summary.MinimumDecided} trades decided that a share waits on\">");
+        region.Append(Invariant, $"<circle class=\"{(summary.TargetShare is null ? "tr-track tr-unmet" : "tr-track")}\" cx=\"75\" cy=\"75\" r=\"{Number(Radius)}\"></circle>");
+        region.Append(Invariant, $"<circle class=\"tr-done\" cx=\"75\" cy=\"75\" r=\"{Number(Radius)}\" stroke-dasharray=\"{Number(circumference * decided / Math.Max(1, summary.MinimumDecided))} {Number(circumference)}\" transform=\"rotate(-90 75 75)\"></circle>");
+        region.Append(Invariant, $"<text class=\"tr-figure\" x=\"75\" y=\"74\" text-anchor=\"middle\">{summary.Decided}</text>");
+        region.Append(Invariant, $"<text class=\"tr-caption\" x=\"75\" y=\"94\" text-anchor=\"middle\">of {summary.MinimumDecided} decided</text></svg>");
+        region.Append("<div class=\"tp-tiles\">");
+
+        foreach (var (status, count, words) in new[]
+        {
+            (PickStatus.Open, summary.Open, "still open"),
+            (PickStatus.Target, summary.Target, "reached target"),
+            (PickStatus.Stopped, summary.Stopped, "stopped out"),
+            (PickStatus.Time, summary.Time, "ran out of time"),
+        })
+        {
+            region.Append(Invariant, $"<div class=\"tile\" data-status=\"{status}\"><b>{count}</b><span>{words}</span></div>");
+        }
+
+        region.Append("</div></div>");
+        region.Append(summary.TargetShare is { } share
+            ? Formatted($"<p class=\"tp-rate\" data-share=\"{share.ToString("R", Invariant)}\"><b>{share:0.0}%</b> reached the target against <b>{summary.BreakEven ?? 0:0.0}%</b> needed to break even, and the average trade came to <b>{summary.AverageResult ?? 0:0.00}</b> of its risk.</p>")
+            : Formatted($"<p class=\"tp-rate\" data-share=\"none\">The share that reached the target is drawn once {summary.MinimumDecided} trades are decided over {summary.MinimumNights} listing nights: {summary.Decided} and {summary.DecidedNights} so far.</p>"));
+        region.Append(Invariant, $"<p class=\"tp-open\"><a href=\"{Escaped(picks)}\">Every trade on Past picks &#8594;</a></p></div>");
+
+        return region.ToString();
+    }
+
+    // Is the list finding new stocks, section 15.10's fifth region: a bar for each evening up to the night, the
+    // part new that evening and the part also on the list the evening before, and the night's split in words.
+    public string FreshBars(IReadOnlyList<FreshNight> evenings, DateOnly night)
+    {
+        if (evenings.Count == 0)
+        {
+            return "<p class=\"degraded\" data-fresh=\"none\">no evening of the list is stored up to this night</p>";
+        }
+
+        const double Wide = 520;
+        const double High = 130;
+
+        var most = Math.Max(1, evenings.Max(evening => evening.Listed));
+        var step = Wide / Math.Max(evenings.Count, 10);
+        var bars = new StringBuilder();
+
+        bars.Append(Invariant, $"<div class=\"fresh-picture\" data-evenings=\"{evenings.Count}\">");
+        bars.Append(Invariant, $"<svg class=\"fresh-bars\" viewBox=\"0 0 {Wide} {High + 4}\" role=\"img\" aria-label=\"New and repeated names on each of the last {evenings.Count} evenings\">");
+        bars.Append(Invariant, $"<line class=\"fr-base\" x1=\"0\" y1=\"{High}\" x2=\"{Wide}\" y2=\"{High}\"></line>");
+
+        for (var at = 0; at < evenings.Count; at++)
+        {
+            var evening = evenings[at];
+            var repeated = High * evening.Repeated / most;
+            var fresh = High * evening.New / most;
+            var x = (at * step) + 2;
+
+            bars.Append(Invariant, $"<g data-session=\"{evening.Session:yyyy-MM-dd}\" data-listed=\"{evening.Listed}\" data-new=\"{evening.New}\" data-repeated=\"{evening.Repeated}\">");
+            bars.Append(Invariant, $"<rect class=\"fr-repeated\" x=\"{Number(x)}\" y=\"{Number(High - repeated)}\" width=\"{Number(step - 4)}\" height=\"{Number(repeated)}\"></rect>");
+            bars.Append(Invariant, $"<rect class=\"fr-new\" x=\"{Number(x)}\" y=\"{Number(High - repeated - fresh)}\" width=\"{Number(step - 4)}\" height=\"{Number(fresh)}\"></rect></g>");
+        }
+
+        bars.Append("</svg>");
+        bars.Append("<p class=\"fr-key\"><span class=\"sw sw-new\"></span>new that evening <span class=\"sw sw-repeated\"></span>also on the list the evening before</p>");
+
+        var tonight = evenings.LastOrDefault(evening => evening.Session == night);
+        var listed = evenings.Sum(evening => evening.Listed);
+
+        bars.Append(tonight is { } drawn
+            ? Formatted($"<p class=\"fr-said\">On this night: {drawn.New} new and {drawn.Repeated} also on the list the evening before. Over these {evenings.Count} evening(s), {(listed == 0 ? 0 : 100.0 * evenings.Sum(evening => evening.New) / listed):0}% of the names listed were new.</p>")
+            : "<p class=\"fr-said\">This night listed nobody.</p>");
+        bars.Append("</div>");
+
+        return bars.ToString();
+    }
+
+    // Research and spend, section 15.10's ninth region: the month's spend against the month cap, the passes
+    // the paid model wrote on each of the seven nights up to the night, and the reports and the overnight
+    // drafts written over them.
+    // see: The spend cap counts a UTC day and a UTC month, and refuses a call that could take spend past either
+    public string ResearchRegion(ResearchPicture picture)
+    {
+        const double Wide = 520;
+        const double High = 70;
+
+        var spent = picture.Spend;
+        var share = spent.MonthCap <= 0 ? 0 : EquityBrief.Core.Prices.Statistic.FromRatio(Math.Min(1m, spent.MonthToDate / spent.MonthCap));
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"research-picture\" data-month=\"{spent.MonthToDate}\" data-month-cap=\"{spent.MonthCap}\" data-nights=\"{picture.Nights.Count}\">");
+        region.Append(Invariant, $"<p class=\"rp-spend\"><b>{SpendVerdict.Money(spent.MonthToDate)}</b> spent this month, of the {SpendVerdict.Money(spent.MonthCap)} month cap</p>");
+        region.Append(Invariant, $"<svg class=\"spend-bar\" viewBox=\"0 0 {Wide} 14\" role=\"img\" aria-label=\"{SpendVerdict.Money(spent.MonthToDate)} of the {SpendVerdict.Money(spent.MonthCap)} month cap\">");
+        region.Append(Invariant, $"<rect class=\"sp-track\" x=\"0\" y=\"1\" width=\"{Wide}\" height=\"12\" rx=\"6\"></rect>");
+        region.Append(Invariant, $"<rect class=\"sp-spent\" x=\"0\" y=\"1\" width=\"{Number(Math.Max(share * Wide, spent.MonthToDate > 0 ? 6 : 0))}\" height=\"12\" rx=\"6\"></rect></svg>");
+
+        var most = Math.Max(1, picture.Nights.Count == 0 ? 1 : picture.Nights.Max(night => night.PaidPasses));
+        var step = Wide / 7;
+
+        region.Append(Invariant, $"<div class=\"caption\">Reports the paid model wrote, on each of the last {picture.Nights.Count} night(s)</div>");
+        region.Append(Invariant, $"<svg class=\"pass-bars\" viewBox=\"0 0 {Wide} {High + 18}\" role=\"img\" aria-label=\"Reports the paid model wrote on each night\">");
+
+        for (var at = 0; at < picture.Nights.Count; at++)
+        {
+            var night = picture.Nights[at];
+            var height = High * night.PaidPasses / most;
+
+            region.Append(Invariant, $"<g data-session=\"{night.Session:yyyy-MM-dd}\" data-paid=\"{night.PaidPasses}\" data-drafts=\"{night.Drafts}\">");
+            region.Append(Invariant, $"<rect class=\"pb-bar\" x=\"{Number((at * step) + 8)}\" y=\"{Number(High - height)}\" width=\"{Number(step - 16)}\" height=\"{Number(Math.Max(height, 1))}\" rx=\"3\"></rect>");
+            region.Append(Invariant, $"<text class=\"pb-day\" x=\"{Number((at * step) + (step / 2))}\" y=\"{High + 14}\" text-anchor=\"middle\">{night.Session:ddd}</text></g>");
+        }
+
+        region.Append("</svg><div class=\"rp-tiles\">");
+        region.Append(Invariant, $"<div class=\"tile\" data-figure=\"paid reports\"><b>{picture.Nights.Sum(night => night.PaidPasses)}</b><span>reports written by the paid model</span></div>");
+        region.Append(Invariant, $"<div class=\"tile\" data-figure=\"overnight drafts\"><b>{picture.Nights.Sum(night => night.Drafts)}</b><span>drafts written overnight on this machine</span></div>");
+        region.Append("</div></div>");
+
+        return region.ToString();
+    }
+
+    // Anything to worry about, section 15.10's tenth region: each item of the checklist in plain words, held,
+    // turned red with its reason where it failed, or a dashed outline where the night stored nothing it could
+    // be read from, and the four counts of the last phase report beneath.
+    // see: Status is drawn in blues with violet for a wait and red for a failure alone
+    public string WorryRegion(IReadOnlyList<WorryItem> items, HarnessCounts? harness)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"worry-picture\" data-failed=\"{items.Count(item => item.State == WorryItem.Failed)}\"><ul class=\"worries\">");
+
+        foreach (var item in items)
+        {
+            var glyph = item.State switch
+            {
+                WorryItem.Held => "<path d=\"M7 12.5 L10.5 16 L17 8.5\"></path>",
+                WorryItem.Failed => "<path d=\"M8 8 L16 16 M16 8 L8 16\"></path>",
+                _ => "<path d=\"M8 12 H16\"></path>",
+            };
+
+            region.Append(Invariant, $"<li data-item=\"{Escaped(item.Item)}\" data-state=\"{Escaped(item.State)}\"><svg class=\"worry-mark\" viewBox=\"0 0 24 24\" width=\"24\" height=\"24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"11\"></circle>{glyph}</svg>");
+            region.Append(Invariant, $"<span>{Escaped(item.Item)}{(item.Why is { } why ? ": <b class=\"worry-why\">" + Escaped(why) + "</b>" : string.Empty)}</span></li>");
+        }
+
+        region.Append("</ul>");
+        region.Append(harness is { } counts
+            ? Formatted($"<div class=\"caption\">The checks on the code, from the last phase report</div><div class=\"wr-tiles\"><div class=\"tile\" data-count=\"passed\"><b>{counts.Passed}</b><span>passed</span></div><div class=\"tile\" data-count=\"failed\"><b>{counts.Failed}</b><span>failed</span></div><div class=\"tile\" data-count=\"unexamined\"><b>{counts.Unexamined}</b><span>not examined</span></div><div class=\"tile\" data-count=\"out of scope\"><b>{counts.OutOfScope}</b><span>out of scope</span></div></div>")
+            : "<p class=\"degraded\" data-report=\"none\">no phase report has been written on this machine, so the checks on the code are not counted here</p>");
+        region.Append("</div>");
+
+        return region.ToString();
     }
 
     static string Escaped(string text) =>

@@ -1318,6 +1318,7 @@ public partial class ArchitectureConformance
         .. GroupOfTenClaims,
         .. UniverseYearClaims,
         .. Reading.ReadSurface.RunPageClaims,
+        .. Reading.ReadSurface.RunMiddleClaims,
     ];
 
     // Rows taken out of the document after phase 12's prediction, which counted each: the name page's
@@ -1370,7 +1371,8 @@ public partial class ArchitectureConformance
     // and the universe table's year line and the headings' accounts of their columns on four tables, which
     // three 5.8 corrections built on the operator's asks of 2026-09-28, and the Run page opened on its pictures,
     // which the 12.3 correction built on the operator's ruling of the same day, its fifteen claims named in their
-    // own list.
+    // own list, and its trades, freshness, research and checklist, which the next 12.3 correction built, its
+    // eighteen named in theirs.
     static readonly string[] PhaseTwelveBeyondThePrediction =
     [
         CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
@@ -1413,6 +1415,7 @@ public partial class ArchitectureConformance
         .. GroupOfTenClaims,
         .. UniverseYearClaims,
         .. Reading.ReadSurface.RunPageClaims,
+        .. Reading.ReadSurface.RunMiddleClaims,
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1445,7 +1448,7 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((550, 665), (predicted, actual));
+        Assert.Equal((550, 683), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

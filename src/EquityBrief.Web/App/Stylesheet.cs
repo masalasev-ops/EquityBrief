@@ -576,7 +576,34 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .run-detail details.fold{border-top:1px solid var(--hair);padding:8px 0}
 .run-detail details.fold>summary{cursor:pointer;font-weight:600;min-height:32px;padding:4px 0}
 .run-detail details.fold[open]>summary{margin-bottom:10px}
-@media (max-width:900px){ .run-pair{grid-template-columns:1fr} .ns-figures{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.run-pair+.run-pair{margin-top:18px}
+.trades-picture .tp-body{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.trades-ring .tr-track{fill:none;stroke:var(--hair);stroke-width:10}
+.trades-ring .tr-track.tr-unmet{stroke:var(--dash-ink);stroke-dasharray:6 6}
+.trades-ring .tr-done{fill:none;stroke:var(--stat);stroke-width:10}
+.trades-ring .tr-figure{font-size:26px;font-weight:600;fill:var(--ink)} .trades-ring .tr-caption{font-size:12px;fill:var(--soft)}
+.tp-tiles,.rp-tiles,.wr-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;flex:1}
+.wr-tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+.trades-picture .tile,.research-picture .tile,.worry-picture .tile{background:var(--panel);border-radius:8px;padding:8px 12px}
+.trades-picture .tile b,.research-picture .tile b,.worry-picture .tile b{display:block;font-size:22px;font-variant-numeric:tabular-nums}
+.trades-picture .tile span,.research-picture .tile span,.worry-picture .tile span{color:var(--soft);font-size:13px}
+.tp-rate,.fr-said{color:var(--ink-2)} .tp-open{margin:0;text-align:right;font-weight:600}
+.fresh-bars,.pass-bars,.spend-bar{width:100%;height:auto;display:block}
+.fresh-bars .fr-base{stroke:var(--hair-2);stroke-width:1}
+.fresh-bars .fr-repeated{fill:var(--stat-2)} .fresh-bars .fr-new{fill:var(--stat)}
+.fr-key{font-size:13px;color:var(--ink-2);display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center}
+.fr-key .sw-new{background:var(--stat)} .fr-key .sw-repeated{background:var(--stat-2)}
+.research-picture .rp-spend{margin:0 0 6px}
+.spend-bar .sp-track{fill:var(--hair)} .spend-bar .sp-spent{fill:var(--stat)}
+.pass-bars .pb-bar{fill:var(--stat)} .pass-bars .pb-day{font-size:11px;fill:var(--soft)}
+.worries{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:8px}
+.worries li{display:flex;gap:10px;align-items:flex-start}
+.worry-mark{flex:none} .worry-mark path{fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.worries li[data-state='held'] .worry-mark circle{fill:var(--stat-fill)} .worries li[data-state='held'] .worry-mark path{stroke:var(--stat)}
+.worries li[data-state='failed'] .worry-mark circle{fill:var(--fail-fill)} .worries li[data-state='failed'] .worry-mark path{stroke:var(--fail)}
+.worries li[data-state='failed'] .worry-why{color:var(--fail)}
+.worries li[data-state='not read'] .worry-mark circle{fill:none;stroke:var(--dash-ink);stroke-dasharray:3 3} .worries li[data-state='not read'] .worry-mark path{stroke:var(--dash-ink)}
+@media (max-width:900px){ .run-pair{grid-template-columns:1fr} .ns-figures{grid-template-columns:repeat(2,minmax(0,1fr))} .wr-tiles{grid-template-columns:repeat(2,minmax(0,1fr))} }
 
 @media (max-width:640px){
  :root{--gutter:14px}

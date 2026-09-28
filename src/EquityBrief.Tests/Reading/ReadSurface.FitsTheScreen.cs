@@ -206,8 +206,10 @@ public partial class ReadSurface
         // correction, a year line beside each of the fixture name's two peers on both, and 49 from
         // the 5.8 correction that draws a year line beside each of the four names on the universe table, and
         // 53 from the 12.3 correction that opens the Run page on its pictures: the night's status mark and time
-        // bar, the market's gauge and the funnel's bars, the fixture's sessions of averages too few for a line.
-        Assert.Equal(53, pictures);
+        // bar, the market's gauge and the funnel's bars, the fixture's sessions of averages too few for a line,
+        // and 62 from the one that draws its trades, freshness, research and checklist: the ring, the freshness
+        // bars, the spend bar, the research bars and the checklist's five marks.
+        Assert.Equal(62, pictures);
 
         var page = screens[3].Item2;
 
