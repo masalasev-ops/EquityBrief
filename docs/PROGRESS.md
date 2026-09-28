@@ -29567,8 +29567,8 @@ Written:    section 15.10's answers, four rows and closing paragraph, section 15
             `.claude/rules/checks.md`'s read-surface row, each prior text in `CHANGELOG.md`; the reader's guide's
             Run card; the decisions by the ruling before this.
 Expected:   derived: no expectation file moves.
-Tests:      133T, from 1494: six added.
-Claims:     133C, from 650: fifteen added, the three regions as the nine parts their rows state, the folded
+Tests:      1500, from 1494: six added.
+Claims:     665, from 650: fifteen added, the three regions as the nine parts their rows state, the folded
             detail, the four marks and section 17's market label, each named in `ReadSurface.RunPageClaims`.
 Pins:       the branch against `main` edits `RunScreen.cs`, `ReadApi.cs`, the read surface's `Program.cs`,
             `MarkRenderer.cs`, `SinglePageApp.cs` and `Stylesheet.cs`, adds `MarketLabel.cs`, and edits tests and
@@ -29583,14 +29583,17 @@ Mutated:    the rule, stated before the run: each mechanism the regions rest on 
             N2 the market's word at the floor read as weak: red in the label test.
             N3 the gauge's value drawn in the support hue: red in the colour test.
             N4 the moves step left out of its group: red in the stage group test.
-            Results: 133M
-Held:       133H
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 133T of 133T tests ran
+            Results: one run each in a detached worktree at b07e889, this entry's commit, filtered to the six
+            new tests, each edit made there and reverted, and the tree read clean after. The whole suite ran
+            green over b07e889 in the gates, 1500 of 1500. N1 turned the state test and the page test red; N2
+            the label test; N3 the colour test; N4 the stage group test.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1500 of 1500 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 133B tables, 133C claims, 133P PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 133R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 133T of 133T tests.
-            Both gates ran over the tree carrying this entry and the one before it, 133SHA, in a worktree
+            `tools/verify-phase.ps1` green at 44 tables, 665 claims, 665 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 676 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1500 of 1500 tests.
+            Both gates ran over the tree carrying this entry and the one before it, b07e889, in a worktree
             beside the repository, and the operator's store under `data/` was not touched by either.
 Carried:    regions 4 to 11 and the narrowed decision, in the corrections after this.
