@@ -29196,3 +29196,52 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, e57cce9, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this.
+
+### 5.8 - correction: a reason's values on tonight's list and a business's sentences beside its state float over the page while the pointer is over them, where they grew a scrollbar around the table and were cut off   2026-09-28
+Corrects:   tonight's list, on the operator's finding of 2026-09-28: "when hovering over the Entry or the
+            Crossed box in tonight's list the table suddenly expands with a scrollbar and whatever is written
+            is not visible anymore".
+Repaired:   the panel stating what the night measured a reason over was placed inside its reason, and the
+            reason inside the table's box, which scrolls sideways; a box that scrolls one way clips the other,
+            so the panel grew a scrollbar around the table and was cut off inside it. The sentences a
+            business's state carries beside the trend word were placed the same way. Both are now fixed to the
+            window, as a name's year and a heading's sentence are, and the shell's script places each beside
+            its holder, beneath it where the window has room and above it where it does not, and within the
+            window at either edge, so the rule that turned the last three reasons' panels to the left is gone.
+            No other panel is placed inside its holder: the other two rules placing an element absolutely are
+            the masthead's month picker and a list's marker, neither in a table.
+Measured:   nothing new.
+Guarded:    `EveryPanelShownOnHoverIsFixedToTheWindowAndPlacedByTheShell` in `read-surface`, new: every panel
+            the stylesheet shows while the pointer is over its holder, read off the stylesheet rather than
+            listed beside the check, is the four there are, each hidden by one rule that fixes it to the window,
+            by none that places it inside its holder, and named in the shell's placing, with the reader shown
+            to find a panel shown on hover and to leave one shown without it. The heading and year line tests
+            read the shell's placing with the two panels in it.
+Written:    `.claude/rules/checks.md`'s read-surface row, its prior text in `CHANGELOG.md`. No section of the
+            architecture changes: section 15.7 already says a reason's values are drawn beside it while it is
+            under the pointer, which the page now does.
+Tests:      1493, from 1492: one added.
+Claims:     650, from 650, predicted unchanged.
+Pins:       the branch against `main` edits no source in the three pin lists: `SinglePageApp.cs` and
+            `Stylesheet.cs` are in none. No version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: one mutation reversing each mechanism the panels rely on, filtered
+            to the new test and the two whose reading of the shell changed.
+            Predicted:
+            P1 a reason's panel placed inside its reason again, as it was: red in the new test.
+            P2 a business's sentences left out of the shell's placing: red in the new test and the headings
+               test.
+            P3 a reason left out of the holders the shell places a panel beside: red in the year line test.
+            Results: one run each in a detached worktree at caebe79, this entry's commit, filtered to the
+            three tests, each edit made there and reverted, and the tree read clean after. The three ran green
+            over the unmutated tree, and the whole suite ran green over caebe79 in the gates, 1493 of 1493. P1
+            turned the new test red; P2 the new test and the headings test; P3 the year line test.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1493 of 1493 tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 650 claims, 650 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 661 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1493 of 1493 tests.
+            Both gates ran over the tree carrying this entry, caebe79, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    as the entry before this.

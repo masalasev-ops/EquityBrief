@@ -8763,3 +8763,11 @@ Was:
 Now:
 > | `read-surface` | ... read back word for word against sentences written with the windows as numbers, off a constructed table and off the fixture's screen; and each column heading of tonight's list on an evening of either rule, of a peers table and of a Past picks table with the stock's column and without says what its column holds, read back word for word against sentences written with the windows and thresholds as numbers, and every heading of tonight's list and of a peers table on the fixture's screens carries one; and a name's earnings reaction record ... |
 Why: the check reaches the part the operator's ask of 2026-09-28 added.
+
+### 2026-09-28 - .claude/rules/checks.md - read-surface holds every panel shown on hover to the window
+Authorised by: Every figure carries a plain-language key
+Was:
+> | `read-surface` | ... and every heading of tonight's list and of a peers table on the fixture's screens carries one; and a name's earnings reaction record ... |
+Now:
+> | `read-surface` | ... and every heading of tonight's list and of a peers table on the fixture's screens carries one; and every panel the stylesheet shows while the pointer is over its holder is hidden by one rule that fixes it to the window, by none that places it inside its holder, and is placed by the shell's script, so a panel drawn in a table's sideways-scrolling box floats over the page; and a name's earnings reaction record ... |
+Why: the operator found on 2026-09-28 that holding the pointer over a reason on tonight's list grew a scrollbar around the table and cut the reason's values off.

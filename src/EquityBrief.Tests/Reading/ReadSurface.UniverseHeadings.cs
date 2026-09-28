@@ -62,7 +62,7 @@ public partial class ReadSurface
         Assert.Contains(".head-tip{display:none;position:fixed;", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains("letter-spacing:normal;text-transform:none;", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains("th.tipped:hover .head-tip,th.tipped:focus-within .head-tip{display:block}", Stylesheet.Css, StringComparison.Ordinal);
-        Assert.Contains("cell.querySelector('.peer-pop, .head-tip')", new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
+        Assert.Contains("cell.querySelector('.peer-pop, .head-tip, .why, .says')", new SinglePageApp().Shell("EquityBrief"), StringComparison.Ordinal);
     }
 
     [Fact]
