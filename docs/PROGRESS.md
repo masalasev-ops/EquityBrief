@@ -29725,15 +29725,19 @@ Mutated:    the rule, stated before the run: each mechanism the three regions re
             L4 the live list's ring drawn in the support hue: red in the colour test.
             L5 the shell's choice written to the link under another name than the page reads: red in the link
                test.
-            Results: 135M
-Held:       135H
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 135T of 135T tests ran
+            Results: one run each in a detached worktree at d746a63, this entry's commit, filtered to the five
+            new tests and the colour test, each edit made there and reverted, and the tree read clean after. The
+            whole suite ran green over d746a63 in the gates, 1510 of 1510. L1 turned the learning region test red;
+            L2 the comparison test and the link test; L3 the checkpoint test; L4 the colour test; L5 the link
+            test.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1510 of 1510 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 135B tables, 135C claims, 135P PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 135R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 135T of 135T tests.
-            Both gates ran over the tree carrying this entry, 135SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 700 claims, 700 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 711 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1510 of 1510 tests.
+            Both gates ran over the tree carrying this entry, d746a63, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    the operator's `register --moved`, run once with items 2 and 3's remedy before the first night after
             the merge.
