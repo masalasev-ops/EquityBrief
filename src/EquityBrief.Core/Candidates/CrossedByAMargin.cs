@@ -12,7 +12,7 @@ namespace EquityBrief.Core.Candidates;
 // as having gone through it, and a level a price is sitting on has decided
 // nothing yet.
 // see: A crossing is a candidate condition only where the close sits half a typical move past the edge it crossed
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public sealed class CrossedByAMargin : CandidateEvaluator
 {
     public const string EvaluatorName = "crossed-by-a-margin";
@@ -27,7 +27,7 @@ public sealed class CrossedByAMargin : CandidateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "8cccb2804954";
+    public override string Version => "29ea9c92e305";
 
     public override IReadOnlyList<string> Reads => [NightValues.Crossings, IndicatorSeries.Atr14];
 

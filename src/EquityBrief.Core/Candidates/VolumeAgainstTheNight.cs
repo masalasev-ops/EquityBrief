@@ -9,7 +9,7 @@ namespace EquityBrief.Core.Candidates;
 // their own average, which is not unusual volume in any sense the live reason
 // means.
 // see: Unusual volume measured against the night's own median is a candidate condition
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public sealed class VolumeAgainstTheNight : CandidateEvaluator
 {
     public const string EvaluatorName = "volume-against-the-night";
@@ -23,7 +23,7 @@ public sealed class VolumeAgainstTheNight : CandidateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "4035f246e6aa";
+    public override string Version => "ece4387e462b";
 
     public override IReadOnlyList<string> Reads => [NightValues.VolumeRatio, NightValues.NightMedianRatio];
 

@@ -28,7 +28,7 @@ public sealed record CandidateVerdict(bool Fired, IReadOnlyDictionary<string, st
 // The version is the pin of the evaluator's own source and every source its evaluation runs through,
 // and `register-append-only` fails where the pin and the constant disagree.
 // see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public abstract class CandidateEvaluator
 {
     // The evaluator's name, as the register's `evaluator` column holds it.

@@ -82,7 +82,7 @@ static int NoVerb()
 // the thing pre-registration exists to stop. Nothing evaluates a registered
 // candidate at 8.3; the shadow column at 8.4 is what runs them. The verb's work is in
 // `RegisterVerb`, so a test runs the verb a person runs rather than a copy of it.
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 static async Task<int> Register(string[] args)
 {
     var configuration = Configuration();

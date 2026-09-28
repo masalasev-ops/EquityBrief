@@ -24,7 +24,7 @@ public sealed record ShortlistOutcome(int MembersConsidered, int RowsWritten, in
 // name the night computed nothing for gets a row saying so: a shadow candidate
 // has to be evaluated on the nights it would have fired, and most of those are
 // nights no live reason surfaced that name.
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 //
 // It selects on chart state alone, with no fundamentals and no model in the
 // decision, which is contradiction L's resolution: what it reads is levels,
@@ -312,7 +312,7 @@ public sealed class ShortlistBuilder : IComponent
             // one row dated months back that went on firing on old prices, and
             // `listings-coverage` could not see it because the fixture holds no
             // such member.
-            // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+            // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
             var stale = sessionDate is { } last && newest is { } night && last < night;
 
             // A member whose stored series has an interior hole, evaluated
@@ -380,7 +380,7 @@ public sealed class ShortlistBuilder : IComponent
             // gapped name is evaluated over the same nothing the live reasons
             // are, so a shadow score is never computed across a hole the live
             // reasons refused to compute across.
-            // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+            // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
             var withheld = stale
                 ? new NameWithheld(ShadowSkipCause.Stale, NoBarThisSession(sessionDate!.Value))
                 : gapped

@@ -11,7 +11,7 @@ namespace EquityBrief.Worker.Candidates;
 // something a night arrives at: a register that filled itself would be the thing
 // pre-registration exists to stop. Its own class rather than a local function in the program,
 // so the suite runs the verb a person runs.
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public static class RegisterVerb
 {
     public const string Name = "register";

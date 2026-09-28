@@ -79,7 +79,7 @@ public static class CandidateFamily
     // into a discovery. A register that could be edited would let either be
     // arranged afterwards, which is why the table refuses an edit rather than the
     // components that reach it.
-    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
     // see: Adding a candidate later restarts the clock
     public static int Divisor(IEnumerable<RegisterRow> rows, DateTimeOffset windowOpenedAt) =>
         StandingBefore(rows, windowOpenedAt).Count;

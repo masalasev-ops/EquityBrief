@@ -13,7 +13,7 @@ namespace EquityBrief.Core.Candidates;
 // or a gate. At 8.3 it is registered and evaluated by nothing; the shadow column
 // at 8.4 is what runs it.
 // see: The momentum panel is context a reader weighs, and nothing computes with it
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public sealed class MomentumIndexReading : CandidateEvaluator
 {
     public const string EvaluatorName = "momentum-index-reading";
@@ -24,7 +24,7 @@ public sealed class MomentumIndexReading : CandidateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "8bc44f1e4855";
+    public override string Version => "6adbc993ca97";
 
     public override IReadOnlyList<string> Reads => [Reading];
 

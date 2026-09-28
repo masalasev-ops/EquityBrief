@@ -959,6 +959,7 @@ app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page, IClock clo
 // already answers and which keeps `#/run/<date>` a link.
 app.MapGet("/screens/run/{night?}", async (
     string? night,
+    string? version,
     ReadApi read,
     MarkRenderer marks,
     SinglePageApp page,
@@ -1021,6 +1022,15 @@ app.MapGet("/screens/run/{night?}", async (
         funnel is { } ran ? await read.FilterSettingsAsync(ran.Version) : null,
         await read.BreadthLineAsync(dated, MarkRenderer.BreadthLineSessions));
 
+    // The versions running beside the live list and tonight's picks beside the one the link names, read
+    // off the shadow column: picks only, a version's outcomes waiting for its look.
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+    var register = await read.RegisteredCandidatesAsync();
+    var edge = EdgeScreen.Edge(register, await read.CandidateNightsAsync(), await read.CandidateSetupsAsync(), dated, clock.UtcNow);
+    var shadowPicks = await read.ShadowPicksAsync(dated);
+    var versions = RunScreen.Versions(register, edge, shadowPicks);
+    var compare = RunScreen.Compare(dated, versions, register, version, shadowPicks, await read.EvaluatedOnAsync(dated), await read.GateResultsAsync(dated));
+
     return Results.Content(
         page.RunRegion(
             marks,
@@ -1076,12 +1086,7 @@ app.MapGet("/screens/run/{night?}", async (
                 everyListing,
                 clock.UtcNow),
             RunScreen.Overlap(everyListing, dated),
-            EdgeScreen.Edge(
-                await read.RegisteredCandidatesAsync(),
-                await read.CandidateNightsAsync(),
-                await read.CandidateSetupsAsync(),
-                dated,
-                clock.UtcNow),
+            edge,
             await read.OpenFilterVersionAsync() is { } open
                 ? EdgeScreen.NearMisses(open, await read.NearMissRowsAsync(open), dated)
                 : EdgeScreen.NearMisses(null, [], dated),
@@ -1098,7 +1103,10 @@ app.MapGet("/screens/run/{night?}", async (
                 how,
                 RunScreen.Refused(await read.RefusedDocumentsAsync(dated)),
                 RunScreen.FellBack(await read.FellBackAsync(dated)),
-                log)),
+                log),
+            background: versions,
+            compare: compare,
+            checkpoints: RunScreen.Checkpoints(edge)),
         "text/html; charset=utf-8");
 });
 

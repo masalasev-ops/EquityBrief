@@ -232,8 +232,8 @@ public static class RunScreen
     // The shadow region, which is a count and a divisor and never a name.
     //
     // A screen shows how many candidate conditions are registered and that each
-    // one's record is withheld until it is promoted. It shows no evaluation of a
-    // name, here or anywhere else: seeing a candidate's record before it is
+    // one's record is withheld until it is promoted. It shows no candidate's pick
+    // of a name, which the comparison of tonight's picks alone draws: seeing a candidate's record before it is
     // promoted is the thing the shadow exists to prevent, and a page that drew
     // one would make the register a formality.
     //
@@ -244,7 +244,7 @@ public static class RunScreen
     // Beside the family's divisor stand the distinct trials the level is shared across and
     // the level each starts at, with what a candidate's looks release of it, so the bar a
     // verdict is read against is on the page wherever the divisor is.
-    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
     // see: Holm's level passes between the candidates by a graph fixed when they are registered, and its first step is 0.05 over the distinct trials read at a look or still running
     public static ShadowRegion Shadow(
         IReadOnlyList<CandidateRow> rows,
@@ -1333,6 +1333,271 @@ public static class RunScreen
                 .Sum(row => Regex.Match(row.Detail, @"^(\d+) of \d+ queued pass\(es\) completed") is { Success: true } done
                     ? int.Parse(done.Groups[1].Value, CultureInfo.InvariantCulture)
                     : 0))),
+    ];
+
+    // A version's name as a link carries it: its words in lower case with every run of anything else one dash.
+    public static string Slug(string candidate) =>
+        Regex.Replace(candidate.ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');
+
+    // The settings a candidate was registered with, read from its register row.
+    static IReadOnlyDictionary<string, double> Settings(string parameters)
+    {
+        using var document = JsonDocument.Parse(parameters);
+
+        return document.RootElement.EnumerateObject()
+            .Where(property => property.Value.ValueKind == JsonValueKind.Number)
+            .ToDictionary(property => property.Name, property => property.Value.GetDouble(), StringComparer.Ordinal);
+    }
+
+    // What a version changes against the live list, in plain words, read off the two registered settings.
+    public static string Changes(IReadOnlyDictionary<string, double> version, IReadOnlyDictionary<string, double> live)
+    {
+        double Of(IReadOnlyDictionary<string, double> settings, string key) => settings.TryGetValue(key, out var held) ? held : double.NaN;
+        bool Moved(string key) => !Of(version, key).Equals(Of(live, key));
+
+        static string Plan(double trade) => trade switch
+        {
+            0 => "the ladder's first tranche",
+            1 => "a stop and target at the nearest bands",
+            _ => "a stop and target clear of the noise",
+        };
+
+        static string Strength(double floor) => Math.Abs(floor - (2.0 / 3)) < 0.001 ? "the top third" : Math.Abs(floor - 0.5) < 0.001 ? "the top half" : floor.ToString("0.00", CultureInfo.InvariantCulture);
+
+        var said = new List<string>();
+        var named = new HashSet<string>(StringComparer.Ordinal) { "marketGate", "strengthFloor", "depthLow", "depthHigh", "arrivalSessions", "trade", "rewardToRiskFloor" };
+
+        if (Moved("marketGate"))
+        {
+            said.Add(Of(version, "marketGate") == 0 ? "lists on every night, the market gate off" : "reads the market gate, which the live list does not");
+        }
+
+        if (Moved("strengthFloor"))
+        {
+            said.Add($"only strength in {Strength(Of(version, "strengthFloor"))}, not {Strength(Of(live, "strengthFloor"))}");
+        }
+
+        if (Moved("depthLow") || Moved("depthHigh"))
+        {
+            said.Add(FormattableString.Invariant($"only dips of {Of(version, "depthLow"):0.#} to {Of(version, "depthHigh"):0.#} typical days, not {Of(live, "depthLow"):0.#} to {Of(live, "depthHigh"):0.#}"));
+        }
+
+        if (Moved("arrivalSessions"))
+        {
+            said.Add(Of(version, "arrivalSessions") == 1
+                ? FormattableString.Invariant($"the buy signal must arrive tonight, not within {Of(live, "arrivalSessions"):0} sessions")
+                : FormattableString.Invariant($"the buy signal may arrive within {Of(version, "arrivalSessions"):0} sessions, not {Of(live, "arrivalSessions"):0}"));
+        }
+
+        if (Moved("trade"))
+        {
+            said.Add($"{Plan(Of(version, "trade"))}, not {Plan(Of(live, "trade"))}");
+        }
+
+        if (Moved("rewardToRiskFloor"))
+        {
+            said.Add(FormattableString.Invariant($"a reward to risk of {Of(version, "rewardToRiskFloor"):0.##} or more, not {Of(live, "rewardToRiskFloor"):0.##}"));
+        }
+
+        said.AddRange(version.Keys.Union(live.Keys).Where(key => !named.Contains(key) && Moved(key)).Order(StringComparer.Ordinal)
+            .Select(key => FormattableString.Invariant($"{key} at {Of(version, key):0.###} where the live list has {Of(live, key):0.###}")));
+
+        var sentence = said.Count == 0 ? "the same settings as the live list" : string.Join("; ", said);
+
+        return char.ToUpperInvariant(sentence[0]) + sentence[1..];
+    }
+
+    // The versions running beside the live list, the live one first, each with what it changes, the stocks it
+    // has picked over the nights up to the night, the share of those the live list also picked, and the
+    // blocks its edge clock holds against the floor of its first look. Picks only: no figure here is read from
+    // how a trade turned out.
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+    public static IReadOnlyList<VersionLine> Versions(IReadOnlyList<CandidateRow> register, EdgeView edge, IReadOnlyList<ShadowPickRow> picks)
+    {
+        var standing = edge.Candidates;
+        var settings = register
+            .Where(row => row.Retires is null)
+            .GroupBy(row => row.Candidate, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => Settings(group.OrderBy(row => row.RegisteredAt).Last().Parameters), StringComparer.Ordinal);
+        var live = standing.FirstOrDefault(candidate => candidate.Live);
+        var liveSettings = live is not null && settings.TryGetValue(live.Candidate, out var held) ? held : new Dictionary<string, double>(StringComparer.Ordinal);
+
+        return
+        [
+            .. standing
+                .OrderByDescending(candidate => candidate.Live)
+                .Select(candidate =>
+                {
+                    var fired = picks.Where(pick => pick.Fired && pick.Candidate == candidate.Candidate).ToArray();
+
+                    return new VersionLine(
+                        candidate.Candidate,
+                        Slug(candidate.Candidate),
+                        candidate.Live ? "The rules that pick tonight's stocks" : Changes(settings.GetValueOrDefault(candidate.Candidate) ?? liveSettings, liveSettings),
+                        fired.Length,
+                        fired.Length == 0 ? null : 1.0 * fired.Count(pick => pick.LivePassed) / fired.Length,
+                        candidate.Record.Blocks,
+                        candidate.Record.Floor,
+                        candidate.Live);
+                }),
+        ];
+    }
+
+    // Tonight's picks beside one background version's: the version the link names or the first after the
+    // live list, the names only the live list picked with the setting the version read them against, the
+    // names both picked, the names only the version picked with the gate the live list stopped them at, and
+    // over the last twenty evenings the version's picks, the share of them the live list also picked and the
+    // evenings it picked a name the live list did not. Picks only.
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+    public static CompareView Compare(
+        DateOnly night,
+        IReadOnlyList<VersionLine> versions,
+        IReadOnlyList<CandidateRow> register,
+        string? asked,
+        IReadOnlyList<ShadowPickRow> picks,
+        IReadOnlySet<string> evaluated,
+        IReadOnlyList<GateResultRow> tonight)
+    {
+        var chosen = versions.FirstOrDefault(version => !version.Live && version.Slug == asked) ?? versions.FirstOrDefault(version => !version.Live);
+
+        if (chosen is null)
+        {
+            return new CompareView(night, versions, null, false, [], [], [], 0, 0, null, 0);
+        }
+
+        var settings = register
+            .Where(row => row.Retires is null && row.Candidate == chosen.Candidate)
+            .OrderBy(row => row.RegisteredAt)
+            .Select(row => Settings(row.Parameters))
+            .LastOrDefault() ?? new Dictionary<string, double>(StringComparer.Ordinal);
+
+        var mine = picks.Where(pick => pick.Candidate == chosen.Candidate).ToArray();
+        var live = tonight.Where(row => row.Passed).Select(row => row.Ticker).ToHashSet(StringComparer.Ordinal);
+        var version = mine.Where(pick => pick.Session == night && pick.Fired).Select(pick => pick.Ticker).ToHashSet(StringComparer.Ordinal);
+        var rows = tonight.ToDictionary(row => row.Ticker, StringComparer.Ordinal);
+        var answers = mine.Where(pick => pick.Session == night).ToDictionary(pick => pick.Ticker, pick => pick.Values, StringComparer.Ordinal);
+
+        var sessions = picks.Select(pick => pick.Session).Where(session => session <= night).Distinct().OrderDescending().Take(FreshEvenings).ToHashSet();
+        var window = mine.Where(pick => pick.Fired && sessions.Contains(pick.Session)).ToArray();
+
+        return new CompareView(
+            night,
+            versions,
+            chosen,
+            evaluated.Contains(chosen.Candidate),
+            [.. live.Except(version).Order(StringComparer.Ordinal).Select(ticker => new ComparedName(ticker, rows.TryGetValue(ticker, out var row) && answers.TryGetValue(ticker, out var said) ? WhyNotTheVersion(row, said, settings) : null))],
+            [.. live.Intersect(version).Order(StringComparer.Ordinal)],
+            [.. version.Except(live).Order(StringComparer.Ordinal).Select(ticker => new ComparedName(ticker, rows.TryGetValue(ticker, out var row) ? WhyNotTheLiveList(row) : null))],
+            sessions.Count,
+            window.Length,
+            window.Length == 0 ? null : 1.0 * window.Count(pick => pick.LivePassed) / window.Length,
+            window.Where(pick => !pick.LivePassed).Select(pick => pick.Session).Distinct().Count());
+    }
+
+    // The gates in the order the filter reads them.
+    static readonly string[] GateOrder = [SwingGates.Market, SwingGates.Trend, SwingGates.Setup, SwingGates.Trigger, SwingGates.Trade];
+
+    // Why the live list stopped a name the version picked: the first gate the live row failed, in the words
+    // the live row stored for it, or the exclusion that took it.
+    static string WhyNotTheLiveList(GateResultRow row)
+    {
+        var gates = Gates(row.Gates);
+
+        foreach (var gate in GateOrder)
+        {
+            if (gates.TryGetValue(gate, out var read) && !read.Passed)
+            {
+                return $"the live list's {gate} gate: {read.Reason}";
+            }
+        }
+
+        return row.Exclusions.Count > 0 ? "excluded from the live list: " + string.Join(", ", row.Exclusions) : "the live list did not pick it";
+    }
+
+    // Why the version did not pick a name the live list picked: the first gate the version's answer failed,
+    // said with the live row's stored reading for that gate and the version's own setting.
+    static string WhyNotTheVersion(GateResultRow row, string answer, IReadOnlyDictionary<string, double> settings)
+    {
+        using var document = JsonDocument.Parse(answer);
+
+        var values = document.RootElement.EnumerateObject().ToDictionary(property => property.Name, property => property.Value.ToString(), StringComparer.Ordinal);
+        var gates = Gates(row.Gates);
+
+        string Value(string gate, string key) => gates.TryGetValue(gate, out var read) && read.Values.TryGetValue(key, out var held) ? held : "none";
+
+        double? Number(string gate, string key) =>
+            double.TryParse(Value(gate, key), NumberStyles.Float, CultureInfo.InvariantCulture, out var number) ? number : null;
+
+        double Setting(string key) => settings.TryGetValue(key, out var held) ? held : double.NaN;
+
+        foreach (var gate in GateOrder)
+        {
+            if (!values.TryGetValue(gate, out var answered) || answered != "failed")
+            {
+                continue;
+            }
+
+            return gate switch
+            {
+                SwingGates.Market => FormattableString.Invariant($"the market's breadth of {Number(gate, "breadth") * 100:0.0}% is below this version's floor of {Setting("breadthFloor") * 100:0}%"),
+                SwingGates.Trend => FormattableString.Invariant($"strength {Number(gate, "strength"):0.000} is below this version's floor of {Setting("strengthFloor"):0.000}"),
+                SwingGates.Setup => FormattableString.Invariant($"dipped {Number(gate, "depth"):0.0} typical days, outside this version's {Setting("depthLow"):0.#} to {Setting("depthHigh"):0.#}"),
+                SwingGates.Trigger => FormattableString.Invariant($"its buy signal arrived {Value(gate, "arrived")}, outside this version's window of {Setting("arrivalSessions"):0} session(s)"),
+                _ => FormattableString.Invariant($"its reward to risk on this version's plan is {(Setting("trade") == 1 ? row.SwingRewardToRisk : Setting("trade") == 0 ? row.LadderRewardToRisk : row.ClearRewardToRisk):0.00}, against a floor of {Setting("rewardToRiskFloor"):0.##}"),
+            };
+        }
+
+        return values.TryGetValue("exclusions", out var excluded) && excluded != "none" ? "excluded by this version: " + excluded : "this version did not pick it";
+    }
+
+    // Each gate a live row stored, with whether it passed, the reason it gave and the values it was read over.
+    static Dictionary<string, (bool Passed, string Reason, IReadOnlyDictionary<string, string> Values)> Gates(string stored)
+    {
+        using var document = JsonDocument.Parse(string.IsNullOrEmpty(stored) ? "{}" : stored);
+
+        var gates = new Dictionary<string, (bool, string, IReadOnlyDictionary<string, string>)>(StringComparer.Ordinal);
+
+        if (document.RootElement.TryGetProperty("gates", out var list))
+        {
+            foreach (var gate in list.EnumerateArray())
+            {
+                gates[gate.GetProperty("gate").GetString() ?? string.Empty] = (
+                    gate.GetProperty("passed").GetBoolean(),
+                    gate.TryGetProperty("reason", out var reason) ? reason.GetString() ?? string.Empty : string.Empty,
+                    gate.TryGetProperty("values", out var read)
+                        ? read.EnumerateObject().ToDictionary(property => property.Name, property => property.Value.GetString() ?? string.Empty, StringComparer.Ordinal)
+                        : new Dictionary<string, string>(StringComparer.Ordinal));
+            }
+        }
+
+        return gates;
+    }
+
+    // Each version at a checkpoint: locked with its setups and blocks until its first look is read, and from
+    // then the last look's share, the break-even its plans needed, what no skill scored from the same starts,
+    // the smallest excess luck alone could not explain, and the verdict in words.
+    // see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow
+    public static IReadOnlyList<CheckpointRow> Checkpoints(EdgeView edge) =>
+    [
+        .. edge.Candidates
+            .OrderByDescending(candidate => candidate.Live)
+            .Select(candidate =>
+            {
+                var record = candidate.Record;
+                var look = record.Looks.Count > 0 ? record.Looks[^1] : null;
+
+                return new CheckpointRow(
+                    candidate.Candidate,
+                    candidate.Live,
+                    record.Setups,
+                    record.Blocks,
+                    record.Floor,
+                    look?.Share,
+                    look is null ? null : record.PlannedBreakEven,
+                    look?.NullShare,
+                    look?.SmallestExcess,
+                    record.Verdict);
+            }),
     ];
 
     // The checklist: each item held, failed with why, or not read where the night stored nothing it could be

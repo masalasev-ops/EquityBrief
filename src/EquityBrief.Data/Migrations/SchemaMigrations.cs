@@ -161,7 +161,7 @@ public static class SchemaMigrations
     // are nights no live reason surfaced that name, so writing rows only for
     // listed names would make section 13's shadow mechanism impossible without
     // anything announcing it.
-    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
     //
     // `plan_at_listing` is the column the improvement loop rests on. Bars can be
     // replayed and the plan cannot, because by the time a verdict is possible
@@ -536,7 +536,7 @@ public static class SchemaMigrations
     // a registration nor a retirement is a row the divisor cannot count and the
     // shadow column cannot evaluate, and a check constraint is what makes that a
     // refusal at the write rather than a row every reader skips differently.
-    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
     const string CreateCandidateRegister = @"
         CREATE TABLE candidate_register (
             id                 INTEGER NOT NULL,
@@ -568,7 +568,7 @@ public static class SchemaMigrations
 
     // A replace removes the row it conflicts with without firing a delete trigger, so an insert naming
     // an id the register holds is refused whatever its conflict clause.
-    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
     const string RefuseARegisterReplace = @"
         CREATE TRIGGER candidate_register_is_append_only_on_replace
         BEFORE INSERT ON candidate_register

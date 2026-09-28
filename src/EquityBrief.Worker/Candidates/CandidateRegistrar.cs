@@ -27,7 +27,7 @@ public sealed record RegistrationOutcome(string Outcome, long? Id, string Detail
 // migrations create. Both layers rather than either: the triggers hold for
 // anything that reaches the file without coming through here, and this holds for
 // the caller that came through the front door and gets told why.
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public sealed class CandidateRegistrar : IComponent
 {
     public static ComponentAccess Access => new(

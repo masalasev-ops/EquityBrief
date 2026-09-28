@@ -11,11 +11,12 @@ namespace EquityBrief.Tests.Reading;
 //
 // The region states how many candidate conditions are registered and the
 // divisor that number sets, and says each candidate's record is withheld until
-// it is promoted. The half that matters more is what it does not state: no
-// evaluation of a name reaches this region or any other, because seeing a
+// it is promoted. The half that matters more is what it does not state: the
+// listings' shadow column reaches this region and no other, because seeing a
 // candidate's record before it is promoted is the thing pre-registration exists
-// to prevent, and a page that drew one would make the register a formality.
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// to prevent, and a page that drew one would make the register a formality. A
+// swing candidate's picks are drawn in the comparison of tonight's picks alone.
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public partial class ReadSurface
 {
     static readonly DateTimeOffset Registered = new(2026, 9, 7, 21, 0, 0, TimeSpan.Zero);

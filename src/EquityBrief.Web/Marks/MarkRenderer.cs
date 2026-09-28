@@ -408,6 +408,52 @@ public sealed record ResearchNight(DateOnly Session, int PaidPasses, int Drafts)
 // up to it.
 public sealed record ResearchPicture(NightSpend Spend, IReadOnlyList<ResearchNight> Nights);
 
+// A version running beside the live list, as the Run page's learning region draws it: what it changes in
+// plain words, the stocks it has picked so far, the share of them the live list also picked, and the
+// evidence it has gathered against the floor its first look is read at. Picks only: nothing here is read
+// from how its trades turned out.
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+public sealed record VersionLine(string Candidate, string Slug, string Changes, int Picks, double? Shared, int Blocks, int Floor, bool Live);
+
+// A stock in a comparison of the night's picks, with the setting that sent it one way where the stored gate
+// results say which.
+public sealed record ComparedName(string Ticker, string? Why);
+
+// Tonight's picks compared with one background version's: the names only the live list picked, the names
+// both picked, and the names only the version picked, each only-name with its reason, and over the last
+// twenty evenings the version's picks, the share of them the live list also picked and the evenings it
+// picked a name the live list did not.
+public sealed record CompareView(
+    DateOnly Night,
+    IReadOnlyList<VersionLine> Versions,
+    VersionLine? Chosen,
+    bool Evaluated,
+    IReadOnlyList<ComparedName> OnlyLive,
+    IReadOnlyList<string> Both,
+    IReadOnlyList<ComparedName> OnlyVersion,
+    int Evenings,
+    int Picked,
+    double? SharedShare,
+    int EveningsAhead);
+
+// One version at a checkpoint: before its first look a locked row with its trades and blocks so far, and
+// from then the share of its trades that reached the target, the break-even they needed, what a version
+// with no skill scored from the same starts, how far luck alone could move it, and the verdict in words.
+public sealed record CheckpointRow(
+    string Candidate,
+    bool Live,
+    int Setups,
+    int Blocks,
+    int Floor,
+    double? Share,
+    double? BreakEven,
+    double? NullShare,
+    double? SmallestExcess,
+    string Verdict)
+{
+    public bool Unlocked => Share is not null && NullShare is not null;
+}
+
 // One item of the Run page's checklist: what it asks, whether it held, and where it failed or could not be
 // read, why.
 public sealed record WorryItem(string Item, string State, string? Why)
@@ -682,7 +728,7 @@ public sealed record BaseRateLine(string Window, double? Rate);
 // nothing a reader could read a candidate's performance off, because the
 // register is only a pre-registration for as long as nobody can see how a
 // candidate is doing before deciding whether to keep it.
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 // see: Holm's level passes between the candidates by a graph fixed when they are registered, and its first step is 0.05 over the distinct trials read at a look or still running
 public sealed record ShadowRegion(
     int Registered,
@@ -733,7 +779,7 @@ public sealed record CandidateRegion(
 // The labels are counts and never names, for the reason a candidate's record carries none: a
 // version is a rule being measured, and a screen that named the stocks it moved would be showing
 // a list nobody chose to show.
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public sealed record TrendVersionRow(
     string Version,
     string Parameters,
@@ -3888,7 +3934,7 @@ public sealed class MarkRenderer : IComponent
     //
     // How many candidate conditions are registered, the correction divisor that
     // number sets, and one line saying each candidate's record is withheld until
-    // it is promoted. No evaluation of a name appears here, and the reason is
+    // it is promoted. No candidate's pick of a name appears here, and the reason is
     // worth the sentence: the region exists to say how hard the test is, and a
     // region that also said how a candidate was doing would let the decision to
     // keep it be taken on the result, which is what registering in advance is
@@ -3896,7 +3942,7 @@ public sealed class MarkRenderer : IComponent
     //
     // The count and the divisor are drawn from two figures computed apart, so a register and a
     // correction that disagree show it on the page rather than agreeing by construction.
-    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
     // see: The significance threshold is divided by the family size, and the divisor is shown
     // The run page's Calibration region, section 15.10's rows: what the two clocks can do, in the one
     // sentence section 13 states; the shape half, being the ordinary nights under the open filter
@@ -4208,7 +4254,7 @@ public sealed class MarkRenderer : IComponent
             region.Append("<p data-trials=\"0\">no distinct trial is counted, since no rule is running and no look has read one, so no level is divided</p>");
         }
 
-        region.Append("<p data-withheld=\"true\">each candidate's own record is withheld until it is promoted, and no evaluation of a name is shown here or anywhere else</p>");
+        region.Append("<p data-withheld=\"true\">each candidate's own record is withheld until it is promoted, and its picks are drawn in the comparison of tonight's picks alone</p>");
 
         region.Append("</section>");
 
@@ -4265,13 +4311,13 @@ public sealed class MarkRenderer : IComponent
     // What each registered candidate's record has come to, and what its next look waits for.
     //
     // A record and never a name: the counts are over setups and the sessions they were listed on,
-    // and a candidate's evaluation of a name reaches no screen until the candidate is promoted.
+    // and how a candidate's pick of a name turned out reaches no screen until a look reads it.
     // The running figure is drawn as monitoring and the verdict field beside it changes only at a
     // look, which is the whole of the arrangement: a figure read every night and acted on when it
     // looks good is the choice the looks exist to keep out of the decision.
     // see: The nightly running figure is monitoring and never the verdict
     // see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow
-    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
     // The trend rule's versions: what each labelled the night's names, how far each stands from
     // the live rule, and how often a label the stored nights show went away and came back.
     //
@@ -4457,7 +4503,7 @@ public sealed class MarkRenderer : IComponent
             drawn.Append("</article>");
         }
 
-        drawn.Append("<p data-withheld=\"true\">no evaluation of a name is drawn here or anywhere else, and no record is drawn beside a ticker</p>");
+        drawn.Append("<p data-withheld=\"true\">no candidate's pick of a name is drawn here, and no record is drawn beside a ticker</p>");
         drawn.Append("</section>");
 
         return drawn.ToString();
@@ -6520,6 +6566,210 @@ public sealed class MarkRenderer : IComponent
         region.Append(harness is { } counts
             ? Formatted($"<div class=\"caption\">The checks on the code, from the last phase report</div><div class=\"wr-tiles\"><div class=\"tile\" data-count=\"passed\"><b>{counts.Passed}</b><span>passed</span></div><div class=\"tile\" data-count=\"failed\"><b>{counts.Failed}</b><span>failed</span></div><div class=\"tile\" data-count=\"unexamined\"><b>{counts.Unexamined}</b><span>not examined</span></div><div class=\"tile\" data-count=\"out of scope\"><b>{counts.OutOfScope}</b><span>out of scope</span></div></div>")
             : "<p class=\"degraded\" data-report=\"none\">no phase report has been written on this machine, so the checks on the code are not counted here</p>");
+        region.Append("</div>");
+
+        return region.ToString();
+    }
+
+    // How the system learns, section 15.10's sixth region: the shape clock as progress toward the ordinary
+    // nights it waits on with each check's median count against its band, dashed until measured; the edge
+    // clock as a line from today to its two checkpoints with the blocks gathered; and every version running
+    // beside the live list, what it changes, its picks, the share the live list also picked and its evidence,
+    // with the checkpoint that unlocks its results and a link comparing tonight's picks.
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+    public string LearningRegion(ShapeState? shape, EdgeView edge, IReadOnlyList<VersionLine> versions, string compare)
+    {
+        var region = new StringBuilder();
+
+        region.Append("<div class=\"learning-picture\"><div class=\"lp-clocks\">");
+
+        // The shape clock.
+        region.Append("<div class=\"lp-shape\"><p class=\"lp-head\">Tuning how many stocks pass</p>");
+
+        if (shape is { } clock)
+        {
+            var done = clock.Wanted == 0 ? 0 : Math.Min(1.0, 1.0 * clock.Ordinary / clock.Wanted);
+
+            region.Append(Invariant, $"<svg class=\"progress-bar\" viewBox=\"0 0 380 16\" role=\"img\" data-ordinary=\"{clock.Ordinary}\" data-wanted=\"{clock.Wanted}\" aria-label=\"{clock.Ordinary} of {clock.Wanted} ordinary nights\">");
+            region.Append("<rect class=\"pg-track\" x=\"0\" y=\"2\" width=\"380\" height=\"12\" rx=\"6\"></rect>");
+            region.Append(Invariant, $"<rect class=\"pg-done\" x=\"0\" y=\"2\" width=\"{Number(Math.Max(done * 380, clock.Ordinary > 0 ? 6 : 0))}\" height=\"12\" rx=\"6\"></rect></svg>");
+            region.Append(Invariant, $"<p class=\"lp-said\">{clock.Ordinary} of {clock.Wanted} ordinary nights under {(clock.VersionOpen ? "filter version " + Escaped(clock.Version) : "no open filter version")}. Each check's typical pass count against the range it should fall in:</p>");
+
+            foreach (var band in clock.Gates.Append(clock.List))
+            {
+                var top = Math.Max(band.High, band.Median ?? 0) * 1.15;
+                double X(double at) => 300 * at / Math.Max(top, 1);
+
+                region.Append(Invariant, $"<div class=\"band-row\" data-measure=\"{Escaped(band.Measure)}\" data-median=\"{Whole(band.Median)}\" data-low=\"{band.Low}\" data-high=\"{band.High}\"><span>{Escaped(char.ToUpperInvariant(band.Measure[0]) + band.Measure[1..])}</span>");
+                region.Append("<svg class=\"band-dot\" viewBox=\"0 0 300 22\" role=\"img\" aria-label=\"" + Escaped(band.Measure) + "\">");
+                region.Append("<line class=\"bd-axis\" x1=\"0\" y1=\"11\" x2=\"300\" y2=\"11\"></line>");
+                region.Append(Invariant, $"<rect class=\"{(clock.Crossed && band.Median is not null ? "bd-band" : "bd-band bd-unmeasured")}\" x=\"{Number(X(band.Low))}\" y=\"4\" width=\"{Number(X(band.High) - X(band.Low))}\" height=\"14\" rx=\"7\"></rect>");
+                region.Append(band.Median is { } median && clock.Crossed
+                    ? Formatted($"<circle class=\"bd-dot\" cx=\"{Number(X(median))}\" cy=\"11\" r=\"6\"></circle>")
+                    : string.Empty);
+                region.Append("</svg></div>");
+            }
+
+            region.Append("<p class=\"lp-note\">The range is dashed and holds no dot until the sixty ordinary nights are stored; then the page proposes settings for you to accept or reject.</p>");
+        }
+        else
+        {
+            region.Append("<p class=\"degraded\" data-shape=\"none\">the shape clock is not read on this page</p>");
+        }
+
+        region.Append("</div>");
+
+        // The edge clock.
+        var live = edge.Candidates.FirstOrDefault(candidate => candidate.Live) ?? edge.Candidates.FirstOrDefault();
+        var run = live?.SessionsRun ?? 0;
+        var end = Math.Max(edge.PromotionSessions, 1);
+        double At(double sessions) => 10 + (500 * Math.Min(sessions, end) / end);
+
+        region.Append("<div class=\"lp-edge\"><p class=\"lp-head\">Judging whether the picks make money</p>");
+        region.Append(Invariant, $"<svg class=\"edge-line\" viewBox=\"0 0 520 96\" role=\"img\" data-sessions=\"{run}\" data-first-look=\"{edge.FirstLookSessions}\" data-promotion=\"{edge.PromotionSessions}\" aria-label=\"{run} sessions run of the {edge.FirstLookSessions} the first checkpoint waits on\">");
+        region.Append("<line class=\"el-track\" x1=\"10\" y1=\"46\" x2=\"510\" y2=\"46\"></line>");
+        region.Append(Invariant, $"<line class=\"el-done\" x1=\"10\" y1=\"46\" x2=\"{Number(At(run))}\" y2=\"46\"></line>");
+        region.Append(Invariant, $"<circle class=\"el-today\" cx=\"{Number(At(run))}\" cy=\"46\" r=\"8\"></circle><text class=\"el-text\" x=\"{Number(Math.Max(At(run), 24))}\" y=\"22\" text-anchor=\"middle\">today</text>");
+        region.Append(Invariant, $"<circle class=\"el-check\" cx=\"{Number(At(edge.FirstLookSessions))}\" cy=\"46\" r=\"8\"></circle><text class=\"el-text\" x=\"{Number(At(edge.FirstLookSessions))}\" y=\"76\" text-anchor=\"middle\">1</text>");
+        region.Append(Invariant, $"<circle class=\"el-check\" cx=\"510\" cy=\"46\" r=\"8\"></circle><text class=\"el-text\" x=\"510\" y=\"76\" text-anchor=\"middle\">2</text>");
+        region.Append("</svg>");
+        region.Append(Invariant, $"<p class=\"lp-said\" data-first-look=\"{edge.FirstLookSessions}\" data-promotion=\"{edge.PromotionSessions}\">Checkpoint 1, {edge.FirstLookSessions} sessions in, about two years: it can drop a version and never promote one. Checkpoint 2, {edge.PromotionSessions} sessions in, about three years: it can promote one.</p>");
+        region.Append(Invariant, $"<p class=\"lp-said\">Block {live?.Record.Blocks ?? 0} of {live?.Record.Floor ?? 8} gathered by the live list. Trades that overlap in time share one market, so evidence is counted in blocks of {EquityBrief.Core.Returns.Blocks.Sessions} sessions and not in trades.</p>");
+        region.Append("</div></div>");
+
+        // The versions.
+        region.Append("<div class=\"lp-versions\"><p class=\"lp-head\">Versions running in the background</p>");
+        region.Append("<p class=\"lp-note\">Picks only: how any version's trades turn out stays hidden until a checkpoint, so none wins on a lucky month.</p>");
+        region.Append("<div class=\"tbl-wrap\"><table class=\"versions-table\"><tr><th>Version</th><th>What it changes</th><th class=\"num\">Picks so far</th><th>Also on the live list</th><th>Evidence</th><th>Results</th></tr>");
+
+        foreach (var version in versions)
+        {
+            region.Append(Invariant, $"<tr data-version=\"{Escaped(version.Slug)}\" data-picks=\"{version.Picks}\" data-shared=\"{Whole(version.Shared)}\" data-blocks=\"{version.Blocks}\" data-live=\"{(version.Live ? "true" : "false")}\">");
+            region.Append(Invariant, $"<td><b>{Escaped(version.Candidate)}</b></td><td>{Escaped(version.Changes)}</td><td class=\"num\">{version.Picks}</td>");
+            region.Append(version.Live
+                ? "<td>is the live list</td>"
+                : version.Shared is { } shared
+                    ? Formatted($"<td><svg class=\"share-bar\" viewBox=\"0 0 90 12\" width=\"90\" height=\"12\" aria-hidden=\"true\"><rect class=\"sh-track\" x=\"0\" y=\"1\" width=\"90\" height=\"10\" rx=\"5\"></rect><rect class=\"sh-done\" x=\"0\" y=\"1\" width=\"{Number(90 * shared)}\" height=\"10\" rx=\"5\"></rect></svg> {shared * 100:0}% of its picks</td>")
+                    : "<td><span class=\"degraded\">no pick yet</span></td>");
+            region.Append(Invariant, $"<td>block {version.Blocks} of {version.Floor}</td><td><span class=\"tag-wait\">at checkpoint 1</span></td></tr>");
+        }
+
+        region.Append("</table></div>");
+        region.Append(Invariant, $"<p class=\"lp-open\"><a href=\"{Escaped(compare)}\">Compare tonight's picks &#8594;</a></p></div></div>");
+
+        return region.ToString();
+    }
+
+    // Compare tonight's picks, section 15.10's seventh region: a choice of the versions running beside the
+    // live list, kept in the link, and for the one chosen the names only the live list picked, the names both
+    // picked and the names only it picked, each only-name with the setting that made the difference, drawn
+    // with the three counts overlapping, and its picks over the last twenty evenings. Picks only.
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+    public string CompareRegion(CompareView view, string route, string names)
+    {
+        var region = new StringBuilder();
+
+        if (view.Chosen is not { } chosen)
+        {
+            return "<p class=\"degraded\" data-compare=\"none\">no version runs beside the live list, so there is nothing to compare</p>";
+        }
+
+        region.Append(Invariant, $"<div class=\"compare-picture\" data-version=\"{Escaped(chosen.Slug)}\" data-evaluated=\"{(view.Evaluated ? "true" : "false")}\" data-only-live=\"{view.OnlyLive.Count}\" data-both=\"{view.Both.Count}\" data-only-version=\"{view.OnlyVersion.Count}\">");
+        region.Append("<div class=\"cp-choose\"><label for=\"compare-version\">Compare the live list with</label>");
+        region.Append(Invariant, $"<select id=\"compare-version\" data-compare=\"{Escaped(route)}\">");
+
+        foreach (var version in view.Versions.Where(version => !version.Live))
+        {
+            region.Append(Invariant, $"<option value=\"{Escaped(version.Slug)}\"{(version.Slug == chosen.Slug ? " selected" : string.Empty)}>{Escaped(version.Candidate)}</option>");
+        }
+
+        region.Append("</select></div>");
+        region.Append(Invariant, $"<p class=\"cp-changes\"><b>{Escaped(chosen.Candidate)}:</b> {Escaped(chosen.Changes)}.</p>");
+
+        if (!view.Evaluated)
+        {
+            region.Append("<p class=\"degraded\" data-evaluated=\"false\">This version was not evaluated on this night, so it picked nothing here.</p>");
+        }
+
+        region.Append("<div class=\"cp-body\">");
+        region.Append(Invariant, $"<svg class=\"overlap-rings\" viewBox=\"0 0 300 200\" width=\"300\" height=\"200\" role=\"img\" aria-label=\"{view.OnlyLive.Count} only on the live list, {view.Both.Count} on both, {view.OnlyVersion.Count} only this version\">");
+        region.Append("<circle class=\"or-live\" cx=\"110\" cy=\"100\" r=\"80\"></circle><circle class=\"or-version\" cx=\"190\" cy=\"100\" r=\"80\"></circle>");
+        region.Append(Invariant, $"<text class=\"or-count\" x=\"70\" y=\"108\" text-anchor=\"middle\">{view.OnlyLive.Count}</text><text class=\"or-count\" x=\"150\" y=\"108\" text-anchor=\"middle\">{view.Both.Count}</text><text class=\"or-count\" x=\"230\" y=\"108\" text-anchor=\"middle\">{view.OnlyVersion.Count}</text>");
+        region.Append("<text class=\"or-name\" x=\"70\" y=\"194\" text-anchor=\"middle\">live list</text><text class=\"or-name\" x=\"230\" y=\"194\" text-anchor=\"middle\">this version</text></svg>");
+        region.Append("<div class=\"cp-groups\">");
+        region.Append(Group("only-live", "Only the live list", view.OnlyLive));
+        region.Append(Group("both", "Both", [.. view.Both.Select(ticker => new ComparedName(ticker, null))]));
+        region.Append(Group("only-version", "Only this version", view.OnlyVersion));
+        region.Append("</div></div>");
+        region.Append("<div class=\"cp-tiles\">");
+        region.Append(Invariant, $"<div class=\"tile\" data-figure=\"picked\"><b>{view.Picked}</b><span>stocks this version picked over the last {view.Evenings} evening(s)</span></div>");
+        region.Append(Invariant, $"<div class=\"tile\" data-figure=\"shared\"><b>{(view.SharedShare is { } share ? Formatted($"{share * 100:0}%") : "none")}</b><span>of them also on the live list</span></div>");
+        region.Append(Invariant, $"<div class=\"tile\" data-figure=\"ahead\"><b>{view.EveningsAhead}</b><span>evenings it picked a stock the live list did not</span></div>");
+        region.Append("</div><p class=\"lp-note\">These are picks, not results. A version's picks never appear on tonight's list, a stock's page or Past picks, and how its trades turn out stays hidden until its checkpoint.</p></div>");
+
+        return region.ToString();
+
+        string Group(string kind, string heading, IReadOnlyList<ComparedName> tickers)
+        {
+            var group = new StringBuilder();
+
+            group.Append(Invariant, $"<div class=\"cp-group\" data-group=\"{kind}\"><p class=\"cp-heading\">{heading}</p>");
+            group.Append(tickers.Count == 0 ? "<p class=\"cp-none\">none on this night</p>" : "<ul>");
+
+            foreach (var name in tickers)
+            {
+                group.Append(Invariant, $"<li data-ticker=\"{Escaped(name.Ticker)}\"><a href=\"{Escaped(names + name.Ticker)}\">{Escaped(name.Ticker)}</a>{(name.Why is { } why ? " <span class=\"cp-why\">" + Escaped(why) + "</span>" : string.Empty)}</li>");
+            }
+
+            group.Append(tickers.Count == 0 ? "</div>" : "</ul></div>");
+
+            return group.ToString();
+        }
+    }
+
+    // At a checkpoint, section 15.10's eighth region: one row per version on a scale from nought to a
+    // hundred. Before its first look a row is a dashed, locked outline with its trades and blocks so far; from
+    // its first look the share of its trades that reached the target, the break-even they needed, what no
+    // skill scored from the same starts and how far luck alone could move it, with the verdict in words.
+    // see: A candidate's verdict is read only at looks fixed when it is registered, with each look's boundary found over every sign vector its blocks allow
+    public string CheckpointRegion(IReadOnlyList<CheckpointRow> rows)
+    {
+        const double Wide = 560;
+        double X(double percent) => Wide * Math.Clamp(percent, 0, 100) / 100;
+
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"checkpoint-picture\" data-rows=\"{rows.Count}\" data-unlocked=\"{rows.Count(row => row.Unlocked)}\">");
+        region.Append("<p class=\"ck-key\"><span class=\"ck-k ck-k-share\"></span>the share of its trades that reached the target <span class=\"ck-k ck-k-even\"></span>the share needed to break even <span class=\"ck-k ck-k-null\"></span>what no skill scored from the same starts <span class=\"ck-k ck-k-luck\"></span>how far luck alone could move it</p>");
+
+        foreach (var row in rows)
+        {
+            region.Append(Invariant, $"<div class=\"ck-row\" data-candidate=\"{Escaped(row.Candidate)}\" data-unlocked=\"{(row.Unlocked ? "true" : "false")}\" data-setups=\"{row.Setups}\" data-blocks=\"{row.Blocks}\">");
+            region.Append(Invariant, $"<span class=\"ck-name\">{Escaped(row.Candidate)}</span>");
+
+            if (row.Unlocked)
+            {
+                var share = row.Share!.Value;
+                var zero = row.NullShare!.Value;
+                var luck = row.SmallestExcess ?? 0;
+
+                region.Append(Invariant, $"<svg class=\"ck-scale\" viewBox=\"0 0 {Wide} 34\" role=\"img\" aria-label=\"{share:0.0}% reached the target\">");
+                region.Append(Invariant, $"<line class=\"ck-axis\" x1=\"0\" y1=\"17\" x2=\"{Wide}\" y2=\"17\"></line>");
+                region.Append(Invariant, $"<rect class=\"ck-luck\" x=\"{Number(X(zero))}\" y=\"11\" width=\"{Number(X(zero + luck) - X(zero))}\" height=\"12\" rx=\"6\"></rect>");
+                region.Append(Invariant, $"<circle class=\"ck-null\" cx=\"{Number(X(zero))}\" cy=\"17\" r=\"6\"></circle>");
+                region.Append(row.BreakEven is { } even ? Formatted($"<line class=\"ck-even\" x1=\"{Number(X(even))}\" y1=\"3\" x2=\"{Number(X(even))}\" y2=\"31\"></line>") : string.Empty);
+                region.Append(Invariant, $"<circle class=\"ck-share\" cx=\"{Number(X(share))}\" cy=\"17\" r=\"8\"></circle></svg>");
+                region.Append(Invariant, $"<span class=\"ck-words\">{share:0.0}% reached the target against {(row.BreakEven is { } needed ? Formatted($"{needed:0.0}%") : "no stored")} needed</span><span class=\"ck-verdict\">{Escaped(row.Verdict)}</span>");
+            }
+            else
+            {
+                region.Append(Invariant, $"<span class=\"ck-locked\">unlocks at checkpoint 1, after block {row.Floor} of {row.Floor}</span>");
+                region.Append(Invariant, $"<span class=\"ck-words\">{row.Setups} trade(s) so far, block {row.Blocks} of {row.Floor}</span><span class=\"tag-wait\">at checkpoint 1</span>");
+            }
+
+            region.Append("</div>");
+        }
+
         region.Append("</div>");
 
         return region.ToString();

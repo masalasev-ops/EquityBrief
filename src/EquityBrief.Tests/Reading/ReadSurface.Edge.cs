@@ -153,14 +153,13 @@ public partial class ReadSurface
         Assert.Contains("<td>version 1; the live filter has since moved strengthFloor</td>", moved[1], StringComparison.Ordinal);
     }
 
-    [Fact]
-    public void TheEdgeHalfDrawsEachFigureFromTheFloorOnAndNoneBelowIt()
+    // Nine closed blocks from 2025-01-02, read 629 sessions after the first night. Worked by hand: the
+    // live filter wins one and loses one a block against a calibrated bar of 40% and a break-even of
+    // 35%, so 50% of 18; the variant registered beside it wins one a block in five blocks, below the
+    // floor. The near misses over the same sessions: admitted as the live filter's, the trigger alone
+    // two wins a block against 30% and 30%, and the trade alone a loss a block in five blocks.
+    static (DateOnly Night, DateOnly First, IReadOnlyList<EdgeCandidate> Candidates, IReadOnlyList<NearMissRow> Rows) NineBlocks()
     {
-        // Nine closed blocks from 2025-01-02, read 629 sessions after the first night. Worked by hand: the
-        // live filter wins one and loses one a block against a calibrated bar of 40% and a break-even of
-        // 35%, so 50% of 18; the variant registered beside it wins one a block in five blocks, below the
-        // floor. The near misses over the same sessions: admitted as the live filter's, the trigger alone
-        // two wins a block against 30% and 30%, and the trade alone a loss a block in five blocks.
         var sessions = new List<DateOnly>();
 
         for (var day = new DateOnly(2025, 1, 2); sessions.Count < 630; day = day.AddDays(1))
@@ -211,6 +210,13 @@ public partial class ReadSurface
             night,
             registered.AddDays(1));
 
+        return (night, sessions[0], candidates, rows);
+    }
+
+    [Fact]
+    public void TheEdgeHalfDrawsEachFigureFromTheFloorOnAndNoneBelowIt()
+    {
+        var (night, first, candidates, rows) = NineBlocks();
         var marks = new MarkRenderer();
         var edge = Blocks(WebUtility.HtmlDecode(marks.Edge(new EdgeView(night, candidates, EdgeClock.FirstLookSessions, EdgeClock.EarliestPromotionSessions))), "<tr data-candidate=.*?</tr>");
 
@@ -220,7 +226,7 @@ public partial class ReadSurface
         Assert.Contains("withheld until 8 non-empty blocks", edge[1], StringComparison.Ordinal);
         Assert.DoesNotContain("reached target before stop", edge[1], StringComparison.Ordinal);
 
-        var misses = WebUtility.HtmlDecode(marks.NearMisses(new NearMissView(night, "1", sessions[0], EdgeClock.NearMisses(rows, night))));
+        var misses = WebUtility.HtmlDecode(marks.NearMisses(new NearMissView(night, "1", first, EdgeClock.NearMisses(rows, night))));
 
         Assert.Contains("<tr data-group=\"admitted\" data-kind=\"admitted\" data-rows=\"18\" data-resolved=\"18\" data-blocks=\"9\" data-withheld=\"false\"><td>admitted by the filter</td><td class=\"num\">18</td><td class=\"num\">18</td><td class=\"num\">9 of 8</td><td>50% reached target before stop, against a planned break-even of 35% and a calibrated null of 40%</td></tr>", misses, StringComparison.Ordinal);
         Assert.Contains("<td>rejected by trigger alone</td><td class=\"num\">18</td><td class=\"num\">18</td><td class=\"num\">9 of 8</td><td>100% reached target before stop, against a planned break-even of 30% and a calibrated null of 30%</td>", misses, StringComparison.Ordinal);

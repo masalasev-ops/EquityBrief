@@ -1613,6 +1613,43 @@ internal static class Scope
             Verdict.Pass, "the spend bar and each night's bar read off the rendered mark", ByReadSurface),
         [CheckReach.Key("15.5 The mark vocabulary", "Checklist")] = new Scoped(
             Verdict.Pass, "each item's state and reason read off the rendered list", ByReadSurface),
+
+        // The 12.3 correction drawing how the system learns, the comparison of tonight's picks and each version at a
+        // checkpoint.
+        [CheckReach.Key("15.10 Run", "How the system learns, the shape clock as the ordinary nights under the open filter version against the sixty its calibration waits on")] = new Scoped(
+            Verdict.Pass, "the ordinary nights and the nights wanted read off the rendered bar from the shape clock the page already draws", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How the system learns, each check's typical pass count against its range drawn dashed until measured")] = new Scoped(
+            Verdict.Pass, "each check's range read off the rendered mark, dashed and holding no dot before the trigger", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How the system learns, the edge clock as a line from today to its two checkpoints with the blocks the live list has gathered")] = new Scoped(
+            Verdict.Pass, "the sessions run and the two checkpoints' sessions read off the rendered line with the live list's blocks against the floor", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How the system learns, each version running beside the live list with what it changes and the stocks it has picked and the share the live list also picked and its blocks against the floor")] = new Scoped(
+            Verdict.Pass, "each version's picks and the share the live list also picked worked by hand over constructed gate rows and read off the rendered table", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How the system learns, a link comparing tonight's picks")] = new Scoped(
+            Verdict.Pass, "the link naming the first version after the live list read off the rendered region", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Compare tonight's picks, a choice of the versions running beside the live list kept in the link")] = new Scoped(
+            Verdict.Pass, "the version the link names chosen and selected on the page, and the shell's listener writing a choice to the link", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Compare tonight's picks, the names only the live list picked and those both picked and those only the version picked with the setting that made the difference beside each name only one side picked")] = new Scoped(
+            Verdict.Pass, "the three groups and the reason beside each one-sided name worked by hand over constructed gate rows, for a version picking what the live list picked and one picking nothing it did", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Compare tonight's picks, two overlapping rings holding the three counts")] = new Scoped(
+            Verdict.Pass, "the three counts read off the rendered rings", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Compare tonight's picks, the version's picks over the last twenty evenings with the share the live list also picked and the evenings it picked a stock the live list did not")] = new Scoped(
+            Verdict.Pass, "the picks, the share and the evenings ahead worked by hand over constructed evenings", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Compare tonight's picks, picks alone with no figure from how a pick turned out")] = new Scoped(
+            Verdict.Pass, "a version's pick with a stored outcome draws no outcome in the region, and its names reach no other screen and no other region of the run page", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "At a checkpoint, one row per version on a scale from nought to a hundred")] = new Scoped(
+            Verdict.Pass, "a row for each version read off the rendered region", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "At a checkpoint, before its first look a locked dashed outline with its trades and blocks so far")] = new Scoped(
+            Verdict.Pass, "a version below its first look locked with its setups and blocks worked by hand", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "At a checkpoint, from its first look the share of its trades that reached the target with the break-even they needed and what no skill scored from the same starts and how far luck alone could move it")] = new Scoped(
+            Verdict.Pass, "the share, the break-even and the null worked by hand over nine constructed blocks and read off the rendered scale", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "At a checkpoint, the verdict in words")] = new Scoped(
+            Verdict.Pass, "the last look's verdict read off the rendered row", ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Clock lines")] = new Scoped(
+            Verdict.Pass, "the shape bar, each range and the edge line read off the rendered marks", ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Overlap rings")] = new Scoped(
+            Verdict.Pass, "the two rings and the three counts read off the rendered mark", ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Checkpoint scale")] = new Scoped(
+            Verdict.Pass, "a locked row and an unlocked row with its dot, rule and band read off the rendered mark", ByReadSurface),
         [CheckReach.Key("15.9 Name", "On the list before")] = new Scoped(
             Verdict.Pass,
             "a name the live list picked before the page's night draws the region after the plan and its earnings reactions, its line counting the picks and each group as the test's own arithmetic over the store gives them and a row per earlier listing as it stood on the page's night, and a name never picked before draws none",
@@ -3296,6 +3333,23 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Freshness bars")] = "12.3",
         [CheckReach.Key("15.5 The mark vocabulary", "Research bars")] = "12.3",
         [CheckReach.Key("15.5 The mark vocabulary", "Checklist")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How the system learns, the shape clock as the ordinary nights under the open filter version against the sixty its calibration waits on")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How the system learns, each check's typical pass count against its range drawn dashed until measured")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How the system learns, the edge clock as a line from today to its two checkpoints with the blocks the live list has gathered")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How the system learns, each version running beside the live list with what it changes and the stocks it has picked and the share the live list also picked and its blocks against the floor")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How the system learns, a link comparing tonight's picks")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Compare tonight's picks, a choice of the versions running beside the live list kept in the link")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Compare tonight's picks, the names only the live list picked and those both picked and those only the version picked with the setting that made the difference beside each name only one side picked")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Compare tonight's picks, two overlapping rings holding the three counts")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Compare tonight's picks, the version's picks over the last twenty evenings with the share the live list also picked and the evenings it picked a stock the live list did not")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Compare tonight's picks, picks alone with no figure from how a pick turned out")] = "12.3",
+        [CheckReach.Key("15.10 Run", "At a checkpoint, one row per version on a scale from nought to a hundred")] = "12.3",
+        [CheckReach.Key("15.10 Run", "At a checkpoint, before its first look a locked dashed outline with its trades and blocks so far")] = "12.3",
+        [CheckReach.Key("15.10 Run", "At a checkpoint, from its first look the share of its trades that reached the target with the break-even they needed and what no skill scored from the same starts and how far luck alone could move it")] = "12.3",
+        [CheckReach.Key("15.10 Run", "At a checkpoint, the verdict in words")] = "12.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Clock lines")] = "12.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Overlap rings")] = "12.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Checkpoint scale")] = "12.3",
         [CheckReach.Key("15.9 Name", "On the list before")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, the trades listed with the nights they were listed on")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many are still open and how many finished")] = "12.2",
@@ -3647,6 +3701,12 @@ internal static class Scope
             ["the live list's trades still open and those that reached the target or were stopped out or ran out of time", "a ring of the trades decided against the minimum a share waits on", "the share and the break-even and the average result together once both minimums are met as Past picks draws them", "a link opening Past picks"],
         [CheckReach.Key("15.10 Run", "Is the list finding new stocks")] =
             ["a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed", "the night's split in words"],
+        [CheckReach.Key("15.10 Run", "How the system learns")] =
+            ["the shape clock as the ordinary nights under the open filter version against the sixty its calibration waits on", "each check's typical pass count against its range drawn dashed until measured", "the edge clock as a line from today to its two checkpoints with the blocks the live list has gathered", "each version running beside the live list with what it changes and the stocks it has picked and the share the live list also picked and its blocks against the floor", "a link comparing tonight's picks"],
+        [CheckReach.Key("15.10 Run", "Compare tonight's picks")] =
+            ["a choice of the versions running beside the live list kept in the link", "the names only the live list picked and those both picked and those only the version picked with the setting that made the difference beside each name only one side picked", "two overlapping rings holding the three counts", "the version's picks over the last twenty evenings with the share the live list also picked and the evenings it picked a stock the live list did not", "picks alone with no figure from how a pick turned out"],
+        [CheckReach.Key("15.10 Run", "At a checkpoint")] =
+            ["one row per version on a scale from nought to a hundred", "before its first look a locked dashed outline with its trades and blocks so far", "from its first look the share of its trades that reached the target with the break-even they needed and what no skill scored from the same starts and how far luck alone could move it", "the verdict in words"],
         [CheckReach.Key("15.10 Run", "Research and spend")] =
             ["the month's spend against the month cap", "the reports the paid model wrote on each of the last seven nights", "the reports and the overnight drafts written over those nights"],
         [CheckReach.Key("15.10 Run", "Anything to worry about")] =

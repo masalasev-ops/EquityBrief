@@ -39,7 +39,7 @@ public sealed record ShadowResult(IReadOnlyList<ShadowOutcome> Outcomes, IReadOn
 // The arithmetic sits here rather than in the builder for the reason the reason
 // outcomes do: a night's stage reads a store and writes a row, and the rule it
 // applies is a thing a test can put constructed input to without a store at all.
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public static class ShadowColumn
 {
     // The candidates a night evaluates: those standing registered at the instant
@@ -143,7 +143,7 @@ public static class ShadowColumn
     // skipped with a reason, by the rules the listings stage applies to its own: a missing or moved
     // evaluator is a fault, and a member the night holds no bar for, or holds across a gap, is a counted
     // skip rather than a verdict computed over nothing.
-    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
     public static ShadowResult EvaluateGates(IReadOnlyList<RegisterRow> standing, GateInputs inputs, NameWithheld? withheld = null)
     {
         var outcomes = new List<ShadowOutcome>();

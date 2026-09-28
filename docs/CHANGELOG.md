@@ -8888,3 +8888,54 @@ Was:
 Now:
 > | `read-surface` | ... each of the seventeen marks is asserted ...; and every rule drawing those pictures names no level's hue, each status colour drawn by them alone; and the Run page draws how the list's trades are going from Past picks' own summary, ...; and a name's earnings reaction record ... |
 Why: the check reaches the regions this correction adds.
+
+### 2026-09-28 - CLAUDE.md - the listings rule cites the decision that superseded the one it cited
+Authorised by: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+Was:
+> **A listings row is written for every name in the index every night,** whether or not a reason fired. A shadow candidate has to be evaluated on the nights it would have fired, and most of those are nights no live reason surfaced that name. (see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown)
+Now: the same rule, citing the decision that superseded the one it cited.
+Why: the operator's brief of 2026-09-28 narrows the decision so a candidate's picks are shown on the Run page while its outcomes wait for a look, and a superseded name cited by a spec is refused by `no-superseded-citation`.
+
+### 2026-09-28 - ARCHITECTURE.html - a candidate's picks are shown on the Run page while its outcomes wait for a look
+Authorised by: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+Was:
+> <tr><td><b>Shadow</b></td><td>Scored and stored exactly like a live thing, but shown nowhere and acting on nothing. ...</td></tr>
+> <tr><td><b>Shadow before live</b></td><td>no condition appears on the list until its record has crossed the boundary of a look, and no evaluation of a name is shown anywhere. A candidate's own record is drawn on the run page, ...</td>...</tr>
+> (figure) stored, and shown nowhere
+> ... A condition is registered before it is scored and scored in shadow before it is shown, and the register is never edited. (see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown)
+> <tr><td>Shadow candidates</td><td>... and one line saying each candidate's record is withheld until it is promoted. No evaluation of a name appears here or anywhere else (see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown) (see: Holm's level ...)</td></tr>
+> and the Nightly row coverage, Family size and correction and register edit rows citing "Candidate conditions are registered before they are scored, and scored in shadow before they are shown"
+Now:
+> <tr><td><b>Shadow</b></td><td>Scored and stored exactly like a live thing but acting on nothing, its picks drawn on the Run page alone and its results nowhere until a look reads them. ...</td></tr>
+> <tr><td><b>Shadow before live</b></td><td>no condition appears on the list until its record has crossed the boundary of a look, and no candidate's pick of a name is shown anywhere but the Run page's comparison of tonight's picks (see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look). A candidate's own record is drawn on the run page, ...</td>...</tr>
+> (figure) stored, its picks on the Run page
+> ... A condition is registered before it is scored and scored in shadow before its results are shown, its picks alone drawn on the Run page before a look, and the register is never edited. (see: the new decision)
+> <tr><td>Shadow candidates</td><td>... and one line saying each candidate's record is withheld until it is promoted. No candidate's pick of a name appears here. A candidate's picks are drawn in the comparison of tonight's picks and counted among the versions of how the system learns and nowhere else (see: the new decision) (see: Holm's level ...)</td></tr>
+> and the three rows citing the new decision.
+Why: the operator's brief of 2026-09-28 has the Run page show which stocks each background version would pick while how its trades turn out stays hidden until its checkpoint, and confirmed the decision this supersedes.
+
+### 2026-09-28 - ARCHITECTURE.html - section 15.10's how the system learns, the comparison of tonight's picks and each version at a checkpoint, and their three marks
+Authorised by: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+Was: section 15.10 drew the freshness region and then research and spend; section 15.5 opened "Seventeen marks."
+Now:
+> | How the system learns | the shape clock as the ordinary nights under the open filter version against the sixty its calibration waits on; each check's typical pass count against its range drawn dashed until measured; the edge clock as a line from today to its two checkpoints with the blocks the live list has gathered; each version running beside the live list with what it changes and the stocks it has picked and the share the live list also picked and its blocks against the floor; a link comparing tonight's picks ... |
+> | Compare tonight's picks | a choice of the versions running beside the live list kept in the link; the names only the live list picked and those both picked and those only the version picked with the setting that made the difference beside each name only one side picked; two overlapping rings holding the three counts; the version's picks over the last twenty evenings with the share the live list also picked and the evenings it picked a stock the live list did not; picks alone with no figure from how a pick turned out ... |
+> | At a checkpoint | one row per version on a scale from nought to a hundred; before its first look a locked dashed outline with its trades and blocks so far; from its first look the share of its trades that reached the target with the break-even they needed and what no skill scored from the same starts and how far luck alone could move it; the verdict in words ... |
+> <p>Twenty marks. ... with the Clock lines, Overlap rings and Checkpoint scale rows added.
+Why: the operator's brief of 2026-09-28 names these regions, and every picture a screen draws is a mark defined once.
+
+### 2026-09-28 - BUILD_PLAN.md, RUNBOOK.md, SCHEMA.md - citations of the superseded candidate decision repointed
+Authorised by: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+Was: BUILD_PLAN's 8.0 paragraph, its 10.0 line "Only two changes reach a screen before a promotion" and its 11.0 line "The four parts are display only", RUNBOOK's "A candidate condition" and SCHEMA's `shadow_reasons` row each cited "Candidate conditions are registered before they are scored, and scored in shadow before they are shown"; RUNBOOK's registration paragraph read:
+> From the next night every standing candidate is evaluated on every name into the shadow column and shown nowhere, and a registration made while a night runs is evaluated from the night after, ...
+Now: each cites the new decision, and RUNBOOK's paragraph reads:
+> From the next night every standing candidate is evaluated on every name into the shadow column, its picks drawn on the Run page's comparison of tonight's picks alone and its results nowhere until a look reads them, and a registration made while a night runs is evaluated from the night after, ...
+Why: a superseded name cited by a spec is refused by `no-superseded-citation`, and the paragraph stated the rule this supersedes.
+
+### 2026-09-28 - .claude/rules/checks.md - read-surface reaches how the system learns, the comparison of tonight's picks and each version at a checkpoint
+Authorised by: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+Was:
+> | `read-surface` | ... each of the seventeen marks is asserted ...; and the Run page draws how the list's trades are going ..., whether every step finished being the night's own state; and a name's earnings reaction record ... |
+Now:
+> | `read-surface` | ... each of the twenty marks is asserted ...; and the Run page draws how the list's trades are going ..., whether every step finished being the night's own state; and the Run page draws how the system learns, ...; a name only a version picked is drawn in the comparison and in no other region and on no other screen, and no outcome of a version's pick is drawn; and a name's earnings reaction record ... |
+Why: the check reaches the regions this correction adds.

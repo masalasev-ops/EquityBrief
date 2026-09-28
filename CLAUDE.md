@@ -132,7 +132,7 @@ Named, and cited by name. A violation is a defect regardless of what else is tru
 
 **No absolute path is written into a store row.** The store must remain a file that can be copied to another machine. (see: The whole system is a checkout and one database file)
 
-**A listings row is written for every name in the index every night,** whether or not a reason fired. A shadow candidate has to be evaluated on the nights it would have fired, and most of those are nights no live reason surfaced that name. (see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown)
+**A listings row is written for every name in the index every night,** whether or not a reason fired. A shadow candidate has to be evaluated on the nights it would have fired, and most of those are nights no live reason surfaced that name. (see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look)
 
 **The candidate register is append-only.** No update and no delete. A retirement is a new dated row naming what it retires. A register that can be edited after results are in is not a pre-registration.
 
