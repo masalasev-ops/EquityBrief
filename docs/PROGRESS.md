@@ -29479,6 +29479,9 @@ Noted:      the decision to narrow is "Candidate conditions are registered befor
             before the operator approves its plan.
 Changed:    nothing.
 Tests:      none added.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, 123T
-            tests and 123C claims with 123P PASS, recorded in the fill after it.
+Verified:   `tools/ci.ps1` green end to end, 0 warnings, 1494 of 1494 tests ran with none failed, and
+            `tools/verify-phase.ps1` green at 44 tables, 650 claims, 650 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 661 placements and verdicts reconciled, 1494 of 1494 tests, both over the tree
+            carrying this entry, 04d8084, in a worktree beside the repository, and the operator's store under
+            `data/` was not touched by either.
 Carried:    the planning pass for the Run page redesign, after the preview command.
