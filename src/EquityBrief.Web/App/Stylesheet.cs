@@ -220,7 +220,6 @@ span[data-last-asked-at]::before{content:none}
 .list-table{table-layout:auto;min-width:820px}
 .list-table th.rz,.list-table td.rz{width:64px;padding:0 3px;border-left:1px solid var(--hair);text-align:center}
 .list-table th.rz{text-transform:none;letter-spacing:0;font-size:11px;color:var(--ink)}
-.list-table th.rz abbr{text-decoration:none;cursor:help;border-bottom:1px dotted var(--soft)}
 .list-table td.c-nm .co{display:block;font-size:12.5px;line-height:1.25;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .list-table a.open{font-size:11px;color:var(--soft);margin-left:4px}
 .list-table td.trend-state{font-size:12.5px;color:var(--ink-2)}

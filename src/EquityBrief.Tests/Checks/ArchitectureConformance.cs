@@ -1462,7 +1462,9 @@ public partial class ArchitectureConformance
         // industry mark, the close and the link arrive, and the year line joins as the ninth mark.
         // 300 at the 5.8 correction that draws each universe ticker's year line: the table's part stating it.
         // 301 at the 5.8 correction whose headings say what each universe column holds: the table's part stating it.
-        Assert.Equal(301, inDocument.Length);
+        // 304 at the 5.8 correction whose headings say what each column of tonight's list, the peers table and
+        // Past picks' table holds: each row's part stating it.
+        Assert.Equal(304, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1532,7 +1534,9 @@ public partial class ArchitectureConformance
         // member in ticker order and the close leave and its six naming the ten and what each row carries arrive.
         // 286 at the 5.8 correction that draws each universe ticker's year line: the table's part stating it.
         // 287 at the 5.8 correction whose headings say what each universe column holds: the table's part stating it.
-        Assert.Equal(287, checkedElements);
+        // 290 at the 5.8 correction whose headings say what each column of tonight's list, the peers table and
+        // Past picks' table holds: each row's part stating it.
+        Assert.Equal(290, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

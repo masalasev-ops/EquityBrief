@@ -657,7 +657,7 @@ public partial class ReadSurface
         // Tonight's reasons in six columns in their set order, each head one word with the
         // reason's full name on it.
         var head = Regex.Match(tonight, "<table class=\"list-table\"[^>]*><thead>(.*?)</thead>", RegexOptions.Singleline).Groups[1].Value;
-        var columns = Regex.Matches(head, "<abbr title=\"([^\"]+)\">([^<]+)</abbr>").ToArray();
+        var columns = Regex.Matches(head, "<th class=\"rz tipped\" tabindex=\"0\" data-heading=\"([^\"]+)\"><span class=\"th-t\">([^<]+)</span>").ToArray();
 
         Assert.Equal(ShortlistSeries.Reasons, columns.Select(column => column.Groups[1].Value).ToArray());
         Assert.Equal(["entry", "crossed", "breakout", "trend", "volume", "earnings"], columns.Select(column => column.Groups[2].Value).ToArray());

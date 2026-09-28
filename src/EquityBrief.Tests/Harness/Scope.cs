@@ -256,6 +256,18 @@ internal static class Scope
             Verdict.Pass,
             "one heading for each column a row draws, each saying what its column holds word for word against sentences written with the windows as numbers, read off a constructed table and off the fixture's screen, shown by the stylesheet while the heading is under the pointer or holds the focus",
             ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The list, each column heading saying what its column holds while the pointer is over it")] = new Scoped(
+            Verdict.Pass,
+            "one heading for each column a row draws on an evening of either rule, the gates' column on the swing filter's alone and each reason's under its short name, each saying what its column holds word for word against sentences written with the thresholds as numbers, and every heading on the fixture's screen carrying one",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "Peers, each column heading saying what its column holds while the pointer is over it")] = new Scoped(
+            Verdict.Pass,
+            "one heading for each column a row draws, each saying what its column holds word for word against sentences written with the windows as numbers, and every heading on a fixture name's page carrying one",
+            ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "Every trade, each column heading saying what its column holds while the pointer is over it")] = new Scoped(
+            Verdict.Pass,
+            "each heading of the screen's table and of a name page's says what its column holds word for word, the stock's column on the screen's alone and the night's sentence naming the link on the name page's",
+            ByReadSurface),
         [CheckReach.Key("15.8 Universe", "The table, sorted by distance to the nearest level ascending")] = new Scoped(
             Verdict.Pass,
             "the rows are ordered by distance to the nearest level, read off the markup",
@@ -3024,6 +3036,9 @@ internal static class Scope
         [CheckReach.Key("15.8 Universe", "The table, the listing strip over sixty sessions")] = "5.4",
         [CheckReach.Key("15.8 Universe", "The table, each ticker a link to its own page that draws its year line while the pointer is over it")] = "5.8",
         [CheckReach.Key("15.8 Universe", "The table, each column heading saying what its column holds while the pointer is over it")] = "5.8",
+        [CheckReach.Key("15.7 Tonight", "The list, each column heading saying what its column holds while the pointer is over it")] = "5.8",
+        [CheckReach.Key("15.9 Name", "Peers, each column heading saying what its column holds while the pointer is over it")] = "5.8",
+        [CheckReach.Key("15.17 Past picks", "Every trade, each column heading saying what its column holds while the pointer is over it")] = "5.8",
         [CheckReach.Key("15.8 Universe", "The table, sorted by distance to the nearest level ascending")] = "5.1",
         [CheckReach.Key("15.8 Universe", "The table, paged")] = "5.8",
         [CheckReach.Key("15.8 Universe", "The table, name")] = "5.1",
@@ -3384,7 +3399,7 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Night header")] =
             ["names in the index", "names the swing filter listed", "names that fired", "the night's breadth with the share above the 50-day average beside it as context", "reports carrying fresh prose against reused", "spend", "run duration", "the harness verdict"],
         [CheckReach.Key("15.7 Tonight", "The list")] =
-            ["one row per name on the list", "ordered by the state its reported quarters give it and within a state by the swing filter's reward to risk then strength then band strength", "the state-first order from the first night whose readings are stored and a night before it in the filter's own order", "at most twenty drawn", "each numbered by its place in that order", "a line above them stating how many are drawn of how many are listed", "a line naming the rule that listed the evening", "name", "close", "day change", "trend state in a word", "the state its reported quarters give it beside the trend", "what the numbers say while the state is under the pointer or holds focus", "the distance row mark", "the reward to risk or the plan's reason for none", "the gates with the values that decided them", "the reasons as context", "beside the name a line saying so where its prices may not reflect a dividend or split"],
+            ["one row per name on the list", "ordered by the state its reported quarters give it and within a state by the swing filter's reward to risk then strength then band strength", "the state-first order from the first night whose readings are stored and a night before it in the filter's own order", "at most twenty drawn", "each numbered by its place in that order", "a line above them stating how many are drawn of how many are listed", "a line naming the rule that listed the evening", "name", "close", "day change", "trend state in a word", "the state its reported quarters give it beside the trend", "what the numbers say while the state is under the pointer or holds focus", "the distance row mark", "the reward to risk or the plan's reason for none", "the gates with the values that decided them", "the reasons as context", "beside the name a line saying so where its prices may not reflect a dividend or split", "each column heading saying what its column holds while the pointer is over it"],
         // 5.8's watch list page, each row's parts as the row states them.
         [CheckReach.Key("15.16 Watch list", "Add a name")] =
             ["a box offering the names of the index", "which adds one while the list holds fewer than twenty and otherwise gives way to a line saying the limit is reached", "the same press beside a name on its own page", "a refusal with the line saying why for a name not of the index tonight or already watched or a twenty-first"],
@@ -3419,6 +3434,7 @@ internal static class Scope
             "the status in words",
             "the sessions held to its resolution or to the newest night",
             "the result as a signed multiple of the risk or open",
+            "each column heading saying what its column holds while the pointer is over it",
             "a key saying how to read the trade line and that only the live list's trades appear with the alternatives hidden until one is promoted",
         ],
         // The fundamentals item's two regions, each read as the parts its row states.
@@ -3450,7 +3466,7 @@ internal static class Scope
         // 11.6. The row names the table's place, its population, its order, its seven columns and
         // the link each ticker carries, and a verdict over it whole would pass with one column undrawn.
         [CheckReach.Key("15.9 Name", "Peers")] =
-            ["beneath the table of the biggest moves", "the name's own row marked and then at most ten members of its group by price alone", "those sharing its industry first and then by how closely each one's daily moves followed the name's", "each row carrying how closely it moved with the name", "whether it shares the name's industry", "the close", "how far it sits below the stored year's high", "its return over sixty sessions", "its trend state", "the distance row mark", "each ticker a link to its own page that draws its year line while the pointer is over it", "a key saying how to read it"],
+            ["beneath the table of the biggest moves", "the name's own row marked and then at most ten members of its group by price alone", "those sharing its industry first and then by how closely each one's daily moves followed the name's", "each row carrying how closely it moved with the name", "whether it shares the name's industry", "the close", "how far it sits below the stored year's high", "its return over sixty sessions", "its trend state", "the distance row mark", "each ticker a link to its own page that draws its year line while the pointer is over it", "each column heading saying what its column holds while the pointer is over it", "a key saying how to read it"],
         // 11.7. The row names the record's place, its population, the seven things each row
         // carries, how a print with no estimate is drawn and its key.
         // 11.8. The row names the part's place, the filing it is read from, the five values and
