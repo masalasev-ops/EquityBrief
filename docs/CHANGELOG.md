@@ -8691,3 +8691,21 @@ Now:
 > | `fixture-expectations` | ... read off the peer readings the replay stored, one row for every name holding bars; and the members a peers table draws are worked by hand over constructed closes, ... and each fixture name's members, their order and their likeness are worked by hand from the captured bars and read off the peer readings the replay stored; and each print's ... |
 > | `read-surface` | ... each of the nine marks ... and a name's peers table is drawn beneath the table of the biggest moves, the name's own row first and marked and then the members the annotator chose in the order it stored them and no other, each member's likeness whole on its element as stored, its ticker opening its own page and its year line drawn over every close the store holds for it, ... and a group holding nobody, a name holding no readings, a row the night has not chosen members for, or a page for an earlier night saying so, and the year line draws a name's closes with its nearest bands named at heights worked by hand, ...; ... |
 Why: the checks reach the table the operator's ruling of 2026-09-27 asked for and the mark it added.
+
+### 2026-09-28 - ARCHITECTURE.html - the bar store keeps its year and the pulled history sits beside it, read by no night
+Authorised by: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone
+Was:
+> One SQLite file. One year of bars is kept per name and no more (see: One year of bars, and no more). One year for 500 names is about 10 MB, and the whole store including research is comfortably under a gigabyte, so it is copied into a fixture, diffed and backed up by hand (see: ...). Section 16 lists the tables.
+> ... It is a few hundred requests in one afternoon and it never repeats for a name that already has its year. One year is what is kept and no more (see: One year of bars, and no more). ...
+Now:
+> One SQLite file. The bar store keeps one year of bars per name for every night's work, and the history the operator pulls for the years before it sits beside it in two tables of its own that no night, score or page reads (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone). One year for 500 names is about 10 MB, and the whole store, the history pulled back to 2018 and the research among it, is about half a gigabyte, so it is copied into a fixture, diffed and backed up by hand (see: ...). Section 16 lists the tables.
+> ... It is a few hundred requests in one afternoon and it never repeats for a name that already has its year. One year is what the bar store keeps, and the history the operator pulls before it is read by no step below (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone). ...
+Why: the operator ruled on 2026-09-28 that the history pulled back to 2018 stays in the operator's store, which the words "one year and no more" no longer described, the pairs ruling's item 4.
+
+### 2026-09-28 - BUILD_PLAN.md - 11.7's retention cites the bar store's year by its new decision
+Authorised by: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone
+Was:
+> ... retention drops a print with its bars (see: One year of bars, and no more); ...
+Now:
+> ... retention drops a print with its bars (see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone); ...
+Why: the decision the checkpoint's text cited was superseded on the operator's ruling of 2026-09-28.

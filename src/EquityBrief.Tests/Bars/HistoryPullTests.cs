@@ -465,7 +465,54 @@ public class HistoryPullTests
 
             // And the night left the pulled rows as it found them.
             Assert.Equal(held, Rows(pulled, "SELECT COUNT(*) FROM pulled_bar;"));
+
+            // The pages read nothing of them either: each name's page, its chart among it, and tonight's
+            // list and the universe drawn over the two stores are the same pages.
+            using var plainHost = new Reading.ReadSurface.Host(plain.Root);
+            using var pulledHost = new Reading.ReadSurface.Host(pulled.Root);
+            using var plainClient = plainHost.CreateClient();
+            using var pulledClient = pulledHost.CreateClient();
+
+            string[] routes = ["/screens/tonight", "/screens/universe", .. tickers.Select(ticker => $"/screens/name/{ticker}")];
+
+            foreach (var route in routes)
+            {
+                var drawn = await plainClient.GetStringAsync(route);
+
+                Assert.True(drawn.Length > 1000, $"{route} drew {drawn.Length} characters, too few to compare.");
+                Assert.True(drawn == await pulledClient.GetStringAsync(route), $"{route} draws differently over the store holding pulled history.");
+            }
         }
+    }
+
+    // What no night reads, no shipped source but the pull names: the history pull and the migration that
+    // creates its two tables are the only files outside the suite that name either table or its store,
+    // so no stage, score, record or page can read them without this failing first.
+    // see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone
+    [Fact]
+    public void NoShippedSourceButThePullAndItsMigrationNamesThePulledTables()
+    {
+        var naming = new System.Text.RegularExpressions.Regex(@"pulled_(bar|earnings)\b|Store\.Pulled(Bar|Earnings)\b");
+
+        var files = Repository.SourceFiles()
+            .Where(file => !file.Contains(Path.DirectorySeparatorChar + "EquityBrief.Tests" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.True(files.Length > 100, $"Read {files.Length} shipped source files, expected more than 100.");
+
+        var found = files
+            .Where(file => naming.IsMatch(File.ReadAllText(file)))
+            .Select(file => Path.GetRelativePath(Repository.Root, file).Replace(Path.DirectorySeparatorChar, '/'))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs"], found);
+
+        // The reader is shown to find what it looks for: a query, a declaration of either store, and not a
+        // word that only begins the same way.
+        Assert.Matches(naming, "SELECT close FROM pulled_bar WHERE ticker = $ticker;");
+        Assert.Matches(naming, "new StoreTouch(Store.PulledEarnings, Touch.Read)");
+        Assert.DoesNotMatch(naming, "var pulled_barrier = 1; Store.PulledBarrier");
     }
 
     // A historical feed answering from constructed sessions, refusing the names it is told to, and

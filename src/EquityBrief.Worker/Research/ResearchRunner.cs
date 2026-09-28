@@ -116,7 +116,7 @@ public sealed class ResearchRunner(
     // move's cause rests on a document inside that move, and no stored move is older than the
     // bars kept. The news a pass asks for is narrower, the windows the rule hands a section
     // from, which 6.11 found a large company's year needed.
-    // see: One year of bars, and no more
+    // see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone
     public const int WindowYears = 1;
 
     // The rounds a pass runs, each a stage suffix on the rows its components write.
