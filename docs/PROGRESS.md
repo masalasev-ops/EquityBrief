@@ -29296,7 +29296,8 @@ Repaired:   `filter-history --remove --from <yyyy-MM-dd> --through <yyyy-MM-dd>`
 Measured:   nothing new; what the rows hold and what reads them is the ruling's.
 Guarded:    `TheFilterHistoryRemovesReplayedResultsAloneAndRefusesASessionANightCanStillRead` in
             `fixture-expectations`, new: over the two-night fixture, with five sessions replayed from
-            2026-08-27 and one of them holding a night's own row, run as a person runs it: a range reaching
+            2026-08-27, one of them holding a night's own row and one replayed row taken as passing, since the
+            fixture's replayed sessions pass nobody, run as a person runs it: a range reaching
             2026-09-01, which the night of 2026-09-04 run again reads, is refused naming 2026-09-01 and
             2026-09-02; a range holding no replayed result and a range not named are refused; a refusal writes
             nothing; the removal of 2026-08-27 to 2026-08-31 takes out their replayed results alone, the

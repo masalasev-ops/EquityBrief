@@ -143,6 +143,12 @@ public partial class FixtureExpectations
 
         store.Execute($"UPDATE gate_result SET version = '2' WHERE ticker = '{own}' AND session_date = '2026-08-28';");
 
+        // And one replayed row taken as passing, so the names a removal says are read and not only a count;
+        // the fixture's replayed sessions before its nights pass nobody.
+        var passer = Query(store, $"SELECT MAX(ticker) FROM gate_result WHERE version = '{ReplayedResults.Version}' AND session_date = '2026-08-27';").Single();
+
+        store.Execute($"UPDATE gate_result SET passed = 1 WHERE ticker = '{passer}' AND session_date = '2026-08-27';");
+
         var (replayed, nights, runs) = (Replayed(), Nights(), Runs());
 
         foreach (var (args, exit, said) in new[]
@@ -168,6 +174,9 @@ public partial class FixtureExpectations
 
             return $"{session}, {count} result(s), " + (passing.Count == 0 ? "none passing" : $"{passing.Count} passing ({string.Join(", ", passing)})");
         }));
+        Assert.Contains($"2026-08-27, ", held, StringComparison.Ordinal);
+        Assert.Contains($"passing ({passer}", held, StringComparison.Ordinal);
+
         var total = Query(store, $"SELECT COUNT(*) FROM gate_result WHERE version = '{ReplayedResults.Version}' AND session_date BETWEEN '2026-08-27' AND '2026-08-31';").Single();
         var kept = string.Join(";", replayed.Split(';').Where(session => string.CompareOrdinal(session, "2026-09-01") >= 0));
 
