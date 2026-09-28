@@ -28970,3 +28970,52 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, d09dbb5, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this.
+
+### 12.2 - correction: the history pulled back to 2018 stays in the operator's store beside the bar store's year, read by no night, score or page, where a decision still said the store holds a year of bars and no more   2026-09-28
+Corrects:   item 4 of the pairs ruling of 2026-09-26, which found the operator's store holding eight years of
+            bars against "One year of bars, and no more" and asked that the decision be superseded with the
+            new reason stated, or the history moved into a research copy, and either way that nothing a night
+            computes is shown to read past its own window. The operator asked on 2026-09-28 for it now rather
+            than after items 2 and 3, and chose to keep the history in the operator's store.
+Ruled:      "The bar store holds one year for every night's work, and the history pulled beside it is read
+            by measurements alone" supersedes "One year of bars, and no more", which moves to Previously
+            decided with its reasoning, and every citation of it is repointed: section 2's store paragraph and
+            section 14's backfill paragraph, which now state the half gigabyte the store is with the history,
+            11.7's done condition, the pulled history's own decision and the research runner's window.
+Repaired:   no behaviour: the history pull's tables were already read by no night. What was missing were
+            the guards on the two surfaces the pull's own test did not reach. The night test over a store
+            holding hostile pulled history, which compared every table a night writes and the pulled rows the
+            night left, now also draws tonight's list, the universe and each fixture name's page, its chart
+            among it, over both stores and holds them identical. A scan holds that no shipped source but the
+            history pull and the migration creating its tables names either table or its store, so no stage,
+            score, record or page can come to read one without failing first. The night's deleter drops the
+            bar store's oldest session and never a pulled row, as the night test already held.
+Measured:   nothing new. The eight years were pulled on 2026-09-26: 1,368,251 bars and 21,834 prints for 688
+            of the 691 names the index held from 2018, which the pairs ruling measured over.
+Guarded:    `NoShippedSourceButThePullAndItsMigrationNamesThePulledTables` in the suite, new, with the reader
+            shown to find a query and a store declaration and not a word beginning the same way; and
+            `ANightOverAStoreHoldingPulledHistoryComputesExactlyWhatItComputesWithoutIt`, extended to the pages.
+Written:    DECISIONS as above; ARCHITECTURE's two paragraphs and BUILD_PLAN's 11.7 citation, each prior text
+            in `CHANGELOG.md`.
+Tests:      12HT, from 1482: one added.
+Claims:     12HC, from 645, predicted unchanged: the two paragraphs are prose no claim table holds.
+Pins:       the branch against `main` edits no source in the three pin lists: `ResearchRunner.cs` changes a
+            citation alone and is in none. No version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: one mutation reversing each guard this correction adds, filtered
+            to the two tests.
+            Predicted:
+            Y1 the name page's bars read from the bar store and the pulled bars together: red in the scan and in
+               the night test's pages.
+            Y2 the night's bar deleter also dropping pulled bars older than the bar store's year: red in the scan
+               and in the night test's count of the pulled rows.
+            Results: 12HM
+Held:       12HH
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12HT of 12HT tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 12HB tables, 12HC claims, 12HP PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 12HR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 12HT of 12HT tests.
+            Both gates ran over the tree carrying this entry, 12HSHA, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    as the entry before this, less item 4.
