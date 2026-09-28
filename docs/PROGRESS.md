@@ -29309,8 +29309,8 @@ Written:    the component catalogue's filter history row and two citations in `A
             `RUNBOOK.md`, each spec's prior text in `CHANGELOG.md`; the decisions by the ruling of this batch.
             Every citation of the two superseded entries in the specs, the code and the tests is repointed.
 Expected:   derived: no expectation file moves.
-Tests:      126T, from 1493: one added.
-Claims:     126C, from 650, predicted unchanged: the catalogue row and the two citations are reworded and
+Tests:      1494, from 1493: one added.
+Claims:     650, from 650, predicted unchanged: the catalogue row and the two citations are reworded and
             add no part.
 Pins:       the branch against `main` edits `FilterHistory.cs`, `ReplayedResults.cs`, `ForwardReturnFiller.cs`,
             the worker's and the read surface's `Program.cs`, `ReadApi.cs`, `SinglePageApp.cs`, tests and five
@@ -29323,15 +29323,21 @@ Mutated:    the rule, stated before the run: each guard the removal rests on tak
             R1 the delete taking every row of a session, a night's own among them: red in the new test.
             R2 a session a night can still read removed rather than refused: red in the new test.
             R3 the passing names left out of what the removal says: red in the new test.
-            Results: 126M
-Held:       126H
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 126T of 126T tests ran
+            Results: the first run, in a detached worktree at f9e98a0, filtered to the new test, each edit
+            made there and reverted: R1 and R2 turned it red, and R3 survived, because the fixture's replayed
+            sessions pass nobody, so every session a removal named read "none passing" whatever the code did
+            with names. The test now takes one replayed row as passing and reads its name in what the removal
+            says, in 23f037a. Run again there, each edit made and reverted and the tree read clean after, R1,
+            R2 and R3 each turned the new test red. The whole suite ran green over both trees in the gates,
+            1494 of 1494.
+Held:       all three at 23f037a; R3 not at f9e98a0, repaired as above.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1494 of 1494 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 126B tables, 126C claims, 126P PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 126R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 126T of 126T tests.
-            Both gates ran over the tree carrying this entry and the one before it, 126SHA, in a worktree
+            `tools/verify-phase.ps1` green at 44 tables, 650 claims, 650 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 661 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1494 of 1494 tests.
+            Both gates ran over the tree carrying this entry and the one before it, 23f037a, in a worktree
             beside the repository, and the operator's store under `data/` was not touched by either.
 Carried:    the command on the operator's store, on their word, any time after the night of 2026-09-29 has
             finished and while no night runs:
