@@ -28997,8 +28997,8 @@ Guarded:    `NoShippedSourceButThePullAndItsMigrationNamesThePulledTables` in th
             `ANightOverAStoreHoldingPulledHistoryComputesExactlyWhatItComputesWithoutIt`, extended to the pages.
 Written:    DECISIONS as above; ARCHITECTURE's two paragraphs and BUILD_PLAN's 11.7 citation, each prior text
             in `CHANGELOG.md`.
-Tests:      12HT, from 1482: one added.
-Claims:     12HC, from 645, predicted unchanged: the two paragraphs are prose no claim table holds.
+Tests:      1483, from 1482: one added.
+Claims:     645, from 645, predicted unchanged: the two paragraphs are prose no claim table holds.
 Pins:       the branch against `main` edits no source in the three pin lists: `ResearchRunner.cs` changes a
             citation alone and is in none. No version moves and nothing is owed before a night.
 Mutated:    the rule, stated before the run: one mutation reversing each guard this correction adds, filtered
@@ -29008,14 +29008,19 @@ Mutated:    the rule, stated before the run: one mutation reversing each guard t
                the night test's pages.
             Y2 the night's bar deleter also dropping pulled bars older than the bar store's year: red in the scan
                and in the night test's count of the pulled rows.
-            Results: 12HM
-Held:       12HH
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 12HT of 12HT tests ran
+            Results: one run each in a detached worktree at b90f270, this entry's commit, filtered to the two
+            tests, each edit made there and reverted, and the tree read clean after. The whole suite ran green
+            over b90f270 in the gates, 1483 of 1483. Y1 turned both red: the scan found the bar read in
+            `ReadApi.cs`, and AAPL's page drew differently over the store holding pulled history. Y2 turned both
+            red: the scan found the delete in `BarFetcher.cs`, and the store held 1,048 pulled bars after the
+            night where more than 2,400 were written.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1483 of 1483 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 12HB tables, 12HC claims, 12HP PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 12HR placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 12HT of 12HT tests.
-            Both gates ran over the tree carrying this entry, 12HSHA, in a worktree beside the repository,
+            `tools/verify-phase.ps1` green at 44 tables, 645 claims, 645 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 656 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1483 of 1483 tests.
+            Both gates ran over the tree carrying this entry, b90f270, in a worktree beside the repository,
             and the operator's store under `data/` was not touched by either.
 Carried:    as the entry before this, less item 4.
