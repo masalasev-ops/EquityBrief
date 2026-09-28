@@ -1575,6 +1575,44 @@ internal static class Scope
             Verdict.Pass,
             "the word worked by hand at the floor and a hair below it and at 60% and a hair below it, and the healthy point pinned to the code",
             ByReadSurface),
+
+        // The 12.3 correction drawing the Run page's trades, freshness, research and checklist.
+        [CheckReach.Key("15.10 Run", "How the list's trades are going, the live list's trades still open and those that reached the target or were stopped out or ran out of time")] = new Scoped(
+            Verdict.Pass, "each status's count read off the rendered tiles from Past picks' own summary, over constructed summaries and a constructed night", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How the list's trades are going, a ring of the trades decided against the minimum a share waits on")] = new Scoped(
+            Verdict.Pass, "the decided count against the minimum on the ring, its track dashed below the minimum", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How the list's trades are going, the share and the break-even and the average result together once both minimums are met as Past picks draws them")] = new Scoped(
+            Verdict.Pass, "the three figures drawn together at the minimums and none of them below, with the counts it waits on said instead", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How the list's trades are going, a link opening Past picks")] = new Scoped(
+            Verdict.Pass, "the link to Past picks read off the rendered region", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Is the list finding new stocks, a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed")] = new Scoped(
+            Verdict.Pass, "each evening's new and repeated names worked by hand over constructed evenings of both rules, the evening before the first filter night read and not drawn", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Is the list finding new stocks, the night's split in words")] = new Scoped(
+            Verdict.Pass, "the night's split and the share new over the evenings drawn read off the rendered words", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Research and spend, the month's spend against the month cap")] = new Scoped(
+            Verdict.Pass, "the month's spend and cap read off the rendered region", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Research and spend, the reports the paid model wrote on each of the last seven nights")] = new Scoped(
+            Verdict.Pass, "each night's paid passes worked by hand over constructed run logs, a refused call and a command run by hand counting none", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Research and spend, the reports and the overnight drafts written over those nights")] = new Scoped(
+            Verdict.Pass, "the reports and the drafts the queue completed summed over the nights and read off the rendered tiles", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Anything to worry about, a checklist of plain items each turning red with its reason where it fails")] = new Scoped(
+            Verdict.Pass, "every item held with no reason, failed with its reason worked by hand, and not read where the night stored nothing", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Anything to worry about, every stock holding the night's prices and every step of the night finished")] = new Scoped(
+            Verdict.Pass, "the stale names and the night's own state, a command run by hand none of it and a failure after the close a failure, worked by hand and read off the page", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Anything to worry about, no research document refused and no section fallen back")] = new Scoped(
+            Verdict.Pass, "the refusals and the sections that fell back counted and named", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Anything to worry about, every company awaiting a quarter asked on schedule")] = new Scoped(
+            Verdict.Pass, "the night's quarters step read held, refused, left at its limit and not run", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Anything to worry about, the four harness counts beneath")] = new Scoped(
+            Verdict.Pass, "the four counts read off the rendered tiles", ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Trades ring")] = new Scoped(
+            Verdict.Pass, "the ring's arc and its dashed track below the minimum read off the rendered mark", ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Freshness bars")] = new Scoped(
+            Verdict.Pass, "each evening's two parts read off the rendered bars, and an empty input saying so", ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Research bars")] = new Scoped(
+            Verdict.Pass, "the spend bar and each night's bar read off the rendered mark", ByReadSurface),
+        [CheckReach.Key("15.5 The mark vocabulary", "Checklist")] = new Scoped(
+            Verdict.Pass, "each item's state and reason read off the rendered list", ByReadSurface),
         [CheckReach.Key("15.9 Name", "On the list before")] = new Scoped(
             Verdict.Pass,
             "a name the live list picked before the page's night draws the region after the plan and its earnings reactions, its line counting the picks and each group as the test's own arithmetic over the store gives them and a row per earlier listing as it stood on the page's night, and a name never picked before draws none",
@@ -3240,6 +3278,24 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Market gauge")] = "12.3",
         [CheckReach.Key("15.5 The mark vocabulary", "Breadth line")] = "12.3",
         [CheckReach.Key("15.5 The mark vocabulary", "Funnel bars")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How the list's trades are going, the live list's trades still open and those that reached the target or were stopped out or ran out of time")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How the list's trades are going, a ring of the trades decided against the minimum a share waits on")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How the list's trades are going, the share and the break-even and the average result together once both minimums are met as Past picks draws them")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How the list's trades are going, a link opening Past picks")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Is the list finding new stocks, a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Is the list finding new stocks, the night's split in words")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Research and spend, the month's spend against the month cap")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Research and spend, the reports the paid model wrote on each of the last seven nights")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Research and spend, the reports and the overnight drafts written over those nights")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Anything to worry about, a checklist of plain items each turning red with its reason where it fails")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Anything to worry about, every stock holding the night's prices and every step of the night finished")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Anything to worry about, no research document refused and no section fallen back")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Anything to worry about, every company awaiting a quarter asked on schedule")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Anything to worry about, the four harness counts beneath")] = "12.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Trades ring")] = "12.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Freshness bars")] = "12.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Research bars")] = "12.3",
+        [CheckReach.Key("15.5 The mark vocabulary", "Checklist")] = "12.3",
         [CheckReach.Key("15.9 Name", "On the list before")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, the trades listed with the nights they were listed on")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many are still open and how many finished")] = "12.2",
@@ -3587,6 +3643,14 @@ internal static class Scope
             ["a one-word label read by a stated rule", "a gauge of the share of members above their 200-day average with the market gate's floor marked", "the share above the 50-day average and the index's volume against its fifty-day average", "a line of that share over the sixty sessions before the night that the store holds averages for"],
         [CheckReach.Key("15.10 Run", "From the index to tonight's list")] =
             ["a funnel of how many members passed each of the filter's checks in turn down to those left after the exclusions", "the count listed with a link opening tonight's list"],
+        [CheckReach.Key("15.10 Run", "How the list's trades are going")] =
+            ["the live list's trades still open and those that reached the target or were stopped out or ran out of time", "a ring of the trades decided against the minimum a share waits on", "the share and the break-even and the average result together once both minimums are met as Past picks draws them", "a link opening Past picks"],
+        [CheckReach.Key("15.10 Run", "Is the list finding new stocks")] =
+            ["a bar for each of the last twenty evenings split into the names new that evening and those the evening before also listed", "the night's split in words"],
+        [CheckReach.Key("15.10 Run", "Research and spend")] =
+            ["the month's spend against the month cap", "the reports the paid model wrote on each of the last seven nights", "the reports and the overnight drafts written over those nights"],
+        [CheckReach.Key("15.10 Run", "Anything to worry about")] =
+            ["a checklist of plain items each turning red with its reason where it fails", "every stock holding the night's prices and every step of the night finished", "no research document refused and no section fallen back", "every company awaiting a quarter asked on schedule", "the four harness counts beneath"],
         // 12.2. The name page's gates and the run page's funnel, each read as the parts its row enumerates.
         [CheckReach.Key("15.9 Name", "Gates")] =
             ["each of the five gates with whether it passed and why", "the setup's family and whether the trigger's event happened", "the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked", "the exclusions with a key saying how to read it"],

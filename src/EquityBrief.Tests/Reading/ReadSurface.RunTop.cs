@@ -338,7 +338,7 @@ public partial class ReadSurface
     [Fact]
     public void TheRunPagesPicturesDrawInTheStatusColoursAndNeverInALevels()
     {
-        string[] pictures = [".night-status", ".status-mark", ".step-bar", ".gauge", ".breadth-line", ".funnel-bars", ".market-picture"];
+        string[] pictures = [".night-status", ".status-mark", ".step-bar", ".gauge", ".breadth-line", ".funnel-bars", ".market-picture", ".trades-ring", ".fresh-bars", ".fr-key", ".spend-bar", ".pass-bars", ".worries", ".worry-mark"];
 
         var rules = Regex.Matches(Stylesheet.Css, "([^{}]+)\\{([^{}]*)\\}")
             .Select(match => (Selector: match.Groups[1].Value.Trim(), Body: match.Groups[2].Value))

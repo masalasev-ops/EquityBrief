@@ -1538,7 +1538,11 @@ public sealed class SinglePageApp : IComponent
         NearMissView? nearMisses = null,
         IReadOnlyList<DateOnly>? held = null,
         NightView? how = null,
-        MarketPicture? picture = null)
+        MarketPicture? picture = null,
+        PicksSummary? trades = null,
+        IReadOnlyList<FreshNight>? fresh = null,
+        ResearchPicture? research = null,
+        IReadOnlyList<WorryItem>? worries = null)
     {
         var region = new StringBuilder();
 
@@ -1587,6 +1591,60 @@ public sealed class SinglePageApp : IComponent
             lede: "How many stocks passed each of the swing filter's checks in turn, down to the ones listed.",
             stamp: Cards.Night(night),
             region: "funnel-picture"));
+
+        region.Append("</div>");
+
+        // How the live list's trades are going and whether it finds new stocks, side by side.
+        region.Append("<div class=\"run-pair\">");
+
+        if (trades is { } picked)
+        {
+            region.Append(Cards.Computed(
+                "The picks so far",
+                marks.TradesRegion(picked, PicksRoute),
+                title: "How the list's trades are going",
+                lede: "Every trade the live list recommended, by where each one stands; the share that won waits until enough have finished to say something.",
+                stamp: Cards.Night(night),
+                region: "trades-picture"));
+        }
+
+        if (fresh is { } evenings)
+        {
+            region.Append(Cards.Computed(
+                "Freshness",
+                marks.FreshBars(evenings, night),
+                title: "Is the list finding new stocks?",
+                lede: "Each evening's list, split into the names new that evening and the ones it listed the evening before too.",
+                stamp: Cards.Night(night),
+                region: "fresh-picture"));
+        }
+
+        region.Append("</div>");
+
+        // Research and spend beside anything to worry about.
+        region.Append("<div class=\"run-pair\">");
+
+        if (research is { } written)
+        {
+            region.Append(Cards.Computed(
+                "Research",
+                marks.ResearchRegion(written),
+                title: "Written reports and what they cost",
+                lede: "What the paid model spent this month against its cap, and the reports and drafts written over the last week.",
+                stamp: Cards.Night(night),
+                region: "research-picture"));
+        }
+
+        if (worries is { } items)
+        {
+            region.Append(Cards.Computed(
+                "Health",
+                marks.WorryRegion(items, harness),
+                title: "Anything to worry about?",
+                lede: "Each item turns red with its reason when it fails.",
+                stamp: Cards.Night(night),
+                region: "worry-picture"));
+        }
 
         region.Append("</div>");
 

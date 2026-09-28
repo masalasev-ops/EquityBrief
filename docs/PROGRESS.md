@@ -29597,3 +29597,58 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry and the one before it, b07e889, in a worktree
             beside the repository, and the operator's store under `data/` was not touched by either.
 Carried:    regions 4 to 11 and the narrowed decision, in the corrections after this.
+
+### 12.3 - correction: the Run page draws how the list's trades are going, whether it finds new stocks, research and spend, and anything to worry about, where it drew none of them as pictures   2026-09-28
+Corrects:   12.3's Run page, the operator's brief of 2026-09-28 continued, regions 4, 5, 9 and 10.
+Repaired:   four regions between the funnel and the detail, each read from what the store holds. The trades
+            region draws Past picks' own summary, read by the same projection: the live list's trades by
+            status, a ring of the trades decided against the minimum a share waits on with its track a dashed
+            outline until both minimums are met, and from then the share, the break-even and the average
+            result together, with a link to Past picks. The freshness region draws the twenty evenings up to the
+            night from the swing filter's first, each split into the names new that evening and those the
+            evening before also listed, each evening read by the rule that listed it. The research region draws
+            the month's spend against the month cap and the reports the paid model wrote on each of the seven
+            nights up to the night, being the research runs whose paid call answered, with the drafts the
+            overnight queue completed. The checklist holds each item, turns it red with its reason, or draws
+            it as not read where the night stored nothing: every stock's prices, every step of the night
+            finished read off the night's own state so a command run by hand is none of it, refused
+            documents, sections that fell back, and the quarters asked on schedule read off the night's own
+            quarters step, with the phase report's four counts beneath. Four marks: the trades ring, the
+            freshness bars, the research bars and the checklist.
+Measured:   nothing new.
+Guarded:    five tests in `read-surface`, new: the freshness split worked by hand over evenings of both rules;
+            the paid passes and drafts worked by hand over constructed run logs, a refused call and a command
+            run by hand counting none; the checklist held, failed with each reason and not read; the trades
+            region below and at the minimums; and the four regions read off the page above the detail over a
+            constructed night.
+Written:    section 15.10's four rows and section 15.5's four marks in `ARCHITECTURE.html` and
+            `.claude/rules/checks.md`'s read-surface row, each prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      1505, from 1500: five added.
+Claims:     683, from 665: eighteen added, the four regions as the fourteen parts their rows state and the four
+            marks, each named in `ReadSurface.RunMiddleClaims`.
+Pins:       the branch against `main` edits `RunScreen.cs`, the read surface's `Program.cs`, `MarkRenderer.cs`,
+            `SinglePageApp.cs` and `Stylesheet.cs`, tests and three documents, none of them in the three pin
+            lists. No version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: each mechanism the four regions rest on reversed alone, filtered to
+            the new tests.
+            Predicted:
+            M1 a night finished with a failure after the close read as every step finished: red in the
+               checklist test and the page test.
+            M2 each evening's repeated names counted against itself: red in the freshness test.
+            M3 the ring's track drawn whole below the minimum: red in the trades test.
+            M4 a paid call a cap refused counted as a report: red in the research test.
+            Results: one run each in a detached worktree at 7256356, this entry's commit, filtered to the five
+            new tests, each edit made there and reverted, and the tree read clean after. The whole suite ran
+            green over 7256356 in the gates, 1505 of 1505. M1 turned the checklist test and the page test red;
+            M2 the freshness test; M3 the trades test; M4 the research test.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1505 of 1505 tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 683 claims, 683 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 694 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1505 of 1505 tests.
+            Both gates ran over the tree carrying this entry, 7256356, in a worktree beside the repository,
+            and the operator's store under `data/` was not touched by either.
+Carried:    regions 6, 7 and 8 and the narrowed decision, in the correction after this.

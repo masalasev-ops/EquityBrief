@@ -1283,6 +1283,109 @@ public static class RunScreen
     // see: The market on the Run page is named in one word by a stated rule that moves no gate
     public static MarketPicture Pictured(DateOnly session, MarketView? night, string? settings, IReadOnlyList<BreadthPoint> line) =>
         new(session, night, (settings is null ? FilterSettings.Proposed : FilterSettings.Read(settings)).BreadthFloor, line);
+
+    // How many evenings the freshness bars draw at most.
+    public const int FreshEvenings = 20;
+
+    // Whether the list finds new stocks: each of the evenings up to the night that the dated screens draw, the
+    // newest twenty, with the names it listed and how many of them the evening before listed, each evening
+    // read by the rule that listed it, as the list from night to night reads them.
+    // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
+    public static IReadOnlyList<FreshNight> Freshness(IReadOnlyList<ListingRow> listings, DateOnly night, DateOnly? first)
+    {
+        var sessions = listings.Select(listing => listing.SessionDate).Where(session => session <= night).Distinct().Order().ToArray();
+        var listed = listings
+            .Where(listing => listing.IsListed)
+            .GroupBy(listing => listing.SessionDate)
+            .ToDictionary(evening => evening.Key, evening => evening.Select(listing => listing.Ticker).ToHashSet(StringComparer.Ordinal));
+
+        IReadOnlySet<string> On(DateOnly session) => listed.TryGetValue(session, out var names) ? names : new HashSet<string>(StringComparer.Ordinal);
+
+        return
+        [
+            .. sessions
+                .Select((session, at) => (Session: session, Before: at > 0 ? sessions[at - 1] : (DateOnly?)null))
+                .Where(evening => first is not { } from || evening.Session >= from)
+                .TakeLast(FreshEvenings)
+                .Select(evening => new FreshNight(
+                    evening.Session,
+                    On(evening.Session).Count,
+                    evening.Before is { } before ? On(evening.Session).Count(On(before).Contains) : 0)),
+        ];
+    }
+
+    // Research over the seven nights up to the night: on each, the passes the paid model wrote, being the
+    // research runs that made a paid call that answered, and the drafts the overnight queue completed, read
+    // off the words its row writes.
+    public static IReadOnlyList<ResearchNight> Research(IReadOnlyList<(DateOnly Night, IReadOnlyList<RunStageRow> Log)> nights) =>
+    [
+        .. nights.Select(night => new ResearchNight(
+            night.Night,
+            night.Log
+                .Where(row => row.RunId.StartsWith(EquityBrief.Core.Research.PassRun.Prefix, StringComparison.Ordinal)
+                    && row.Stage.StartsWith("research call", StringComparison.Ordinal)
+                    && row.Outcome == Ok)
+                .Select(row => row.RunId)
+                .Distinct(StringComparer.Ordinal)
+                .Count(),
+            night.Log
+                .Where(row => row.Stage == QueueStage)
+                .Sum(row => Regex.Match(row.Detail, @"^(\d+) of \d+ queued pass\(es\) completed") is { Success: true } done
+                    ? int.Parse(done.Groups[1].Value, CultureInfo.InvariantCulture)
+                    : 0))),
+    ];
+
+    // The checklist: each item held, failed with why, or not read where the night stored nothing it could be
+    // read from. Whether every step finished is the night's own state, the one region 1 draws, so a command
+    // run by hand that day is none of the night's steps. The quarters are read off the night's own quarters
+    // step: asked on schedule where it ran and neither refused an ask nor left one at its limit or the day's
+    // allowance.
+    // see: A night's state is read off its own run log rows, and the pages that state it read that one state
+    public static IReadOnlyList<WorryItem> Worries(
+        IReadOnlyList<string> stale,
+        NightView night,
+        IReadOnlyList<RefusedDocument> refused,
+        IReadOnlyList<LeftOutSection> fellBack,
+        IReadOnlyList<RunStageRow> log)
+    {
+        var quarters = log
+            .Where(row => row.RunId.StartsWith(NightPrefix, StringComparison.Ordinal) && row.Stage == "quarters")
+            .OrderBy(row => row.StartedAt)
+            .LastOrDefault();
+
+        WorryItem Item(string item, bool held, string why) => new(item, held ? WorryItem.Held : WorryItem.Failed, held ? null : why);
+
+        var refusedAsks = quarters is null ? null : Regex.Match(quarters.Detail, @"(\d+) refused;");
+        var leftAt = quarters is null ? null : Regex.Match(quarters.Detail, @"(\d+) left at the (step's limit|day's allowance)");
+
+        return
+        [
+            Item("Every stock has the night's prices", stale.Count == 0, FormattableString.Invariant($"{stale.Count} carry an earlier session's bars: {string.Join(", ", stale)}")),
+            Item(
+                "Every step of the night finished",
+                night.State is NightStates.Finished or NightStates.NoSession && night.AfterTheClose is null,
+                night.State switch
+                {
+                    NightStates.Finished => "after the close, " + night.AfterTheClose,
+                    NightStates.Stopped => $"it stopped at {night.StoppedAt}: {night.Reason}",
+                    NightStates.Running => $"it is still running, last at {night.StoppedAt}",
+                    NightStates.Unfinished => $"it was left unfinished at {night.StoppedAt}",
+                    _ => "no night ran for this session",
+                }),
+            Item("No research document was refused", refused.Count == 0, FormattableString.Invariant($"{refused.Count} refused by admissibility")),
+            Item("No report section fell back", fellBack.Count == 0, FormattableString.Invariant($"{fellBack.Count} fell back: {string.Join(", ", fellBack.Select(section => section.Subject + " " + section.Section))}")),
+            quarters is null
+                ? new WorryItem("Every company awaiting a new quarter was asked on schedule", WorryItem.NotRead, "the night ran no quarters step")
+                : Item(
+                    "Every company awaiting a new quarter was asked on schedule",
+                    quarters.Outcome == Ok && refusedAsks is { Success: true } && refusedAsks.Groups[1].Value == "0" && leftAt is { Success: false },
+                    quarters.Outcome != Ok
+                        ? $"the quarters step {quarters.Outcome}: {quarters.Detail}"
+                        : leftAt is { Success: true }
+                            ? $"{leftAt.Groups[1].Value} left at the {leftAt.Groups[2].Value}"
+                            : $"{refusedAsks!.Groups[1].Value} ask(s) refused"),
+        ];
+    }
 }
 
 // One resolved setup, as the record counts it.
