@@ -9,10 +9,9 @@ namespace EquityBrief.Core.Providers;
 // A paid job's model over Claude's own messages interface.
 //
 // It names no model and no key: which model it asks for, the options it is asked with, the
-// key and the prices are the profile's settings. Its refusal reader was written against the
-// provider's own refusal, captured on 2026-09-29. Its answer reader reads the shape the
-// provider's documentation states, and it is held to the answers captured from the provider
-// before it writes a live pass. The
+// key and the prices are the profile's settings. Its readers are held to the provider's own
+// answers, captured into the fixture: a section, one stopped at its budget, a refusal for a
+// key naming no workspace, one for a model it does not serve, and the model list. The
 // interface returns the answer as content blocks and the counts under `usage`, with the
 // prompt tokens read from the provider's cache and those written to it counted apart from
 // the rest, and a model's thinking counted inside the output it bills. It stamps no instant

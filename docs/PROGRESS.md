@@ -30574,3 +30574,96 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             operator's store under `data/` was not touched by either.
 Carried:    the news labeller labels tonight's list alone, and the key under this list says a row of it carries no
             news counts once the labeller lands.
+
+### 12.6 - correction: each paid job names a model profile by one word, Claude's own messages interface is a second format, a key the secrets file does not hold stops the job with its line, and the run page names a profile near its retirement date and a report costing more than two dollars, where one set of fields named the one research model   2026-09-29
+Corrects:   the research model's configuration, one set of fields naming one hosted model on one wire format, on the
+            plan the 12.6 ruling records whole, approved with its corrections 1 and A.
+Asked:      the operator, on 2026-09-28, in the brief the 12.6 ruling records; on 2026-09-29, research moving to Claude
+            Sonnet 5.5 and staying there, MDT's report held for the Claude profile, and the two corrections.
+Repaired:   `EquityBrief:Models:Profiles` holds three profiles, deepseek, claude-haiku and claude-sonnet, each with its
+            format, address, model, the secrets section its key sits under, options, prices, and the earliest
+            retirement date its provider publishes with the day it was read. The research job names its profile by
+            one word, `Models:Research:Use`, which the shipped settings set to claude-sonnet, beside its timeout of 600
+            seconds and its answer budget of 16000 tokens. One resolver, `ModelProfiles`, is what the worker and the
+            read surface both resolve through. `AnthropicMessagesFeed` speaks Claude's own messages interface beside
+            the OpenAI-format feed. It prices an answer from its four counts, its cache writes among them, reads the
+            instant from the response's Date header, and reads a stop at the budget or a refusal as an answer not
+            stored and billed all the same. It sends a workspace written beside the key where the key names none. A
+            profile whose key the secrets file does not hold stops the job with the plain line naming the profile and
+            the key's path and resolves no other profile; a research pass writes that line as its own run log row,
+            the drain settles the request refused under it, and the run page's stages that failed draw it. The run
+            page's checklist names a profile a job uses from thirty days before its retirement date, and a report
+            whose pass on the night's session cost more than two dollars with its stock and cost. The fixture carries
+            its own models file, so its recordings stay on the deepseek profile they were made under whatever the
+            shipped word says, and the provider's answers are captured into it: a refusal for a key naming no
+            workspace, the model list, a section, one stopped at its budget and one for a model it does not serve.
+            Four decisions are superseded, their prior text below: "Two models for two jobs, and which research model
+            answers is configuration" by "A local model writes prose from numbers and each paid job names its hosted
+            model in configuration"; "The research model is one interface with an implementation per wire format,
+            chosen by configuration and never falling back" by "A paid model is one interface with an implementation
+            per wire format, and a job never falls back from the profile it names"; "The research model is named only
+            in configuration, and a call is priced at the configured rates its own timestamp falls in" by "A paid job
+            names its model profile in one word, and a profile is priced at its configured rates at its call's own
+            timestamp"; and "Every paid call is made through the spend cap, which holds the research model" by "Every
+            paid call is made through the spend cap, which holds each paid job's model". Two are added: "A profile
+            carries its provider's earliest retirement date, and the run page names it from thirty days before" and
+            "A report costing more than two dollars is named on the run page the morning after it was written".
+            What ran before this: the research model's format, address, model, key, options and prices under one set
+            of fields, the shipped settings naming DeepSeek, and a key missing at startup refusing the whole command.
+Measured:   against the provider on 2026-09-29, the Claude key the operator's secrets file holds. At 03:48Z the key,
+            not scoped to a workspace, was refused with status 400 until the request named one. The operator wrote the
+            Default workspace's ID beside the key, and at 11:33Z the model list answered 200 with thirteen models, both
+            the shipped Claude profiles name among them. A section on claude-sonnet-5-5 answered in one sentence from
+            210 input tokens and 27 output, 0.00069 dollars; the same request with a budget of 8 stopped at max_tokens
+            after 8, 0.0005 dollars; and a model it does not serve was refused with 404. The captures cost 0.0012
+            dollars in all, against the plan's bound of 0.05.
+Guarded:    thirteen tests, new. In `ModelProfilesTests`: the request's fields and the options refused for one of
+            them; an answer priced from its four counts and the ceiling over a cache write; the refusal in the
+            provider's own words and the workspace header; the captured section, budget stop, unknown model and model
+            list read as they arrived and priced by hand; and the thirty-day boundary at 2026-09-14, 2026-09-15 and
+            2026-10-15. In `fixture-expectations`: each shipped profile resolved with its prices and dates; the one word
+            switching the model called and nothing else; the fixture pinned to its own profile whatever the shipped
+            word says; and a key the secrets file does not hold stopping the job with its line, no other profile
+            answering, and the pass's own row carrying it. In `read-surface`: the checklist's two items at thirty days
+            and thirty-one, and at 2.01 dollars and 2.00; and a failed stage drawn in its reason's words. The recorded
+            research tests read the fixture's models file, and the hosted routes pin it.
+Written:    section 6.4's paragraph on the paid models, the spend cap's catalogue row, section 15.10's checklist row,
+            section 17's rows for the profiles, the retirement warning and the report named for its cost, and section
+            18's row for a missing key in `ARCHITECTURE.html`; RUNBOOK's paid models section and keys table; the
+            citations in SCHEMA and BUILD_PLAN; `.claude/rules/checks.md`'s `fixture-expectations`, `read-surface` and
+            `nightly-cost` rows; each prior text in `CHANGELOG.md`; the decisions in `DECISIONS.md`; and the
+            fixture's models file, its captures and their manifest entries.
+Expected:   derived: no expectation file moves.
+Tests:      1539, from 1526: thirteen added.
+Claims:     725, from 718: seven added, section 17's three rows, the checklist's two items and section 18's row as its
+            two halves, each named in `ModelProfileClaims`.
+Pins:       the branch against `main` edits the paid model feeds, the spend cap's constants, the research lane, runner,
+            spend cap and theme runner, the worker's and the read surface's programs and the run page's reader, none
+            of them in the three pin lists. No version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: the mechanism each rule the brief or a correction states rests on,
+            reversed alone, filtered to the tests that name it.
+            Predicted:
+            P1 no fallback: a job whose profile's key is missing resolved to the deepseek profile instead, filtered to
+               `ModelProfilesTests`, `fixture-expectations`' profile tests and `ResearchModelFeedTests`: red in the
+               missing-key test.
+            P2 the thirty-day boundary moved a day, the warning from twenty-nine days before, filtered to
+               `ModelProfilesTests` and the checklist test: red in the boundary theory's 2026-09-15 case and in the
+               checklist test.
+            P3 the two-dollar boundary taken inclusively, a report costing exactly two dollars named, filtered to the
+               checklist test: red in it.
+            P4 the fixture's models file naming claude-sonnet for research, filtered to `fixture-expectations`'
+               profile tests: red in the pinned test alone.
+            Results: 126R
+Held:       126H
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1539 of 1539 tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 725 claims, 725 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 126P placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1539 of 1539 tests.
+            Both gates ran over the tree carrying this entry, 126SHA, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    MDT's report, outstanding since the night of 2026-09-28, written on claude-sonnet once this merges. The
+            actual cost of each of the first five reports written on claude-sonnet, recorded beside the estimate of
+            0.84 to 1.30 dollars, and of the labeller's first five nights beside its table, correction A's. The news
+            labeller and its screens.

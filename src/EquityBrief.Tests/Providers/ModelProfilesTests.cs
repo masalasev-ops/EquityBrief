@@ -117,6 +117,44 @@ public class ModelProfilesTests
         Assert.DoesNotContain("wrkspc_", named.ToString(), StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ClaudesCapturedAnswersAreReadAsTheyArrivedAndPricedFromTheirCounts()
+    {
+        var settings = Resolved("claude-sonnet");
+
+        // The section Claude Sonnet 5.5 wrote on 2026-09-29, read at the instant its Date header carries and
+        // priced by hand at the profile's rates: 210 prompt tokens neither read from the cache nor written to it
+        // at 2.00 and 27 output at 10.00, in dollars a million tokens.
+        var answer = AnthropicMessagesFeed.ParseRecorded(Captured("anthropic-section-sonnet.json"), "The close");
+
+        Assert.Equal(
+            new ResearchAnswer("claude-sonnet-5-5", "Keysight Technologies (KEYS) closed at $333.42 per share.", 210, 0, 210, 27, 0, "end_turn", DateTimeOffset.Parse("2026-09-29T11:33:21Z", CultureInfo.InvariantCulture), 0),
+            answer);
+        Assert.Equal(0.00069m, settings.Pricing.Price(answer));
+
+        // An answer stopped at its budget is not stored and is priced at what it was billed: 210 in and 8 out.
+        var cut = Assert.Throws<UnusableResearchAnswer>(() => AnthropicMessagesFeed.ParseRecorded(Captured("anthropic-section-budget.json"), "The close"));
+
+        Assert.Equal(("Keysight Technologies", "max_tokens", 210, 8), (cut.Answer.Text, cut.Answer.FinishReason, cut.Answer.PromptTokens, cut.Answer.CompletionTokens));
+        Assert.Equal(0.0005m, settings.Pricing.Price(cut.Answer));
+        Assert.Contains("stopped at its budget of tokens", cut.Message, StringComparison.Ordinal);
+
+        // A model the provider does not serve is refused in its own words.
+        Assert.Equal(
+            "The Research job's model refused The close with status 404: model: claude-no-such-model",
+            AnthropicMessagesFeed.Refused("Research", "The close", 404, Captured("anthropic-refused-unknown-model.json")));
+
+        // Every model a shipped Claude profile names is one the provider's own list served on that day.
+        using var listed = JsonDocument.Parse(Captured("anthropic-probe-models.json"));
+
+        var served = listed.RootElement.GetProperty("data").EnumerateArray().Select(model => model.GetProperty("id").GetString()!).ToHashSet(StringComparer.Ordinal);
+        var shipped = Shipped("claude-sonnet");
+        var claude = new[] { "claude-sonnet", "claude-haiku" };
+
+        Assert.All(claude, profile => Assert.Equal(ResearchModelSettings.AnthropicFormat, shipped[ModelProfiles.Field(profile, ModelProfiles.FormatField)]));
+        Assert.All(claude, profile => Assert.Contains(shipped[ModelProfiles.Field(profile, ModelProfiles.ModelField)]!, served));
+    }
+
     [Theory]
     [InlineData("2026-09-14", false)]
     [InlineData("2026-09-15", true)]
