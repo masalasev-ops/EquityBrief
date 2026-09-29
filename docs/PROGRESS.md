@@ -30265,3 +30265,230 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry and the one before and the one after it, 141SHA, in a
             worktree beside the repository, and the operator's store under `data/` was not touched by either.
 Carried:    the second list, built after the profiles and MDT's report and before the labeller.
+
+### 12.5 ruling - a sweep of the swing filter over the stored history proposes a starting point from a plateau and the variants that run beside it, and one registration freezes them, nothing registered before the operator approves   2026-09-29
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, registers nothing, and signs nothing off.
+Asked:      the operator, on 2026-09-29, with the second review of the plan the 12.6 ruling records: part B below,
+            approved on the fourth review with B1 to B3 and on the fifth with one correction and two additions,
+            all below. Its computing starts only after the profiles, the second list and the labeller are merged.
+Ruled:      at a glance, as approved:
+            - The history: the pulled history's 2,198 sessions, 2018-01-02 to 2026-09-25, over 688 names, each
+              night replayed with the index as it stood and the earnings dates as pulled. The 12-month strength
+              measure needs 252 sessions before a night, so every variation is scored from 2019-01-02, about 1,947
+              sessions in 30 blocks of 63 over 8 calendar years, and 2018 is warm-up.
+            - Structural axes: the strength measure 3, the uptrend definition 7 (the live classifier at each of its
+              four versions and three simple rules), support 3, the pullback's reference high 3, the trigger type 3,
+              the stop and target rule 3, the exits 8 (a hold of 10, 20, 40 or 63 sessions, each with the stop moved
+              to break-even once a trade is up by its risk, on and off, all from one forward walk), and the earnings
+              window 4. Their product is 54,432; the 7,776 pairing the ladder with a simple uptrend rule cannot be
+              expressed, since the ladder reads the classifier's label, so there are 46,656 designs.
+            - Dials, at three coarse values in stage 1 and a fine grid in stage 2: the strength bar 7, the depth's low
+              edge 4 and high edge 5, the volume bar 6, the trigger's freshness 5, the reward-to-risk floor 6, the
+              stop bounds 4, the market check 5 and a minimum band strength 4.
+            - Stage 1, which designs are viable: 46,656 x 3^9 = 918,330,048 variations, read per design off the
+              cumulative sums of a table over its dial levels. Its ranking marks the live rule's own design and dials,
+              each among the coarse values, with its rank beside the five proposed for stage 2. Stage 2, the
+              plateau: 2,016,000 fine settings around each of the 5, 10,080,000 variations, where the plateau,
+              neighbour and variant tests run.
+            - The trigger's freshness reads earlier nights, whose setup depends on the depth, the volume bar and the
+              band floor, so it is computed per combination of those dials, 81 in stage 1 and 480 in stage 2, and
+              not by a first firing read on the trigger alone, which would change what the trigger means. Every
+              other dial reads tonight's values or a price series alone.
+            - Machine time, estimated from a whole night's arithmetic of 39 seconds on a store copy on the SSD
+              (2026-09-18): about 23.8 hours for the shared inputs, up to 95 at the most with the classifier's three
+              further versions; stage 1 up to about 15 hours and stage 2 up to about 40. The first 20 sessions and
+              each stage's first designs are timed before the rest, each measured figure put to the operator first.
+              It reads a copy of the store on the C: SSD, never computes while a night, the overnight queue, the
+              labeller or a drain runs, stops by 23:00 UTC on a weekday, and saves its progress in chunks.
+            - The starting point, proposed and never taken automatically: the centre of a plateau, where a variation
+              and at least three quarters of its one-step neighbours beat their break-even and no skill; beating
+              its break-even in at least 6 of the 8 years and with its best year removed; at least 300 trades, in at
+              least 22 of the 30 blocks; at least one stock listed on at least 60% of nights. The four figures are
+              the operator's to rule when the sweep reports.
+            - The variants: one change to a plausible neighbouring value; open in history, neither side winning more
+              than 5 of the 8 years; at least a quarter of their picks outside the starting rule's; at least 30
+              trades a year. Ranked by openness, difference and trades, spread across the filter's parts, up to six,
+              the family at most eight with the fundamentals candidate, whose place stays free unless its evaluator
+              has landed by the freeze.
+            - The freeze: `register --freeze`, one registration at one instant, retiring the six registered today,
+              opening the filter version holding the starting rule and registering it with the approved variants.
+              Every checkpoint judges only trades after the freeze, and the variations explored count toward none of
+              the family's correction. A design whose stop is not at a band, support at the average itself, is named
+              plainly if it reaches stage 2 or the starting point, being the operator's decision against section
+              10's principle and not a setting.
+            - Where it shows: a results page at `#/sweep`; a card for the frozen rules at the top of "How the system
+              learns", read from the registration itself; the starting point's history beside the live record.
+Measured:   read-only on the operator's store, 2026-09-29, for B3. Over 2018-01-02 to 2026-09-25 the index held
+            1,107,914 index-nights, the membership averaging 504 names a session, and 2,580 of them have no bar
+            served, 0.23%; 3 names have no bars at all and 535 miss some sessions. The results page states the share
+            beside every figure, and above a proposed 3% says plainly that the results read better than the market
+            was. The trend rule holds four versions: the live one, below both averages, below both under a cross,
+            and the new label holds two nights. The live scorer holds a trade for up to 63 sessions with no move
+            to break-even, which is one of the eight exits.
+Brief:      the operator's words, whole.
+            > === B. Sweep the filter over the stored history to choose a starting point ===
+            > A planning pass first, and nothing registered before the operator approves.
+            >
+            > The operator's intent: "I am not backtesting with the goal of finding a winning
+            > plan and fix it indefinitely. I want to backtest with numerous variations, as
+            > many as possible, to find a starting point. And from this starting point we
+            > start the evaluation on live data for the future without overfitting to the
+            > past." Variants keep running after the freeze, so the improvement loop continues.
+            >
+            > The replay:
+            >   - Replay the swing filter over the stored history, with the index as it stood
+            >     each night and the earnings dates as stored, across a wide grid of every
+            >     setting the filter has: the strength bar, pullback depth, the volume bar,
+            >     the trigger's freshness, the reward-to-risk floor, the stop and target
+            >     rules, the market check on and off, and the trend rule's versions. State the
+            >     grid and the number of variations before running. Build the grid so a
+            >     condition can be added later as a new axis; the RSI and MACD conditions are
+            >     not in it yet.
+            >   - Score every trade each variation would have taken with the forward-return
+            >     scorer the live record uses: target first, stop first or neither, against
+            >     its own break-even and against no skill from the same starts, after costs,
+            >     counted in blocks of 63 sessions.
+            >   - Report per variation: trades, the share reaching target against the
+            >     break-even they needed, the no-skill comparison, the average result in
+            >     multiples of risk, names per night and nights with none, all year by year.
+            >
+            > The starting point, proposed and never taken automatically:
+            >   - from a plateau, a region where neighbouring settings also do well, never the
+            >     single best variation
+            >   - holding up across the history's different markets year by year, without
+            >     depending on any one year
+            >   - above a stated floor of trades
+            >   - listing stocks on most nights
+            >
+            > The variants that run beside it after the freeze. Each candidate question comes
+            > from the sweep and must pass four tests:
+            >   - one change: the starting rule with exactly one setting moved, to a value
+            >     history says is still plausible
+            >   - open in history: moving it gave mixed results across years; a setting
+            >     history clearly settled is not tested live
+            >   - different enough: at least a quarter of its picks are stocks the starting
+            >     rule does not pick, as a starting figure the planning pass may argue
+            >   - enough trades a year to reach a verdict at the checkpoints
+            > Rank the passing questions by openness, difference and trades, and spread them
+            > across the filter's parts: strength, pullback, trigger, trade and market. Propose
+            > up to six, each described in plain words with its evidence. With the fundamentals
+            > candidate the family is at most eight. If fewer pass, run fewer and leave the
+            > places free.
+            >
+            > The freeze: one registration, at one instant,
+            >   - retires the six candidates registered today, whose records are kept and read
+            >     by no checkpoint
+            >   - registers the starting rule, its approved variants and the fundamentals
+            >     candidate
+            > A retired question the sweep still finds open returns re-based around the new
+            > rule, with a fresh record. Every checkpoint judges only trades after the freeze.
+            > The variations explored are exploration, not trials of the live family, and do
+            > not count toward its correction; state this in the decision. At each future
+            > promotion, the variants are re-based around the new live rule and the sweep is
+            > run again with the added years, to choose the next open questions, never to
+            > judge.
+            >
+            > What it cannot do: the fundamental reading is left out, because the provider
+            > restates old figures. State any other input that is not as it stood on the night.
+            >
+            > Where it shows:
+            >   - A results page to explore: the grid as a map where plateaus are visible, each
+            >     region year by year, the proposed starting point and variants marked, every
+            >     figure labelled as history.
+            >   - On the Run page, at the top of "How the system learns", a card for the frozen
+            >     rules: the live rules in plain words, each check with its value, the date
+            >     frozen; beneath, each variant's one difference; and a link to every earlier
+            >     frozen set with the dates it ran. The card reads the registration itself, so
+            >     it can never disagree with what is being judged.
+            >   - The same section gains the starting point's history beside the live record
+            >     as it builds, labelled as history.
+            >
+            > The machine:
+            >   - Read-only on a copy of the store; the live store changes only by the
+            >     registration the operator runs.
+            >   - Never computes during a night, the overnight queue or the labeller. Stop
+            >     before the scheduled night and resume after it, in chunks that save their
+            >     progress, so a grid taking several days never costs a night.
+            >   - The live store sits on the slow spinning disk. Place the copy where its
+            >     reads do not slow the night.
+            >   - State the machine time for the full grid before starting.
+            >
+            > Documents: the sweep, the results page, the freeze and the frozen-rules card in
+            > ARCHITECTURE.html; the decisions for a starting point chosen from history and for
+            > exploration not counting toward the correction; HOW_IT_WORKS.html section 9
+            > gains how the starting point is chosen and how variants keep the loop running.
+Review:     the fourth review's changes, whole.
+            > Part B is approved with these changes to its grid and search.
+            >
+            > === B1. Add the structural choices as axes ===
+            > The grid turns the dials of one design and never changes the design. Add:
+            >   - strength measure: the mean rank of 3 and 6-month returns (live), 6 months
+            >     alone, and 12 months excluding the latest month
+            >   - uptrend definition: as live, price above the 200-day alone, the 50-day above
+            >     the 200-day, and a rising 200-day
+            >   - support: anchored bands only (live), any band including averages, and the
+            >     20 or 50-day average itself; and a minimum band strength
+            >   - the pullback's reference high: 10, 20 (live) and 50 sessions
+            >   - trigger type: a close above yesterday's high (live), a close above
+            >     yesterday's close, and a close in the top quarter of the day's range
+            >   - exits: a maximum hold of 10, 20, 40 and 63 sessions, and a stop moved to
+            >     break-even once the trade is up by its risk, on and off, both scored in the
+            >     same forward walk
+            >   - the earnings exclusion window: off, 5, 10 and 15 sessions
+            > State any of these the code cannot express as a column computed once per
+            > session, and what it would take.
+            >
+            > === B2. Search in two stages instead of one factorial grid ===
+            > Stage 1: every combination of the structural choices, each with the dials at
+            > three coarse values, to find which designs are viable. Stage 2: the full fine
+            > grid of the dials around the strongest few designs from stage 1, where the
+            > plateau, neighbour and variant tests run. State each stage's size and its
+            > measured machine time on the first sessions before running it. Report stage 1's
+            > ranking of designs to the operator with the stage 2 proposal.
+            >
+            > === B3. State the missing departures with the results ===
+            > Count the index-nights whose name left the index and has no bars served, as a
+            > share of all index-nights, and show it on the results page beside every figure.
+            > If it is above a few percent, say plainly that the results read better than the
+            > market was, because the missing names are mostly failures.
+            The fifth review's correction and additions, whole.
+            > Part B approved with one correction and two additions.
+            >
+            > === Correction. The trigger's freshness is not independent of the other dials ===
+            > The cumulative-sum table is valid only where each dial filters a name-night by a
+            > value that is the same whatever the other dials are. The trigger's freshness is
+            > not: "first fired within N sessions" reads earlier nights, and whether the setup
+            > held on those nights depends on the same variation's pullback depth, volume bar,
+            > reference high and support, so one name-night has a different freshness under
+            > different settings of those dials. Either compute freshness per combination of
+            > the dials that feed it, or define the trigger's first firing on the trigger's
+            > own condition alone, independent of the setup; state which, what it changes in
+            > what the trigger means, and the time it adds. Extend the equivalence test with a
+            > constructed history in which a pullback holds under one depth setting and fails
+            > under another on the nights before a trigger, so the table and direct evaluation
+            > must agree there. Apply the same check to any other dial whose value reads
+            > earlier nights.
+            >
+            > === Addition 1. A non-band stop is a design question if it wins ===
+            > The average-as-support design stops one typical move below the average, a
+            > distance where every other design stops at a band. If that design reaches stage
+            > 2 or the starting point, say so plainly in the report: adopting it would mean
+            > the live plan's stop no longer always comes from a price level, which section 10
+            > states as a principle, and that is the operator's decision, not a setting.
+            >
+            > === Addition 2. Show where today's rule stands ===
+            > Stage 1's ranking marks the live rule's own design and its current dial
+            > settings, with its rank and figures beside the five proposed, so the operator
+            > sees how far the search moved from today's rule and why.
+Changed:    nothing.
+Tests:      none added.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 142T of 142T tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 142B tables, 142C claims, 142P PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 142R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 142T of 142T tests.
+            Both gates ran over the tree carrying this entry and the two before it, 142SHA, in a worktree beside the
+            repository, and the operator's store under `data/` was not touched by either.
+Carried:    the sweep, its planning figures measured before each stage, stage 1's ranking and the stage 2 proposal
+            put to the operator, and the starting point and variants put to the operator before any registration.
