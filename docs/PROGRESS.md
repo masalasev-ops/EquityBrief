@@ -31161,13 +31161,13 @@ Found:      reading the code before the build, over `main` at 9a25f8c:
               does not reach it: it builds the working tree as it stands when it is started.
 Changed:    this entry alone.
 Tests:      none added here.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1548 of 1548 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 44 tables, 725 claims, 725 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 123P placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 123T of 123T tests.
-            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            0 unexamined, 736 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1548 of 1548 tests.
+            Both gates ran over the tree carrying this entry, bf06bbd, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    the build of this ruling, after tonight's night and pull request 282; the build's time over its first
             five nights against the one-hour deadline.
