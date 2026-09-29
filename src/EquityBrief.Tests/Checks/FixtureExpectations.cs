@@ -57,6 +57,14 @@ public partial class FixtureExpectations
         "fixture-expectations",
         ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
+            // 12.5's correction, the sweep: section 17's four rows over constructed candidates, maps and clocks and
+            // the fixture's two nights, and section 18's row about a chunk that fails twice.
+            CheckReach.Key(Scope.LimitsTable, "Sweep grid"),
+            CheckReach.Key(Scope.LimitsTable, "Sweep starting point"),
+            CheckReach.Key(Scope.LimitsTable, "Sweep variants"),
+            CheckReach.Key(Scope.LimitsTable, "Sweep run"),
+            CheckReach.Key(Scope.FailureTable, "A chunk of the sweep fails twice"),
+
             // 12.6's correction, the model profiles: section 17's profiles over the shipped settings and the
             // fixture's own models file, and the half of section 18's row about a key the secrets file does not
             // hold where the job stops and the drain settles its request.

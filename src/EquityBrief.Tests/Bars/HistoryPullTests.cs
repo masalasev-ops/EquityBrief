@@ -485,8 +485,9 @@ public class HistoryPullTests
         }
     }
 
-    // What no night reads, no shipped source but the pull names: the history pull and the migration that
-    // creates its two tables are the only files outside the suite that name either table or its store,
+    // What no night reads, no shipped source but the pull and the one measurement that reads it names: the
+    // history pull, the migration that creates its two tables and the sweep's history, which reads them by
+    // hand and never from a night, are the only files outside the suite that name either table or its store,
     // so no stage, score, record or page can read them without this failing first.
     // see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone
     [Fact]
@@ -506,7 +507,7 @@ public class HistoryPullTests
             .Order(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs"], found);
+        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
 
         // The reader is shown to find what it looks for: a query, a declaration of either store, and not a
         // word that only begins the same way.

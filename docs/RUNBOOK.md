@@ -442,6 +442,16 @@ dotnet run --project src/EquityBrief.Worker -- history-pull --purge <the pull's 
 
 A purge removes every row that pull wrote from both tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull` and `history-purge`, and the run page draws both as run by hand.
 
+### Sweeping the swing filter over the stored history
+
+The sweep replays the swing filter over the history the store and the pulled tables hold, across its designs and settings, and writes a report proposing a starting point and the variants that run beside it. It registers nothing (see: A starting point is proposed from the centre of a plateau of the stored history and never its best variation, and nothing is registered before the operator approves it):
+
+```
+dotnet run --project src/EquityBrief.Worker -c Release -- sweep
+```
+
+It reads the live store directly over a read-only connection, one short read a name, and writes nothing to it: its saved chunks, its state and its report are files in the folder `sweep` beside the store, or the folder the setting `EquityBrief:Sweep:Folder` names (see: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night). It runs for as long as the history takes, about half an hour on this machine over the history from 2018, and looks after itself: on a weekday it pauses before 23:00 UTC for the night and goes on once the night has let its lock go, it waits whenever a drain holds its lock, a chunk that fails twice stops it with the report saying which and why, and started again it goes on from the first chunk it lacks. The history ends at the newest session the store held when it first started; to sweep again from the start over newer sessions, move the folder aside first. Its progress is the file `sweep.log` in the folder, and the report is served at `http://localhost:5152/sweep` as the sweep last wrote it. Start it from a build that is not the one the scheduler runs the night from, so a rebuild of the checkout never stops it.
+
 ### Registering a candidate and versioning a ladder rule
 
 Both are decisions a person takes, from the repository root, and a night never takes either. Nothing is registered and no window is open until someone runs one of these.

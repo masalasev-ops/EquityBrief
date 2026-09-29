@@ -49,6 +49,9 @@ public partial class ComponentAccess
             // 12.6's correction giving each section a profile, the section trial.
             CheckReach.Key(Scope.CatalogueTable, "Section trial"),
             CheckReach.Key(Scope.MatrixTable, "Section trial"),
+            // 12.5's correction, the sweep history.
+            CheckReach.Key(Scope.CatalogueTable, "Sweep history"),
+            CheckReach.Key(Scope.MatrixTable, "Sweep history"),
 
             // 12.1, the swing reader.
             CheckReach.Key(Scope.CatalogueTable, "Swing reader"),
@@ -564,8 +567,9 @@ public partial class ComponentAccess
         // trend classifier, which hands its label to the ladder builder, from 6.11 the
         // report exporter, whose file is kept wherever the person exporting chooses,
         // from 12.2 the filter counts, which print the shape counts and open the store read-only,
-        // and from 12.6 the comparison files, written to a folder the repository ignores.
-        Assert.Equal(["ComparisonFiles", "FilterCounts", "MarkRenderer", "ReportExporter", "SinglePageApp", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // from 12.6 the comparison files, written to a folder the repository ignores, and from 12.5 the
+        // sweep history, which opens the store read-only and keeps its chunks and its report in a folder beside it.
+        Assert.Equal(["ComparisonFiles", "FilterCounts", "MarkRenderer", "ReportExporter", "SinglePageApp", "SweepHistory", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(
@@ -835,7 +839,7 @@ public partial class ComponentAccess
         count switch
         {
             2 => "Two", 3 => "Three", 4 => "Four", 5 => "Five", 6 => "Six", 7 => "Seven", 8 => "Eight", 9 => "Nine", 10 => "Ten",
-            11 => "Eleven", 12 => "Twelve",
+            11 => "Eleven", 12 => "Twelve", 13 => "Thirteen",
             _ => count.ToString(System.Globalization.CultureInfo.InvariantCulture),
         };
 }

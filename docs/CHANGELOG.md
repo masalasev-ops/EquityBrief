@@ -9706,3 +9706,12 @@ Now:
 > Section 15.17, Every trade: ... the result as a signed multiple of the risk or open; a repeat listing made while the trade from an earlier night was open marked as listed again and counted once (see: A repeat listing made before the rule reached the filter is marked and counted once); each column heading ...
 > Section 18, A still open trade whose outcome row is missing: the open trade rule reads the trade as open until its cap's sessions have passed ... the Still open row draws the plan and no dot, says no outcome stored and that the trade is read as open until its sessions run out, and Past picks marks the repeat ... a row that is not there says nothing either way ...
 Why: the operator ruled one open trade per stock on 2026-09-30, read on the pages first with no pin moving, after the list listed BDX again two nights after listing it with the trade still open.
+### 2026-09-29 - .claude/rules/checks.md - fixture-expectations reaches the sweep, and register-append-only names the sweep's file as the one computing a reading outside the evaluation
+Authorised by: A starting point is proposed from the centre of a plateau of the stored history and never its best variation, and nothing is registered before the operator approves it
+Was:
+> | `fixture-expectations` | ... and the pass's own row carrying the line with no call and no spend, under which the drain settles the request refused |
+> | `register-append-only` | ... listed and held to the shipped files that compute a reading or run an evaluation, taken over line endings normalised ... |
+Now:
+> | `fixture-expectations` | ... under which the drain settles the request refused; and the sweep reads the live rule's own design over the fixture's two nights as the nights stored it, ... and never fails a write a writer makes while it reads |
+> | `register-append-only` | ... listed and held to the shipped files that compute a reading or run an evaluation, but the sweep's, which computes over the history in memory by hand and hands nothing to an evaluation or a store, named as the one left out, taken over line endings normalised ... |
+Why: the checks reach the sweep this correction adds, and the sweep computes the indicators of the history it replays without handing them to anything a candidate is evaluated through.

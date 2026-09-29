@@ -161,6 +161,83 @@ public static class NullWin
             resolved);
     }
 
+    // The calibrated bar for a plan whose stop moves to the entry once a close stands its risk above it, the
+    // exit the sweep reads beside the fixed stop, at a round trip in basis points.
+    public static double? ForMovingTheStop(double floor, double ceiling, double volatility, int sessions, double basisPoints, int seed)
+    {
+        if (WalkMovingTheStop(floor, ceiling, volatility, sessions, seed) is not { Resolved: > 0 } resolved)
+        {
+            return null;
+        }
+
+        var made = resolved.Gain + resolved.Loss;
+
+        if (made <= 0)
+        {
+            return null;
+        }
+
+        return Math.Clamp(resolved.Win + (basisPoints / 10_000 / made), 0, 1);
+    }
+
+    // The same paths as `Walk`, from the same seed and the same source of numbers, with the stop moved to the
+    // entry after the first close at or above the entry plus what the plan put at risk. The move is read after
+    // the close's stop and target, as a stop moved on a session is the next session's stop, and a path closing
+    // under the entry once it has moved is a loss of what it gave back, which is what the plan's scoring reads.
+    public static NullOutcome? WalkMovingTheStop(double floor, double ceiling, double volatility, int sessions, int seed)
+    {
+        if (floor <= 0 || floor >= 1 || ceiling <= 1 || volatility <= 0 || sessions <= 0
+            || double.IsNaN(floor) || double.IsNaN(ceiling) || double.IsNaN(volatility))
+        {
+            return null;
+        }
+
+        var drift = -0.5 * volatility * volatility;
+        var random = new PathRandom(seed);
+        var movesAt = 1 + (1 - floor);
+        var (wins, losses, gain, loss) = (0, 0, 0d, 0d);
+
+        for (var path = 0; path < Paths; path++)
+        {
+            var price = 1d;
+            var stop = floor;
+
+            for (var session = 0; session < sessions; session++)
+            {
+                price *= Math.Exp(drift + (volatility * random.Normal()));
+
+                if (price < stop)
+                {
+                    losses++;
+                    loss += 1 - price;
+
+                    break;
+                }
+
+                if (price >= ceiling)
+                {
+                    wins++;
+                    gain += price - 1;
+
+                    break;
+                }
+
+                if (price >= movesAt)
+                {
+                    stop = 1;
+                }
+            }
+        }
+
+        var resolved = wins + losses;
+
+        return new NullOutcome(
+            resolved == 0 ? 0 : (double)wins / resolved,
+            wins == 0 ? 0 : gain / wins,
+            losses == 0 ? 0 : loss / losses,
+            resolved);
+    }
+
     // The seed one setup's paths are walked from: the pinned seed and the setup's
     // own name and session, so a setup's bar is the same whichever night computed
     // it and whatever order the night reached its names in.

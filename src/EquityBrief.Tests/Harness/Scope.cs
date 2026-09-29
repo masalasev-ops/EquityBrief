@@ -2529,6 +2529,37 @@ internal static class Scope
             Verdict.Pass,
             "a refused pass's row, a record carrying its reason, is drawn among the stages that failed in that reason's words, read off the rendered region, and a stage whose record carries no reason keeps its detail",
             ByReadSurface),
+
+        // 12.5's correction on the operator's rulings of 2026-09-29: the sweep history, the sweep's figures and
+        // the chunk that fails twice.
+        [CheckReach.Key(CatalogueTable, "Sweep history")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the stores it reads and that it writes none, and the declaration matches this row, its matrix row and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Sweep history")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(LimitsTable, "Sweep grid")] = new Scoped(
+            Verdict.Pass,
+            "the grid's counts are the ones its axes make, every setting's figures read off a design's table are the ones reading it directly gives over constructed candidates, the first stage's viable count and median are the ones every coarse setting read directly gives, and a tie on every figure takes one place through the design nearest the live rule's",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Sweep starting point")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed map whose best single setting is off the plateau the proposal is the plateau's centre, a plateau missing a floor proposes nothing, three quarters of a setting's neighbours are enough and fewer are not, a record one year carries is refused, and the report says the results read better than the market was a tenth over the threshold and not at it",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Sweep variants")] = new Scoped(
+            Verdict.Pass,
+            "each of the four tests refuses a variant on its own and passes it at its edge",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Sweep run")] = new Scoped(
+            Verdict.Pass,
+            "over a clock the run's own wait moves the run pauses at the window's edges and not a minute before, goes on two polls after a night lets its lock go and after a drain's, gives up a night that never came, and a run stopped after a chunk goes on from the next and holds what an unstopped run holds",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A chunk of the sweep fails twice")] = new Scoped(
+            Verdict.Pass,
+            "a chunk failing once is tried again and goes on, one failing twice stops the run with the chunk and the error recorded and the page it writes naming both and proposing nothing, and a run stopped after a chunk goes on from the next",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "Spend cap reached, research pauses for the period")] = new Scoped(
             Verdict.Pass,
             "at the day cap and at the month cap on its own the shipped spend cap refuses before the call, the recorded model is asked nothing, the refusal is a row carrying no call and no spend, and the period it names ends at the next UTC midnight or the first of the next UTC month",
@@ -3195,6 +3226,8 @@ internal static class Scope
         ["Filter history"] = "12.6",
         // The operator's ruling of 2026-09-26, built as 12.2's correction.
         ["History pull"] = "12.2",
+        // The operator's rulings of 2026-09-29, built as 12.5's correction.
+        ["Sweep history"] = "12.5",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -4274,6 +4307,8 @@ internal static class Scope
         ["Both lists on tonight's page empty on a night the swing filter listed"] = "12.7",
         // The model profiles, a 12.6 correction.
         ["A paid job's profile names a key the secrets file does not hold"] = "12.6",
+        // The sweep, a 12.5 correction.
+        ["A chunk of the sweep fails twice"] = "12.5",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -4348,6 +4383,11 @@ internal static class Scope
         ["Sector sites"] = "12.6",
         ["Report rates"] = "12.6",
         ["Section review"] = "12.6",
+        // The sweep, a 12.5 correction.
+        ["Sweep grid"] = "12.5",
+        ["Sweep starting point"] = "12.5",
+        ["Sweep variants"] = "12.5",
+        ["Sweep run"] = "12.5",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)
