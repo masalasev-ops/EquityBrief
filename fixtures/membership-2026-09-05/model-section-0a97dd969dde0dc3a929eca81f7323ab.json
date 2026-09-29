@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-hzxi6tqke1ak2wvwm92qx",
+  "object": "chat.completion",
+  "created": 1790706778,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The first risk is that supply constraints will limit the conversion of demand into revenue. That risk would be confirmed by management stating that the supply environment is less flexible today than a year ago and describing supply as a governor of the ability to convert demand into revenue for the next several quarters [D3]. The second risk is that one-time tariff impacts recorded in fiscal year 2026 will not repeat, creating a high comparison bar for future profitability. That risk would be confirmed by management cautioning that they did have the onetime tariff impacts this year that won't repeat and noting that operating margin exceeded long-term targets partly due to these non-recurring items [D3]. The third risk is that supply chain limitations will act as a governor on near-term revenue conversion for the next several quarters due to high demand for incoming components across the ecosystem. That risk would be confirmed by management stating that internal capacity constraints for new product ramps have largely been resolved but the challenge has shifted to external component supply and that revenue conversion will likely be nonlinear over the next few quarters as the company manages these external supply dependencies [D4].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18810,
+    "completion_tokens": 224,
+    "total_tokens": 19034,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

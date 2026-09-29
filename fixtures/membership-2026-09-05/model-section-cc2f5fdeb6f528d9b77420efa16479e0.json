@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-5t9uk74p4kmz5xokacpk3h",
+  "object": "chat.completion",
+  "created": 1790706622,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Apple Inc. is a technology company trading at a close of 316.22 within an uptrend state, supported by a 200-day average of 283.69 and a 50-day average of 315.64 while facing immediate resistance between 319.07 and 320.28. The stock recently posted a negative move of -7.35 percent following an earnings reaction where actual results of 2.02 exceeded the estimate of 1.88, resulting in a surprise of 7.45 percent on the session ending 2026-07-31. Technical indicators show a MACD value of 2.25 with a histogram of 0.92 above a signal line of 1.32 and a 14-day relative strength index of 50.26 alongside a 14-day average true range of 7.50. Session volume for the latest period was 35.42 million compared to a 20-day average volume of 39.18 million and a 50-day average volume of 48.64 million, with swings marked at 43 since the last major move measured from 2026-07-27 showing a decline of -9.94 percent.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1696,
+    "completion_tokens": 291,
+    "total_tokens": 1987,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

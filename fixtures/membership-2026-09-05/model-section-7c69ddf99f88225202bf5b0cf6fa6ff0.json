@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-rs1am1ri9pcrwu9lgms7v",
+  "object": "chat.completion",
+  "created": 1790706585,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Microsoft Corporation is a technology sector company with an improving business state read from the quarter to 2026-06-30. The stock closed at 493.95 during the session on 2026-07-30, which followed the latest earnings reaction report dated 2026-07-29 where actuals of 4.74 exceeded estimates of 4.21 by a surprise of 12.59 per cent. Technical indicators show a 14-day average true range of 10.75 and a relative strength index of 56.17, while the company maintains an operating margin of 45.1 per cent compared to 44.9 per cent a year earlier. Sales growth remains robust with figures of 18.1 per cent for the same quarter a year before, 17.7 per cent on a year earlier, and 18.3 per cent on a year earlier the quarter before.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1866,
+    "completion_tokens": 215,
+    "total_tokens": 2081,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

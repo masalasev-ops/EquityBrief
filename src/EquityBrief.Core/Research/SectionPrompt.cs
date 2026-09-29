@@ -36,19 +36,31 @@ public static class SectionPrompt
     // A margin is named rather than every fraction below one, because the MACD
     // histogram is one too and a percentage of it would pass the number rule while
     // saying something nobody computed.
+    //
+    // A section describes and never prescribes, because the trade plan is computed by code
+    // and drawn in a region of its own, and a written plan beside it can contradict it. The
+    // corpus's two prose rules are stated because the checker refuses a sentence breaking
+    // either. And nothing to write is no text at all: a writer told only to write nothing
+    // answered with an invisible character and, asked again, with sentences saying so.
+    // see: A written section describes the company and never proposes a trade, a holding or a plan for income
     public const string Instructions =
         "You write one section of an equity research report. Write plain prose with no headings, no lists, no markdown and no preamble. "
         + "Every figure you write must be one of the facts listed, copied or rounded, and written in digits. Write no figure that is not listed, and no date that is not listed. "
         + "Round an amount of money to millions or billions and write the unit, write a margin as a percentage, and write any other figure to at most two decimal places. "
         + "Write a count from one to ten in words and anything larger in digits. "
-        + "If the facts and documents do not support the section, write nothing.";
+        + "Describe the company and never prescribe: propose no trade, no holding, no adding or trimming and no plan for income, because the trade plan is computed separately. "
+        + "Write no em dash, and never call a statement or a view candid or frank. "
+        + "If the facts and documents do not support the section, answer with no text at all: no character, no mark and no sentence saying so.";
 
     // The citation instruction, given only where documents are listed. It was part of
     // every call until the first replay, where a section handed no document put a
     // citation to a first document on every sentence, having been told how to cite
-    // one, and was refused for citing past a source list that held nothing.
+    // one, and was refused for citing past a source list that held nothing. The sentence
+    // opening a paragraph is named because those were the ones a writer left uncited: a
+    // risk's own sentence ahead of the confirmation it cited, and a short version's framing.
     public const string Citing =
-        "End every sentence with the document it rests on, written as [D1] for the first document listed, [D2] for the second, and so on. Write no sentence that no listed document supports.";
+        "End every sentence with the document it rests on, written as [D1] for the first document listed, [D2] for the second, and so on, "
+        + "the sentence opening a paragraph as well as the rest. Write no sentence that no listed document supports, and none about what you are writing or leaving out.";
 
     // The instructions for a call, which carry the citation rule where there is
     // something to cite.
@@ -73,8 +85,12 @@ public static class SectionPrompt
             + "Write nothing about any move not listed there.",
         ["What the company sells"] =
             "Say what the company sells and to whom, in two to four sentences, using only the documents listed.",
+        // The segments that moved and why, and never every segment, which the numbers table
+        // already draws line by line.
         ["The segment commentary"] =
-            "Write one sentence for each business segment whose figures are listed, saying what that segment reported for the quarter, using only the segment facts listed.",
+            "Name the business segments whose figures moved most or changed direction, at most four, one sentence each, saying what each reported for the quarter "
+            + "and what the documents listed give as the cause. Never go through every segment, because the numbers table already shows each of them. "
+            + "Use only the segment facts and the documents listed.",
         // Handed its facts as a reader reads them and asked to copy them, because asked to
         // round them the model cut digits off, and asked nothing it copied six places.
         // see: The key under each figure is handed its facts as a reader reads them, rounded by code
@@ -95,26 +111,39 @@ public static class SectionPrompt
         // each case a paragraph opening on its own name, a point to a sentence, and each risk a
         // paragraph opening on its ordinal with what would confirm it in a sentence of its own. A
         // writer that answers in another shape is still drawn, a claim to a row, since the page
-        // cuts only where the prose says a part ends.
+        // cuts only where the prose says a part ends. A point that could be said of any company
+        // tells the reader nothing about this one, and a confirmation that is a bare threshold,
+        // or one the next quarter crosses by construction, confirms nothing about the risk.
         // see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws
         ["The two cases"] =
             "Write the bull case as one paragraph that begins \"The bull case\", then the bear case as a second paragraph that begins \"The bear case\". "
-            + "Give each point its own sentence, and end each case with a sentence saying what it needs to see at the next report.",
+            + "Give each point its own sentence, and end each case with a sentence saying what it needs to see at the next report. "
+            + "Make each point specific to this company and its latest documents, and leave out any sentence that could be said of any company.",
         ["The risks, each with what would confirm it"] =
             "Name each risk to the company that the documents support, each in a paragraph of its own. Begin each with its ordinal and the word risk, as \"The first risk is\", "
-            + "and follow it with one sentence that begins \"That risk would be confirmed by\" and names the figure or event that would confirm it.",
+            + "and follow it with one sentence that begins \"That risk would be confirmed by\" and names an observable event that would tell the risk apart from ordinary movement, "
+            + "stated against the company's guidance or its trend: never a bare threshold such as a figure above 0, and never a figure the next quarter crosses by construction, "
+            + "such as growth falling after a quarter that held an extra week.",
+        // What is true and what is argued about, and never a plan: the plan is computed by code
+        // and drawn in its own region. The one section that sums the others up is the one a
+        // writer opens paragraphs in with a short signpost citing nothing, so it is told that a
+        // sentence which only introduces or sums up is not one to write.
+        // see: A written section describes the company and never proposes a trade, a holding or a plan for income
         ["The short version"] =
-            "In three or four paragraphs, say what is true, what the market is arguing about, and what the plan therefore is.",
+            "In three or four paragraphs, say what the documents and the sections already written show to be true of the company and what the market is arguing about. "
+            + "Every sentence, however short, states something a listed document says and ends with its marker, so write no sentence that only introduces, joins or sums up the others. "
+            + "Describe it and propose nothing: the trade plan is computed and drawn separately, so write no trade, no holding, no adding or trimming and no plan for income.",
     };
 
     // The segment commentary over a table that files no quarter. The quarter's ask above
     // stays word for word, since every recording of it is keyed on it.
     // see: A segment figure held for a period longer than a quarter is asked for by that period and refused where its sentence names a period of another length
     public static string SegmentsOverALongerPeriod(int months, string ended) =>
-        "Write one sentence for each business segment whose figures are listed, saying what that segment reported for the "
+        "Name the business segments whose figures moved most or changed direction, at most four, one sentence each, saying what each reported for the "
         + months.ToString(CultureInfo.InvariantCulture) + " months to " + ended
-        + ". Each segment figure listed is named with the period it covers, so name a period by its months and never as a quarter, a half or any other period. "
-        + "Use only the segment facts listed.";
+        + " and what the documents listed give as the cause. Never go through every segment, because the numbers table already shows each of them. "
+        + "Each segment figure listed is named with the period it covers, so name a period by its months and never as a quarter, a half or any other period. "
+        + "Use only the segment facts and the documents listed.";
 
     static string AskFor(string section, IReadOnlyList<Fact> facts) =>
         string.Equals(section, Evidence.Segments, StringComparison.Ordinal) && SegmentPeriods.LongerPeriodIn(facts) is { } longer

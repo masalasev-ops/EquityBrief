@@ -182,7 +182,7 @@ public sealed class OpenAiCompatibleModelFeed(
             : "unstated";
 
         var text = message.TryGetProperty("content", out var content) && content.ValueKind == JsonValueKind.String
-            ? Regex.Replace(content.GetString()!, @"<think>[\s\S]*?</think>", string.Empty).Trim()
+            ? AnswerText.Visible(Regex.Replace(content.GetString()!, @"<think>[\s\S]*?</think>", string.Empty))
             : string.Empty;
 
         var usage = root.TryGetProperty("usage", out var used) ? used : default;

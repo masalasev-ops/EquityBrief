@@ -26,6 +26,35 @@ public sealed record ResearchAnswer(
     DateTimeOffset Created,
     int CacheWriteTokens = 0);
 
+// The text of an answer as a reader sees it, trimmed of white space and of the format
+// characters Unicode sets apart from visible text, the zero-width space among them. An
+// answer holding nothing a reader can see is no answer whichever model wrote it: told to
+// write nothing, a writer answered with a single zero-width space, which a trim of white
+// space alone keeps and the checker then read as a sentence.
+public static class AnswerText
+{
+    public static string Visible(string text)
+    {
+        static bool Invisible(char character) =>
+            char.IsWhiteSpace(character) || char.GetUnicodeCategory(character) == UnicodeCategory.Format;
+
+        var start = 0;
+        var end = text.Length;
+
+        while (start < end && Invisible(text[start]))
+        {
+            start++;
+        }
+
+        while (end > start && Invisible(text[end - 1]))
+        {
+            end--;
+        }
+
+        return text[start..end];
+    }
+}
+
 // The research model did not answer at all. A type of its own for the reason the
 // local model's is: a pass stops asking on it and carries on past a refusal.
 public sealed class ResearchModelUnavailable(string message) : Exception(message);
@@ -353,7 +382,7 @@ public sealed record ResearchModelSettings
     // describe.
     public static IReadOnlyList<string> OwnedFields(string format) =>
         string.Equals(format, AnthropicFormat, StringComparison.Ordinal)
-            ? ["model", "messages", "system", "max_tokens", "stream"]
+            ? ["model", "messages", "system", "max_tokens", "stream", AnthropicMessagesFeed.OutputConfigField]
             : ["model", "messages", "max_tokens", "stream"];
 
     public ResearchModelSettings(

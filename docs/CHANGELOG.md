@@ -9080,3 +9080,39 @@ Now:
 > | the most one research answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `32768` |
 > ... and a call already made keeps the price its run log row recorded (see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp). The answer budget is the job's and not the profile's, so a switch to a model that counts its reasoning inside its answer wants a budget that holds both: DeepSeek ran on `32768` from 6.7, and Claude Sonnet 5.5 on `16000` for the day it wrote research.
 Why: the operator switched research back to DeepSeek on 2026-09-29, and the shipped values are the table's.
+
+### 2026-09-29 - ARCHITECTURE.html - a written section describes and never prescribes, four asks are tightened, and the corpus's prose rules hold for written sentences
+Authorised by: A written section describes the company and never proposes a trade, a holding or a plan for income; A written sentence carrying the word the corpus bans or an em dash is refused as an uncited one is
+Was:
+> <tr><td>The short version</td><td>Three or four paragraphs stating what is true, what the market is arguing about, and what the plan therefore is</td>...
+> ... The claim checker then refuses the section unless every figure in it is one code computed and every sentence rests on a document it is allowed to rest on (see: Code owns every number). The table says what each step does for each section. ...
+> <td>one sentence per business unit, saying what it reported for that period, and told to name a longer period by its months and never as a quarter, a half or any other period</td>
+> <td>the bull case as one paragraph opening on the words "The bull case" and the bear case as a second opening on "The bear case", a point to a sentence, each ending in what it needs to see at the next report (see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws)</td>
+> <td>each risk the documents support in a paragraph of its own, opening on its ordinal as "The first risk is" and followed by a sentence opening "That risk would be confirmed by" naming the figure or event that would confirm it</td>
+> <td>three or four paragraphs: what is true, what the market is arguing about, and what the plan therefore is</td>
+Now:
+> <tr><td>The short version</td><td>Three or four paragraphs stating what the documents and the sections already written show to be true and what the market is arguing about, proposing no trade and no plan, which the plan's own region draws</td>...
+> ... rests on a document it is allowed to rest on (see: Code owns every number), and it refuses a sentence carrying the word the corpus bans, in any form, or an em dash, as it refuses one resting on nothing (see: A written sentence carrying the word the corpus bans or an em dash is refused as an uncited one is). Every model is told to describe the company and never to prescribe: no section proposes a trade, a holding, adding, trimming or a plan for income, because the plan is computed by code and drawn in its own region (see: A written section describes the company and never proposes a trade, a holding or a plan for income). The table says what each step does for each section. ...
+> <td>the business units whose figures moved most or changed direction, at most four, a sentence each saying what it reported for that period and what the filing gives as the cause, never every unit, which the numbers table already draws, and told to name a longer period by its months and never as a quarter, a half or any other period</td>
+> <td>the bull case ..., a point to a sentence, each point specific to the company and its latest documents and none that could be said of any company, each case ending in what it needs to see at the next report (see: ...)</td>
+> <td>each risk ... followed by a sentence opening "That risk would be confirmed by" naming an observable event that would tell the risk apart from ordinary movement, stated against the company's guidance or its trend, never a bare threshold and never a figure the next quarter crosses by construction</td>
+> <td>three or four paragraphs: what the documents and the sections already written show to be true, and what the market is arguing about, proposing no trade and no plan (see: A written section describes the company and never proposes a trade, a holding or a plan for income)</td>
+Why: the operator's comparison of MDT's two reports on 2026-09-29 found a short version prescribing a plan that contradicted the computed one, a segment commentary listing every line, general points in the two cases, bare-threshold confirmations and a short version carrying the banned word, and ruled the instructions tightened for every model and the prose rules held by the claim check.
+
+### 2026-09-29 - RUNBOOK.md - what a pass over the fixture costs, over the recordings made again under the instructions of 2026-09-29
+Authorised by: A written section describes the company and never proposes a trade, a holding or a plan for income
+Was:
+> **What a pass costs.** Over the fixture's KEYS a pass wrote seven of the eight sections it could write, three on the local model and four through the spend cap for $0.0226, a sum that includes the cause of each large move, asked twice and answered with nothing both times, since a call answered with nothing is billed, and is at the off-peak rate, since the pass's paid calls were recorded on a Saturday, outside the provider's peak days; recorded inside the peak window, the same calls cost twice as much. ...
+> ... Over the fixture's KEYS a pass with every section paid cost $0.0330, and the fetch weighs ten of the provider's daily 100,000 calls. ...
+Now:
+> **What a pass costs.** Over the fixture's KEYS a pass wrote all eight sections it could write, three on the local model and five through the spend cap for $0.0343, a sum that includes the two cases and the risks each asked again after the checker refused a figure in the first draft, since every draft is billed, and is at the off-peak rate, since the pass's paid calls were recorded on a weekday outside the provider's peak windows; recorded inside a peak window, the same calls cost twice as much. ...
+> ... Over the fixture's KEYS a pass with every section paid cost $0.0394, and the fetch weighs ten of the provider's daily 100,000 calls. ...
+Why: every recording the fixture's pass reads was made again, since the instructions every section is asked under changed, and the figures are the new recordings'.
+
+### 2026-09-29 - .claude/rules/checks.md - claim-admissibility's row names the corpus's prose rules held to a written sentence
+Authorised by: A written sentence carrying the word the corpus bans or an em dash is refused as an uncited one is
+Was:
+> | `claim-admissibility` | every CI run | ... A poisoned paragraph and an unsourced claim are this row's other half and are asserted from 6.4, which is the checkpoint at which a written section exists to reject |
+Now:
+> | `claim-admissibility` | every CI run | ... A poisoned paragraph and an unsourced claim are this row's other half and are asserted from 6.4, which is the checkpoint at which a written section exists to reject; and a sentence carrying the corpus's banned word in any form, or an em dash, is refused as an unsourced claim is, its second draft left out and named on the name page by its rule and never by its sentence |
+Why: the check reaches the behaviour this ruling adds.

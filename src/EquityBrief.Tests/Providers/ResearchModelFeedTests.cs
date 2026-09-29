@@ -52,6 +52,13 @@ public class ResearchModelFeedTests
                     .Append(new KeyValuePair<string, string?>(ModelProfiles.Field(PinnedProfile, ModelProfiles.OptionsField), options ?? string.Empty)))
             .Build());
 
+    // The fixture's settings with the research job on its claude-sonnet profile, which the fixture's
+    // recordings of Claude Sonnet 5.5 were made under.
+    internal const string ClaudeProfile = "claude-sonnet";
+
+    internal static ResearchModelSettings PinnedClaude() =>
+        Pinned(null, (ModelProfiles.Use(ModelProfiles.ResearchJob), ClaudeProfile), (ModelProfiles.KeyPath("Claude"), NotAKey));
+
     // A key of the pinned profile's prices.
     static string Price(string field) => ModelProfiles.Prices(PinnedProfile) + ":" + field;
 
@@ -172,23 +179,24 @@ public class ResearchModelFeedTests
         var settings = Pinned();
         var answer = RecordedAnswer(settings);
 
-        Assert.Equal(DayOfWeek.Sunday, answer.Created.UtcDateTime.DayOfWeek);
+        // Recorded on a weekday outside both peak windows.
+        Assert.Equal(DayOfWeek.Tuesday, answer.Created.UtcDateTime.DayOfWeek);
         Assert.False(settings.Pricing.IsPeak(answer.Created));
 
         var byHand = (answer.CacheHitTokens * 0.003m + answer.CacheMissTokens * 0.15m + answer.CompletionTokens * 0.60m) / 1_000_000m;
 
         Assert.Equal(byHand, settings.Pricing.Price(answer));
-        Assert.Equal(0.0001731m, byHand);
+        Assert.Equal(0.0000717m, byHand);
 
         // The same counts stamped inside a peak window cost twice as much.
         Assert.Equal(byHand * 2m, settings.Pricing.Price(answer with { Created = DateTimeOffset.Parse("2026-09-14T01:30:00Z", CultureInfo.InvariantCulture) }));
 
-        // Every captured call arrived with nothing cached, so the cached rate is held over
-        // the same answer with part of its prompt served from the cache: 150 of 182 cached
-        // is 150 at 0.003 and 32 at 0.15, beside the same 243 of output.
-        var cached = answer with { CacheHitTokens = 150, CacheMissTokens = 32 };
+        // The captured call arrived with nothing cached, so the cached rate is held over the
+        // same answer with part of its prompt served from the cache: 200 of 246 cached is 200
+        // at 0.003 and 46 at 0.15, beside the same 58 of output.
+        var cached = answer with { CacheHitTokens = 200, CacheMissTokens = 46 };
 
-        Assert.Equal(0.00015105m, settings.Pricing.Price(cached));
+        Assert.Equal(0.0000423m, settings.Pricing.Price(cached));
 
         // A provider with no peak pricing names no windows, and no instant is priced up.
         var flat = new ResearchPricing(0.003m, 0.15m, 0.60m, [], [], 2m);

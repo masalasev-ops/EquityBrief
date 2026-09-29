@@ -1784,11 +1784,11 @@ public static class NameScreen
     // `read-surface` asserts the two agree.
     public const string RejectedTwice = "rejected twice";
 
-    // The two rules whose finding records the draft's own sentence as the offending text.
+    // The four rules whose finding records the draft's own sentence as the offending text.
     // Every other rule records something the checker extracted, a figure, a date, a window
     // or a citation marker, which is the most useful thing on the line.
     static readonly HashSet<string> TheDraftsOwnSentence =
-        new(StringComparer.Ordinal) { ClaimRules.Uncited, ClaimRules.CauseNamingNoMove };
+        new(StringComparer.Ordinal) { ClaimRules.Uncited, ClaimRules.CauseNamingNoMove, ClaimRules.ClaimOfCandour, ClaimRules.EmDashed };
 
     // What refused a section, as the name page states it: every rule the checker named,
     // and the offending text beside each except where that text is the draft's own

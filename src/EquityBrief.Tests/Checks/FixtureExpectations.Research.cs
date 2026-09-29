@@ -70,11 +70,13 @@ public partial class FixtureExpectations
         Assert.Equal(expected.GetProperty("modelCalls").GetProperty("local").GetInt32(), local.Requests);
         Assert.Equal(expected.GetProperty("modelCalls").GetProperty("paid").GetInt32(), own.Length);
 
-        // The theme's one call, over the pages it was handed, answered with nothing: the
-        // recording carries no answer, and the pass stored no cycle.
-        var cycle = Assert.Single(paid.Asked, request => request.Section == ClaimRules.CycleSection);
+        // The theme's call, over the pages it was handed, answered with nothing and asked once
+        // more with the same request: the recording carries no answer, and the pass stored no cycle.
+        var cycles = paid.Asked.Where(request => request.Section == ClaimRules.CycleSection).ToArray();
+        var cycle = cycles[0];
 
-        Assert.Equal(theme.GetProperty("paid").GetInt32(), paid.Asked.Count(request => request.Section == ClaimRules.CycleSection));
+        Assert.Equal(theme.GetProperty("paid").GetInt32(), cycles.Length);
+        Assert.All(cycles, asked => Assert.Equal(cycle.Key, asked.Key));
         Assert.Equal(theme.GetProperty("handed").GetInt32(), cycle.DocumentIds.Count);
         Assert.Throws<UnusableResearchAnswer>(() => OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(cycle))), cycle.Section));
         Assert.Empty(Query(store, "SELECT theme FROM theme_section;"));
@@ -120,8 +122,7 @@ public partial class FixtureExpectations
                 .Select(id => Query(store, $"SELECT title FROM source_document WHERE id = '{id.GetString()}';").Single()),
         ];
 
-        // The cause stored no version, the model having answered it with nothing, so what it was
-        // handed is read off the documents its request carried.
+        // What the cause was handed, read off the documents its request carried.
         Assert.Equal(
             Listed(handed.GetProperty("The cause of each large move")),
             own.First(request => request.Section == ClaimRules.CauseSection).DocumentIds.Select(id => Query(store, $"SELECT title FROM source_document WHERE id = '{id}';").Single()));
@@ -748,7 +749,7 @@ public partial class FixtureExpectations
         // The paid lane's sections are written while the local model is not answering, and
         // the local lane's are left absent with their reason, which the page reads. The short
         // version is in the local lane here, so every paid call is one the default pass made,
-        // the cause of each large move among them, which the recordings answer with nothing twice.
+        // the two cases and the risks each written again after the checker refused a figure.
         using var fresh = await FixtureReplay.ReplayedForResearchAsync();
 
         var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
@@ -760,9 +761,8 @@ public partial class FixtureExpectations
             [.. ProseWriter.DefaultLane, "The short version"],
             outcome.NotWritten.Where(line => line.Reason.StartsWith(ProseWriter.Unavailable, StringComparison.Ordinal)).Select(line => line.Section).ToArray());
         Assert.Equal(
-            ["The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
+            [ClaimRules.CauseSection, "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The two cases", "The risks, each with what would confirm it"],
             outcome.Written.Select(section => section.Section).ToArray());
-        Assert.Contains(outcome.NotWritten, line => line.Section == ClaimRules.CauseSection && line.Reason == ProseWriter.NoUsableAnswer);
         Assert.All(outcome.Written, section => Assert.Equal(paid.Identity, section.Model));
         Assert.Equal("0", Query(fresh, $"SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS' AND model = '{LocalModelSettings.DefaultModel}';").Single());
     }
@@ -826,17 +826,18 @@ public partial class FixtureExpectations
                 Listed(asked.GetProperty("fallback")).Order(StringComparer.Ordinal),
                 Query(store, "SELECT section FROM research_section WHERE ticker = 'KEYS' AND status = 'fallback' ORDER BY section;"));
 
-            // Over the name's own sections: the theme's one call is made the same in both runs,
-            // whichever lane the name's sections are in, and is the theme's rather than a lane's.
+            // Over the name's own sections: the theme's call, and its one ask again, are made the
+            // same in both runs, whichever lane the name's sections are in, and are the theme's
+            // rather than a lane's.
             Assert.Equal(asked.GetProperty("calls").GetInt32(), local.Requests + paid.Asked.Count(request => request.Section != ClaimRules.CycleSection));
-            Assert.Equal(1, paid.Asked.Count(request => request.Section == ClaimRules.CycleSection));
+            Assert.Equal(Expected("research-record").GetProperty("theme").GetProperty("paid").GetInt32(), paid.Asked.Count(request => request.Section == ClaimRules.CycleSection));
             Assert.Equal(
                 decimal.Parse(asked.GetProperty("spend").GetString()!, CultureInfo.InvariantCulture),
                 Query(store, $"SELECT spend FROM run_log WHERE run_id = 'replay-research' AND stage NOT LIKE 'research call: {ClaimRules.CycleSection}%';").Sum(spend => decimal.Parse(spend, CultureInfo.InvariantCulture)));
 
             // One evidence set: every section in both runs was handed what the default pass
-            // hands it, whichever model asked, read off the risks, which both runs write. The two
-            // cases in the local lane came back cut short twice and stored no row to read.
+            // hands it, whichever model asked, read off the risks' first draft, which both runs
+            // store.
             Assert.Equal(
                 Listed(Expected("research-record").GetProperty("handed").GetProperty("acrossTheEvidence")).Length,
                 JsonDocument.Parse(Query(store, "SELECT source_ids FROM research_section WHERE ticker = 'KEYS' AND section = 'The risks, each with what would confirm it' AND version = 1;").Single()).RootElement.GetArrayLength());
@@ -1145,9 +1146,11 @@ public partial class FixtureExpectations
 
         var billed = settings.Pricing.Price(OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section));
 
+        // Worked by hand off the recording: 246 uncached prompt tokens at 0.15 and 58 completion
+        // tokens at 0.60, in dollars a million tokens, off-peak.
         Assert.False(call.Answered);
         Assert.Equal(billed, call.Price);
-        Assert.Equal(0.0001731m, billed);
+        Assert.Equal(0.0000717m, billed);
         Assert.Equal([$"research call: The two cases|refused|1|1|{billed.ToString(CultureInfo.InvariantCulture)}"], CallRows(store, "pass-billed-unusable"));
 
         // And the ledger the next call is judged by holds it.

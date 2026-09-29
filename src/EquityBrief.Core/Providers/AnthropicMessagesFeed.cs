@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 
 namespace EquityBrief.Core.Providers;
 
@@ -165,6 +166,14 @@ public sealed class AnthropicMessagesFeed(HttpClient client, ResearchModelSettin
             ["stream"] = false,
         };
 
+        if (wanted.DocumentIds.Count > 0)
+        {
+            body[OutputConfigField] = new JsonObject
+            {
+                ["format"] = new JsonObject { ["type"] = "json_schema", ["schema"] = SentencesSchema() },
+            };
+        }
+
         if (settings.Options is { } options)
         {
             foreach (var (name, value) in JsonNode.Parse(options)!.AsObject())
@@ -176,9 +185,112 @@ public sealed class AnthropicMessagesFeed(HttpClient client, ResearchModelSettin
         return body.ToJsonString();
     }
 
+    // Where a call lists documents, the answer is asked for in the shape the checker reads it by:
+    // paragraphs of sentences, each sentence with the number of the listed document it rests on,
+    // and the prose is built from them with every sentence ending in its marker. Asked for in plain
+    // prose, the model opened the paragraphs of a short version with sentences citing nothing on
+    // every draft the instructions told it to fold them away, and a sentence that carries its
+    // document by the answer's shape cannot arrive without one. Whether that document supports the
+    // sentence is still the checker's to read, as it is for a marker written in prose.
+    public const string OutputConfigField = "output_config";
+
+    public static JsonObject SentencesSchema() => new()
+    {
+        ["type"] = "object",
+        ["properties"] = new JsonObject
+        {
+            ["paragraphs"] = new JsonObject
+            {
+                ["type"] = "array",
+                ["items"] = new JsonObject
+                {
+                    ["type"] = "array",
+                    ["items"] = new JsonObject
+                    {
+                        ["type"] = "object",
+                        ["properties"] = new JsonObject
+                        {
+                            ["sentence"] = new JsonObject { ["type"] = "string", ["description"] = "one sentence of the section, written without a document marker" },
+                            ["document"] = new JsonObject { ["type"] = "integer", ["description"] = "the number of the listed document the sentence rests on: 1 for [D1], 2 for [D2]" },
+                        },
+                        ["required"] = new JsonArray("sentence", "document"),
+                        ["additionalProperties"] = false,
+                    },
+                },
+            },
+        },
+        ["required"] = new JsonArray("paragraphs"),
+        ["additionalProperties"] = false,
+    };
+
+    static readonly Regex Marker = new(@"\s*\[D\d+\]", RegexOptions.Compiled);
+
+    // The prose an answer asked for as sentences comes to: each sentence with any marker it wrote
+    // taken out and its own put before its closing stop, the sentences of a paragraph joined by a
+    // space and the paragraphs by a blank line. None where the text is not that answer's shape.
+    public static string? FromSentences(string text)
+    {
+        if (!text.StartsWith('{'))
+        {
+            return null;
+        }
+
+        JsonDocument parsed;
+
+        try
+        {
+            parsed = JsonDocument.Parse(text);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+
+        using (parsed)
+        {
+            if (parsed.RootElement.ValueKind != JsonValueKind.Object
+                || !parsed.RootElement.TryGetProperty("paragraphs", out var paragraphs)
+                || paragraphs.ValueKind != JsonValueKind.Array)
+            {
+                return null;
+            }
+
+            return string.Join("\n\n", paragraphs.EnumerateArray()
+                .Where(paragraph => paragraph.ValueKind == JsonValueKind.Array)
+                .Select(paragraph => string.Join(" ", paragraph.EnumerateArray()
+                    .Where(one => one.ValueKind == JsonValueKind.Object && one.TryGetProperty("sentence", out var said) && said.ValueKind == JsonValueKind.String)
+                    .Select(one => Cited(
+                        AnswerText.Visible(Marker.Replace(one.GetProperty("sentence").GetString()!, string.Empty)),
+                        one.TryGetProperty("document", out var cited) && cited.ValueKind == JsonValueKind.Number ? cited.GetInt32() : null))
+                    .Where(sentence => sentence.Length > 0)))
+                .Where(paragraph => paragraph.Length > 0));
+        }
+    }
+
+    static string Cited(string sentence, int? document)
+    {
+        if (sentence.Length == 0 || document is not { } number)
+        {
+            return sentence;
+        }
+
+        var marker = " [D" + number.ToString(CultureInfo.InvariantCulture) + "]";
+        var end = sentence.Length;
+
+        while (end > 0 && sentence[end - 1] is '"' or '\'' or ')' or '”' or '’')
+        {
+            end--;
+        }
+
+        return end > 0 && sentence[end - 1] is '.' or '!' or '?'
+            ? sentence[..(end - 1)] + marker + sentence[(end - 1)..]
+            : sentence + marker + ".";
+    }
+
     // A response read as the captures show it arrives.
     //
-    // The answer is the text of the `text` blocks in order; a `thinking` block beside them is
+    // The answer is the text of the `text` blocks in order, read back to prose where it was asked
+    // for as sentences; a `thinking` block beside them is
     // never stored as a section. The counts are the interface's own: `input_tokens` is the
     // prompt the provider neither read from its cache nor wrote to it, and the two cache
     // counts are the rest. Thinking is billed inside `output_tokens`, so nothing is added for
@@ -206,10 +318,12 @@ public sealed class AnthropicMessagesFeed(HttpClient client, ResearchModelSettin
         static int Count(JsonElement element, string name) =>
             element.TryGetProperty(name, out var count) && count.ValueKind == JsonValueKind.Number ? count.GetInt32() : 0;
 
-        var text = string.Concat(content.EnumerateArray()
+        var said = AnswerText.Visible(string.Concat(content.EnumerateArray()
             .Where(block => block.TryGetProperty("type", out var type) && type.GetString() == "text"
-                && block.TryGetProperty("text", out var said) && said.ValueKind == JsonValueKind.String)
-            .Select(block => block.GetProperty("text").GetString())).Trim();
+                && block.TryGetProperty("text", out var one) && one.ValueKind == JsonValueKind.String)
+            .Select(block => block.GetProperty("text").GetString())));
+
+        var text = FromSentences(said) ?? said;
 
         var uncached = Count(usage, "input_tokens");
         var read = Count(usage, "cache_read_input_tokens");
@@ -246,15 +360,38 @@ public sealed class AnthropicMessagesFeed(HttpClient client, ResearchModelSettin
                 answer);
         }
 
+        // What an answer with no visible text held, named by its blocks, since the captures
+        // show the model thinking by default and ending after the thinking with no text at all.
         if (text.Length == 0)
         {
+            var thinking = usage.TryGetProperty("output_tokens_details", out var details) && details.ValueKind == JsonValueKind.Object
+                ? Count(details, "thinking_tokens")
+                : 0;
+
             throw new UnusableResearchAnswer(
-                $"The answer for {section} carried no text: the stop reason was {stop} after {output} output token(s). A " +
-                "section stored from this would be empty.",
+                $"The answer for {section} carried no text: it held {Held(content)}, and the stop reason was {stop} after " +
+                $"{output} output token(s), {thinking} of them thinking. A section stored from this would be empty.",
                 answer);
         }
 
         return answer;
+    }
+
+    // The blocks an answer held, counted by type in the order each type first arrived.
+    public static string Held(JsonElement content)
+    {
+        var types = content.EnumerateArray()
+            .Select(block => block.TryGetProperty("type", out var type) && type.ValueKind == JsonValueKind.String ? type.GetString()! : "untyped")
+            .ToArray();
+
+        return types.Length == 0
+            ? "no block"
+            : string.Join(" and ", types.Distinct(StringComparer.Ordinal).Select(type =>
+            {
+                var count = types.Count(one => string.Equals(one, type, StringComparison.Ordinal));
+
+                return count.ToString(CultureInfo.InvariantCulture) + " " + type + (count == 1 ? " block" : " blocks");
+            }));
     }
 
     // A recording of this interface: the response's `Date` header and its body as they

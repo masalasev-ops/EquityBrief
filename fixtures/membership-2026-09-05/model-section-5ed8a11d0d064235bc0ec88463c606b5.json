@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-lmg784511g4evnaurkemo",
+  "object": "chat.completion",
+  "created": 1790706336,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Apple Inc. is a technology sector company with a current close of 316.22 and a trend state classified as an uptrend. The stock trades above its 20-day average of 313.54, 50-day average of 315.64, and 200-day average of 283.69, while the 14-day average true range stands at 7.50. Recent earnings reactions show actuals exceeding estimates in four instances with surprises ranging from 3.24 per cent to 7.45 per cent on dates including 2026-07-31 and 2026-04-30. Technical indicators include a MACD of 2.25, a histogram of 0.92, and a signal line of 1.32 alongside a 14-day relative strength index of 50.26. Immediate support edges are located at 316.02 and 304.79 with a strength of 15, while immediate resistance edges sit at 319.07 and 320.28 with a strength of 3.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1694,
+    "completion_tokens": 260,
+    "total_tokens": 1954,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

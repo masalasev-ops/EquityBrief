@@ -209,15 +209,15 @@ public partial class FixtureExpectations
 
         // The price is the recording's own counts at the configured rates, which the
         // feed tests work out by hand, written as money in TEXT and never rounded.
-        Assert.Equal(0.0001731m, call.Price);
-        Assert.Equal(["research call: The two cases|ok|1|1|0.0001731"], CallRows(store, "pass-below"));
+        Assert.Equal(0.0000717m, call.Price);
+        Assert.Equal(["research call: The two cases|ok|1|1|0.0000717"], CallRows(store, "pass-below"));
 
         // And the ledger the next call is judged by is the store's.
         await using var connection = store.Open();
 
         var ledger = await SpendCap.LedgerAsync(connection, DateTimeOffset.Parse("2026-09-15T20:00:00Z", CultureInfo.InvariantCulture));
 
-        Assert.Equal(0.0001731m, ledger.SpentOn(new DateOnly(2026, 9, 15)));
+        Assert.Equal(0.0000717m, ledger.SpentOn(new DateOnly(2026, 9, 15)));
     }
 
     [Fact]

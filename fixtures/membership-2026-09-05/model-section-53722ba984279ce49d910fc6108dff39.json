@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-5b2mdh7dr7y2itpgo3tis6",
+  "object": "chat.completion",
+  "created": 1790706632,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Keysight Technologies Inc is a Technology sector company with one group member currently trading at a close of 333.42, which sits above the 20-day average of 329.95 and the 50-day average of 326.08 while remaining below the immediate resistance edge at 366.41. The stock is in an uptrend state with a 14-day relative strength index of 54.21 and a 14-day average true range of 10.83, indicating moderate volatility around the session high of 333.82 and session low of 325.75. Recent earnings reactions show mixed results with the latest report on 2026-08-19 showing an actual of 2.82 against an estimate of 2.16 for a move of -6.32 percent, while the reaction on 2026-05-19 showed an actual of 2.87 versus an estimate of 2.32 resulting in a -0.59 percent move. Historical moves include a significant gain of 28.62 percent measured from 2026-02-17 on the session of 2026-02-24 and a decline of 13.98 percent measured from 2026-08-17 on the session of 2026-08-24. The immediate support structure is defined by a high edge at 332.78 and a low edge at 312 with a strength rating of 19, whereas the immediate resistance has a strength rating of 2.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1692,
+    "completion_tokens": 369,
+    "total_tokens": 2061,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}
