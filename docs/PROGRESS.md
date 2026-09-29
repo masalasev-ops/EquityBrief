@@ -31112,6 +31112,5 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             41 of 41 roster checks carried and all 41 run, 129T1 of 129T1 tests.
             Both gates ran over the tree carrying this entry, 129SHA1, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
-Carried:    the sweep's run over the live store, started from this branch's build once item 2 has merged and its
-            remedy has run, and the entry pointing at its report; the pull request, merged once the operator has read
-            the report; and the freeze, on the operator's word.
+Report:     129REP1
+Carried:    the pull request, merged once the operator has read the report; and the freeze, on the operator's word.
