@@ -177,7 +177,7 @@ public partial class FixtureExpectations
     // ---- the spend cap, the one component that makes a paid call ----
 
     // The shipped configuration's research model, with a key no test sends.
-    static ResearchModelSettings Research(string? options = null) => Providers.ResearchModelFeedTests.Shipped(options);
+    static ResearchModelSettings Research(string? options = null) => Providers.ResearchModelFeedTests.Pinned(options);
 
     static IClock SpendClock(string instant) =>
         FixedClock.At(DateTimeOffset.Parse(instant, CultureInfo.InvariantCulture), SessionZones.UnitedStates);

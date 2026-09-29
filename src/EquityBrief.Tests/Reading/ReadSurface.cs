@@ -63,6 +63,10 @@ public partial class ReadSurface
             // 12.7's correction, close to a buy point beneath tonight's list.
             .. CloseToABuyPointClaims,
 
+            // 12.6's correction, the model profiles: the checklist's two items and section 17's rows they read,
+            // and the half of section 18's row about a key the secrets file does not hold that the run page draws.
+            .. ProfileSurfaceClaims,
+
             // 12.3, the Calibration region and section 17's two bands.
             CheckReach.Key("15.10 Run", "The shape clock, the ordinary nights under the open filter version against the sixty the calibration waits on"),
             CheckReach.Key("15.10 Run", "The shape clock, every event night with what made it one"),
@@ -4891,8 +4895,11 @@ public partial class ReadSurface
     // says so.
     internal sealed class Host(string root) : WebApplicationFactory<ReadApi>
     {
-        protected override void ConfigureWebHost(IWebHostBuilder builder) =>
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
             builder.UseSetting(StoreLocation.DataRootKey, root);
+            Providers.ResearchModelFeedTests.PinModels(builder);
+        }
     }
 
     // The night the store's listings are for, read off the store rather than

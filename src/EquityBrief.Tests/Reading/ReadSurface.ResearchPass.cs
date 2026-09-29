@@ -763,7 +763,7 @@ public partial class ReadSurface
         var refused = await FixtureReplay.Researcher(
                 store,
                 FixedClock.At(nextDay, SessionZones.UnitedStates),
-                paid: new RecordedResearchModelFeed(Path.Combine(Repository.Root, "fixtures", FixtureExpectation.Folder), Providers.ResearchModelFeedTests.Shipped(), unreachable))
+                paid: new RecordedResearchModelFeed(Path.Combine(Repository.Root, "fixtures", FixtureExpectation.Folder), Providers.ResearchModelFeedTests.Pinned(), unreachable))
             .RunAsync("KEYS", "research-cloud-gone", new ResearchPassRequest(Refresh: true));
 
         // The pass did not start: nothing stored, nothing fetched.
@@ -786,7 +786,7 @@ public partial class ReadSurface
         await FixtureReplay.Researcher(
                 none,
                 FixedClock.At(nextDay, SessionZones.UnitedStates),
-                paid: new RecordedResearchModelFeed(Path.Combine(Repository.Root, "fixtures", FixtureExpectation.Folder), Providers.ResearchModelFeedTests.Shipped(), unreachable))
+                paid: new RecordedResearchModelFeed(Path.Combine(Repository.Root, "fixtures", FixtureExpectation.Folder), Providers.ResearchModelFeedTests.Pinned(), unreachable))
             .RunAsync("KEYS", "research-cloud-gone-nothing-stored");
 
         var offered = await ResearchedPage(none, "KEYS", nextDay);
@@ -911,6 +911,7 @@ public partial class ReadSurface
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseSetting(StoreLocation.DataRootKey, root);
+            Providers.ResearchModelFeedTests.PinModels(builder);
 
             foreach (var (key, value) in settings)
             {

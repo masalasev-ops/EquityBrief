@@ -25,7 +25,7 @@ public partial class ReadSurface
             rows,
             writing.ToDictionary(pair => pair.Row, pair => pair.Started is null ? (DateTimeOffset?)null : UtcAt(pair.Started)),
             QueueTimes.Estimate(passes),
-            Providers.ResearchModelFeedTests.Shipped().Pricing,
+            Providers.ResearchModelFeedTests.Pinned().Pricing,
             UtcAt(now));
 
     [Fact]

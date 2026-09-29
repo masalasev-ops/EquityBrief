@@ -22,6 +22,12 @@ public sealed record SpendCaps
     public const decimal DefaultDay = 10m;
     public const decimal DefaultMonth = 50m;
 
+    // A report whose pass cost more than this is named on the run page the morning after, on the
+    // operator's word of 2026-09-29, since a pass on the research profile the operator chose was
+    // estimated at up to 1.30 from token counts a cheaper model measured, and a report costing more
+    // than its estimate is to be seen that morning rather than in the month's spend.
+    public const decimal ReportNamedAbove = 2m;
+
     public SpendCaps(decimal day, decimal month)
     {
         if (day <= 0m || month <= 0m)

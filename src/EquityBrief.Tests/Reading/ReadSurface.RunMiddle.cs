@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Reading;
+using EquityBrief.Core.Providers;
 using EquityBrief.Core.Shortlist;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
@@ -37,6 +38,19 @@ public partial class ReadSurface
         CheckReach.Key("15.5 The mark vocabulary", "Freshness bars"),
         CheckReach.Key("15.5 The mark vocabulary", "Research bars"),
         CheckReach.Key("15.5 The mark vocabulary", "Checklist"),
+    ];
+
+    // The claims the 12.6 correction bringing the model profiles adds to what this check reaches: the checklist's
+    // items for a profile near its retirement date and a report costing more than section 17 names with the two
+    // rows of section 17 they read, and the half of section 18's row about a key the secrets file does not hold
+    // that the run page draws. Declared before the reach that takes them in.
+    internal static readonly string[] ProfileSurfaceClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "Paid model retirement warning"),
+        CheckReach.Key(Scope.LimitsTable, "A report named for its cost"),
+        CheckReach.Key("15.10 Run", "Anything to worry about, no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date"),
+        CheckReach.Key("15.10 Run", "Anything to worry about, no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost"),
+        CheckReach.Key(Scope.FailureTable, "A paid job's profile names a key the secrets file does not hold, the run page's stages that failed name the pass in the line's own words"),
     ];
 
     static ListingRow Listing(string ticker, string session, bool listed, string rule) =>
@@ -131,7 +145,7 @@ public partial class ReadSurface
 
         var held = Read([], finished, 0, 0, Quarters("3 of 3 member(s) due asked: 3 reporting, 0 waiting, 0 joining, 0 filled; 3 stored, 0 not yet posted, 0 returning nothing, 0 refused; 36 quarter row(s), 33 weighted call(s); 0 member(s) of the fill still owed"));
 
-        Assert.Equal(5, held.Count);
+        Assert.Equal(7, held.Count);
         Assert.All(held, item => Assert.Equal((WorryItem.Held, (string?)null), (item.State, item.Why)));
 
         var failed = Read(["P", "TAP"], RunScreen.Night(FinishedNight, TenthOfSeptember, DateTimeOffset.Parse("2026-09-11T01:00:00Z", CultureInfo.InvariantCulture), FifteenMinutes), 1, 1, Quarters("3 of 3 member(s) due asked: 3 reporting, 0 waiting, 0 joining, 0 filled; 1 stored, 0 not yet posted, 0 returning nothing, 2 refused; 12 quarter row(s), 33 weighted call(s); 0 member(s) of the fill still owed"));
@@ -144,8 +158,8 @@ public partial class ReadSurface
                 "1 fell back: KEYS The risks",
                 "2 ask(s) refused",
             ],
-            failed.Select(item => item.Why));
-        Assert.All(failed, item => Assert.Equal(WorryItem.Failed, item.State));
+            failed.Take(5).Select(item => item.Why));
+        Assert.All(failed.Take(5), item => Assert.Equal(WorryItem.Failed, item.State));
 
         Assert.Equal("1 left at the step's limit", Read([], finished, 0, 0, Quarters("4 of 5 member(s) due asked: 4 reporting, 0 waiting, 0 joining, 0 filled; 4 stored, 0 not yet posted, 0 returning nothing, 0 refused; 48 quarter row(s), 44 weighted call(s); 0 member(s) of the fill still owed; 1 left at the step's limit"))[4].Why);
         Assert.Equal((WorryItem.NotRead, "the night ran no quarters step"), (Read([], finished, 0, 0, null)[4].State, Read([], finished, 0, 0, null)[4].Why));
@@ -155,6 +169,65 @@ public partial class ReadSurface
         Assert.Contains("<li data-item=\"Every stock has the night's prices\" data-state=\"failed\">", drawn, StringComparison.Ordinal);
         Assert.Contains(": <b class=\"worry-why\">2 carry an earlier session's bars: P, TAP</b>", drawn, StringComparison.Ordinal);
         Assert.Contains("<div class=\"tile\" data-count=\"passed\"><b>665</b>", drawn, StringComparison.Ordinal);
+    }
+
+    // A pass the research job's profile could not be used for is a stage that failed, and its line is
+    // the pass's own reason rather than the record it was written in; a stage whose detail carries no
+    // reason keeps its detail as written.
+    [Fact]
+    public void AFailedStageWhoseRecordCarriesAReasonIsDrawnInThatReasonsWords()
+    {
+        const string Said = "The Research job uses the profile 'claude-sonnet', whose key 'Claude' the secrets file does not hold.";
+
+        var failed = RunScreen.Failed(
+        [
+            new StageRow("research", DateTimeOffset.Parse("2026-09-29T04:00:01Z", CultureInfo.InvariantCulture), 0, 0, 0, 0, "0", "unconfigured", $"{{\"ticker\":\"MDT\",\"outcome\":\"unconfigured\",\"reason\":\"{Said.Replace("'", "\\u0027", StringComparison.Ordinal)}\"}}"),
+            new StageRow("fetch", DateTimeOffset.Parse("2026-09-28T23:30:05Z", CultureInfo.InvariantCulture), 30, 0, 0, 3, "0", "stopped", "the day's file carried none of the index"),
+            new StageRow("research", DateTimeOffset.Parse("2026-09-29T04:10:00Z", CultureInfo.InvariantCulture), 0, 0, 0, 0, "0", "paused", "{\"ticker\":\"KO\",\"reason\":null}"),
+        ]);
+
+        Assert.Equal([Said, "the day's file carried none of the index", "{\"ticker\":\"KO\",\"reason\":null}"], failed.Select(stage => stage.Detail));
+
+        var drawn = WebUtility.HtmlDecode(new MarkRenderer().FailedStages(failed));
+
+        Assert.Contains($"research: unconfigured. {Said}</p>", drawn, StringComparison.Ordinal);
+    }
+
+    // A profile a job uses is named from thirty days before the date its provider publishes for
+    // retiring it, with the job and the date, and not the day before that; a profile whose provider
+    // publishes none is never named. A report whose pass on the night's session cost more than two
+    // dollars is named with its cost, and one costing two dollars exactly is not.
+    [Fact]
+    public void TheChecklistNamesAProfileNearItsRetirementAndAReportCostingMoreThanTwoDollars()
+    {
+        var night = RunScreen.Night(
+            [.. FinishedNight.Where(row => row.Stage != RunScreen.QueueStage)],
+            TenthOfSeptember,
+            DateTimeOffset.Parse("2026-09-11T01:00:00Z", CultureInfo.InvariantCulture),
+            FifteenMinutes);
+
+        static ModelProfile Profile(string name, DateOnly? retires) =>
+            new("Research", name, "anthropic", "a-model", null, retires, new DateOnly(2026, 9, 29));
+
+        static RunStageRow Call(string ticker, string spend) =>
+            LogRow($"research-20260911T001000Z-{ticker}", "research call: The two cases", "2026-09-11T00:10:00Z", "2026-09-11T00:11:00Z", spend: spend);
+
+        IReadOnlyList<WorryItem> Read(IReadOnlyList<ModelProfile> profiles, params RunStageRow[] calls) =>
+            RunScreen.Worries([], night, [], [], calls, profiles);
+
+        // 2026-10-10 is thirty days after the night of 2026-09-10, and 2026-10-11 thirty-one.
+        var named = Read([Profile("soon", new DateOnly(2026, 10, 10)), Profile("later", new DateOnly(2026, 10, 11)), Profile("never", null)])[5];
+
+        Assert.Equal(WorryItem.Failed, named.State);
+        Assert.Equal("soon, used by the research job, may be retired from 2026-10-10, as its provider stated on 2026-09-29", named.Why);
+        Assert.Equal((WorryItem.Held, (string?)null), (Read([Profile("later", new DateOnly(2026, 10, 11))])[5].State, Read([Profile("later", new DateOnly(2026, 10, 11))])[5].Why));
+
+        // A pass's calls are summed: 1.50 and 0.51 come to 2.01, and 1.50 and 0.50 to 2.00 exactly.
+        var dear = Read([], Call("MDT", "1.50"), Call("MDT", "0.51"), Call("KO", "1.50"), Call("KO", "0.50"))[6];
+
+        Assert.Equal("No report cost more than $2.00", dear.Item);
+        Assert.Equal((WorryItem.Failed, "MDT's report cost $2.01"), (dear.State, dear.Why));
+        Assert.Equal(WorryItem.Held, Read([], Call("KO", "1.50"), Call("KO", "0.50"))[6].State);
     }
 
     // The trades region over Past picks' own summary: below the minimum a dashed ring and the counts it waits on,

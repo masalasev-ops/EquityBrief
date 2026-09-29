@@ -60,8 +60,8 @@ public partial class FixtureExpectations
         Members(store, members, theme);
 
         var search = new RecordedSearchFeed(Folder());
-        var firstPaid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
-        var secondPaid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var firstPaid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
+        var secondPaid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
 
         // The first member's pass finds its industry's theme missing and refreshes it before
         // anything of its own; the second member's pass, the same evening, finds it accepted
@@ -103,7 +103,7 @@ public partial class FixtureExpectations
             Query(store, "SELECT theme, section, version, as_of, status, industries FROM theme_section ORDER BY version;"));
 
         Assert.All(versions, version => Assert.Equal("paid", version.GetProperty("lane").GetString()));
-        Assert.Equal([Providers.ResearchModelFeedTests.Shipped().Identity], Query(store, "SELECT DISTINCT model FROM theme_section;"));
+        Assert.Equal([Providers.ResearchModelFeedTests.Pinned().Identity], Query(store, "SELECT DISTINCT model FROM theme_section;"));
 
         // The searches the pass asked, one a site in the list's order, each over the window the
         // file states, and what they kept: a result from a site the list does not carry dropped
@@ -316,7 +316,7 @@ public partial class FixtureExpectations
     {
         using var store = new TemporaryStore().Migrated();
 
-        var cap = new SpendCap(new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped()), Core.Spending.SpendCaps.Default, ResearchClock, store.DatabaseFile);
+        var cap = new SpendCap(new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned()), Core.Spending.SpendCaps.Default, ResearchClock, store.DatabaseFile);
 
         await FixtureReplay.Themer(store, ResearchClock, cap, new ClaimChecker(ResearchClock, store.DatabaseFile)).RunAsync("Scientific & Technical Instruments", "theme-off-list");
 
@@ -370,7 +370,7 @@ public partial class FixtureExpectations
             ]}
             """);
 
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
         var cap = new SpendCap(paid, Core.Spending.SpendCaps.Default, ResearchClock, store.DatabaseFile);
 
         var outcome = await FixtureReplay.Themer(store, ResearchClock, cap, new ClaimChecker(ResearchClock, store.DatabaseFile), new RecordedSearchFeed(folder.Path)).RunAsync(FixtureReplay.RecordedTheme, "theme-snippets");
@@ -490,10 +490,10 @@ public partial class FixtureExpectations
         var peak = new DateTimeOffset(2026, 9, 8, 2, 30, 0, TimeSpan.Zero);
         IClock atPeak = FixedClock.At(peak, SessionZones.UnitedStates);
 
-        Assert.True(Providers.ResearchModelFeedTests.Shipped().Pricing.IsPeak(peak));
+        Assert.True(Providers.ResearchModelFeedTests.Pinned().Pricing.IsPeak(peak));
 
         var search = new NoResults();
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
         var cap = new SpendCap(paid, Core.Spending.SpendCaps.Default, atPeak, store.DatabaseFile);
 
         var outcome = await FixtureReplay.Themer(store, atPeak, cap, new ClaimChecker(atPeak, store.DatabaseFile), search).RunAsync(FixtureReplay.RecordedTheme, "theme-at-peak");
@@ -520,7 +520,7 @@ public partial class FixtureExpectations
 
         var started = Query(whole, "SELECT started_at FROM run_log WHERE run_id = 'replay-theme' AND stage = 'research call: The industry cycle';").Single();
 
-        Assert.False(Providers.ResearchModelFeedTests.Shipped().Pricing.IsPeak(DateTimeOffset.Parse(started, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal)));
+        Assert.False(Providers.ResearchModelFeedTests.Pinned().Pricing.IsPeak(DateTimeOffset.Parse(started, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal)));
     }
 
     // ---- a refresh that fails while a name depends on it ----
@@ -591,7 +591,7 @@ public partial class FixtureExpectations
             FixtureReplay.Themer(
                 store,
                 ResearchClock,
-                new SpendCap(model ?? new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped()), Core.Spending.SpendCaps.Default, ResearchClock, store.DatabaseFile),
+                new SpendCap(model ?? new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned()), Core.Spending.SpendCaps.Default, ResearchClock, store.DatabaseFile),
                 new ClaimChecker(ResearchClock, store.DatabaseFile),
                 search);
 
@@ -646,7 +646,7 @@ public partial class FixtureExpectations
             {"results":[{"url":"https://www.semiconductors.org/an-old-report","title":"An old report","content":"A snippet.","raw_content":"A report on the industry, published long before the quarter the search asked for, and carrying enough text to be a page.","published_date":"Mon, 02 Mar 2026 00:00:00 GMT"}]}
             """);
 
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
         var cap = new SpendCap(paid, Core.Spending.SpendCaps.Default, ResearchClock, store.DatabaseFile);
 
         await FixtureReplay.Themer(store, ResearchClock, cap, new ClaimChecker(ResearchClock, store.DatabaseFile), new RecordedSearchFeed(folder.Path)).RunAsync(FixtureReplay.RecordedTheme, "theme-refused-only");
@@ -811,7 +811,7 @@ public partial class FixtureExpectations
 
         var news = new RecordedNameNewsFeed(Folder());
         var archive = new RecordedFilingsArchiveFeed(Folder());
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
         var search = new RecordedSearchFeed(Folder());
 
         await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: archive, news: news, search: search).RunAsync("KEYS", "research-counted");
@@ -833,7 +833,7 @@ public partial class FixtureExpectations
     // drafts a test chooses rather than a provider recorded.
     internal sealed class ScriptedModel(params string[] texts) : IResearchModelFeed
     {
-        readonly ResearchModelSettings settings = Providers.ResearchModelFeedTests.Shipped();
+        readonly ResearchModelSettings settings = Providers.ResearchModelFeedTests.Pinned();
 
         public int Requests { get; private set; }
 

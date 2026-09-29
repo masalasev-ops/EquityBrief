@@ -289,7 +289,7 @@ public partial class ReadSurface
 
                 return Task.CompletedTask;
             },
-            Providers.ResearchModelFeedTests.Shipped().Pricing,
+            Providers.ResearchModelFeedTests.Pinned().Pricing,
             until =>
             {
                 waits.Add(until);
@@ -327,7 +327,7 @@ public partial class ReadSurface
             + "('research-20260919T030000Z-NVDA', 'research', '2026-09-19T03:25:00Z', '2026-09-19T03:26:00Z', 'ok'),"
             + "('research-20260920T100000Z-DGX', 'research', '2026-09-20T10:03:00Z', '2026-09-20T10:04:00Z', 'ok');");
 
-        var pricing = Providers.ResearchModelFeedTests.Shipped().Pricing;
+        var pricing = Providers.ResearchModelFeedTests.Pinned().Pricing;
         var clock = new WaitedClock(UtcAt(now));
         var waits = new List<DateTimeOffset>();
         var passes = new List<DateTimeOffset>();
@@ -377,7 +377,7 @@ public partial class ReadSurface
             store.DatabaseFile,
             clock,
             _ => throw new InvalidOperationException("nothing is outstanding, so no pass runs"),
-            Providers.ResearchModelFeedTests.Shipped().Pricing,
+            Providers.ResearchModelFeedTests.Pinned().Pricing,
             until =>
             {
                 waits.Add(until);
@@ -411,7 +411,7 @@ public partial class ReadSurface
 
                 return Task.CompletedTask;
             },
-            Providers.ResearchModelFeedTests.Shipped().Pricing,
+            Providers.ResearchModelFeedTests.Pinned().Pricing,
             until =>
             {
                 waits.Add(until);
@@ -435,7 +435,7 @@ public partial class ReadSurface
 
         // A Sunday, which names no peak window, so neither drain waits.
         var clock = FixedClock.At(UtcAt("2026-09-20T12:00:05Z"), SessionZones.UnitedStates);
-        var pricing = Providers.ResearchModelFeedTests.Shipped().Pricing;
+        var pricing = Providers.ResearchModelFeedTests.Pinned().Pricing;
         var first = new List<string>();
         var second = new List<string>();
         var held = new List<string>();

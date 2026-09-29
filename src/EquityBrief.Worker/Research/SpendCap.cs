@@ -19,13 +19,13 @@ public sealed record PaidCall(ResearchAnswer? Answer, decimal Price, SpendVerdic
 
 // The spend cap. The one component that makes a paid call.
 //
-// It holds the research model, and the runners hold it rather than the model, so a call
-// that would pass a cap is refused where every paid call is made rather than in each
-// caller that remembered to ask. Before a call it reads what the run log says was spent
-// today and this month and judges the call by the most it could cost; after it, it
-// records what the call did cost on a run log row of its own. The ledger is therefore
+// It holds the model a paid job's profile names, and the runners hold it rather than the
+// model, so a call that would pass a cap is refused where every paid call is made rather
+// than in each caller that remembered to ask. Before a call it reads what the run log says
+// was spent today and this month and judges the call by the most it could cost; after it,
+// it records what the call did cost on a run log row of its own. The ledger is therefore
 // the store's, measured, and never a figure a caller kept.
-// see: Every paid call is made through the spend cap, which holds the research model
+// see: Every paid call is made through the spend cap, which holds each paid job's model
 // see: The spend cap counts a UTC day and a UTC month, and refuses a call that could take spend past either
 // see: The spend cap is a stop, not an allowance
 public sealed class SpendCap(

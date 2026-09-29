@@ -338,10 +338,33 @@ static async Task<int> ResearchPass(string[] args)
     SpendCaps caps;
     SourceLists lists;
 
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var runId = PassRun.IdFor(clock.UtcNow, ticker);
+
+    // The research job's settings first, and a refusal of them written as this pass's own row
+    // where the store is there to hold it: a key the secrets file does not hold stops the job
+    // with a line the run page draws and the drain settles the request under, and no other
+    // profile is asked instead.
+    // see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
+    try
+    {
+        research = ResearchLane.Settings(configuration);
+    }
+    catch (InvalidOperationException refusal)
+    {
+        Console.Error.WriteLine("research: " + refusal.Message);
+
+        if (File.Exists(store.DatabaseFile))
+        {
+            await ResearchRunner.RefusedBySettingsAsync(clock, store.DatabaseFile, ticker, runId, refusal.Message);
+        }
+
+        return 1;
+    }
+
     try
     {
         local = LocalLane.Settings(configuration);
-        research = ResearchLane.Settings(configuration);
         lane = LocalLane.Sections(configuration);
         caps = ResearchLane.Caps(configuration);
         lists = SourceLists.Read(Path.Combine(AppContext.BaseDirectory, SourceLists.FileName));
@@ -364,8 +387,6 @@ static async Task<int> ResearchPass(string[] args)
         return 1;
     }
 
-    var clock = SystemClock.ForUnitedStatesSessions();
-    var runId = PassRun.IdFor(clock.UtcNow, ticker);
     var database = store.DatabaseFile;
 
     // The company's figures first, and the night's facts file again where they moved, so the
@@ -416,9 +437,14 @@ static async Task<int> Drain()
     var clock = SystemClock.ForUnitedStatesSessions();
     ResearchPricing pricing;
 
+    // The windows the research job's profile states, read without its key: a key the secrets
+    // file does not hold stops each pass on the pass's own row, which the drain settles the
+    // request under, rather than stopping the drain where nothing would draw why.
     try
     {
-        pricing = ResearchLane.Settings(configuration).Pricing;
+        pricing = ResearchLane.Profile(configuration)?.Pricing
+            ?? throw new InvalidOperationException(
+                $"'{ModelProfiles.Use(ModelProfiles.ResearchJob)}' names no profile with prices, so no pass can be priced.");
     }
     catch (InvalidOperationException refusal)
     {

@@ -267,7 +267,7 @@ public class FixtureReplay
     {
         var store = await ResearchedAsync();
         var night = FixedClock.At(Night, SessionZones.UnitedStates);
-        var cap = new SpendCap(new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped()), Core.Spending.SpendCaps.Default, night, store.DatabaseFile);
+        var cap = new SpendCap(new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned()), Core.Spending.SpendCaps.Default, night, store.DatabaseFile);
 
         await Themer(store, night, cap, new ClaimChecker(night, store.DatabaseFile)).RunAsync(RecordedTheme, "replay-theme");
 
@@ -315,7 +315,7 @@ public class FixtureReplay
         INameNewsFeed? news = null,
         ISearchFeed? search = null)
     {
-        var cap = new SpendCap(paid ?? new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped()), caps ?? Core.Spending.SpendCaps.Default, clock, store.DatabaseFile);
+        var cap = new SpendCap(paid ?? new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned()), caps ?? Core.Spending.SpendCaps.Default, clock, store.DatabaseFile);
         var checker = new ClaimChecker(clock, store.DatabaseFile);
 
         return new(
@@ -345,7 +345,7 @@ public class FixtureReplay
             checker,
             search ?? new RecordedSearchFeed(Folder()),
             SourceLists.Read(Path.Combine(Repository.Root, SourceLists.FileName)).Industry,
-            Providers.ResearchModelFeedTests.Shipped().Pricing,
+            Providers.ResearchModelFeedTests.Pinned().Pricing,
             clock,
             store.DatabaseFile);
 

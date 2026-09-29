@@ -10,7 +10,9 @@ namespace EquityBrief.Core.Providers;
 //
 // The counts are what a call is priced from, read off the payload rather than
 // estimated, and `Created` is the provider's timestamp rather than this machine's,
-// because a rate that changes at peak is decided by the provider's clock.
+// because a rate that changes at peak is decided by the provider's clock. A prompt the
+// provider wrote to its cache on this call is counted apart, since a provider that
+// charges for the write charges it at a rate of its own.
 // see: Code owns every number
 public sealed record ResearchAnswer(
     string Model,
@@ -21,7 +23,8 @@ public sealed record ResearchAnswer(
     int CompletionTokens,
     int ReasoningTokens,
     string FinishReason,
-    DateTimeOffset Created);
+    DateTimeOffset Created,
+    int CacheWriteTokens = 0);
 
 // The research model did not answer at all. A type of its own for the reason the
 // local model's is: a pass stops asking on it and carries on past a refusal.
@@ -40,17 +43,17 @@ public sealed class UnusableResearchAnswer(string message, ResearchAnswer answer
     public ResearchAnswer Answer { get; } = answer;
 }
 
-// The paid lane's model.
+// A paid job's model.
 //
-// One interface with an implementation per wire format, chosen by configuration and
-// never falling back from one to another. Which provider and which model answer are
-// settings, so switching model is a change to configuration and not to code. It prices
-// its own answers and bounds its own calls from the configured rates, because the one
-// component allowed to make a paid call judges the cap by those two figures without
-// knowing whose model it is.
-// see: The research model is one interface with an implementation per wire format, chosen by configuration and never falling back
-// see: Every paid call is made through the spend cap, which holds the research model
-// see: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in
+// One interface with an implementation per wire format, chosen by the profile a job's
+// configuration names and never falling back from one to another. Which provider and
+// which model answer are settings, so switching model is a change to configuration and
+// not to code. It prices its own answers and bounds its own calls from the profile's
+// rates, because the one component allowed to make a paid call judges the cap by those
+// two figures without knowing whose model it is.
+// see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
+// see: Every paid call is made through the spend cap, which holds each paid job's model
+// see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
 public interface IResearchModelFeed
 {
     int Requests { get; }
@@ -80,13 +83,15 @@ public interface IResearchModelFeed
     decimal Ceiling(ModelRequest request);
 }
 
-// What a research model's provider charges, as configuration states it: dollars per
-// million tokens for a cached prompt token, an uncached one and an output token, and
-// the hours at which those rates are multiplied.
+// What a paid model's provider charges, as a profile's configuration states it: dollars
+// per million tokens for a cached prompt token, an uncached one, a prompt token written to
+// the provider's cache and an output token, and the hours at which those rates are
+// multiplied.
 //
 // A setting rather than a constant, because it is the provider's price and moves when
 // the provider moves it, and because a different model is a different price. Peak hours
-// are UTC hours on the days named; a provider with no peak pricing names none.
+// are UTC hours on the days named; a provider with no peak pricing names none, and one
+// that charges nothing apart for a cache write names no write rate.
 public sealed record ResearchPricing
 {
     // What a chat template adds to a prompt before its text is counted, as tokens. The
@@ -101,12 +106,13 @@ public sealed record ResearchPricing
         decimal output,
         IReadOnlyList<(int From, int To)> peakHours,
         IReadOnlyCollection<DayOfWeek> peakDays,
-        decimal peakMultiple)
+        decimal peakMultiple,
+        decimal cacheWrite = 0m)
     {
-        if (cacheHit < 0m || cacheMiss <= 0m || output <= 0m)
+        if (cacheHit < 0m || cacheMiss <= 0m || output <= 0m || cacheWrite < 0m)
         {
             throw new InvalidOperationException(
-                "A research model priced at nothing for its prompt or its output is a model whose calls the spend cap " +
+                "A paid model priced at nothing for its prompt or its output is a model whose calls the spend cap " +
                 "cannot see, so a rate at or below zero is refused rather than read.");
         }
 
@@ -123,6 +129,7 @@ public sealed record ResearchPricing
 
         CacheHit = cacheHit;
         CacheMiss = cacheMiss;
+        CacheWrite = cacheWrite;
         Output = output;
         PeakHours = [.. peakHours];
         PeakDays = [.. peakDays];
@@ -133,7 +140,18 @@ public sealed record ResearchPricing
 
     public decimal CacheMiss { get; }
 
+    public decimal CacheWrite { get; }
+
     public decimal Output { get; }
+
+    // The names a profile's prices are written under, beneath its `Prices` section.
+    public const string CacheHitField = "CacheHit";
+    public const string CacheMissField = "CacheMiss";
+    public const string CacheWriteField = "CacheWrite";
+    public const string OutputField = "Output";
+    public const string PeakHoursField = "PeakHours";
+    public const string PeakDaysField = "PeakDays";
+    public const string PeakMultipleField = "PeakMultiple";
 
     public IReadOnlyList<(int From, int To)> PeakHours { get; }
 
@@ -141,44 +159,49 @@ public sealed record ResearchPricing
 
     public decimal PeakMultiple { get; }
 
-    // The prices as configuration states them, read through the two ways a caller holds its
-    // configuration: the value at a key, and the values listed under one. Read in one place,
-    // so the worker's passes and the queue page the read surface draws hold the same windows.
-    // None where configuration states no price, which the settings refuse by name. Peak hours
-    // are written as "01-04", a UTC start hour and end hour; days by their English names.
-    public static ResearchPricing? From(Func<string, string?> value, Func<string, IEnumerable<string?>> values)
+    // The prices as a profile's configuration states them under its `Prices` section, read
+    // through the two ways a caller holds its configuration: the value at a key, and the
+    // values listed under one. Read in one place, so the worker's passes and the queue page
+    // the read surface draws hold the same windows. None where configuration states no
+    // price, which the settings refuse by name. Peak hours are written as "01-04", a UTC
+    // start hour and end hour; days by their English names.
+    public static ResearchPricing? From(string section, Func<string, string?> value, Func<string, IEnumerable<string?>> values)
     {
-        var hit = value(ResearchModelSettings.CacheHitKey);
-        var miss = value(ResearchModelSettings.CacheMissKey);
-        var output = value(ResearchModelSettings.OutputKey);
+        string Key(string field) => section + ":" + field;
+
+        var hit = value(Key(CacheHitField));
+        var miss = value(Key(CacheMissField));
+        var write = value(Key(CacheWriteField));
+        var output = value(Key(OutputField));
 
         if (string.IsNullOrWhiteSpace(miss) && string.IsNullOrWhiteSpace(output) && string.IsNullOrWhiteSpace(hit))
         {
             return null;
         }
 
-        var hours = values(ResearchModelSettings.PeakHoursKey)
-            .Select(child => Window(child ?? string.Empty))
+        var hours = values(Key(PeakHoursField))
+            .Select(child => Window(child ?? string.Empty, Key(PeakHoursField)))
             .ToArray();
 
-        var days = values(ResearchModelSettings.PeakDaysKey)
+        var days = values(Key(PeakDaysField))
             .Select(child => Enum.TryParse<DayOfWeek>(child, ignoreCase: true, out var day)
                 ? day
-                : throw new InvalidOperationException($"'{ResearchModelSettings.PeakDaysKey}' names '{child}', which is not a day of the week."))
+                : throw new InvalidOperationException($"'{Key(PeakDaysField)}' names '{child}', which is not a day of the week."))
             .ToArray();
 
-        var multiple = value(ResearchModelSettings.PeakMultipleKey);
+        var multiple = value(Key(PeakMultipleField));
 
         return new ResearchPricing(
-            Money(hit, ResearchModelSettings.CacheHitKey) ?? 0m,
-            Money(miss, ResearchModelSettings.CacheMissKey) ?? 0m,
-            Money(output, ResearchModelSettings.OutputKey) ?? 0m,
+            Money(hit, Key(CacheHitField)) ?? 0m,
+            Money(miss, Key(CacheMissField)) ?? 0m,
+            Money(output, Key(OutputField)) ?? 0m,
             hours,
             days,
-            Money(multiple, ResearchModelSettings.PeakMultipleKey) ?? 1m);
+            Money(multiple, Key(PeakMultipleField)) ?? 1m,
+            Money(write, Key(CacheWriteField)) ?? 0m);
     }
 
-    static (int From, int To) Window(string value)
+    static (int From, int To) Window(string value, string key)
     {
         var parts = value.Split('-');
 
@@ -187,7 +210,7 @@ public sealed record ResearchPricing
             && int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var to)
                 ? (from, to)
                 : throw new InvalidOperationException(
-                    $"'{ResearchModelSettings.PeakHoursKey}' holds '{value}', and a peak window is written as a UTC start hour and end hour, as 01-04.");
+                    $"'{key}' holds '{value}', and a peak window is written as a UTC start hour and end hour, as 01-04.");
     }
 
     static decimal? Money(string? value, string key)
@@ -283,82 +306,81 @@ public sealed record ResearchPricing
         return null;
     }
 
-    // What an answer cost: the cached prompt tokens, the uncached ones and the
-    // completion, each at its rate, multiplied where the provider's own timestamp falls
-    // at peak.
+    // What an answer cost: the cached prompt tokens, the uncached ones, the ones written to
+    // the cache and the completion, each at its rate, multiplied where the provider's own
+    // timestamp falls at peak.
     public decimal Price(ResearchAnswer answer) =>
-        (answer.CacheHitTokens * CacheHit + answer.CacheMissTokens * CacheMiss + answer.CompletionTokens * Output)
+        (answer.CacheHitTokens * CacheHit + answer.CacheMissTokens * CacheMiss + answer.CacheWriteTokens * CacheWrite
+            + answer.CompletionTokens * Output)
         * (IsPeak(answer.Created) ? PeakMultiple : 1m) / 1_000_000m;
 
     // The most a call could cost before it is made: every byte of the prompt and the
-    // template's allowance as uncached tokens, the whole answer budget as output, at the
-    // peak multiple. A tokeniser over bytes cannot make more tokens of a text than it has
-    // bytes, and a provider cannot bill more output than the budget allows.
+    // template's allowance at the dearer of the uncached and cache-write rates, the whole
+    // answer budget as output, at the peak multiple. A tokeniser over bytes cannot make
+    // more tokens of a text than it has bytes, and a provider cannot bill more output than
+    // the budget allows.
     public decimal Ceiling(ModelRequest request, int answerTokens)
     {
         var bytes = Encoding.UTF8.GetByteCount(request.System) + Encoding.UTF8.GetByteCount(request.Prompt);
 
-        return ((bytes + TemplateTokens) * CacheMiss + answerTokens * Output) * PeakMultiple / 1_000_000m;
+        return ((bytes + TemplateTokens) * Math.Max(CacheMiss, CacheWrite) + answerTokens * Output) * PeakMultiple / 1_000_000m;
     }
 }
 
-// The research model's settings: the wire format, where the provider answers, which
-// model, any options the provider takes with the request, how long a call may take, the
-// answer's budget, the key, and the prices.
+// A paid job's model as configuration names it: the job, the profile its `Use` names, and
+// that profile's wire format, where its provider answers, which model, any options the
+// provider takes with the request, the key, the prices and the provider's earliest
+// published retirement date, with the job's own answer budget and how long a call may take.
 //
-// None of it is written in code. The shipped configuration names the provider this
-// installation uses, and a different provider or model is a different value in that
-// file and in the secrets file beside it.
-// see: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in
+// None of it is written in code. The shipped configuration names each profile and the one
+// each job uses, and a different provider or model for a job is one word in that file,
+// with its key in the secrets file beside it.
+// see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
 public sealed record ResearchModelSettings
 {
-    public const string Section = "EquityBrief:Models:Research";
-    public const string FormatKey = Section + ":Format";
-    public const string BaseAddressKey = Section + ":BaseAddress";
-    public const string ModelKey = Section + ":Model";
-    public const string OptionsKey = Section + ":Options";
-    public const string TimeoutKey = Section + ":TimeoutSeconds";
-    public const string AnswerTokensKey = Section + ":AnswerTokens";
-    public const string ApiKeyKey = Section + ":ApiKey";
-
-    public const string PricesSection = Section + ":Prices";
-    public const string CacheHitKey = PricesSection + ":CacheHit";
-    public const string CacheMissKey = PricesSection + ":CacheMiss";
-    public const string OutputKey = PricesSection + ":Output";
-    public const string PeakHoursKey = PricesSection + ":PeakHours";
-    public const string PeakDaysKey = PricesSection + ":PeakDays";
-    public const string PeakMultipleKey = PricesSection + ":PeakMultiple";
-
-    // The one wire format this build implements, which is the OpenAI chat completions
-    // format most providers serve.
+    // The OpenAI chat completions format most providers serve, and Claude's own messages
+    // interface, the two wire formats this build implements.
     public const string OpenAiFormat = "openai";
+    public const string AnthropicFormat = "anthropic";
+
+    public static readonly string[] Formats = [OpenAiFormat, AnthropicFormat];
 
     public const int DefaultTimeoutSeconds = 600;
     public const int DefaultAnswerTokens = 8192;
 
-    // The request fields the feed owns, which options may not set, because an option
+    // The request fields a format's feed owns, which options may not set, because an option
     // replacing the model or the messages would be a call the recording key does not
     // describe.
-    public static readonly string[] OwnedFields = ["model", "messages", "max_tokens", "stream"];
+    public static IReadOnlyList<string> OwnedFields(string format) =>
+        string.Equals(format, AnthropicFormat, StringComparison.Ordinal)
+            ? ["model", "messages", "system", "max_tokens", "stream"]
+            : ["model", "messages", "max_tokens", "stream"];
 
     public ResearchModelSettings(
+        string job,
+        string profile,
         string? format,
         string? baseAddress,
         string? model,
+        string? keyName,
         string? apiKey,
         ResearchPricing? pricing,
         string? options = null,
         int? timeoutSeconds = null,
-        int? answerTokens = null)
+        int? answerTokens = null,
+        DateOnly? retires = null,
+        DateOnly? retiresReadOn = null,
+        string? workspace = null)
     {
         var named = string.IsNullOrWhiteSpace(format) ? OpenAiFormat : format.Trim();
 
-        if (!string.Equals(named, OpenAiFormat, StringComparison.OrdinalIgnoreCase))
+        if (!Formats.Contains(named, StringComparer.Ordinal))
         {
             throw new InvalidOperationException(
-                $"'{FormatKey}' names '{named}', and the one wire format this build implements is '{OpenAiFormat}'. A format " +
-                "with no implementation is refused rather than answered by another, because a section whose model is not " +
-                "the one configured is a section nobody can say who wrote.");
+                $"'{ModelProfiles.Field(profile, ModelProfiles.FormatField)}' names '{named}', and the wire formats this build " +
+                $"implements are {string.Join(" and ", Formats.Select(one => $"'{one}'"))}. A format with no implementation is " +
+                "refused rather than answered by another, because a section whose model is not the one configured is a " +
+                "section nobody can say who wrote.");
         }
 
         if (string.IsNullOrWhiteSpace(baseAddress)
@@ -366,36 +388,67 @@ public sealed record ResearchModelSettings
             || address.Scheme is not ("https" or "http"))
         {
             throw new InvalidOperationException(
-                $"'{BaseAddressKey}' is '{baseAddress}', and the research model needs the absolute address its provider " +
-                "answers at. It is refused at startup rather than at the first pass.");
+                $"'{ModelProfiles.Field(profile, ModelProfiles.BaseAddressField)}' is '{baseAddress}', and the {job} job's model " +
+                "needs the absolute address its provider answers at. It is refused at startup rather than at the first call.");
         }
 
         if (string.IsNullOrWhiteSpace(model))
         {
-            throw new InvalidOperationException($"'{ModelKey}' names no model, and the research model needs one.");
+            throw new InvalidOperationException(
+                $"'{ModelProfiles.Field(profile, ModelProfiles.ModelField)}' names no model, and the {job} job needs one.");
+        }
+
+        if (string.IsNullOrWhiteSpace(keyName))
+        {
+            throw new InvalidOperationException(
+                $"'{ModelProfiles.Field(profile, ModelProfiles.KeyField)}' names no key, and the profile '{profile}' needs the " +
+                "name of the section of the secrets file its key sits under.");
         }
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             throw new InvalidOperationException(
-                $"No research model key. Set '{ApiKeyKey}' in appsettings.Secrets.json beside appsettings.json, or in the " +
-                "environment. It is refused here, at startup, rather than at the first pass, because a pass refused by the " +
-                "provider reads as research that failed rather than research never configured.");
+                $"The {job} job uses the profile '{profile}', whose key '{keyName}' the secrets file does not hold. Set " +
+                $"'{ModelProfiles.KeyPath(keyName.Trim())}' in appsettings.Secrets.json beside appsettings.json, or in the " +
+                "environment. The job stops here and no other profile answers for it, because a section whose model is not " +
+                "the one configured is a section nobody can say who wrote.");
         }
 
         Pricing = pricing ?? throw new InvalidOperationException(
-            $"No prices for the research model. Set '{CacheHitKey}', '{CacheMissKey}' and '{OutputKey}' to what the provider " +
-            "charges per million tokens. A model nobody can price is refused rather than called, because a call recorded as " +
-            "costing nothing is spend the cap cannot see.");
+            $"No prices for the profile '{profile}'. Set '{ModelProfiles.Prices(profile)}' to what the provider charges per " +
+            "million tokens. A model nobody can price is refused rather than called, because a call recorded as costing " +
+            "nothing is spend the cap cannot see.");
 
-        Format = OpenAiFormat;
+        Job = job;
+        Profile = profile;
+        Format = named;
         BaseAddress = address.AbsoluteUri.EndsWith('/') ? address.AbsoluteUri : address.AbsoluteUri + "/";
         Model = model.Trim();
-        Options = Parsed(options);
+        KeyName = keyName.Trim();
+        Options = Parsed(options, named, ModelProfiles.Field(profile, ModelProfiles.OptionsField));
         Timeout = TimeSpan.FromSeconds(timeoutSeconds is > 0 ? timeoutSeconds.Value : DefaultTimeoutSeconds);
         AnswerTokens = answerTokens is > 0 ? answerTokens.Value : DefaultAnswerTokens;
+        Retires = retires;
+        RetiresReadOn = retiresReadOn;
+        Workspace = string.IsNullOrWhiteSpace(workspace) ? null : workspace.Trim();
         ApiKey = apiKey;
     }
+
+    // The workspace a key not scoped to one names on every request, read from beside the key
+    // in the secrets file, or none where the key carries its own.
+    internal string? Workspace { get; }
+
+    public string Job { get; }
+
+    public string Profile { get; }
+
+    public string KeyName { get; }
+
+    // The earliest date the provider publishes for retiring the model, and the day that was
+    // read, or none where the provider publishes none.
+    public DateOnly? Retires { get; }
+
+    public DateOnly? RetiresReadOn { get; }
 
     public string Format { get; }
 
@@ -420,9 +473,9 @@ public sealed record ResearchModelSettings
     public string Identity => Options is null ? Model : Model + " " + Options;
 
     // Never rendered with the key, because a key that can be printed reaches a log.
-    public override string ToString() => $"ResearchModelSettings({Identity} at {BaseAddress}, key withheld)";
+    public override string ToString() => $"ResearchModelSettings({Job} on {Profile}: {Identity} at {BaseAddress}, key withheld)";
 
-    static string? Parsed(string? options)
+    static string? Parsed(string? options, string format, string key)
     {
         if (string.IsNullOrWhiteSpace(options))
         {
@@ -443,16 +496,16 @@ public sealed record ResearchModelSettings
         if (node is not JsonObject parsed)
         {
             throw new InvalidOperationException(
-                $"'{OptionsKey}' is not a JSON object. Options are the provider's own request fields, written as the " +
+                $"'{key}' is not a JSON object. Options are the provider's own request fields, written as the " +
                 "object the provider takes, and anything else would be sent as something nobody wrote.");
         }
 
-        var owned = parsed.Select(field => field.Key).Where(field => OwnedFields.Contains(field, StringComparer.Ordinal)).ToArray();
+        var owned = parsed.Select(field => field.Key).Where(field => OwnedFields(format).Contains(field, StringComparer.Ordinal)).ToArray();
 
         if (owned.Length > 0)
         {
             throw new InvalidOperationException(
-                $"'{OptionsKey}' sets {string.Join(", ", owned)}, which the feed writes itself from the request and the " +
+                $"'{key}' sets {string.Join(", ", owned)}, which the feed writes itself from the request and the " +
                 "settings. An option replacing one would be a call the recording key does not describe.");
         }
 

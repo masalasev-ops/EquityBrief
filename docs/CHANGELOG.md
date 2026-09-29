@@ -9011,3 +9011,50 @@ Now:
 > | `fixture-expectations` | ... and the overnight queue takes the names the filter passed first in its order, not in the order of their tickers or of the reasons they fired, then the names one gate short nearest first, then every other member, and the night's closing count ... |
 > | `read-surface` | ... and a night no name passed the line with how many reached each gate; and beneath it close to a buy point draws every member one gate short with no exclusion and none missing two or excluded, ... drawing it storing nothing and Past picks holding none of it, and the near-miss rule named by no source but the read surface's and the queue's; and the name page's why, listing history and walk ... |
 Why: the checks reach the list this correction adds and the queue's new order.
+
+### 2026-09-29 - ARCHITECTURE.html - each paid job names a model profile by one word, research moves to Claude Sonnet 5.5, a missing key stops the job, and the run page names a profile near its retirement date and a report costing more than two dollars
+Authorised by: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
+Was:
+> Two models are used for different jobs. ... Which hosted model is configuration and not code: the wire format, the address, the model, the options it is asked with and the rates it is priced at are settings, the shipped configuration names DeepSeek V4, and switching model changes those settings and nothing else. ... (see: Two models for two jobs, and which research model answers is configuration) (see: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in) ...
+> | Spend cap | ... so the ledger is what the store holds and neither runner can reach the research model except through it (see: Every paid call is made through the spend cap, which holds the research model) |
+> | Anything to worry about | ... every company awaiting a quarter asked on schedule; the four harness counts beneath |
+Now:
+> Two kinds of model are used for different jobs. ... the settings file holds one profile per model ... and each paid job names the profile it uses by one word. The research job names Claude Sonnet 5.5 from 2026-09-29, and switching its model is changing that word and nothing else; a job whose profile names a key the secrets file does not hold stops, and no other profile answers for it. ... (see: A local model writes prose from numbers and each paid job names its hosted model in configuration) (see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp) (see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names) ...
+> | Spend cap | ... neither runner can reach the research model except through it; the model it holds is the one the research job's profile names (see: Every paid call is made through the spend cap, which holds each paid job's model) |
+> | Anything to worry about | ... every company awaiting a quarter asked on schedule; no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date ...; no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost ...; the four harness counts beneath |
+> Section 17 gains Paid model profiles, Paid model retirement warning and A report named for its cost; section 18 gains A paid job's profile names a key the secrets file does not hold.
+Why: the operator's brief of 2026-09-28 asked for named profiles and one switch per job, and on 2026-09-29 moved research to Claude Sonnet 5.5, asked for a warning before a profile's model is retired, and for any report costing more than two dollars to be seen the morning after.
+
+### 2026-09-29 - RUNBOOK.md - the paid models as profiles, the one word each job names, switching a model and adding a key
+Authorised by: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
+Was:
+> | the research model's provider | `EquityBrief:Models:Research:ApiKey` | `EquityBrief.Worker` |
+> ### The research model's settings and the spend caps
+> The research model is the one part of the system that costs money ... | the wire format the provider serves | `EquityBrief:Models:Research:Format` | `openai` | ... **Switching model is a change to these values and the key, and to nothing else.** ... The one format this build implements is `openai` ...
+Now:
+> | DeepSeek, the `deepseek` profile's key | `EquityBrief:Models:Research:ApiKey` | ... | Claude, the key both Claude profiles name | `EquityBrief:Models:Claude:ApiKey` | ... | Claude's workspace, where the key is not scoped to one | `EquityBrief:Models:Claude:WorkspaceId` | ...
+> ### The paid models, the one word each job names, and the spend caps
+> ... | the profile the research job uses | `EquityBrief:Models:Research:Use` | `claude-sonnet` | ... Each profile's fields ... **Switching a job's model is changing its one word.** ... **Adding a key.** ... **Adding a profile** ... **A profile nearing its retirement date is named on the run page.** ... **A report costing more than $2 is named on the run page** ...
+Why: the operator's brief asked for how to switch models and add a key, and the Claude key the operator added on 2026-09-29 is not scoped to a workspace, which the provider refuses without one named.
+
+### 2026-09-29 - SCHEMA.md, BUILD_PLAN.md - citations of the superseded paid model decisions repointed
+Authorised by: Every paid call is made through the spend cap, which holds each paid job's model
+Was:
+> SCHEMA.md: ... rather than kept by anything that spends (see: Every paid call is made through the spend cap, which holds the research model).
+> BUILD_PLAN.md: ... configuration naming which provider answers (see: The research model is one interface with an implementation per wire format, chosen by configuration and never falling back), ...
+Now:
+> SCHEMA.md: ... rather than kept by anything that spends, whichever job's model the call was made to (see: Every paid call is made through the spend cap, which holds each paid job's model).
+> BUILD_PLAN.md: ... configuration naming which provider answers (see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names), ...
+Why: the decisions each cited are superseded, and a live citation to a superseded decision is refused.
+
+### 2026-09-29 - .claude/rules/checks.md - fixture-expectations, read-surface and nightly-cost reach the model profiles
+Authorised by: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
+Was:
+> | `fixture-expectations` | ... the fixture's night reading no quarter fetched on or after it |
+> | `read-surface` | ... read back off constructed readings worked by hand |
+> | `nightly-cost` | ... each run under the prefix the run page reads as by hand |
+Now:
+> | `fixture-expectations` | ... the fixture's night reading no quarter fetched on or after it; and each shipped model profile resolves from the shipped settings ..., under which the drain settles the request refused |
+> | `read-surface` | ... read back off constructed readings worked by hand; and the Run page's checklist names a model profile a job uses from thirty days before its provider's retirement date ... and a stage that failed whose record carries a reason is drawn in that reason's words ... |
+> | `nightly-cost` | ... each run under the prefix the run page reads as by hand. The source scan finds each paid model format's wire in its own feed and in no other shipped file ... |
+Why: the checks reach the behaviour this correction adds.

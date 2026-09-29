@@ -1477,7 +1477,9 @@ public partial class ArchitectureConformance
         // the fourteen parts their rows state and three marks. 359 at the one that builds the night's tries:
         // tonight's row stating the night's state as its four parts and the two the Run page's first row adds.
         // 370 at the 12.7 correction that draws close to a buy point: its row as its eleven parts.
-        Assert.Equal(370, inDocument.Length);
+        // 372 at the 12.6 correction that brings the model profiles: the checklist's items for a profile near its
+        // retirement date and a report costing more than section 17 names.
+        Assert.Equal(372, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1555,8 +1557,11 @@ public partial class ArchitectureConformance
         // tonight's picks and each version at a checkpoint: the fourteen parts their rows state. 333 at the one
         // that builds the night's tries: tonight's row stating the night's state as its four parts and the two
         // the Run page's first row adds. 344 at the 12.7 correction that draws close to a buy point: its row as
-        // the nine parts it enumerates and the two it states outside them.
-        Assert.Equal(344, checkedElements);
+        // the nine parts it enumerates and the two it states outside them. 348 at 12.6's correction that brings
+        // the model profiles: the checklist's two items for a profile near its retirement date and a report
+        // costing more than section 17 names, and section 18's row about a key the secrets file does not hold as
+        // its two halves.
+        Assert.Equal(348, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

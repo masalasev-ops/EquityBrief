@@ -44,7 +44,7 @@ public sealed class RecordedResearchModelFeed(string folder, ResearchModelSettin
         var file = Path.Combine(folder, FileFor(request));
 
         return File.Exists(file)
-            ? Task.FromResult(OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(file), request.Section))
+            ? Task.FromResult(ResearchModelFeeds.ParseRecorded(settings, File.ReadAllText(file), request.Section))
             : throw new InvalidOperationException(
                 $"No recording answers the {request.Lane} lane's call for {request.Section} on {request.Model}, keyed " +
                 $"{request.Key}, in '{folder}'. The recording is keyed on the whole request, so a prompt, a document list " +

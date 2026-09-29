@@ -33,7 +33,7 @@ public sealed record ThemePassOutcome(
 // see: Industry research is per theme, not per name
 // see: A theme is the industry the index names for a member, and one theme pass serves every member it names
 // see: A theme search is scoped by parameter, not by hope
-// see: Every paid call is made through the spend cap, which holds the research model
+// see: Every paid call is made through the spend cap, which holds each paid job's model
 //
 // A refresh is paid work serving members nobody opened, so it runs off-peak and never at
 // peak, and a pass asked at peak says when the window opens and writes nothing.

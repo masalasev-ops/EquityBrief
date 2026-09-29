@@ -7,17 +7,17 @@ using System.Text.Json.Nodes;
 
 namespace EquityBrief.Core.Providers;
 
-// The research model over the OpenAI chat completions format, which is the format most
+// A paid job's model over the OpenAI chat completions format, which is the format most
 // providers of a hosted model serve.
 //
 // It names no provider and no model. Where it sends the request, which model it asks
-// for, the options the provider takes, the key and the prices are all settings, so
-// switching model is a change to configuration. What it was written against is three
-// responses captured from the provider the shipped configuration names, before a line
+// for, the options the provider takes, the key and the prices are all the profile's
+// settings, so switching model is a change to configuration. What it was written against
+// is three responses captured from the provider the deepseek profile names, before a line
 // of it existed, and the reader accepts the two ways providers in this format report a
 // cached prompt, the provider's own fields and the OpenAI format's.
-// see: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in
-// see: The research model is one interface with an implementation per wire format, chosen by configuration and never falling back
+// see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
+// see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
 public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchModelSettings settings, ProviderRequest? request = null) : IResearchModelFeed
 {
     public const string Path = "chat/completions";
@@ -257,12 +257,21 @@ public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchMode
     public decimal Ceiling(ModelRequest wanted) => settings.Pricing.Ceiling(wanted, settings.AnswerTokens);
 }
 
-// The research model a configuration resolves to, by its wire format.
+// The paid model a job's profile resolves to, by its wire format, and never another.
+// see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
 public static class ResearchModelFeeds
 {
     public static IResearchModelFeed Live(ResearchModelSettings settings) => settings.Format switch
     {
         ResearchModelSettings.OpenAiFormat => OpenAiCompatibleResearchFeed.Live(settings),
-        _ => throw new InvalidOperationException($"No research model feed implements the format '{settings.Format}'."),
+        ResearchModelSettings.AnthropicFormat => AnthropicMessagesFeed.Live(settings),
+        _ => throw new InvalidOperationException($"No paid model feed implements the format '{settings.Format}'."),
+    };
+
+    // A recording read by the parser the live feed of its format uses.
+    public static ResearchAnswer ParseRecorded(ResearchModelSettings settings, string recording, string section) => settings.Format switch
+    {
+        ResearchModelSettings.AnthropicFormat => AnthropicMessagesFeed.ParseRecorded(recording, section),
+        _ => OpenAiCompatibleResearchFeed.Parse(recording, section),
     };
 }

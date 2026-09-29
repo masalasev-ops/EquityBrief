@@ -318,9 +318,10 @@ public class EodhdBulkPriceFeedTests
         // the first from a second provider, and eight until 6.6 added the local
         // model, which is the first that reaches a model, nine until 6.7 added the
         // research model, which is the first that is paid, ten until 6.8 added one
-        // name's own news, and eleven until 6.9 added the search tool, which is the
-        // first that reaches the open web.
-        Assert.Equal(12, Checks.NightlyCost.MayHoldAClient.Length);
+        // name's own news, eleven until 6.9 added the search tool, which is the
+        // first that reaches the open web, and twelve until 12.6 added Claude's own
+        // messages interface, the second format a paid model answers in.
+        Assert.Equal(13, Checks.NightlyCost.MayHoldAClient.Length);
         Assert.All(
             Checks.NightlyCost.MayHoldAClient,
             file => Assert.EndsWith("Feed.cs", file, StringComparison.Ordinal));

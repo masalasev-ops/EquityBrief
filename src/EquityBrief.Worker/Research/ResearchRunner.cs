@@ -43,7 +43,7 @@ public sealed record ResearchPassOutcome(
 // see: Everything expensive happens when a name is opened
 // see: The model never fetches; components fetch and hand it documents
 // see: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
-// see: Every paid call is made through the spend cap, which holds the research model
+// see: Every paid call is made through the spend cap, which holds each paid job's model
 //
 // One pass, one run id, however many rounds it takes. A section refused on its first
 // draft is written once more inside the same pass, and figure 12.2's short version is
@@ -94,6 +94,12 @@ public sealed class ResearchRunner(
     public const string Paused = "paused";
     public const string NoFactsFile = "no facts file";
     public const string AlreadyRunning = "already running";
+
+    // A pass the research job's settings refused before it started: a profile naming a key
+    // the secrets file does not hold, or one nothing can price. Nothing is fetched and no
+    // model is asked, and no other profile answers instead.
+    // see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
+    public const string Unconfigured = "unconfigured";
 
     // What a pass for such a name did, which is the sentence the name page reads.
     // see: A pass for a name with no facts file refreshes its industry's theme and says so
@@ -813,6 +819,39 @@ public sealed class ResearchRunner(
         await record.ExecuteNonQueryAsync(cancellation);
 
         return outcome;
+    }
+
+    // The row a pass the research job's settings refused writes, under the run the pass would
+    // have had, with the plain line saying which profile and which key. It is the pass's own
+    // row, so the drain settles the request under it and the name page and the run page read
+    // it as they read any pass's.
+    public static async Task RefusedBySettingsAsync(
+        IClock clock,
+        string databaseFile,
+        string ticker,
+        string runId,
+        string reason,
+        CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var record = connection.CreateCommand();
+
+        var at = clock.UtcNow;
+
+        record.CommandText = AppendRun;
+        record.Parameters.AddWithValue("$run_id", runId);
+        record.Parameters.AddWithValue("$stage", Stage);
+        record.Parameters.AddWithValue("$started_at", Instant(at));
+        record.Parameters.AddWithValue("$ended_at", Instant(at));
+        record.Parameters.AddWithValue("$outcome", Unconfigured);
+        record.Parameters.AddWithValue("$rows_written", 0);
+        record.Parameters.AddWithValue("$network_requests", 0);
+        record.Parameters.AddWithValue(
+            "$detail",
+            Detail(Outcome(ticker, clock.SessionDateAt(at), Unconfigured, ResearchState.Missing, [], reason)));
+
+        await record.ExecuteNonQueryAsync(cancellation);
     }
 
     // The run log's detail, as JSON, which is what lets the name page say for one name

@@ -57,6 +57,12 @@ public partial class FixtureExpectations
         "fixture-expectations",
         ["fixtures/membership-2026-09-05", "docs/ARCHITECTURE.html"],
         [
+            // 12.6's correction, the model profiles: section 17's profiles over the shipped settings and the
+            // fixture's own models file, and the half of section 18's row about a key the secrets file does not
+            // hold where the job stops and the drain settles its request.
+            CheckReach.Key(Scope.LimitsTable, "Paid model profiles"),
+            CheckReach.Key(Scope.FailureTable, "A paid job's profile names a key the secrets file does not hold, the job stops before it fetches or asks anything and no other profile answers for it; a research pass writes the plain line saying which profile and which key as its own run log row, which the drain settles the request under as refused"),
+
             // 12.3, the shape clock's event rule and its sixty nights.
             CheckReach.Key(Scope.LimitsTable, "Event session share"),
             CheckReach.Key(Scope.LimitsTable, "Event volume ratio"),

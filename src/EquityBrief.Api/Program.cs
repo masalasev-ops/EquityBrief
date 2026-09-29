@@ -543,15 +543,22 @@ async Task<(IReadOnlyList<RequestRow> Rows, IReadOnlyList<RequestTime> Times, Pa
         estimate);
 }
 
-// The peak windows the queue page states, or none where the prices cannot be read, which
-// the page says rather than refusing to draw the queue.
-static EquityBrief.Core.Providers.ResearchPricing? QueuePricing(IConfiguration configuration)
+// The peak windows the queue page states, read from the profile the research job uses and
+// never its key, or none where the prices cannot be read, which the page says rather than
+// refusing to draw the queue.
+static EquityBrief.Core.Providers.ResearchPricing? QueuePricing(IConfiguration configuration) =>
+    Profile(configuration, EquityBrief.Core.Providers.ModelProfiles.ResearchJob)?.Pricing;
+
+// A paid job's profile as configuration names it, without its key, or none where the job
+// names no profile or one that cannot be read.
+static EquityBrief.Core.Providers.ModelProfile? Profile(IConfiguration configuration, string job)
 {
     try
     {
-        return EquityBrief.Core.Providers.ResearchPricing.From(
+        return EquityBrief.Core.Providers.ModelProfiles.Describe(
             key => configuration[key],
-            key => configuration.GetSection(key).GetChildren().Select(child => child.Value));
+            key => configuration.GetSection(key).GetChildren().Select(child => child.Value),
+            job);
     }
     catch (InvalidOperationException)
     {
@@ -1227,7 +1234,8 @@ app.MapGet("/screens/run/{night?}", async (
                 how,
                 RunScreen.Refused(await read.RefusedDocumentsAsync(dated)),
                 RunScreen.FellBack(await read.FellBackAsync(dated)),
-                log),
+                log,
+                [.. EquityBrief.Core.Providers.ModelProfiles.Jobs.Select(job => Profile(builder.Configuration, job)).OfType<EquityBrief.Core.Providers.ModelProfile>()]),
             background: versions,
             compare: compare,
             checkpoints: RunScreen.Checkpoints(edge)),
