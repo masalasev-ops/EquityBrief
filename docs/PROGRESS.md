@@ -29855,15 +29855,19 @@ Mutated:    the rule, stated before the run: each mechanism the tries, the one s
             N5 a night that finds the lock held run anyway: red in the lock test.
             N6 the rest of a night run from the step after the migration whatever its tries finished: red in the
                resume test.
-            Results: 137M
-Held:       137H
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 137T of 137T tests ran
+            Results: one run each in a detached worktree at 37f54b1, this entry's commit, filtered to the four
+            `nightly-run` tests for N1, N5 and N6 and the five `read-surface` tests of the night's state for N2 to N4,
+            each edit made there and reverted, and the tree read clean after. The whole suite ran green over 37f54b1 in
+            the gates, 1518 of 1518. N1 turned the first tries test red; N2 the state test; N3 the one-state test; N4
+            the notice test; N5 the lock test; N6 the resume test.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1518 of 1518 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 137B tables, 137C claims, 137P PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 137R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 137T of 137T tests.
-            Both gates ran over the tree carrying this entry, 137SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 706 claims, 706 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 717 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1518 of 1518 tests.
+            Both gates ran over the tree carrying this entry, 37f54b1, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    the operator's command raising the scheduled task's limit to eight hours, in RUNBOOK, before a night
             that tries again can run past two.
