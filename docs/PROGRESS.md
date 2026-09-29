@@ -29895,16 +29895,19 @@ Pins:       the branch against `main` edits `ReadApi.cs` and a test, in none of 
 Mutated:    the rule, stated before the run: the mechanism reversed alone, filtered to the extended test.
             Predicted:
             D1 the queue's row left out and no other step after the close: red in the extended test.
-            Results: 138M
-Held:       138H
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 138T of 138T tests ran
+            Results: one run in a detached worktree at b67c082, the commit carrying this entry and the one after it,
+            filtered to the extended test and the one the entry after this extends, the edit made there and reverted,
+            and the tree read clean after. The whole suite ran green over b67c082 in the gates, 1518 of 1518. D1
+            turned the extended test red and left the other green.
+Held:       red in the test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1518 of 1518 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 138B tables, 138C claims, 138P PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 138R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 138T of 138T tests.
-            Both gates ran over the tree carrying this entry, 138SHA, in a worktree beside the repository, and the
-            operator's store under `data/` was not touched by either.
+            `tools/verify-phase.ps1` green at 44 tables, 706 claims, 706 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 717 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1518 of 1518 tests.
+            Both gates ran over the tree carrying this entry and the one after it, b67c082, in a worktree beside
+            the repository, and the operator's store under `data/` was not touched by either.
 Carried:    nothing. The 12.3 correction before this carried the operator's command raising the scheduled task's
             limit; the operator ran it on 2026-09-29 and it reads back `PT8H`. The operator also ruled that PR 275 be
             merged while the report pass the night of 2026-09-28 started waited for the off-peak hours, since the
@@ -29932,14 +29935,17 @@ Pins:       the branch against `main` edits `MarkRenderer.cs`, `SinglePageApp.cs
 Mutated:    the rule, stated before the run: the mechanism reversed alone, filtered to the extended test.
             Predicted:
             T1 the ticker linking to the night with the name selected, as before: red in the extended test.
-            Results: 139M
-Held:       139H
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 139T of 139T tests ran
+            Results: one run in a detached worktree at b67c082, this entry's commit, filtered to the extended test
+            and the one the entry before this extends, the edit made there and reverted, and the tree read clean after.
+            The whole suite ran green over b67c082 in the gates, 1518 of 1518. T1 turned the extended test red and
+            left the other green.
+Held:       red in the test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1518 of 1518 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 139B tables, 139C claims, 139P PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 139R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 139T of 139T tests.
-            Both gates ran over the tree carrying this entry and the one before it, 139SHA, in a worktree beside the
+            `tools/verify-phase.ps1` green at 44 tables, 706 claims, 706 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 717 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1518 of 1518 tests.
+            Both gates ran over the tree carrying this entry and the one before it, b67c082, in a worktree beside the
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
