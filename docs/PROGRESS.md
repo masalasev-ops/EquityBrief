@@ -31171,3 +31171,138 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             operator's store under `data/` was not touched by either.
 Carried:    the build of this ruling, after tonight's night and pull request 282; the build's time over its first
             five nights against the one-hour deadline.
+
+### 12.2 - correction: the swing filter reads pullbacks alone, a stop inside a support band moves to that band's low edge, the night's deadline is an hour and the version bound settled, and a comment or a blank line moves no pin, where the filter read breakouts, a trailing stop could sit inside the band beneath and every comment moved a pin   2026-09-29
+Corrects:   12.2's gates, which read a tight base breaking out beside the pullback, and the ladder's stop, which trailed
+            to a swing low wherever it sat, on items 2 and 3 of the operator's ruling of 2026-09-26, the 12.2 ruling
+            that removes breakouts; with them, on the operator's ruling of 2026-09-28 that places them in one window,
+            the night's deadline, the bound on versions scored at once, and the pins, which every comment moved.
+Asked:      item 2, word for word as the 12.2 ruling records it: "About five names a year, on about three nights a
+            year, is too few for the edge clock ever to judge. Every path in the filter has to feed the loop, and a
+            path the loop can never measure is code to maintain with no way of learning whether it works. The fix
+            would also bring in a measured-move target, which is a new rule section 10 does not have." Item 3: "It
+            is section 10's intent applied exactly: a stop sits below a band, never inside one. It is also the same
+            rule the list's trade now uses, so the report's plan and the list agree about where a stock's stop is."
+            The deadline, on 2026-09-28, reading ten scheduled nights: "how does it matter how long it takes. It's
+            running locally." The same day the operator placed items 2 and 3, a pin that ignores comments first,
+            the deadline at an hour and the version cap kept at 18 in one window after the night of 2026-09-29 with
+            one remedy, the placing the 12.3 ruling of that day records.
+Repaired:   - Pullbacks alone. `SwingGates` reads a pullback into an anchored support band and nothing else: no
+              breakout band, no breakout family, the trigger the pullback's event, the setup band the pullback's
+              band, and the setup's stored values the depth, the dry-up, the band's edges and the band test.
+              `FilterSettings` holds no base tightness and no breakout volume, and `Read` passes over both where a
+              version opened before names them. `SwingFilterRule`'s parameters, the shape proposer's recount and
+              the `filter-counts` verb drop the same two. The tightness stays a stored swing reading, drawn on the
+              name page, and read by no gate. The run page's funnel draws the setup's families only on a night that
+              held a breakout, which is a night stored before this. The breakout on volume reason is untouched.
+            - A stop inside a support band. `LadderSeries.OutsideEverySupportBand` moves a tranche's stop that is
+              above a support band's low edge and at or below its high edge to that low edge, again where that
+              edge is inside another, after the trailing rule or the band beneath has placed it.
+            - The deadline. `RetryPolicy.WallClock` is 20 minutes, so `Standard.Deadline` is 60, and the run page's
+              Calibration region draws no line for the wall clock or the version bound, the two obligations
+              discharged by the ruling; its two reads of the run log go with them.
+            - The pins. `SourcePin.Of` trims each line and leaves out a line that is a comment alone and a line
+              holding nothing, so a comment, a decision citation among them, and a blank line move none of the
+              three pins; a comment written after code on its line is still pinned.
+            - The remedy's form. `shape --rule-correction` takes `--trade` as optional, and with none opens the
+              next version on the plan the open one reads, every setting as it stood and written as the code now
+              writes a version's settings, retiring and registering the family at one instant; it is refused
+              where the open version's stored settings already read as the code writes them.
+Measured:   the ten nights that ran on the schedule over the whole index up to 2026-09-28, read-only off the run log
+            the same day: 363 to 665 seconds to the close with a median of 494, the slowest 2026-09-24's, against a
+            wall clock proposed at five minutes and a deadline of fifteen. The version step replayed 2 to 5 versions
+            over about 503 names in at most 2 seconds on the six of them it ran on. The breakouts and the stops the
+            ruling moves were measured in the 12.2 ruling of 2026-09-26 over 1,996 sessions of the pulled history:
+            81 breakout setups, 12 reaching the trade gate and none listing on either plan; 878 of 2,815 first
+            tranches listed with the stop inside a band, all trailing stops, 2,353 listing once moved with none
+            inside a band.
+Changed:    the gates, the settings, the evaluator, the shape proposer's recount, the count verb, the ladder's stop,
+            the retry policy, the pin, the shape command's correction and the run page's Calibration lines; every
+            pin constant and each evaluator's version; section 10's stop paragraph, section 11's setup, section 14's
+            filter step, 15.10's funnel row and section 17's wall clock, deadline and version bound rows in
+            `ARCHITECTURE.html`, with section 17's base tightness and breakout volume rows removed; BUILD_PLAN's
+            8.0, 12.2 and 12.3 text and its two operating rows discharged; RUNBOOK's correction, settings, count
+            and pinned source passages; one citation in SCHEMA; the setup's row and figure line in section 6 of
+            `HOW_IT_WORKS.html`; the prior text of each spec edit in `CHANGELOG.md`; and the fixture's
+            ladder, listing, gate result and version score expectations, each worked again under the rule that
+            moves a stop inside a band.
+Decisions:  superseded, each moved below with its reasoning: "A feed is tried three times with a doubling backoff,
+            and the night has a deadline it cannot move" by "... an hour's deadline it cannot move"; "The trailing
+            stop is the higher of the band beneath and the last swing low" by "..., and a stop inside a support band
+            moves to that band's low edge"; "A ladder rule's version is measured beside that rule's live window,
+            and both count against the bound" by "... against a bound of eighteen"; and "The ladder rules' code
+            version pins every source a live ladder rule or its replay runs through" by "..., its comments and
+            blank lines aside". New: "A comment or a blank line moves no pin, and every other change to a pinned
+            source does" and "The swing filter reads pullbacks alone, and a breakout returns only as a registered
+            candidate built from its measured record", which narrows the shape proposer's, the trade gate's and
+            the arrival's entries on their breakout clauses. Every live citation of a superseded name is repointed.
+Tests:      1543, from 1539: `ACommentOrABlankLineMovesNoPinAndEveryOtherEditDoes`,
+            `AStopInsideASupportBandMovesToThatBandsLowEdgeAndAStopInAGapBetweenBandsStays`,
+            `NoStopTheReportsPlanOrTheListsTradeStatesLiesInsideASupportBand`, the operator's own for item 3, and
+            `ARuleCorrectionNamingNoPlanOpensTheNextVersionWrittenAsTheCodeWritesItAndRegistersTheFamilyAgain`.
+            The breakout gate test now asserts the same constructed breakout is no setup; the funnel test asserts a
+            night holding no breakout draws no families and one holding a breakout draws them; the pin tests
+            append a line of code where they appended a comment, and the evaluator pin test asserts a comment
+            moves nothing; the replay test states that over the fixture the trailing rule and the band beneath
+            agree on every tranche; and the wall clock and the Calibration lines read the settled figures.
+Claims:     723, from 725: section 17's base tightness and breakout volume rows, each named in phase 12's pair as a
+            row it added and a later correction took out.
+Pins:       every pin moves, the rule for all three being new. The swing filter's code version is 76466298a7f0,
+            from daccb4aabfaf; the ladder rules' 8ae51b59cb91, from fd934631fb3b; and the evaluators' `swing-filter`
+            abcf6df67b7d, `arrived-and-narrow` 1132e8cc8c61, `volume-against-the-night` e031a258e0aa,
+            `crossed-by-a-margin` 2deb54bf2f0c, `momentum-index-reading` d2abbd4535fc and `momentum-histogram-turn`
+            d6c1fa6c44d8. From this merge a night stops at the rule versions step with a ladder window open and
+            marks the swing filter's step failed naming the six standing candidates until the remedy runs.
+Remedy:     for the operator, after the merge and when no night is running, before midnight in New York where the
+            choice is there, from the repository root, in this order. The eight ladder windows the store holds open,
+            each version closed before its rule's live window:
+            dotnet run --project src/EquityBrief.Worker -- version --rule "merge distance" --close "a quarter of a typical move" --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+            dotnet run --project src/EquityBrief.Worker -- version --rule "merge distance" --close live --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+            dotnet run --project src/EquityBrief.Worker -- version --rule "zone edges from non-average anchors only" --close "non-average anchors only" --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+            dotnet run --project src/EquityBrief.Worker -- version --rule "zone edges from non-average anchors only" --close live --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+            dotnet run --project src/EquityBrief.Worker -- version --rule "the trend rule" --close "below both averages" --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+            dotnet run --project src/EquityBrief.Worker -- version --rule "the trend rule" --close "below both under a cross" --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+            dotnet run --project src/EquityBrief.Worker -- version --rule "the trend rule" --close "the new label holds two nights" --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+            dotnet run --project src/EquityBrief.Worker -- version --rule "the trend rule" --close live --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+            then each opened again, each live window before its versions:
+            dotnet run --project src/EquityBrief.Worker -- version --rule "merge distance" --live-window
+            dotnet run --project src/EquityBrief.Worker -- version --rule "merge distance" --version "a quarter of a typical move" --parameters typicalMoveMultiple=0.25
+            dotnet run --project src/EquityBrief.Worker -- version --rule "zone edges from non-average anchors only" --live-window
+            dotnet run --project src/EquityBrief.Worker -- version --rule "zone edges from non-average anchors only" --version "non-average anchors only" --parameters zoneEdgesFromNonAverageAnchorsOnly=1
+            dotnet run --project src/EquityBrief.Worker -- version --rule "the trend rule" --live-window
+            dotnet run --project src/EquityBrief.Worker -- version --trend-version "below both averages"
+            dotnet run --project src/EquityBrief.Worker -- version --trend-version "below both under a cross"
+            dotnet run --project src/EquityBrief.Worker -- version --trend-version "the new label holds two nights"
+            and the filter's rule correction, which opens version 4 without the breakout's two settings and
+            retires and registers the six standing candidates at one instant, stating the blocks the live filter
+            has run, which it refuses at any other count:
+            dotnet run --project src/EquityBrief.Worker -- shape --rule-correction --restarts 0 --evidence "the operator's ruling of 2026-09-26: the filter reads pullbacks alone and a stop inside a support band moves to that band's low edge, landing with the night's deadline at an hour and the pin that reads past comments in one change and one remedy"
+Mutated:    the rule, stated before the run: the one assertion guarding each rule the ruling states in its own
+            words, and the one guarding the remedy's form, each mutation alone, filtered to the tests that read it.
+            Predicted:
+            M1 a close clearing a band above the previous close named a breakout and passing the setup, filtered to
+               the gates' tests: red in `ATightBaseClearingABandOnHeavyVolumeIsNoSetupSinceTheFilterReadsPullbacksAlone`.
+            M2 `OutsideEverySupportBand` returning the stop it is handed, filtered to the ladder's stop tests and
+               the fixture's tranches: red in the constructed stop test, the operator's test and the fixture's
+               tranches and stops.
+            M3 a stop on a band's top edge read as outside it, filtered to the same: red in the constructed stop
+               test and the operator's test, KEYS's first stop at 306.852 being a band's top edge.
+            M4 the pin reading comments again, filtered to the pin tests: red in the comment test and in the
+               evaluator pin test.
+            M5 the wall clock back at five minutes, filtered to the limits row, the census and the Run page's night
+               line: red in all three.
+            M6 the correction naming no plan compared against the settings as the code reads them rather than as
+               stored, filtered to the shape command's tests: red in the correction naming no plan.
+            Results: 128R1
+Held:       128H1
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1543 of 1543 tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 723 claims, 723 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 128P1 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1543 of 1543 tests.
+            Both gates ran over the tree carrying this entry, 128SHA1, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    the remedy above, the operator's to run after the merge; and the name page's trade table drawing only
+            the stepped plan and the plan the night's live rule used, queued on 2026-09-27 to land with items 2 and
+            3, which this window leaves for a change of its own since it moves no pin and needs no remedy.
