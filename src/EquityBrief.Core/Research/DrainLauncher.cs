@@ -19,6 +19,11 @@ public sealed record DrainStart(bool Started, string Line);
 public interface IDrainLauncher
 {
     DrainStart Start();
+
+    // The rest of the newest night, which the press on tonight's page and the Run page starts.
+    // see: A night left unfinished is run to its end from the step it stopped at by a press or a command, and one night runs at a time under a lock file
+    DrainStart StartTheRestOfTheNight() =>
+        new(false, "The rest of the night was not started, because this surface holds no way to start the worker.");
 }
 
 // The worker's drain, started as a process of its own from a copy of the worker's build
@@ -51,6 +56,9 @@ public sealed class WorkerDrainLauncher(
 
     public const string Verb = "drain";
 
+    // The verb and its flag that run the rest of the newest night.
+    public static readonly IReadOnlyList<string> RestOfTheNight = ["nightly", "--resume"];
+
     // The folder under the data root the copies are made in.
     public const string CopiesFolder = "drains";
 
@@ -82,16 +90,22 @@ public sealed class WorkerDrainLauncher(
             : Path.Combine(checkout, "src", WorkerProject, relative);
     }
 
-    public DrainStart Start()
+    public DrainStart Start() =>
+        Launch([Verb], "The worker has started on the queue, and a pass asked at peak waits for the off-peak rate.", "the request waits for the drain run by hand");
+
+    public DrainStart StartTheRestOfTheNight() =>
+        Launch(RestOfTheNight, "The rest of the night has started from the first step its tries have not finished.", "the rest of the night waits for tools/nightly --resume run by hand");
+
+    DrainStart Launch(IReadOnlyList<string> verb, string started, string waits)
     {
         if (checkout is null || workerBuild is null)
         {
-            return new DrainStart(false, "The worker was not started, because the read surface is not running from its own build inside a checkout, so the request waits for the drain run by hand.");
+            return new DrainStart(false, $"The worker was not started, because the read surface is not running from its own build inside a checkout, so {waits}.");
         }
 
         if (!File.Exists(Path.Combine(workerBuild, Assembly)))
         {
-            return new DrainStart(false, "The worker was not started, because no worker is built beside the read surface, so the request waits for the drain run by hand.");
+            return new DrainStart(false, $"The worker was not started, because no worker is built beside the read surface, so {waits}.");
         }
 
         string copy;
@@ -107,8 +121,8 @@ public sealed class WorkerDrainLauncher(
 
         try
         {
-            return (start ?? Started)(StartInfo(copy))
-                ? new DrainStart(true, "The worker has started on the queue, and a pass asked at peak waits for the off-peak rate.")
+            return (start ?? Started)(StartInfo(copy, verb))
+                ? new DrainStart(true, started)
                 : new DrainStart(false, "The worker was not started, because its process did not start.");
         }
         catch (System.ComponentModel.Win32Exception failure)
@@ -118,8 +132,8 @@ public sealed class WorkerDrainLauncher(
     }
 
     // How the process is started, stated apart from starting it so what a press would run is
-    // asserted without running it.
-    public ProcessStartInfo StartInfo(string copy)
+    // asserted without running it: the drain, or the verb named.
+    public ProcessStartInfo StartInfo(string copy, IReadOnlyList<string>? verb = null)
     {
         var info = new ProcessStartInfo(Executable)
         {
@@ -132,7 +146,12 @@ public sealed class WorkerDrainLauncher(
         };
 
         info.ArgumentList.Add(Path.Combine(copy, Assembly));
-        info.ArgumentList.Add(Verb);
+
+        foreach (var argument in verb ?? [Verb])
+        {
+            info.ArgumentList.Add(argument);
+        }
+
         info.Environment[DataRootVariable] = dataRoot;
 
         return info;

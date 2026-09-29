@@ -47,10 +47,20 @@ $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Monday,Tuesday,Wednesday
 $trigger.StartBoundary = '2026-09-11T23:30:00Z'
 $settings = New-ScheduledTaskSettingsSet -WakeToRun -StartWhenAvailable `
              -DontStopIfGoingOnBatteries -AllowStartIfOnBatteries `
-             -ExecutionTimeLimit (New-TimeSpan -Hours 2)
+             -ExecutionTimeLimit (New-TimeSpan -Hours 8)
 Register-ScheduledTask -TaskName 'EquityBrief nightly' -Action $action `
              -Trigger $trigger -Settings $settings
 ```
+
+Eight hours because a night that stops is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own, and the overnight queue and the report follow the close, so a limit of two would stop the process in the middle of a try (see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own). A task registered with the earlier limit of two hours takes the new one from an elevated PowerShell:
+
+```powershell
+$t = Get-ScheduledTask -TaskName 'EquityBrief nightly'
+$t.Settings.ExecutionTimeLimit = 'PT8H'
+Set-ScheduledTask -InputObject $t
+```
+
+Reading it back with `(Get-ScheduledTask -TaskName 'EquityBrief nightly').Settings.ExecutionTimeLimit` shows `PT8H`.
 
 `-WakeToRun` because a laptop left to itself sleeps and a nightly job that silently did not run is worse than no nightly job. `-StartWhenAvailable` because a machine that was off at the instant should run the night when it comes back rather than skip it, and the night is idempotent.
 
@@ -471,6 +481,16 @@ The whole system is a checkout and one database file.
 ## When something looks wrong in the morning
 
 Read the run page first. It states what ran, how long, what was spent, how many names were stale, and what failed in which component.
+
+**A night that stops tries again by itself.** A step before the close that fails or passes the night's deadline stops that try, and the night runs again from that step fifteen minutes later, up to three more times, each try under a deadline of its own. While it waits, tonight's page and the Run page say it is waiting to try again, when the next try starts and every try so far with the step it stopped at and its reason. A night refused before its first step, one whose day's allowance is spent and a step after the close are not tried again (see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own).
+
+**Running the rest of a night left unfinished.** Where both pages say the night was left unfinished, read each try's reason first: a fault that stopped four tries the same way will stop a fifth, and wants a fix before anything else. Then press "Run the rest of the night" on either page, or from the checkout:
+
+```
+tools/nightly.ps1 --resume
+```
+
+It runs the newest night on the run log from the first step its tries have not finished, as one more try under that night's id and on that night's session, and says so and does nothing where the night finished. Run the next morning for the evening before, it asks for no quarters and no report, as a night run for a named session does. A night holds a lock file under the data root while it runs, so the press and the command are refused while a night runs, and the pages say which run holds it (see: A night left unfinished is run to its end from the step it stopped at by a press or a command, and one night runs at a time under a lock file). A night for an earlier session is still run whole with `--session`.
 
 | Symptom | Likely cause | What to do |
 |---|---|---|

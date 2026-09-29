@@ -8939,3 +8939,37 @@ Was:
 Now:
 > | `read-surface` | ... each of the twenty marks is asserted ...; and the Run page draws how the list's trades are going ..., whether every step finished being the night's own state; and the Run page draws how the system learns, ...; a name only a version picked is drawn in the comparison and in no other region and on no other screen, and no outcome of a version's pick is drawn; and a name's earnings reaction record ... |
 Why: the check reaches the regions this correction adds.
+
+### 2026-09-29 - ARCHITECTURE.html - a night tries again from the step that stopped, tonight's page says the night's state, and a press runs the rest of a night
+Authorised by: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own
+Was: section 14 went from its list of steps to its note on the computations; section 15.7 opened its regions on the night header; the citations of the night's state read "A night's state is read off its own run log rows, and the pages that state it read that one state"; and
+> <tr><td>How last night went</td><td>a status mark and a headline naming the night's state as its own run log rows give it; four headline figures being the stocks read and the provider requests with the research spend and the steps run again; a time bar of the night's steps in six named groups showing where a stopped night stopped (see: ...)</td></tr>
+> <tr><td><b>Night status</b></td><td>... a clock in violet is a night not run yet and a mark in red is a failure. ...</td><td>Run</td></tr>
+Now: section 14 carries a paragraph after its list on the tries, the run of the rest of a night and the lock; section 15.7 gains the row
+> <tr><td>The night's state</td><td>a notice at the top naming the night's state as the Run page's headline names it; each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished; a press running the rest of a night left unfinished; a one-line note where the night finished (see: ...)</td></tr>
+the Run page's row adds "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished; a press running the rest of a night left unfinished", the mark's violet clock is "a night not run yet or waiting to try again", and every citation names "A night's state is read off its own run log rows and its tries, and the pages that state it read that one state".
+Why: the operator approved on 2026-09-28 the tries, the notice on tonight's page and the Run page, the press and `--resume`, and asked that the headline and the notice read one source.
+
+### 2026-09-29 - RUNBOOK.md - the scheduled task's limit is eight hours, and a night's tries and the rest of a night are said
+Authorised by: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own
+Was:
+>              -ExecutionTimeLimit (New-TimeSpan -Hours 2)
+and "When something looks wrong in the morning" opened on its table.
+Now: `-ExecutionTimeLimit (New-TimeSpan -Hours 8)`, with the reason and the commands raising an existing task's limit beneath it; and the section opens with what a night that stops does by itself, and how to run the rest of a night left unfinished by the press or `tools/nightly.ps1 --resume`.
+Why: four tries and three waits do not fit inside two hours, and the operator asked for the command raising the limit.
+
+### 2026-09-29 - SCHEMA.md - a night's try again is a run of its own
+Authorised by: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own
+Was: the run log's notes went from the overnight queue's row to the watch list.
+Now: a paragraph states the id a try writes under, the `try again` row a stopped try writes beside its stop with the outcome `waiting` and the instant the next try starts, and that the pages read a night's first try and every try carrying its id as one night.
+Why: the run log grows a stage and a run id shape the pages read.
+
+### 2026-09-29 - .claude/rules/checks.md - nightly-run and read-surface reach the night's tries
+Authorised by: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
+Was:
+> | `nightly-run` | ... a night run again for an earlier session asking for no quarters |
+> | `read-surface` | ... and no outcome of a version's pick is drawn; and a name's earnings reaction record ... |
+Now:
+> | `nightly-run` | ... a night run again for an earlier session asking for no quarters; and a night whose step fails before the close writes beside the stop when its next try starts and tries again from that step ...; and a night is refused while another holds the lock and writes nothing |
+> | `read-surface` | ... and no outcome of a version's pick is drawn; and the Run page's headline and tonight's notice name one state for a night finished, running, waiting to try again, left unfinished, not yet run and never ran, ...; and a name's earnings reaction record ... |
+Why: the checks reach the behaviour this correction adds.

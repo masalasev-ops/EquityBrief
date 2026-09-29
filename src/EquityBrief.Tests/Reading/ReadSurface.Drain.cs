@@ -25,9 +25,18 @@ public partial class ReadSurface
 
         public int Started { get; private set; }
 
+        public int RestStarted { get; private set; }
+
         public DrainStart Start()
         {
             Started++;
+
+            return new DrainStart(true, Line);
+        }
+
+        public DrainStart StartTheRestOfTheNight()
+        {
+            RestStarted++;
 
             return new DrainStart(true, Line);
         }

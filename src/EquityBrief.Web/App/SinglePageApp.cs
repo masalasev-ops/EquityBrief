@@ -119,6 +119,24 @@ public sealed class SinglePageApp : IComponent
     // Where a request is taken back out of the queue. A press names the request rather than
     // the name, because a name may have been asked for before and settled since.
     public const string WithdrawRoute = "/passes/withdraw/";
+    // The press running the rest of a night left unfinished, from tonight's notice or the Run page.
+    // see: A night left unfinished is run to its end from the step it stopped at by a press or a command, and one night runs at a time under a lock file
+    public const string NightResumeRoute = "/night/resume";
+
+    // The press, drawn beneath a night left unfinished and nowhere else.
+    public static string NightPress(NightView night) =>
+        night.State == NightStates.Unfinished
+            ? $"<form class=\"night-control\" method=\"post\" action=\"{NightResumeRoute}\"><button type=\"submit\" class=\"btn\">Run the rest of the night</button></form>"
+            : string.Empty;
+
+    // Tonight's notice: the night's state as the Run page's headline names it, its tries, and the press
+    // where it was left unfinished; nothing on a day the exchange did not trade.
+    // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
+    public string NightNotice(MarkRenderer marks, NightView night) =>
+        night.State == NightStates.NoSession
+            ? string.Empty
+            : "<section class=\"night-notice-box\">" + marks.NightNotice(night) + NightPress(night) + "</section>";
+
     public const string PassHeader = "X-EquityBrief-Pass";
     public const string PassHeaderValue = "name-page";
 
@@ -319,6 +337,24 @@ public sealed class SinglePageApp : IComponent
           scrollTo(0, kept);
           const place = screen.querySelector('.watch-said');
           if (place) { place.innerHTML = said; }
+        });
+        // The press running the rest of a night left unfinished: sent with the page's own header, and what the
+        // surface said put beside it, the press kept disabled once the rest has started.
+        document.addEventListener('submit', async (event) => {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement) || !form.classList.contains('night-control')) { return; }
+          event.preventDefault();
+          for (const button of form.querySelectorAll('button')) { button.disabled = true; }
+          const response = await fetch(form.getAttribute('action'), {
+            method: 'POST',
+            headers: { '{{{PassHeader}}}': '{{{PassHeaderValue}}}' },
+          });
+          for (const old of form.parentElement.querySelectorAll('.night-said')) { old.remove(); }
+          form.insertAdjacentHTML('afterend', await response.text());
+          const said = form.nextElementSibling;
+          if (!said || said.getAttribute('data-resume') !== 'started') {
+            for (const button of form.querySelectorAll('button')) { button.disabled = false; }
+          }
         });
         // A link followed or a row picked is a new place, and back or forward returns to where
         // the reader was. Anywhere on a row of tonight's list but its links picks that row, which
@@ -1564,14 +1600,15 @@ public sealed class SinglePageApp : IComponent
         // Once sixty ordinary nights are stored under the open version, the page says so before anything else.
         region.Append(shape is { } due ? marks.ShapeDue(due) : string.Empty);
 
-        // How last night went: its state from its own run log rows, the four headline figures and the time
-        // its steps took, above everything else.
-        // see: A night's state is read off its own run log rows, and the pages that state it read that one state
+        // How last night went: its state from its own run log rows and its tries, the four headline figures,
+        // the time its steps took, and the press running the rest of a night left unfinished, above
+        // everything else.
+        // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
         if (how is { } went)
         {
             region.Append(Cards.Computed(
                 "Last night",
-                marks.NightStatus(went),
+                marks.NightStatus(went) + NightPress(went),
                 title: "How last night went",
                 lede: "What the night's own run log says of it: its state, what it read and cost, and where its time went.",
                 stamp: Cards.Night(night),

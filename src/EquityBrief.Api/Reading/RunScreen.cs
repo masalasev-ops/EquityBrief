@@ -1178,19 +1178,38 @@ public static class RunScreen
     const string NightPrefix = "night-";
     const string QueuePass = "-queue-";
 
-    // How a night went, from its own run log rows alone. The night's runs are those whose id is a night's,
-    // the newest by the instant its id carries; a night run again for its session is one of them. Its state:
-    // finished where the newest closed its arithmetic; stopped where it wrote a stop before that; running
-    // where it wrote neither and its last row is inside the night's deadline; left unfinished where its last
-    // row is older than that and nothing said why; and where no run of the night is stored, not yet run on
-    // the session the clock is in and never ran on one before it, or no session on a day the exchange did
-    // not trade. The notice on tonight's page reads this same state.
-    // see: A night's state is read off its own run log rows, and the pages that state it read that one state
-    public static NightView Night(IReadOnlyList<RunStageRow> log, DateOnly session, DateOnly today, DateTimeOffset now, TimeSpan deadline)
+    // The part a night's try again adds to the id of the night's first try, before its number, the stage
+    // and outcome of the row a stopped try writes beside its stop saying when the next starts, and the words
+    // that row ends on. The read surface holds no reference to the worker, so they are stated here and
+    // `nightly-run` asserts they are the night's own.
+    public const string TryMark = "-try-";
+    public const string TryAgainStage = "try again";
+    public const string Waiting = "waiting";
+    static readonly Regex NextTryAt = new(@" at (?<at>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)$", RegexOptions.Compiled);
+
+    // The instant a session's night is first read as never ran where no run of it is stored: 00:30 UTC on
+    // the day after the session, an hour after the scheduled night starts.
+    public static readonly TimeSpan NeverRanFrom = TimeSpan.FromHours(24.5);
+
+    // How a night went, from its own run log rows alone. The night's runs are those whose id is a night's;
+    // a try the night made again, or a run of its rest, carries the id of the run it continues with the try
+    // mark and its number, and the newest run by the instant its id carries is read with its tries as one
+    // night, each stage as the newest try that wrote it. A night run again whole for its session is a run of
+    // its own. Its state: finished where the arithmetic closed; waiting to try again where the newest try
+    // stopped before the close and wrote when the next starts, until that instant and the deadline after it
+    // have passed; running where the newest try wrote neither a stop nor a close and its last row is inside
+    // the night's deadline; left unfinished otherwise, with the step and the reason where a try stopped; and
+    // where no run of the night is stored, not yet run until 00:30 UTC on the day after the session and never
+    // ran from then, or no session on a day the exchange did not trade. A night whose first try holds the
+    // night's lock and that wrote neither a stop nor a close is running whatever its last row's instant,
+    // since a run of the rest of an earlier session's night stamps its rows on that session's evening. The
+    // notice on tonight's page is handed this same view.
+    // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
+    public static NightView Night(IReadOnlyList<RunStageRow> log, DateOnly session, DateTimeOffset now, TimeSpan deadline, string? heldBy = null)
     {
         var runs = log
             .Where(row => row.RunId.StartsWith(NightPrefix, StringComparison.Ordinal) && !row.RunId.Contains(QueuePass, StringComparison.Ordinal))
-            .GroupBy(row => row.RunId, StringComparer.Ordinal)
+            .GroupBy(row => FirstTry(row.RunId), StringComparer.Ordinal)
             .OrderBy(run => RunInstant(run.Key) ?? run.Min(row => row.StartedAt))
             .ToArray();
 
@@ -1199,41 +1218,76 @@ public static class RunScreen
 
         if (runs.Length == 0)
         {
-            var state = !Traded(session) ? NightStates.NoSession : session >= today ? NightStates.NotYet : NightStates.NeverRan;
+            var state = !Traded(session) ? NightStates.NoSession
+                : now < new DateTimeOffset(session.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero) + NeverRanFrom ? NightStates.NotYet
+                : NightStates.NeverRan;
 
             return new NightView(
                 session, state, null, null, null, null, null, deadline.TotalMinutes, null, 0, spend, 0, null,
                 [.. groups.Select(group => new StepGroupView(group.Name, group.Stages.Count, 0, 0, false))]);
         }
 
-        var last = runs[^1].ToArray();
+        // The night's tries in order, the first under the id the night started with.
+        var tries = runs[^1]
+            .GroupBy(row => row.RunId, StringComparer.Ordinal)
+            .OrderBy(attempt => TryNumber(attempt.Key))
+            .Select(attempt => attempt.ToArray())
+            .ToArray();
+
         var afterTheClose = groups[^1].Stages;
-        var close = last.FirstOrDefault(row => row.Stage == CloseStage && row.Outcome == Ok);
-        var stop = last.FirstOrDefault(row => StopOutcomes.Contains(row.Outcome) && !afterTheClose.Contains(row.Stage));
-        var afterStop = last.FirstOrDefault(row => StopOutcomes.Contains(row.Outcome) && afterTheClose.Contains(row.Stage));
-        var started = last.Min(row => row.StartedAt);
-        var written = last.Max(row => row.EndedAt);
-        var arithmetic = last.Where(row => !afterTheClose.Contains(row.Stage)).ToArray();
+        var latest = tries[^1];
+
+        // Each stage as the newest try that wrote it, so a try that ran from a step keeps what an earlier
+        // try stored before it.
+        var merged = tries
+            .SelectMany(attempt => attempt)
+            .Where(row => row.Stage != TryAgainStage)
+            .GroupBy(row => row.Stage, StringComparer.Ordinal)
+            .Select(stage => stage.Last())
+            .ToArray();
+
+        var close = merged.FirstOrDefault(row => row.Stage == CloseStage && row.Outcome == Ok);
+        var stop = latest.FirstOrDefault(row => StopOutcomes.Contains(row.Outcome) && !afterTheClose.Contains(row.Stage));
+        var afterStop = merged.FirstOrDefault(row => StopOutcomes.Contains(row.Outcome) && afterTheClose.Contains(row.Stage));
+        var waiting = latest.FirstOrDefault(row => row.Stage == TryAgainStage && row.Outcome == Waiting);
+        var nextTry = waiting is not null && NextTryAt.Match(waiting.Detail) is { Success: true } named
+            && DateTimeOffset.TryParse(named.Groups["at"].Value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var due)
+                ? due
+                : (DateTimeOffset?)null;
+        var started = tries[0].Min(row => row.StartedAt);
+        var written = latest.Max(row => row.EndedAt);
+        var arithmetic = merged.Where(row => !afterTheClose.Contains(row.Stage)).ToArray();
 
         var nightState =
-            last.Any(row => row.Outcome == NoSession) ? NightStates.NoSession
+            merged.Any(row => row.Outcome == NoSession) ? NightStates.NoSession
             : close is not null ? NightStates.Finished
-            : stop is not null ? NightStates.Stopped
-            : now - written <= deadline ? NightStates.Running
+            : stop is not null && nextTry is { } next && now <= next + deadline ? NightStates.Waiting
+            : stop is not null ? NightStates.Unfinished
+            : string.Equals(heldBy, runs[^1].Key, StringComparison.Ordinal) || now - written <= deadline ? NightStates.Running
             : NightStates.Unfinished;
 
         var stoppedAt = nightState switch
         {
-            NightStates.Stopped => stop!.Stage,
-            NightStates.Running or NightStates.Unfinished => last.MaxBy(row => row.EndedAt)!.Stage,
+            NightStates.Waiting => stop!.Stage,
+            NightStates.Unfinished when stop is not null => stop.Stage,
+            NightStates.Running or NightStates.Unfinished => latest.Where(row => row.Stage != TryAgainStage).MaxBy(row => row.EndedAt)?.Stage,
             _ => null,
         };
+
+        var madeTries = tries
+            .Select((attempt, at) =>
+            {
+                var stopped = attempt.FirstOrDefault(row => StopOutcomes.Contains(row.Outcome) && !afterTheClose.Contains(row.Stage));
+
+                return new NightTry(at + 1, attempt[0].RunId, stopped?.Stage, stopped?.Detail);
+            })
+            .ToArray();
 
         return new NightView(
             session,
             nightState,
             stoppedAt,
-            nightState == NightStates.Stopped ? stop!.Detail : null,
+            stop is not null && nightState is NightStates.Waiting or NightStates.Unfinished ? stop.Detail : null,
             started,
             written,
             arithmetic.Length == 0 ? null : (arithmetic.Max(row => row.EndedAt) - started).TotalSeconds,
@@ -1243,21 +1297,37 @@ public static class RunScreen
                 : null,
             runs.Sum(run => run.Sum(row => row.NetworkRequests)),
             spend,
-            runs[..^1].Sum(run => run.Count(row => StopOutcomes.Contains(row.Outcome))),
+            (tries.Length - 1) + runs[..^1].Sum(run => run.Count(row => StopOutcomes.Contains(row.Outcome))),
             nightState == NightStates.Finished && afterStop is not null ? $"{afterStop.Stage} {afterStop.Outcome}: {afterStop.Detail}" : null,
             [
                 .. groups.Select(group =>
                 {
-                    var reached = last.Where(row => group.Stages.Contains(row.Stage)).ToArray();
+                    var reached = merged.Where(row => group.Stages.Contains(row.Stage)).ToArray();
 
                     return new StepGroupView(
                         group.Name,
                         group.Stages.Count,
                         reached.Select(row => row.Stage).Distinct(StringComparer.Ordinal).Count(),
                         reached.Sum(row => (row.EndedAt - row.StartedAt).TotalSeconds),
-                        nightState == NightStates.Stopped && group.Stages.Contains(stoppedAt!));
+                        stop is not null && nightState is NightStates.Waiting or NightStates.Unfinished && group.Stages.Contains(stop.Stage));
                 }),
-            ]);
+            ],
+            madeTries,
+            nightState == NightStates.Waiting ? nextTry : null);
+
+        static string FirstTry(string runId)
+        {
+            var at = runId.IndexOf(TryMark, StringComparison.Ordinal);
+
+            return at < 0 ? runId : runId[..at];
+        }
+
+        static int TryNumber(string runId)
+        {
+            var at = runId.IndexOf(TryMark, StringComparison.Ordinal);
+
+            return at >= 0 && int.TryParse(runId[(at + TryMark.Length)..], NumberStyles.None, CultureInfo.InvariantCulture, out var number) ? number : 1;
+        }
 
         static DateTimeOffset? RunInstant(string runId) =>
             runId.Length >= NightPrefix.Length + 16
@@ -1605,7 +1675,7 @@ public static class RunScreen
     // run by hand that day is none of the night's steps. The quarters are read off the night's own quarters
     // step: asked on schedule where it ran and neither refused an ask nor left one at its limit or the day's
     // allowance.
-    // see: A night's state is read off its own run log rows, and the pages that state it read that one state
+    // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
     public static IReadOnlyList<WorryItem> Worries(
         IReadOnlyList<string> stale,
         NightView night,
@@ -1632,8 +1702,9 @@ public static class RunScreen
                 night.State switch
                 {
                     NightStates.Finished => "after the close, " + night.AfterTheClose,
-                    NightStates.Stopped => $"it stopped at {night.StoppedAt}: {night.Reason}",
+                    NightStates.Waiting => $"it stopped at {night.StoppedAt} and is waiting to try again: {night.Reason}",
                     NightStates.Running => $"it is still running, last at {night.StoppedAt}",
+                    NightStates.Unfinished when night.Reason is { } reason => $"it was left unfinished at {night.StoppedAt}: {reason}",
                     NightStates.Unfinished => $"it was left unfinished at {night.StoppedAt}",
                     _ => "no night ran for this session",
                 }),

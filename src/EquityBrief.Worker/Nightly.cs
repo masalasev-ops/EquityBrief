@@ -50,6 +50,18 @@ public static class Nightly
     // the script can print them and nightly-cost can read them back.
     public sealed record NightOutcome(string RunId, int ModelCalls, int NetworkRequests, IReadOnlyList<string> Steps);
 
+    // How many more times a night that stops before its close tries again, how long it waits first, and
+    // what it waits with, which the suite replaces so a test does not sleep. A night the scheduler starts
+    // tries three more times fifteen minutes apart; a run of the rest of a night, and a night the suite
+    // runs unless it asks, tries once.
+    // see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own
+    public sealed record TryPlan(int Retries, TimeSpan Wait, Func<TimeSpan, Task>? Delay = null)
+    {
+        public static TryPlan Standard { get; } = new(3, TimeSpan.FromMinutes(15));
+
+        public static TryPlan Once { get; } = new(0, TimeSpan.Zero);
+    }
+
     // What the command line calls: resolve the feeds from a fixture folder,
     // optionally replace one of them with a live feed, then run.
     //
@@ -69,7 +81,8 @@ public static class Nightly
         TimeSpan? deadline = null,
         NightQueue? queue = null,
         IDrainLauncher? launcher = null,
-        bool askForTheFirstName = true)
+        bool askForTheFirstName = true,
+        TryPlan? tries = null)
     {
         if (!Directory.Exists(fixtureFolder))
         {
@@ -94,9 +107,13 @@ public static class Nightly
             runId,
             deadline,
             launcher,
-            askForTheFirstName);
+            askForTheFirstName,
+            tries);
     }
 
+    // `runId` is the id of the night's first try, and `tryNumber` the try this run starts as: one for a
+    // night, and the next for a run of the rest of one, which `resume` starts from the first step the
+    // night's tries have not finished.
     public static async Task<int> RunAsync(
         StoreLocation store,
         NightFeeds feeds,
@@ -108,7 +125,10 @@ public static class Nightly
         string? runId = null,
         TimeSpan? deadline = null,
         IDrainLauncher? launcher = null,
-        bool askForTheFirstName = true)
+        bool askForTheFirstName = true,
+        TryPlan? tries = null,
+        int tryNumber = 1,
+        bool resume = false)
     {
         // The night's deadline, and the thing that can cancel it.
         //
@@ -121,7 +141,9 @@ public static class Nightly
         // see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move
         var limit = deadline ?? RetryPolicy.Standard.Deadline;
 
-        using var night = new CancellationTokenSource(limit);
+        // Each try's deadline is its own, so a try again is not started with the minutes an earlier try
+        // spent already gone.
+        var night = new CancellationTokenSource(limit);
 
         // The instant and not only the date. A night that fails halfway and is
         // re-run is a second run, and SCHEMA's grain is one row per run per
@@ -131,7 +153,25 @@ public static class Nightly
         // records under an id it chose.
         var nightStartedAt = clock.UtcNow;
 
-        runId ??= FormattableString.Invariant($"night-{nightStartedAt:yyyyMMddTHHmmssZ}");
+        var firstTry = runId ?? FormattableString.Invariant($"night-{nightStartedAt:yyyyMMddTHHmmssZ}");
+        var plan = tries ?? TryPlan.Once;
+        var number = tryNumber;
+
+        runId = NightClose.TryId(firstTry, number);
+
+        // One night at a time: a second, a run of the rest of one among them, is refused before it writes
+        // anything, and writes no row of its own, since a row would read as the night the page names.
+        using var held = NightLock.Take(store.DataRoot, firstTry);
+
+        if (held is null)
+        {
+            error.WriteLine(
+                $"nightly: {NightLock.Holder(store.DataRoot) ?? "another night"} holds the night's lock under the data root, " +
+                "so this run was refused before its first step and wrote nothing. Run it again once that night has ended.");
+            night.Dispose();
+
+            return 1;
+        }
 
         var (membership, historical, bulkFeed, corporate, calendar, _, companies) = feeds;
 
@@ -500,8 +540,105 @@ public static class Nightly
         // same clock.
         var session = clock.SessionDateAt(clock.UtcNow);
 
-        foreach (var step in steps)
+        // A run of the rest of a night starts from the first step its tries have not finished, having
+        // migrated the store first, since the checkout it runs from may be newer than the night's.
+        var start = 0;
+
+        if (resume)
         {
+            var done = (await NightResume.NewestAsync(store.DatabaseFile, clock))?.Done ?? new HashSet<string>(StringComparer.Ordinal);
+
+            // The migration writes no row of its own and is run first whatever the tries finished.
+            start = Array.FindIndex(steps, 1, step => !(step.Stages ?? [step.Name]).All(done.Contains));
+
+            if (start < 0)
+            {
+                output.WriteLine($"nightly: every step of {firstTry} has finished, so there is nothing to run.");
+                night.Dispose();
+
+                return 0;
+            }
+        }
+
+        // The close's place in the night: a step after it is not tried again, since the list is drawn.
+        var closeAt = Array.FindIndex(steps, step => step.Name == NightClose.Stage);
+
+        while (true)
+        {
+            var (code, stoppedAt, again) = await RunStepsAsync(resume && number == tryNumber && start > 0 ? [0, .. Enumerable.Range(start, steps.Length - start)] : Enumerable.Range(start, steps.Length - start));
+
+            if (stoppedAt is not { } at || !again || at > closeAt || number - tryNumber >= plan.Retries)
+            {
+                night.Dispose();
+
+                if (stoppedAt is null)
+                {
+                    break;
+                }
+
+                return code;
+            }
+
+            // The try that stopped says when the next starts, beside its stop, which is what the pages read
+            // a night waiting to try again off.
+            var next = clock.UtcNow + plan.Wait;
+            var waiting =
+                $"try {number + 1} of {tryNumber + plan.Retries} starts from step '{steps[at].Name}' at " +
+                next.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture);
+
+            output.WriteLine("nightly: " + waiting);
+
+            try
+            {
+                await NightClose.RecordStopAsync(store.DatabaseFile, store.DataRoot, runId, [NightClose.TryAgainStage], clock.UtcNow, clock.UtcNow, NightClose.Waiting, waiting);
+            }
+            catch (Exception failure)
+            {
+                error.WriteLine($"nightly: the next try could not be recorded on the run log: {failure.Message}");
+            }
+
+            await (plan.Delay ?? (wait => Task.Delay(wait)))(plan.Wait);
+
+            number++;
+            runId = NightClose.TryId(firstTry, number);
+            night.Dispose();
+            night = new CancellationTokenSource(limit);
+            start = at;
+
+            output.WriteLine($"nightly: {runId}, from step '{steps[at].Name}'");
+        }
+
+        // The nightly claim, printed where the operator reads it rather than
+        // only stored. Zero model calls because nothing on this path calls one,
+        // and the request count is what the five feeds counted, live or recorded
+        // alike, because the count is on the interface.
+        //
+        // Which source it ran against is on the same line, and it is read off
+        // the feeds rather than off the setting that chose them. Before 2.6 this
+        // said "network request(s)" on a night that touched no network, because
+        // a recorded feed counts the calls a live one would have made: that is
+        // deliberate, since it is how a replay measures the cost shape, and it
+        // is exactly why the line has to say which kind of night this was.
+        var live = feeds.ReachesTheNetwork;
+
+        output.WriteLine(
+            $"nightly: green over {(live ? "the provider" : "a capture")}, 0 model calls in the arithmetic and " +
+            $"{queueCalls} local model call(s) from the overnight queue, " +
+            $"{feeds.Requests} {(live ? "network request(s)" : "request(s), none of them to a network")}, " +
+            $"{feeds.WeightedCalls} weighted call(s) of {ProviderWeights.DailyAllowance}");
+
+        return 0;
+
+        // The steps named, in order: the exit code, the step a stop stopped at, and whether a try again may
+        // be made from it, which it may after a failure or the deadline and never after the day's allowance
+        // or a day the exchange calendar cannot place. A day the exchange did not trade stops the night at
+        // its second step with an exit code of nought.
+        async Task<(int Code, int? StoppedAt, bool Again)> RunStepsAsync(IEnumerable<int> indices)
+        {
+        foreach (var index in indices)
+        {
+            var step = steps[index];
+
             // A day the exchange did not trade, asked once the store can hold
             // the row that says so and before anything is fetched.
             //
@@ -530,7 +667,7 @@ public static class Nightly
                     error.WriteLine("nightly: " + failed);
                     await RecordStopAsync(store, runId, step, clock.UtcNow, clock.UtcNow, NightClose.Failed, failed, error);
 
-                    return 1;
+                    return (1, index, false);
                 }
 
                 if (!traded)
@@ -540,7 +677,7 @@ public static class Nightly
                     output.WriteLine("nightly: " + closed);
                     await RecordNoSessionAsync(store, runId, clock.UtcNow, closed, error);
 
-                    return 0;
+                    return (0, index, false);
                 }
             }
 
@@ -566,7 +703,7 @@ public static class Nightly
                 error.WriteLine("nightly: " + stopped);
                 await RecordStopAsync(store, runId, step, stepStarted, clock.UtcNow, NightClose.Stopped, stopped, error);
 
-                return 1;
+                return (1, index, false);
             }
 
             try
@@ -587,7 +724,7 @@ public static class Nightly
                 error.WriteLine("nightly: " + stopped);
                 await RecordStopAsync(store, runId, step, stepStarted, clock.UtcNow, NightClose.Stopped, stopped, error, feeds.Requests - requestsBefore);
 
-                return 1;
+                return (1, index, true);
             }
             catch (Exception failure)
             {
@@ -600,30 +737,12 @@ public static class Nightly
                 error.WriteLine("nightly: " + failed);
                 await RecordStopAsync(store, runId, step, stepStarted, clock.UtcNow, NightClose.Failed, failed, error, feeds.Requests - requestsBefore);
 
-                return 1;
+                return (1, index, true);
             }
         }
 
-        // The nightly claim, printed where the operator reads it rather than
-        // only stored. Zero model calls because nothing on this path calls one,
-        // and the request count is what the five feeds counted, live or recorded
-        // alike, because the count is on the interface.
-        //
-        // Which source it ran against is on the same line, and it is read off
-        // the feeds rather than off the setting that chose them. Before 2.6 this
-        // said "network request(s)" on a night that touched no network, because
-        // a recorded feed counts the calls a live one would have made: that is
-        // deliberate, since it is how a replay measures the cost shape, and it
-        // is exactly why the line has to say which kind of night this was.
-        var live = feeds.ReachesTheNetwork;
-
-        output.WriteLine(
-            $"nightly: green over {(live ? "the provider" : "a capture")}, 0 model calls in the arithmetic and " +
-            $"{queueCalls} local model call(s) from the overnight queue, " +
-            $"{feeds.Requests} {(live ? "network request(s)" : "request(s), none of them to a network")}, " +
-            $"{feeds.WeightedCalls} weighted call(s) of {ProviderWeights.DailyAllowance}");
-
-        return 0;
+        return (0, null, false);
+        }
     }
 
     // A night refused before its first step, being a source that cannot be

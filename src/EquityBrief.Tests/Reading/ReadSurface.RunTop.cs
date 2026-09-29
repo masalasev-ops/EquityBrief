@@ -16,7 +16,7 @@ namespace EquityBrief.Tests.Reading;
 // read-surface, the Run page's first three regions: how last night went, the market and the funnel, each read
 // back off the rendered page over a constructed store, the night's state worked by hand over constructed run log
 // rows, and every table the page drew before read back inside a section folded shut beneath them.
-// see: A night's state is read off its own run log rows, and the pages that state it read that one state
+// see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
 // see: The market on the Run page is named in one word by a stated rule that moves no gate
 // see: Status is drawn in blues with violet for a wait and red for a failure alone
 public partial class ReadSurface
@@ -72,14 +72,15 @@ public partial class ReadSurface
     [Fact]
     public void TheNightsStateIsReadOffItsOwnRunLogRowsAsTheRuleGivesIt()
     {
-        var eleventh = new DateOnly(2026, 9, 11);
         var after = DateTimeOffset.Parse("2026-09-11T01:00:00Z", CultureInfo.InvariantCulture);
 
+        DateTimeOffset At(string instant) => DateTimeOffset.Parse(instant, CultureInfo.InvariantCulture);
+
         // Finished: the newest run closed its arithmetic. Worked by hand: 503 stocks read off the close; seven
-        // requests over both runs; 0.012 spent by the research pass that evening; one step stopped on the earlier
-        // run; the arithmetic from 23:30:00 to the close's end at 23:40:30, 630 seconds; the queue's failure said
+        // requests over both runs; 0.012 spent by the research pass that evening; one stop on the earlier run;
+        // the arithmetic from 23:30:00 to the close's end at 23:40:30, 630 seconds; the queue's failure said
         // after the close and not unfinishing the night; and the queue's own pass no run of the night.
-        var finished = RunScreen.Night(FinishedNight, TenthOfSeptember, eleventh, after, FifteenMinutes);
+        var finished = RunScreen.Night(FinishedNight, TenthOfSeptember, after, FifteenMinutes);
 
         Assert.Equal(NightStates.Finished, finished.State);
         Assert.Equal((503, 7, 0.012m, 1), (finished.StocksRead!.Value, finished.ProviderRequests, finished.ResearchSpend, finished.StepsRetried));
@@ -91,39 +92,77 @@ public partial class ReadSurface
         Assert.DoesNotContain(finished.Groups, group => group.Stopped);
         Assert.Equal("Finished", MarkRenderer.NightHeadline(finished));
         Assert.Equal(
-            "Started 23:30 UTC and closed its arithmetic in 10 min 30 s, inside its 15-minute deadline. Before this run, 1 step(s) of the night stopped and the night was run again. After the close, overnight queue failed: database is locked",
+            "Started 23:30 UTC and closed its arithmetic in 10 min 30 s, inside its 15-minute deadline. It took 1 more try after a step stopped. After the close, overnight queue failed: database is locked",
             MarkRenderer.NightSaid(finished));
 
-        // Stopped: the newest run wrote a stop at the levels before any close, and the group holding it is marked.
+        // A stop at the levels before any close, with no try said to follow: left unfinished at the levels, with
+        // its reason, and the group holding it marked.
         RunStageRow[] stopped =
         [
             LogRow(NightRun, "fetch", "2026-09-10T23:30:10Z", "2026-09-10T23:30:20Z"),
             LogRow(NightRun, "levels", "2026-09-10T23:31:00Z", "2026-09-10T23:45:00Z", "stopped", detail: "step 'levels' passed the night's deadline of 15 minute(s) and was stopped."),
         ];
 
-        var stop = RunScreen.Night(stopped, TenthOfSeptember, eleventh, after, FifteenMinutes);
+        var stop = RunScreen.Night(stopped, TenthOfSeptember, after, FifteenMinutes);
 
-        Assert.Equal((NightStates.Stopped, "levels"), (stop.State, stop.StoppedAt));
-        Assert.Equal("Stopped at levels", MarkRenderer.NightHeadline(stop));
+        Assert.Equal((NightStates.Unfinished, "levels"), (stop.State, stop.StoppedAt));
+        Assert.Equal("Left unfinished at levels", MarkRenderer.NightHeadline(stop));
         Assert.Equal("It stopped at levels: step 'levels' passed the night's deadline of 15 minute(s) and was stopped.", MarkRenderer.NightSaid(stop));
         Assert.Equal(["Indicators and levels"], stop.Groups.Where(group => group.Stopped).Select(group => group.Name));
         Assert.Equal("fail", MarkRenderer.NightTone(stop.State));
 
+        // The same stop with the row saying try 2 starts from the levels at 00:00: waiting to try again until that
+        // instant and the deadline after it, 00:15:00 exactly, and left unfinished a second past it, since no try 2
+        // wrote a row. The try that stopped is listed with its reason.
+        RunStageRow[] waiting = [.. stopped, LogRow(NightRun, RunScreen.TryAgainStage, "2026-09-10T23:45:00Z", "2026-09-10T23:45:00Z", RunScreen.Waiting, detail: "try 2 of 4 starts from step 'levels' at 2026-09-11T00:00:00Z")];
+
+        var wait = RunScreen.Night(waiting, TenthOfSeptember, At("2026-09-10T23:50:00Z"), FifteenMinutes);
+
+        Assert.Equal((NightStates.Waiting, "levels", At("2026-09-11T00:00:00Z")), (wait.State, wait.StoppedAt, wait.NextTry!.Value));
+        Assert.Equal("Waiting to try again", MarkRenderer.NightHeadline(wait));
+        Assert.Equal("Try 1 stopped at levels, and try 2 starts from that step at 00:00 UTC. Until it finishes, tonight's list is the one before it.", MarkRenderer.NightSaid(wait));
+        Assert.Equal("wait", MarkRenderer.NightTone(wait.State));
+        Assert.Contains("<li data-try=\"1\" data-step=\"levels\"><b>Try 1</b> stopped at levels: step 'levels' passed the night's deadline", MarkRenderer.NightTries(wait), StringComparison.Ordinal);
+        Assert.Equal(NightStates.Waiting, RunScreen.Night(waiting, TenthOfSeptember, At("2026-09-11T00:15:00Z"), FifteenMinutes).State);
+        Assert.Equal(NightStates.Unfinished, RunScreen.Night(waiting, TenthOfSeptember, At("2026-09-11T00:15:01Z"), FifteenMinutes).State);
+
+        // Try 2 under the first try's id with the mark and its number, from the levels: running while its last row
+        // is inside its deadline, read with the fetch try 1 stored, and finished once it closes, one more try said.
+        var second = NightRun + RunScreen.TryMark + "2";
+        RunStageRow[] retried = [.. waiting, LogRow(second, "levels", "2026-09-11T00:00:00Z", "2026-09-11T00:04:00Z")];
+
+        var running = RunScreen.Night(retried, TenthOfSeptember, At("2026-09-11T00:10:00Z"), FifteenMinutes);
+
+        Assert.Equal((NightStates.Running, "levels"), (running.State, running.StoppedAt));
+        Assert.Equal([(1, NightRun, "levels"), (2, second, (string?)null)], running.TriesMade.Select(attempt => (attempt.Number, attempt.RunId, attempt.StoppedAt)));
+        Assert.Equal(
+            [("Prices and calendar", 1), ("Indicators and levels", 1)],
+            running.Groups.Where(group => group.Reached > 0).Select(group => (group.Name, group.Reached)));
+        Assert.DoesNotContain(running.Groups, group => group.Stopped);
+
+        RunStageRow[] closed = [.. retried, LogRow(second, "close", "2026-09-11T00:05:00Z", "2026-09-11T00:05:10Z", detail: "503 name(s) computed, 2 on the list")];
+        var done = RunScreen.Night(closed, TenthOfSeptember, after, FifteenMinutes);
+
+        Assert.Equal((NightStates.Finished, 1, 503), (done.State, done.StepsRetried, done.StocksRead!.Value));
+        Assert.Equal(string.Empty, MarkRenderer.NightTries(done));
+
         // Neither a close nor a stop: running while its last row is inside the deadline, and left unfinished once
-        // it is older, at the fifteen minutes exactly and a second past them.
+        // it is older, at the fifteen minutes exactly and a second past them, unless the night holds the lock.
         RunStageRow[] partway = [LogRow(NightRun, "fetch", "2026-09-10T23:30:10Z", "2026-09-10T23:30:20Z"), LogRow(NightRun, "levels", "2026-09-10T23:31:00Z", "2026-09-10T23:35:00Z")];
 
-        Assert.Equal(NightStates.Running, RunScreen.Night(partway, TenthOfSeptember, TenthOfSeptember, DateTimeOffset.Parse("2026-09-10T23:50:00Z", CultureInfo.InvariantCulture), FifteenMinutes).State);
-        Assert.Equal(NightStates.Unfinished, RunScreen.Night(partway, TenthOfSeptember, TenthOfSeptember, DateTimeOffset.Parse("2026-09-10T23:50:01Z", CultureInfo.InvariantCulture), FifteenMinutes).State);
-        Assert.Equal("levels", RunScreen.Night(partway, TenthOfSeptember, eleventh, after, FifteenMinutes).StoppedAt);
+        Assert.Equal(NightStates.Running, RunScreen.Night(partway, TenthOfSeptember, At("2026-09-10T23:50:00Z"), FifteenMinutes).State);
+        Assert.Equal(NightStates.Unfinished, RunScreen.Night(partway, TenthOfSeptember, At("2026-09-10T23:50:01Z"), FifteenMinutes).State);
+        Assert.Equal(NightStates.Running, RunScreen.Night(partway, TenthOfSeptember, after, FifteenMinutes, heldBy: NightRun).State);
+        Assert.Equal(NightStates.Unfinished, RunScreen.Night(partway, TenthOfSeptember, after, FifteenMinutes, heldBy: EarlierRun).State);
+        Assert.Equal("levels", RunScreen.Night(partway, TenthOfSeptember, after, FifteenMinutes).StoppedAt);
 
-        // No run of the night: not yet on the session the clock is in, never on one before it, and no session on a
-        // Saturday; a queue's pass and a research pass are no run of the night.
+        // No run of the night: not yet run until 00:30 UTC on the day after the session and never ran from then, and
+        // no session on a Saturday; a queue's pass and a research pass are no run of the night.
         RunStageRow[] none = [.. FinishedNight.Where(row => !row.RunId.StartsWith("night-", StringComparison.Ordinal) || row.RunId.Contains("-queue-", StringComparison.Ordinal))];
 
-        Assert.Equal(NightStates.NotYet, RunScreen.Night(none, TenthOfSeptember, TenthOfSeptember, after, FifteenMinutes).State);
-        Assert.Equal(NightStates.NeverRan, RunScreen.Night(none, TenthOfSeptember, eleventh, after, FifteenMinutes).State);
-        Assert.Equal(NightStates.NoSession, RunScreen.Night([], new DateOnly(2026, 9, 12), eleventh, after, FifteenMinutes).State);
+        Assert.Equal(NightStates.NotYet, RunScreen.Night(none, TenthOfSeptember, At("2026-09-11T00:29:59Z"), FifteenMinutes).State);
+        Assert.Equal(NightStates.NeverRan, RunScreen.Night(none, TenthOfSeptember, At("2026-09-11T00:30:00Z"), FifteenMinutes).State);
+        Assert.Equal(NightStates.NoSession, RunScreen.Night([], new DateOnly(2026, 9, 12), after, FifteenMinutes).State);
         Assert.Equal(("wait", "fail", "quiet", "ok"), (MarkRenderer.NightTone(NightStates.NotYet), MarkRenderer.NightTone(NightStates.NeverRan), MarkRenderer.NightTone(NightStates.NoSession), MarkRenderer.NightTone(NightStates.Running)));
     }
 
@@ -161,6 +200,7 @@ public partial class ReadSurface
 
         Assert.Equal(6, RunScreen.StepGroups.Count);
         Assert.Equal([NightClose.Failed, NightClose.Stopped, NightClose.Refused], RunScreen.StopOutcomes);
+        Assert.Equal((NightClose.TryMark, NightClose.TryAgainStage, NightClose.Waiting), (RunScreen.TryMark, RunScreen.TryAgainStage, RunScreen.Waiting));
     }
 
     // The word the market is named by, worked by hand at each point of its rule and a hair either side.
@@ -324,11 +364,13 @@ public partial class ReadSurface
         using var host = new Host(store.Root);
         using var client = host.CreateClient();
 
-        var night = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/run/2026-09-10")), "<div class=\"night-status\".*?</ol></div></div>"));
+        var night = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync("/screens/run/2026-09-10")), "<div class=\"night-status\".*?<ol class=\"step-groups\">.*?</ol></div></div>"));
 
-        Assert.Contains("data-state=\"stopped\" data-tone=\"fail\"", night, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"ns-headline\">Stopped at levels</p>", night, StringComparison.Ordinal);
+        // No try said to follow the stop, so the night was left unfinished at the step it stopped at.
+        Assert.Contains("data-state=\"left unfinished\" data-tone=\"fail\"", night, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"ns-headline\">Left unfinished at levels</p>", night, StringComparison.Ordinal);
         Assert.Contains("It stopped at levels: step 'levels' failed: SQLite Error 5: 'database is locked'.", night, StringComparison.Ordinal);
+        Assert.Contains("<li data-try=\"1\" data-step=\"levels\"><b>Try 1</b> stopped at levels: step 'levels' failed: SQLite Error 5: 'database is locked'.</li>", night, StringComparison.Ordinal);
         Assert.Contains("class=\"sb-stopped\" data-group=\"Indicators and levels\"", night, StringComparison.Ordinal);
         Assert.Contains("<li data-group=\"Indicators and levels\" data-reached=\"1\"><b>Indicators and levels</b> stopped here</li>", night, StringComparison.Ordinal);
     }
@@ -338,7 +380,7 @@ public partial class ReadSurface
     [Fact]
     public void TheRunPagesPicturesDrawInTheStatusColoursAndNeverInALevels()
     {
-        string[] pictures = [".night-status", ".status-mark", ".step-bar", ".gauge", ".breadth-line", ".funnel-bars", ".market-picture", ".trades-ring", ".fresh-bars", ".fr-key", ".spend-bar", ".pass-bars", ".worries", ".worry-mark", ".progress-bar", ".band-dot", ".edge-line", ".share-bar", ".compare-picture", ".overlap-rings", ".checkpoint-picture", ".ck-", ".tag-wait"];
+        string[] pictures = [".night-status", ".status-mark", ".step-bar", ".gauge", ".breadth-line", ".funnel-bars", ".market-picture", ".trades-ring", ".fresh-bars", ".fr-key", ".spend-bar", ".pass-bars", ".worries", ".worry-mark", ".progress-bar", ".band-dot", ".edge-line", ".share-bar", ".compare-picture", ".overlap-rings", ".checkpoint-picture", ".ck-", ".tag-wait", ".night-notice"];
 
         var rules = Regex.Matches(Stylesheet.Css, "([^{}]+)\\{([^{}]*)\\}")
             .Select(match => (Selector: match.Groups[1].Value.Trim(), Body: match.Groups[2].Value))

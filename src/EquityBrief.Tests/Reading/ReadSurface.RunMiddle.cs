@@ -11,7 +11,7 @@ namespace EquityBrief.Tests.Reading;
 
 // read-surface, the Run page's trades, freshness, research and checklist regions: each projection worked by
 // hand over constructed rows and each region read back off the rendered page over a constructed store.
-// see: A night's state is read off its own run log rows, and the pages that state it read that one state
+// see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
 // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
 public partial class ReadSurface
 {
@@ -116,7 +116,6 @@ public partial class ReadSurface
         var finished = RunScreen.Night(
             [.. FinishedNight.Where(row => row.Stage != RunScreen.QueueStage), LogRow("shape-20260910T235000Z", "shape", "2026-09-10T23:50:00Z", "2026-09-10T23:51:00Z", "refused")],
             TenthOfSeptember,
-            new DateOnly(2026, 9, 11),
             DateTimeOffset.Parse("2026-09-11T01:00:00Z", CultureInfo.InvariantCulture),
             FifteenMinutes);
 
@@ -135,7 +134,7 @@ public partial class ReadSurface
         Assert.Equal(5, held.Count);
         Assert.All(held, item => Assert.Equal((WorryItem.Held, (string?)null), (item.State, item.Why)));
 
-        var failed = Read(["P", "TAP"], RunScreen.Night(FinishedNight, TenthOfSeptember, new DateOnly(2026, 9, 11), DateTimeOffset.Parse("2026-09-11T01:00:00Z", CultureInfo.InvariantCulture), FifteenMinutes), 1, 1, Quarters("3 of 3 member(s) due asked: 3 reporting, 0 waiting, 0 joining, 0 filled; 1 stored, 0 not yet posted, 0 returning nothing, 2 refused; 12 quarter row(s), 33 weighted call(s); 0 member(s) of the fill still owed"));
+        var failed = Read(["P", "TAP"], RunScreen.Night(FinishedNight, TenthOfSeptember, DateTimeOffset.Parse("2026-09-11T01:00:00Z", CultureInfo.InvariantCulture), FifteenMinutes), 1, 1, Quarters("3 of 3 member(s) due asked: 3 reporting, 0 waiting, 0 joining, 0 filled; 1 stored, 0 not yet posted, 0 returning nothing, 2 refused; 12 quarter row(s), 33 weighted call(s); 0 member(s) of the fill still owed"));
 
         Assert.Equal(
             [

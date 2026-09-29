@@ -435,6 +435,42 @@ app.MapPost(SinglePageApp.PassRoute + "{ticker}", async (string ticker, HttpRequ
         statusCode: started.Written ? StatusCodes.Status202Accepted : StatusCodes.Status409Conflict);
 });
 
+// The press running the rest of a night left unfinished, from tonight's notice or the Run page: refused
+// without the page's own header, refused while a night holds the lock, refused where the newest night is
+// not left unfinished, and otherwise starting the worker's run of the rest of the newest night, as the
+// report press starts the drain. The reply is the line the page puts beside the press.
+// see: A night left unfinished is run to its end from the step it stopped at by a press or a command, and one night runs at a time under a lock file
+app.MapPost(SinglePageApp.NightResumeRoute, async (HttpRequest request, ReadApi read, IClock clock, StoreLocation store, IDrainLauncher launcher) =>
+{
+    static IResult Said(string state, string line, int status) =>
+        Results.Content(
+            $"<p class=\"night-said\" data-resume=\"{state}\">{System.Net.WebUtility.HtmlEncode(line)}</p>",
+            "text/html; charset=utf-8",
+            statusCode: status);
+
+    if (!string.Equals(request.Headers[SinglePageApp.PassHeader].FirstOrDefault(), SinglePageApp.PassHeaderValue, StringComparison.Ordinal))
+    {
+        return Said("refused", "The rest of the night was not started: the request did not come from the page.", StatusCodes.Status403Forbidden);
+    }
+
+    if (NightLock.Holder(store.DataRoot) is { } holder)
+    {
+        return Said("held", $"The rest of the night was not started: {holder} holds the night's lock and is still running.", StatusCodes.Status409Conflict);
+    }
+
+    var newest = await read.RunNightAsync();
+    var state = newest is { } ran ? NightFrom(await read.RunLogAsync(ran), ran, clock, store).State : null;
+
+    if (state != NightStates.Unfinished)
+    {
+        return Said("not-unfinished", $"The rest of the night was not started: the newest night is {state ?? "not on the run log"}, not left unfinished.", StatusCodes.Status409Conflict);
+    }
+
+    var started = launcher.StartTheRestOfTheNight();
+
+    return Said(started.Started ? "started" : "not-started", started.Line, started.Started ? StatusCodes.Status202Accepted : StatusCodes.Status409Conflict);
+});
+
 // A press on the queue screen taking a report out before anybody started writing it.
 //
 // Refused without the page's own header, as the press that asks for one is, and refused
@@ -543,6 +579,27 @@ static async Task<IReadOnlyList<SpentRow>> SpentOn(ReadApi read, DateOnly night)
     return await read.SpentRowsAsync(from, to);
 }
 
+// How a night went, the one view the Run page's headline and tonight's notice are both handed, read off the
+// night's run log rows and the night holding the lock, if one does.
+// see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
+static NightView NightFrom(IReadOnlyList<RunStageRow> log, DateOnly night, IClock clock, StoreLocation store) =>
+    RunScreen.Night(log, night, clock.UtcNow, EquityBrief.Core.Providers.RetryPolicy.Standard.Deadline, NightLock.Holder(store.DataRoot));
+
+// The session tonight's notice is about: the date the page was asked for, and with none the session the clock
+// is in where the exchange trades it, whose night may not have drawn its list yet, and otherwise the night the
+// page draws.
+static DateOnly NoticeSession(string? asked, DateOnly drawn, IClock clock)
+{
+    if (asked is { Length: > 0 })
+    {
+        return drawn;
+    }
+
+    var now = clock.SessionDateAt(clock.UtcNow);
+
+    return Traded(now) && now >= drawn ? now : drawn;
+}
+
 // The run log of each of the seven nights up to a night that the store holds an evening for, oldest first,
 // which the Run page's research region counts over.
 static async Task<IReadOnlyList<(DateOnly Night, IReadOnlyList<RunStageRow> Log)>> WeekOf(ReadApi read, DateOnly night)
@@ -601,7 +658,8 @@ app.MapGet("/screens/tonight/{night?}", async (
     MarkRenderer marks,
     SinglePageApp page,
     SpendCaps caps,
-    IClock clock) =>
+    IClock clock,
+    StoreLocation store) =>
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
 
@@ -616,6 +674,12 @@ app.MapGet("/screens/tonight/{night?}", async (
             "text/html; charset=utf-8");
     }
 
+    // The notice at the top, from the same view the Run page's headline is handed, for the night the page
+    // was asked for or with none for the night the clock is in, whose list may not be drawn yet.
+    // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
+    var about = NoticeSession(night, dated, clock);
+    var notice = page.NightNotice(marks, NightFrom(await read.RunLogAsync(about), about, clock, store));
+
     // The record starts on the swing filter's first night, and an evening before it is not drawn.
     // see: The dated screens open from the swing filter's first night, and no evening before it is drawn
     var first = await read.FirstFilterNightAsync();
@@ -624,7 +688,7 @@ app.MapGet("/screens/tonight/{night?}", async (
     if (first is { } start && dated < start)
     {
         return Results.Content(
-            SinglePageApp.BeforeTheRecord(dated, start, "Tonight", SinglePageApp.NightRoute, "#/", held),
+            notice + SinglePageApp.BeforeTheRecord(dated, start, "Tonight", SinglePageApp.NightRoute, "#/", held),
             "text/html; charset=utf-8");
     }
 
@@ -635,7 +699,7 @@ app.MapGet("/screens/tonight/{night?}", async (
     if (listings.Count == 0)
     {
         return Results.Content(
-            page.StaleBanner(dated, await read.NewestNightAsync()),
+            notice + page.StaleBanner(dated, await read.NewestNightAsync()),
             "text/html; charset=utf-8");
     }
 
@@ -713,7 +777,7 @@ app.MapGet("/screens/tonight/{night?}", async (
         RunScreen.Resolved(await read.ForwardReturnsAsync()));
 
     return Results.Content(
-        page.TonightRegion(
+        notice + page.TonightRegion(
             marks,
             dated,
             universe.Count,
@@ -964,7 +1028,8 @@ app.MapGet("/screens/run/{night?}", async (
     MarkRenderer marks,
     SinglePageApp page,
     SpendCaps caps,
-    IClock clock) =>
+    IClock clock,
+    StoreLocation store) =>
 {
     var index = builder.Configuration["EquityBrief:IndexCode"] ?? "GSPC";
 
@@ -1012,8 +1077,8 @@ app.MapGet("/screens/run/{night?}", async (
 
     // How the night went, from its own run log rows, and the market and the funnel it drew, each read
     // once and handed to both the pictures at the top and the tables folded beneath them.
-    // see: A night's state is read off its own run log rows, and the pages that state it read that one state
-    var how = RunScreen.Night(log, dated, clock.SessionDateAt(clock.UtcNow), clock.UtcNow, EquityBrief.Core.Providers.RetryPolicy.Standard.Deadline);
+    // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
+    var how = NightFrom(log, dated, clock, store);
     var funnel = RunScreen.Funnel(await read.GateResultsAsync(dated), dated, await read.ListRuleAsync(dated));
     var market = RunScreen.Market(await read.MarketReadingAsync(dated));
     var picture = RunScreen.Pictured(

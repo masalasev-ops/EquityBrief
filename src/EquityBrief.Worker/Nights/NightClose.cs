@@ -196,6 +196,19 @@ public sealed class NightClose : IComponent
     // the kind of failure off.
     public const string Refused = "refused";
 
+    // A night's try again: what it adds to the id of the night's first try before its number, and the
+    // stage and outcome of the row a stopped try writes beside its stop, whose detail ends on the instant
+    // the next try starts.
+    // see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own
+    public const string TryMark = "-try-";
+    public const string TryAgainStage = "try again";
+    public const string Waiting = "waiting";
+
+    // The id a night's try writes under: the first try's own, and each later one the first's with the
+    // mark and its number.
+    public static string TryId(string firstTry, int number) =>
+        number == 1 ? firstTry : firstTry + TryMark + number.ToString(CultureInfo.InvariantCulture);
+
     // What that row says, in one place so the night prints what the log holds.
     public static string NotASession(DateOnly day) =>
         day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " is a " +
