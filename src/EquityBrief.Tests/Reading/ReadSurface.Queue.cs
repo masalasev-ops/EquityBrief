@@ -129,8 +129,9 @@ public partial class ReadSurface
     public async Task TheNightsDurationIsTheArithmeticsAndAQueueAtItsLimitIsNotAStageThatFailed()
     {
         // A night whose arithmetic took three minutes and whose queue then ran for an hour, at
-        // its limit. The header's duration is the three minutes the wall clock row bounds, and
-        // the queue that stopped at its limit did what its limit is for.
+        // its limit, with the quarters step before the queue and the report asked for after it,
+        // as the night of 2026-09-28 ran. The header's duration is the three minutes the wall
+        // clock row bounds, and the queue that stopped at its limit did what its limit is for.
         using var store = new TemporaryStore().Migrated();
 
         void Logged(string stage, string started, string ended, string outcome) =>
@@ -141,7 +142,9 @@ public partial class ReadSurface
         Logged("fetch", "2026-09-09T01:10:00Z", "2026-09-09T01:11:00Z", "ok");
         Logged("listings", "2026-09-09T01:11:00Z", "2026-09-09T01:12:00Z", "ok");
         Logged("close", "2026-09-09T01:12:00Z", "2026-09-09T01:13:00Z", "ok");
-        Logged(OvernightQueue.Stage, "2026-09-09T01:13:00Z", "2026-09-09T02:13:00Z", OvernightQueue.StoppedAtItsLimit);
+        Logged("quarters", "2026-09-09T01:13:00Z", "2026-09-09T01:13:30Z", "ok");
+        Logged(OvernightQueue.Stage, "2026-09-09T01:13:30Z", "2026-09-09T02:13:30Z", OvernightQueue.StoppedAtItsLimit);
+        Logged("report", "2026-09-09T02:13:30Z", "2026-09-09T02:13:31Z", "ok");
 
         var api = Api(store);
 
@@ -149,7 +152,7 @@ public partial class ReadSurface
 
         var stages = RunScreen.Stages(await api.RunLogAsync(new DateOnly(2026, 9, 8)));
 
-        Assert.Equal(4, stages.Count);
+        Assert.Equal(6, stages.Count);
         Assert.Empty(RunScreen.Failed(stages));
 
         // A queue the local model stopped is one.

@@ -1802,11 +1802,13 @@ public sealed class ReadApi : IComponent
         var rows = await RunLogAsync(night);
         var run = await LastListingsRunAsync(night);
 
-        // The arithmetic's span, which the wall clock row bounds. The overnight queue's row
-        // sits under the same run and runs for up to its own limit after the close, so a
-        // span over it would read an hour of queue against a limit of minutes.
+        // The arithmetic's span, which the wall clock row bounds. Every step after the close sits
+        // under the same run: the overnight queue runs for up to its own limit, and the report the
+        // night asks for is written after it, so a span over either would read an hour of queue
+        // against a limit of minutes.
         // see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed
-        var stages = rows.Where(row => row.RunId == run && row.Stage != RunScreen.QueueStage).ToArray();
+        var afterTheClose = RunScreen.StepGroups[^1].Stages;
+        var stages = rows.Where(row => row.RunId == run && !afterTheClose.Contains(row.Stage)).ToArray();
 
         if (stages.Length == 0)
         {

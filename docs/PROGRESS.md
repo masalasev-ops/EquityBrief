@@ -29871,3 +29871,41 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             operator's store under `data/` was not touched by either.
 Carried:    the operator's command raising the scheduled task's limit to eight hours, in RUNBOOK, before a night
             that tries again can run past two.
+
+### 11.4 - correction: tonight's header states how long the night's arithmetic took, where it measured to the report asked for after the overnight queue   2026-09-29
+Corrects:   11.4, which added the report the night asks for as a step after the overnight queue, and 5.6's duration,
+            which excluded the queue's row alone.
+Found:      on the live page for the night of 2026-09-28 the header said "the night took 00:54:00" where the Run
+            page said the arithmetic closed in 6 min 27 s. The duration spans the run's rows but the queue's, and the
+            report's row is written after the queue ends, so from 11.4 every night's header measured to the end of
+            the queue.
+Repaired:   the duration spans the run's rows before the close's own and none after it, reading the steps after the
+            close from the one list the Run page groups them in, so the quarters step and the report are left out as
+            the queue is.
+Measured:   nothing new.
+Guarded:    `TheNightsDurationIsTheArithmeticsAndAQueueAtItsLimitIsNotAStageThatFailed`, extended with the quarters
+            step before the queue and the report after it, as the night of 2026-09-28 ran: the duration stays three
+            minutes.
+Written:    nothing beyond this entry.
+Expected:   derived: no expectation file moves.
+Tests:      1518, unchanged.
+Claims:     706, unchanged.
+Pins:       the branch against `main` edits `ReadApi.cs` and a test, in none of the three pin lists. No version
+            moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: the mechanism reversed alone, filtered to the extended test.
+            Predicted:
+            D1 the queue's row left out and no other step after the close: red in the extended test.
+            Results: 138M
+Held:       138H
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 138T of 138T tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 138B tables, 138C claims, 138P PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 138R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 138T of 138T tests.
+            Both gates ran over the tree carrying this entry, 138SHA, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    nothing. The 12.3 correction before this carried the operator's command raising the scheduled task's
+            limit; the operator ran it on 2026-09-29 and it reads back `PT8H`. The operator also ruled that PR 275 be
+            merged while the report pass the night of 2026-09-28 started waited for the off-peak hours, since the
+            drain runs from its own copy of the build.
