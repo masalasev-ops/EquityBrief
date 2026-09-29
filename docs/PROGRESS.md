@@ -30557,15 +30557,20 @@ Mutated:    the rule, stated before the run: the three mutations the ruling name
             C3 the order reversed, farthest first: red in the first test, the twenty test, the earlier night test,
                the writes-nothing test and the queue test; green in the closed market test, whose four rows sit at one
                distance, and in the empty, name page and changed tests, which read no order.
-            Results: 127R
-Held:       127H
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 127T of 127T tests ran
+            Results: one run each in a detached worktree at 1bc8929, this entry's commit, filtered to the nine tests,
+            each edit made there and reverted, and the tree read clean after. The whole suite ran green over 1bc8929
+            in the gates, 1526 of 1526. C1 turned all nine red. C2 turned the seven new `read-surface` tests red and
+            left the queue test and the changed one green. C3 turned the first test, the twenty test, the earlier
+            night test, the writes-nothing test and the queue test red, and left the closed market, empty, name page
+            and changed tests green.
+Held:       red in every test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1526 of 1526 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 44 tables, 718 claims, 718 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 127P placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 127T of 127T tests.
-            Both gates ran over the tree carrying this entry, 127SHA, in a worktree beside the repository, and the
+            0 unexamined, 729 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1526 of 1526 tests.
+            Both gates ran over the tree carrying this entry, 1bc8929, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    the news labeller labels tonight's list alone, and the key under this list says a row of it carries no
             news counts once the labeller lands.
