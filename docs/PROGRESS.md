@@ -30850,9 +30850,9 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 44 tables, 725 claims, 725 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 127P1 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            0 unexamined, 736 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
             41 of 41 roster checks carried and all 41 run, 1539 of 1539 tests.
-            Both gates ran over the tree carrying this entry, 127SHA1, in a worktree beside the repository, and the
+            Both gates ran over the tree carrying this entry, a7218d9, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    item 2 and its commands; the sweep, its report and its pull request, merged once the operator has read
             the report; the freeze, on the operator's word.
