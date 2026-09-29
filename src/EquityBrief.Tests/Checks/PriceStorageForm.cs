@@ -314,7 +314,12 @@ public class PriceStorageForm
         // shipped source when the reader was written and in no stated set. The
         // scorer reads the same way twice: the typical move and, from 10.4, each
         // of the two averages a trend version reads, every one of them a
-        // statistic stored as the double it is.
+        // statistic stored as the double it is. From 12.5's correction the sweep
+        // adds five of the second kind, each a count over a count: the no-skill
+        // walk's wins over its resolved paths a second time, for the exit that
+        // moves the stop, the nights listing over the nights, a variant's picks
+        // outside the starting point's over its own, the index-nights with no bar
+        // over them all, and a design's viable settings over its settings.
         Assert.Equal(
             [
                 "CandidateRecord.cs: (double)inside.Length",
@@ -335,6 +340,7 @@ public class PriceStorageForm
                 "MarkRenderer.cs: (double)price",
                 "MarkRenderer.cs: (double)track.Total",
                 "NullWin.cs: (double)wins",
+                "NullWin.cs: (double)wins",
                 "RuleVersionScorer.cs: Convert.ToDouble(value",
                 "RuleVersionScorer.cs: Convert.ToDouble(value",
                 "ShortlistBuilder.cs: Convert.ToDouble(value",
@@ -342,6 +348,10 @@ public class PriceStorageForm
                 "Statistic.cs: (decimal)statistic",
                 "Statistic.cs: (double)price",
                 "Statistic.cs: (double)ratio",
+                "SweepMeasures.cs: (double)NightsListing",
+                "SweepPlateau.cs: (double)picks.Count",
+                "SweepReport.cs: (double)inputs.IndexNightsWithoutABar",
+                "SweepStages.cs: (double)viable",
                 "TrendClassifier.cs: (double)value",
                 "VersionRecord.cs: (double)atLeast",
                 "VersionRecord.cs: (double?)null",

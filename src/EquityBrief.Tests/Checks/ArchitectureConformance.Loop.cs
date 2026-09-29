@@ -1167,6 +1167,20 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.FailureTable, "A paid job's profile names a key the secrets file does not hold, the run page's stages that failed name the pass in the line's own words"),
     ];
 
+    // 12.5's correction on the operator's rulings of 2026-09-29: the sweep history as a component with its
+    // catalogue and matrix rows, section 17's four sweep rows and section 18's row about a chunk that fails twice.
+    // Declared before the lists that take them in.
+    internal static readonly string[] SweepClaims =
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Sweep history"),
+        CheckReach.Key(Scope.MatrixTable, "Sweep history"),
+        CheckReach.Key(Scope.LimitsTable, "Sweep grid"),
+        CheckReach.Key(Scope.LimitsTable, "Sweep starting point"),
+        CheckReach.Key(Scope.LimitsTable, "Sweep variants"),
+        CheckReach.Key(Scope.LimitsTable, "Sweep run"),
+        CheckReach.Key(Scope.FailureTable, "A chunk of the sweep fails twice"),
+    ];
+
     // Phase 12's rows, each written by the checkpoint that draws or asserts it, so none reads as out
     // of scope: 12.1's swing reader and its two stores, its night step, the readings drawn on
     // tonight's header, the universe table, the name page and the run page, section 17's four
@@ -1336,6 +1350,7 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.NightNoticeClaims,
         .. Reading.ReadSurface.CloseToABuyPointClaims,
         .. ModelProfileClaims,
+        .. SweepClaims,
     ];
 
     // Rows taken out of the document after phase 12's prediction, which counted each: the name page's
@@ -1401,7 +1416,8 @@ public partial class ArchitectureConformance
     // own list, and its trades, freshness, research and checklist, which the next 12.3 correction built, its
     // eighteen named in theirs, and close to a buy point, which the 12.7 correction built on the operator's
     // specification of 2026-09-29, its twelve named in theirs, and the model profiles a 12.6 correction built on
-    // the operator's brief of 2026-09-28, its seven claims named in their own list.
+    // the operator's brief of 2026-09-28, its seven claims named in their own list, and the sweep a 12.5
+    // correction built on the operator's rulings of 2026-09-29, its seven claims named in theirs.
     static readonly string[] PhaseTwelveBeyondThePrediction =
     [
         CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
@@ -1449,6 +1465,7 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.NightNoticeClaims,
         .. Reading.ReadSurface.CloseToABuyPointClaims,
         .. ModelProfileClaims,
+        .. SweepClaims,
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1481,9 +1498,10 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum. 725 from the
-        // 12.6 correction that brings the model profiles, its seven claims named in their own list, and 723 from
-        // the 12.2 correction that takes the breakout's two thresholds out with the family.
-        Assert.Equal((550, 723), (predicted, actual));
+        // 12.6 correction that brings the model profiles, its seven claims named in their own list, 723 from
+        // the 12.2 correction that takes the breakout's two thresholds out with the family, and 730 from the 12.5
+        // correction that brings the sweep, its seven claims named in theirs.
+        Assert.Equal((550, 730), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

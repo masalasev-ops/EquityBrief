@@ -9157,3 +9157,13 @@ Was:
 Now:
 > ... `live` rows included (see: A ladder rule's version is measured beside that rule's live window, and both count against a bound of eighteen).
 Why: the decision it cited is superseded, and a live citation to a superseded decision is refused.
+
+### 2026-09-29 - .claude/rules/checks.md - fixture-expectations reaches the sweep, and register-append-only names the sweep's file as the one computing a reading outside the evaluation
+Authorised by: A starting point is proposed from the centre of a plateau of the stored history and never its best variation, and nothing is registered before the operator approves it
+Was:
+> | `fixture-expectations` | ... and the pass's own row carrying the line with no call and no spend, under which the drain settles the request refused |
+> | `register-append-only` | ... listed and held to the shipped files that compute a reading or run an evaluation, taken over line endings normalised ... |
+Now:
+> | `fixture-expectations` | ... under which the drain settles the request refused; and the sweep reads the live rule's own design over the fixture's two nights as the nights stored it, ... and never fails a write a writer makes while it reads |
+> | `register-append-only` | ... listed and held to the shipped files that compute a reading or run an evaluation, but the sweep's, which computes over the history in memory by hand and hands nothing to an evaluation or a store, named as the one left out, taken over line endings normalised ... |
+Why: the checks reach the sweep this correction adds, and the sweep computes the indicators of the history it replays without handing them to anything a candidate is evaluated through.

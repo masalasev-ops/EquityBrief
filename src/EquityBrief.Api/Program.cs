@@ -1041,6 +1041,22 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
         "text/html; charset=utf-8");
 });
 
+// The sweep's report, section 15.18: the page the sweep wrote beside the store, served as it stands. The
+// surface computes none of it; where no run has written one, the page says so.
+// see: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night
+app.MapGet(EquityBrief.Core.Sweep.SweepFolder.Route, (StoreLocation store) =>
+{
+    var report = Path.Combine(
+        EquityBrief.Core.Sweep.SweepFolder.Resolve(builder.Configuration[EquityBrief.Core.Sweep.SweepFolder.Key], store.DataRoot),
+        EquityBrief.Core.Sweep.SweepFolder.ReportFile);
+
+    return File.Exists(report)
+        ? Results.Content(File.ReadAllText(report), "text/html; charset=utf-8")
+        : Results.Content(
+            "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>Sweep report</title></head><body><p>No sweep has written its report yet. The sweep writes it when it finishes, or where it stopped.</p></body></html>",
+            "text/html; charset=utf-8");
+});
+
 // The researched names, section 15.8's researched region on a route of its own.
 app.MapGet("/screens/researched", async (ReadApi read, SinglePageApp page) =>
     Results.Content(

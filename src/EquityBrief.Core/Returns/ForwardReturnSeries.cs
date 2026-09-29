@@ -285,7 +285,7 @@ public static class ForwardReturnSeries
 
     // What the trade made, from the close it was entered at to the close it
     // resolved on. Null for a setup nobody entered, which has no trade to measure.
-    static double? ChangeFromEntry(decimal entry, decimal at) =>
+    public static double? ChangeFromEntry(decimal entry, decimal at) =>
         entry <= 0 ? null : Statistic.FromRatio((at - entry) / entry) * 100;
 
     // The bar the plan set for itself: the share of the time its target has to be
@@ -318,7 +318,7 @@ public static class ForwardReturnSeries
     // and the two are different numbers about different entries.
     // see: A stored break-even is measured from the close the setup was entered at, as a percentage beside the figures it is compared with
     // see: A condition is judged against the break-even its own plan demands
-    static double? BreakEven(decimal entry, decimal stop, decimal target)
+    public static double? BreakEven(decimal entry, decimal stop, decimal target)
     {
         var risk = entry - stop;
         var reward = target - entry;

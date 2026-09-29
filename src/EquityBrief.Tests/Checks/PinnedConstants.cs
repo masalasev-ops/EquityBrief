@@ -86,6 +86,10 @@ public class PinnedConstants
         const string CalibrationRow = "The calibrated bar";
         const string PowerRow = "Power stated at a look";
         const string CandidatesRow = "The three candidates' numbers";
+        const string SweepGridRow = "Sweep grid";
+        const string SweepStart = "Sweep starting point";
+        const string SweepVariantsRow = "Sweep variants";
+        const string SweepRun = "Sweep run";
 
         return
         [
@@ -248,6 +252,37 @@ public class PinnedConstants
             new("Weighted calls a quarters ask", "10", ProviderWeights.Fundamentals, "ProviderWeights.Fundamentals"),
             new("Weighted calls a quarters ask", "1", ProviderWeights.HistoricalPerTicker, "ProviderWeights.HistoricalPerTicker"),
             new("Weighted calls a quarters ask", "10", ProviderWeights.Fundamentals, "ProviderWeights.Fundamentals, what an ask storing nothing costs"),
+            new(SweepGridRow,"46,656", Core.Sweep.SweepAxes.Designs(selectionOnly: false).Count, "the designs SweepAxes holds"),
+            new(SweepGridRow,"54,432", Core.Sweep.SweepAxes.AllCombinations, "SweepAxes.AllCombinations"),
+            new(SweepGridRow,"7,776", Core.Sweep.SweepAxes.AllCombinations - Core.Sweep.SweepAxes.Designs(selectionOnly: false).Count, "the combinations SweepAxes leaves out"),
+            new(SweepGridRow,"19,683", Core.Sweep.SweepGrid.Coarse.Variations, "SweepGrid.Coarse.Variations"),
+            new(SweepGridRow,"300", Core.Sweep.SweepMeasures.TradeFloor, "SweepMeasures.TradeFloor"),
+            new(SweepGridRow,"6", Core.Sweep.SweepMeasures.YearsBeating, "SweepMeasures.YearsBeating"),
+            new(SweepGridRow,"8", Core.Sweep.SweepFigures.Years, "SweepFigures.Years"),
+            new(SweepGridRow,"5", Worker.Sweep.SweepRunner.CarriedForward, "SweepRunner.CarriedForward"),
+            new(SweepGridRow,"2,016,000", Core.Sweep.SweepGrid.Fine.Variations, "SweepGrid.Fine.Variations"),
+            new(SweepStart, "75", (decimal)Worker.Sweep.SweepPlateau.NeighboursOnIt * 100, "SweepPlateau.NeighboursOnIt as a percentage"),
+            new(SweepStart, "6", Core.Sweep.SweepMeasures.YearsBeating, "SweepMeasures.YearsBeating"),
+            new(SweepStart, "8", Core.Sweep.SweepFigures.Years, "SweepFigures.Years"),
+            new(SweepStart, "300", Core.Sweep.SweepMeasures.TradeFloor, "SweepMeasures.TradeFloor"),
+            new(SweepStart, "22", Core.Sweep.SweepMeasures.BlockFloor, "SweepMeasures.BlockFloor"),
+            new(SweepStart, "30", Core.Sweep.SweepFigures.WholeBlocks, "SweepFigures.WholeBlocks"),
+            new(SweepStart, "60", (decimal)Core.Sweep.SweepMeasures.ListingShare * 100, "SweepMeasures.ListingShare as a percentage"),
+            new(SweepStart, "3", (decimal)Worker.Sweep.SweepReport.MissingThreshold * 100, "SweepReport.MissingThreshold as a percentage"),
+            new(SweepVariantsRow, "5", Worker.Sweep.SweepPlateau.YearsEitherMayWin, "SweepPlateau.YearsEitherMayWin"),
+            new(SweepVariantsRow, "8", Core.Sweep.SweepFigures.Years, "SweepFigures.Years"),
+            new(SweepVariantsRow, "25", (decimal)Worker.Sweep.SweepPlateau.OutsideFloor * 100, "SweepPlateau.OutsideFloor as a percentage"),
+            new(SweepVariantsRow, "30", Worker.Sweep.SweepPlateau.TradesAYear, "SweepPlateau.TradesAYear"),
+            new(SweepVariantsRow, "6", Worker.Sweep.SweepPlateau.MostVariants, "SweepPlateau.MostVariants"),
+            new(SweepRun, "20", Worker.Sweep.SweepRunner.FirstSessions, "SweepRunner.FirstSessions"),
+            new(SweepRun, "100", Worker.Sweep.SweepRunner.SessionsPerChunk, "SweepRunner.SessionsPerChunk"),
+            new(SweepRun, "50", Worker.Sweep.SweepRunner.DesignsPerChunk, "SweepRunner.DesignsPerChunk"),
+            new(SweepRun, "23", Worker.Sweep.SweepRunner.PauseFrom.Hours, "SweepRunner.PauseFrom's hour"),
+            new(SweepRun, "00", Worker.Sweep.SweepRunner.PauseFrom.Minutes, "SweepRunner.PauseFrom's minute"),
+            new(SweepRun, "2", Worker.Sweep.SweepRunner.ClearPolls, "SweepRunner.ClearPolls"),
+            new(SweepRun, "60", (decimal)Worker.Sweep.SweepRunner.Poll.TotalSeconds, "SweepRunner.Poll in seconds"),
+            new(SweepRun, "7", (decimal)(Worker.Sweep.SweepRunner.GiveUpWaitingAt + (TimeSpan.FromHours(24) - Worker.Sweep.SweepRunner.PauseFrom)).TotalHours, "SweepRunner's wait for a night that never came, in hours from the window's opening"),
+            new(SweepRun, "5", (decimal)Worker.Sweep.SweepRunner.Longest.TotalDays, "SweepRunner.Longest in days"),
         ];
     }
 

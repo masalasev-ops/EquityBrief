@@ -78,7 +78,17 @@ public static class SessionReplay
         SqliteConnection connection,
         string ticker,
         IReadOnlyList<ReplayBar> series,
-        IReadOnlyDictionary<string, double> indicators)
+        IReadOnlyDictionary<string, double> indicators) =>
+        series.Count < VolumeProfileSeries.Window || !indicators.ContainsKey(IndicatorSeries.Atr14)
+            ? []
+            : BandsOver(series, indicators, StoredSwings.AsOf(connection, ticker, series[^1].SessionDate));
+
+    // The same band set over swings already held, each confirmed by the session, for a replay that computes
+    // the swings of a whole series itself rather than reading the store's.
+    public static IReadOnlyList<Level> BandsOver(
+        IReadOnlyList<ReplayBar> series,
+        IReadOnlyDictionary<string, double> indicators,
+        IReadOnlyList<Swing> confirmed)
     {
         if (series.Count < VolumeProfileSeries.Window || !indicators.TryGetValue(IndicatorSeries.Atr14, out var atr))
         {
@@ -91,7 +101,7 @@ public static class SessionReplay
             .Select(bar => new LevelBar(bar.SessionDate, bar.High, bar.Low, bar.Close))
             .ToArray();
 
-        var swings = StoredSwings.AsOf(connection, ticker, session)
+        var swings = confirmed
             .Where(swing => swing.SessionDate >= window[0].SessionDate)
             .Select(swing => new LevelMember(MemberSource.Swing, $"swing {swing.Direction}", swing.Price, swing.SessionDate))
             .ToArray();

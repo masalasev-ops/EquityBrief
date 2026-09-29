@@ -37,13 +37,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "filter-history" => await FilterHistoryRun(args),
     "history-pull" => await HistoryPullRun(args),
     "quarters" => await QuartersRun(args),
+    "sweep" => await SweepRun(),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. Twelve are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. Thirteen are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -69,7 +70,9 @@ static int NoVerb()
         "night can read them, and " +
         "'history-pull --from <yyyy-MM-dd>' stores the daily bars and earnings prints of every name the index held from that " +
         "date to tonight apart from the store's own, each row marked by its pull, with '--purge <pull>' removing a pull whole, and " +
-        "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill. '--live' " +
+        "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill, and " +
+        "'sweep' replays the swing filter over the stored history across its designs and settings, reading the store and " +
+        "writing nothing to it, and writes its report beside it, going on from its last saved chunk when started again. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -197,6 +200,26 @@ static async Task<int> QuartersRun(string[] args)
         store.DatabaseFile,
         Console.Out,
         Console.Error);
+}
+
+// The sweep, by hand and never from the night: one process that reads the store, computes in chunks saved
+// beside it, pauses for every night and writes its report. The verb's work is in `SweepRunner`, so a test runs
+// the runner the verb runs.
+// see: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night
+static async Task<int> SweepRun()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var folder = EquityBrief.Core.Sweep.SweepFolder.Resolve(configuration[EquityBrief.Core.Sweep.SweepFolder.Key], store.DataRoot);
+
+    Directory.CreateDirectory(folder);
+
+    return await new EquityBrief.Worker.Sweep.SweepRunner(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DataRoot,
+        store.DatabaseFile,
+        folder,
+        Console.Out).RunAsync();
 }
 
 // One name's fundamentals, on demand and never from the night.
