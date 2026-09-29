@@ -31293,15 +31293,23 @@ Mutated:    the rule, stated before the run: the one assertion guarding each rul
                line: red in all three.
             M6 the correction naming no plan compared against the settings as the code reads them rather than as
                stored, filtered to the shape command's tests: red in the correction naming no plan.
-            Results: 128R1
-Held:       128H1
+            Results: one run each in a detached worktree at fc78f6c, this entry's commit, filtered as stated, each
+            edit made there and reverted, and the tree read clean after. The whole suite ran green over fc78f6c
+            in the gates, 1543 of 1543. M1 turned the breakout gate test red and left the pullback's and the
+            trigger's green. M2 turned the constructed stop test, the operator's test and the fixture's tranches
+            red. M3 turned the same three red, the fixture's tranches among them, KEYS's first and third stops
+            both sitting on a band's top edge. M4 turned the comment test and the evaluator pin test red. M5
+            turned the limits row, the census and the Run page's night line red. M6 turned the correction
+            naming no plan red and left the correction naming one green.
+Held:       red in every test predicted; M3 reddened one more, the fixture's tranches, which read KEYS's stops on
+            the top edges M3 moves and which its prediction left out.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1543 of 1543 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 44 tables, 723 claims, 723 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 128P1 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            0 unexamined, 734 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
             41 of 41 roster checks carried and all 41 run, 1543 of 1543 tests.
-            Both gates ran over the tree carrying this entry, 128SHA1, in a worktree beside the repository, and the
+            Both gates ran over the tree carrying this entry, fc78f6c, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    the remedy above, the operator's to run after the merge; and the name page's trade table drawing only
             the stepped plan and the plan the night's live rule used, queued on 2026-09-27 to land with items 2 and
