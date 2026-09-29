@@ -109,6 +109,10 @@ public readonly record struct SweepDesign(
         Hold.ToString(CultureInfo.InvariantCulture),
         BreakEven ? "breakeven" : "fixed",
         EarningsWindow.ToString(CultureInfo.InvariantCulture));
+
+    // A design prints as its key. The printing a record writes for itself reads every property, the selection
+    // among them, which is a design whose selection is a design again, and never ends.
+    public override string ToString() => Key;
 }
 
 // The axes, the dials and the grids each stage reads them over, stated once for the runner, the tests and the

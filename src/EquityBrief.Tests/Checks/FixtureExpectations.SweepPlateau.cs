@@ -263,6 +263,11 @@ public partial class FixtureExpectations
 
             Assert.Equal(row, read);
             Assert.Equal(design, read.Design);
+
+            // A design and a row print as their keys and end, a design's selection being a design again.
+            Assert.Equal(design.Key, design.ToString());
+            Assert.Equal(design.Key, FormattableString.Invariant($"{design}"));
+            Assert.Contains(design.Key, row.ToString(), StringComparison.Ordinal);
         }
     }
 }
