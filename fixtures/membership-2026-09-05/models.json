@@ -1,6 +1,6 @@
 {
+  "constructed": "Settings rather than a captured response: the model profiles and each paid job's Use this fixture's recordings were made under, written here by hand from the shipped configuration as it stood when they were recorded, and read over the shipped settings so a switch the operator makes there moves no recorded test.",
   "EquityBrief": {
-    "DataRoot": "data",
     "Models": {
       "Profiles": {
         "deepseek": {
@@ -20,21 +20,6 @@
             "PeakMultiple": "2"
           }
         },
-        "claude-haiku": {
-          "Format": "anthropic",
-          "BaseAddress": "https://api.anthropic.com/",
-          "Model": "claude-haiku-4-5-20251001",
-          "Key": "Claude",
-          "Options": "",
-          "Retires": "2026-10-15",
-          "RetiresReadOn": "2026-09-29",
-          "Prices": {
-            "CacheHit": "0.10",
-            "CacheWrite": "1.25",
-            "CacheMiss": "1.00",
-            "Output": "5.00"
-          }
-        },
         "claude-sonnet": {
           "Format": "anthropic",
           "BaseAddress": "https://api.anthropic.com/",
@@ -52,9 +37,9 @@
         }
       },
       "Research": {
-        "Use": "claude-sonnet",
+        "Use": "deepseek",
         "TimeoutSeconds": "600",
-        "AnswerTokens": "16000"
+        "AnswerTokens": "32768"
       }
     }
   }

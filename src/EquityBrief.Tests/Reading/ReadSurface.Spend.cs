@@ -240,7 +240,7 @@ public partial class ReadSurface
 
         Assert.Equal([UtcAt("2026-09-21T01:30:00Z"), UtcAt("2026-09-21T12:00:00Z")], answers.Order());
 
-        var priced = RunScreen.Priced(await api.PaidCallSpendsAsync(), answers.Count(Providers.ResearchModelFeedTests.Shipped().Pricing.IsPeak));
+        var priced = RunScreen.Priced(await api.PaidCallSpendsAsync(), answers.Count(Providers.ResearchModelFeedTests.Pinned().Pricing.IsPeak));
         var drawn = new MarkRenderer().OperationalHeader(new DateOnly(2026, 9, 21), RunScreen.Stages(await api.RunLogAsync(new DateOnly(2026, 9, 21))), priced);
 
         Assert.Contains("data-calls=\"2\" data-passes=\"2\"", drawn, StringComparison.Ordinal);

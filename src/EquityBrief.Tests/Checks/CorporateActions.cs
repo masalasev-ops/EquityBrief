@@ -1007,8 +1007,11 @@ public class CorporateActions
     // served from.
     sealed class SurfaceHost(string root) : WebApplicationFactory<ReadApi>
     {
-        protected override void ConfigureWebHost(IWebHostBuilder builder) =>
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
             builder.UseSetting(StoreLocation.DataRootKey, root);
+            Providers.ResearchModelFeedTests.PinModels(builder);
+        }
     }
 
     [Fact]

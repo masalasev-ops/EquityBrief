@@ -1605,6 +1605,12 @@ internal static class Scope
             Verdict.Pass, "the night's quarters step read held, refused, left at its limit and not run", ByReadSurface),
         [CheckReach.Key("15.10 Run", "Anything to worry about, the four harness counts beneath")] = new Scoped(
             Verdict.Pass, "the four counts read off the rendered tiles", ByReadSurface),
+        // 12.6's correction, the model profiles: a profile near its retirement date and a report costing more
+        // than section 17 names, each an item of the checklist.
+        [CheckReach.Key("15.10 Run", "Anything to worry about, no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date")] = new Scoped(
+            Verdict.Pass, "a profile thirty days before its date named with its job and date, one thirty-one days before and one whose provider publishes none not named, worked by hand over constructed profiles", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Anything to worry about, no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost")] = new Scoped(
+            Verdict.Pass, "a pass whose calls sum to a cent over the amount named with its stock and cost, and one summing to the amount exactly not named, worked by hand over constructed rows", ByReadSurface),
         [CheckReach.Key("15.5 The mark vocabulary", "Trades ring")] = new Scoped(
             Verdict.Pass, "the ring's arc and its dashed track below the minimum read off the rendered mark", ByReadSurface),
         [CheckReach.Key("15.5 The mark vocabulary", "Freshness bars")] = new Scoped(
@@ -2434,6 +2440,28 @@ internal static class Scope
             Verdict.Pass,
             "the day cap and the month cap each refuse on their own over constructed ledgers, at the UTC edges either side, a call that could take spend past either is refused before it is made, the ledger is read off the run log rather than kept, and the row's proposed figures are read off the document against the constants",
             ByExpectations),
+        // 12.6's correction, the model profiles: section 17's three rows, and section 18's row about a key the
+        // secrets file does not hold in its two halves, the job stopping and the line the run page draws.
+        [CheckReach.Key(LimitsTable, "Paid model profiles")] = new Scoped(
+            Verdict.Pass,
+            "each shipped profile resolves from the shipped settings with its format, model, key and its provider's prices and dates, the one word a job names reaches the feed of that profile's format asking for that model, and the fixture's own models file holds its recordings to the profile they were made under whatever the shipped word says",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Paid model retirement warning")] = new Scoped(
+            Verdict.Pass,
+            "the checklist names a profile from thirty days before its date and not the day before, and never one whose provider publishes none, the thirty read off the document against the constant",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "A report named for its cost")] = new Scoped(
+            Verdict.Pass,
+            "the checklist names a pass whose calls sum past the amount with its stock and cost and not one summing to it exactly, the amount read off the document against the constant",
+            ByReadSurface),
+        [CheckReach.Key(FailureTable, "A paid job's profile names a key the secrets file does not hold, the job stops before it fetches or asks anything and no other profile answers for it; a research pass writes the plain line saying which profile and which key as its own run log row, which the drain settles the request under as refused")] = new Scoped(
+            Verdict.Pass,
+            "with DeepSeek's key held and Claude's not, the research job naming Claude is refused in the line naming the profile and the key's path, no settings are resolved for another profile, and the pass's own row carries the line with no call and no spend, under which the drain settles the request refused",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A paid job's profile names a key the secrets file does not hold, the run page's stages that failed name the pass in the line's own words")] = new Scoped(
+            Verdict.Pass,
+            "a refused pass's row, a record carrying its reason, is drawn among the stages that failed in that reason's words, read off the rendered region, and a stage whose record carries no reason keeps its detail",
+            ByReadSurface),
         [CheckReach.Key(FailureTable, "Spend cap reached, research pauses for the period")] = new Scoped(
             Verdict.Pass,
             "at the day cap and at the month cap on its own the shipped spend cap refuses before the call, the recorded model is asked nothing, the refusal is a row carrying no call and no spend, and the period it names ends at the next UTC midnight or the first of the next UTC month",
@@ -3370,6 +3398,8 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Anything to worry about, no research document refused and no section fallen back")] = "12.3",
         [CheckReach.Key("15.10 Run", "Anything to worry about, every company awaiting a quarter asked on schedule")] = "12.3",
         [CheckReach.Key("15.10 Run", "Anything to worry about, the four harness counts beneath")] = "12.3",
+        [CheckReach.Key("15.10 Run", "Anything to worry about, no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date")] = "12.6",
+        [CheckReach.Key("15.10 Run", "Anything to worry about, no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost")] = "12.6",
         [CheckReach.Key("15.5 The mark vocabulary", "Trades ring")] = "12.3",
         [CheckReach.Key("15.5 The mark vocabulary", "Freshness bars")] = "12.3",
         [CheckReach.Key("15.5 The mark vocabulary", "Research bars")] = "12.3",
@@ -3774,7 +3804,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Research and spend")] =
             ["the month's spend against the month cap", "the reports the paid model wrote on each of the last seven nights", "the reports and the overnight drafts written over those nights"],
         [CheckReach.Key("15.10 Run", "Anything to worry about")] =
-            ["a checklist of plain items each turning red with its reason where it fails", "every stock holding the night's prices and every step of the night finished", "no research document refused and no section fallen back", "every company awaiting a quarter asked on schedule", "the four harness counts beneath"],
+            ["a checklist of plain items each turning red with its reason where it fails", "every stock holding the night's prices and every step of the night finished", "no research document refused and no section fallen back", "every company awaiting a quarter asked on schedule", "no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date", "no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost", "the four harness counts beneath"],
         // 12.2. The name page's gates and the run page's funnel, each read as the parts its row enumerates.
         [CheckReach.Key("15.9 Name", "Gates")] =
             ["each of the five gates with whether it passed and why", "the setup's family and whether the trigger's event happened", "the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked", "the exclusions with a key saying how to read it"],
@@ -3981,6 +4011,14 @@ internal static class Scope
         [CheckReach.Key(FailureTable, "Spend cap reached")] =
             ["research pauses for the period", "the name says research is paused and when it resumes"],
 
+        // Section 18's row about a key the secrets file does not hold, decomposed at 12.6's correction for the
+        // spend cap row's reason: the job stopping is the worker's, and the line on the run page is a surface.
+        [CheckReach.Key(FailureTable, "A paid job's profile names a key the secrets file does not hold")] =
+            [
+                "the job stops before it fetches or asks anything and no other profile answers for it; a research pass writes the plain line saying which profile and which key as its own run log row, which the drain settles the request under as refused",
+                "the run page's stages that failed name the pass in the line's own words",
+            ],
+
         // Section 18's two local lane rows, decomposed at 6.6 for contradiction F's
         // argument. Each names what the writer does and what the page draws, which
         // this checkpoint builds, beside what the paid path does with the section, the
@@ -4133,6 +4171,8 @@ internal static class Scope
         ["A night that stored no readings of the reported quarters"] = "12.2",
         // 12.7's correction, answered by tonight's page.
         ["Both lists on tonight's page empty on a night the swing filter listed"] = "12.7",
+        // The model profiles, a 12.6 correction.
+        ["A paid job's profile names a key the secrets file does not hold"] = "12.6",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -4200,6 +4240,10 @@ internal static class Scope
         ["Earnings quality"] = "12.2",
         ["Valuation position"] = "12.2",
         ["Weighted calls a quarters ask"] = "12.2",
+        // The model profiles, a 12.6 correction.
+        ["Paid model profiles"] = "12.6",
+        ["Paid model retirement warning"] = "12.6",
+        ["A report named for its cost"] = "12.6",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

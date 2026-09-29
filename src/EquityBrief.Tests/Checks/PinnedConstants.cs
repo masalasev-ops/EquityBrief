@@ -124,6 +124,8 @@ public class PinnedConstants
             new("Research staleness triggers", "90", Staleness.BaselineDays, "Staleness.BaselineDays"),
             new("Spend cap", "10", SpendCaps.DefaultDay, "SpendCaps.DefaultDay"),
             new("Spend cap", "50", SpendCaps.DefaultMonth, "SpendCaps.DefaultMonth"),
+            new("Paid model retirement warning", "30", ModelProfiles.RetirementWarningDays, "ModelProfiles.RetirementWarningDays"),
+            new("A report named for its cost", "2", SpendCaps.ReportNamedAbove, "SpendCaps.ReportNamedAbove"),
             new("Theme search parameters", "3", ThemeSearch.ResultsASite, "ThemeSearch.ResultsASite"),
             new("Theme search parameters", "10", ThemeSearch.MostPages, "ThemeSearch.MostPages"),
             new("Theme search parameters", "5", ThemeSearch.MentionsPerTenThousand, "ThemeSearch.MentionsPerTenThousand"),

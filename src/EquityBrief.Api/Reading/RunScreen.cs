@@ -3,9 +3,12 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Filter;
+using EquityBrief.Core.Providers;
+using EquityBrief.Core.Research;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Rules;
 using EquityBrief.Core.Shortlist;
+using EquityBrief.Core.Spending;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 
@@ -813,14 +816,44 @@ public static class RunScreen
     // see: A night on a day the exchange did not trade fetches nothing and exits clean
     public const string NoSession = "no session";
 
+    //
+    // A stage whose detail is a record carrying the reason it came to, as a research pass writes
+    // it, is drawn with that reason, so the line is the pass's own words rather than its record:
+    // a pass the research job's profile could not be used for says which profile and which key.
+    // see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
     public static IReadOnlyList<StageRow> Failed(IReadOnlyList<StageRow> stages) =>
     [
-        .. stages.Where(stage => !stage.ByHand
-            && !string.Equals(stage.Outcome, Ok, StringComparison.Ordinal)
-            && !string.Equals(stage.Outcome, "started", StringComparison.Ordinal)
-            && !string.Equals(stage.Outcome, NoSession, StringComparison.Ordinal)
-            && !(string.Equals(stage.Stage, QueueStage, StringComparison.Ordinal) && string.Equals(stage.Outcome, QueueAtItsLimit, StringComparison.Ordinal))),
+        .. stages
+            .Where(stage => !stage.ByHand
+                && !string.Equals(stage.Outcome, Ok, StringComparison.Ordinal)
+                && !string.Equals(stage.Outcome, "started", StringComparison.Ordinal)
+                && !string.Equals(stage.Outcome, NoSession, StringComparison.Ordinal)
+                && !(string.Equals(stage.Stage, QueueStage, StringComparison.Ordinal) && string.Equals(stage.Outcome, QueueAtItsLimit, StringComparison.Ordinal)))
+            .Select(stage => ReasonOf(stage.Detail) is { } reason ? stage with { Detail = reason } : stage),
     ];
+
+    // The reason a detail written as a record carries, or none where it is not one or carries none.
+    static string? ReasonOf(string detail)
+    {
+        if (!detail.StartsWith('{'))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(detail);
+
+            return document.RootElement.TryGetProperty("reason", out var reason) && reason.ValueKind == JsonValueKind.String
+                && reason.GetString() is { Length: > 0 } said
+                    ? said
+                    : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
 
     // The overnight queue's own stage, and the outcome it writes where it stopped at its
     // limit with names left. Stated here for the reason the no-session word is, the read
@@ -1676,12 +1709,20 @@ public static class RunScreen
     // step: asked on schedule where it ran and neither refused an ask nor left one at its limit or the day's
     // allowance.
     // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
+    //
+    // Two items follow them. A paid job's profile whose provider publishes a retirement date within thirty
+    // days of the night is named with the job using it and the date, so a switch is made before the model
+    // stops answering. And a report whose pass ran on the night's session and cost more than the amount
+    // section 17 names is named with its cost, so an expensive report is seen the morning after it was
+    // written rather than in the month's spend.
+    // see: A profile carries its provider's earliest retirement date, and the run page names it from thirty days before
     public static IReadOnlyList<WorryItem> Worries(
         IReadOnlyList<string> stale,
         NightView night,
         IReadOnlyList<RefusedDocument> refused,
         IReadOnlyList<LeftOutSection> fellBack,
-        IReadOnlyList<RunStageRow> log)
+        IReadOnlyList<RunStageRow> log,
+        IReadOnlyList<ModelProfile>? profiles = null)
     {
         var quarters = log
             .Where(row => row.RunId.StartsWith(NightPrefix, StringComparison.Ordinal) && row.Stage == "quarters")
@@ -1692,6 +1733,15 @@ public static class RunScreen
 
         var refusedAsks = quarters is null ? null : Regex.Match(quarters.Detail, @"(\d+) refused;");
         var leftAt = quarters is null ? null : Regex.Match(quarters.Detail, @"(\d+) left at the (step's limit|day's allowance)");
+
+        var retiring = (profiles ?? []).Where(profile => ModelProfiles.RetiresSoon(profile, night.Session)).ToArray();
+
+        var dear = log
+            .Where(row => row.RunId.StartsWith(PassRun.Prefix, StringComparison.Ordinal))
+            .GroupBy(row => row.RunId, StringComparer.Ordinal)
+            .Select(run => (Ticker: run.Key[(run.Key.LastIndexOf('-') + 1)..], Spent: run.Sum(row => Spent(row.Spend))))
+            .Where(run => run.Spent > SpendCaps.ReportNamedAbove)
+            .ToArray();
 
         return
         [
@@ -1720,8 +1770,21 @@ public static class RunScreen
                         : leftAt is { Success: true }
                             ? $"{leftAt.Groups[1].Value} left at the {leftAt.Groups[2].Value}"
                             : $"{refusedAsks!.Groups[1].Value} ask(s) refused"),
+            Item(
+                "No paid model a job uses is within thirty days of its retirement date",
+                retiring.Length == 0,
+                string.Join("; ", retiring.Select(profile =>
+                    FormattableString.Invariant($"{profile.Name}, used by the {profile.Job.ToLowerInvariant()} job, may be retired from {profile.Retires:yyyy-MM-dd}")
+                    + (profile.RetiresReadOn is { } read ? FormattableString.Invariant($", as its provider stated on {read:yyyy-MM-dd}") : string.Empty)))),
+            Item(
+                "No report cost more than " + SpendVerdict.Money(SpendCaps.ReportNamedAbove),
+                dear.Length == 0,
+                string.Join("; ", dear.Select(run => $"{run.Ticker}'s report cost {SpendVerdict.Money(run.Spent)}"))),
         ];
     }
+
+    static decimal Spent(string spend) =>
+        decimal.TryParse(spend, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var amount) ? amount : 0m;
 }
 
 // One resolved setup, as the record counts it.

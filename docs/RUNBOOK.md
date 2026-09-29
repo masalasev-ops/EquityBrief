@@ -165,7 +165,9 @@ Moving to a new machine: copy the checkout, copy the store file, write the secre
 |---|---|---|
 | EODHD | `EquityBrief:Providers:Eodhd:ApiKey` | `EquityBrief.Worker` |
 | SEC EDGAR | `EquityBrief:Providers:SecEdgar:Contact` | `EquityBrief.Worker` |
-| the research model's provider | `EquityBrief:Models:Research:ApiKey` | `EquityBrief.Worker` |
+| DeepSeek, the `deepseek` profile's key | `EquityBrief:Models:Research:ApiKey` | `EquityBrief.Worker` |
+| Claude, the key both Claude profiles name | `EquityBrief:Models:Claude:ApiKey` | `EquityBrief.Worker` |
+| Claude's workspace, where the key is not scoped to one | `EquityBrief:Models:Claude:WorkspaceId` | `EquityBrief.Worker` |
 | Tavily, the search tool | `EquityBrief:Providers:Tavily:ApiKey` | `EquityBrief.Worker` |
 
 **The archive's row is a contact and not a key, and it is written here for the same reason the key is.** The archive needs no key and refuses a request that names no user agent, and its fair-access policy asks that the agent carry contact details, so the setting is what a request declares about this installation rather than what authorises it. A blank one refuses at startup for the reason a blank key does. Put a dedicated address there, an alias or a plus-addressed variant rather than a personal mailbox: the value goes out in the header of every archive request for the life of the installation, and it sits in this file beside the keys, where anything identifying a person is one more thing that must never reach a captured fixture (see: The archive declares a contact in its user agent, and a blank one refuses at startup).
@@ -202,30 +204,48 @@ The queue runs in the same invocation after the arithmetic has closed and record
 
 **Where to read what it did.** The queue's own row on the run log, under the night's run with the stage `overnight queue`, says what it came to: `ok` where it ran through every name it queued, `limit` where it stopped at its hours with names left, and `unavailable` where the local model did not answer, which stops the queue at that name. Its detail names the names listed and queued, every pass it ran under a run of its own with what each wrote, the names it left, and whether the machine was held awake. Each name's pass writes the judge's, the writer's and the checker's rows under that pass's run.
 
-### The research model's settings and the spend caps
+### The paid models, the one word each job names, and the spend caps
 
-The research model is the one part of the system that costs money, and nothing in the code says which model it is. The shipped `appsettings.json` beside the worker names the provider and the model this installation uses and the rates that provider charges for it; a different provider or model is different values, set in `appsettings.Secrets.json` or the environment, either of which wins over the shipped file. Its key is in the table above and is refused by name at startup when it is blank, on a fixture run as on a live one.
+The paid models are the one part of the system that costs money, and nothing in the code says which model any of them is. The shipped `appsettings.json` beside the worker holds one profile per model under `EquityBrief:Models:Profiles`, each naming its wire format, where its provider answers, the model, the section of the secrets file its key sits under, any options, the rates its provider charges and the earliest date its provider publishes for retiring it. Each job that calls a paid model names the profile it uses by one word, its `Use`, under a section of its own beside how long one call may take and the most one answer may run to. Values set in `appsettings.Secrets.json` or the environment win over the shipped file.
 
 | Setting | Key | As shipped |
 |---|---|---|
-| the wire format the provider serves | `EquityBrief:Models:Research:Format` | `openai` |
-| where the provider answers | `EquityBrief:Models:Research:BaseAddress` | `https://api.deepseek.com/` |
-| which model answers | `EquityBrief:Models:Research:Model` | `deepseek-flash` |
-| the provider's own request fields, written as the JSON object it takes | `EquityBrief:Models:Research:Options` | none |
-| how long one call may take, in seconds | `EquityBrief:Models:Research:TimeoutSeconds` | `600` |
-| the most one answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `32768` |
-| dollars per million prompt tokens the provider serves from its cache | `EquityBrief:Models:Research:Prices:CacheHit` | `0.003` |
-| dollars per million prompt tokens it does not | `EquityBrief:Models:Research:Prices:CacheMiss` | `0.15` |
-| dollars per million output tokens, reasoning included | `EquityBrief:Models:Research:Prices:Output` | `0.60` |
-| the UTC hours the rates are multiplied in, one entry per window written as a start and an end hour | `EquityBrief:Models:Research:Prices:PeakHours` | `01-04, 06-10` |
-| the days those hours fall on, one entry per day | `EquityBrief:Models:Research:Prices:PeakDays` | `Monday, Tuesday, Wednesday, Thursday, Friday` |
-| what the rates are multiplied by in those hours | `EquityBrief:Models:Research:Prices:PeakMultiple` | `2` |
+| the profile the research job uses | `EquityBrief:Models:Research:Use` | `claude-sonnet` |
+| how long one research call may take, in seconds | `EquityBrief:Models:Research:TimeoutSeconds` | `600` |
+| the most one research answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `16000` |
 | the most research may spend in a UTC day, in dollars | `EquityBrief:Spend:DayCap` | `10` |
 | the most research may spend in a UTC month, in dollars | `EquityBrief:Spend:MonthCap` | `50` |
 
-**Switching model is a change to these values and the key, and to nothing else.** A provider serving the OpenAI chat completions format takes its address, its model and its key, and its rates from its own price page; a provider with no peak pricing names no peak hours, and its multiple is then read as one. Options are the provider's own fields sent beside the request, as the shipped provider takes `{"thinking":{"type":"disabled"}}` to answer without reasoning first. A model asked with options is recorded as a different writer from the same model asked without them, so a section says which model wrote it and how it was asked. The one format this build implements is `openai`, and another is refused at startup rather than answered by this one (see: The research model is one interface with an implementation per wire format, chosen by configuration and never falling back).
+Each profile's fields, under `EquityBrief:Models:Profiles:<profile>`:
 
-**A model with no prices is refused at startup**, rather than called and recorded as costing nothing, and so is a rate at or below zero for the uncached prompt or the output, a peak window whose start is not before its end, a multiple below one, a day that is not a day of the week, and options that set the model, the messages, the answer's budget or the stream, which the feed writes itself. The shipped rates are what the provider's page gave on 2026-09-13 for the shipped model. When the provider changes a price, these values are what change, and a call already made keeps the price its run log row recorded (see: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in).
+| Field | What it holds | `deepseek` | `claude-haiku` | `claude-sonnet` |
+|---|---|---|---|---|
+| `Format` | the wire format the provider serves | `openai` | `anthropic` | `anthropic` |
+| `BaseAddress` | where the provider answers | `https://api.deepseek.com/` | `https://api.anthropic.com/` | `https://api.anthropic.com/` |
+| `Model` | which model answers | `deepseek-flash` | `claude-haiku-4-5-20251001` | `claude-sonnet-5-5` |
+| `Key` | the section of the secrets file holding its `ApiKey` | `Research` | `Claude` | `Claude` |
+| `Options` | the provider's own request fields, written as the JSON object it takes | none | none | none |
+| `Retires` | the earliest date the provider publishes for retiring the model | none | `2026-10-15` | `2027-09-28` |
+| `RetiresReadOn` | the day that date was read | `2026-09-29` | `2026-09-29` | `2026-09-29` |
+| `Prices:CacheHit` | dollars per million prompt tokens the provider serves from its cache | `0.003` | `0.10` | `0.20` |
+| `Prices:CacheWrite` | dollars per million prompt tokens written to its cache | none | `1.25` | `2.50` |
+| `Prices:CacheMiss` | dollars per million prompt tokens it does neither with | `0.15` | `1.00` | `2.00` |
+| `Prices:Output` | dollars per million output tokens, reasoning included | `0.60` | `5.00` | `10.00` |
+| `Prices:PeakHours` | the UTC hours the rates are multiplied in, one entry per window written as a start and an end hour | `01-04, 06-10` | none | none |
+| `Prices:PeakDays` | the days those hours fall on, one entry per day | `Monday, Tuesday, Wednesday, Thursday, Friday` | none | none |
+| `Prices:PeakMultiple` | what the rates are multiplied by in those hours | `2` | none | none |
+
+**Switching a job's model is changing its one word.** Set `EquityBrief:Models:Research:Use` to `deepseek`, `claude-haiku` or `claude-sonnet`, and the next pass the drain starts is written by that profile's model; a pass already running finishes on the model it started with. Nothing else changes: the other profiles stay as they are, a section records the model that wrote it, and a call already made keeps the price its run log row recorded (see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp).
+
+**Adding a key.** A profile's `Key` names the section of the secrets file holding its key, as `EquityBrief:Models:<Key>:ApiKey` in the worker's `appsettings.Secrets.json`: `Research` for DeepSeek, as it has been since 6.7, and `Claude` for both Claude profiles. A Claude key that is not scoped to a workspace is refused by the provider on every request until the workspace it bills to is named beside it, as `EquityBrief:Models:Claude:WorkspaceId`, the `wrkspc_` identifier the provider's console shows for the workspace; a key made inside a workspace needs none. A job whose profile names a key the secrets file does not hold stops with a plain line saying which profile and which key, on the pass's own run log row, which the drain settles the request under and the run page draws; no other profile answers for it (see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names).
+
+**Adding a profile** is one more entry under `EquityBrief:Models:Profiles` with the fields above. A provider serving the OpenAI chat completions format takes `openai`, and Claude's own messages interface takes `anthropic`; another format is refused at startup rather than answered by one of these. A provider with no peak pricing names no peak hours, and its multiple is then read as one; a provider charging nothing apart for a cache write names no write rate. Options are the provider's own fields sent beside the request, as DeepSeek takes `{"thinking":{"type":"disabled"}}` to answer without reasoning first. A model asked with options is recorded as a different writer from the same model asked without them.
+
+**A model with no prices is refused at startup**, rather than called and recorded as costing nothing, and so is a rate at or below zero for the uncached prompt or the output, a write rate below zero, a peak window whose start is not before its end, a multiple below one, a day that is not a day of the week, a retirement date not written as `yyyy-MM-dd`, and options that set the model, the messages, the system prompt, the answer's budget or the stream, which the feed writes itself. DeepSeek's rates are what its page gave on 2026-09-13; Claude's are what https://platform.claude.com/docs/en/about-claude/pricing gave on 2026-09-29, and the model identifiers and retirement dates what the models overview page gave the same day. When a provider changes a price or a date, these values are what change.
+
+**A profile nearing its retirement date is named on the run page.** From 30 days before a profile's `Retires`, the run page's list of anything to worry about carries one line naming the profile, each job using it and the date, so a switch is made before the day the model stops answering; on that day the job's own check that the model answers stops it with its line, and no other profile answers for it (see: A profile carries its provider's earliest retirement date, and the run page names it from thirty days before). As shipped, `claude-haiku`'s date of 2026-10-15 is inside that reach, and it draws the line once a job uses it.
+
+**A report costing more than $2 is named on the run page** the morning after it was written, with its cost, in the same list, so an expensive report is seen before the month's spend shows it.
 
 **Both caps are proposals**, marked so in section 17, and the obligation that settles them fires on the run page once twenty research passes carry a recorded cost. A cap stops research rather than warning about it: a call is refused before it is made where the most it could cost would take the day or the month past its cap, research resumes when that UTC day or month ends, and the name page says research is paused and when it resumes (see: The spend cap is a stop, not an allowance).
 

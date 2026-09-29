@@ -14,6 +14,9 @@ One folder per fixture name and date. Committed, never regenerated, and the expe
   research-prose.json  section prose for the claim checker, constructed because no model writes
                        a section before 6.6, with every figure written against the facts file the
                        fixture produces and the clean paragraphs beside the rejected ones
+  models.json          the model profiles and each paid job's `Use` the fixture's recordings were
+                       made under, read over the shipped settings, so a switch the operator makes
+                       there moves no recorded test
   expectations/        one file per stage, flat, each naming the tables it covers and how it
                        was derived
     indicators.json    swings.json    volume-profile.json

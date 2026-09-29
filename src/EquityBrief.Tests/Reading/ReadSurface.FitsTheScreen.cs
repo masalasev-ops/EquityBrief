@@ -210,8 +210,9 @@ public partial class ReadSurface
         // and 62 from the one that draws its trades, freshness, research and checklist: the ring, the freshness
         // bars, the spend bar, the research bars and the checklist's five marks, and 69 from the one that draws
         // how the system learns: the shape clock's bar, its five ranges and the edge clock's line, the fixture
-        // registering no version to compare or put at a checkpoint.
-        Assert.Equal(69, pictures);
+        // registering no version to compare or put at a checkpoint, and 71 from the 12.6 correction that adds
+        // the checklist's two items for a profile near its retirement date and a report costing more than $2.
+        Assert.Equal(71, pictures);
 
         var page = screens[3].Item2;
 

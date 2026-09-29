@@ -14,33 +14,52 @@ using Microsoft.Extensions.Configuration;
 namespace EquityBrief.Tests.Providers;
 
 // The research model's feed, read against the responses captured from the provider the
-// shipped configuration names before any of it was written, and priced at the rates that
-// configuration states. Nothing here, and nothing it tests, names a provider in code.
+// fixture's pinned profile names before any of it was written, and priced at the rates that
+// profile states. Nothing here, and nothing it tests, names a provider in code.
 public class ResearchModelFeedTests
 {
     static string Folder() => Path.Combine(Repository.Root, "fixtures", FixtureExpectation.Folder);
 
     static string Captured(string file) => File.ReadAllText(Path.Combine(Folder(), file));
 
-    static string ShippedConfiguration => Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "appsettings.json");
+    internal static string ShippedConfiguration => Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "appsettings.json");
+
+    // The fixture's own profiles and each paid job's `Use`, which its recordings were made
+    // under, read over the shipped settings so a switch the operator makes there moves no
+    // recorded test.
+    internal static string PinnedModels => Path.Combine(Folder(), "models.json");
+
+    // The profile the fixture pins the research job to, and the secrets section its key sits in.
+    internal const string PinnedProfile = "deepseek";
+    internal const string PinnedKey = "Research";
 
     // A key no test sends anywhere. The settings refuse a blank one, so a test that
     // builds settings has to hand it something.
-    const string NotAKey = "a key no test sends";
+    internal const string NotAKey = "a key no test sends";
 
     // The options the second recording was asked with.
     internal const string ThinkingOff = "{\"thinking\":{\"type\":\"disabled\"}}";
 
-    // The settings the shipped configuration gives, with a key that is not one and the
-    // options a test asks for, read through the path the worker reads them through.
-    internal static ResearchModelSettings Shipped(string? options = null, params (string Key, string Value)[] overrides) =>
+    // The settings the fixture's recordings were made under, with a key that is not one and
+    // the options a test asks for, read through the path the worker reads them through.
+    internal static ResearchModelSettings Pinned(string? options = null, params (string Key, string Value)[] overrides) =>
         ResearchLane.Settings(new ConfigurationBuilder()
             .AddJsonFile(ShippedConfiguration)
+            .AddJsonFile(PinnedModels)
             .AddInMemoryCollection(
                 overrides.Select(value => new KeyValuePair<string, string?>(value.Key, value.Value))
-                    .Append(new KeyValuePair<string, string?>(ResearchModelSettings.ApiKeyKey, NotAKey))
-                    .Append(new KeyValuePair<string, string?>(ResearchModelSettings.OptionsKey, options ?? string.Empty)))
+                    .Append(new KeyValuePair<string, string?>(ModelProfiles.KeyPath(PinnedKey), NotAKey))
+                    .Append(new KeyValuePair<string, string?>(ModelProfiles.Field(PinnedProfile, ModelProfiles.OptionsField), options ?? string.Empty)))
             .Build());
+
+    // A key of the pinned profile's prices.
+    static string Price(string field) => ModelProfiles.Prices(PinnedProfile) + ":" + field;
+
+    // A read surface the suite hosts, pinned to the fixture's profiles over the shipped settings
+    // it reads beside the worker, so the peak windows its pages state are the recorded profile's
+    // whatever profile the operator's switch names.
+    internal static void PinModels(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) =>
+        builder.ConfigureAppConfiguration((_, configuration) => configuration.AddJsonFile(PinnedModels));
 
     // The request the two recordings answer, as the capture built it.
     internal static ModelRequest Recorded(ResearchModelSettings settings) =>
@@ -150,7 +169,7 @@ public class ResearchModelFeedTests
         // The shipped configuration's rates, from the provider's page read on 2026-09-13:
         // 0.003 a million cached prompt tokens, 0.15 uncached and 0.60 output, doubled at
         // peak. Worked by hand from the recording's own counts rather than read back.
-        var settings = Shipped();
+        var settings = Pinned();
         var answer = RecordedAnswer(settings);
 
         Assert.Equal(DayOfWeek.Sunday, answer.Created.UtcDateTime.DayOfWeek);
@@ -193,13 +212,13 @@ public class ResearchModelFeedTests
     public void PeakIsTheConfiguredWindowsOnTheConfiguredDaysInUtc(string instant, bool peak)
     {
         // Monday the 14th, Friday the 18th, Saturday the 19th and Sunday the 20th.
-        Assert.Equal(peak, Shipped().Pricing.IsPeak(DateTimeOffset.Parse(instant, CultureInfo.InvariantCulture)));
+        Assert.Equal(peak, Pinned().Pricing.IsPeak(DateTimeOffset.Parse(instant, CultureInfo.InvariantCulture)));
     }
 
     [Fact]
     public void ACallsCeilingIsEveryByteAsATokenAndTheWholeBudgetAtPeakAndHoldsOverTheRecordings()
     {
-        var settings = Shipped();
+        var settings = Pinned();
         var request = Recorded(settings);
 
         var bytes = Encoding.UTF8.GetByteCount(request.System) + Encoding.UTF8.GetByteCount(request.Prompt);
@@ -211,7 +230,7 @@ public class ResearchModelFeedTests
         // what each recorded call cost as if it had been at peak.
         foreach (var options in new[] { (string?)null, ThinkingOff })
         {
-            var asked = Shipped(options);
+            var asked = Pinned(options);
             var recorded = Recorded(asked);
             var answer = RecordedAnswer(asked);
 
@@ -225,13 +244,13 @@ public class ResearchModelFeedTests
     [Fact]
     public void TheRequestAsSentCarriesTheConfiguredModelAndBudgetAndTheProvidersOptionsBesideThem()
     {
-        using var plain = JsonDocument.Parse(OpenAiCompatibleResearchFeed.Body(Recorded(Shipped()), Shipped()));
-        using var asked = JsonDocument.Parse(OpenAiCompatibleResearchFeed.Body(Recorded(Shipped(ThinkingOff)), Shipped(ThinkingOff)));
+        using var plain = JsonDocument.Parse(OpenAiCompatibleResearchFeed.Body(Recorded(Pinned()), Pinned()));
+        using var asked = JsonDocument.Parse(OpenAiCompatibleResearchFeed.Body(Recorded(Pinned(ThinkingOff)), Pinned(ThinkingOff)));
 
         // With no options, the four fields the feed owns and nothing else.
         Assert.Equal(["model", "messages", "max_tokens", "stream"], plain.RootElement.EnumerateObject().Select(field => field.Name).ToArray());
-        Assert.Equal(Shipped().Model, plain.RootElement.GetProperty("model").GetString());
-        Assert.Equal(Shipped().AnswerTokens, plain.RootElement.GetProperty("max_tokens").GetInt32());
+        Assert.Equal(Pinned().Model, plain.RootElement.GetProperty("model").GetString());
+        Assert.Equal(Pinned().AnswerTokens, plain.RootElement.GetProperty("max_tokens").GetInt32());
         Assert.False(plain.RootElement.GetProperty("stream").GetBoolean());
         Assert.Equal(["system", "user"], plain.RootElement.GetProperty("messages").EnumerateArray().Select(message => message.GetProperty("role").GetString()!).ToArray());
 
@@ -240,9 +259,9 @@ public class ResearchModelFeedTests
 
         // And the identity a section stores carries the options, so the two are two
         // writers with two recordings.
-        Assert.Equal(Shipped().Model, Shipped().Identity);
-        Assert.Equal(Shipped().Model + " " + ThinkingOff, Shipped(ThinkingOff).Identity);
-        Assert.NotEqual(Recorded(Shipped()).Key, Recorded(Shipped(ThinkingOff)).Key);
+        Assert.Equal(Pinned().Model, Pinned().Identity);
+        Assert.Equal(Pinned().Model + " " + ThinkingOff, Pinned(ThinkingOff).Identity);
+        Assert.NotEqual(Recorded(Pinned()).Key, Recorded(Pinned(ThinkingOff)).Key);
     }
 
     [Fact]
@@ -251,13 +270,13 @@ public class ResearchModelFeedTests
         // Another provider, another model and other prices, named in configuration and
         // nowhere else: the same feed sends to that address, asks for that model with that
         // provider's options, and prices at those rates.
-        var elsewhere = Shipped(
+        var elsewhere = Pinned(
             "{\"reasoning_effort\":\"low\"}",
-            (ResearchModelSettings.BaseAddressKey, "https://models.example.test/v1"),
-            (ResearchModelSettings.ModelKey, "another-model"),
-            (ResearchModelSettings.CacheHitKey, "0.5"),
-            (ResearchModelSettings.CacheMissKey, "1.25"),
-            (ResearchModelSettings.OutputKey, "10"));
+            (ModelProfiles.Field(PinnedProfile, ModelProfiles.BaseAddressField), "https://models.example.test/v1"),
+            (ModelProfiles.Field(PinnedProfile, ModelProfiles.ModelField), "another-model"),
+            (Price(ResearchPricing.CacheHitField), "0.5"),
+            (Price(ResearchPricing.CacheMissField), "1.25"),
+            (Price(ResearchPricing.OutputField), "10"));
 
         Assert.Equal("https://models.example.test/v1/", elsewhere.BaseAddress);
         Assert.Equal("another-model {\"reasoning_effort\":\"low\"}", elsewhere.Identity);
@@ -267,7 +286,7 @@ public class ResearchModelFeedTests
         Assert.Equal("another-model", body.RootElement.GetProperty("model").GetString());
         Assert.Equal("low", body.RootElement.GetProperty("reasoning_effort").GetString());
 
-        var answer = RecordedAnswer(Shipped());
+        var answer = RecordedAnswer(Pinned());
 
         Assert.Equal((answer.CacheMissTokens * 1.25m + answer.CompletionTokens * 10m) / 1_000_000m, elsewhere.Pricing.Price(answer));
 
@@ -280,7 +299,7 @@ public class ResearchModelFeedTests
     [Fact]
     public async Task TheLiveFeedSendsTheKeyInTheHeaderToTheConfiguredAddressAndNeverInTheAddress()
     {
-        var settings = Shipped();
+        var settings = Pinned();
         var seen = new Seeing(Captured(RecordedResearchModelFeed.FileFor(Recorded(settings))));
 
         using var client = new HttpClient(seen) { BaseAddress = new Uri(settings.BaseAddress) };
@@ -303,7 +322,7 @@ public class ResearchModelFeedTests
     {
         // What a pass asks before it fetches anything. The 6.8 sweep found no test calling
         // it on the live feed, so a probe that read every response as an answer passed.
-        var settings = Shipped();
+        var settings = Pinned();
 
         async Task<(string? Line, Seeing Seen, OpenAiCompatibleResearchFeed Feed)> Probe(HttpStatusCode status, string body)
         {
@@ -341,7 +360,7 @@ public class ResearchModelFeedTests
     [Fact]
     public async Task NothingListeningIsItsOwnFailureAndARefusalCarriesTheProvidersWords()
     {
-        var settings = Shipped();
+        var settings = Pinned();
 
         using var gone = new HttpClient(new Unreachable()) { BaseAddress = new Uri(settings.BaseAddress) };
 
@@ -358,9 +377,14 @@ public class ResearchModelFeedTests
     [Fact]
     public void WhatNobodyConfiguredIsRefusedByNameAtStartup()
     {
-        var blankKey = Assert.Throws<InvalidOperationException>(() => ResearchLane.Settings(new ConfigurationBuilder().AddJsonFile(ShippedConfiguration).Build()));
+        // The fixture's profile with no key: the refusal names the profile, the path the key
+        // is read from, and that no other profile answers instead.
+        var blankKey = Assert.Throws<InvalidOperationException>(() => ResearchLane.Settings(
+            new ConfigurationBuilder().AddJsonFile(ShippedConfiguration).AddJsonFile(PinnedModels).Build()));
 
-        Assert.Contains(ResearchModelSettings.ApiKeyKey, blankKey.Message, StringComparison.Ordinal);
+        Assert.Contains($"'{PinnedProfile}'", blankKey.Message, StringComparison.Ordinal);
+        Assert.Contains(ModelProfiles.KeyPath(PinnedKey), blankKey.Message, StringComparison.Ordinal);
+        Assert.Contains("no other profile answers", blankKey.Message, StringComparison.Ordinal);
 
         // A key written into a file and left empty, or holding only spaces, is the likelier
         // mistake than no key at all, and it is refused the same way.
@@ -368,93 +392,133 @@ public class ResearchModelFeedTests
         {
             var written = new ConfigurationBuilder()
                 .AddJsonFile(ShippedConfiguration)
-                .AddInMemoryCollection([new KeyValuePair<string, string?>(ResearchModelSettings.ApiKeyKey, blank)])
+                .AddJsonFile(PinnedModels)
+                .AddInMemoryCollection([new KeyValuePair<string, string?>(ModelProfiles.KeyPath(PinnedKey), blank)])
                 .Build();
 
-            Assert.Contains(ResearchModelSettings.ApiKeyKey, Assert.Throws<InvalidOperationException>(() => ResearchLane.Settings(written)).Message, StringComparison.Ordinal);
+            Assert.Contains(ModelProfiles.KeyPath(PinnedKey), Assert.Throws<InvalidOperationException>(() => ResearchLane.Settings(written)).Message, StringComparison.Ordinal);
         }
 
         string Refusal(string key, string value) =>
-            Assert.Throws<InvalidOperationException>(() => Shipped(null, (key, value))).Message;
+            Assert.Throws<InvalidOperationException>(() => Pinned(null, (key, value))).Message;
 
-        Assert.Contains("'another format'", Refusal(ResearchModelSettings.FormatKey, "another format"), StringComparison.Ordinal);
-        Assert.Contains(ResearchModelSettings.BaseAddressKey, Refusal(ResearchModelSettings.BaseAddressKey, "api.example.test"), StringComparison.Ordinal);
-        Assert.Contains("'5m'", Refusal(ResearchModelSettings.TimeoutKey, "5m"), StringComparison.Ordinal);
-        Assert.Contains("'about a dollar'", Refusal(ResearchModelSettings.OutputKey, "about a dollar"), StringComparison.Ordinal);
-        Assert.Contains("'1am-4am'", Refusal(ResearchModelSettings.PeakHoursKey + ":0", "1am-4am"), StringComparison.Ordinal);
-        Assert.Contains("'Someday'", Refusal(ResearchModelSettings.PeakDaysKey + ":0", "Someday"), StringComparison.Ordinal);
+        Assert.Contains("'another format'", Refusal(ModelProfiles.Field(PinnedProfile, ModelProfiles.FormatField), "another format"), StringComparison.Ordinal);
+        Assert.Contains(
+            ModelProfiles.Field(PinnedProfile, ModelProfiles.BaseAddressField),
+            Refusal(ModelProfiles.Field(PinnedProfile, ModelProfiles.BaseAddressField), "api.example.test"),
+            StringComparison.Ordinal);
+        Assert.Contains("'5m'", Refusal(ModelProfiles.JobField(ModelProfiles.ResearchJob, ModelProfiles.TimeoutField), "5m"), StringComparison.Ordinal);
+        Assert.Contains("'about a dollar'", Refusal(Price(ResearchPricing.OutputField), "about a dollar"), StringComparison.Ordinal);
+        Assert.Contains("'1am-4am'", Refusal(Price(ResearchPricing.PeakHoursField) + ":0", "1am-4am"), StringComparison.Ordinal);
+        Assert.Contains("'Someday'", Refusal(Price(ResearchPricing.PeakDaysField) + ":0", "Someday"), StringComparison.Ordinal);
+        Assert.Contains("'soon'", Refusal(ModelProfiles.Field(PinnedProfile, ModelProfiles.RetiresField), "soon"), StringComparison.Ordinal);
 
-        Assert.Contains("not a JSON object", Assert.Throws<InvalidOperationException>(() => Shipped("[\"thinking\"]")).Message, StringComparison.Ordinal);
-        Assert.Contains("sets model", Assert.Throws<InvalidOperationException>(() => Shipped("{\"model\":\"something else\"}")).Message, StringComparison.Ordinal);
+        // A job naming no profile, or one the profiles do not hold, is refused by name and no
+        // other profile is taken in its place.
+        Assert.Contains("names no profile", Refusal(ModelProfiles.Use(ModelProfiles.ResearchJob), " "), StringComparison.Ordinal);
+        Assert.Contains("'a-profile-nobody-wrote'", Refusal(ModelProfiles.Use(ModelProfiles.ResearchJob), "a-profile-nobody-wrote"), StringComparison.Ordinal);
+
+        Assert.Contains("not a JSON object", Assert.Throws<InvalidOperationException>(() => Pinned("[\"thinking\"]")).Message, StringComparison.Ordinal);
+        Assert.Contains("sets model", Assert.Throws<InvalidOperationException>(() => Pinned("{\"model\":\"something else\"}")).Message, StringComparison.Ordinal);
 
         // A model with no prices at all is refused rather than called at nothing.
         var unpriced = new ConfigurationBuilder().AddInMemoryCollection(
         [
-            new KeyValuePair<string, string?>(ResearchModelSettings.BaseAddressKey, "https://models.example.test/v1"),
-            new KeyValuePair<string, string?>(ResearchModelSettings.ModelKey, "another-model"),
-            new KeyValuePair<string, string?>(ResearchModelSettings.ApiKeyKey, NotAKey),
+            new KeyValuePair<string, string?>(ModelProfiles.Use(ModelProfiles.ResearchJob), "unpriced"),
+            new KeyValuePair<string, string?>(ModelProfiles.Field("unpriced", ModelProfiles.BaseAddressField), "https://models.example.test/v1"),
+            new KeyValuePair<string, string?>(ModelProfiles.Field("unpriced", ModelProfiles.ModelField), "another-model"),
+            new KeyValuePair<string, string?>(ModelProfiles.Field("unpriced", ModelProfiles.KeyField), "Elsewhere"),
+            new KeyValuePair<string, string?>(ModelProfiles.KeyPath("Elsewhere"), NotAKey),
         ]).Build();
 
         Assert.Contains("No prices", Assert.Throws<InvalidOperationException>(() => ResearchLane.Settings(unpriced)).Message, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void TheShippedModelIsOneTheProvidersOwnListCarries()
+    public void ThePinnedModelIsOneTheProvidersOwnListCarries()
     {
         using var listed = JsonDocument.Parse(Captured("research-probe-models.json"));
 
         Assert.Contains(
-            Shipped().Model,
+            Pinned().Model,
             listed.RootElement.GetProperty("data").EnumerateArray().Select(model => model.GetProperty("id").GetString()!));
     }
 
     [Fact]
-    public void TheRunbookStatesEachResearchSettingAndCapWithTheValueTheShippedConfigurationHolds()
+    public void TheRunbookStatesEachJobSettingEachProfileAndEachCapWithTheValueTheShippedConfigurationHolds()
     {
         var runbook = Corpus.Read("docs/RUNBOOK.md");
+        var lines = runbook.Split('\n');
 
-        var rows = runbook.Split('\n')
-            .Where(line => line.StartsWith("| ", StringComparison.Ordinal)
-                && (line.Contains("`EquityBrief:Models:Research:", StringComparison.Ordinal) || line.Contains("`EquityBrief:Spend:", StringComparison.Ordinal)))
-            .Select(line => line.Trim().Trim('|').Split('|').Select(cell => cell.Trim()).ToArray())
-            .ToArray();
-
-        // Twelve research settings, two caps, and the key's row in the secrets table.
-        Assert.Equal(15, rows.Length);
+        static string[] Cells(string line) => line.Trim().Trim('|').Split('|').Select(cell => cell.Trim()).ToArray();
 
         var shipped = new ConfigurationBuilder().AddJsonFile(ShippedConfiguration).Build();
 
-        string Stated(string key) => Assert.Single(rows, row => row[1] == $"`{key}`")[2].Trim('`');
+        // A value as the file holds it, a list joined as the runbook writes it, and none where
+        // the file holds nothing.
+        string Holds(string key)
+        {
+            var listed = shipped.GetSection(key).GetChildren().Select(child => child.Value).ToArray();
+            var value = listed.Length > 0 ? string.Join(", ", listed) : shipped[key];
 
-        foreach (var key in new[]
-        {
-            ResearchModelSettings.FormatKey,
-            ResearchModelSettings.BaseAddressKey,
-            ResearchModelSettings.ModelKey,
-            ResearchModelSettings.TimeoutKey,
-            ResearchModelSettings.AnswerTokensKey,
-            ResearchModelSettings.CacheHitKey,
-            ResearchModelSettings.CacheMissKey,
-            ResearchModelSettings.OutputKey,
-            ResearchModelSettings.PeakMultipleKey,
-        })
-        {
-            Assert.Equal(shipped[key], Stated(key));
+            return string.IsNullOrWhiteSpace(value) ? "none" : value;
         }
 
-        Assert.Equal(
-            string.Join(", ", shipped.GetSection(ResearchModelSettings.PeakHoursKey).GetChildren().Select(child => child.Value)),
-            Stated(ResearchModelSettings.PeakHoursKey));
-        Assert.Equal(
-            string.Join(", ", shipped.GetSection(ResearchModelSettings.PeakDaysKey).GetChildren().Select(child => child.Value)),
-            Stated(ResearchModelSettings.PeakDaysKey));
+        // The job's settings and the caps, a key to a row.
+        var rows = lines
+            .Where(line => line.StartsWith("| ", StringComparison.Ordinal)
+                && (line.Contains("`EquityBrief:Models:Research:", StringComparison.Ordinal) || line.Contains("`EquityBrief:Spend:", StringComparison.Ordinal))
+                && !line.Contains("ApiKey", StringComparison.Ordinal))
+            .Select(Cells)
+            .ToArray();
+
+        string Stated(string key) => Assert.Single(rows, row => row[1] == $"`{key}`")[2].Trim('`');
+
+        foreach (var field in new[] { ModelProfiles.UseField, ModelProfiles.TimeoutField, ModelProfiles.AnswerTokensField })
+        {
+            var key = ModelProfiles.JobField(ModelProfiles.ResearchJob, field);
+
+            Assert.Equal(Holds(key), Stated(key));
+        }
 
         Assert.Equal(SpendCaps.DefaultDay, decimal.Parse(Stated(SpendCaps.DayKey), CultureInfo.InvariantCulture));
         Assert.Equal(SpendCaps.DefaultMonth, decimal.Parse(Stated(SpendCaps.MonthKey), CultureInfo.InvariantCulture));
 
-        // The options row states none, and the key row names the path the settings read.
-        Assert.Equal("none", Stated(ResearchModelSettings.OptionsKey));
-        Assert.Contains($"`{ResearchModelSettings.ApiKeyKey}`", runbook, StringComparison.Ordinal);
+        // The profiles' table, a column per shipped profile and a row per field, every cell
+        // the value the shipped file holds.
+        var header = Cells(Assert.Single(lines, line => line.StartsWith("| Field | What it holds |", StringComparison.Ordinal)));
+        var profiles = header.Skip(2).Select(cell => cell.Trim('`')).ToArray();
+
+        Assert.Equal(
+            shipped.GetSection(ModelProfiles.ProfilesSection).GetChildren().Select(child => child.Key).Order(StringComparer.Ordinal),
+            profiles.Order(StringComparer.Ordinal));
+
+        string[] fields =
+        [
+            ModelProfiles.FormatField, ModelProfiles.BaseAddressField, ModelProfiles.ModelField, ModelProfiles.KeyField,
+            ModelProfiles.OptionsField, ModelProfiles.RetiresField, ModelProfiles.RetiresReadOnField,
+            .. new[]
+            {
+                ResearchPricing.CacheHitField, ResearchPricing.CacheWriteField, ResearchPricing.CacheMissField, ResearchPricing.OutputField,
+                ResearchPricing.PeakHoursField, ResearchPricing.PeakDaysField, ResearchPricing.PeakMultipleField,
+            }.Select(field => ModelProfiles.PricesField + ":" + field),
+        ];
+
+        foreach (var field in fields)
+        {
+            var row = Cells(Assert.Single(lines, line => line.StartsWith($"| `{field}` |", StringComparison.Ordinal)));
+
+            for (var column = 0; column < profiles.Length; column++)
+            {
+                Assert.Equal(Holds(ModelProfiles.Field(profiles[column], field)), row[column + 2].Trim('`'));
+            }
+        }
+
+        // And the key rows name the paths the settings read.
+        foreach (var keyName in profiles.Select(profile => shipped[ModelProfiles.Field(profile, ModelProfiles.KeyField)]!).Distinct(StringComparer.Ordinal))
+        {
+            Assert.Contains($"`{ModelProfiles.KeyPath(keyName)}`", runbook, StringComparison.Ordinal);
+        }
     }
 
     // ---- the recording ----
@@ -462,12 +526,12 @@ public class ResearchModelFeedTests
     [Fact]
     public async Task TheRecordingAnswersTheRequestItHoldsAndRefusesByNameTheOneItDoesNot()
     {
-        var settings = Shipped();
+        var settings = Pinned();
         var feed = new RecordedResearchModelFeed(Folder(), settings);
 
         // Each recording answers the request asked the way it was recorded.
         Assert.Equal("KEYS closed at 333.42.", (await feed.CompleteAsync(Recorded(settings))).Text);
-        Assert.Equal("The close was 333.42.", (await new RecordedResearchModelFeed(Folder(), Shipped(ThinkingOff)).CompleteAsync(Recorded(Shipped(ThinkingOff)))).Text);
+        Assert.Equal("The close was 333.42.", (await new RecordedResearchModelFeed(Folder(), Pinned(ThinkingOff)).CompleteAsync(Recorded(Pinned(ThinkingOff)))).Text);
 
         var unrecorded = Recorded(settings) with { Prompt = "a prompt nobody recorded" };
         var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => feed.CompleteAsync(unrecorded));

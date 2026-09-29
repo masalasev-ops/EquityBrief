@@ -1152,6 +1152,21 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.17 Past picks", "Every trade, each column heading saying what its column holds while the pointer is over it"),
     ];
 
+    // 12.6's correction on the operator's brief of 2026-09-28 and the corrections of 2026-09-29: section 17's
+    // model profiles, their retirement warning and a report named for its cost, the checklist's two items drawing
+    // the last two, and section 18's row about a key the secrets file does not hold as its two halves. Declared
+    // before the lists that take them in.
+    static readonly string[] ModelProfileClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "Paid model profiles"),
+        CheckReach.Key(Scope.LimitsTable, "Paid model retirement warning"),
+        CheckReach.Key(Scope.LimitsTable, "A report named for its cost"),
+        CheckReach.Key("15.10 Run", "Anything to worry about, no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date"),
+        CheckReach.Key("15.10 Run", "Anything to worry about, no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost"),
+        CheckReach.Key(Scope.FailureTable, "A paid job's profile names a key the secrets file does not hold, the job stops before it fetches or asks anything and no other profile answers for it; a research pass writes the plain line saying which profile and which key as its own run log row, which the drain settles the request under as refused"),
+        CheckReach.Key(Scope.FailureTable, "A paid job's profile names a key the secrets file does not hold, the run page's stages that failed name the pass in the line's own words"),
+    ];
+
     // Phase 12's rows, each written by the checkpoint that draws or asserts it, so none reads as out
     // of scope: 12.1's swing reader and its two stores, its night step, the readings drawn on
     // tonight's header, the universe table, the name page and the run page, section 17's four
@@ -1322,6 +1337,7 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.RunBottomClaims,
         .. Reading.ReadSurface.NightNoticeClaims,
         .. Reading.ReadSurface.CloseToABuyPointClaims,
+        .. ModelProfileClaims,
     ];
 
     // Rows taken out of the document after phase 12's prediction, which counted each: the name page's
@@ -1376,7 +1392,8 @@ public partial class ArchitectureConformance
     // which the 12.3 correction built on the operator's ruling of the same day, its fifteen claims named in their
     // own list, and its trades, freshness, research and checklist, which the next 12.3 correction built, its
     // eighteen named in theirs, and close to a buy point, which the 12.7 correction built on the operator's
-    // specification of 2026-09-29, its twelve named in theirs.
+    // specification of 2026-09-29, its twelve named in theirs, and the model profiles a 12.6 correction built on
+    // the operator's brief of 2026-09-28, its seven claims named in their own list.
     static readonly string[] PhaseTwelveBeyondThePrediction =
     [
         CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
@@ -1423,6 +1440,7 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.RunBottomClaims,
         .. Reading.ReadSurface.NightNoticeClaims,
         .. Reading.ReadSurface.CloseToABuyPointClaims,
+        .. ModelProfileClaims,
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1454,8 +1472,9 @@ public partial class ArchitectureConformance
             (actual, 0, 0, actual),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
-        // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((550, 718), (predicted, actual));
+        // Stated, so a claim added or lost without being named here moves this rather than the sum. 725 from the
+        // 12.6 correction that brings the model profiles, its seven claims named in their own list.
+        Assert.Equal((550, 725), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

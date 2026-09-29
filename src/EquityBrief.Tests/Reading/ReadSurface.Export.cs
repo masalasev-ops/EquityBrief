@@ -177,6 +177,7 @@ public partial class ReadSurface
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseSetting(StoreLocation.DataRootKey, root);
+            Providers.ResearchModelFeedTests.PinModels(builder);
             builder.ConfigureTestServices(services => services.AddSingleton(clock));
         }
     }

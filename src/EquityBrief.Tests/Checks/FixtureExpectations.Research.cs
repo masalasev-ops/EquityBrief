@@ -31,7 +31,7 @@ public partial class FixtureExpectations
     {
         var expected = Expected("research-record");
         var local = new RecordedLocalModelFeed(Folder());
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
 
         using var store = await FixtureReplay.ResearchedAsync(local: local, paid: paid);
 
@@ -165,7 +165,7 @@ public partial class FixtureExpectations
     {
         using var store = await FixtureReplay.ResearchedAsync();
 
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
         var local = new RecordedLocalModelFeed(Folder());
 
         var sectionsBefore = Query(store, "SELECT COUNT(*) FROM research_section;").Single();
@@ -208,7 +208,7 @@ public partial class FixtureExpectations
         // says why and counts no request.
         var news = new NoArticles();
         var archive = new NoRelease();
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
 
         var again = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: archive, news: news).RunAsync("KEYS", "research-nothing-again");
 
@@ -263,7 +263,7 @@ public partial class FixtureExpectations
         // A research model that does not answer, so the pass records what it warranted
         // and stops before it fetches or writes anything.
         var unreachable = "The research model could not be reached: nothing is listening.";
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped(), unreachable);
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned(), unreachable);
 
         var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid).RunAsync("KEYS", "research-warranted");
 
@@ -300,7 +300,7 @@ public partial class FixtureExpectations
         // A regenerate asked the same day, while no pass has run to the end, writes what went stale
         // and nothing accepted that day, so it pays for no section twice in a day. The judge makes
         // every accepted section stale for a regenerate, which is what leaves this to the rule.
-        var rewrite = await FixtureReplay.Researcher(store, ResearchClock, paid: new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped(), unreachable))
+        var rewrite = await FixtureReplay.Researcher(store, ResearchClock, paid: new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned(), unreachable))
             .RunAsync("KEYS", "research-warranted-rewrite", new ResearchPassRequest(Refresh: true));
 
         Assert.Equal(warranted, rewrite.Warranted);
@@ -316,7 +316,7 @@ public partial class FixtureExpectations
 
         // Once one has, a regenerate that day starts nothing and warrants nothing.
         // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
-        var regenerate = await FixtureReplay.Researcher(store, ResearchClock, paid: new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped(), unreachable))
+        var regenerate = await FixtureReplay.Researcher(store, ResearchClock, paid: new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned(), unreachable))
             .RunAsync("KEYS", "research-warranted-regenerate", new ResearchPassRequest(Refresh: true));
 
         Assert.Equal(ResearchRunner.RegeneratedToday, regenerate.Reason);
@@ -358,7 +358,7 @@ public partial class FixtureExpectations
             ["KEYS.US"],
             string.Empty);
 
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
 
         // The theme's searches find nothing, so its call is not what the count below reads.
         var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: new NoRelease(), news: new Articles([article]), search: new NoResults())
@@ -390,7 +390,7 @@ public partial class FixtureExpectations
         using var store = await FixtureReplay.ReplayedAsync();
 
         var unreachable = "The research model could not be reached: No connection could be made because the target machine actively refused it.";
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped(), unreachable);
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned(), unreachable);
         var local = new RecordedLocalModelFeed(Folder());
 
         var outcome = await FixtureReplay.Researcher(store, ResearchClock, local: local, paid: paid).RunAsync("KEYS", "research-unreachable");
@@ -409,7 +409,7 @@ public partial class FixtureExpectations
         // A pass with every section local asks nothing of the research model, and runs.
         using var localOnly = await FixtureReplay.ReplayedAsync();
 
-        var asked = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped(), unreachable);
+        var asked = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned(), unreachable);
 
         var ran = await FixtureReplay.Researcher(localOnly, ResearchClock, lane: ClaimRules.Sections, paid: asked, localModel: new NothingAnsweringLocal()).RunAsync("KEYS", "research-local-only");
 
@@ -482,7 +482,7 @@ public partial class FixtureExpectations
 
         await held.Entered.WaitAsync(TimeSpan.FromMinutes(1));
 
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
         var news = new NoArticles();
         var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: new NoRelease(), news: news).RunAsync("KEYS", "research-while-running");
 
@@ -507,7 +507,7 @@ public partial class FixtureExpectations
 
         // A day cap below what the pass's first paid call could cost, so the cap refuses
         // before the first paid call and every paid section is named with its line.
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
         var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, caps: new SpendCaps(0.01m, 50m)).RunAsync("KEYS", "research-at-cap");
 
         Assert.Equal(ResearchRunner.Paused, outcome.Outcome);
@@ -705,7 +705,7 @@ public partial class FixtureExpectations
         // to a local model that does not answer, since the recordings answer it with nothing, so the
         // first paid call is one they answer with prose, and the short version with it, which would
         // otherwise be asked over a set of sections no recording was made over.
-        var asked = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var asked = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
         IReadOnlyList<string> lane = [.. ProseWriter.DefaultLane, ClaimRules.CauseSection, "The short version"];
 
         using (var free = await FixtureReplay.ReplayedForResearchAsync())
@@ -725,7 +725,7 @@ public partial class FixtureExpectations
 
         using var store = await FixtureReplay.ReplayedForResearchAsync();
 
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
         var outcome = await FixtureReplay.Researcher(store, ResearchClock, lane: lane, paid: paid, caps: new SpendCaps(cap, 50m), search: new NoResults(), localModel: new NothingAnsweringLocal()).RunAsync("KEYS", "research-cap-reached");
 
         // One call made and written, and no call after the refusal: the pass is paused, and every
@@ -751,7 +751,7 @@ public partial class FixtureExpectations
         // the cause of each large move among them, which the recordings answer with nothing twice.
         using var fresh = await FixtureReplay.ReplayedForResearchAsync();
 
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
         var outcome = await FixtureReplay.Researcher(fresh, ResearchClock, lane: [.. ProseWriter.DefaultLane, "The short version"], paid: paid, localModel: new NothingAnsweringLocal())
             .RunAsync("KEYS", "research-local-gone");
 
@@ -780,7 +780,7 @@ public partial class FixtureExpectations
         // the key, the one the prose expectation works by hand: the two are refused before any
         // local call and left for the paid path, which writes them in this pass from the
         // recordings the comparison made.
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
         var local = new RecordedLocalModelFeed(Folder());
         var context = Expected("prose").GetProperty("cannotHold").GetProperty("contextTokens").GetInt32();
 
@@ -814,7 +814,7 @@ public partial class FixtureExpectations
         })
         {
             var local = new RecordedLocalModelFeed(Folder());
-            var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+            var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
 
             using var store = await FixtureReplay.ResearchedAsync(lane: lane, paidForLocal: paidForLocal, local: local, paid: paid);
 
@@ -1130,7 +1130,7 @@ public partial class FixtureExpectations
     {
         using var store = new TemporaryStore().Migrated();
 
-        var settings = Providers.ResearchModelFeedTests.Shipped();
+        var settings = Providers.ResearchModelFeedTests.Pinned();
         var request = Providers.ResearchModelFeedTests.Recorded(settings);
 
         // The default-mode recording with its answer cut off at the budget, as the provider

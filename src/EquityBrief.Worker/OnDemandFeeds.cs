@@ -25,9 +25,10 @@ namespace EquityBrief.Worker;
 // other call it makes goes through.
 // see: The on-demand feeds are resolved in one place, as the nightly feeds are
 //
-// The fourth is the research model, from 6.7, which the spend cap holds for every
-// paid call: nothing takes it from this record but the cap.
-// see: Every paid call is made through the spend cap, which holds the research model
+// The fourth is the research model, from 6.7, the model the research job's profile
+// names, which the spend cap holds for every paid call: nothing takes it from this
+// record but the cap.
+// see: Every paid call is made through the spend cap, which holds each paid job's model
 //
 // The fifth is one name's own news, from 6.8, which a research pass reads. It is here
 // and not on the night's record, whose news is one dated query for the whole market.

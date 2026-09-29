@@ -26,7 +26,7 @@ public partial class FixtureExpectations
         // ran: nothing fetched, no model asked, and its row says why and counts no request.
         var news = new NoArticles();
         var archive = new NoRelease();
-        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Shipped());
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
 
         var again = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, archive: archive, news: news)
             .RunAsync("KEYS", "research-regenerate-same-day", new ResearchPassRequest(Refresh: true, PaidForLocal: true));

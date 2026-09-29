@@ -87,6 +87,11 @@ public partial class NightlyCost
         "CompletionRequest",
         "IModelClient",
         "chat/completions",
+
+        // The header Claude's own messages interface cannot be asked without, added at 12.6 with
+        // the first feed over that interface, for the reason the wire path above stands for the
+        // other format: a request that cannot avoid sending it is the shape, not a guess at a name.
+        "anthropic-version",
     ];
 
     // The shipped files permitted to hold an outward-request type, each by its
@@ -106,6 +111,7 @@ public partial class NightlyCost
     // see: The outward-request scan names the files that may hold a client rather than dropping the patterns
     internal static readonly string[] MayHoldAClient =
     [
+        "src/EquityBrief.Core/Providers/AnthropicMessagesFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdBulkPriceFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdCorporateActionFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdEarningsCalendarFeed.cs",
@@ -138,11 +144,13 @@ public partial class NightlyCost
     // the paid provider: the provider is named in configuration alone, and the first
     // pattern is what holds that, because a file naming it is a file this scan reports.
     // It was three for one commit, while the feed was named for the provider and the
-    // double carried the name by calling it.
+    // double carried the name by calling it. The third from 12.6, the feed over Claude's own
+    // messages interface, named for its format as the other is.
     // see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name
-    // see: The research model is named only in configuration, and a call is priced at the configured rates its own timestamp falls in
+    // see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
     internal static readonly string[] MayHoldAModel =
     [
+        "src/EquityBrief.Core/Providers/AnthropicMessagesFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleModelFeed.cs",
         "src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs",
     ];
@@ -284,13 +292,13 @@ public partial class NightlyCost
         // empty result. A carve-out that grew without anyone noticing reads
         // exactly like a scan that found nothing.
         Assert.True(
-            MayHoldAClient.Length <= 12,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are twelve feed " +
-            "implementations. A thirteenth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 13,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are thirteen feed " +
+            "implementations. A fourteenth is a file that is not one, or a feed nobody declared.");
 
-        // The model list, stated the same way: two files, the local lane's client and
-        // the research model's live feed.
-        Assert.Equal(2, MayHoldAModel.Length);
+        // The model list, stated the same way: three files, the local lane's client and
+        // the paid model's live feed in each of its two formats.
+        Assert.Equal(3, MayHoldAModel.Length);
 
         // And the list holds exactly the provider implementations, in both
         // directions, so a file added to it that is not one fails rather than
@@ -301,7 +309,9 @@ public partial class NightlyCost
         // local model, which is the first that reaches a model, ten at 6.7, the
         // research model, which is the first that is paid, and eleven at 6.8, one name's
         // own news, which is the night's news endpoint asked for one name and is the
-        // reason it holds a client of its own rather than a ticker on the night's.
+        // reason it holds a client of its own rather than a ticker on the night's, and
+        // twelve at 12.6, Claude's own messages interface, the second format a paid
+        // model answers in.
         var live = Repository.SourceFiles()
             .Select(file => file[Repository.Root.Length..].Replace(Path.DirectorySeparatorChar, '/').TrimStart('/'))
             .Where(IsAProviderImplementation)

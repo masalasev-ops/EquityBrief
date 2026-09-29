@@ -354,7 +354,7 @@ public partial class NightlyRun
         using var store = new TemporaryStore().Migrated();
 
         var clock = FixedClock.At(Night, SessionZones.UnitedStates);
-        var cap = new SpendCap(new RecordedResearchModelFeed(FixtureFolder(), Providers.ResearchModelFeedTests.Shipped()), SpendCaps.Default, clock, store.DatabaseFile);
+        var cap = new SpendCap(new RecordedResearchModelFeed(FixtureFolder(), Providers.ResearchModelFeedTests.Pinned()), SpendCaps.Default, clock, store.DatabaseFile);
 
         RefuseADocument(store, 3);
 

@@ -825,6 +825,41 @@
       "query": "POST chat/completions for What the company sells of KEYS in the paid lane, as the lane comparison asks it with every section paid, the draft written after the checker refused the first, over 1 document the research runner hands that section, over the facts file the 4.2 and 3.4 corrections moved: model deepseek-flash, the request SectionPrompt builds, keyed f7070843228c9907570cc58298066168",
       "fetchedAt": "2026-09-26T04:37:51Z",
       "trimmedTo": "nothing. The whole response, 9837 prompt tokens, 9600 of them served from the provider's cache, and 770 completion tokens, 624 of them reasoning, finishing on stop, created at 2026-09-26T04:37:51Z, off-peak, priced at 0.00052635 dollars by the configured rates, named for the request's key so a replay asking the same request reads it."
+    },
+    {
+      "file": "anthropic-refused-no-workspace.json",
+      "endpoint": "Claude's own messages interface at https://api.anthropic.com, with the key in the x-api-key header and never in the address, and the anthropic-version header 2023-06-01",
+      "query": "POST https://api.anthropic.com/v1/messages with model claude-no-such-model, max_tokens 64, the section instructions SectionPrompt states as the system prompt, a user message stating KEYS's close of 333.42, and stream false, on the Claude key the operator's secrets file held on 2026-09-29, which is not scoped to a workspace and was sent with no anthropic-workspace-id header",
+      "fetchedAt": "2026-09-29T03:48:45Z",
+      "trimmedTo": "nothing. The whole body of the status 400 the provider answered with, refusing the key for naming no workspace before it read the model the request named, which is the error shape the feed's refusal reader reads the provider's own words from. The same body answered the model list and two section requests captured in the same minute, and one copy is kept."
+    },
+    {
+      "file": "anthropic-probe-models.json",
+      "endpoint": "Claude's own messages interface at https://api.anthropic.com, with the key in the x-api-key header and never in the address, the anthropic-version header 2023-06-01, and the anthropic-workspace-id header naming the operator's Default workspace",
+      "query": "GET https://api.anthropic.com/v1/models, the list the feed's probe asks for, which bills nothing",
+      "fetchedAt": "2026-09-29T11:33:08Z",
+      "trimmedTo": "nothing. The whole body of the status 200, thirteen models on one page with has_more false, among them the two the shipped profiles name, claude-sonnet-5-5 and claude-haiku-4-5-20251001."
+    },
+    {
+      "file": "anthropic-section-sonnet.json",
+      "endpoint": "Claude's own messages interface at https://api.anthropic.com, with the key in the x-api-key header and never in the address, the anthropic-version header 2023-06-01, and the anthropic-workspace-id header naming the operator's Default workspace",
+      "query": "POST https://api.anthropic.com/v1/messages with model claude-sonnet-5-5, max_tokens 16000, the section instructions SectionPrompt states as the system prompt, a user message stating KEYS's close of 333.42 and asking for it in one sentence, and stream false, in the field order the feed writes",
+      "fetchedAt": "2026-09-29T11:33:21Z",
+      "trimmedTo": "nothing. The response's Date header and its whole body as they arrived, wrapped as the feed's recordings of this interface are: one text block, stop reason end_turn, 210 input tokens, none read from the provider's cache or written to it, and 27 output tokens with no thinking, priced at 0.00069 dollars by claude-sonnet's configured rates."
+    },
+    {
+      "file": "anthropic-section-budget.json",
+      "endpoint": "Claude's own messages interface at https://api.anthropic.com, with the key in the x-api-key header and never in the address, the anthropic-version header 2023-06-01, and the anthropic-workspace-id header naming the operator's Default workspace",
+      "query": "POST https://api.anthropic.com/v1/messages as anthropic-section-sonnet.json's request with max_tokens 8, so the answer stops at its budget",
+      "fetchedAt": "2026-09-29T11:33:22Z",
+      "trimmedTo": "nothing. The response's Date header and its whole body as they arrived, wrapped as the feed's recordings of this interface are: the text cut to two words, stop reason max_tokens, 210 input tokens and 8 output tokens, billed at 0.0005 dollars by claude-sonnet's configured rates."
+    },
+    {
+      "file": "anthropic-refused-unknown-model.json",
+      "endpoint": "Claude's own messages interface at https://api.anthropic.com, with the key in the x-api-key header and never in the address, the anthropic-version header 2023-06-01, and the anthropic-workspace-id header naming the operator's Default workspace",
+      "query": "POST https://api.anthropic.com/v1/messages as anthropic-section-sonnet.json's request with model claude-no-such-model and max_tokens 64",
+      "fetchedAt": "2026-09-29T11:33:23Z",
+      "trimmedTo": "nothing. The whole body of the status 404 the provider answered with, a not_found_error naming the model, which bills nothing."
     }
   ]
 }

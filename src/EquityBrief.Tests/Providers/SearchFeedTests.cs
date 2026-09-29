@@ -281,7 +281,7 @@ public class SearchFeedTests
     [Fact]
     public void AnOpensFeedsHoldTheSearchToolAndAFixtureOneReachesNoNetwork()
     {
-        var feeds = OnDemandFeeds.FromFixture(Folder(), ResearchModelFeedTests.Shipped());
+        var feeds = OnDemandFeeds.FromFixture(Folder(), ResearchModelFeedTests.Pinned());
 
         Assert.IsType<RecordedSearchFeed>(feeds.Search);
         Assert.False(feeds.ReachesTheNetwork);
