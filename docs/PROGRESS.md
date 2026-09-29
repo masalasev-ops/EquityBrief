@@ -31022,15 +31022,24 @@ Mutated:    the rule, stated before the run: the mechanism each rule the brief s
             M7 the instruction to describe and never prescribe removed: red in the instructions' test, and in the
                Claude pass's, the research record's and the lane comparison's, whose recordings are keyed on the
                instructions.
-            Results: 126MUT
-Held:       126HELD
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 126T of 126T tests ran
+            Results: one run each in a detached worktree at 10396fc, this entry's commit, filtered to the eleven
+            tests, each edit made there and reverted, and the tree read clean after. M1 turned the banned word's
+            test red and left the other ten green; M2 the em dash's test alone; M3 the two theme tests, the
+            research record's test and the lane comparison's, and no other; M4 the invisible answer's test alone;
+            M5 the structured answer's test alone; M6 the structured answer's test and the Claude pass's, whose
+            drafts, refused for citing nothing, asked for second drafts no recording answers. M7 turned the four
+            predicted red and, unpredicted, the two prose rules' tests, for the same cause: their store is the
+            fixture's replayed night, whose key under each figure is asked of the local model under the same
+            instructions, so no recording answered it.
+Held:       red in every test predicted, and in no other but M7's two, which the prediction missed for a cause the
+            prediction itself names.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1548 of 1548 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 44 tables, 725 claims, 725 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 126P placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 126T of 126T tests.
-            Both gates ran over the tree carrying this entry, 126SHA, in a worktree beside the repository, and the
+            0 unexamined, 736 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1548 of 1548 tests.
+            Both gates ran over the tree carrying this entry, 10396fc, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    part 4 of the brief: MDT regenerated on DeepSeek once this has merged and the New York day of its two
             passes has turned, since a regenerate runs once a name a day, and the three reports set side by side
