@@ -16,7 +16,7 @@ namespace EquityBrief.Core.Providers;
 // is three responses captured from the provider the deepseek profile names, before a line
 // of it existed, and the reader accepts the two ways providers in this format report a
 // cached prompt, the provider's own fields and the OpenAI format's.
-// see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
+// see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
 // see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
 public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchModelSettings settings, ProviderRequest? request = null) : IResearchModelFeed
 {

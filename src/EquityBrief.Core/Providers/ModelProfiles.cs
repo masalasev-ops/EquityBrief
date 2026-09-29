@@ -22,7 +22,7 @@ public sealed record ModelProfile(
 // the day that was read. Each paid job names the profile it uses by one word, its `Use`,
 // under a section of its own beside its answer budget and how long a call may take.
 // Switching a job's model is changing that word, and it takes effect on the job's next run.
-// see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
+// see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
 // see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
 public static class ModelProfiles
 {

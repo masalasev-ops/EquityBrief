@@ -147,7 +147,7 @@ public partial class NightlyCost
     // double carried the name by calling it. The third from 12.6, the feed over Claude's own
     // messages interface, named for its format as the other is.
     // see: The night's zero-model-call rule bounds the arithmetic, and the overnight queue is carved out of it by name
-    // see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
+    // see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
     internal static readonly string[] MayHoldAModel =
     [
         "src/EquityBrief.Core/Providers/AnthropicMessagesFeed.cs",

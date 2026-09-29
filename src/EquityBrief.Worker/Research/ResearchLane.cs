@@ -12,7 +12,7 @@ namespace EquityBrief.Worker.Research;
 // key, a model with no price or a format nothing implements refuses before any command
 // runs rather than at the first pass. Nothing here names a provider: the shipped
 // configuration does, and switching model is one word in that file.
-// see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
+// see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
 public static class ResearchLane
 {
     public static ResearchModelSettings Settings(IConfiguration configuration) =>

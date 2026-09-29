@@ -15,7 +15,7 @@ namespace EquityBrief.Tests.Providers;
 // not scoped to one names, and the retirement warning's reach. The profiles as the fixture's claims read them
 // are fixture-expectations'.
 // see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
-// see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
+// see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
 public class ModelProfilesTests
 {
     static string Folder() => Path.Combine(Repository.Root, "fixtures", FixtureExpectation.Folder);
@@ -46,7 +46,7 @@ public class ModelProfilesTests
         Assert.Equal(["model", "max_tokens", "system", "messages", "stream"], sent.RootElement.EnumerateObject().Select(field => field.Name).ToArray());
         Assert.Equal(SectionPrompt.Instructions, sent.RootElement.GetProperty("system").GetString());
         Assert.Equal(["user"], sent.RootElement.GetProperty("messages").EnumerateArray().Select(message => message.GetProperty("role").GetString()!).ToArray());
-        Assert.Equal(16000, sent.RootElement.GetProperty("max_tokens").GetInt32());
+        Assert.Equal(32768, sent.RootElement.GetProperty("max_tokens").GetInt32());
 
         // The system prompt is the feed's own field in this format, and an option setting it is refused at
         // startup as one setting the model is.
@@ -75,7 +75,7 @@ public class ModelProfilesTests
         var request = ResearchModelFeedTests.Recorded(settings);
         var bytes = System.Text.Encoding.UTF8.GetByteCount(request.System) + System.Text.Encoding.UTF8.GetByteCount(request.Prompt);
 
-        Assert.Equal(((bytes + ResearchPricing.TemplateTokens) * 2.50m + 16000 * 10.00m) / 1_000_000m, settings.Pricing.Ceiling(request, settings.AnswerTokens));
+        Assert.Equal(((bytes + ResearchPricing.TemplateTokens) * 2.50m + 32768 * 10.00m) / 1_000_000m, settings.Pricing.Ceiling(request, settings.AnswerTokens));
     }
 
     [Fact]

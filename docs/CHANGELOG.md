@@ -9058,3 +9058,25 @@ Now:
 > | `read-surface` | ... read back off constructed readings worked by hand; and the Run page's checklist names a model profile a job uses from thirty days before its provider's retirement date ... and a stage that failed whose record carries a reason is drawn in that reason's words ... |
 > | `nightly-cost` | ... each run under the prefix the run page reads as by hand. The source scan finds each paid model format's wire in its own feed and in no other shipped file ... |
 Why: the checks reach the behaviour this correction adds.
+
+### 2026-09-29 - ARCHITECTURE.html - the research job's profile is the operator's to switch, and research is back on DeepSeek
+Authorised by: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
+Was:
+> ... The research job names Claude Sonnet 5.5 from 2026-09-29, and switching its model is changing that word and nothing else; ... (see: A local model writes prose from numbers and each paid job names its hosted model in configuration) (see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp) ...
+> <tr><td>Paid model profiles</td><td>... (see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp) ...</td><td>... The operator's brief of 2026-09-28 named three profiles, DeepSeek as configured, Claude Haiku 4.5 and Claude Sonnet 5.5, with Claude's rates from Anthropic's pricing page read on 2026-09-29, and the operator moved research to Claude Sonnet 5.5 that day. ...</td>...
+Now:
+> ... Which profile the research job names is the operator's to switch, and switching its model is changing that word and nothing else; ... (see: A local model writes prose from numbers and each paid job names the hosted model the operator chooses in configuration) (see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp) ...
+> <tr><td>Paid model profiles</td><td>... (see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp) ...</td><td>... with Claude's rates from Anthropic's pricing page read on 2026-09-29; the operator moved research to Claude Sonnet 5.5 that day and back to DeepSeek the same day, to set the two reports on MDT side by side. ...</td>...
+Why: the operator switched research back to DeepSeek on 2026-09-29 to compare MDT's report on each, and a sentence fixing the current model would go false at every switch.
+
+### 2026-09-29 - RUNBOOK.md - research ships on DeepSeek with its budget of 32768, and a switch says the budget is the job's
+Authorised by: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
+Was:
+> | the profile the research job uses | `EquityBrief:Models:Research:Use` | `claude-sonnet` |
+> | the most one research answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `16000` |
+> ... and a call already made keeps the price its run log row recorded (see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp).
+Now:
+> | the profile the research job uses | `EquityBrief:Models:Research:Use` | `deepseek` |
+> | the most one research answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `32768` |
+> ... and a call already made keeps the price its run log row recorded (see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp). The answer budget is the job's and not the profile's, so a switch to a model that counts its reasoning inside its answer wants a budget that holds both: DeepSeek ran on `32768` from 6.7, and Claude Sonnet 5.5 on `16000` for the day it wrote research.
+Why: the operator switched research back to DeepSeek on 2026-09-29, and the shipped values are the table's.

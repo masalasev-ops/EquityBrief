@@ -14,7 +14,7 @@ namespace EquityBrief.Tests.Checks;
 // resolved from the shipped settings, the switch changing the model called, the fixture pinned to its own
 // profile whatever the shipped switch says, and a key the secrets file does not hold stopping the job with
 // no other profile answering for it.
-// see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
+// see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
 // see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
 public partial class FixtureExpectations
 {
@@ -58,12 +58,12 @@ public partial class FixtureExpectations
         Assert.Equal((new DateOnly(2027, 9, 28), new DateOnly(2026, 9, 29)), (sonnet.Retires, sonnet.RetiresReadOn));
 
         // The research job's own budget and timeout whichever profile it names, and the shipped switch naming
-        // Claude Sonnet 5.5, on the operator's answer of 2026-09-29.
-        Assert.All(new[] { deepseek, haiku, sonnet }, settings => Assert.Equal((16000, TimeSpan.FromSeconds(600)), (settings.AnswerTokens, settings.Timeout)));
+        // DeepSeek with the budget it ran on, as the operator last switched it.
+        Assert.All(new[] { deepseek, haiku, sonnet }, settings => Assert.Equal((32768, TimeSpan.FromSeconds(600)), (settings.AnswerTokens, settings.Timeout)));
 
         var shipped = new ConfigurationBuilder().AddJsonFile(ResearchModelFeedTests.ShippedConfiguration).Build();
 
-        Assert.Equal("claude-sonnet", shipped[ModelProfiles.Use(ModelProfiles.ResearchJob)]);
+        Assert.Equal("deepseek", shipped[ModelProfiles.Use(ModelProfiles.ResearchJob)]);
     }
 
     [Fact]

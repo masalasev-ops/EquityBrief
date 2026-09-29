@@ -30675,3 +30675,59 @@ Carried:    MDT's report, outstanding since the night of 2026-09-28, written on 
             actual cost of each of the first five reports written on claude-sonnet, recorded beside the estimate of
             0.84 to 1.30 dollars, and of the labeller's first five nights beside its table, correction A's. The news
             labeller and its screens.
+
+### 12.6 ruling - research switched back to DeepSeek on the operator's word, so a DeepSeek report on MDT can be set beside the one Claude Sonnet 5.5 wrote, and which profile a job names is the operator's to switch   2026-09-29
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-29, after MDT's report was written on Claude Sonnet 5.5, word for word:
+            > Ok what is the switch to turn it to deepseek. I want a comparitive study of this report vs deepseek
+            > generated  report. Can you generate a deepseek report as well to compare
+            > report on MDT
+            and, offered a copy of the store today or the live store once the day has passed:
+            > Switch over to deepseek, and regenerate the MDT report on live store
+Ruled:      - The research job names `deepseek` again, with its answer budget back at the 32768 tokens DeepSeek ran on
+              from 6.7, since DeepSeek counts its reasoning inside its answer; the timeout stays 600 seconds. The
+              other profiles are unchanged.
+            - MDT's report is regenerated on DeepSeek on the live store once the UTC day its Claude pass ran has
+              passed, since a regenerate starts nothing on a day a pass for the name already ran. DeepSeek's sections
+              then draw on MDT's page, and Claude's stay in the store as the earlier version of each, which is what the
+              comparison reads.
+            - Which profile a job names is the operator's to switch: a switch is recorded as a ruling here with the
+              day and the operator's words, and fixes nothing in DECISIONS. The two entries that fixed research on
+              Claude Sonnet 5.5 are superseded: "A paid job names its model profile in one word, and a profile is
+              priced at its configured rates at its call's own timestamp" by "A paid job names its model profile in
+              one word the operator switches, and a profile is priced at its configured rates at its call's own
+              timestamp", and "A local model writes prose from numbers and each paid job names its hosted model in
+              configuration" by "A local model writes prose from numbers and each paid job names the hosted model the
+              operator chooses in configuration", each moved below with its reasoning.
+Measured:   MDT's report on Claude Sonnet 5.5, run by hand through the drain from `main` at 255a478 on 2026-09-29,
+            read off the run log: 12 calls to `claude-sonnet-5-5` from 12:17:23Z to 12:20:42Z, 0.756394 dollars in all,
+            against the estimate of 0.84 to 1.30. That is the first of the five correction A records. It wrote eleven
+            sections and left one out: the industry cycle answered with no text after 170 output tokens, stopping on
+            end_turn, and cost 0.083694 dollars, which the instructions' "if the facts and documents do not support the
+            section, write nothing" reads as. It fetched 157 documents and admitted all 157.
+Changed:    the worker's shipped settings, research's `Use` and `AnswerTokens`; RUNBOOK's table and its passage on a
+            switch; section 6.4's paragraph and section 17's profiles row in `ARCHITECTURE.html`; their prior text in
+            `CHANGELOG.md`; the two decisions superseded and every citation repointed; and the two tests that state the
+            shipped word and budget.
+Tests:      1539, unchanged: `EachShippedProfileResolvesFromTheShippedSettingsWithItsProvidersPricesAndDates` now reads
+            `deepseek` and 32768 as shipped, and `ModelProfilesTests`' request and ceiling read 32768.
+Claims:     725, unchanged.
+Pins:       the branch against `main` edits the worker's settings, feed and resolver comments and tests, none of
+            them in the three pin lists. No version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: the ruling's own value reversed alone, filtered to the tests that read it.
+            Predicted:
+            R1 the shipped `Use` back to `claude-sonnet`, filtered to `fixture-expectations`' profile tests and the
+               RUNBOOK test: red in the shipped profiles test and in the RUNBOOK test.
+            Results: 126R2
+Held:       126H2
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1539 of 1539 tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 725 claims, 725 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 126P2 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1539 of 1539 tests.
+            Both gates ran over the tree carrying this entry, 126SHA2, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    MDT's DeepSeek regenerate, once the UTC day of its Claude pass has passed, and the comparison of the two
+            reports section by section. The four correction A records still owed, over whichever days research names
+            Claude Sonnet 5.5.
