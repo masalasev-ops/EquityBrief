@@ -881,6 +881,57 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public void TwoOfAFilingsOtherTablesWhoseTitlesSayNothingOfTheirGroupingNameNoFigureTwice()
+    {
+        // Two tables whose titles name no grouping, each with a total for the quarter, as ARES's filing
+        // stated its revenues on the night of 2026-09-28: named alike, the two totals would be one name
+        // twice and the facts file refused. The second table carries its count among those sharing the
+        // grouping, and its growth is named as its figures are.
+        const string Payload = """
+        {
+          "revenueTables": [
+            {
+              "report": "R41.htm",
+              "title": "Revenues (Details)",
+              "periods": [ { "months": 3, "ended": "2026-06-30" } ],
+              "consolidated": [ { "lineItem": "Total revenues", "months": 3, "ended": "2026-06-30", "value": "1200000000" } ],
+              "groups": []
+            },
+            {
+              "report": "R44.htm",
+              "title": "Revenues - Disaggregated (Details)",
+              "periods": [ { "months": 3, "ended": "2026-06-30" } ],
+              "consolidated": [ { "lineItem": "Total revenues", "months": 3, "ended": "2026-06-30", "value": "1150000000" } ],
+              "groups": []
+            }
+          ],
+          "tableGrowth": [
+            { "report": "R41.htm", "group": 0, "label": "total", "lineItem": "Total revenues", "months": 3, "ended": "2026-06-30", "yearEarlier": "2025-06-30", "value": "1.2" },
+            { "report": "R44.htm", "group": 0, "label": "total", "lineItem": "Total revenues", "months": 3, "ended": "2026-06-30", "yearEarlier": "2025-06-30", "value": "1.15" }
+          ]
+        }
+        """;
+
+        using var document = JsonDocument.Parse(Payload);
+
+        var tables = FactsAssembler.RevenueTables(document.RootElement);
+        var grown = FactsAssembler.TableGrowth(document.RootElement);
+
+        Assert.Equal(
+            [
+                ("segment other table 2 total Total revenues 2026-06-30", "1150000000"),
+                ("segment other table total Total revenues 2026-06-30", "1200000000"),
+            ],
+            tables.Select(fact => (fact.Name, fact.Value)).Order());
+        Assert.Equal(
+            [
+                ("segment other table 2 total Total revenues growth on a year earlier 2026-06-30", "1.15"),
+                ("segment other table total Total revenues growth on a year earlier 2026-06-30", "1.2"),
+            ],
+            grown.Select(fact => (fact.Name, fact.Value)).Order());
+    }
+
+    [Fact]
     public void ATableOfTwelveMonthPeriodsAloneIsCarriedAndNamedForItsMonths()
     {
         // 8.0's ruling, over a table shaped as an annual report files one: three columns of

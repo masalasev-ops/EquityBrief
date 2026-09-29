@@ -29741,3 +29741,46 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             operator's store under `data/` was not touched by either.
 Carried:    the operator's `register --moved`, run once with items 2 and 3's remedy before the first night after
             the merge.
+
+### 6.8 - correction: two of a filing's other tables whose titles read alike name their figures apart, where the second repeated the first's names and the facts file was refused   2026-09-28
+Corrects:   6.8's facts file, which carries each of the filing's other revenue tables named by what its title says
+            it groups by, and a title that says nothing of it as "other table".
+Found:      the night of 2026-09-28 stopped at its facts step: "The facts file for ARES would name 'segment other
+            table total Total revenues 2026-06-30' 2 times." ARES's filing states two tables of revenues whose
+            titles name no grouping, each with its total for the quarter, and a figure repeated in one table was
+            told apart by its position while one repeated across two tables was not. It first reached a night on
+            2026-09-28, the first night reading the filings fetched for every member on 2026-09-27.
+Repaired:   the tables' names are given once, in the order the filing states the tables: the first to take a
+            grouping keeps the name it had, and each later table sharing it carries its count among them, as
+            "segment other table 2 total Total revenues 2026-06-30". Each table's growth is named from the same
+            list, so a growth still carries its table's figures' name. No name a filing with one table of each
+            grouping writes moves, so no stored facts file and no recording is touched.
+Measured:   nothing new.
+Guarded:    one test, new. `TwoOfAFilingsOtherTablesWhoseTitlesSayNothingOfTheirGroupingNameNoFigureTwice`: two
+            tables shaped as ARES's, each with a total for the quarter and a growth, named apart with the value
+            each table states.
+Written:    nothing beyond this entry.
+Expected:   derived: no expectation file moves.
+Tests:      1511, from 1510: one added.
+Claims:     700, unchanged.
+Pins:       the branch against `main` edits `FactsAssembler.cs` and a test, in none of the three pin lists. No
+            version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: the mechanism reversed alone, filtered to the new test and the test of
+            the tables it sits beside.
+            Predicted:
+            F1 every table given the name its grouping reads, with no count: red in the new test alone.
+            Results: one run in a detached worktree at 0f8387a, this entry's commit, filtered to the two tests,
+            the edit made there and reverted, and the tree read clean after. The whole suite ran green over
+            0f8387a in the gates, 1511 of 1511. F1 turned the new test red and left the other green.
+Held:       red in the test predicted, and in no other.
+            Read-only over the operator's store, the three table readers named every figure once for all 503
+            members' newest filings with this correction applied.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1511 of 1511 tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 700 claims, 700 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 711 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1511 of 1511 tests.
+            Both gates ran over the tree carrying this entry, 0f8387a, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    the night of 2026-09-28 run again once this merges.
