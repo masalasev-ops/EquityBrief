@@ -53,7 +53,7 @@ public sealed class UnusableResearchAnswer(string message, ResearchAnswer answer
 // two figures without knowing whose model it is.
 // see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
 // see: Every paid call is made through the spend cap, which holds each paid job's model
-// see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
+// see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
 public interface IResearchModelFeed
 {
     int Requests { get; }
@@ -335,7 +335,7 @@ public sealed record ResearchPricing
 // None of it is written in code. The shipped configuration names each profile and the one
 // each job uses, and a different provider or model for a job is one word in that file,
 // with its key in the secrets file beside it.
-// see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
+// see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
 public sealed record ResearchModelSettings
 {
     // The OpenAI chat completions format most providers serve, and Claude's own messages

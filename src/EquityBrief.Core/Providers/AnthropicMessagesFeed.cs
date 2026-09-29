@@ -18,7 +18,7 @@ namespace EquityBrief.Core.Providers;
 // in the body, so the instant an answer carries is the response's own `Date` header, which
 // is the provider's clock rather than this machine's.
 // see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
-// see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp
+// see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
 public sealed class AnthropicMessagesFeed(HttpClient client, ResearchModelSettings settings, ProviderRequest? request = null) : IResearchModelFeed
 {
     public const string Path = "v1/messages";

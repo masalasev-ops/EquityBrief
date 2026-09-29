@@ -210,9 +210,9 @@ The paid models are the one part of the system that costs money, and nothing in 
 
 | Setting | Key | As shipped |
 |---|---|---|
-| the profile the research job uses | `EquityBrief:Models:Research:Use` | `claude-sonnet` |
+| the profile the research job uses | `EquityBrief:Models:Research:Use` | `deepseek` |
 | how long one research call may take, in seconds | `EquityBrief:Models:Research:TimeoutSeconds` | `600` |
-| the most one research answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `16000` |
+| the most one research answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `32768` |
 | the most research may spend in a UTC day, in dollars | `EquityBrief:Spend:DayCap` | `10` |
 | the most research may spend in a UTC month, in dollars | `EquityBrief:Spend:MonthCap` | `50` |
 
@@ -235,7 +235,7 @@ Each profile's fields, under `EquityBrief:Models:Profiles:<profile>`:
 | `Prices:PeakDays` | the days those hours fall on, one entry per day | `Monday, Tuesday, Wednesday, Thursday, Friday` | none | none |
 | `Prices:PeakMultiple` | what the rates are multiplied by in those hours | `2` | none | none |
 
-**Switching a job's model is changing its one word.** Set `EquityBrief:Models:Research:Use` to `deepseek`, `claude-haiku` or `claude-sonnet`, and the next pass the drain starts is written by that profile's model; a pass already running finishes on the model it started with. Nothing else changes: the other profiles stay as they are, a section records the model that wrote it, and a call already made keeps the price its run log row recorded (see: A paid job names its model profile in one word, and a profile is priced at its configured rates at its call's own timestamp).
+**Switching a job's model is changing its one word.** Set `EquityBrief:Models:Research:Use` to `deepseek`, `claude-haiku` or `claude-sonnet`, and the next pass the drain starts is written by that profile's model; a pass already running finishes on the model it started with. Nothing else changes: the other profiles stay as they are, a section records the model that wrote it, and a call already made keeps the price its run log row recorded (see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp). The answer budget is the job's and not the profile's, so a switch to a model that counts its reasoning inside its answer wants a budget that holds both: DeepSeek ran on `32768` from 6.7, and Claude Sonnet 5.5 on `16000` for the day it wrote research.
 
 **Adding a key.** A profile's `Key` names the section of the secrets file holding its key, as `EquityBrief:Models:<Key>:ApiKey` in the worker's `appsettings.Secrets.json`: `Research` for DeepSeek, as it has been since 6.7, and `Claude` for both Claude profiles. A Claude key that is not scoped to a workspace is refused by the provider on every request until the workspace it bills to is named beside it, as `EquityBrief:Models:Claude:WorkspaceId`, the `wrkspc_` identifier the provider's console shows for the workspace; a key made inside a workspace needs none. A job whose profile names a key the secrets file does not hold stops with a plain line saying which profile and which key, on the pass's own run log row, which the drain settles the request under and the run page draws; no other profile answers for it (see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names).
 
