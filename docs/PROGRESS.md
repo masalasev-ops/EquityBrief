@@ -29949,3 +29949,209 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry and the one before it, b67c082, in a worktree beside the
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    nothing.
+
+### 12.6 ruling - each paid job names a model profile by one word in the settings file, research moves to Claude Sonnet 5.5, and a paid model labels the news of tonight's list, planned and approved before anything is built   2026-09-29
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-28: the brief below, "A planning pass first, then build." While it was read:
+            the Claude key sits in the worker's secrets file under Models, Claude, ApiKey; and "There is a report
+            pending for tonight run. Can you use the claude portion for it's run. If you need to delay the report
+            generation until you are finished coding then do so".
+Answered:   on 2026-09-29 at about 02:55 UTC, two questions put while planning. Research moves to Claude Sonnet 5.5
+            and stays there, `Models:Research:Use` being `claude-sonnet`, where the brief kept it on DeepSeek. And
+            MDT's drain, which the 09-28 night asked for at 01:07 UTC and which waited to start on DeepSeek at
+            04:00 UTC, is stopped on the plan's approval. It was stopped at 03:31 UTC; MDT's request stayed
+            outstanding with no run started, and a drain on the Claude profile writes it once the profiles land.
+Ruled:      the plan approved on 2026-09-29 at about 03:31 UTC after five rounds, at a glance:
+            - Profiles: `Models:Profiles` holds `deepseek` as configured today, `claude-haiku` and `claude-sonnet`,
+              each with its format, address, model, the secrets section holding its key, its options, its prices
+              and its provider's earliest published retirement date with the day it was read. `deepseek` names the
+              key `Research`, where DeepSeek's key already sits, and both Claude profiles name `Claude`. A job names
+              its profile by `Use`, with its own answer budget and timeout. A profile whose key the secrets file
+              does not hold stops that job alone with a plain line the run page draws, and never falls back.
+            - Prices: from https://platform.claude.com/docs/en/about-claude/pricing, read on 2026-09-29 at about
+              02:45 UTC, in dollars a million tokens: Claude Haiku 4.5, 1 input, 1.25 a five-minute cache write,
+              0.10 a cache read, 5 output; Claude Sonnet 5.5, 2, 2.50, 0.20, 10. The model IDs, from
+              https://platform.claude.com/docs/en/about-claude/models/overview the same day, are
+              `claude-haiku-4-5-20251001` and `claude-sonnet-5-5`. Peak windows are DeepSeek's alone. Every cost
+              figure and the spend cap read the active profile's prices, and a call keeps the price its row carries.
+            - Retirement: the models page commits to Haiku 4.5 until "Not sooner than October 15, 2026" and to
+              Sonnet 5.5 until "Not sooner than September 28, 2027"; DeepSeek's pricing page, read the same day,
+              publishes none for `deepseek-flash`. From 30 days before a profile's date, the run page carries one
+              line naming the profile, each job using it and the date.
+            - The wire: Claude's native interface in a feed named for its format, `AnthropicMessagesFeed`, format
+              `anthropic`, sent as plain HTTP like every other feed, its parser written against captured responses;
+              the model-name scan gains the interface's `anthropic-version` header as a pattern.
+            - Articles: the news pulse counter keeps every article naming a member from the one query it already
+              makes, its text cut at 8,000 characters, for 31 days, each judged for admissibility as it is stored.
+              A `news-fill --days 30` verb, run by hand on the operator's word, fills the window at once.
+            - The labeller: a process of its own, started after the close as the drain is started, becoming
+              section 14's step 22, with its calls and its spend on its own run and never the night's, a fifth
+              carve-out of the hard rule. It reads tonight's list in the order drawn; for each name the stored,
+              admitted articles of the 30 days before the night, at most 20, newest first, not yet labelled by the
+              active profile under the instruction's version; one call an article through the spend cap, with
+              structured output on a Claude profile and JSON mode on the other.
+            - Labels: a kind from the brief's nine, a direction for the company, and a reason of one sentence holding
+              no digit, so the reason carries no number the facts file does not. An answer failing a check is asked
+              once more; failing twice it is stored as unreadable with its cause, counted, and not paid for again.
+              A label is never overwritten, and after a switch the new profile writes rows of its own.
+            - Spend: every paid call counts against the day cap of 10 dollars and the month cap of 50; a label is
+              also judged against the labeller's own month limit, proposed at 5 dollars, and the labeller has its
+              own time limit, proposed at 20 minutes. Both settle from its first 20 nights.
+            - Screens: a News region on the name page after "On the list before", with the brief's tabs, tags, bar
+              and reasons, naming the labelling model once; Tonight's positive and negative counts per row; the
+              labeller's line in the run page's research and spend region. An opinion piece sits in the opinion tab
+              alone and counts in no direction tab, no bar and no count on Tonight.
+            - Recorded tests read the fixture's own `models.json`, so the operator's switch moves no recorded test.
+Corrected:  on the first review, 2026-09-29: correction 1, the retirement line above; and correction 2, that the
+            unreadable answers are counted by cause over the labeller's first 20 nights beside its time and month
+            limits, and that a share above one in ten refused for a digit brings back the alternative of a number
+            the article's own stored text carries. On the second review: correction A, below.
+Expected:   labelling at a typical list of 3 names, each on its first night with 20 articles, 60 labels a night and
+            21 nights a month, a label being about 1,480 tokens in and 60 out: Haiku 0.11 dollars a night and 2.24 a
+            month; Sonnet 0.28 and 5.85, before any thinking it bills; DeepSeek off peak 0.015 and 0.33. The swing
+            filter's three live nights listed 3, 1 and 1 names. A research pass on Sonnet 5.5, priced from the last
+            six DeepSeek passes' own token counts with the newer tokenizer's 30%, comes to 0.84 to 1.30 dollars
+            against the 0.04 to 0.05 they cost, an upper figure, since DeepSeek counts its reasoning as output.
+Measured:   read-only on the operator's store, 2026-09-29. The night's news query returned 1,370 to 1,963 articles
+            over 2 pages on its last seven nights. The 11,531 news documents research passes stored run to a
+            mean of 4,240 characters after a cut at 8,000, and 93.6% fit whole. Over 14 stored sessions the
+            median member drew 18 articles, and 47.9% of members reached 20.
+Order:      this entry and the 12.7 and 12.5 rulings after it; then the profiles, with research on
+            `claude-sonnet` and MDT's report; then "Close to a buy point"; then the labeller and its screens; then
+            the sweep, whose computing starts only once the rest are merged. Nothing merges while a night, the
+            overnight queue or the labeller runs.
+Brief:      the operator's words, whole.
+            > Build: news for tonight's listed stocks labelled by a paid model, with the model
+            > chosen by one switch in the settings file. A planning pass first, then build.
+            >
+            > === 1. Model profiles and a switch per job ===
+            > Today appsettings.json names one paid model under Models:Research. Replace that
+            > with named profiles and one switch per job:
+            >   - Models:Profiles holds one entry per model: its format, address, model name,
+            >     the name of its key in the secrets file, and its prices. Start with
+            >     "deepseek", as configured today; "claude-haiku", Claude Haiku 4.5; and
+            >     "claude-sonnet", Claude Sonnet 5.5.
+            >   - Each job that calls a paid model names the profile it uses:
+            >     Models:Research:Use stays "deepseek", unchanged in behaviour, and a new
+            >     Models:News:Use starts as "claude-haiku". Switching to "claude-sonnet" or
+            >     "deepseek" is changing that one word, and takes effect on the next night.
+            >   - Claude profiles use Claude's own interface, a second value for a profile's
+            >     format beside the OpenAI-style one DeepSeek uses. Anthropic describes its
+            >     OpenAI compatibility layer as for testing, and the labeller needs dependable
+            >     structured output, which the native interface provides.
+            >   - Claude's prices come from Anthropic's pricing page, recorded with the page
+            >     and date in PROGRESS. Every cost figure and the spend cap read the active
+            >     profile's prices, including peak-hour rules, which are DeepSeek's alone.
+            >   - A profile naming a key the secrets file does not hold stops that job with a
+            >     plain message on the run page. It never falls back to another model.
+            >
+            > === 2. The news labeller ===
+            > Each night, after the list is drawn, for every stock on tonight's list: its
+            > stored news articles from the last 30 days, at most 20, newest first. Each
+            > article not already labelled by the active profile is sent with its title and
+            > stored content, and the model returns:
+            >   - kind: results, guidance, product, legal or regulatory, deal, analyst
+            >     change, management, opinion or promotional, or other
+            >   - direction for the company: positive, negative or neutral
+            >   - one sentence saying why
+            > The instruction is written once, versioned, and stated in the architecture.
+            >
+            > Each label is stored with the article, the profile, the model and the
+            > instruction's version. A label is never overwritten: after a switch, the new
+            > model labels what it has not seen, and the page shows the newest label with the
+            > model that wrote it. An answer that does not parse is retried once, then left
+            > unlabelled and counted on the run page.
+            >
+            > It runs after the arithmetic, bounded by its own time limit, and a failure
+            > there never stops the night or changes the list.
+            >
+            > === 3. Spend ===
+            > The labeller's spend is its own line: tonight's cost and the month's, with the
+            > articles labelled, on the run page's research and spend region. It has a
+            > monthly limit of its own, proposed in section 17. Once reached, it labels
+            > nothing more that month and says so on the run page and on each unlabelled
+            > stock. State the expected cost a night and a month at a typical list size for
+            > each of the three profiles.
+            >
+            > === 4. Where it shows ===
+            > - A stock's report, news section: tabs for all, positive, negative, neutral and
+            >   opinion. Each headline carries its kind as a small tag, its source, date and
+            >   link, and its one-line reason on hover or focus. Above the tabs, a bar of
+            >   positive against negative over the 30 days. The model that wrote the labels is
+            >   named once, in small type.
+            > - Tonight: on each row, the count of positive and negative stories.
+            > - A stock with no labels shows its headlines unlabelled, with one line saying
+            >   why: not on the list, the month's limit reached, or the model unreachable.
+            > - Labels are context. No gate, order or plan reads them.
+            >
+            > === Documents and tests ===
+            > ARCHITECTURE.html: the profiles and the switch, the labeller in the catalogue and
+            > the night's steps, its store in section 16, its limits in section 17, its
+            > failure rows in section 18, and the news regions in section 15. SCHEMA for the
+            > label store. RUNBOOK: how to switch models and add a key. HOW_IT_WORKS.html
+            > section 7: one sentence that a listed stock's news is sorted by what kind of
+            > story it is and which way it cuts, by a model you choose.
+            >
+            > Tests: each profile resolved from settings; the switch changing the model
+            > called; a missing key refused without fallback; a label never overwritten after
+            > a switch; an unparseable answer retried once then counted; the monthly limit
+            > stopping the labeller; the fixture night pinned to its own profile so the
+            > operator's switch changes no recorded test; and the news tabs, bar and Tonight
+            > counts asserted off the rendered pages.
+Review:     the first review's two corrections, whole.
+            > === Correction 1. Warn before a profile's model is retired ===
+            > F8 found Anthropic commits to Haiku 4.5 only until not sooner than 2026-10-15,
+            > about two weeks away, and Haiku 4.5 is the newest Haiku. Each profile carries
+            > the earliest retirement date its provider publishes, read from the models page
+            > with the date read. From 30 days before it, the run page shows one line naming
+            > the profile, the job using it and the date. On the day the model stops
+            > answering, the labeller's existing unreachable check stops it with its plain
+            > line, as planned, and never falls back.
+            >
+            > === Correction 2. Measure what the no-digit rule costs ===
+            > F5's rule is sound, but reasons like "third-quarter" pass while "Q3" does not,
+            > and every refused answer is paid for twice. Count unreadable answers by cause
+            > over the labeller's first 20 nights, beside its time and month limits, and
+            > record the share. If more than one answer in ten is refused for a digit, bring
+            > the alternative back to the operator: a number allowed only where the article's
+            > own stored text carries it.
+            The second review's run order and correction A, whole. Its "PRs 1 and 2" and "PRs 3 and 4" are the
+            plan's own numbering of its four pull requests, and not GitHub's.
+            > Three pieces of work, in this run order. Nothing merges while a night, the queue
+            > or the labeller is running.
+            >
+            >   1. The approved news plan, PRs 1 and 2 (the ruling entry, and the profiles
+            >      with research on claude-sonnet and MDT's report), with correction A below.
+            >   2. The second list on Tonight, "Close to a buy point" (part C).
+            >   3. The approved news plan, PRs 3 and 4 (the labeller and its screens).
+            >   4. The sweep over the stored history (part B): its planning pass may be
+            >      written at any time, but its computing starts only after 1 to 3 are merged.
+            >
+            > === A. One correction to the approved news plan ===
+            > The Sonnet research cost is an upper estimate from DeepSeek's token counts. For
+            > the first five reports written on claude-sonnet, record each one's actual cost
+            > from Anthropic's usage figures in PROGRESS beside the estimate of $0.84 to $1.30,
+            > and do the same for the labeller's first five nights against its table. Any
+            > single report costing more than $2 is named on the run page's "Anything to worry
+            > about" region with its cost, so an expensive report is seen the morning after,
+            > not at the month's end. Everything else in the plan stands as approved.
+Noted:      the build supersedes "The research model is one interface with an implementation per wire format,
+            chosen by configuration and never falling back", "The research model is named only in configuration,
+            and a call is priced at the configured rates its own timestamp falls in" and "Every paid call is made
+            through the spend cap, which holds the research model", each for profiles and jobs; it narrows "Every
+            part of a page states where it came from and as of when, and a written section when it was written
+            rather than which model wrote it" for the news region alone; and CLAUDE.md's hard rule gains its fifth
+            carve-out, with the prior text to CHANGELOG. The operator's messages of this planning pass are also
+            kept word for word in the local `prompts/` archive, which nothing in the corpus reads.
+Changed:    nothing.
+Tests:      none added.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 140T of 140T tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 140B tables, 140C claims, 140P PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 140R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 140T of 140T tests.
+            Both gates ran over the tree carrying this entry and the two after it, 140SHA, in a worktree beside the
+            repository, and the operator's store under `data/` was not touched by either.
+Carried:    the profiles with research on `claude-sonnet` and MDT's report; then, after the 12.7 ruling's work,
+            the labeller and its screens, with correction A's five reports and five nights recorded as they come.
