@@ -30155,3 +30155,113 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    the profiles with research on `claude-sonnet` and MDT's report; then, after the 12.7 ruling's work,
             the labeller and its screens, with correction A's five reports and five nights recorded as they come.
+
+### 12.7 ruling - a second list on tonight's page, "Close to a buy point", draws the members that missed exactly one gate and no exclusion, nearest to qualifying first, and recommends nothing   2026-09-29
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-26, and not built; the specification below, given on 2026-09-29 with the
+            second review of the plan the 12.6 ruling records, and approved "as written" on the fourth.
+Ruled:      at a glance, as approved:
+            - What it holds: a member whose stored `gate_result` row failed exactly one of the five gates, market,
+              trend and strength, setup, trigger and trade, and carries no exclusion. Two failed gates, or any
+              exclusion, keep it off.
+            - The cap: the two lists together draw at most twenty rows, tonight's list first and the second filling
+              the rest, each list's true count stated above its rows.
+            - The distance: one number for every gate, how far its deciding value sits from its bar as a share of
+              the bar. A strength, a breadth, a depth, a dry-up, a reward to risk or a stop outside its bounds
+              reads as its shortfall over the bar. A trigger first fired N sessions ago against a window of W reads
+              (N - W) / W. A condition not met at all counts as one whole bar: no firing among the stored results,
+              no band to set a target or a stop at, a setup outside an anchored support band. A trend that is not
+              an uptrend adds 0.5 for a range and 1.0 for a downtrend, the classifier's range sitting between the
+              two. Shortfalls within one gate add. Ties go by the first list's order. The reasoning: every bar
+              here is a quantity with a natural zero, so the shortfall as a share of the bar needs no unit and no
+              scale set by hand. A count of the members lying between a value and its bar was rejected, because it
+              moves a stock's distance when other stocks move.
+            - A closed market: tonight's list is empty by design, and the second list holds the members failing the
+              market alone, under one line stated once, that they would qualify if the market turned, with the
+              breadth and its bar.
+            - It computes nothing new and reads the gate results the night already stores. Its pin diff is empty:
+              it touches the read surface, `MarkRenderer.cs`, `SinglePageApp.cs` and the overnight queue's order,
+              and none of the sources the swing filter's, the rule versions' or the candidate evaluators' pins
+              read. It is drawn from 2026-09-24, the first night whose live gate results are stored; the replayed
+              rows of 2026-09-21 to 2026-09-23 are read by the trigger alone and never drawn.
+            - It recommends nothing: the edge clock judges the first list alone; Past picks shows no second-list
+              stock; the list's key says the near-miss measurement already scores these stocks by the gate they
+              missed; a stock on it opens to its report, whose "Why it is here" names the gate missed and by how
+              much; the overnight queue drafts the first list, then the second, then every other member, on the
+              local model alone; the news labeller labels the first list alone, so a second-list row carries no
+              news counts, and the key says so.
+Measured:   read-only on the operator's store, 2026-09-29, over the 2026-09-28 night's rows under version 3. 56
+            members missed exactly one gate with no exclusion, and 2 more missed one gate and carried an exclusion.
+            Of the 56: trend and strength 49, of them 28 in a range with strength over its bar, 14 in a range with
+            strength under it, 8 in a downtrend and 1 in an uptrend with strength under it; trade 4, of them 3 with
+            no band to set a target at and 1 at 1.44 times the risk against 1.5; trigger 2; setup 1, a pullback of
+            0.39 typical moves against 1 to 5.
+Brief:      the operator's words, whole.
+            > === C. The second list on Tonight: "Close to a buy point" ===
+            > Asked for on 2026-09-26 and never built.
+            >
+            > What it holds: stocks that passed every gate of the live filter except exactly
+            > one. Missing two or more keeps a stock off it. Exclusions stay exclusions: an
+            > earnings date inside the holding window, a price series in doubt or a missing
+            > day in the bars are reasons not to trade, not a check narrowly failed.
+            >
+            > The two lists together show at most twenty stocks, buy points first, the second
+            > list filling the rest. The page states each list's true count.
+            >
+            > Each row: the gate it missed, the value it had and the bar it needed, in plain
+            > words, for example "the buy signal fired 5 sessions ago, needs 3 or fewer" or
+            > "the reward is 1.3 times the risk, needs 1.5"; plus everything a first-list row
+            > shows, including the business state and the swing trade's entry, stop and target
+            > where one exists.
+            >
+            > Order: nearest to qualifying first. Propose one comparable distance to each
+            > gate's bar, with its reasoning; ties broken by the first list's own order.
+            >
+            > On a night the market gate is closed, the first list is empty by design. The
+            > second list then shows the stocks passing every gate except the market, under
+            > one line saying they would qualify if the market turned, with the breadth figure
+            > and its bar, stated once and not on each row.
+            >
+            > It reads the gate results already stored for every member every night and
+            > computes nothing new. State the pin diff and that it is empty. It is drawn for
+            > earlier nights too, from the first night whose gate results are stored; state
+            > which night that is.
+            >
+            > It recommends nothing:
+            >   - the edge clock judges only the first list
+            >   - Past picks never shows a second-list stock
+            >   - the key under the list says the near-miss measurement already scores these
+            >     stocks by the gate they missed
+            >   - a stock on it opens to its report, whose "why it is here" region names the
+            >     gate missed and by how much
+            >   - the overnight queue drafts the first list first, then the second, on the
+            >     local model only
+            >   - the news labeller labels the first list only; a second-list row carries no
+            >     news counts and the list's key says so
+            >
+            > Name it "Close to a buy point": the watch list already names the operator's own
+            > stocks.
+            >
+            > Documents: section 15.7 gains the region, section 17 the cap of twenty across
+            > both lists, section 18 the row for a night where both lists are empty, prior
+            > text to CHANGELOG, rules stated for any day. HOW_IT_WORKS.html sections 6 and 10
+            > each gain one sentence on the second list.
+            >
+            > Tests: a constructed night with stocks each missing one different gate, one
+            > missing two, and one excluded by an earnings date; only the first group appears,
+            > in the stated order, each with its gate and distance. A closed-market night
+            > shows the second list under its line. Twenty is the cap across both lists. An
+            > earlier night draws from its stored gate results. Assert every row off the
+            > rendered page. Mutations: the one-gate count changed to two, the exclusion rule
+            > removed, and the order reversed, each expected red.
+Changed:    nothing.
+Tests:      none added.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 141T of 141T tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 141B tables, 141C claims, 141P PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 141R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 141T of 141T tests.
+            Both gates ran over the tree carrying this entry and the one before and the one after it, 141SHA, in a
+            worktree beside the repository, and the operator's store under `data/` was not touched by either.
+Carried:    the second list, built after the profiles and MDT's report and before the labeller.
