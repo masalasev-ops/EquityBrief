@@ -30856,3 +30856,191 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             operator's store under `data/` was not touched by either.
 Carried:    item 2 and its commands; the sweep, its report and its pull request, merged once the operator has read
             the report; the freeze, on the operator's word.
+
+### 12.6 ruling - every research model is told to describe and never prescribe and four asks are tightened, the claim check holds the corpus's prose rules, and Claude's refusals are fixed by an answer shaped as cited sentences and a retry of an empty theme answer, from the operator's comparison of MDT's two reports   2026-09-29
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-29, once MDT's report had been written on DeepSeek beside the one Claude Sonnet
+            5.5 wrote that day, word for word, the one word the corpus bans written here as "[the word the corpus
+            bans]":
+            > The MDT comparison: keep research on DeepSeek, tighten the research
+            > instructions for every model, and fix the Claude failures.
+            >
+            > === 1. Instructions every research model follows ===
+            >   - The short version describes; it never prescribes. No section proposes a
+            >     trade, a holding, adding, trimming or an income plan: the plan is computed
+            >     by the code and drawn in its own region. The DeepSeek short version for MDT
+            >     wrote "hold the position for the income ... add toward the support band and
+            >     trim into the resistance band", which contradicts the swing trade the list
+            >     computed.
+            >   - The segment commentary names the lines that moved most or changed
+            >     direction, at most four, and says from the documents what drove each. It
+            >     never lists every line: the numbers table already does.
+            >   - Each point in the two cases is specific to this company and its latest
+            >     documents. A sentence that could describe any company is left out.
+            >   - Each risk's confirmation is an observable event that separates the risk
+            >     from ordinary movement, stated against guidance or the trend: never a bare
+            >     threshold such as "above 0", and never a figure the next quarter crosses by
+            >     construction, such as growth falling after a quarter that held an extra
+            >     week.
+            > State what the change invalidates among the recorded model calls and what
+            > re-recording costs.
+            >
+            > === 2. The prose rules apply to written sections ===
+            > The claim check refuses a written sentence that carries the corpus's banned word
+            > or an em dash, as it refuses an uncited one: retried once, then left out and
+            > named. The MDT DeepSeek short version carried "The [the word the corpus bans] counterpoint". Test
+            > both.
+            >
+            > === 3. The Claude failures, fixed although research is on DeepSeek ===
+            >   - The short version and the causes of large moves were each rejected twice
+            >     for a sentence naming no document. Find which sentences Claude writes
+            >     without a document marker, and fix the instruction or the structured
+            >     answer so every sentence carries one.
+            >   - The industry cycle's answer ended after 170 output tokens with no text.
+            >     State what the answer held (a thinking block, a refusal, another block
+            >     type), and parse it or treat it as unusable, then retry.
+            > Test both on captured Claude answers, and record the findings in PROGRESS.
+            >
+            > === 4. Show the result ===
+            > Once 1 and 2 have landed, regenerate MDT on DeepSeek and put the new report
+            > beside both earlier ones on one page for the operator, with each report's cost.
+            > I need this to be PRd and merged right when its done
+            and, earlier the same day, the exception MDT's DeepSeek report was written under:
+            > ok we can wait on that. has the new MDX  report been generated? If not then do itright away by making one exception for today
+            > MDT i meant
+Ruled:      - Every research model is asked, in the instructions every section is asked under, to describe the
+              company and never prescribe, proposing no trade, holding, adding, trimming or plan for income; to
+              write no em dash and call no statement candid or frank; and, where the documents do not support
+              the section, to answer with no text at all. The citation instruction names the sentence opening a
+              paragraph and forbids a sentence about what the writer is writing or leaving out. The short version
+              is asked for what the documents and the sections already written show to be true and what the
+              market is arguing about, every sentence ending on its marker and none only introducing or summing
+              up, and for no plan; the segment commentary for the segments that moved most or changed direction,
+              at most four, with what the documents give as the cause, and never every segment; each point of the
+              two cases for this company and its latest documents; and each risk's confirmation for an observable
+              event against guidance or the trend, never a bare threshold or a figure the next quarter crosses by
+              construction. Two decisions: "A written section describes the company and never proposes a trade, a
+              holding or a plan for income" and "A written sentence carrying the word the corpus bans or an em
+              dash is refused as an uncited one is".
+            - The claim checker refuses a sentence carrying the banned word in any form, or an em dash, in every
+              section, recording the draft's own sentence, so the page names the rule and never draws the word;
+              the retry and the fallback are the checker's own.
+            - An answer holding nothing but white space and invisible format characters is no answer, for every
+              model; Claude's answer with no text says which blocks it held and how many of its output tokens
+              were thinking; the theme pass asks once more for an answer that came back empty or cut short, as a
+              name's pass does, and names what the second held where both were; and where a Claude call lists
+              documents, its answer is asked for as paragraphs of sentences, each sentence with the number of the
+              document it rests on, and the feed builds the prose from them with each sentence ending on its
+              marker. The claim checker's sentence reader reads "a.m." and "p.m." as abbreviations.
+            - Research stays on DeepSeek, as the operator's brief says.
+Found:      - What Claude's empty industry cycle held. The request was rebuilt read-only from the store over the five
+              pages naming Medical Devices among those MDT's pass stored at 12:17:25Z, 23,617 input tokens
+              against the original's 40,997, since five more pages it handed were stored by earlier passes and
+              cannot be told from the rest, and asked once of claude-sonnet-5-5 at 18:17Z: the answer held one
+              thinking block, its text left out and its signature kept, and no text block, stopping on end_turn
+              after 207 output tokens, 205 of them thinking. Sonnet 5.5 thinks by default and, told to write
+              nothing where the documents do not support a section, wrote nothing after thinking. It is unusable
+              and is now asked for once more; the name pass already asked once more for such an answer, by the
+              decision "An answer that comes back empty or cut short is asked for once more", and the theme pass
+              did not, which is why the cycle was left out on one call.
+            - Which sentences Claude wrote without a marker, read off MDT's refused drafts in the store: for the
+              cause of each large move, a first answer of one zero-width space where it had nothing to write,
+              which the parser's trim kept and the checker read as a sentence, and a second of three sentences
+              saying it was writing nothing; for the risks, each risk's own sentence, the marker on its
+              confirmation alone; for the short version, the framing sentences an ask for "what the plan
+              therefore is" drew, "We keep the position and let the next report decide whether to add to it"
+              among them. Asked under the new instructions over the fixture, Claude cited every sentence of the
+              two cases and the risks, and answered the cause with a thinking block and no text; its short
+              version still opened paragraphs with a sentence citing nothing on each of eight drafts under four
+              wordings, one or two a draft, such as "Guidance points further up." and "What the market is arguing
+              about is whether demand can be turned into revenue.". So the instruction does not fix it for
+              Claude and the structured answer does: asked for cited sentences, every sentence of every section
+              Claude wrote over the fixture carried its marker and its short version was accepted on its first
+              draft.
+            - The checker's sentence reader cut "9:30 a.m. PT", leaving the opening of one of Claude's calendar
+              items standing as a sentence citing nothing.
+            - DeepSeek's short version fell back once, in the default lane, under the fourth wording, refused for
+              figures the facts file does not hold; under the first, the one kept, it was accepted on its first
+              draft there.
+Measured:   MDT's DeepSeek report, on the operator's exception to once a name a day, by `research --ticker MDT
+            --refresh --paid-for-local` against the live store at 17:52Z, from a Release build of `main` at e5cd00c
+            in a scratch worktree whose once-a-day checks read false for MDT and its industry on that session alone,
+            never committed and removed after: 12 calls to deepseek-flash, $0.04897575 in all, eight sections
+            accepted, four of them on a second draft, and the industry cycle left out, the theme's check still
+            holding in that build. A first run with its arguments misspelt made no call, and a second without the
+            option to have the paid model write every section refetched MDT's filings from the free archive,
+            rewrote its facts file and made no model call. Claude Sonnet 5.5's of the same day, by its run log: 12
+            calls, $0.756394, six sections accepted and two left out, the cause and the short version.
+Recorded:   what the change invalidates: every recording the fixture's research reads, since the instructions
+            every section is asked under are part of every request's key, all 47, 32 from the local model and 15
+            from DeepSeek. Made again from the requests the suite makes on 2026-09-29 between 18:25Z and 19:20Z,
+            LM Studio serving qwen/qwen3.5-9b and DeepSeek off-peak on a Tuesday: 35 from the local model, which
+            cost nothing, and 18 from DeepSeek, $0.052428876 by the configured rates; beside them 7 from Claude
+            Sonnet 5.5 under the fixture's claude-sonnet profile, $0.416764, and the capture of the thinking-only
+            answer, $0.049304, the Claude tests' own. What the re-recording cost in all, the short version's four
+            wordings and the recordings they left no request asking for included: 25 DeepSeek calls,
+            $0.093202554, and 26 Claude calls, $1.790172. The keys were read at run time from the checkout's
+            secrets file and printed nowhere. The 47 recordings no request asks for any more are removed, and the
+            manifest names each of the 60 with its request, its usage and, for a paid one, its price.
+Expected:   the readings of the recordings the expectation files freeze, read again off the new recordings: in
+            `research-record.json` the pass's versions, stages, calls and spend, the pass now writing all eight
+            sections of the name's own, the cause on its first draft, the two cases, the risks and the segment
+            commentary on their second, and the theme's call answered with nothing twice; the lane comparison's
+            verdicts, calls and spend; in `prose.json` the release passes' verdicts and the facts-only prompt's
+            count; in `spend.json` and `theme-record.json` the calls' own counts and prices. The independently
+            derived ones, worked by hand before the tests that read them ran: the recorded call's price, 246
+            uncached prompt tokens at 0.15 and 58 completion tokens at 0.60, $0.0000717, and the same call's with
+            thinking off, $0.00003795; the facts-only prompt's count by the rule, 17,196 characters, 1,521 of them
+            digits and 15,675 others at 2.75 a token, 7,221; and the two cases' nine and seven sentences.
+Changed:    `SectionPrompt.cs`'s instructions, citation rule and four asks; `ClaimRules.cs`'s two refusals and its
+            abbreviations; `AnswerText` in `IResearchModelFeed.cs`, read by the three feeds; `AnthropicMessagesFeed.cs`'s
+            structured answer and the blocks an empty answer held; `ThemeResearchRunner.cs`'s one ask again;
+            `NameScreen.cs`'s draft-sentence rules; the fixture's recordings, manifest and four expectation files;
+            section 4's short version row, section 12.2's paragraph and four rows in `ARCHITECTURE.html`, RUNBOOK's
+            costs and `.claude/rules/checks.md`'s `claim-admissibility` row, with their prior text in `CHANGELOG.md`;
+            the two decisions in `DECISIONS.md`; and the tests that read the changed recordings.
+Tests:      1548, from 1539: nine added, `ClaimAdmissibility`'s two over the prose rules, four in
+            `ModelProfilesTests` over the instructions both formats send, the structured answer, the thinking-only
+            capture and an invisible answer, `FixtureExpectations`' two over the theme's one ask again, driven by
+            the captured thinking-only answer, and one over the fixture's pass asked of Claude.
+Claims:     725, unchanged: the rows the ruling edits are rows the harness already holds.
+Pins:       the branch against `main` edits research sources, feeds, the checker and the read surface, none of them
+            in the three pin lists. No version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: the mechanism each rule the brief states in its own words rests on,
+            reversed alone, filtered to the nine new tests, the research record's test and the lane comparison's.
+            Predicted:
+            M1 the banned word's refusal removed: red in the banned word's test alone.
+            M2 the em dash's refusal removed: red in the em dash's test alone.
+            M3 the theme pass's ask again removed: red in the two theme tests, the research record's test and the
+               lane comparison's.
+            M4 an invisible answer read as text, the trim back to white space alone: red in the invisible answer's
+               test alone.
+            M5 Claude's request asked for prose where documents are listed: red in the structured answer's test
+               alone.
+            M6 the structured answer's sentences built without their markers: red in the structured answer's test
+               and the Claude pass's.
+            M7 the instruction to describe and never prescribe removed: red in the instructions' test, and in the
+               Claude pass's, the research record's and the lane comparison's, whose recordings are keyed on the
+               instructions.
+            Results: one run each in a detached worktree at 10396fc, this entry's commit, filtered to the eleven
+            tests, each edit made there and reverted, and the tree read clean after. M1 turned the banned word's
+            test red and left the other ten green; M2 the em dash's test alone; M3 the two theme tests, the
+            research record's test and the lane comparison's, and no other; M4 the invisible answer's test alone;
+            M5 the structured answer's test alone; M6 the structured answer's test and the Claude pass's, whose
+            drafts, refused for citing nothing, asked for second drafts no recording answers. M7 turned the four
+            predicted red and, unpredicted, the two prose rules' tests, for the same cause: their store is the
+            fixture's replayed night, whose key under each figure is asked of the local model under the same
+            instructions, so no recording answered it.
+Held:       red in every test predicted, and in no other but M7's two, which the prediction missed for a cause the
+            prediction itself names.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1548 of 1548 tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 725 claims, 725 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 736 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1548 of 1548 tests.
+            Both gates ran over the tree carrying this entry, 10396fc, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    part 4 of the brief: MDT regenerated on DeepSeek once this has merged and the New York day of its two
+            passes has turned, since a regenerate runs once a name a day, and the three reports set side by side
+            on one page with each report's cost.

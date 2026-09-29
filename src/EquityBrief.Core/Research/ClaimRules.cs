@@ -141,6 +141,17 @@ public static class ClaimRules
     public const string DateNoCitedDocumentCarries = "a date no document the sentence cites carries";
     public const string DateNotAfterTheNight = "a date on or before the night the facts file was computed for";
     public const string FigureNamedForAnotherPeriod = "a figure the facts file holds for a period longer than a quarter, in a sentence naming a period of another length";
+    public const string ClaimOfCandour = "a sentence claiming candour in the word the corpus bans";
+    public const string EmDashed = "a sentence carrying an em dash";
+
+    // The corpus's two prose rules, held to every written sentence of every section as they
+    // are to every file the repository tracks. The word is assembled from its parts, as the
+    // corpus's own check assembles it, so this file is not an occurrence of it; any form of
+    // it is refused, as the corpus refuses one.
+    // see: A written sentence carrying the word the corpus bans or an em dash is refused as an uncited one is
+    static readonly string BannedWord = "hon" + "est";
+
+    static readonly string EmDash = ((char)0x2014).ToString();
 
     // ---- the check ----
 
@@ -182,6 +193,16 @@ public static class ClaimRules
             if (researched && sentence.Citations.Count == 0)
             {
                 findings.Add(new ClaimFinding(sentence.Text, sentence.Text, Uncited));
+            }
+
+            if (sentence.Text.Contains(BannedWord, StringComparison.OrdinalIgnoreCase))
+            {
+                findings.Add(new ClaimFinding(sentence.Text, sentence.Text, ClaimOfCandour));
+            }
+
+            if (sentence.Text.Contains(EmDash, StringComparison.Ordinal))
+            {
+                findings.Add(new ClaimFinding(sentence.Text, sentence.Text, EmDashed));
             }
 
             foreach (var cited in sentence.Citations)
@@ -333,11 +354,13 @@ public static class ClaimRules
     // leaves a fragment with no citation, which the citation rule would refuse
     // for being a sentence it is not. "Bros." and "Cos." end the names of two index
     // members, and "Jr." and "Sr." a person's, and 6.11's production run found a cause
-    // refused for a split after "Bros." and again after "Jr.".
+    // refused for a split after "Bros." and again after "Jr.". "a.m." and "p.m." time an
+    // event a calendar item names, and a split after either left the start of one such item
+    // standing as a sentence citing nothing.
     static readonly HashSet<string> Abbreviations = new(StringComparer.OrdinalIgnoreCase)
     {
         "vs", "Inc", "Corp", "Co", "Cos", "Bros", "Ltd", "Plc", "St", "Mr", "Mrs", "Ms", "Dr", "Jr", "Sr", "No", "approx", "est",
-        "e.g", "i.e", "U.S", "U.K", "Jan", "Feb", "Mar", "Apr", "Jun", "Jul", "Aug", "Sep", "Sept",
+        "e.g", "i.e", "U.S", "U.K", "a.m", "p.m", "Jan", "Feb", "Mar", "Apr", "Jun", "Jul", "Aug", "Sep", "Sept",
         "Oct", "Nov", "Dec",
     };
 

@@ -544,15 +544,14 @@ public partial class FixtureExpectations
         Assert.Equal(before, Query(store, "SELECT * FROM theme_section;"));
         Assert.Equal([$"{ThemeResearchRunner.Unavailable}|2"], Query(store, "SELECT outcome, network_requests FROM run_log WHERE run_id = 'research-search-down' AND stage = 'theme research';"));
 
-        // The name is written from its own filings and news, every section but the cycle and the
-        // cause of each large move, which the recordings answer with nothing twice, and the cycle
-        // is absent with the reason.
+        // The name is written from its own filings and news, every section but the cycle, and the
+        // cycle is absent with the reason.
         Assert.Equal(ResearchRunner.Written, outcome.Outcome);
         Assert.Equal(
-            ClaimRules.Sections.Where(section => section != ClaimRules.CycleSection && section != ClaimRules.CauseSection).Order(StringComparer.Ordinal),
+            ClaimRules.Sections.Where(section => section != ClaimRules.CycleSection).Order(StringComparer.Ordinal),
             Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS' ORDER BY section;").Order(StringComparer.Ordinal));
         Assert.Equal(
-            [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{unavailable}", $"{ClaimRules.CauseSection}|{ProseWriter.NoUsableAnswer}"],
+            [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{unavailable}"],
             outcome.NotWritten.Select(line => $"{line.Section}|{line.Reason}").ToArray());
     }
 
@@ -569,14 +568,13 @@ public partial class FixtureExpectations
         Assert.Equal(1, refused.Requests);
         Assert.Empty(Query(store, "SELECT theme FROM theme_section;"));
 
-        // Every section of the name's own is written and stored but the cause of each large move,
-        // which the recordings answer with nothing twice, the cycle is omitted with the one line
-        // saying the theme could not be refreshed, and the theme record is as it was.
+        // Every section of the name's own is written and stored, the cycle is omitted with the one
+        // line saying the theme could not be refreshed, and the theme record is as it was.
         Assert.Equal(ResearchRunner.Written, outcome.Outcome);
-        Assert.Equal(7, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';").Count);
+        Assert.Equal(8, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';").Count);
         Assert.DoesNotContain(ClaimRules.CycleSection, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';"));
         Assert.Equal(
-            [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{refused.Line}", $"{ClaimRules.CauseSection}|{ProseWriter.NoUsableAnswer}"],
+            [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{refused.Line}"],
             outcome.NotWritten.Select(line => $"{line.Section}|{line.Reason}").ToArray());
     }
 
@@ -704,6 +702,87 @@ public partial class FixtureExpectations
         Assert.Equal(
             [ClaimChecker.ThemeStage, $"{ClaimChecker.ThemeStage}, {ResearchRunner.SecondRound}"],
             Query(store, "SELECT stage FROM run_log WHERE stage LIKE '%claims%' ORDER BY rowid;"));
+    }
+
+    // A research model whose first answers are the captured one holding only a thinking block, read by
+    // Claude's own parser and billed as it was, and whose later answers are the scripted model's.
+    internal sealed class ThinkingOnlyFirst(ScriptedModel then, int thinking) : IResearchModelFeed
+    {
+        int asked;
+
+        public int Requests => asked;
+
+        public int Probes => then.Probes;
+
+        public string Identity => then.Identity;
+
+        public Task<string?> UnreachableAsync(CancellationToken cancellation = default) => then.UnreachableAsync(cancellation);
+
+        public Task<ResearchAnswer> CompleteAsync(ModelRequest request, CancellationToken cancellation = default) =>
+            ++asked <= thinking
+                ? Task.FromResult(AnthropicMessagesFeed.ParseRecorded(File.ReadAllText(Path.Combine(Folder(), "anthropic-section-thinking-only.json")), request.Section))
+                : then.CompleteAsync(request, cancellation);
+
+        public decimal Price(ResearchAnswer answer) => then.Price(answer);
+
+        public decimal Ceiling(ModelRequest request) => then.Ceiling(request);
+    }
+
+    static void OnePageAboutTheIndustry(string folder) =>
+        Answered(
+            folder,
+            FixtureReplay.RecordedTheme,
+            """
+            {"results":[{"url":"https://www.semiconductors.org/sales","title":"Sales","content":"A snippet.","raw_content":"Global semiconductor sales rose again in July as demand for advanced chips kept climbing across the semiconductor industry.","published_date":"Fri, 04 Sep 2026 00:00:00 GMT"}]}
+            """);
+
+    [Fact]
+    public async Task ACycleWhoseAnswerHeldOnlyThinkingIsAskedForOnceMoreAndWrittenFromTheSecond()
+    {
+        using var store = new TemporaryStore().Migrated();
+        using var folder = new TemporaryDirectory();
+
+        OnePageAboutTheIndustry(folder.Path);
+
+        // Claude's captured answer first, holding a thinking block and no text, then a cycle in words.
+        var model = new ThinkingOnlyFirst(new ScriptedModel("Sales across the industry kept rising as demand for advanced chips climbed [D1]."), 1);
+        var cap = new SpendCap(model, Core.Spending.SpendCaps.Default, ResearchClock, store.DatabaseFile);
+
+        var outcome = await FixtureReplay.Themer(store, ResearchClock, cap, new ClaimChecker(ResearchClock, store.DatabaseFile), new RecordedSearchFeed(folder.Path)).RunAsync(FixtureReplay.RecordedTheme, "theme-thinking-only");
+
+        // The same request asked again under a stage of its own, the first call billed and refused with
+        // what it held, and the cycle written from the second, as a name's pass asks.
+        Assert.Equal(2, model.Requests);
+        Assert.Equal(
+            [$"research call: {ClaimRules.CycleSection}|{SpendCap.Refused}", $"research call: {ClaimRules.CycleSection}, {ResearchRunner.AskedAgainSuffix}|{SpendCap.Paid}"],
+            Query(store, "SELECT stage, outcome FROM run_log WHERE stage LIKE 'research call:%' ORDER BY rowid;"));
+        Assert.Contains("it held 1 thinking block", Query(store, $"SELECT detail FROM run_log WHERE stage = 'research call: {ClaimRules.CycleSection}';").Single(), StringComparison.Ordinal);
+        Assert.NotEqual(["0"], Query(store, $"SELECT spend FROM run_log WHERE stage = 'research call: {ClaimRules.CycleSection}';"));
+        Assert.Equal([$"1|{ClaimChecker.Accepted}"], Query(store, "SELECT version, status FROM theme_section;"));
+        Assert.Equal(ThemeResearchRunner.Written, outcome.Outcome);
+    }
+
+    [Fact]
+    public async Task ACycleWhoseTwoAnswersHeldOnlyThinkingIsLeftOutSayingWhatTheSecondHeld()
+    {
+        using var store = new TemporaryStore().Migrated();
+        using var folder = new TemporaryDirectory();
+
+        OnePageAboutTheIndustry(folder.Path);
+
+        var model = new ThinkingOnlyFirst(new ScriptedModel(), 2);
+        var cap = new SpendCap(model, Core.Spending.SpendCaps.Default, ResearchClock, store.DatabaseFile);
+
+        var outcome = await FixtureReplay.Themer(store, ResearchClock, cap, new ClaimChecker(ResearchClock, store.DatabaseFile), new RecordedSearchFeed(folder.Path)).RunAsync(FixtureReplay.RecordedTheme, "theme-thinking-twice");
+
+        // Asked once more and not again, nothing stored, and the line saying so names what the second held.
+        Assert.Equal(2, model.Requests);
+        Assert.Empty(Query(store, "SELECT version FROM theme_section;"));
+
+        var line = Assert.Single(outcome.NotWritten, one => one.Section == ClaimRules.CycleSection).Reason;
+
+        Assert.StartsWith(ProseWriter.NoUsableAnswer + ": ", line, StringComparison.Ordinal);
+        Assert.Contains("it held 1 thinking block", line, StringComparison.Ordinal);
     }
 
     // ---- which theme a name's pass reads, and when it refreshes it ----

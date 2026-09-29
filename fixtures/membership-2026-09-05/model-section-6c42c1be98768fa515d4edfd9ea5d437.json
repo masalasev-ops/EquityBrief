@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-cugxfq2agnrvlmhuqgkzr",
+  "object": "chat.completion",
+  "created": 1790706641,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Apple Inc. operates in the Technology sector and its stock closed at 316.22 with a session high of 320.7 and a low of 314.9 on a volume of 35.42 million shares. The current price sits below the 50-day average of 316.88 and above the 20-day average of 314.80 while trading within a range trend state supported by levels at 323.67 and 310.66. Technical indicators show a relative strength index of 50.26 and a MACD value of 1.63 with a histogram of 0.15 above the signal line of 1.48. The company has beaten estimates for eight consecutive quarters with an operating margin of 32.6 per cent compared to 30.0 per cent a year earlier and sales growth of 9.6 per cent versus the same quarter last year.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1863,
+    "completion_tokens": 212,
+    "total_tokens": 2075,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

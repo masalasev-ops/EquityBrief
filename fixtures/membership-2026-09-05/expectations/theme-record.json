@@ -54,7 +54,7 @@
     "searches": 12,
     "paid": 1
   },
-  "spend": "0.002072784",
+  "spend": "0.002280684",
   "passes": {
     "note": "the first member's pass finds the theme missing, refreshes it and is left with the accepted version as of the night, so its sentence says the cycle was refreshed; the second member's pass finds that version accepted today, refreshes nothing, and its sentence says nothing of the cycle. Neither writes anything of its own.",
     "outcome": "no facts file",

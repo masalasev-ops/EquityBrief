@@ -682,12 +682,13 @@ public partial class FixtureExpectations
         var recorded = Directory.GetFiles(Folder(), RecordedLocalModelFeed.FilePrefix + "*.json").Select(Path.GetFileName).Order(StringComparer.Ordinal).ToArray();
 
         // Two from the replay, MSFT's key under each figure and NFLX's; four from the release's
-        // passes, what the company sells, the segment commentary and the cause, and the cause
-        // again after the checker refused its first draft, the key being the research pass's own
-        // request; three from the research pass with the configured lanes; seven from the
-        // comparison with every section in the local lane, two of them drafts written after the
-        // checker refused the first, the two cases and the risks each asked once in the parts the
-        // name page draws, the first answer running to its budget and the second accepted; two
+        // passes, what the company sells, the segment commentary and the cause, and the segment
+        // commentary again after the checker refused its first draft, the key being the research
+        // pass's own request; four from the research pass with the configured lanes, the segment
+        // commentary among them asked again after the checker refused its first draft; nine from
+        // the comparison with every section in the local lane, the cause, the dated calendar
+        // items, the two cases, the risks and the short version, and each of the last four asked
+        // again after the checker refused its first draft; two
         // from the queue over the fixture's night, AAPL's key and
         // KEYS's, MSFT's and NFLX's being the replay's requests asked again; eight from the two
         // later nights, every member's key on each, each member reading the quarters the
@@ -701,7 +702,7 @@ public partial class FixtureExpectations
         // listing AAPL, KEYS's key over the group of one the rebalance's joiner reads but with
         // the quarters the fixture's night stored for it, which the joiner does not yet hold,
         // MSFT's and NFLX's there being requests the rebalance asked.
-        Assert.Equal(32, recorded.Length);
+        Assert.Equal(35, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 
         foreach (var request in asked)

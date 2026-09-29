@@ -177,7 +177,7 @@ public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchMode
         var choice = choices[0];
         var message = choice.GetProperty("message");
         var finish = choice.TryGetProperty("finish_reason", out var reason) && reason.ValueKind == JsonValueKind.String ? reason.GetString()! : "unstated";
-        var text = message.TryGetProperty("content", out var content) && content.ValueKind == JsonValueKind.String ? content.GetString()!.Trim() : string.Empty;
+        var text = message.TryGetProperty("content", out var content) && content.ValueKind == JsonValueKind.String ? AnswerText.Visible(content.GetString()!) : string.Empty;
 
         var prompt = Count(usage, "prompt_tokens") ?? 0;
         var completion = Count(usage, "completion_tokens") ?? 0;

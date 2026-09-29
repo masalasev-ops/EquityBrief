@@ -319,6 +319,14 @@ public sealed class ThemeResearchRunner(
 
         var call = await cap.AskAsync(request, runId, round, cancellation);
 
+        // An answer that arrived empty or cut short is asked for once more, as a name's pass
+        // asks, under a stage of its own so both calls and what each cost stand on the run log.
+        // see: An answer that comes back empty or cut short is asked for once more
+        if (call.Unusable)
+        {
+            call = await cap.AskAsync(request, runId, ResearchRunner.AskedAgain(round), cancellation);
+        }
+
         if (call.Paused)
         {
             notWritten.Add(new UnwrittenSection(ClaimRules.CycleSection, call.Verdict.Line));
@@ -328,7 +336,9 @@ public sealed class ThemeResearchRunner(
 
         if (call.Answer is not { } answer)
         {
-            notWritten.Add(new UnwrittenSection(ClaimRules.CycleSection, call.Failure ?? "the research model returned nothing"));
+            notWritten.Add(new UnwrittenSection(
+                ClaimRules.CycleSection,
+                call.Unusable ? ProseWriter.NoUsableAnswer + ": " + call.Failure : call.Failure ?? "the research model returned nothing"));
 
             return null;
         }

@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-ow62i5q58p84woxqy7mwvy",
+  "object": "chat.completion",
+  "created": 1790706732,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The session ending on 2026-08-24 saw the stock decline by 13.980341 per cent because document D1 reports that shares climbed in pre-market trading after record third-quarter results and document D2 states that management raised the outlook for the fourth quarter and full fiscal year, both of which are positive catalysts that contradict the observed price drop, while no other listed document provides a cause for this specific move. [D1]",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 9406,
+    "completion_tokens": 100,
+    "total_tokens": 9506,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

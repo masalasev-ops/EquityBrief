@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-30won4gcw5vq4buhj3xs99",
+  "object": "chat.completion",
+  "created": 1790706484,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Netflix Inc operates within the Communication Services sector and currently trades at a close of 76.77, reflecting a steady business state with an operating margin of 33.4 per cent compared to 34.1 per cent a year earlier. The stock has experienced significant volatility, including a largest move of 27.72 per cent on 2026-03-02 and recent declines such as a 13.89 per cent drop following the report date of 2026-04-16 where earnings reaction showed a surprise of negative 6.82 per cent. Technical indicators show immediate resistance between 78.44 and 79.43 with support levels at 75.56 and 76.53, while the 20-day average stands at 79.43 against a 50-day average of 75.56 and a 200-day average of 86.53. Sales growth remains robust with figures of 15.9 per cent for the same quarter a year before, 13.4 per cent on a year earlier, and 16.2 per cent on a year earlier the quarter before, supported by an operating cash flow to net income ratio of 0.87.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1834,
+    "completion_tokens": 281,
+    "total_tokens": 2115,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

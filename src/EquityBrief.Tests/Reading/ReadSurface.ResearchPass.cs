@@ -237,8 +237,8 @@ public partial class ReadSurface
         Assert.True(written.Success, "KEYS draws no two cases, and this is what reads them.");
 
         // The fixture's two cases as the recorded writer answered the ask: two paragraphs, the
-        // first opening on the bull case and the second on the bear case, each of eight sentences
-        // counted by hand off the recording, every one ending on the marker of its document.
+        // first opening on the bull case with nine sentences and the second on the bear case with
+        // seven, counted by hand off the recording, every one ending on the marker of its document.
         var stored = Rows(store, "SELECT prose FROM research_section r WHERE ticker = 'KEYS' AND section = 'The two cases' AND status = 'accepted' " +
             "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted');")
             .Single()[0];
@@ -252,7 +252,7 @@ public partial class ReadSurface
         var cases = CasesDrawn(written.Value);
 
         Assert.Equal(["The case for", "The case against"], [.. cases.Select(one => one.Label ?? "no label")]);
-        Assert.Equal([8, 8], [.. cases.Select(one => one.Rows.Count)]);
+        Assert.Equal([9, 7], [.. cases.Select(one => one.Rows.Count)]);
 
         // Each case is its own paragraph cut at its sentences, unchanged and in the order written.
         Assert.Equal([.. paragraphs], [.. cases.Select(one => string.Join(" ", one.Rows))]);
@@ -471,14 +471,11 @@ public partial class ReadSurface
 
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
 
-        // Seven written over one pass, stated in advance, and all seven drawn as sections: the
-        // cause of each move, which is drawn in the moves table where it is written, was answered
-        // with nothing twice, and the page says so.
-        Assert.Equal(7, Accepted(store, "KEYS").Count);
+        // Eight written over one pass, stated in advance, and the seven beside the cause of each
+        // move drawn as sections, the cause being drawn in the moves table where it is written.
+        Assert.Equal(8, Accepted(store, "KEYS").Count);
         AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
-        Assert.Equal(
-            $"The cause of each large move is not written: {ProseWriter.NoUsableAnswer}",
-            WebUtility.HtmlDecode(Regex.Match(page, "<p class=\"not-written\" data-section=\"The cause of each large move\">([^<]*)</p>").Groups[1].Value));
+        Assert.DoesNotContain("<p class=\"not-written\" data-section=\"The cause of each large move\">", page, StringComparison.Ordinal);
 
         int At(string marker) => page.IndexOf(marker, StringComparison.Ordinal);
         int Section(string section) => At($"<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"{WebUtility.HtmlEncode(section)}\"");

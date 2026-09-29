@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-n388hu6042s8bhzhjrnrq",
+  "object": "chat.completion",
+  "created": 1790706363,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Keysight Technologies Inc operates within the Technology sector and trades at a close of 333.42, which sits above its 50-day average of 326.21 and its 20-day average of 330.47 while remaining below its 200-day average of 289.31. The stock is in an uptrend with a forward price to earnings ratio of 20.66 and a trailing price to earnings multiple of 45.89, reflecting a market valuation that is significantly higher than the trailing earnings per share of 7.38. Recent quarterly performance shows revenue of 1.85 billion representing a growth of 36.5 per cent on a year earlier alongside net income of 397 million which grew by 107.9 per cent. The company does not pay dividends as indicated by a forward annual rate of 0 and a payout ratio of 0.0 per cent, while total assets stand at 11.92 billion against shareholders equity of 6.57 billion. Technical indicators include a 14-day average true range of 11.05 and an immediate support high edge at 332.78 with an immediate resistance high edge at 366.41.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 5311,
+    "completion_tokens": 278,
+    "total_tokens": 5589,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

@@ -155,6 +155,124 @@ public class ModelProfilesTests
         Assert.All(claude, profile => Assert.Contains(shipped[ModelProfiles.Field(profile, ModelProfiles.ModelField)]!, served));
     }
 
+    [Fact]
+    public void EveryResearchModelIsToldToDescribeAndNeverPrescribeAndTheShortVersionAsksForNoPlan()
+    {
+        // The instructions every section is asked under, as each format's feed sends them: the system prompt
+        // in Claude's own interface and the system message in the other format.
+        foreach (var use in new[] { "deepseek", "claude-sonnet" })
+        {
+            var settings = Resolved(use);
+            var request = SectionPrompt.PaidRequest(settings.Identity, "KEYS", "The short version", [], [new PromptDocument("a-document", "A release", null, "The release's text.")]);
+
+            using var sent = JsonDocument.Parse(settings.Format == ResearchModelSettings.AnthropicFormat
+                ? AnthropicMessagesFeed.Body(request, settings)
+                : OpenAiCompatibleResearchFeed.Body(request, settings));
+
+            var system = settings.Format == ResearchModelSettings.AnthropicFormat
+                ? sent.RootElement.GetProperty("system").GetString()!
+                : sent.RootElement.GetProperty("messages")[0].GetProperty("content").GetString()!;
+
+            Assert.Contains("Describe the company and never prescribe: propose no trade, no holding, no adding or trimming and no plan for income", system, StringComparison.Ordinal);
+            Assert.Contains("Write no em dash", system, StringComparison.Ordinal);
+            Assert.Contains("answer with no text at all", system, StringComparison.Ordinal);
+            Assert.Contains("the sentence opening a paragraph as well as the rest", system, StringComparison.Ordinal);
+        }
+
+        // The short version asks for what is true and argued about, and for no plan.
+        Assert.DoesNotContain("plan therefore", SectionPrompt.Asks["The short version"], StringComparison.Ordinal);
+        Assert.Contains("propose nothing", SectionPrompt.Asks["The short version"], StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ClaudeIsAskedForSentencesEachNamingItsDocumentWhereDocumentsAreListedAndThePageReadsTheirProse()
+    {
+        var settings = Resolved("claude-sonnet");
+        var listed = SectionPrompt.PaidRequest(settings.Identity, "KEYS", "The short version", [], [new PromptDocument("a-document", "A release", null, "The release's text.")]);
+
+        // Where documents are listed: the answer's shape, paragraphs of sentences, each sentence with the
+        // number of the document it rests on, both required.
+        using (var sent = JsonDocument.Parse(AnthropicMessagesFeed.Body(listed, settings)))
+        {
+            var format = sent.RootElement.GetProperty(AnthropicMessagesFeed.OutputConfigField).GetProperty("format");
+            var sentence = format.GetProperty("schema").GetProperty("properties").GetProperty("paragraphs").GetProperty("items").GetProperty("items");
+
+            Assert.Equal("json_schema", format.GetProperty("type").GetString());
+            Assert.Equal(["sentence", "document"], sentence.GetProperty("required").EnumerateArray().Select(field => field.GetString()!).ToArray());
+            Assert.Equal("integer", sentence.GetProperty("properties").GetProperty("document").GetProperty("type").GetString());
+        }
+
+        // Where none is listed there is nothing to name, and the answer is asked for as prose.
+        using (var plain = JsonDocument.Parse(AnthropicMessagesFeed.Body(ResearchModelFeedTests.Recorded(settings), settings)))
+        {
+            Assert.False(plain.RootElement.TryGetProperty(AnthropicMessagesFeed.OutputConfigField, out _));
+        }
+
+        // The short version Claude Sonnet 5.5 answered over the fixture as sentences, read back to prose:
+        // every sentence ends on the marker of the document its answer named, the paragraphs are kept, and
+        // the checker finds no sentence naming no document.
+        var recording = Captured(ClaudesShortVersion);
+        var answer = AnthropicMessagesFeed.ParseRecorded(recording, listed.Section);
+
+        using var raw = JsonDocument.Parse(recording);
+
+        var asked = JsonDocument.Parse(raw.RootElement.GetProperty(AnthropicMessagesFeed.RecordedResponse).GetProperty("content").EnumerateArray()
+            .Single(block => block.GetProperty("type").GetString() == "text").GetProperty("text").GetString()!).RootElement.GetProperty("paragraphs");
+
+        Assert.Equal(asked.GetArrayLength(), answer.Text.Split("\n\n").Length);
+        Assert.Equal(asked.EnumerateArray().Sum(paragraph => paragraph.GetArrayLength()), ClaimRules.Sentences(answer.Text).Count);
+        Assert.All(ClaimRules.Sentences(answer.Text), sentence => Assert.Matches(@"\[D\d+\]\.$", sentence.Text));
+    }
+
+    // The fixture's recording of the short version Claude Sonnet 5.5 wrote over KEYS on the claude-sonnet
+    // profile, its first draft, which the checker accepted.
+    const string ClaudesShortVersion = "research-call-e507a2a58766d96358388f806364e236.json";
+
+    [Fact]
+    public void AnAnswerHoldingOnlyThinkingIsUnusableNamesWhatItHeldAndIsPricedAtWhatWasBilled()
+    {
+        var settings = Resolved("claude-sonnet");
+
+        // The industry cycle Claude Sonnet 5.5 was asked for MDT's industry on 2026-09-29, asked again over the
+        // pages that pass stored: one thinking block with its text left out, no text block, and the stop reason
+        // end_turn after 207 output tokens, 205 of them thinking. Priced by hand: 23617 prompt tokens neither read
+        // from the cache nor written to it at 2.00 and 207 output at 10.00, in dollars a million tokens.
+        var thrown = Assert.Throws<UnusableResearchAnswer>(() => AnthropicMessagesFeed.ParseRecorded(Captured("anthropic-section-thinking-only.json"), ClaimRules.CycleSection));
+
+        Assert.Contains("it held 1 thinking block, and the stop reason was end_turn after 207 output token(s), 205 of them thinking", thrown.Message, StringComparison.Ordinal);
+        Assert.Equal((string.Empty, "end_turn", 23617, 207), (thrown.Answer.Text, thrown.Answer.FinishReason, thrown.Answer.PromptTokens, thrown.Answer.CompletionTokens));
+        Assert.Equal(0.049304m, settings.Pricing.Price(thrown.Answer));
+    }
+
+    [Fact]
+    public void AnAnswerHoldingOnlyAnInvisibleCharacterIsNoAnswerWhicheverFormatCarriesIt()
+    {
+        // What Claude Sonnet 5.5 answered for MDT's cause of each large move on 2026-09-29, a single zero-width
+        // space, which that pass stored as its first draft and the checker refused as a sentence naming no document.
+        const string Answered = "​";
+
+        Assert.Equal(string.Empty, AnswerText.Visible(Answered));
+        Assert.Equal(string.Empty, AnswerText.Visible(" ​﻿\n"));
+        Assert.Equal("A sentence [D1].", AnswerText.Visible("​A sentence [D1].​ "));
+
+        // The captured section with its text replaced by it is no section, and is billed all the same.
+        var capture = System.Text.Json.Nodes.JsonNode.Parse(Captured("anthropic-section-sonnet.json"))!;
+
+        capture["response"]!["content"]![0]!["text"] = Answered;
+
+        var thrown = Assert.Throws<UnusableResearchAnswer>(() => AnthropicMessagesFeed.ParseRecorded(capture.ToJsonString(), ClaimRules.CauseSection));
+
+        Assert.Contains("it held 1 text block", thrown.Message, StringComparison.Ordinal);
+        Assert.Equal(27, thrown.Answer.CompletionTokens);
+
+        // And over the other format's capture, as DeepSeek would carry it.
+        var other = System.Text.Json.Nodes.JsonNode.Parse(Captured("research-probe-thinking.json"))!;
+
+        other["choices"]![0]!["message"]!["content"] = Answered;
+
+        Assert.Throws<UnusableResearchAnswer>(() => OpenAiCompatibleResearchFeed.Parse(other.ToJsonString(), ClaimRules.CauseSection));
+    }
+
     [Theory]
     [InlineData("2026-09-14", false)]
     [InlineData("2026-09-15", true)]

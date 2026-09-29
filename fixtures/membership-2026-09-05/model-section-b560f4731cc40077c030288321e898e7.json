@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-g77jay36hxsauo8wiupf3",
+  "object": "chat.completion",
+  "created": 1790709545,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Keysight Technologies Inc operates within the Technology sector and reported revenue of 1846000000.00 for the quarter ended July 31, 2026, representing growth on a year earlier of 0.365385 [D1]. The company posted net income of 397000000.00 with earnings per share of 2.82, which exceeded the estimate of 2.16 by a surprise percentage of 30.5556 [D1]. Management raised its outlook for the fourth fiscal quarter of 2026 to a revenue range between 1930000000 and 1950000000, with non-GAAP earnings per share expected between 3.34 and 3.40 [D1]. The stock closed at 333.42 with an immediate support high edge of 332.78 and an immediate resistance high edge of 366.41 [D1]. Shares rose after the results release, with a latest earnings reaction move per cent of -6.319648 on the report date of 2026-08-18 [D1]. The company maintains a forward price to earnings ratio of 20.6612 and a trailing price to earnings ratio of 45.8862 [D1]. Total assets stood at 11921000000.00 with shareholders equity of 6571000000.00 as of the latest quarter end [D1]. The Communications Solutions Group reported revenue of 1345000000, up 43 percent from the prior year, while the Electronic Industrial Solutions Group reported revenue of 501000000, up 21 percent from the prior year [D1]. Orders surged 56 percent year-on-year to 2.091 billion, driven by demand for testing solutions linked to artificial intelligence infrastructure [D2]. Wireline revenue surpassed wireless revenue for the first time in the company's history due to accelerating AI data centre investment [D3]. The supply environment is described as less flexible than a year ago, with executives noting that supply will act as a governor of near-term revenue conversion [D4]. Analysts have set a mean price target of 418.42, indicating a potential upside of 30 percent from the current trading level [D5]. The company announced participation in investor conferences scheduled for September 11, 2026 and September 15, 2026 [D6]. Keysight also announced a research collaboration with the Centre for Assuring Autonomy at the University of York to advance AI safety assurance for software-defined vehicles on September 3, 2026 [D7].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18660,
+    "completion_tokens": 626,
+    "total_tokens": 19286,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}
