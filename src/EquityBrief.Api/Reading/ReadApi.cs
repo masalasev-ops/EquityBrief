@@ -2921,6 +2921,34 @@ public sealed class ReadApi : IComponent
         return await command.ExecuteScalarAsync() as string;
     }
 
+    // Whether a member's trigger event happened on each session up to a night, newest first, off every result
+    // the store holds for it, the replayed sessions among them, since those are what the trigger's arrival
+    // reads: what "Close to a buy point" reads how many sessions before the night a missed trigger first
+    // fired from. A session whose bars could not say is none.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    public async Task<IReadOnlyList<bool?>> TriggerEventsAsync(string ticker, DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = TriggerEventsUpTo;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$on", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var events = new List<bool?>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            events.Add(reader.IsDBNull(0) ? null : reader.GetInt64(0) == 1);
+        }
+
+        return events;
+    }
+
+    const string TriggerEventsUpTo = "SELECT trigger_event FROM gate_result WHERE ticker = $ticker AND session_date <= $on ORDER BY session_date DESC;";
+
     // Every name's two readings for the peers table, one row per name, as the annotator last
     // wrote them.
     public async Task<IReadOnlyList<PeerReadingRow>> PeerReadingsAsync()

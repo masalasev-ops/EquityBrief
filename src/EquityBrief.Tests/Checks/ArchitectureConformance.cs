@@ -1389,7 +1389,8 @@ public partial class ArchitectureConformance
         // checklist, four rows and four marks. 111 at the one that draws how the system learns, the comparison
         // of tonight's picks and each version at a checkpoint, three rows and three marks. 112 at the one that
         // builds the night's tries: tonight's row stating the night's state.
-        Assert.Equal(112, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 113 at the 12.7 correction that draws close to a buy point beneath tonight's list.
+        Assert.Equal(113, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1475,7 +1476,8 @@ public partial class ArchitectureConformance
         // that draws how the system learns, the comparison of tonight's picks and each version at a checkpoint:
         // the fourteen parts their rows state and three marks. 359 at the one that builds the night's tries:
         // tonight's row stating the night's state as its four parts and the two the Run page's first row adds.
-        Assert.Equal(359, inDocument.Length);
+        // 370 at the 12.7 correction that draws close to a buy point: its row as its eleven parts.
+        Assert.Equal(370, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1552,8 +1554,9 @@ public partial class ArchitectureConformance
         // fourteen parts their rows state. 327 at the one that draws how the system learns, the comparison of
         // tonight's picks and each version at a checkpoint: the fourteen parts their rows state. 333 at the one
         // that builds the night's tries: tonight's row stating the night's state as its four parts and the two
-        // the Run page's first row adds.
-        Assert.Equal(333, checkedElements);
+        // the Run page's first row adds. 344 at the 12.7 correction that draws close to a buy point: its row as
+        // the nine parts it enumerates and the two it states outside them.
+        Assert.Equal(344, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

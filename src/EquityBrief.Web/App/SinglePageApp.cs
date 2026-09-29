@@ -638,7 +638,8 @@ public sealed class SinglePageApp : IComponent
         GatesView? gates = null,
         FilterWhy? passed = null,
         bool? watched = null,
-        IReadOnlyList<PickCell>? earlier = null)
+        IReadOnlyList<PickCell>? earlier = null,
+        (DateOnly Evening, EquityBrief.Core.Filter.MissedGate Gate)? missed = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -760,18 +761,26 @@ public sealed class SinglePageApp : IComponent
             region: "how-to-read"));
 
         // Why it is here, which section 15.9 puts above the chart and which is
-        // present only when the name is on tonight's list, beneath the line
-        // section 18 draws where the listing was written before the correction.
+        // present only when the name is on tonight's list or one gate short of it,
+        // beneath the line section 18 draws where the listing was written before the
+        // correction.
+        // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
         var why = WrittenBeforeTheCorrectionLine(writtenBeforeTheCorrection)
-            + (passed is { } filtered ? marks.WhyItPassed(ticker, filtered) : marks.WhyItIsHere(ticker, firedReasons));
+            + (passed is { } filtered
+                ? marks.WhyItPassed(ticker, filtered)
+                : missed is { } oneShort
+                    ? marks.WhyItIsClose(ticker, oneShort.Evening, oneShort.Gate)
+                    : marks.WhyItIsHere(ticker, firedReasons));
 
-        if (passed is not null || firedReasons.Count > 0)
+        if (passed is not null || missed is not null || firedReasons.Count > 0)
         {
             Card("why", "Why it is here", Cards.Computed(
                 "Why it is here",
                 why,
                 title: passed is { } through
                     ? Invariant($"On the list on {through.Evening:yyyy-MM-dd} because the swing filter passed it")
+                    : missed is { } near
+                    ? Invariant($"Close to a buy point on {near.Evening:yyyy-MM-dd}: one gate short")
                     : night is { } listed ? Invariant($"On the list on {listed:yyyy-MM-dd} for these reasons") : "On tonight's list for these reasons",
                 stamp: Cards.Night(session),
                 id: "why",
@@ -1413,7 +1422,8 @@ public sealed class SinglePageApp : IComponent
         MarketView? market = null,
         ListRuleView? rule = null,
         int? listed = null,
-        IReadOnlyList<DateOnly>? held = null)
+        IReadOnlyList<DateOnly>? held = null,
+        IReadOnlyList<ListingCell>? close = null)
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -1466,13 +1476,31 @@ public sealed class SinglePageApp : IComponent
             stamp: Cards.Night(night),
             region: "list"));
 
+        // "Close to a buy point", beneath the list on a night the swing filter listed: the members one gate
+        // short, drawing the places the list leaves of the twenty, nearest to qualifying first. It recommends
+        // nothing, which its key says.
+        // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+        if (byFilter && close is not null)
+        {
+            region.Append(Cards.Computed(
+                "Close to a buy point",
+                marks.TonightList(close, TonightDrawn - Math.Min(rows.Count, TonightDrawn), rule: rule, oneGateShort: true) + Cards.Key(
+                    "How to read this list.",
+                    CloseKeyText,
+                    "Each row reads as a row of the list above does, with the one gate it missed in place of the gates it passed. The distance is how far short it is as a share of the bar it needed."),
+                title: "Close to a buy point",
+                lede: "Each passed every gate of the swing filter but one, and nothing excluded it; nearest to qualifying first, then in the list's own order.",
+                stamp: Cards.Night(night),
+                region: "close"));
+        }
+
         // The selected name's plan and level summary, which is what section 15.7
         // means by the common case needing no navigation: selecting a row draws its
         // plan beneath the list, on the same page, and brings it into view.
         // see: Selecting a row draws its plan beneath the list and is no navigation
         if (selectedName.Length > 0 && selectedTicker is { } chosen)
         {
-            var picked = rows.FirstOrDefault(row => row.Ticker == chosen);
+            var picked = rows.Concat(close ?? []).FirstOrDefault(row => row.Ticker == chosen);
             var name = picked?.Distance?.Name;
 
             region.Append(Cards.Computed(
@@ -1521,8 +1549,13 @@ public sealed class SinglePageApp : IComponent
         "ranks no company as an investment, and the one rank it draws is a return's place among the members' returns, a fact about the chart";
 
     // Section 17's list display count, held here so the app and the projection
-    // agree about it rather than each stating it.
+    // agree about it rather than each stating it. The two lists on Tonight share it.
     public const int TonightDrawn = 20;
+
+    // What "Close to a buy point" is and is not, under its rows.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    public const string CloseKeyText =
+        "These stocks are not picks. None of them passed the filter, the edge clock and Past picks never count them, and the near-miss measurement on the run page already scores stocks like these by the gate they missed. They are here so a stock one condition away is seen before it arrives rather than after.";
 
     // Section 18's row for listings written before the 5.4 correction: the rows
     // stay as written, since a listing records what that night listed, and a

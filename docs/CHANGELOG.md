@@ -8981,3 +8981,33 @@ Was:
 Now:
 > ... Selecting a row, anywhere on it but its links, draws its plan beneath the list and brings it into view, and its ticker is a link opening the name's own page (see: Selecting a row draws its plan beneath the list and is no navigation). ...
 Why: the operator followed MDT's ticker on the night of 2026-09-28 and was left on tonight's page; the ticker selected the row, and the decision already reserves a row's links from selecting it.
+
+### 2026-09-29 - ARCHITECTURE.html - tonight's page draws close to a buy point beneath the list, and the queue drafts its names after the list's
+Authorised by: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+Was:
+> <td>listings, gate results, fundamental readings</td><td>run log</td><td>works through the names on tonight's list whose research is missing or stale, in the order the list is drawn in, and has the staleness judge ...
+> ... every name in the index whose research is missing or stale, the names on tonight's list first in the order it is drawn in (see: The key under each figure is dated ...
+> <p><b>Reads:</b> the listings, the rule that listed the night, the gate results, the fundamental readings, ladders, levels and facts for that night, the run log for the header, and series state ...
+> <tr><td>Why it is here</td><td>present only when the name is on the list of the page's evening: where the swing filter listed it, ... each reason in a full sentence rather than a label and with the values that made it true</td></tr>
+> <tr><td>List display</td><td>the first 20 in the list's order drawn, the true count of names listed always stated, which from the switch is the count the swing filter passed (see: ...) (see: ...)</td><td>a page that shows twenty every night cannot tell you how busy the night was</td><td>app test against a fixture night of 40</td></tr>
+> <td>tonight's list draws no row and one line with the night's breadth and the gate's floor, or with breadth not available, and the header's count is 0</td><td>... (see: Tonight's list is the swing filter's ...)</td></tr>
+and section 15.7's regions went from The list to An evening before the switch, its note from "as section 18 states." to "On an evening before the switch", and section 18 from "No name passed the swing filter on a night" to the next row.
+Now:
+> <td>listings, gate results, filter versions, fundamental readings</td><td>run log</td><td>works through the names on tonight's list whose research is missing or stale, in the order the list is drawn in, then the names close to a buy point in the order that list is drawn in, then every other member, and has the staleness judge ...
+> ... every name in the index whose research is missing or stale, the names on tonight's list first in the order it is drawn in, then the names close to a buy point in the order that list is drawn in, then every other name (see: A member that missed exactly one gate ...) (see: The key under each figure is dated ...
+> <p><b>Reads:</b> the listings, the rule that listed the night, the gate results, the fundamental readings, ladders, levels and facts for that night, the settings of the filter version each gate result was stored under and a member's gate results on the sessions before the night for the second list, the run log for the header, and series state ...
+> <tr><td>Why it is here</td><td>present only when the name is on the list of the page's evening or close to a buy point on it: ...; where it is one gate short, the gate it missed with what it had against the bar it needed and how far short of it and the trade its plan states and a line saying it is not a pick</td></tr>
+> <tr><td>List display</td><td>the first 20 in the list's order drawn, the true count of names listed always stated, which from the switch is the count the swing filter passed; the two lists on the page share those rows, the list's drawn first and close to a buy point drawing the places left with its own true count stated (see: ...) (see: ...) (see: A member that missed exactly one gate ...)</td><td>a page that shows twenty every night cannot tell you how busy the night was, and a second list drawing rows of its own on top of them would push the page back to the length the twenty exists to stop</td><td>app test against a fixture night of 40, and against constructed nights of 15 and 20 on the list with 14 close to a buy point</td></tr>
+> <td>tonight's list draws no row and one line with the night's breadth and the gate's floor, or with breadth not available, and the header's count is 0; close to a buy point draws the members short of the market alone beneath one line stated once that they would qualify if the market turned</td><td>... (see: Tonight's list is the swing filter's ...) (see: A member that missed exactly one gate ...)</td></tr>
+and section 15.7 gains the region Close to a buy point, its note a paragraph on the distance each gate is ordered by, the settings it is read against and that it stores nothing, and section 18 the row "Both lists on tonight's page empty on a night the swing filter listed".
+Why: the operator asked for the second list on 2026-09-26 and gave its specification on 2026-09-29, approved as written; the 12.7 ruling records it whole.
+
+### 2026-09-29 - .claude/rules/checks.md - read-surface and fixture-expectations reach close to a buy point
+Authorised by: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+Was:
+> | `fixture-expectations` | ... and the overnight queue takes the names the filter passed first in its order, not in the order of their tickers or of the reasons they fired, and the night's closing count ... |
+> | `read-surface` | ... and a night no name passed the line with how many reached each gate; and the name page's why, listing history and walk ... |
+Now:
+> | `fixture-expectations` | ... and the overnight queue takes the names the filter passed first in its order, not in the order of their tickers or of the reasons they fired, then the names one gate short nearest first, then every other member, and the night's closing count ... |
+> | `read-surface` | ... and a night no name passed the line with how many reached each gate; and beneath it close to a buy point draws every member one gate short with no exclusion and none missing two or excluded, ... drawing it storing nothing and Past picks holding none of it, and the near-miss rule named by no source but the read surface's and the queue's; and the name page's why, listing history and walk ... |
+Why: the checks reach the list this correction adds and the queue's new order.

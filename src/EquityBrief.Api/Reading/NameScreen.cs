@@ -1102,7 +1102,8 @@ public static class NameScreen
         IReadOnlyList<PickCell>? earlier = null,
         FundamentalReadingRow? reading = null,
         IReadOnlyList<QuarterDatesRow>? readQuarters = null,
-        IReadOnlyList<CloseRow>? peerCloses = null)
+        IReadOnlyList<CloseRow>? peerCloses = null,
+        EquityBrief.Core.Filter.MissedGate? missed = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1232,7 +1233,8 @@ public static class NameScreen
             gates is null ? null : Gates(gates) with { Rule = listing is { } held && held.SessionDate == gates.SessionDate ? held.ListedBy : ListRules.Reasons },
             Passed(listing, gates),
             watched,
-            earlier);
+            earlier,
+            gates is not null && missed is not null ? (gates.SessionDate, missed) : null);
     }
 
     // "What the numbers say" for a night's readings: the heading carrying the state, the quarter read from,

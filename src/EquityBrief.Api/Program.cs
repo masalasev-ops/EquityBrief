@@ -304,6 +304,18 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
     var peerReadings = on is null ? await read.PeerReadingsAsync() : [];
     var peerCloses = await read.ClosesAsync([.. NameScreen.PickedPeers(ticker, peerReadings).Select(pick => pick.Ticker)]);
 
+    // The name's swing filter result for the page's night, or its newest where the page is tonight's, and
+    // where the night's list is the swing filter's and the name missed exactly one gate of it with nothing
+    // excluding it, the gate it missed and by how much.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    var gate = await read.GateResultAsync(ticker, on);
+    var missed = gate is not null && night is { } shown && gate.SessionDate == shown && CloseScreen.MissedOne(gate) && await read.ListRuleAsync(shown) == ListRules.Filter
+        ? CloseScreen.MissOf(
+            gate,
+            await FilterSettingsOf(read, gate.Version),
+            gate.Trigger ? null : EquityBrief.Core.Filter.NearMiss.FiredSessionsBefore(await read.TriggerEventsAsync(ticker, shown)))
+        : null;
+
     var region = NameScreen.Region(
         page, marks, ticker, bars, indicators, levels, profile, ladder, nextEvent, moves,
         fundamentals,
@@ -339,8 +351,7 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         NameScreen.NotAMemberOn(ticker, groupsReadOn, membersThen),
         // The name's swing readings for the page's night, or its newest where the page is tonight's.
         await read.SwingReadingAsync(ticker, on),
-        // The name's swing filter result for the page's night, or its newest where the page is tonight's.
-        await read.GateResultAsync(ticker, on),
+        gate,
         // Whether the operator watches the name, which its header's press says. An exported file carries
         // no press, because nothing it is opened beside can answer one.
         export ? null : (await read.WatchedAsync()).Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)),
@@ -348,10 +359,18 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         night is { } picked ? PicksScreen.Before(await read.PicksAsync(picked, ticker), picked) : null,
         reading,
         readQuarters,
-        peerCloses);
+        peerCloses,
+        missed);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
+
+// The settings a filter version holds, which a gate result stored under it was decided by, and the proposed
+// settings for a result stored under no opened version.
+static async Task<EquityBrief.Core.Filter.FilterSettings> FilterSettingsOf(ReadApi read, string version) =>
+    await read.FilterSettingsAsync(version) is { } json
+        ? EquityBrief.Core.Filter.FilterSettings.Read(json)
+        : EquityBrief.Core.Filter.FilterSettings.Proposed;
 
 // Where the pass a page started stands, which the page asks for while it watches one.
 //
@@ -729,15 +748,53 @@ app.MapGet("/screens/tonight/{night?}", async (
     var market = await read.MarketReadingAsync(dated);
 
     // The names whose stored series is suspect, which a row says beside the name.
+    var closes = await read.ClosesToTheNightAsync(dated);
+    var suspects = await read.SuspectSeriesAsync();
+    var researched = await read.ResearchedAsync();
+    var readings = await read.FundamentalReadingsAsync(dated);
     var listed = TonightScreen.Rows(
         dated,
         listings,
         cells,
-        await read.ClosesToTheNightAsync(dated),
-        await read.SuspectSeriesAsync(),
-        await read.ResearchedAsync(),
+        closes,
+        suspects,
+        researched,
         gates,
-        await read.FundamentalReadingsAsync(dated));
+        readings);
+
+    // The members one gate short, on a night the swing filter listed, each measured against the settings of
+    // the version its result was stored under, and a missed trigger against the firings its own results show.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    IReadOnlyList<EquityBrief.Web.Marks.ListingCell>? near = null;
+
+    if (gates is not null)
+    {
+        var settings = new Dictionary<string, EquityBrief.Core.Filter.FilterSettings>(StringComparer.Ordinal);
+
+        foreach (var version in gates.Where(CloseScreen.MissedOne).Select(gate => gate.Version).Distinct(StringComparer.Ordinal))
+        {
+            settings[version] = await FilterSettingsOf(read, version);
+        }
+
+        var fired = new Dictionary<string, int?>(StringComparer.Ordinal);
+
+        foreach (var gate in gates.Where(gate => CloseScreen.MissedOne(gate) && !gate.Trigger))
+        {
+            fired[gate.Ticker] = EquityBrief.Core.Filter.NearMiss.FiredSessionsBefore(await read.TriggerEventsAsync(gate.Ticker, dated));
+        }
+
+        near = TonightScreen.Close(
+            dated,
+            listings,
+            cells,
+            closes,
+            gates,
+            version => settings.TryGetValue(version, out var held) ? held : EquityBrief.Core.Filter.FilterSettings.Proposed,
+            fired,
+            suspects,
+            researched,
+            readings);
+    }
 
     // What the queue holds for each listed name, from the times the queue page states, so a
     // row and the selected name say a report is queued or being written and when.
@@ -745,14 +802,15 @@ app.MapGet("/screens/tonight/{night?}", async (
     var (queued, times, _) = await QueueRead(read, clock);
     var states = QueueTimes.States(queued, times, clock.SessionZone);
     IReadOnlyList<EquityBrief.Web.Marks.ListingCell> rows = [.. listed.Select(row => states.TryGetValue(row.Ticker, out var state) ? row with { Queue = state } : row)];
+    IReadOnlyList<EquityBrief.Web.Marks.ListingCell>? nearRows = near is null ? null : [.. near.Select(row => states.TryGetValue(row.Ticker, out var state) ? row with { Queue = state } : row)];
 
     // Whichever row the reader selected, from the hash, and the first row when
     // they have selected none. Section 15.7's region is for whichever row is
     // selected, and a composition fixed at the first answers a question nobody
     // asked. Its plan and its bands are the ones the night shown stored, drawn
-    // against that night's close.
+    // against that night's close. A row of either list can be selected.
     var asked = request.Query["name"].FirstOrDefault();
-    var selection = TonightScreen.Selected(rows, asked);
+    var selection = TonightScreen.Selected(rows, asked, nearRows);
 
     var member = selection is { } picked ? universe.FirstOrDefault(row => row.Ticker == picked.Ticker) : null;
     var selected = selection is { } chosen
@@ -796,7 +854,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             RunScreen.Market(market),
             TonightScreen.RuleView(rule, gates, market),
             TonightScreen.Listed(listings),
-            held: held),
+            held: held,
+            close: nearRows),
         "text/html; charset=utf-8");
 });
 

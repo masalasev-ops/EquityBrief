@@ -173,6 +173,77 @@ public partial class FixtureExpectations
         Assert.Equal(["NFLX", "MSFT", "AAPL", "KEYS"], reordered.Completed.Select(pass => pass.Ticker));
     }
 
+    [Fact]
+    public async Task TheQueueDraftsTheListThenTheNamesOneGateShortNearestFirstThenEveryOtherMember()
+    {
+        // Over a copy of the fixture's night, NFLX is made to pass, and AAPL and KEYS each to miss the trade
+        // gate alone with nothing excluding them: KEYS's reward a tenth short of the floor its version holds
+        // and AAPL's half short, so KEYS is nearer. The tickers put AAPL first among the three that did not
+        // pass, and MSFT, missing more than one gate, follows the two.
+        // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+        var night = await FixtureReplay.NightAsync(NightQueue.FromFixture(Folder(), new RecordingAwake()) with { LocalModel = new NothingAnsweringLocal() });
+
+        using var store = night.Store;
+
+        Assert.True(night.Code == 0, night.Error);
+
+        const string On = "2026-09-08";
+
+        var version = Assert.Single(Query(store, $"SELECT DISTINCT version FROM gate_result WHERE session_date = '{On}';"));
+        var settings = Query(store, $"SELECT settings FROM filter_version WHERE version = '{version}';") is [var json]
+            ? EquityBrief.Core.Filter.FilterSettings.Read(json)
+            : EquityBrief.Core.Filter.FilterSettings.Proposed;
+
+        string Short(double ratio) => JsonSerializer.Serialize(new
+        {
+            gates = new[]
+            {
+                new { gate = "market", passed = true, reason = "breadth at or above its floor", values = new Dictionary<string, string>() },
+                new { gate = "trend and strength", passed = true, reason = "an uptrend at or above its floor", values = new Dictionary<string, string>() },
+                new { gate = "setup", passed = true, reason = "a pullback into an anchored support band", values = new Dictionary<string, string>() },
+                new { gate = "trigger", passed = true, reason = "the close above the previous session's high", values = new Dictionary<string, string>() },
+                new
+                {
+                    gate = "trade",
+                    passed = false,
+                    reason = "reward to risk below its floor",
+                    values = new Dictionary<string, string>
+                    {
+                        ["reward to risk"] = ratio.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
+                        ["stop in typical moves"] = settings.StopLow.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
+                    },
+                },
+            },
+            notes = Array.Empty<string>(),
+        });
+
+        store.Execute($"UPDATE gate_result SET passed = 1, rank = 1 WHERE ticker = 'NFLX' AND session_date = '{On}';");
+        store.Execute($"UPDATE gate_result SET market = 0, trend = 0, passed = 0, exclusions = '[]' WHERE ticker = 'MSFT' AND session_date = '{On}';");
+
+        foreach (var (ticker, ratio) in new[] { ("KEYS", settings.RewardToRiskFloor * 0.9), ("AAPL", settings.RewardToRiskFloor * 0.5) })
+        {
+            store.Execute(
+                $"UPDATE gate_result SET market = 1, trend = 1, setup = 1, trigger_pass = 1, trade = 0, passed = 0, exclusions = '[]', gates = '{Short(ratio)}' " +
+                $"WHERE ticker = '{ticker}' AND session_date = '{On}';");
+        }
+
+        var clock = FixedClock.At(QueueNight, SessionZones.UnitedStates);
+        var local = new RecordedLocalModelFeed(Folder());
+
+        var queued = await new OvernightQueue(
+            new StalenessJudge(clock, store.DatabaseFile),
+            sections => new ProseWriter(local, new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
+            new ClaimChecker(clock, store.DatabaseFile),
+            ProseWriter.DefaultLane,
+            TimeSpan.FromHours(OvernightQueue.DefaultHours),
+            new RecordingAwake(),
+            clock,
+            store.DatabaseFile).RunAsync("close", new DateOnly(2026, 9, 8));
+
+        Assert.Equal(["NFLX"], queued.Listed);
+        Assert.Equal(["NFLX", "KEYS", "AAPL", "MSFT"], queued.Queued);
+    }
+
     // A local runtime answering one name's first draft with a figure no facts file holds and its
     // draft asked again in words, and every other request as the runtime it wraps does.
     sealed class FirstDraftRefused(ILocalModelFeed inner, string ticker) : ILocalModelFeed
