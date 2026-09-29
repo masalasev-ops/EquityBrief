@@ -33655,7 +33655,11 @@ Found:      a trial of this build, run end to end over the live store read-only 
             the five strongest whose figures differ; the registration command carried no date and an empty list of
             variants; and the report did not say why a move one step tighter can never pass the test of difference,
             which it now does. Any support band and an anchored one read alike on 253,324 of the 253,373
-            candidates, a band of averages alone rarely holding the close.
+            candidates, a band of averages alone rarely holding the close. A fifth fault was found by S7 below, the
+            first mutation whose failing assertion printed a design: a design printed itself by every property, its
+            selection among them, which is a design again, so printing one never ended and the test host was lost
+            to the stack; the same cause as the save's loop. A design now prints as its key, and the saved row's
+            test asserts it does.
 Guarded:    eighteen tests, new, in `fixture-expectations`: every setting's figures off a design's table are the ones
             reading it directly gives over constructed candidates on a grid of 13,122 settings; the first stage's
             viable count and median are the ones each coarse setting read directly gives; a trigger fired on a session
@@ -33667,7 +33671,7 @@ Guarded:    eighteen tests, new, in `fixture-expectations`: every setting's figu
             centre and never the single best; each of the four variant tests refusing on its own; a record one year
             carries refused; the missing departures at three per cent and a tenth over; the ranking marking the live
             rule's design and naming a stop not at a band; the five carried over ties; a saved row read back to its
-            design; the pause, the night's lock and a drain's over a clock the run's own wait moves; and a chunk tried
+            design and a design printing as its key; the pause, the night's lock and a drain's over a clock the run's own wait moves; and a chunk tried
             once more and stopped. Four tests are changed: the history pull's list of the sources naming the pulled
             tables adds the sweep's, a measurement that reads them by hand; the component with no run log row adds
             the sweep history; the evaluation's sources name the sweep's file as the one computing a reading outside
@@ -33698,8 +33702,14 @@ Mutated:    the rule, stated before the run: the mechanism each rule the rulings
                pause test alone.
             S6 a chunk failing once stopping the run: red in the retry test alone.
             S7 stage 2 carrying designs whose figures tie: red in the five carried test alone.
-            Results: 129R1
-Held:       129H1
+            Results: one run each in a detached worktree at 1e2aeef, this entry's first commit, filtered to the
+            eighteen sweep tests, each edit made there and reverted, and the tree read clean after. S1 turned the
+            plateau test red and left the other seventeen green. S2 turned the equivalence test, the first stage's
+            test and the pulled history's test red and left the other fifteen green. S3 turned the threshold test
+            red, S4 the store test, S5 the pause test and S6 the retry test, each alone. S7's first run aborted the
+            test host on the printing fault above; with the fix applied in the worktree it turned the five carried
+            test red and left the other seventeen green, and both edits were reverted there.
+Held:       red in every test predicted, and in no other, S7 once the fault it found was fixed.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 129T1 of 129T1 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
