@@ -30718,15 +30718,18 @@ Mutated:    the rule, stated before the run: the ruling's own value reversed alo
             Predicted:
             R1 the shipped `Use` back to `claude-sonnet`, filtered to `fixture-expectations`' profile tests and the
                RUNBOOK test: red in the shipped profiles test and in the RUNBOOK test.
-            Results: 126R2
-Held:       126H2
+            Results: one run in a detached worktree at ab43c9e, this entry's commit, filtered to the four profile
+            tests and the RUNBOOK test, the edit made there and reverted, and the tree read clean after. The whole
+            suite ran green over ab43c9e in the gates, 1539 of 1539. R1 turned the shipped profiles test and the
+            RUNBOOK test red and left the other three green.
+Held:       red in every test predicted, and in no other.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1539 of 1539 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 44 tables, 725 claims, 725 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 126P2 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            0 unexamined, 736 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
             41 of 41 roster checks carried and all 41 run, 1539 of 1539 tests.
-            Both gates ran over the tree carrying this entry, 126SHA2, in a worktree beside the repository, and the
+            Both gates ran over the tree carrying this entry, ab43c9e, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    MDT's DeepSeek regenerate, once the UTC day of its Claude pass has passed, and the comparison of the two
             reports section by section. The four correction A records still owed, over whichever days research names
