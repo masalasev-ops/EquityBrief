@@ -1320,6 +1320,7 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.RunPageClaims,
         .. Reading.ReadSurface.RunMiddleClaims,
         .. Reading.ReadSurface.RunBottomClaims,
+        .. Reading.ReadSurface.NightNoticeClaims,
     ];
 
     // Rows taken out of the document after phase 12's prediction, which counted each: the name page's
@@ -1418,6 +1419,7 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.RunPageClaims,
         .. Reading.ReadSurface.RunMiddleClaims,
         .. Reading.ReadSurface.RunBottomClaims,
+        .. Reading.ReadSurface.NightNoticeClaims,
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1450,7 +1452,7 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
-        Assert.Equal((550, 700), (predicted, actual));
+        Assert.Equal((550, 706), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

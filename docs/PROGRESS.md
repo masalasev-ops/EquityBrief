@@ -29784,3 +29784,86 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 0f8387a, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    the night of 2026-09-28 run again once this merges.
+
+### 12.3 - correction: a night that stops before its close tries again from the step that stopped, tonight's page and the Run page name one state for it, and a press runs the rest of a night left unfinished, where a stopped night waited for a person to notice   2026-09-29
+Corrects:   12.3's Run page, whose first region names the night's state, and the night it reads, on the operator's
+            approval of 2026-09-28.
+Asked:      the operator, on 2026-09-28: "what i need is some retry attempts from the point where it got stuck so
+            that the night can complete and also some sort of user notification at the top of the tonight page to
+            tell that the night is running or it was left unfinished", and, approving the plan put to them: "As
+            proposed: 3 more tries from the step that stopped, 15 minutes apart, each with its own hour; no retry
+            when the day's allowance is spent or the night was refused before it started; the notice at the top of
+            Tonight and the Run page for running, waiting to try again, left unfinished, never ran after 00:30 UTC
+            on a trading day, and a one-line "finished" note; the "Run the rest of the night" press guarded by a
+            night lock file; tools/nightly.ps1 --resume. Each notice while waiting or unfinished lists every try so
+            far with its own reason", with "The Run page's status headline and the notice on Tonight must read one
+            source", a test failing where the two disagree on finished, running, waiting, unfinished, not yet run
+            and never ran.
+Repaired:   a step before the close that fails or passes the night's deadline stops the try it is in; the try writes
+            beside its stop a `try again` row saying when the next starts, waits fifteen minutes, and the night runs
+            again from that step under the first try's id with `-try-` and its number and a deadline of its own, up
+            to three more times, keeping what the earlier tries stored. No try again follows a refusal before the
+            first step, the day's allowance spent, a day the exchange calendar cannot place, or a step after the
+            close. `tools/nightly --resume` and the press on either page run the rest of the newest night after the
+            migration from the first step its tries have not finished, as one more try on that night's session, and
+            do nothing where it finished. A night takes a lock file under the data root and names itself beside it,
+            and a second night is refused while one holds it and writes nothing. `RunScreen.Night` reads a night's
+            first try and its tries as one night, adds waiting to try again, folds a stop with no try left into left
+            unfinished with its reason, reads a night holding the lock as running, and reads never ran from 00:30 UTC
+            on the day after the session; the Run page's headline and tonight's notice are both handed what it returns
+            through one function in the read surface. Each try that stopped is listed with its reason, the press is
+            drawn on a night left unfinished alone, and a finished night is said in one line.
+            The decision "A night's state is read off its own run log rows, and the pages that state it read that one
+            state" is superseded by "A night's state is read off its own run log rows and its tries, and the pages that
+            state it read that one state", and two decisions are added: "A night that stops before its close is tried
+            again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its
+            own" and "A night left unfinished is run to its end from the step it stopped at by a press or a command,
+            and one night runs at a time under a lock file".
+            What the headline read before this: the night's run log rows through `RunScreen.Night`, finished where the
+            newest run closed, stopped where it wrote a stop before the close, running inside the deadline, left
+            unfinished past it, and not yet run or never ran by the session the clock was in; tonight's page drew no
+            notice.
+Measured:   nothing new.
+Guarded:    seven tests, new. In `nightly-run`: `ANightThatStopsTriesAgainFromTheStepThatStoppedAndKeepsWhatTheEarlierTryStored`,
+            the news failing once; `ANightStopsTryingAfterThreeMoreTriesEachStoppedWithItsReasonAndItsRestRunsFromThatStep`,
+            the news failing every time and then the rest run; `ATryPastItsDeadlineIsTriedAgainUnderADeadlineOfItsOwn`;
+            and `ASecondNightIsRefusedWhileOneHoldsTheLockAndWritesNothing`. In `read-surface`:
+            `TheRunPagesHeadlineAndTonightsNoticeNameOneStateForEveryStateANightCanBeIn`, the six states each over a
+            run log worked by hand for it; `TonightsNoticeListsEachTryThatStoppedOffersThePressOnANightLeftUnfinishedAndSaysInOneLineWhereItFinished`;
+            and `ThePressRunsTheRestOfANightLeftUnfinishedAndIsRefusedWithoutThePagesHeaderWhileANightHoldsTheLockAndOtherwise`.
+            The state test works waiting, a try again and the lock by hand, and the stopped night's page test reads it
+            left unfinished with its try.
+Written:    section 14's paragraph on the tries, section 15.7's row stating the night's state, section 15.10's
+            first row and the night status mark in `ARCHITECTURE.html`; RUNBOOK's task limit and the passages on the
+            tries and the rest of a night; SCHEMA's paragraph on a try's run; `.claude/rules/checks.md`'s
+            `nightly-run` and `read-surface` rows; each prior text in `CHANGELOG.md`; the decisions in `DECISIONS.md`
+            and the reader's guide's key.
+Expected:   derived: no expectation file moves.
+Tests:      1518, from 1511: seven added.
+Claims:     706, from 700: six added, tonight's row stating the night's state as its four parts and the two the
+            Run page's first row adds, each named in `ReadSurface.NightNoticeClaims`.
+Pins:       the branch against `main` edits `Nightly.cs`, `NightClose.cs` and `Program.cs` in the worker, adds
+            `NightResume.cs` and `NightLock.cs`, and edits `DrainLauncher.cs` and the read surface and web sources,
+            none of them in the three pin lists. No version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: each mechanism the tries, the one state and the press rest on reversed
+            alone, filtered to the tests that name it.
+            Predicted:
+            N1 a try again started from the first step rather than the one that stopped: red in the first tries test.
+            N2 a waiting night read without the deadline after its next try: red in the state test.
+            N3 tonight's notice handed a view of its own, with no deadline: red in the one-state test.
+            N4 the press drawn on a waiting night as well: red in the notice test.
+            N5 a night that finds the lock held run anyway: red in the lock test.
+            N6 the rest of a night run from the step after the migration whatever its tries finished: red in the
+               resume test.
+            Results: 137M
+Held:       137H
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 137T of 137T tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 137B tables, 137C claims, 137P PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 137R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 137T of 137T tests.
+            Both gates ran over the tree carrying this entry, 137SHA, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    the operator's command raising the scheduled task's limit to eight hours, in RUNBOOK, before a night
+            that tries again can run past two.

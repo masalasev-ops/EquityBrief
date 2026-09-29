@@ -1650,6 +1650,20 @@ internal static class Scope
             Verdict.Pass, "the two rings and the three counts read off the rendered mark", ByReadSurface),
         [CheckReach.Key("15.5 The mark vocabulary", "Checkpoint scale")] = new Scoped(
             Verdict.Pass, "a locked row and an unlocked row with its dot, rule and band read off the rendered mark", ByReadSurface),
+
+        // The 12.3 correction building the night's tries, tonight's notice and the press running the rest of a night.
+        [CheckReach.Key("15.7 Tonight", "The night's state, a notice at the top naming the night's state as the Run page's headline names it")] = new Scoped(
+            Verdict.Pass, "the notice's state read off tonight's page and the headline's off the Run page, equal for every state a night can be in over a run log worked by hand for each", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The night's state, each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished")] = new Scoped(
+            Verdict.Pass, "try 1 with the step it stopped at and its reason read off the notice while the night waits on try 2", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The night's state, a press running the rest of a night left unfinished")] = new Scoped(
+            Verdict.Pass, "the press drawn once on a night left unfinished and on no waiting night, and the route it posts to refused without the header, while a night holds the lock and on a finished night", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The night's state, a one-line note where the night finished")] = new Scoped(
+            Verdict.Pass, "the finished night's notice read whole as its one line", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How last night went, each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished")] = new Scoped(
+            Verdict.Pass, "the tries worked by hand over constructed run log rows, a try again read with what the earlier try stored, and read off the Run page", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How last night went, a press running the rest of a night left unfinished")] = new Scoped(
+            Verdict.Pass, "the press read off the Run page on a night left unfinished and absent while it waits", ByReadSurface),
         [CheckReach.Key("15.9 Name", "On the list before")] = new Scoped(
             Verdict.Pass,
             "a name the live list picked before the page's night draws the region after the plan and its earnings reactions, its line counting the picks and each group as the test's own arithmetic over the store gives them and a row per earlier listing as it stood on the page's night, and a name never picked before draws none",
@@ -3350,6 +3364,12 @@ internal static class Scope
         [CheckReach.Key("15.5 The mark vocabulary", "Clock lines")] = "12.3",
         [CheckReach.Key("15.5 The mark vocabulary", "Overlap rings")] = "12.3",
         [CheckReach.Key("15.5 The mark vocabulary", "Checkpoint scale")] = "12.3",
+        [CheckReach.Key("15.7 Tonight", "The night's state, a notice at the top naming the night's state as the Run page's headline names it")] = "12.3",
+        [CheckReach.Key("15.7 Tonight", "The night's state, each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished")] = "12.3",
+        [CheckReach.Key("15.7 Tonight", "The night's state, a press running the rest of a night left unfinished")] = "12.3",
+        [CheckReach.Key("15.7 Tonight", "The night's state, a one-line note where the night finished")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How last night went, each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How last night went, a press running the rest of a night left unfinished")] = "12.3",
         [CheckReach.Key("15.9 Name", "On the list before")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, the trades listed with the nights they were listed on")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many are still open and how many finished")] = "12.2",
@@ -3692,7 +3712,9 @@ internal static class Scope
         // The 12.3 correction that opens the Run page on its pictures, each of its first three regions read as
         // the parts its row states.
         [CheckReach.Key("15.10 Run", "How last night went")] =
-            ["a status mark and a headline naming the night's state as its own run log rows give it", "four headline figures being the stocks read and the provider requests with the research spend and the steps run again", "a time bar of the night's steps in six named groups showing where a stopped night stopped"],
+            ["a status mark and a headline naming the night's state as its own run log rows give it", "four headline figures being the stocks read and the provider requests with the research spend and the steps run again", "a time bar of the night's steps in six named groups showing where a stopped night stopped", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished"],
+        [CheckReach.Key("15.7 Tonight", "The night's state")] =
+            ["a notice at the top naming the night's state as the Run page's headline names it", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished", "a one-line note where the night finished"],
         [CheckReach.Key("15.10 Run", "The market")] =
             ["a one-word label read by a stated rule", "a gauge of the share of members above their 200-day average with the market gate's floor marked", "the share above the 50-day average and the index's volume against its fifty-day average", "a line of that share over the sixty sessions before the night that the store holds averages for"],
         [CheckReach.Key("15.10 Run", "From the index to tonight's list")] =

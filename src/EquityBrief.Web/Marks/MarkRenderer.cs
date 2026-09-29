@@ -357,12 +357,12 @@ public sealed record BreadthPoint(DateOnly Session, double Share, int Counted);
 public sealed record MarketPicture(DateOnly Session, MarketView? Night, double Floor, IReadOnlyList<BreadthPoint> Line);
 
 // The states a night can be in, as the Run page and the notice on tonight's page name them.
-// see: A night's state is read off its own run log rows, and the pages that state it read that one state
+// see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
 public static class NightStates
 {
     public const string Finished = "finished";
     public const string Running = "running";
-    public const string Stopped = "stopped";
+    public const string Waiting = "waiting to try again";
     public const string Unfinished = "left unfinished";
     public const string NotYet = "not yet run";
     public const string NeverRan = "never ran";
@@ -373,10 +373,15 @@ public static class NightStates
 // them the night reached, the seconds they took, and whether the night stopped inside it.
 public sealed record StepGroupView(string Name, int Steps, int Reached, double Seconds, bool Stopped);
 
+// One try of a night: its number, counted from one, the run it wrote under, and the step it stopped at
+// with the reason it wrote, where it stopped.
+public sealed record NightTry(int Number, string RunId, string? StoppedAt, string? Reason);
+
 // How a night went, read off its own run log rows alone: its state, where it stopped and why, when it
-// started and how long its arithmetic took against its deadline, the four headline figures, and its
-// steps in groups. The notice on tonight's page reads the same state.
-// see: A night's state is read off its own run log rows, and the pages that state it read that one state
+// started and how long its arithmetic took against its deadline, the four headline figures, its steps
+// in groups, every try it made, and while it waits the instant its next try starts. The notice on
+// tonight's page reads the same state.
+// see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
 public sealed record NightView(
     DateOnly Session,
     string State,
@@ -391,7 +396,12 @@ public sealed record NightView(
     decimal ResearchSpend,
     int StepsRetried,
     string? AfterTheClose,
-    IReadOnlyList<StepGroupView> Groups);
+    IReadOnlyList<StepGroupView> Groups,
+    IReadOnlyList<NightTry>? Tries = null,
+    DateTimeOffset? NextTry = null)
+{
+    public IReadOnlyList<NightTry> TriesMade => Tries ?? [];
+}
 
 // One evening of the list as the Run page's freshness bars draw it: the names it listed and how many of them
 // were on the list the evening before, each evening read by the rule that listed it.
@@ -6087,13 +6097,13 @@ public sealed class MarkRenderer : IComponent
         $"{Escaped(ticker)} has {bars} stored session{(bars == 1 ? string.Empty : "s")}, " +
         $"and a chart needs at least {FewestBars}.</p>";
 
-    // The headline each state of a night is named by, in the words the Run page draws.
+    // The headline each state of a night is named by, in the words the Run page and tonight's notice draw.
     public static string NightHeadline(NightView night) => night.State switch
     {
         NightStates.Finished => "Finished",
         NightStates.Running => "Running",
-        NightStates.Stopped => "Stopped at " + night.StoppedAt,
-        NightStates.Unfinished => "Left unfinished",
+        NightStates.Waiting => "Waiting to try again",
+        NightStates.Unfinished => night.StoppedAt is { } step ? "Left unfinished at " + step : "Left unfinished",
         NightStates.NotYet => "Not run yet",
         NightStates.NeverRan => "Never ran",
         _ => "No session",
@@ -6106,20 +6116,23 @@ public sealed class MarkRenderer : IComponent
         var started = night.Started is { } at ? at.UtcDateTime.ToString("HH:mm", Invariant) + " UTC" : string.Empty;
         var written = night.LastWritten is { } last ? last.UtcDateTime.ToString("HH:mm", Invariant) + " UTC" : string.Empty;
 
+        var next = night.NextTry is { } due ? due.UtcDateTime.ToString("HH:mm", Invariant) + " UTC" : string.Empty;
+
         var said = night.State switch
         {
             NightStates.Finished => Formatted($"Started {started} and closed its arithmetic in {Span(night.Seconds ?? 0)}, inside its {night.DeadlineMinutes:0}-minute deadline."),
             NightStates.Running => Formatted($"Started {started}; the last step written was {night.StoppedAt} at {written}. Until it finishes, tonight's list is the one before it."),
-            NightStates.Stopped => Formatted($"It stopped at {night.StoppedAt}: {night.Reason}"),
+            NightStates.Waiting => Formatted($"Try {night.TriesMade.Count} stopped at {night.StoppedAt}, and try {night.TriesMade.Count + 1} starts from that step at {next}. Until it finishes, tonight's list is the one before it."),
+            NightStates.Unfinished when night.Reason is { } reason => Formatted($"It stopped at {night.StoppedAt}: {reason}"),
             NightStates.Unfinished => Formatted($"Its last step written was {night.StoppedAt} at {written}, and no step recorded a stop, so the night ended without saying why, a machine asleep or a task ended among the causes."),
             NightStates.NotYet => Formatted($"No night has run for {day} yet."),
             NightStates.NeverRan => Formatted($"No night ran for {day}: the run log holds none of its steps."),
             _ => Formatted($"The exchange did not trade on {day}, so the night fetched nothing and exited clean."),
         };
 
-        if (night.StepsRetried > 0)
+        if (night.StepsRetried > 0 && night.State is NightStates.Finished or NightStates.Running)
         {
-            said += Formatted($" Before this run, {night.StepsRetried} step(s) of the night stopped and the night was run again.");
+            said += Formatted($" It took {night.StepsRetried} more tr{(night.StepsRetried == 1 ? "y" : "ies")} after a step stopped.");
         }
 
         if (night.AfterTheClose is { } after)
@@ -6142,15 +6155,67 @@ public sealed class MarkRenderer : IComponent
     public static string NightTone(string state) => state switch
     {
         NightStates.Finished or NightStates.Running => "ok",
-        NightStates.NotYet => "wait",
-        NightStates.Stopped or NightStates.Unfinished or NightStates.NeverRan => "fail",
+        NightStates.NotYet or NightStates.Waiting => "wait",
+        NightStates.Unfinished or NightStates.NeverRan => "fail",
         _ => "quiet",
     };
+
+    // Every try a night made that stopped, with the step it stopped at and the reason it wrote, drawn while
+    // the night waits to try again or was left unfinished, and nothing otherwise.
+    // see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own
+    public static string NightTries(NightView night)
+    {
+        var stopped = night.TriesMade.Where(attempt => attempt.StoppedAt is not null).ToArray();
+
+        if (night.State is not (NightStates.Waiting or NightStates.Unfinished) || stopped.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var list = new StringBuilder();
+
+        list.Append(Invariant, $"<ol class=\"night-tries\" data-tries=\"{night.TriesMade.Count}\">");
+
+        foreach (var attempt in stopped)
+        {
+            list.Append(Invariant, $"<li data-try=\"{attempt.Number}\" data-step=\"{Escaped(attempt.StoppedAt!)}\"><b>Try {attempt.Number}</b> stopped at {Escaped(attempt.StoppedAt!)}: {Escaped(attempt.Reason ?? "it wrote no reason")}</li>");
+        }
+
+        list.Append("</ol>");
+
+        return list.ToString();
+    }
+
+    // The notice at the top of tonight's page: the same state, headline and line the Run page's first
+    // region draws, with every try that stopped while the night waits or was left unfinished, and one line
+    // where it finished.
+    // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
+    public string NightNotice(NightView night)
+    {
+        var tone = NightTone(night.State);
+
+        if (night.State == NightStates.Finished)
+        {
+            var closed = night.LastWritten is { } at ? at.UtcDateTime.ToString("HH:mm", Invariant) + " UTC" : "its close";
+
+            return $"<p class=\"night-notice\" data-state=\"{Escaped(night.State)}\" data-tone=\"{tone}\" data-session=\"{night.Session.ToString("yyyy-MM-dd", Invariant)}\">The night of {night.Session.ToString("ddd yyyy-MM-dd", Invariant)} finished; its last step was written at {closed}.</p>";
+        }
+
+        var notice = new StringBuilder();
+
+        notice.Append(Invariant, $"<div class=\"night-notice\" data-state=\"{Escaped(night.State)}\" data-tone=\"{tone}\" data-session=\"{night.Session:yyyy-MM-dd}\">");
+        notice.Append(Invariant, $"<p class=\"nn-headline\"><b>The night of {night.Session:ddd yyyy-MM-dd}: {Escaped(NightHeadline(night))}</b></p>");
+        notice.Append(Invariant, $"<p class=\"nn-said\">{Escaped(NightSaid(night))}</p>");
+        notice.Append(NightTries(night));
+        notice.Append("</div>");
+
+        return notice.ToString();
+    }
 
     // How last night went, section 15.10's first region: the status mark and the headline for the state
     // the night's run log gives it, the line saying what that rests on, the four headline figures and the
     // time bar of the night's steps in their six groups, with where a stopped night stopped.
-    // see: A night's state is read off its own run log rows, and the pages that state it read that one state
+    // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
     public string NightStatus(NightView night)
     {
         var tone = NightTone(night.State);
@@ -6174,6 +6239,7 @@ public sealed class MarkRenderer : IComponent
         region.Append(Invariant, $"<div class=\"lbl\">The night of {night.Session:ddd yyyy-MM-dd}</div>");
         region.Append(Invariant, $"<p class=\"ns-headline\">{Escaped(NightHeadline(night))}</p>");
         region.Append(Invariant, $"<p class=\"ns-said\">{Escaped(NightSaid(night))}</p>");
+        region.Append(NightTries(night));
         region.Append("</div></div>");
 
         region.Append("<div class=\"ns-figures\">");

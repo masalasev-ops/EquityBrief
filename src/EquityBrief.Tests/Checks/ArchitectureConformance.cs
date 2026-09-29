@@ -1387,8 +1387,9 @@ public partial class ArchitectureConformance
         // 97 at the 12.3 correction that opens the Run page on its pictures: its first three regions, the folded
         // detail and the four marks they draw. 105 at the one that draws its trades, freshness, research and
         // checklist, four rows and four marks. 111 at the one that draws how the system learns, the comparison
-        // of tonight's picks and each version at a checkpoint, three rows and three marks.
-        Assert.Equal(111,screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // of tonight's picks and each version at a checkpoint, three rows and three marks. 112 at the one that
+        // builds the night's tries: tonight's row stating the night's state.
+        Assert.Equal(112, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1472,8 +1473,9 @@ public partial class ArchitectureConformance
         // parts their rows state, the folded detail and the four marks. 336 at the one that draws its trades,
         // freshness, research and checklist: the fourteen parts their rows state and four marks. 353 at the one
         // that draws how the system learns, the comparison of tonight's picks and each version at a checkpoint:
-        // the fourteen parts their rows state and three marks.
-        Assert.Equal(353, inDocument.Length);
+        // the fourteen parts their rows state and three marks. 359 at the one that builds the night's tries:
+        // tonight's row stating the night's state as its four parts and the two the Run page's first row adds.
+        Assert.Equal(359, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1548,8 +1550,10 @@ public partial class ArchitectureConformance
         // 299 at the 12.3 correction that opens the Run page on its pictures: its first three regions as the nine
         // parts their rows state. 313 at the one that draws its trades, freshness, research and checklist: the
         // fourteen parts their rows state. 327 at the one that draws how the system learns, the comparison of
-        // tonight's picks and each version at a checkpoint: the fourteen parts their rows state.
-        Assert.Equal(327, checkedElements);
+        // tonight's picks and each version at a checkpoint: the fourteen parts their rows state. 333 at the one
+        // that builds the night's tries: tonight's row stating the night's state as its four parts and the two
+        // the Run page's first row adds.
+        Assert.Equal(333, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

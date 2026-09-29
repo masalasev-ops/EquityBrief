@@ -541,6 +541,17 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .ns-headline{font:600 28px/1.2 var(--serif);margin:2px 0}
 .night-status[data-tone='fail'] .ns-headline{color:var(--fail)}
 .ns-said{color:var(--ink-2);margin:0;max-width:78ch}
+.night-tries{margin:8px 0 0;padding-left:20px;color:var(--ink-2);max-width:78ch}
+.night-tries li{margin:2px 0}
+.night-notice-box{margin:0 0 14px}
+.night-notice{border-radius:8px;padding:10px 14px;margin:0;border:1px solid var(--hair);background:var(--panel)}
+.night-notice[data-tone='ok']{border-color:var(--stat);background:var(--stat-fill)}
+.night-notice[data-tone='wait']{border-color:var(--wait);background:var(--wait-fill)}
+.night-notice[data-tone='fail']{border-color:var(--fail);background:var(--fail-fill)}
+.night-notice p{margin:0}
+.night-notice .nn-said{color:var(--ink-2);margin-top:4px}
+.night-control{margin:10px 0 0}
+.night-said{color:var(--ink-2);margin:6px 0 0}
 .ns-figures{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:16px 0}
 .ns-figures .tile{background:var(--panel);border-radius:8px;padding:10px 14px}
 .ns-figures .tile b{display:block;font-size:24px;font-variant-numeric:tabular-nums}

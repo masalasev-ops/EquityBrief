@@ -44,7 +44,8 @@ static int NoVerb()
 {
     Console.Error.WriteLine(
         "EquityBrief.Worker: no verb given. Twelve are built: 'migrate' applies pending migrations, " +
-        "'nightly --fixture <folder>' runs the night's steps in order, " +
+        "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
+        "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
         "'research --ticker <TICKER>' writes the sections of one name's research that are not written or have gone " +
         "stale, with '--refresh' to fetch its figures again and write every section again, once a day, and '--paid-for-local' to have the paid model write the " +
@@ -493,6 +494,43 @@ static async Task<int> NightlyRun(string[] args)
     var named = Argument(args, "--session");
     IClock clock;
 
+    // The rest of the newest night, from the first step its tries have not finished, as one more try under
+    // that night's id and on that night's session. A night for the session the clock is in runs on the
+    // clock; one for an earlier session runs as a night named for it does, asking for no quarters and no
+    // report, since what it would store is today's answer and not that night's.
+    // see: A night left unfinished is run to its end from the step it stopped at by a press or a command, and one night runs at a time under a lock file
+    NightToResume? rest = null;
+
+    if (args.Contains("--resume"))
+    {
+        IClock now = SystemClock.ForUnitedStatesSessions();
+
+        if (named is not null)
+        {
+            Console.Error.WriteLine("nightly: '--resume' and '--session' were both given. The rest of a night runs on that night's own session.");
+
+            return 1;
+        }
+
+        rest = await NightResume.NewestAsync(store.DatabaseFile, now);
+
+        if (rest is null)
+        {
+            Console.Error.WriteLine("nightly: '--resume' found no night on the run log, so there is no rest of one to run.");
+
+            return 1;
+        }
+
+        if (rest.Finished)
+        {
+            Console.Out.WriteLine($"nightly: the night of {rest.Session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} closed its arithmetic, so there is nothing to run.");
+
+            return 0;
+        }
+
+        named = rest.Session == now.SessionDateAt(now.UtcNow) ? null : rest.Session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    }
+
     if (named is null)
     {
         clock = SystemClock.ForUnitedStatesSessions();
@@ -538,7 +576,7 @@ static async Task<int> NightlyRun(string[] args)
     // deciding what the operator meant.
     var wantsLive = args.Contains("--live");
     var wantsFixture = Argument(args, "--fixture") is not null;
-    var runId = RunId(named) ?? FormattableString.Invariant($"night-{clock.UtcNow:yyyyMMddTHHmmssZ}");
+    var runId = rest?.FirstTry ?? RunId(named) ?? FormattableString.Invariant($"night-{clock.UtcNow:yyyyMMddTHHmmssZ}");
 
     if (wantsLive && wantsFixture)
     {
@@ -592,7 +630,15 @@ static async Task<int> NightlyRun(string[] args)
         store.DataRoot,
         SystemClock.ForUnitedStatesSessions());
 
-    return await Nightly.RunAsync(store, feeds, queue, index, clock, Console.Out, Console.Error, runId, launcher: launcher, askForTheFirstName: named is null);
+    // A night the scheduler starts tries again from a step that stopped; a run of the rest of one tries once.
+    // see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own
+    return await Nightly.RunAsync(
+        store, feeds, queue, index, clock, Console.Out, Console.Error, runId,
+        launcher: launcher,
+        askForTheFirstName: named is null,
+        tries: rest is null ? Nightly.TryPlan.Standard : Nightly.TryPlan.Once,
+        tryNumber: rest?.NextTry ?? 1,
+        resume: rest is not null);
 }
 
 // A night refused before its first step, on stderr and on the run log.
