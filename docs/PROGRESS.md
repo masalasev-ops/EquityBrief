@@ -30145,13 +30145,13 @@ Noted:      the build supersedes "The research model is one interface with an im
             kept word for word in the local `prompts/` archive, which nothing in the corpus reads.
 Changed:    nothing.
 Tests:      none added.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 140T of 140T tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1518 of 1518 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 140B tables, 140C claims, 140P PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 140R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 140T of 140T tests.
-            Both gates ran over the tree carrying this entry and the two after it, 140SHA, in a worktree beside the
+            `tools/verify-phase.ps1` green at 44 tables, 706 claims, 706 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 717 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1518 of 1518 tests.
+            Both gates ran over the tree carrying this entry and the two after it, d3ce9e0, in a worktree beside the
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    the profiles with research on `claude-sonnet` and MDT's report; then, after the 12.7 ruling's work,
             the labeller and its screens, with correction A's five reports and five nights recorded as they come.
@@ -30256,13 +30256,13 @@ Brief:      the operator's words, whole.
             > removed, and the order reversed, each expected red.
 Changed:    nothing.
 Tests:      none added.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 141T of 141T tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1518 of 1518 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 141B tables, 141C claims, 141P PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 141R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 141T of 141T tests.
-            Both gates ran over the tree carrying this entry and the one before and the one after it, 141SHA, in a
+            `tools/verify-phase.ps1` green at 44 tables, 706 claims, 706 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 717 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1518 of 1518 tests.
+            Both gates ran over the tree carrying this entry and the one before and the one after it, d3ce9e0, in a
             worktree beside the repository, and the operator's store under `data/` was not touched by either.
 Carried:    the second list, built after the profiles and MDT's report and before the labeller.
 
@@ -30482,13 +30482,13 @@ Review:     the fourth review's changes, whole.
             > sees how far the search moved from today's rule and why.
 Changed:    nothing.
 Tests:      none added.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 142T of 142T tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1518 of 1518 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 142B tables, 142C claims, 142P PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 142R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 142T of 142T tests.
-            Both gates ran over the tree carrying this entry and the two before it, 142SHA, in a worktree beside the
+            `tools/verify-phase.ps1` green at 44 tables, 706 claims, 706 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 717 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1518 of 1518 tests.
+            Both gates ran over the tree carrying this entry and the two before it, d3ce9e0, in a worktree beside the
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    the sweep, its planning figures measured before each stage, stage 1's ranking and the stage 2 proposal
             put to the operator, and the starting point and variants put to the operator before any registration.
