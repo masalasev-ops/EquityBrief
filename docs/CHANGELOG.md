@@ -8973,3 +8973,11 @@ Now:
 > | `nightly-run` | ... a night run again for an earlier session asking for no quarters; and a night whose step fails before the close writes beside the stop when its next try starts and tries again from that step ...; and a night is refused while another holds the lock and writes nothing |
 > | `read-surface` | ... and no outcome of a version's pick is drawn; and the Run page's headline and tonight's notice name one state for a night finished, running, waiting to try again, left unfinished, not yet run and never ran, ...; and a name's earnings reaction record ... |
 Why: the checks reach the behaviour this correction adds.
+
+### 2026-09-29 - ARCHITECTURE.html - a ticker on tonight's list opens the name's own page
+Authorised by: Selecting a row draws its plan beneath the list and is no navigation
+Was:
+> ... Selecting a row draws its plan beneath the list and brings it into view (see: Selecting a row draws its plan beneath the list and is no navigation). ...
+Now:
+> ... Selecting a row, anywhere on it but its links, draws its plan beneath the list and brings it into view, and its ticker is a link opening the name's own page (see: Selecting a row draws its plan beneath the list and is no navigation). ...
+Why: the operator followed MDT's ticker on the night of 2026-09-28 and was left on tonight's page; the ticker selected the row, and the decision already reserves a row's links from selecting it.

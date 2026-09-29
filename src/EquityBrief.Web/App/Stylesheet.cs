@@ -226,7 +226,7 @@ span[data-last-asked-at]::before{content:none}
 .list-table tr[data-ticker]{cursor:pointer}
 .list-table tr[data-ticker]:hover td{background:var(--page)}
 .list-table tr.sel td{background:var(--page);box-shadow:inset 0 2px 0 var(--ink),inset 0 -2px 0 var(--ink)}
-.list-table a.select{font:700 13px var(--sans);letter-spacing:.03em}
+.list-table a.name-link{font:700 13px var(--sans);letter-spacing:.03em}
 .list-table td.day-change{white-space:nowrap}
 .list-table{table-layout:auto;min-width:820px}
 .list-table th.rz,.list-table td.rz{width:64px;padding:0 3px;border-left:1px solid var(--hair);text-align:center}

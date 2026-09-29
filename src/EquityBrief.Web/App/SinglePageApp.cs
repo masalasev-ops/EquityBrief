@@ -389,8 +389,8 @@ public sealed class SinglePageApp : IComponent
           }
           const row = event.target.closest('.list-table tr[data-ticker]');
           if (row && !event.target.closest('a, button, form')) {
-            const pick = row.querySelector('a.select');
-            if (pick) { fresh = true; location.hash = pick.getAttribute('href'); }
+            const pick = row.getAttribute('data-select-href');
+            if (pick) { fresh = true; location.hash = pick; }
             return;
           }
           if (event.target.closest('a[href^="#"]')) { fresh = true; }

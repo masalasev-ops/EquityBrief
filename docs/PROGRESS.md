@@ -29909,3 +29909,37 @@ Carried:    nothing. The 12.3 correction before this carried the operator's comm
             limit; the operator ran it on 2026-09-29 and it reads back `PT8H`. The operator also ruled that PR 275 be
             merged while the report pass the night of 2026-09-28 started waited for the off-peak hours, since the
             drain runs from its own copy of the build.
+
+### 5.8 - correction: a ticker on tonight's list opens the name's own page, and the row around it still selects it, where the ticker selected the row and left the reader on tonight's page   2026-09-29
+Corrects:   5.8's correction of 2026-09-19 that drew the screens to the approved design, which made each row's ticker
+            the link selecting the row.
+Found:      the operator followed MDT's ticker on the list for 2026-09-28, `#/night/2026-09-28?name=MDT`, and was left
+            on tonight's page with the plan drawn beneath the list: "this is taking me to the tonight page". Asked what
+            the ticker should open, they answered the stock's page.
+Repaired:   the ticker is a link opening the name's own page, and the row carries the address that selects it, which
+            the shell follows on a press anywhere on the row but its links, buttons and forms. The decision the
+            selection rests on already reserves a row's links from selecting it, so it stands unchanged.
+Measured:   nothing new.
+Guarded:    `TheSelectedNameIsWhicheverRowTheReaderPickedAndCarriesTheLevelSummary`, extended: every row carries the
+            address selecting it, its ticker links to the name's page and to no night, and the shell selects from the
+            row's address on a press off its links.
+Written:    section 15.7's note on selecting a row in `ARCHITECTURE.html`, its prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      1518, unchanged.
+Claims:     706, unchanged.
+Pins:       the branch against `main` edits `MarkRenderer.cs`, `SinglePageApp.cs`, `Stylesheet.cs` and a test, in
+            none of the three pin lists. No version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: the mechanism reversed alone, filtered to the extended test.
+            Predicted:
+            T1 the ticker linking to the night with the name selected, as before: red in the extended test.
+            Results: 139M
+Held:       139H
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 139T of 139T tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 139B tables, 139C claims, 139P PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 139R placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 139T of 139T tests.
+            Both gates ran over the tree carrying this entry and the one before it, 139SHA, in a worktree beside the
+            repository, and the operator's store under `data/` was not touched by either.
+Carried:    nothing.
