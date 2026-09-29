@@ -2724,19 +2724,21 @@ public sealed class MarkRenderer : IComponent
 
         foreach (var (row, place) in shown.Select((row, at) => (row, at + 1)))
         {
+            // The row is what selects it, anywhere on it but its links. Section 15.7's selected-name
+            // region is for whichever row is selected, and a row a reader cannot select is a row the
+            // region can never be about. The address it selects carries the night as well as the name,
+            // so a selected view of an earlier night is a link like every other view.
+            // see: Selecting a row draws its plan beneath the list and is no navigation
             list.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-fired-count=\"{row.FiredCount}\" data-strength=\"{row.Strength}\" ");
-            list.Append(Invariant, $"data-day-change=\"{Change(row.DayChangePct)}\" data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\">");
+            list.Append(Invariant, $"data-day-change=\"{Change(row.DayChangePct)}\" data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\" ");
+            list.Append(Invariant, $"data-selects=\"{Escaped(row.Ticker)}\" data-select-href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\">");
 
             // The row's place in the order the rows are drawn in, counted from one.
             list.Append(Invariant, $"<td class=\"place\" data-place=\"{place}\">{place}</td>");
 
-            // The name, and the name is the link that selects this row. Section
-            // 15.7's selected-name region is for whichever row is selected, and
-            // a row a reader cannot select is a row the region can never be
-            // about. The href carries the night as well as the name, so a
-            // selected view of an earlier night is a link like every other view.
-            list.Append(Invariant, $"<td class=\"c-nm\"><a class=\"select\" data-selects=\"{Escaped(row.Ticker)}\" ");
-            list.Append(Invariant, $"href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
+            // The name, a link opening the name's own page, which is what a reader following a ticker
+            // expects.
+            list.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
             // What the link opens is a report where one was written and the name's
             // page where none was, so it is drawn with the words of whichever it is:
             // a link calling itself a report for a name holding none is the page

@@ -4388,14 +4388,25 @@ public partial class ReadSurface
         Assert.Contains($"data-selected=\"{picked.Ticker}\"", tonight, StringComparison.Ordinal);
 
         // Every row is selectable, which is what makes "whichever row" true: a
-        // row with no way to pick it is a row the region can never be about.
+        // row with no way to pick it is a row the region can never be about. The
+        // row carries the address that selects it, and its ticker is a link to the
+        // name's own page, since a link is the one part of a row that does not select.
         var list = marks.TonightList(rows, SinglePageApp.TonightDrawn);
+        var on = night.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
 
         foreach (var row in rows)
         {
-            Assert.Contains($"data-selects=\"{row.Ticker}\"", list, StringComparison.Ordinal);
-            Assert.Contains($"?name={row.Ticker}\"", list, StringComparison.Ordinal);
+            Assert.Matches($"<tr data-ticker=\"{row.Ticker}\"[^>]* data-selects=\"{row.Ticker}\" data-select-href=\"#/night/{on}\\?name={row.Ticker}\">", list);
+            Assert.Contains($"<td class=\"c-nm\"><a class=\"name-link\" href=\"{SinglePageApp.NameRoute}{row.Ticker}\">{row.Ticker}</a>", list, StringComparison.Ordinal);
+            Assert.DoesNotContain($" href=\"#/night/{on}?name={row.Ticker}\"", list, StringComparison.Ordinal);
         }
+
+        // The shell selects a row from the address the row carries, on a press anywhere on it but
+        // its links, buttons and forms.
+        var shell = new SinglePageApp().Shell("EquityBrief");
+
+        Assert.Contains("if (row && !event.target.closest('a, button, form')) {", shell, StringComparison.Ordinal);
+        Assert.Contains("const pick = row.getAttribute('data-select-href');", shell, StringComparison.Ordinal);
     }
 
     [Fact]
