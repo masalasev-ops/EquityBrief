@@ -393,12 +393,14 @@ public partial class ReadSurface
         Assert.Contains($"Z00 was {ListRules.ByFilter} on {TheSwitch}.", why, StringComparison.Ordinal);
         Assert.Contains($"As context, the reasons that fired on it that evening: {ShortlistSeries.Reasons[0]}.", why, StringComparison.Ordinal);
 
-        // Z41 fired three on the switch night and the filter did not pass it, so its page there says it is
-        // not on the list, its reasons drawn nowhere as a why; the evening before, the reasons listed it,
-        // and its page says why in their words.
+        // Z41 fired three on the switch night and the filter did not pass it, its trade gate alone failing, so
+        // its page there says it is one gate short and not on the list, its reasons drawn nowhere as a why; the
+        // evening before, the reasons listed it, and its page says why in their words.
         var notListed = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/Z41/{TheSwitch}")), "<section class=\"why-it-is-here\".*?</section>"));
 
-        Assert.Contains("data-reasons=\"0\"><p class=\"degraded\" data-listed=\"false\">", notListed, StringComparison.Ordinal);
+        Assert.Contains("data-missed=\"trade\"", notListed, StringComparison.Ordinal);
+        Assert.Contains("so it is close to a buy point and not on the list", notListed, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-reasons=", notListed, StringComparison.Ordinal);
         Assert.Contains("data-reasons=\"3\"", Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/name/Z41/{BeforeTheSwitch}")), "<section class=\"why-it-is-here\".*?</section>")), StringComparison.Ordinal);
 
         // The walk on the switch night follows the filter's order.

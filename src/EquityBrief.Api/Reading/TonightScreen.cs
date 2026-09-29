@@ -2,6 +2,7 @@ using System.Globalization;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Spending;
 using System.Text.Json;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Ladders;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Quarters;
@@ -117,6 +118,45 @@ public static class TonightScreen
         IReadOnlyList<GateResultRow>? gates = null,
         IReadOnlyList<FundamentalReadingRow>? readings = null)
     {
+        var (drawn, statePlace) = Drawer(night, cellByTicker, closesToTheNight, suspects, researched, readings);
+
+        if (gates is not null)
+        {
+            var byTicker = listings.ToDictionary(listing => listing.Ticker, StringComparer.Ordinal);
+
+            return
+            [
+                .. gates
+                    .Where(gate => gate.Passed && byTicker.ContainsKey(gate.Ticker))
+                    .OrderBy(gate => statePlace(gate.Ticker))
+                    .ThenBy(gate => gate.Rank ?? int.MaxValue)
+                    .ThenBy(gate => gate.Ticker, StringComparer.Ordinal)
+                    .Select(gate =>
+                    {
+                        var filter = FilterRowOf(gate);
+
+                        return drawn(byTicker[gate.Ticker]) with
+                        {
+                            Filter = filter,
+                            RewardToRisk = decimal.TryParse(filter.RewardToRisk, NumberStyles.Float, CultureInfo.InvariantCulture, out var ratio) ? ratio : null,
+                            NoRewardToRisk = null,
+                        };
+                    }),
+            ];
+        }
+
+        return Ordered(listings.Where(listing => listing.FiredCount > 0).Select(drawn), Order.FiredThenRewardToRisk);
+    }
+
+    // How a row of either list is drawn from a night's listing row, and where a member's state places it.
+    static (Func<ListingRow, ListingCell> Drawn, Func<string, int> StatePlace) Drawer(
+        DateOnly night,
+        IReadOnlyDictionary<string, UniverseCell> cellByTicker,
+        IReadOnlyList<CloseRow> closesToTheNight,
+        IReadOnlyList<SuspectSeriesRow>? suspects,
+        IReadOnlyList<ResearchedRow>? researched,
+        IReadOnlyList<FundamentalReadingRow>? readings)
+    {
         // The night's own readings, by member, which order the names passing and say what each one's
         // reported quarters say. A night that stored none reads none here.
         var readingByTicker = (readings ?? []).ToDictionary(row => row.Ticker, StringComparer.Ordinal);
@@ -144,39 +184,54 @@ public static class TonightScreen
                 group => (IReadOnlyList<CloseRow>)[.. group.OrderByDescending(row => row.SessionDate)],
                 StringComparer.Ordinal);
 
-        ListingCell Drawn(ListingRow listing) => Cell(listing, night, cellByTicker, sessions) with
-        {
-            Suspect = NameScreen.Suspect(suspectByTicker.GetValueOrDefault(listing.Ticker)),
-            ResearchedOn = researchedByTicker.TryGetValue(listing.Ticker, out var written) ? written : null,
-            Business = Business(readingByTicker.GetValueOrDefault(listing.Ticker)),
-        };
+        return (
+            listing => Cell(listing, night, cellByTicker, sessions) with
+            {
+                Suspect = NameScreen.Suspect(suspectByTicker.GetValueOrDefault(listing.Ticker)),
+                ResearchedOn = researchedByTicker.TryGetValue(listing.Ticker, out var written) ? written : null,
+                Business = Business(readingByTicker.GetValueOrDefault(listing.Ticker)),
+            },
+            ticker => FundamentalState.Place(readingByTicker.GetValueOrDefault(ticker)?.State));
+    }
 
-        if (gates is not null)
-        {
-            var byTicker = listings.ToDictionary(listing => listing.Ticker, StringComparer.Ordinal);
+    // "Close to a buy point" on a night the swing filter listed: every member its stored results show missing
+    // exactly one gate with nothing excluding it, each drawn as a row of the list is with the gate it missed,
+    // what it had against the bar it needed and how far that is, nearest to qualifying first and a tie in the
+    // first list's own order. The bars are the settings of the version each result was stored under, and a
+    // missed trigger's arrival is read off the member's own results on the sessions before.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    public static IReadOnlyList<ListingCell> Close(
+        DateOnly night,
+        IReadOnlyList<ListingRow> listings,
+        IReadOnlyDictionary<string, UniverseCell> cellByTicker,
+        IReadOnlyList<CloseRow> closesToTheNight,
+        IReadOnlyList<GateResultRow> gates,
+        Func<string, FilterSettings> settingsOf,
+        IReadOnlyDictionary<string, int?> firedSessionsBefore,
+        IReadOnlyList<SuspectSeriesRow>? suspects = null,
+        IReadOnlyList<ResearchedRow>? researched = null,
+        IReadOnlyList<FundamentalReadingRow>? readings = null)
+    {
+        var (drawn, statePlace) = Drawer(night, cellByTicker, closesToTheNight, suspects, researched, readings);
+        var byTicker = listings.ToDictionary(listing => listing.Ticker, StringComparer.Ordinal);
+        var gateByTicker = gates.ToDictionary(gate => gate.Ticker, StringComparer.Ordinal);
 
-            return
-            [
-                .. gates
-                    .Where(gate => gate.Passed && byTicker.ContainsKey(gate.Ticker))
-                    .OrderBy(gate => FundamentalState.Place(readingByTicker.GetValueOrDefault(gate.Ticker)?.State))
-                    .ThenBy(gate => gate.Rank ?? int.MaxValue)
-                    .ThenBy(gate => gate.Ticker, StringComparer.Ordinal)
-                    .Select(gate =>
-                    {
-                        var filter = FilterRowOf(gate);
+        var rows = gates
+            .Where(gate => CloseScreen.MissedOne(gate) && byTicker.ContainsKey(gate.Ticker))
+            .Select(gate =>
+            {
+                var filter = FilterRowOf(gate);
 
-                        return Drawn(byTicker[gate.Ticker]) with
-                        {
-                            Filter = filter,
-                            RewardToRisk = decimal.TryParse(filter.RewardToRisk, NumberStyles.Float, CultureInfo.InvariantCulture, out var ratio) ? ratio : null,
-                            NoRewardToRisk = null,
-                        };
-                    }),
-            ];
-        }
+                return drawn(byTicker[gate.Ticker]) with
+                {
+                    Filter = filter,
+                    RewardToRisk = decimal.TryParse(filter.RewardToRisk, NumberStyles.Float, CultureInfo.InvariantCulture, out var ratio) ? ratio : null,
+                    NoRewardToRisk = null,
+                    Missed = CloseScreen.MissOf(gate, settingsOf(gate.Version), firedSessionsBefore.GetValueOrDefault(gate.Ticker)),
+                };
+            });
 
-        return Ordered(listings.Where(listing => listing.FiredCount > 0).Select(Drawn), Order.FiredThenRewardToRisk);
+        return CloseScreen.Ordered(rows, gateByTicker, statePlace);
     }
 
     // The state a member's reported quarters gave it on the night and the sentences its readings say, and
@@ -353,8 +408,12 @@ public static class TonightScreen
     // until 5.8. The fallback is the first row rather than nothing, because the
     // page opens with no name in the hash and a region that were absent then
     // would make the common case the empty one.
-    public static ListingCell? Selected(IReadOnlyList<ListingCell> rows, string? asked) =>
+    //
+    // A row of "Close to a buy point" is selected only when asked for by name, so a night whose list is empty
+    // opens with no plan drawn rather than with the plan of a stock that did not pass.
+    public static ListingCell? Selected(IReadOnlyList<ListingCell> rows, string? asked, IReadOnlyList<ListingCell>? close = null) =>
         rows.FirstOrDefault(row => string.Equals(row.Ticker, asked, StringComparison.Ordinal))
+            ?? close?.FirstOrDefault(row => string.Equals(row.Ticker, asked, StringComparison.Ordinal))
             ?? rows.FirstOrDefault();
 
     static ListingCell Cell(

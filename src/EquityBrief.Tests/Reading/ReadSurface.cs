@@ -60,6 +60,9 @@ public partial class ReadSurface
             .. RunBottomClaims,
             .. NightNoticeClaims,
 
+            // 12.7's correction, close to a buy point beneath tonight's list.
+            .. CloseToABuyPointClaims,
+
             // 12.3, the Calibration region and section 17's two bands.
             CheckReach.Key("15.10 Run", "The shape clock, the ordinary nights under the open filter version against the sixty the calibration waits on"),
             CheckReach.Key("15.10 Run", "The shape clock, every event night with what made it one"),

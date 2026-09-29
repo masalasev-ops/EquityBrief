@@ -891,7 +891,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(FailureTable, "The market gate closed on a night")] = new Scoped(
             Verdict.Pass,
-            "a constructed night whose market gate closed draws no row and the line with the night's breadth and the gate's floor, and one whose breadth is not available the line saying so, read off tonight's page, the header's count 0; the night asking for no report and saying why on its row is `nightly-run`'s",
+            "a constructed night whose market gate closed draws no row and the line with the night's breadth and the gate's floor, and one whose breadth is not available the line saying so, read off tonight's page, the header's count 0, and close to a buy point drawing the members short of the market alone beneath its one line; the night asking for no report and saying why on its row is `nightly-run`'s",
             ByReadSurface),
         [CheckReach.Key(FailureTable, "No name passed the swing filter on a night")] = new Scoped(
             Verdict.Pass,
@@ -1427,7 +1427,7 @@ internal static class Scope
             ByNight),
         [CheckReach.Key(LimitsTable, "List display")] = new Scoped(
             Verdict.Pass,
-            "at most twenty rows are drawn and the true fired count is stated whatever is drawn, asserted against a constructed night of forty",
+            "at most twenty rows are drawn and the true fired count is stated whatever is drawn, asserted against a constructed night of forty, and the two lists share them with each count stated, asserted with fifteen and twenty on the list and fourteen one gate short",
             ByReadSurface),
         [CheckReach.Key("15.5 The mark vocabulary", "Listing strip")] = new Scoped(
             Verdict.Pass,
@@ -1664,6 +1664,33 @@ internal static class Scope
             Verdict.Pass, "the tries worked by hand over constructed run log rows, a try again read with what the earlier try stored, and read off the Run page", ByReadSurface),
         [CheckReach.Key("15.10 Run", "How last night went, a press running the rest of a night left unfinished")] = new Scoped(
             Verdict.Pass, "the press read off the Run page on a night left unfinished and absent while it waits", ByReadSurface),
+
+        // 12.7's correction, close to a buy point, on the operator's specification of 2026-09-29.
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, one row per member whose stored result missed exactly one of the five gates and carries no exclusion")] = new Scoped(
+            Verdict.Pass, "a constructed night's members one gate short drawn and none missing two, excluded or on the list, read off the page against the store's gate rows in both directions", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, nearest to qualifying first with a tie in the list's own order")] = new Scoped(
+            Verdict.Pass, "the order read off the page against distances worked by hand from the version's settings, a tie at half a bar drawn by the trade's reward to risk and four members at one distance on a closed market by reward to risk then strength", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, drawing the places the list leaves of the twenty")] = new Scoped(
+            Verdict.Pass, "fifteen on the list leaving five rows and twenty leaving none, read off both lists on the page", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, a line above them stating how many are drawn of how many are one gate short")] = new Scoped(
+            Verdict.Pass, "the line read whole where every row is drawn, where five of fourteen are and where none is", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, what a row of the list carries")] = new Scoped(
+            Verdict.Pass, "each row drawn by the list's own row writer with its column headings, the gates' column alone replaced", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, the gate it missed in place of the gates")] = new Scoped(
+            Verdict.Pass, "each row's gate named in its cell and the column headed for it, with no gates column drawn", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, what it had against the bar it needed in plain words")] = new Scoped(
+            Verdict.Pass, "each gate's words read whole off its row against the constructed values and the version's bars", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, how far short that is as a share of the bar")] = new Scoped(
+            Verdict.Pass, "each row's share short read off the page against the distance worked by hand, a trigger four sessions back against a window of three reading two thirds", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, the trade its plan states")] = new Scoped(
+            Verdict.Pass, "the entry, stop and target of the plan the version's trade gate reads, read off each row against the stored row", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, one line above the rows stated once saying they would qualify if the market turned")] = new Scoped(
+            Verdict.Pass, "on a closed market the line with the breadth and its bar read once off the list and no row saying it again", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, a key saying it recommends nothing")] = new Scoped(
+            Verdict.Pass, "the key's sentence the code holds read off the page, and drawing the list storing nothing and Past picks holding none of its names", ByReadSurface),
+        [CheckReach.Key(FailureTable, "Both lists on tonight's page empty on a night the swing filter listed")] = new Scoped(
+            Verdict.Pass, "the second list's line drawn where its rows are empty, beside the list's own line on a night no name passed", ByReadSurface),
+
         [CheckReach.Key("15.9 Name", "On the list before")] = new Scoped(
             Verdict.Pass,
             "a name the live list picked before the page's night draws the region after the plan and its earnings reactions, its line counting the picks and each group as the test's own arithmetic over the store gives them and a row per earlier listing as it stood on the page's night, and a name never picked before draws none",
@@ -1754,7 +1781,7 @@ internal static class Scope
             ByReadSurface),
                                         [CheckReach.Key("15.9 Name", "Why it is here")] = new Scoped(
             Verdict.Pass,
-            "each reason that fired is a full sentence with the values beside it, a reason the mapping has no sentence for fails rather than rendering a default, and a name that fired nothing says it is not on tonight's list, and breakout on volume's sentence states section 11's condition as that row's cell states it; on an evening the swing filter listed, the region names the rule and each gate with why it passed and the reasons as context, and a name the filter did not pass has no region whatever it fired",
+            "each reason that fired is a full sentence with the values beside it, a reason the mapping has no sentence for fails rather than rendering a default, and a name that fired nothing says it is not on tonight's list, and breakout on volume's sentence states section 11's condition as that row's cell states it; on an evening the swing filter listed, the region names the rule and each gate with why it passed and the reasons as context, a name one gate short names the gate it missed with its words, how far short and its trade beside the line that it is not a pick, and a name the filter did not pass otherwise has no region whatever it fired",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "Walk")] = new Scoped(
             Verdict.Pass,
@@ -2160,9 +2187,9 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included, which is where the queue writing no research is a claim: the sections a pass writes are inserted by the prose writer and moved by the checker, each under its own row",
             ByAccess),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for every name in the index whose research is missing or stale, the names on tonight's list first in the order it is drawn in (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures), until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Run the overnight queue on the local model, writing the sections in the local lane that rest on no document for every name in the index whose research is missing or stale, the names on tonight's list first in the order it is drawn in, then the names close to a buy point in the order that list is drawn in, then every other name (see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing) (see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures), until the configured time limit rather than until a count of names is reached (see: The overnight queue is bounded by time, not by a count of names), a limit of its own rather than the night's deadline (see: The overnight queue is bounded by its own limit rather than the night's deadline, and starts no pass once the limit has passed). It holds the machine awake while it works and reports whether it ran (see: The overnight run holds the machine awake and reports whether it ran). This makes no paid call and no request, and no part of the arithmetic above depends on it (see: The overnight queue writes the local lane's sections that rest on no document for every name, and the paid model is for names you get serious about).")] = new Scoped(
             Verdict.Pass,
-            "the night runs the queue after the close has recorded the arithmetic's counts and before its own request, on its own output and on the run log's own order, and states the queue's local model calls apart from the arithmetic's none; over a copy of the fixture's night whose readings are stored the queue takes the names the filter passed improving first, the ones reading no state next in the filter's order and deteriorating last, whatever their ranks",
+            "the night runs the queue after the close has recorded the arithmetic's counts and before its own request, on its own output and on the run log's own order, and states the queue's local model calls apart from the arithmetic's none; over a copy of the fixture's night whose readings are stored the queue takes the names the filter passed improving first, the ones reading no state next in the filter's order and deteriorating last, whatever their ranks; and over another copy it takes the list's name first, then the two one gate short nearer first against their tickers' order, then the member missing two",
             ByNight),
         // 11.4, the night's own request, after the queue.
         [CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, improving businesses first where the night stored its readings, one request marked as asked by the night unless that name has one outstanding or being written and none on a night no name passed, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list).")] = new Scoped(
@@ -3370,6 +3397,17 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "The night's state, a one-line note where the night finished")] = "12.3",
         [CheckReach.Key("15.10 Run", "How last night went, each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished")] = "12.3",
         [CheckReach.Key("15.10 Run", "How last night went, a press running the rest of a night left unfinished")] = "12.3",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, one row per member whose stored result missed exactly one of the five gates and carries no exclusion")] = "12.7",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, nearest to qualifying first with a tie in the list's own order")] = "12.7",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, drawing the places the list leaves of the twenty")] = "12.7",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, a line above them stating how many are drawn of how many are one gate short")] = "12.7",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, what a row of the list carries")] = "12.7",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, the gate it missed in place of the gates")] = "12.7",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, what it had against the bar it needed in plain words")] = "12.7",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, how far short that is as a share of the bar")] = "12.7",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, the trade its plan states")] = "12.7",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, one line above the rows stated once saying they would qualify if the market turned")] = "12.7",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point, a key saying it recommends nothing")] = "12.7",
         [CheckReach.Key("15.9 Name", "On the list before")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, the trades listed with the nights they were listed on")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many are still open and how many finished")] = "12.2",
@@ -3715,6 +3753,10 @@ internal static class Scope
             ["a status mark and a headline naming the night's state as its own run log rows give it", "four headline figures being the stocks read and the provider requests with the research spend and the steps run again", "a time bar of the night's steps in six named groups showing where a stopped night stopped", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished"],
         [CheckReach.Key("15.7 Tonight", "The night's state")] =
             ["a notice at the top naming the night's state as the Run page's headline names it", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished", "a one-line note where the night finished"],
+        // 12.7's correction: the nine parts close to a buy point enumerates, and the line a closed market draws
+        // and the key, which its row states outside the enumerations.
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point")] =
+            ["one row per member whose stored result missed exactly one of the five gates and carries no exclusion", "nearest to qualifying first with a tie in the list's own order", "drawing the places the list leaves of the twenty", "a line above them stating how many are drawn of how many are one gate short", "what a row of the list carries", "the gate it missed in place of the gates", "what it had against the bar it needed in plain words", "how far short that is as a share of the bar", "the trade its plan states", "one line above the rows stated once saying they would qualify if the market turned", "a key saying it recommends nothing"],
         [CheckReach.Key("15.10 Run", "The market")] =
             ["a one-word label read by a stated rule", "a gauge of the share of members above their 200-day average with the market gate's floor marked", "the share above the 50-day average and the index's volume against its fifty-day average", "a line of that share over the sixty sessions before the night that the store holds averages for"],
         [CheckReach.Key("15.10 Run", "From the index to tonight's list")] =
@@ -4089,6 +4131,8 @@ internal static class Scope
         ["The provider refuses a quarters ask"] = "12.2",
         ["The quarters step reaches its limit or the day's allowance"] = "12.2",
         ["A night that stored no readings of the reported quarters"] = "12.2",
+        // 12.7's correction, answered by tonight's page.
+        ["Both lists on tonight's page empty on a night the swing filter listed"] = "12.7",
     };
 
     // The two rows of the read and write matrix whose component already exists.

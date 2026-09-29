@@ -30492,3 +30492,80 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             repository, and the operator's store under `data/` was not touched by either.
 Carried:    the sweep, its planning figures measured before each stage, stage 1's ranking and the stage 2 proposal
             put to the operator, and the starting point and variants put to the operator before any registration.
+
+### 12.7 - correction: tonight's page draws "Close to a buy point" beneath the list, the members one gate short nearest to qualifying first, and the overnight queue drafts them after the list, where a member one gate short was seen only on its own page   2026-09-29
+Corrects:   12.7's near misses, which score the members one gate short by the gate they missed and draw them on
+            no list, on the specification the 12.7 ruling records whole.
+Asked:      the operator, on 2026-09-26, and specified on 2026-09-29, approved as written.
+Repaired:   the one rule and its distance live in `NearMiss`, in Core, which the read surface and the overnight
+            queue both read, so the page and the queue cannot order the names differently. A member is close to a
+            buy point where its stored result failed exactly one of the five gates and carries no exclusion. Its
+            distance is how far the deciding value sits from its bar as a share of the bar, each bar the setting of
+            the filter version its result was stored under, with the ruling's rules for a condition not met at all,
+            a trend that is not an uptrend and shortfalls within one gate. A trigger that first fired on the Nth
+            session back against a window of W reads (N - W) / W with N counted as the arrival window counts, tonight
+            the first, so a firing one session outside a window of three reads a third where a count from the session
+            before tonight would read none; that session is read off the member's own stored results before the
+            night, the replayed results among them. Tonight's route draws the second list with the list's own row
+            writer, the gate it missed with its words, how far short and its trade in place of the gates, drawing the
+            places the list leaves of the twenty with its own count; on a night the market gate closed its rows sit
+            under one line stated once; a row of it can be selected, and the page opens on the list's first row as
+            before. A name one gate short says on its page which gate it missed, by how much and that it is not a
+            pick. The overnight queue drafts the list's names, then these in the order they are drawn, then every
+            other member, and reads the filter versions for it. Nothing is stored for the second list.
+            One decision is added, "A member that missed exactly one gate and no exclusion is drawn close to a buy
+            point nearest first, and recommends nothing", which narrows "The page shows twenty and states the true
+            count".
+            What the page drew before this: the list alone, a member one gate short reached only from the universe
+            or its own page, whose Why it is here said it was not on the list.
+Measured:   on the preview's copy of the store at 2026-09-25, read-only: 1 name listed and 21 one gate short, 19 of
+            them drawn: 3 triggers first fired 3 sessions before the night against a window of 3, a third short; HUM's
+            reward 0.94 times the risk against 1.5, 37% short; 7 in a range with strength over its bar, half a bar; 5
+            in a range with strength under it, from 57% to 107%; ECL's reward 0.59 against 1.5; MSI's stop 0.10 typical
+            moves below the entry against 0.5 to 4; and FTNT with no band above the close to set a target at, a whole
+            bar.
+Guarded:    eight tests, new. In `read-surface`: `CloseToABuyPointDrawsEachMemberOneGateShortNearestFirstAndNoneMissingTwoOrExcluded`,
+            each gate's distance worked by hand against the version's settings and read in both directions against
+            the store; `TheTwoListsDrawTwentyRowsBetweenThemTheListFirst`, fifteen and twenty on the list with fourteen
+            one gate short; `OnANightTheMarketGateClosedTheListHoldsTheMembersShortOfTheMarketAloneUnderOneLine`;
+            `ANightWhoseListsAreBothEmptySaysSoInEach`; `AnEarlierNightDrawsItsOwnMembersOneGateShort`;
+            `ANameOneGateShortSaysOnItsPageWhichGateItMissedAndByHowMuchAndThatItIsNotAPick`; and
+            `DrawingTheSecondListWritesNothingAndPastPicksAndTheEdgeClockReadNoneOfIt`, the store's rows unchanged by
+            the pages, Past picks holding none of it and the rule named by no source but the read surface's and the
+            queue's. In `fixture-expectations`: `TheQueueDraftsTheListThenTheNamesOneGateShortNearestFirstThenEveryOtherMember`.
+            `EachSurfaceReadsAnEveningByTheRuleThatListedIt` is changed: its Z41, failing its trade gate alone, now
+            reads one gate short on its page where it read not on the list, its reasons drawn nowhere as a why as
+            before.
+Written:    the Overnight queue's catalogue row, section 14's queue step, section 15.7's reads, its new region and
+            its note, section 15.9's Why it is here, section 17's list display row and section 18's
+            closed market row and new row in `ARCHITECTURE.html`; `.claude/rules/checks.md`'s `read-surface` and
+            `fixture-expectations` rows; each prior text in `CHANGELOG.md`; the decision in `DECISIONS.md`; and one
+            sentence each in the reader's guide's sections 6 and 10.
+Expected:   derived: no expectation file moves.
+Tests:      1526, from 1518: eight added.
+Claims:     718, from 706: twelve added, the region's eleven parts and section 18's row, each named in
+            `ReadSurface.CloseToABuyPointClaims`.
+Pins:       the branch against `main` edits `OvernightQueue.cs` in the worker, adds `NearMiss.cs` in Core's filter
+            folder and `CloseScreen.cs` in the read surface, and edits the read surface's and the web's sources, none
+            of them in the three pin lists. No version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: the three mutations the ruling names, each made alone in `NearMiss`,
+            filtered to the nine tests naming the second list, the eight new and the changed one.
+            Predicted:
+            C1 the one-gate count changed to two: red in all nine.
+            C2 the exclusion rule removed: red in the seven new `read-surface` tests; green in the queue test, whose
+               members carry no exclusion, and in the changed one.
+            C3 the order reversed, farthest first: red in the first test, the twenty test, the earlier night test,
+               the writes-nothing test and the queue test; green in the closed market test, whose four rows sit at one
+               distance, and in the empty, name page and changed tests, which read no order.
+            Results: 127R
+Held:       127H
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 127T of 127T tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 718 claims, 718 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 127P placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 127T of 127T tests.
+            Both gates ran over the tree carrying this entry, 127SHA, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    the news labeller labels tonight's list alone, and the key under this list says a row of it carries no
+            news counts once the labeller lands.

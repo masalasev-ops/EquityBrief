@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
@@ -41,7 +42,8 @@ public sealed record QueueOutcome(
 
 // The overnight queue. After the arithmetic has closed, every name in the index whose
 // research is missing or stale, the names on tonight's list first in the swing filter's
-// order, each given a pass of the local lane's sections, until the configured number of
+// order, then the names one gate short in the order "Close to a buy point" draws them,
+// each given a pass of the local lane's sections, until the configured number of
 // hours has passed. Every name rather than the listed ones, because the one section the
 // queue writes explains the night's figures and every name's page draws them.
 // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
@@ -73,6 +75,7 @@ public sealed class OvernightQueue(
         [
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
+            new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -112,6 +115,22 @@ public sealed class OvernightQueue(
                  CASE WHEN g.passed = 1 THEN " + FundamentalState.PlaceIn("f.state") + @" ELSE 0 END,
                  g.rank, l.ticker;
     ";
+
+    // Each listed member's stored result on the night, as "Close to a buy point" reads it, with the state its
+    // reported quarters gave it; a replayed result is none of the night's.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    static readonly string ResultsOnNight = @"
+        SELECT g.ticker, g.version, g.market, g.trend, g.setup, g.trigger_pass, g.trade, g.exclusions, g.passed,
+               g.gates, g.strength, g.band_strength, f.state
+        FROM gate_result g
+        JOIN listing l ON l.ticker = g.ticker AND l.session_date = g.session_date
+        LEFT JOIN fundamental_reading f ON f.ticker = g.ticker AND f.session_date = g.session_date
+        WHERE g.session_date = $session AND g.version <> '" + ReplayedResults.Version + @"';
+    ";
+
+    const string SettingsOfVersion = "SELECT settings FROM filter_version WHERE version = $version;";
+
+    const string TriggerEventsUpTo = "SELECT trigger_event FROM gate_result WHERE ticker = $ticker AND session_date <= $session ORDER BY session_date DESC;";
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -163,6 +182,19 @@ public sealed class OvernightQueue(
 
         var members = await MembersAsync(connection, night, cancellation);
         var listed = members.Where(member => member.Passed > 0).Select(member => member.Ticker).ToArray();
+
+        // The members one gate short follow tonight's list in the order "Close to a buy point" draws them,
+        // and every other member follows them.
+        // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+        var close = await CloseAsync(connection, night, cancellation);
+        var near = close.ToHashSet(StringComparer.Ordinal);
+
+        members =
+        [
+            .. members.Where(member => member.Passed > 0),
+            .. close.Select(ticker => (ticker, 0)),
+            .. members.Where(member => member.Passed == 0 && !near.Contains(member.Ticker)),
+        ];
 
         using var held = awake.Hold(AwakeReason);
 
@@ -337,6 +369,101 @@ public sealed class OvernightQueue(
         }
 
         return members;
+    }
+
+    // The members "Close to a buy point" draws on the night, in its order: each result one gate short with
+    // nothing excluding it, measured against the settings of the version it was stored under, and a missed
+    // trigger against the firings the member's own results show.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    static async Task<IReadOnlyList<string>> CloseAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
+    {
+        var session = night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var results = new List<(NearMissResult Result, string Version, string? State)>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = ResultsOnNight;
+            command.Parameters.AddWithValue("$session", session);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                results.Add((
+                    new NearMissResult(
+                        reader.GetString(0),
+                        reader.GetInt32(2) == 1,
+                        reader.GetInt32(3) == 1,
+                        reader.GetInt32(4) == 1,
+                        reader.GetInt32(5) == 1,
+                        reader.GetInt32(6) == 1,
+                        (JsonSerializer.Deserialize<string[]>(reader.GetString(7)) ?? []).Length,
+                        reader.GetInt32(8) == 1,
+                        reader.GetString(9),
+                        reader.IsDBNull(10) ? null : reader.GetDouble(10),
+                        reader.IsDBNull(11) ? null : reader.GetInt32(11)),
+                    reader.GetString(1),
+                    reader.IsDBNull(12) ? null : reader.GetString(12)));
+            }
+        }
+
+        var settings = new Dictionary<string, FilterSettings>(StringComparer.Ordinal);
+        var close = new List<(NearMissResult Result, MissedGate Missed, string? State)>();
+
+        foreach (var (result, version, state) in results.Where(one => NearMiss.MissedOne(one.Result)))
+        {
+            if (!settings.TryGetValue(version, out var held))
+            {
+                await using var command = connection.CreateCommand();
+
+                command.CommandText = SettingsOfVersion;
+                command.Parameters.AddWithValue("$version", version);
+
+                held = settings[version] = await command.ExecuteScalarAsync(cancellation) is string json
+                    ? FilterSettings.Read(json)
+                    : FilterSettings.Proposed;
+            }
+
+            int? fired = null;
+
+            if (!result.Trigger)
+            {
+                await using var command = connection.CreateCommand();
+
+                command.CommandText = TriggerEventsUpTo;
+                command.Parameters.AddWithValue("$ticker", result.Ticker);
+                command.Parameters.AddWithValue("$session", session);
+
+                var events = new List<bool?>();
+
+                await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+                while (await reader.ReadAsync(cancellation))
+                {
+                    events.Add(reader.IsDBNull(0) ? null : reader.GetInt64(0) == 1);
+                }
+
+                fired = NearMiss.FiredSessionsBefore(events);
+            }
+
+            if (NearMiss.MissOf(result, held, fired) is { } missed)
+            {
+                close.Add((result, missed, state));
+            }
+        }
+
+        return
+        [
+            .. NearMiss.Ordered(
+                close,
+                one => one.Result.Ticker,
+                one => one.Missed.Distance,
+                one => FundamentalState.Place(one.State),
+                one => NearMiss.RewardToRisk(one.Result.Gates),
+                one => one.Result.Strength,
+                one => one.Result.BandStrength)
+                .Select(one => one.Result.Ticker),
+        ];
     }
 
     static string Instant(DateTimeOffset instant) =>

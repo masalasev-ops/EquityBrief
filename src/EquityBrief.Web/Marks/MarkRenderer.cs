@@ -593,7 +593,12 @@ public sealed record ListingCell(
     // The state the member's reported quarters gave it on the night and what the numbers say, and null
     // on a night that stored no readings.
     // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
-    NumbersRow? Business = null);
+    NumbersRow? Business = null,
+    // Where the row is close to a buy point: the one gate it missed, what it had against the bar it needed
+    // in plain words, how far that is as a share of the bar, and the trade's entry, stop and target where
+    // one exists. Null on every row of tonight's list itself.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    EquityBrief.Core.Filter.MissedGate? Missed = null);
 
 // The state a member's reported quarters gave it on a night and the sentences its readings say, which
 // tonight's row draws beside the trend word, the sentences showing while the word is under the pointer
@@ -2470,6 +2475,27 @@ public sealed class MarkRenderer : IComponent
         return region.ToString();
     }
 
+    // Why a name one gate short is close to a buy point: the gate it missed, what it had against the bar it
+    // needed and how far short that is, and the trade its plan states, beneath the line that it is not a pick.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    public string WhyItIsClose(string ticker, DateOnly evening, EquityBrief.Core.Filter.MissedGate missed)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"why-it-is-here\" data-ticker=\"{Escaped(ticker)}\" data-rule=\"{ListRules.Filter}\" data-missed=\"{Escaped(missed.Gate)}\" data-distance=\"{missed.Distance.ToString("R", Invariant)}\">");
+        region.Append(Invariant, $"<p class=\"list-rule\">{Escaped(ticker)} passed every gate of the swing filter on {evening:yyyy-MM-dd} but one, and nothing excluded it, so it is close to a buy point and not on the list.</p>");
+        region.Append(Formatted($"<p class=\"gate\" data-gate=\"{Escaped(missed.Gate)}\" data-passed=\"false\"><b>{Escaped(missed.Gate)}</b>: {Escaped(missed.Words)}; {missed.Distance * 100:0}% short of its bar.</p>"));
+
+        if (missed.Trade is { } trade)
+        {
+            region.Append(Invariant, $"<p class=\"missed-trade\">The trade its plan states: {Escaped(trade)}.</p>");
+        }
+
+        region.Append("<p class=\"context\">It is not a pick: it did not pass, and nothing counts it as one.</p></section>");
+
+        return region.ToString();
+    }
+
     // The list from night to night, the run page's overlap.
     // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     public string Overlap(OverlapView? overlap)
@@ -2640,30 +2666,59 @@ public sealed class MarkRenderer : IComponent
     // beside how many are drawn, because a list that does not say how long it is
     // cannot tell a reader which of its rows they are on.
     // see: The page shows twenty and states the true count
+    //
+    // Drawn as "Close to a buy point" it holds the members one gate short, each with the gate it missed in
+    // place of the gates it passed, beneath a count of its own, and on a night the market gate closed its
+    // rows beneath one line saying they would qualify if the market turned.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
     public string TonightList(
         IReadOnlyList<ListingCell> rows,
         int drawn,
         IReadOnlyList<ReasonRecord>? records = null,
-        ListRuleView? rule = null)
+        ListRuleView? rule = null,
+        bool oneGateShort = false)
     {
         var shown = rows.Take(drawn).ToArray();
         var list = new StringBuilder();
-        var byFilter = rule is { Rule: ListRules.Filter };
+        var byFilter = oneGateShort || rule is { Rule: ListRules.Filter };
 
-        list.Append(Invariant, $"<section class=\"tonight-list\" data-fired=\"{rows.Count}\" data-drawn=\"{shown.Length}\" data-rule=\"{Escaped(rule?.Rule ?? ListRules.Reasons)}\">");
+        list.Append(Invariant, $"<section class=\"tonight-list{(oneGateShort ? " close-list" : string.Empty)}\" data-list=\"{(oneGateShort ? "close" : "listed")}\" data-fired=\"{rows.Count}\" data-drawn=\"{shown.Length}\" data-rule=\"{Escaped(rule?.Rule ?? ListRules.Reasons)}\">");
 
         // The rule the evening was listed by, so a row read from an evening before the switch is not
         // taken for one the swing filter drew.
         // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
-        list.Append(Invariant, $"<p class=\"list-rule\" data-rule=\"{Escaped(rule?.Rule ?? ListRules.Reasons)}\">This evening was {Escaped(ListRules.EveningSaid(rule?.Rule ?? ListRules.Reasons))}.</p>");
+        if (!oneGateShort)
+        {
+            list.Append(Invariant, $"<p class=\"list-rule\" data-rule=\"{Escaped(rule?.Rule ?? ListRules.Reasons)}\">This evening was {Escaped(ListRules.EveningSaid(rule?.Rule ?? ListRules.Reasons))}.</p>");
+        }
 
-        if (byFilter && rule is { MarketOpen: false } closed)
+        // A closed market fails every member at its first gate, so every row here missed the market alone, and
+        // what it needed is said once above them rather than on each.
+        var marketClosed = oneGateShort && rule is { MarketOpen: false };
+
+        if (marketClosed && rows.Count > 0)
+        {
+            list.Append(Invariant, $"<p class=\"market-turned\" data-market=\"closed\" data-breadth=\"{(rule!.Breadth is { } share ? share.ToString("R", Invariant) : "none")}\">");
+            list.Append(rule.Breadth is { } breadth && rule.Floor is { } floor
+                ? Formatted($"The market gate closed tonight, so these would qualify if the market turned: {breadth * 100:0.0}% of the members closed above their 200-day average, and it needs {floor * 100:0.#}%.")
+                : "The market gate closed tonight, so these would qualify if the market turned; the night's breadth is not available.");
+            list.Append("</p>");
+        }
+
+        if (!oneGateShort && byFilter && rule is { MarketOpen: false } closed)
         {
             list.Append(Invariant, $"<p class=\"degraded\" data-market=\"closed\" data-breadth=\"{(closed.Breadth is { } share ? share.ToString("R", Invariant) : "none")}\">");
             list.Append(closed.Breadth is { } breadth && closed.Floor is { } floor
                 ? Formatted($"The market gate closed tonight: {breadth * 100:0.0}% of the members closed above their 200-day average, below its floor of {floor * 100:0.#}%, so no name is listed.")
                 : "The market gate closed tonight: the night's breadth is not available, so no name is listed.");
             list.Append("</p></section>");
+
+            return list.ToString();
+        }
+
+        if (oneGateShort && rows.Count == 0)
+        {
+            list.Append("<p class=\"degraded\" data-close=\"0\">No member missed exactly one gate tonight with nothing excluding it.</p></section>");
 
             return list.ToString();
         }
@@ -2690,21 +2745,32 @@ public sealed class MarkRenderer : IComponent
         // How many rows the list draws of how many fired, above the rows it counts, and where
         // the rows leave a name out, where every name is.
         list.Append(Invariant, $"<p class=\"list-count\" data-drawn=\"{shown.Length}\" data-undrawn=\"{rows.Count - shown.Length}\">");
-        var named = byFilter ? "the swing filter listed" : "that fired";
+        var named = oneGateShort ? "one gate short" : byFilter ? "the swing filter listed" : "that fired";
 
-        list.Append(rows.Count > shown.Length
+        // The two lists share twenty rows, the first list's drawn first, so a night whose first list fills
+        // them draws none of this one and says how many it holds.
+        list.Append(shown.Length == 0
+            ? Formatted($"The list above fills every row the page draws, so none of the {rows.Count} names {named} is drawn. <a href=\"#/universe\">See every name on the universe page</a>")
+            : rows.Count > shown.Length
             ? Formatted($"Showing {shown.Length} of the {rows.Count} names {named}. <a href=\"#/universe\">See every name on the universe page</a>")
             : rows.Count == 1
                 ? $"Showing the one name {named}."
                 : Formatted($"Showing all {rows.Count} names {named}."));
         list.Append("</p>");
 
+        if (shown.Length == 0)
+        {
+            list.Append("</section>");
+
+            return list.ToString();
+        }
+
         list.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table\" data-rows=\"{shown.Length}\">");
         // Each heading carries what its column holds, a reason's column under its short name with its
         // full name in the sentence.
         list.Append("<thead><tr>");
 
-        foreach (var (heading, says) in TonightHeadings(byFilter))
+        foreach (var (heading, says) in TonightHeadings(byFilter, oneGateShort))
         {
             list.Append(TippedHeading(heading, says, heading switch
             {
@@ -2820,7 +2886,18 @@ public sealed class MarkRenderer : IComponent
             // The gates that put the row on the list, each with why, the setup's family, the session its
             // trigger arrived on and the trade the gate read, its figures to the hundredth as the reward to
             // risk column and the name page draw them rather than as the gate stored them.
-            if (byFilter)
+            // On the second list, the one gate the row missed in place of the gates, with what it had against
+            // the bar it needed, how far short that is as a share of the bar, and the trade its plan states.
+            // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+            if (oneGateShort)
+            {
+                list.Append(row.Missed is { } missed
+                    ? Formatted($"<td class=\"missed\" data-gate=\"{Escaped(missed.Gate)}\" data-distance=\"{missed.Distance.ToString("R", Invariant)}\"><b>{Escaped(missed.Gate)}</b>{(marketClosed && missed.Gate == "market" ? string.Empty : ": " + Escaped(missed.Words))}; {missed.Distance * 100:0}% short")
+                        + (missed.Trade is { } trade ? $"<span class=\"missed-trade\">{Escaped(trade)}</span>" : string.Empty)
+                        + "</td>"
+                    : "<td class=\"missed\"><span class=\"degraded\">no gate result stored</span></td>");
+            }
+            else if (byFilter)
             {
                 list.Append(row.Filter is { } gates
                     ? Formatted($"<td class=\"gates\" data-rank=\"{gates.Rank}\" data-family=\"{Escaped(gates.Family ?? "none")}\" data-arrived=\"{Escaped(gates.Arrived)}\" data-input=\"{Escaped(gates.Input)}\" title=\"{Escaped(string.Join("; ", gates.Gates.Select(gate => gate.Name + ": " + gate.Reason)))}\">{Escaped(gates.Family ?? "no family")}, arrived {Escaped(gates.Arrived)}; {Escaped(PlanWords(gates.Input))}, reward to risk {Hundredths(gates.RewardToRisk)}, its stop {Hundredths(gates.StopMoves)} typical moves below the entry</td>")
@@ -5271,7 +5348,7 @@ public sealed class MarkRenderer : IComponent
 
     // What each of tonight's list's columns holds before its reason columns, in the order they are drawn,
     // the gates' column among them on an evening the swing filter listed.
-    public static IReadOnlyList<(string Heading, string Says)> TonightHeadings(bool byFilter) =>
+    public static IReadOnlyList<(string Heading, string Says)> TonightHeadings(bool byFilter, bool oneGateShort = false) =>
     [
         ("#", "The row's place in the order the list is drawn in, counted from one."),
         ("Name", "The ticker selects the row and draws its plan and levels beneath the list. Beside it, report opens the stock's written report, or not written opens its page where no report is written yet, and the company is named beneath."),
@@ -5280,10 +5357,16 @@ public sealed class MarkRenderer : IComponent
         ("Trend", TrendSays + " Beside it, where the night read one, the state the company's reported quarters gave it, with what its numbers say under the pointer."),
         ("Distance to levels", DistanceSays),
         ("Reward to risk", "How far the plan's target sits above its buy against how far its stop sits below it, so 2.00 means twice as much to gain as to lose. It is a fact about the chart and not a chance of anything. Where the plan states none, the row says why."),
-        .. byFilter
+        .. oneGateShort
+            ? new[] { ("Gate missed", GateMissedSays) }
+            : byFilter
             ? new[] { ("Gates", "How the swing filter passed the stock: the setup's family, the session its trigger arrived on, and the plan the trade gate read with its reward to risk and how far its stop sits below the entry in typical days' moves. Hold the pointer on the cell for each gate's reason.") }
             : Array.Empty<(string, string)>(),
     ];
+
+    // What the second list's gate column holds.
+    public const string GateMissedSays =
+        "The one gate of the five the stock did not pass, what it had against the bar it needed, and how far short that is as a share of that bar, so ten per cent short reads the same on every gate. A condition not met at all is a whole bar, one hundred per cent. Beneath it, the trade its plan states, where it states one.";
 
     // What a reason column of tonight's list holds: the reason's full name and when it fires, as the
     // architecture's table of reasons states it, what a mark in the column means, and that on an evening the
