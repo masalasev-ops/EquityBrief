@@ -31044,3 +31044,130 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    part 4 of the brief: MDT regenerated on DeepSeek once this has merged and the New York day of its two
             passes has turned, since a regenerate runs once a name a day, and the three reports set side by side
             on one page with each report's cost.
+
+### 12.3 ruling - each night is built from a clean copy of the committed code at the main checkout's own commit and never from its working tree, and refuses only a checkout off main or holding a commit origin/main lacks, ruled before anything is built   2026-09-29
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-29, after an edit meant for a worktree beside the repository landed in the main
+            checkout and was reverted at once, asked for this proposal to be evaluated, word for word:
+            > === 1. The night refuses to run from a checkout that is not clean ===
+            > An edit landed in the main checkout by mistake today and was reverted. The night builds and runs from
+            > that checkout, so a leftover edit would run as live code. Before its first step, the night checks
+            > that the checkout is on main, has no uncommitted or untracked source changes, and matches
+            > origin/main; if not, it refuses before the first step, names what it found on the run page and in
+            > the Tonight notice, and the retry machinery does not retry it. Test all three cases.
+            The evaluation found the check could not live in the worker, which is built from the tree it would
+            check, that "matches origin/main" would refuse a night whenever a merge was fetched and not yet pulled,
+            and that a stray file outside what the night builds would cost a night. It offered two ways: (a) refuse
+            and record, through a worker command built from the same tree, or (b) never build from the working
+            tree. It recommended (b). The operator ruled, word for word:
+            > Ruling on the night's checkout check: option (b), with these conditions.
+            >
+            > === What the night builds ===
+            > Each night builds from a clean copy of the committed code, never from the main
+            > checkout's working tree.
+            >   - The commit is the main checkout's own HEAD, read with no fetch, so a night
+            >     may run behind origin/main, which is sometimes the safe state, and says so
+            >     in one line on the run page.
+            >   - It refuses only a checkout off main, or holding commits origin/main does not
+            >     have. Uncommitted and untracked files are never built, so they cost no night.
+            >   - A persistent night worktree, reset to that commit and cleaned each night, is
+            >     acceptable in place of a fresh temporary one if it is faster; state which,
+            >     and measure the build time over the first five nights against the 1-hour
+            >     deadline.
+            >
+            > === What it must still find ===
+            >   - The data folder and the store are the main checkout's, by absolute path. A
+            >     night must never find, create or write a store inside the build copy.
+            >   - The secrets file and anything else untracked the night reads, such as the
+            >     local model settings, are read from the main checkout. Nothing secret is
+            >     ever copied into the build copy.
+            >   - The report press, the drain it starts and the labeller run from the same
+            >     build the night made.
+            >
+            > === One night, one commit ===
+            >   - The run log records the commit each night was built from, and the run page
+            >     shows it.
+            >   - A retry, the resume press and the run-the-rest command reuse that night's
+            >     build of that commit, never a newer one, so no night mixes two versions of
+            >     the code.
+            >   - A refusal gets its own outcome, which the resume press treats as a refusal,
+            >     never as an unfinished night.
+            >   - Where the script refuses before any worker exists, it still writes a line
+            >     the Tonight notice can read, so the page shows the refusal and its reason
+            >     rather than "never ran".
+            >
+            > === Tests ===
+            > Over a temporary git repository, as proposed: off main, a change under src/, a
+            > local commit origin/main lacks, and clean. Plus:
+            >   - a checkout behind origin/main runs and is noted
+            >   - the store written is the main checkout's, not the build copy's
+            >   - the secrets are found without being copied
+            >   - a resume after a newer commit lands reuses the night's original build
+            >   - a refusal is shown on Tonight with its reason
+            > Build it after tonight's night and #282, as you proposed.
+Ruled:      at a glance:
+            - The build. Each night builds the main checkout's own commit, read with no fetch, in a copy holding the
+              committed code alone, so an uncommitted or untracked file is never built and costs no night. Whether
+              the copy is a persistent night worktree, reset to that commit and cleaned each night, or a fresh
+              temporary one is chosen at the build by which is faster and stated, and the build's time is measured
+              over the first five nights against the one-hour deadline.
+            - The refusal. A night refuses only a checkout off `main`, or one holding a commit `origin/main` does not
+              have, read against the local ref. A checkout behind `origin/main` runs, and the run page says so in
+              one line.
+            - The store and the secrets. The data folder and the store are the main checkout's, named by absolute
+              path, and no night finds, creates or writes a store inside the build copy. The secrets file, and
+              anything else untracked the night reads, is read from the main checkout, and nothing secret is copied
+              into the build copy.
+            - One night, one commit. The run log records the commit each night was built from, and the run page
+              shows it. The night's tries, the resume press, the run-the-rest command, the report press, the drain
+              it starts and the labeller run the build the night made, never a newer one.
+            - The refusal's record. A refusal has an outcome of its own, which the resume press reads as a refusal
+              and never as a night left unfinished. Where the script refuses before any worker exists, it writes a
+              line the Tonight notice reads, so the page shows the refusal and its reason rather than a night that
+              never ran.
+            - The order. Built after tonight's night and pull request 282, with the tests the ruling lists.
+Found:      reading the code before the build, over `main` at 9a25f8c:
+            - `tools/nightly` changes to the repository root and runs `dotnet run --project src/EquityBrief.Worker`,
+              which builds the working tree as it stands. A project compiles every `.cs` file beneath its folder, so
+              a file never added to git is built as surely as an edit to a tracked one.
+            - The worker's `appsettings.json` names the data root `data`, relative, resolved against the working
+              directory the script sets. A night whose working directory were the build copy would open, or create,
+              a store inside it. The drain is already told its store in its environment, `EquityBrief__DataRoot`,
+              which the worker's configuration reads over its own file, and the night can be told the same way.
+            - The worker reads `appsettings.Secrets.json` from its build's own folder as an optional file, and the
+              worker's project file copies it there from `src/EquityBrief.Worker`. A clean copy holds no secrets
+              file, so a night built from one would start with no key and no error at configuration, failing at its
+              first keyed request. The copy of the build a press makes for its drain under `data/drains` carries the
+              secrets file today, since it copies the whole build output. The secrets file is the only untracked
+              file the worker reads: it holds the providers' keys, the search tool's key, the filing archive's
+              contact and the two model keys, and the local model's settings are defaults in code.
+            - The read surface starts the drain, and the rest of a night, from a copy of the worker's build beside
+              its own in the main checkout, `WorkerDrainLauncher.WorkerBuildBeside`. Under this ruling it starts the
+              night's build, which it learns from what the night leaves under the data root.
+            - A night's three further tries wait inside the one worker process, so they already run one build. The
+              run-the-rest command, `tools/nightly.ps1 --resume`, goes through the script, and today builds the
+              working tree again.
+            - `refused` is an outcome already, since 6.0, for a night refused before its first step by a fixture
+              folder that does not exist or a blank key, written under the migrate stage, and `NightResume` counts
+              it among the stops that leave a stage unfinished, so a press after such a night runs it again. The
+              checkout's refusal takes an outcome of its own, and 6.0's keeps its meaning, since a night refused for
+              a blank key is worth running once the key is filled in.
+            - The run log has no column holding a commit, so recording one takes a migration after the newest on
+              `main` when this is built.
+            - A refusal in the script comes before any worker exists, and only the worker writes the store, so the
+              line the Tonight notice reads is a file under the data root beside the night's lock file, outside the
+              store.
+            - The read surface on 5152 is started by hand with `dotnet run` from the main checkout, and the ruling
+              does not reach it: it builds the working tree as it stands when it is started.
+Changed:    this entry alone.
+Tests:      none added here.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 725 claims, 725 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 123P placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 123T of 123T tests.
+            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    the build of this ruling, after tonight's night and pull request 282; the build's time over its first
+            five nights against the one-hour deadline.
