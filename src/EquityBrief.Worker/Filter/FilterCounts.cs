@@ -24,8 +24,7 @@ public sealed record SessionCounts(
     IReadOnlyList<int> Funnel,
     IReadOnlyList<int> Alone,
     IReadOnlyList<int> RelaxedAlone,
-    int Pullbacks,
-    int Breakouts);
+    int Pullbacks);
 
 // The shape counts the operator rules the filter's starting settings from: for each session, the
 // members through each gate in order and what each removed, each gate alone, each gate relaxed with
@@ -172,8 +171,7 @@ public sealed class FilterCounts : IComponent
                     SwingFunnel.Of(results),
                     [.. Enumerable.Range(0, SwingGates.Order.Length).Select(gate => results.Count(result => result.Gates[gate].Passed))],
                     SwingFunnel.RelaxedAlone(results),
-                    results.Count(result => result.Family == SwingGates.Pullback),
-                    results.Count(result => result.Family == SwingGates.Breakout)));
+                    results.Count(result => result.Family == SwingGates.Pullback)));
 
                 // The shape clock reads the proposed values with the trigger's arrival read off the night
                 // before, as the night itself does, over the nights the store keeps listings for.
@@ -511,13 +509,13 @@ public sealed class FilterCounts : IComponent
         {
             report.AppendLine();
             report.AppendLine(name);
-            report.AppendLine("session     source    breadth  funnel (attrition)                               alone: mkt trd set trg tra   relaxed alone: mkt trd set trg tra   pullbacks breakouts");
+            report.AppendLine("session     source    breadth  funnel (attrition)                               alone: mkt trd set trg tra   relaxed alone: mkt trd set trg tra   pullbacks");
 
             foreach (var one in sessions)
             {
                 var attrition = string.Join(" ", one.Funnel.Select((count, at) => at == 0 ? count.ToString(CultureInfo.InvariantCulture) : FormattableString.Invariant($"{count}(-{one.Funnel[at - 1] - count})")));
 
-                report.AppendLine(FormattableString.Invariant($"{one.Session:yyyy-MM-dd}  {one.Source,-8}  {(one.Breadth is { } share ? (share * 100).ToString("0.0", CultureInfo.InvariantCulture) + "%" : "n/a"),7}  {attrition,-48} {string.Join(" ", one.Alone.Select(count => count.ToString(CultureInfo.InvariantCulture).PadLeft(4)))}   {string.Join(" ", one.RelaxedAlone.Select(count => count.ToString(CultureInfo.InvariantCulture).PadLeft(4)))}   {one.Pullbacks,9} {one.Breakouts,9}"));
+                report.AppendLine(FormattableString.Invariant($"{one.Session:yyyy-MM-dd}  {one.Source,-8}  {(one.Breadth is { } share ? (share * 100).ToString("0.0", CultureInfo.InvariantCulture) + "%" : "n/a"),7}  {attrition,-48} {string.Join(" ", one.Alone.Select(count => count.ToString(CultureInfo.InvariantCulture).PadLeft(4)))}   {string.Join(" ", one.RelaxedAlone.Select(count => count.ToString(CultureInfo.InvariantCulture).PadLeft(4)))}   {one.Pullbacks,9}"));
             }
 
             foreach (var source in new[] { Stored, Replayed })

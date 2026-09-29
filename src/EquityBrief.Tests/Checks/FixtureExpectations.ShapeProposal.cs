@@ -35,10 +35,7 @@ public partial class FixtureExpectations
                         i / 1000.0,
                         pulled ? 3 : null,
                         pulled ? (90 + i - 460) / 100.0 : null,
-                        null,
-                        null,
                         pulled,
-                        false,
                         arrived,
                         arrived ? 3 : null,
                         arrived ? 3 : null,
@@ -144,7 +141,7 @@ public partial class FixtureExpectations
                     (string)ticker.Value,
                     [
                         new Gate(SwingGates.Trend, i >= 167, "constructed", new Dictionary<string, string> { ["trend state"] = SwingGates.Uptrend, ["strength"] = (i / 250.0).ToString("R", CultureInfo.InvariantCulture) }),
-                        new Gate(SwingGates.Setup, false, "constructed", new Dictionary<string, string> { ["depth"] = "none", [SwingGates.PullbackBandValue] = "no", [SwingGates.BreakoutBandValue] = "no" }),
+                        new Gate(SwingGates.Setup, false, "constructed", new Dictionary<string, string> { ["depth"] = "none", [SwingGates.PullbackBandValue] = "no" }),
                     ],
                     null,
                     false,
@@ -278,12 +275,12 @@ public partial class FixtureExpectations
     {
         using var store = ProposalStore(60, new HashSet<int>());
 
-        // The first ten nights' rows lose the setup's two band answers, as a row stored before the setup
-        // kept them reads: worked by hand, the fifty others give the same medians and the same floor.
+        // The first ten nights' rows lose the setup's band answer, as a row stored before the setup kept it
+        // reads: worked by hand, the fifty others give the same medians and the same floor.
         var tenth = ProposalFirst.AddDays(10).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
         store.Execute(
-            "UPDATE gate_result SET gates = json_remove(gates, '$.gates[1].values.\"" + SwingGates.PullbackBandValue + "\"', '$.gates[1].values.\"" + SwingGates.BreakoutBandValue + "\"') " +
+            "UPDATE gate_result SET gates = json_remove(gates, '$.gates[1].values.\"" + SwingGates.PullbackBandValue + "\"') " +
             $"WHERE session_date < '{tenth}';");
 
         var outcome = await ProposeOver(store, "shape-unanswered");
@@ -339,7 +336,7 @@ public partial class FixtureExpectations
                         [
                             new Gate(SwingGates.Market, true, "constructed", new Dictionary<string, string>()),
                             new Gate(SwingGates.Trend, true, "constructed", new Dictionary<string, string> { ["trend state"] = SwingGates.Uptrend, ["strength"] = "0.9" }),
-                            new Gate(SwingGates.Setup, true, "constructed", new Dictionary<string, string> { ["depth"] = "3", ["dry-up"] = "0.5", [SwingGates.PullbackBandValue] = "yes", [SwingGates.BreakoutBandValue] = "no" }),
+                            new Gate(SwingGates.Setup, true, "constructed", new Dictionary<string, string> { ["depth"] = "3", ["dry-up"] = "0.5", [SwingGates.PullbackBandValue] = "yes" }),
                             new Gate(SwingGates.Trigger, i < 10, "constructed", new Dictionary<string, string> { ["event tonight"] = "yes", ["event the session before"] = "no", [SwingGates.ArrivedValue] = i < 10 ? "tonight" : "none" }),
                         ],
                         SwingGates.Pullback,

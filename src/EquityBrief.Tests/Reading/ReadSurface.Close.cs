@@ -35,7 +35,7 @@ public partial class ReadSurface
     // read against is a figure this file states: breadth 45%, strength 0.50, a pullback of 1 to 5 typical
     // moves, volume while it came down 1.5 times its average or less, reward to risk 1.5, a stop 0.5 to 4
     // typical moves below the entry, and a trigger first fired within the last 3 sessions.
-    static readonly FilterSettings CloseVersion = new(0.45, 0.5, 1, 5, 1.5, 0.7, 1.5, 1.5, 0.5, 4, 15, 3, TradeInput.Clear);
+    static readonly FilterSettings CloseVersion = new(0.45, 0.5, 1, 5, 1.5, 1.5, 0.5, 4, 15, 3, TradeInput.Clear);
 
     // A member's stored gates with the values its one missed gate read, every other gate's as the switch
     // night's rows carry them.

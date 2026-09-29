@@ -1,7 +1,7 @@
 {
   "stage": "ladders",
   "derivation": "derived",
-  "derivedFrom": "the trend rule and the tranche rules settled at 4.0, applied to the committed bar files and the levels expectation outside this repository and without running the ladder builder. The bars are adjusted first, the factor being the provider's adjusted close over its raw close with the high and low scaled by the same figure. The averages are the arithmetic mean of the last 50 and the last 200 adjusted closes. The swings are sessions whose high is strictly above all six neighbours or whose low is strictly below all six. The tranches are the support bands whose low edge is below the close, nearest first, at most three, skipping any band with no anchor other than a moving average; each stop is the low edge of the next support band beneath it whatever anchors that one in a range, and in an uptrend the higher of that band and the most recent swing low beneath the tranche; the invalidation is the lowest of those stops, or a tranche's own low edge where no band sits beneath it. The typical day's move is twice the merge distance the levels expectation states, the merge distance being half of it. Nothing here was read back from a run. Worked again on 2026-09-26 over the bands the levels expectation derives under the 3.4 correction, the trend, the inputs and the moves being unchanged; the builder's output was read only after, and it agreed on every tranche, condition, stop, exit, setup and figure.",
+  "derivedFrom": "the trend rule and the tranche rules settled at 4.0, applied to the committed bar files and the levels expectation outside this repository and without running the ladder builder. The bars are adjusted first, the factor being the provider's adjusted close over its raw close with the high and low scaled by the same figure. The averages are the arithmetic mean of the last 50 and the last 200 adjusted closes. The swings are sessions whose high is strictly above all six neighbours or whose low is strictly below all six. The tranches are the support bands whose low edge is below the close, nearest first, at most three, skipping any band with no anchor other than a moving average; each stop is the low edge of the next support band beneath it whatever anchors that one in a range, and in an uptrend the higher of that band and the most recent swing low beneath the tranche, a stop inside a support band moving to that band's low edge; the invalidation is the lowest of those stops, or a tranche's own low edge where no band sits beneath it. The typical day's move is twice the merge distance the levels expectation states, the merge distance being half of it. Nothing here was read back from a run. Worked again on 2026-09-26 over the bands the levels expectation derives under the 3.4 correction, the trend, the inputs and the moves being unchanged; the builder's output was read only after, and it agreed on every tranche, condition, stop, exit, setup and figure. Worked again on 2026-09-29 under the rule that moves a stop inside a support band, above its low edge and at or below its high edge, to that band's low edge: the ruling of 2026-09-26 named before the build the three stops it moves, KEYS's first and third and AAPL's second, each a swing low inside the band beneath, and the risk, the ratio, the break-even, the blended figures and the earnings shares that read them follow by the same arithmetic.",
   "tables": [
     "ladder"
   ],
@@ -188,13 +188,13 @@
     "byName": {
       "AAPL": [
         "319.0748|320.28|AvailableNow|304.7879",
-        "304.7879|316.0175|FirstCloseBackAbove|300.57",
+        "304.7879|316.0175|FirstCloseBackAbove|299.7415",
         "299.7415|302.1594|ReachesTheZone|283.439"
       ],
       "KEYS": [
-        "311.2696|332.78|AvailableNow|306.852",
+        "311.2696|332.78|AvailableNow|305.42",
         "305.42|306.852|FirstCloseBackAbove|300.87",
-        "300.87|300.87|ReachesTheZone|293.55"
+        "300.87|300.87|ReachesTheZone|288.5134"
       ],
       "MSFT": [
         "492.1166|501.9168|AvailableNow|485.1401",
@@ -209,10 +209,10 @@
     }
   },
   "invalidation": {
-    "note": "the lowest price the structure depends on, which is the lowest stop the tranches carry. KEYS takes its from the trailing rule, the swing low at 293.55 sitting above the band at 288.5134 beneath its third tranche; AAPL's is the band beneath its third tranche, its 200-day average at 283.439.",
+    "note": "the lowest price the structure depends on, which is the lowest stop the tranches carry. KEYS's is the band beneath its third tranche, 288.5134 to 293.55, whose low edge its trailing stop moves to, the swing low at 293.55 being that band's top edge; AAPL's is the band beneath its third tranche, its 200-day average at 283.439.",
     "byName": {
       "AAPL": "283.439",
-      "KEYS": "293.55",
+      "KEYS": "288.5134",
       "MSFT": "443.5621",
       "NFLX": "68.7982"
     }
@@ -234,10 +234,10 @@
     }
   },
   "stops": {
-    "note": "the trend decides the stop. NFLX is the range and its three stops are the bands beneath, which is the range floor. The three uptrends take the higher of the band beneath and the most recent swing low beneath the tranche, so the stop rises as the structure makes higher lows and is never looser than the range rule.",
+    "note": "the trend decides the stop. NFLX is the range and its three stops are the bands beneath, which is the range floor. The three uptrends take the higher of the band beneath and the most recent swing low beneath the tranche, so the stop rises as the structure makes higher lows and is never looser than the range rule, and a stop that lands inside a support band, above its low edge and at or below its high edge, moves to that band's low edge, since a close the band still holds would otherwise end the trade.",
     "whereTheTrailingRuleBites": {
-      "KEYS": "its first tranche's stop moves from the band at 305.42 to the swing low at 306.852, and its third's from the band at 288.5134 to the swing low at 293.55",
-      "AAPL": "its second tranche's stop moves from the band at 299.7415 to the swing low at 300.57; its first and third take the band beneath, the swing lows beneath each being further away",
+      "KEYS": "its first tranche's stop trails from the band at 305.42 to the swing low at 306.852, and its third's from the band at 288.5134 to the swing low at 293.55; each swing low is the top edge of the band beneath, 305.42 to 306.852 and 288.5134 to 293.55, so each stop moves back to that band's low edge, 305.42 and 288.5134",
+      "AAPL": "its second tranche's stop trails from the band at 299.7415 to the swing low at 300.57, which sits inside the band beneath, 299.7415 to 302.1594, so it moves back to 299.7415; its first and third take the band beneath, the swing lows beneath each being further away",
       "MSFT": "every one of its three takes the band, because its swing lows beneath each tranche are further away than the band is. Its third tranche is the case that shows why the rule takes the higher of the two: the last swing low beneath 476.2534 is 376.6809, a hundred points down, and a trailing stop there would be looser protection than the range rule gives"
     }
   },
@@ -329,16 +329,16 @@
         "firstRewardToRisk": "1.0090",
         "breakEven": "0.4978",
         "blendedEntry": "315.04005",
-        "blendedRisk": "14.47005",
+        "blendedRisk": "15.29855",
         "blendedReward": "19.66125",
-        "blendedRewardToRisk": "1.3588"
+        "blendedRewardToRisk": "1.2852"
       },
       "KEYS": {
         "firstEntry": "322.0248",
-        "firstRisk": "15.1728",
+        "firstRisk": "16.6048",
         "firstReward": "44.3852",
-        "firstRewardToRisk": "2.9253",
-        "breakEven": "0.2548",
+        "firstRewardToRisk": "2.6730",
+        "breakEven": "0.2723",
         "blendedEntry": "314.0804",
         "blendedRisk": "13.2104",
         "blendedReward": "52.3296",
@@ -369,8 +369,8 @@
         "2026-07-30|2026-07-31|24.4989|1.6454"
       ],
       "KEYS": [
-        "2026-05-19|2026-05-20|2.03|0.1338",
-        "2026-08-18|2026-08-19|21.55|1.4203"
+        "2026-05-19|2026-05-20|2.03|0.1223",
+        "2026-08-18|2026-08-19|21.55|1.2978"
       ],
       "MSFT": [
         "2026-04-29|2026-04-30|16.6126|1.3988",
@@ -385,12 +385,12 @@
       "note": "the first tranche's own risk, its zone midpoint less its stop, and it exists whether or not any exit is traded. MSFT trades none of its exits so it has no reward to measure, and it still has a stop and two prints to measure against it.",
       "byName": {
         "AAPL": "14.8895",
-        "KEYS": "15.1728",
+        "KEYS": "16.6048",
         "MSFT": "11.8766",
         "NFLX": "2.678"
       }
     },
-    "reading": "NFLX is the name this rule exists for. Its last two prints moved it 3.91 and 2.02 times the distance to its own stop, so a position carried through the date is one the plan's stop cannot protect. AAPL's second print moved it 1.65 times the distance to its stop and its first 0.59, and KEYS's second 1.42.",
+    "reading": "NFLX is the name this rule exists for. Its last two prints moved it 3.91 and 2.02 times the distance to its own stop, so a position carried through the date is one the plan's stop cannot protect. AAPL's second print moved it 1.65 times the distance to its stop and its first 0.59, and KEYS's second 1.30.",
     "places": "the move is quoted as the store holds it, which is the provider's own adjusted close subtracted from another: the close is kept as sent rather than rounded to four places, so a name whose provider quotes three carries three. The share is a ratio and is quoted to four."
   }
 }

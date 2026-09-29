@@ -547,9 +547,15 @@ public class RegisterAppendOnly
             for (var at = 0; at < sources.Length; at++)
             {
                 var moved = sources.ToArray();
-                moved[at] += "\n// a line that changes what this does\n";
+                moved[at] += "\ninternal static class ChangesWhatThisDoes { }\n";
 
                 Assert.NotEqual(evaluator.Version, CandidateEvaluator.Pin(moved));
+
+                // And a comment added to it moves nothing.
+                var commented = sources.ToArray();
+                commented[at] += "\n// a comment and nothing else\n";
+
+                Assert.Equal(evaluator.Version, CandidateEvaluator.Pin(commented));
             }
 
             // And exactly one line is left out of it, the evaluator's own version.

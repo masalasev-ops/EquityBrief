@@ -85,7 +85,7 @@ public sealed class CorporateActionChecker : IComponent
     // reason, named with it on every night it stays so, which puts the stage on the run
     // page's failed region rather than stopping in silence, and asked for again weekly.
     // see: A suspect name is asked for again on the five nights after it is marked and weekly after that, and its own page, its row on tonight's list and the run page say so until a refetch succeeds
-    // see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move
+    // see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move
     public const int RetryNights = 5;
 
     // How many calendar days after the session a spent name was last asked for it is

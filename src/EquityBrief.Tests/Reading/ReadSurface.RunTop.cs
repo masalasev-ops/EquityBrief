@@ -308,7 +308,7 @@ public partial class ReadSurface
 
         Assert.Contains("data-state=\"finished\" data-tone=\"ok\" data-session=\"2026-09-10\" data-stocks-read=\"503\" data-requests=\"7\" data-spend=\"0.012\" data-retried=\"1\"", night, StringComparison.Ordinal);
         Assert.Contains("<p class=\"ns-headline\">Finished</p>", night, StringComparison.Ordinal);
-        Assert.Contains("closed its arithmetic in 10 min 30 s, inside its 15-minute deadline.", night, StringComparison.Ordinal);
+        Assert.Contains("closed its arithmetic in 10 min 30 s, inside its 60-minute deadline.", night, StringComparison.Ordinal);
         Assert.Equal(
             [.. RunScreen.StepGroups.Select(group => group.Name)],
             Regex.Matches(night, "<li data-group=\"([^\"]+)\"").Select(match => match.Groups[1].Value));

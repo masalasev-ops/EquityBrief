@@ -18,12 +18,22 @@ namespace EquityBrief.Core;
 // The line that declares the version is left out, because a hash of a file
 // including its own hash could never be written down: putting the computed value
 // into the file changes the file and so changes the value.
+//
+// A line that is a comment and nothing else, and a line holding only white space,
+// are left out too, and every other line is read without the white space at its
+// ends. A comment, a citation of a decision among them, and the spacing between
+// lines are read by a person and never by the code, so moving one leaves every
+// answer the pinned code gives where it was, and a pin that moved with them would
+// stop a night for a change no answer can show. A comment written after code on
+// its line is still pinned, with the code it sits beside.
+// see: A comment or a blank line moves no pin, and every other change to a pinned source does
 public static class SourcePin
 {
     public static string Of(IEnumerable<string> sources, string declaration)
     {
         var lines = sources
             .Select(source => source.Replace("\r\n", "\n", StringComparison.Ordinal).TrimStart('﻿').Split('\n'))
+            .Select(source => source.Select(line => line.Trim()).Where(Read).ToArray())
             .ToArray();
 
         // The whole line and exactly one of it, so nothing written beside the version goes unpinned.
@@ -46,4 +56,8 @@ public static class SourcePin
         // it from the files rather than trusting it.
         return Convert.ToHexString(digest)[..12].ToLowerInvariant();
     }
+
+    // Whether a line, its ends already trimmed, is one the pin reads: anything but white space alone
+    // and a comment alone.
+    static bool Read(string trimmed) => trimmed.Length > 0 && !trimmed.StartsWith("//", StringComparison.Ordinal);
 }

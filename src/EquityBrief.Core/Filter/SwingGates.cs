@@ -90,8 +90,10 @@ public static class SwingGates
     // Section 11's five, in the order a name meets them, which is the order the funnel counts.
     public static readonly string[] Order = [Market, Trend, Setup, Trigger, Trade];
 
+    // The one setup the filter reads, a pullback into an anchored support band. A row stored before
+    // breakouts were removed may name the other family, "breakout", which no gate reads any more.
+    // see: The swing filter reads pullbacks alone, and a breakout returns only as a registered candidate built from its measured record
     public const string Pullback = "pullback";
-    public const string Breakout = "breakout";
 
     public const string EarningsExclusion = "earnings inside the holding window";
     public const string SuspectExclusion = "suspect series";
@@ -99,12 +101,10 @@ public static class SwingGates
 
     public const string Uptrend = "uptrend";
 
-    // The setup's values naming whether the close sat inside an anchored support band and whether it
-    // cleared a band that sat at or above the previous close, which the shape proposer recounts from:
-    // neither is a threshold, so a count under another setting keeps them as the night found them.
+    // The setup's value naming whether the close sat inside an anchored support band, which the shape
+    // proposer recounts from: it is not a threshold, so a count under another setting keeps it as the
+    // night found it.
     public const string PullbackBandValue = "inside an anchored support band";
-
-    public const string BreakoutBandValue = "cleared a band above the previous close";
 
     // The trigger's value naming the session its event arrived on inside the window, or none, which the
     // shape proposer recounts from: no threshold moves it.
@@ -118,14 +118,13 @@ public static class SwingGates
     public static GateResult Evaluate(GateInputs inputs, FilterSettings settings)
     {
         var pullbackBand = PullbackBand(inputs);
-        var breakoutBand = BreakoutBand(inputs);
 
         var market = MarketGate(inputs, settings);
         var trend = TrendGate(inputs, settings);
-        var (setup, family) = SetupGate(inputs, settings, pullbackBand, breakoutBand);
-        var (trigger, triggerEvent) = TriggerGate(inputs, settings, family, pullbackBand, breakoutBand);
+        var (setup, family) = SetupGate(inputs, settings, pullbackBand);
+        var (trigger, triggerEvent) = TriggerGate(inputs, settings, pullbackBand);
 
-        var setupBand = family == Breakout ? breakoutBand : pullbackBand ?? breakoutBand;
+        var setupBand = pullbackBand;
         var ladder = LadderTrade(inputs);
         var swing = SwingTrade(inputs, setupBand);
         var clear = ClearTrade(inputs, setupBand);
@@ -216,21 +215,10 @@ public static class SwingGates
                 .FirstOrDefault()
             : null;
 
-    // The band tonight's close cleared that sat at or above last night's close, the breakout reason's own
-    // test, the highest of them where the close cleared more than one.
-    // see: Breakout on volume reads resistance at the previous session's close
-    static FilterBand? BreakoutBand(GateInputs inputs) =>
-        inputs.Close is { } close && inputs.PreviousClose is { } before
-            ? inputs.Bands
-                .Where(band => band.LowEdge >= before && close > band.HighEdge)
-                .OrderByDescending(band => band.HighEdge)
-                .FirstOrDefault()
-            : null;
-
     // The setup: a pullback into an anchored support band from a recent high, on volume that dried up
-    // while it came down; or a tight base breaking out through a band on heavy volume. The pullback is
-    // read first and names the family where both pass.
-    static (Gate Gate, string? Family) SetupGate(GateInputs inputs, FilterSettings settings, FilterBand? pullbackBand, FilterBand? breakoutBand)
+    // while it came down.
+    // see: The swing filter reads pullbacks alone, and a breakout returns only as a registered candidate built from its measured record
+    static (Gate Gate, string? Family) SetupGate(GateInputs inputs, FilterSettings settings, FilterBand? pullbackBand)
     {
         var reading = inputs.Reading;
 
@@ -243,44 +231,27 @@ public static class SwingGates
         var dry = reading.DryUp is { } dryUp && dryUp < settings.DryUpCeiling;
         var pullback = depthIn && dry && pullbackBand is not null;
 
-        var tight = reading.Tightness is { } tightness && tightness < settings.TightnessCeiling;
-        var heavy = inputs.Volume is { } volume && inputs.VolumeAverage50 is > 0 and var average
-            && Statistic.FromVolume(volume) >= settings.BreakoutVolumeMultiple * average;
-        var breakout = tight && heavy && breakoutBand is not null;
+        var family = pullback ? Pullback : null;
 
-        var family = pullback ? Pullback : breakout ? Breakout : null;
-
-        var parts = new List<string>
-        {
-            pullback
-                ? "a pullback into an anchored support band"
-                : "no pullback: " + string.Join(", ", Missing(
-                    (depthIn, reading.Depth is { } d ? Invariant($"depth {d:0.00} outside {settings.DepthLow:0.##} to {settings.DepthHigh:0.##} typical moves") : "no depth"),
-                    (dry, reading.DryUp is { } v ? Invariant($"dry-up {v:0.00} not below {settings.DryUpCeiling:0.##}") : reading.PullbackSessions == 0 ? "the high was made on the night" : "no dry-up"),
-                    (pullbackBand is not null, "the close is inside no anchored support band"))),
-            breakout
-                ? "a tight base breaking out"
-                : "no breakout: " + string.Join(", ", Missing(
-                    (tight, reading.Tightness is { } t ? Invariant($"tightness {t:0.00} not below {settings.TightnessCeiling:0.##}") : "no tightness"),
-                    (breakoutBand is not null, "the close cleared no band that sat at or above the previous close"),
-                    (heavy, inputs.Volume is null || inputs.VolumeAverage50 is not > 0 ? "no volume against its average" : Invariant($"volume below {settings.BreakoutVolumeMultiple:0.##} times its fifty-day average")))),
-        };
+        var reason = pullback
+            ? "a pullback into an anchored support band"
+            : "no pullback: " + string.Join(", ", Missing(
+                (depthIn, reading.Depth is { } d ? Invariant($"depth {d:0.00} outside {settings.DepthLow:0.##} to {settings.DepthHigh:0.##} typical moves") : "no depth"),
+                (dry, reading.DryUp is { } v ? Invariant($"dry-up {v:0.00} not below {settings.DryUpCeiling:0.##}") : reading.PullbackSessions == 0 ? "the high was made on the night" : "no dry-up"),
+                (pullbackBand is not null, "the close is inside no anchored support band")));
 
         return (
             new Gate(
                 Setup,
                 family is not null,
-                string.Join("; ", parts),
+                reason,
                 Values(
                     ("family", family ?? "none"),
                     ("depth", Figure(reading.Depth)),
                     ("dry-up", Figure(reading.DryUp)),
-                    ("tightness", Figure(reading.Tightness)),
-                    ("volume multiple", inputs.Volume is { } v2 && inputs.VolumeAverage50 is > 0 and var a2 ? Figure(Statistic.FromVolume(v2) / a2) : "none"),
-                    ("band low", Price(pullbackBand?.LowEdge ?? breakoutBand?.LowEdge)),
-                    ("band high", Price(pullbackBand?.HighEdge ?? breakoutBand?.HighEdge)),
-                    (PullbackBandValue, pullbackBand is null ? "no" : "yes"),
-                    (BreakoutBandValue, breakoutBand is null ? "no" : "yes"))),
+                    ("band low", Price(pullbackBand?.LowEdge)),
+                    ("band high", Price(pullbackBand?.HighEdge)),
+                    (PullbackBandValue, pullbackBand is null ? "no" : "yes"))),
             family);
     }
 
@@ -331,12 +302,11 @@ public static class SwingGates
         return (null, unread);
     }
 
-    // The trigger: for a breakout, the first close above the band, which the band test already is; for a
-    // pullback, and for a name with no setup so its near misses can be read, the event's arrival inside
-    // the window, read off the stored results of the sessions before. A session with no stored result
-    // the answer turns on cannot say, and the gate fails rather than passing on the absence.
+    // The trigger: for a pullback, and for a name with no setup so its near misses can be read, the event's
+    // arrival inside the window, read off the stored results of the sessions before. A session with no
+    // stored result the answer turns on cannot say, and the gate fails rather than passing on the absence.
     // see: Arrival is a trigger that first fired within the last three sessions, and the trade is read from tonight's close
-    static (Gate Gate, bool? Event) TriggerGate(GateInputs inputs, FilterSettings settings, string? family, FilterBand? pullbackBand, FilterBand? breakoutBand)
+    static (Gate Gate, bool? Event) TriggerGate(GateInputs inputs, FilterSettings settings, FilterBand? pullbackBand)
     {
         var tonight = PullbackEvent(inputs, pullbackBand);
         var window = settings.ArrivalSessions;
@@ -357,11 +327,6 @@ public static class SwingGates
             ("previous high", Price(inputs.PreviousHigh)),
             ("arrival window", Whole(window)),
             (ArrivedValue, at is { } back ? On(back) : "none"));
-
-        if (family == Breakout)
-        {
-            return (new Gate(Trigger, true, "the first close above the band it cleared", values), tonight);
-        }
 
         if (at is 0)
         {

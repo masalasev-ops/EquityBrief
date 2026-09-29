@@ -5,7 +5,7 @@ namespace EquityBrief.Core.Providers;
 // The distinction is the whole of the retry policy. A refused connection and a
 // rejected rate are worth asking again; a rejected key is wrong three times and
 // the retry only delays the message that says so.
-// see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move
+// see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move
 //
 // `Unusable` marks a model's answer that arrived and could not be stored, empty or cut short,
 // which a caller may ask for once more where it would not ask again after a refusal.
@@ -22,23 +22,25 @@ public sealed class ProviderRefusal(string message, bool transient, bool unusabl
 // the test that reads that row against this record is what keeps the two from
 // drifting. Written as a record rather than as constants so a test can hand in
 // a policy of its own without the production one moving.
-// see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move
+// see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move
 public sealed record RetryPolicy(int Attempts, TimeSpan FirstWait, TimeSpan Timeout, TimeSpan Deadline)
 {
     // The wall clock section 17 states for a night at index size, and the
     // multiple the deadline follows it by.
     //
-    // Proposed, and it stays proposed until five scheduled nights over the whole
-    // index have run and the run page's operational header is read for them. One
-    // night run by hand is an observation and a limit needs a distribution.
-    // owes: The nightly wall clock at index size, measured from nights that ran on the schedule
+    // Settled by the operator on 2026-09-28 at twenty minutes, from ten nights
+    // that ran on the schedule over the whole index, which took 363 to 665
+    // seconds to the close, so the deadline is an hour. A night runs on the
+    // operator's own machine, where a slow night costs nobody anything, and the
+    // deadline stops a night that has hung rather than one the store's disk has
+    // slowed.
     //
     // The deadline is derived from it rather than stated beside it, which is
     // what "the deadline follows at three times the limit, in the document and
     // in the retry policy together" has to mean if it is to survive the limit
     // moving. Written as two numbers the relationship was a coincidence held by
     // a comment, and the comment was the only thing that would have noticed.
-    public static TimeSpan WallClock { get; } = TimeSpan.FromMinutes(5);
+    public static TimeSpan WallClock { get; } = TimeSpan.FromMinutes(20);
 
     public const int DeadlineMultiple = 3;
 

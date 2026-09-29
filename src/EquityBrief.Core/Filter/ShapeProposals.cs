@@ -3,7 +3,7 @@ using System.Globalization;
 namespace EquityBrief.Core.Filter;
 
 // One member's stored answers on one night, as the shape proposer recounts them: the readings each
-// threshold is compared with, the two band tests and the trigger's arrival inside its window, which no
+// threshold is compared with, the band test and the trigger's arrival inside its window, which no
 // threshold moves, the trade read three ways, and whether an exclusion removed it. A row written before
 // the plan clear of the noise was stored carries none of it.
 public sealed record StoredMember(
@@ -12,10 +12,7 @@ public sealed record StoredMember(
     double? Strength,
     double? Depth,
     double? DryUp,
-    double? Tightness,
-    double? VolumeMultiple,
     bool PullbackBand,
-    bool BreakoutBand,
     bool? Arrived,
     double? LadderRewardToRisk,
     double? LadderStopMoves,
@@ -82,14 +79,10 @@ public static class ShapeProposals
         foreach (var member in night.Members)
         {
             var trend = member.TrendState == SwingGates.Uptrend && member.Strength is { } strength && strength >= settings.StrengthFloor;
-            var pullback = member.Depth is { } depth && depth >= settings.DepthLow && depth <= settings.DepthHigh
+            var setup = member.Depth is { } depth && depth >= settings.DepthLow && depth <= settings.DepthHigh
                 && member.DryUp is { } dryUp && dryUp < settings.DryUpCeiling
                 && member.PullbackBand;
-            var breakout = member.Tightness is { } tightness && tightness < settings.TightnessCeiling
-                && member.VolumeMultiple is { } multiple && multiple >= settings.BreakoutVolumeMultiple
-                && member.BreakoutBand;
-            var setup = pullback || breakout;
-            var trigger = (!pullback && breakout) || member.Arrived == true;
+            var trigger = member.Arrived == true;
 
             var (ratio, moves) = settings.Trade switch
             {

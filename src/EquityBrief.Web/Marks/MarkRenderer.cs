@@ -5561,7 +5561,8 @@ public sealed class MarkRenderer : IComponent
         {
             region.Append(Invariant, $"<tr data-step=\"{Escaped(step.Gate)}\" data-passed=\"{step.Passed}\" data-removed=\"{step.Removed}\"><td>{Escaped(char.ToUpperInvariant(step.Gate[0]) + step.Gate[1..])}");
 
-            if (step.Gate == "setup")
+            // A night stored before the filter read pullbacks alone may hold breakouts, and draws them.
+            if (step.Gate == "setup" && funnel.Breakouts > 0)
             {
                 region.Append(Invariant, $" <span class=\"families\" data-pullbacks=\"{funnel.Pullbacks}\" data-breakouts=\"{funnel.Breakouts}\">({funnel.Pullbacks} pullback(s), {funnel.Breakouts} breakout(s))</span>");
             }

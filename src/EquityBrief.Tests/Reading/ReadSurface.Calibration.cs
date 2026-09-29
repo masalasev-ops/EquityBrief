@@ -176,11 +176,11 @@ public partial class ReadSurface
     {
         using var store = CalibrationStore();
 
-        // Two nights the clock chose the session for closed, and one run by hand for a named session and one
-        // that stopped do not count; the first of the two replayed a merge distance version and four others,
-        // the second only the merge distance; two research passes carry a recorded cost; and the version
-        // whose new label holds two nights scored three nights since its window opened, a night written
-        // in sample before it not among them.
+        // Two nights the clock chose the session for closed and replayed versions, which the wall clock's and
+        // the version bound's lines counted until the operator's ruling of 2026-09-28 settled both, so neither
+        // is drawn; two research passes carry a recorded cost; and the version whose new label holds two
+        // nights scored three nights since its window opened, a night written in sample before it not among
+        // them.
         store.Execute(
             "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES " +
             "('night-20260910T233000Z', 'close', '2026-09-10T23:40:00Z', '2026-09-10T23:41:00Z', 'ok', 1, 0, 0, '0', '')," +
@@ -217,10 +217,8 @@ public partial class ReadSurface
         var lines = Regex.Matches(region, "<li data-trigger=\"([^\"]+)\" data-count=\"(\\d+)\" data-of=\"(\\d+)\">(.*?)</li>")
             .ToDictionary(match => match.Groups[1].Value, match => (Count: match.Groups[2].Value, Of: match.Groups[3].Value, Text: match.Groups[4].Value), StringComparer.Ordinal);
 
-        Assert.Equal(["wall clock", "spend cap", "version bound", "event setups", "trend confirmation"], lines.Keys);
-        Assert.Equal(("2", "5"), (lines["wall clock"].Count, lines["wall clock"].Of));
+        Assert.Equal(["spend cap", "event setups", "trend confirmation"], lines.Keys);
         Assert.Equal(("2", "20"), (lines["spend cap"].Count, lines["spend cap"].Of));
-        Assert.Equal(("1", "5"), (lines["version bound"].Count, lines["version bound"].Of));
         Assert.Equal(("0", "250"), (lines["event setups"].Count, lines["event setups"].Of));
         Assert.Equal(("3", "60"), (lines["trend confirmation"].Count, lines["trend confirmation"].Of));
         Assert.Contains("no stage scores an event-book setup yet, so nothing counts toward it", lines["event setups"].Text, StringComparison.Ordinal);

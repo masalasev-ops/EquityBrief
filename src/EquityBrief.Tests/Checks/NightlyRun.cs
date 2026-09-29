@@ -58,7 +58,7 @@ public partial class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Count the ordinary nights stored under the open filter version and, once they reach sixty, propose for each gate the one setting that brings its median count inside its band, writing one proposal for the version and stating the crossed trigger on the night's run log; nothing proposed is applied until the operator's command accepts it."),
 
             // 12.2, the swing filter.
-            CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it)."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it)."),
 
             // 12.2's correction, the fundamentals item: the readings step and the quarters step.
             CheckReach.Key(NightlyRunSteps.Heading, ArchitectureConformance.ReadingsStep),
@@ -224,10 +224,12 @@ public partial class NightlyRun
         Assert.Contains("three times", wallClock, StringComparison.Ordinal);
         Assert.Equal(RetryPolicy.WallClock * 3, policy.Deadline);
 
-        // The row says the figure is proposed and names what settles it, which
-        // is what keeps a proposed limit from being read as a measured one.
-        Assert.Contains("proposed until", wallClock, StringComparison.Ordinal);
-        Assert.Contains("operational header", wallClock, StringComparison.Ordinal);
+        // The row says who settled the figure and from what, the operator's
+        // ruling over nights that ran on the schedule, which is what keeps a
+        // settled limit from being read as a proposed one and says the ten
+        // nights it rests on.
+        Assert.Contains("settled by the operator from ten nights that ran on the schedule", wallClock, StringComparison.Ordinal);
+        Assert.DoesNotContain("proposed", wallClock, StringComparison.Ordinal);
 
         // And the population is the index the fetch returned rather than the
         // literal 500, which is the other half of the row's own claim.
