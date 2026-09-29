@@ -63,10 +63,12 @@ public sealed class ShapeCommand : IComponent
         new("--accept", ["--accept"], ["--restarts"], []),
         new("--settings", ["--settings", "--evidence"], ["--trade", "--restarts"], []),
         new("--reject", ["--reject", "--reason"], [], []),
-        new("--rule-correction", ["--trade", "--evidence", "--restarts"], [], ["--rule-correction"]),
+        new("--rule-correction", ["--evidence", "--restarts"], ["--trade"], ["--rule-correction"]),
     ];
 
     const string OpenVersion = "SELECT version, settings FROM filter_version WHERE closed_at IS NULL ORDER BY opened_at DESC LIMIT 1;";
+
+    const string OpenVersionSettings = "SELECT settings FROM filter_version WHERE closed_at IS NULL ORDER BY opened_at DESC LIMIT 1;";
 
     const string VersionCount = "SELECT COUNT(*) FROM filter_version;";
 
@@ -207,20 +209,22 @@ public sealed class ShapeCommand : IComponent
 
         if (form.Flag == "--rule-correction")
         {
-            return await CorrectAsync(Given("--trade")!, Given("--evidence")!, restarts!.Value, runId);
+            return await CorrectAsync(Given("--trade"), Given("--evidence")!, restarts!.Value, runId);
         }
 
         return await AcceptSettingsAsync(Given("--settings")!, Given("--trade"), Given("--evidence")!, restarts, runId);
     }
 
     // A rule correction taken before the family's first scored night: the open version closed and the
-    // next opened with the trade input the ruling names and every other setting as it stood, every
-    // standing swing family candidate retired and the six the code writes for the new version registered,
-    // all at one instant. It states the non-empty blocks the live candidate has run, which it restarts,
-    // or is refused, and it is no acceptance: the bound counts the acceptances of a proposal or of ruled
-    // settings and nothing else.
+    // next opened with the trade input the ruling names, or the one it held where none is named, and every
+    // other setting as it stood, written as the code now writes a version's settings, every standing swing
+    // family candidate retired and the six the code writes for the new version registered, all at one
+    // instant. A correction naming no plan is the one a change to the filter's rule takes, which moves no
+    // setting and drops any the filter no longer reads. It states the non-empty blocks the live candidate
+    // has run, which it restarts, or is refused, and it is no acceptance: the bound counts the acceptances
+    // of a proposal or of ruled settings and nothing else.
     // see: A rule correction taken before the family's first scored night opens a filter version and registers the family again at one instant, and is no shape acceptance
-    public async Task<ShapeOutcome> CorrectAsync(string trade, string evidence, int restarts, string runId, CancellationToken cancellation = default)
+    public async Task<ShapeOutcome> CorrectAsync(string? trade, string evidence, int restarts, string runId, CancellationToken cancellation = default)
     {
         await using var connection = await OpenAsync(cancellation);
 
@@ -229,16 +233,33 @@ public sealed class ShapeCommand : IComponent
             return await RefuseAsync(runId, "no filter version is open, so there is no rule to correct. Nothing was changed.");
         }
 
-        if (FilterSettings.InputOf(trade) is not { } input)
+        TradeInput input;
+
+        if (trade is null)
+        {
+            input = held.Settings.Trade;
+        }
+        else if (FilterSettings.InputOf(trade) is { } named)
+        {
+            input = named;
+        }
+        else
         {
             return await RefuseAsync(runId, $"--trade '{trade}' is not ladder, swing or clear. Nothing was changed.");
         }
 
         var settings = held.Settings with { Trade = input };
 
-        if (settings.Write() == held.Settings.Write())
+        // The version's settings as stored, against the next version's as the code writes them: a
+        // correction naming no plan changes something only where the stored settings carry one the filter
+        // no longer reads.
+        if (settings.Write() == await OpenSettingsAsync(connection, cancellation))
         {
-            return await RefuseAsync(runId, $"filter version {held.Version} already reads the {trade} plan, so the correction would change nothing. Nothing was changed.");
+            return await RefuseAsync(
+                runId,
+                trade is null
+                    ? $"filter version {held.Version}'s settings are already written as the code writes them, so the correction would change nothing. Nothing was changed."
+                    : $"filter version {held.Version} already reads the {trade} plan, so the correction would change nothing. Nothing was changed.");
         }
 
         var startedAt = clock.UtcNow;
@@ -286,7 +307,7 @@ public sealed class ShapeCommand : IComponent
         }
 
         var said = FormattableString.Invariant(
-            $"filter version {next} opened, closing {held.Version}, its trade gate reading the {trade} plan and every other setting as version {held.Version} held it; {corrected.Detail}; a rule correction and no shape acceptance, restarting {blocks} non-empty block(s)");
+            $"filter version {next} opened, closing {held.Version}, its trade gate reading the {FilterSettings.Word(input)} plan and every other setting as version {held.Version} held it{(trade is null ? ", written as the code now writes a version's settings" : string.Empty)}; {corrected.Detail}; a rule correction and no shape acceptance, restarting {blocks} non-empty block(s)");
 
         await RecordAsync(connection, null, runId, startedAt, Corrected, 1, said, cancellation);
 
@@ -611,6 +632,16 @@ public sealed class ShapeCommand : IComponent
         await connection.OpenAsync(cancellation);
 
         return connection;
+    }
+
+    // The open version's settings as they are stored, which a version opened before the filter read
+    // pullbacks alone writes with two the filter no longer reads.
+    static async Task<string?> OpenSettingsAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = OpenVersionSettings;
+
+        return await command.ExecuteScalarAsync(cancellation) as string;
     }
 
     static async Task<(string Version, FilterSettings Settings)?> OpenVersionAsync(SqliteConnection connection, CancellationToken cancellation)

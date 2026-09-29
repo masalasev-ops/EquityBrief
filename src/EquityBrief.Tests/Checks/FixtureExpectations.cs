@@ -97,14 +97,12 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.LimitsTable, "Shape acceptance bound"),
             CheckReach.Key(Scope.FailureTable, "A shape proposal rejected"),
 
-            // 12.2, the swing filter: the nine thresholds it is proposed at, its two stores, its
+            // 12.2, the swing filter: the seven thresholds it is proposed at, its two stores, its
             // fixture row and the two failures its gates answer.
             CheckReach.Key(Scope.LimitsTable, "Market gate"),
             CheckReach.Key(Scope.LimitsTable, "Strength gate"),
             CheckReach.Key(Scope.LimitsTable, "Pullback depth"),
             CheckReach.Key(Scope.LimitsTable, "Volume dry-up"),
-            CheckReach.Key(Scope.LimitsTable, "Base tightness"),
-            CheckReach.Key(Scope.LimitsTable, "Breakout volume"),
             CheckReach.Key(Scope.LimitsTable, "Trade reward to risk"),
             CheckReach.Key(Scope.LimitsTable, "Trade stop distance"),
             CheckReach.Key(Scope.LimitsTable, "Earnings exclusion"),
@@ -3063,9 +3061,11 @@ public partial class FixtureExpectations
 
         // Where the trailing rule bites, named per name in the expectation and
         // read back off the store. KEYS's first and third tranches and AAPL's
-        // second are the ones in this fixture whose stop the trailing rule moves,
-        // and stating that is what keeps a rule that changed nothing from reading
-        // as a rule that works.
+        // second are the ones in this fixture whose stop the trailing rule moves
+        // to a swing low, and each of those lows sits inside the band beneath,
+        // so each stop moves on to that band's low edge. Stating both steps is
+        // what keeps a rule that changed nothing from reading as a rule that works.
+        // see: The trailing stop is the higher of the band beneath and the last swing low, and a stop inside a support band moves to that band's low edge
         var stops = Expected("ladder").GetProperty("stops").GetProperty("whereTheTrailingRuleBites");
 
         Assert.Contains("306.852", stops.GetProperty("KEYS").GetString()!, StringComparison.Ordinal);
@@ -3077,7 +3077,7 @@ public partial class FixtureExpectations
             .RootElement;
 
         Assert.Equal(
-            ["306.852", "300.87", "293.55"],
+            ["305.42", "300.87", "288.5134"],
             keys.GetProperty("tranches").EnumerateArray().Select(tranche => tranche.GetProperty("stop").GetString()));
 
         // A skipped exit is listed with its reason rather than omitted, which is
@@ -3495,11 +3495,13 @@ public partial class FixtureExpectations
         // the band beneath and is looser protection than the range rule gives.
         // A trailing stop that can sit below the range floor is not trailing
         // anything, so the stop is the higher of the two.
-        // see: The trailing stop is the higher of the band beneath and the last swing low
+        // see: The trailing stop is the higher of the band beneath and the last swing low, and a stop inside a support band moves to that band's low edge
         var band = new Level(90m, 95m, LevelSeries.Support, false, 1, true, []);
 
         // A higher low has formed above the band beneath, so the stop rises to
-        // it. This is KEYS's case in the fixture and the only one there.
+        // it. The fixture's three such lows, KEYS's two and AAPL's one, each sit
+        // inside the band beneath, so the plan moves each on to that band's low
+        // edge, which the test below states.
         Assert.Equal(88m, LadderSeries.StopFor(band, beneath: 85m, TrendState.Uptrend, [70m, 88m]));
 
         // The last swing low is below the band beneath, so the band wins. This
@@ -3520,6 +3522,46 @@ public partial class FixtureExpectations
         // a stop inside the zone being bought is not a stop, which is why this
         // was carried out of 4.4 rather than written as a line.
         Assert.Equal(85m, LadderSeries.StopFor(band, beneath: 85m, TrendState.Uptrend, [92m]));
+    }
+
+    [Fact]
+    public void AStopInsideASupportBandMovesToThatBandsLowEdgeAndAStopInAGapBetweenBandsStays()
+    {
+        // Above a support band's low edge and at or below its high edge is inside it, since a close on the
+        // band's top edge is a close the band holds; the stop moves to the low edge, again where that edge
+        // is inside another band, and a stop between two bands or inside resistance stays where it is.
+        // see: The trailing stop is the higher of the band beneath and the last swing low, and a stop inside a support band moves to that band's low edge
+        Level Support(decimal low, decimal high) => new(low, high, LevelSeries.Support, false, 1, true, []);
+
+        IReadOnlyList<Level> bands =
+        [
+            Support(110m, 115m),
+            Support(100m, 104m),
+            new(96m, 98m, LevelSeries.Resistance, false, 1, true, []),
+            Support(85m, 90m),
+            Support(80m, 85m),
+        ];
+
+        Assert.Equal(100m, LadderSeries.OutsideEverySupportBand(102m, bands));
+        Assert.Equal(100m, LadderSeries.OutsideEverySupportBand(104m, bands));
+        Assert.Equal(100m, LadderSeries.OutsideEverySupportBand(100m, bands));
+        Assert.Equal(106m, LadderSeries.OutsideEverySupportBand(106m, bands));
+        Assert.Equal(97m, LadderSeries.OutsideEverySupportBand(97m, bands));
+
+        // Two bands touching, the upper's low edge the lower's high edge, as a chain the width cap split
+        // reads: the stop walks down both.
+        Assert.Equal(80m, LadderSeries.OutsideEverySupportBand(88m, bands));
+        Assert.Null(LadderSeries.OutsideEverySupportBand(null, bands));
+
+        // Through the plan: a tranche on 110 to 115 over the band 100 to 104 in an uptrend. A swing low of
+        // 102 is the higher of it and the band's 100, and inside the band, so the stop is the band's low
+        // edge; a swing low of 106 sits in the gap between the two bands and stays the stop.
+        var asOf = new DateOnly(2026, 9, 4);
+        var flat = Enumerable.Range(0, 10).Select(day => new LadderBar(asOf.AddDays(day - 9), 118m, 116m, 117m)).ToArray();
+        IReadOnlyList<Level> plan = [Support(110m, 115m), Support(100m, 104m)];
+
+        Assert.Equal(100m, LadderSeries.For(plan, 117m, 1m, flat, TrendState.Uptrend, [102m]).Tranches[0].Stop);
+        Assert.Equal(106m, LadderSeries.For(plan, 117m, 1m, flat, TrendState.Uptrend, [106m]).Tranches[0].Stop);
     }
 
     [Fact]
@@ -3677,7 +3719,7 @@ public partial class FixtureExpectations
         // The branch the fixture cannot reach: three of its four names are in an
         // uptrend and the fourth is a range, so the state that produces no plan
         // at all is unreachable from these bars.
-        // see: The trailing stop is the higher of the band beneath and the last swing low
+        // see: The trailing stop is the higher of the band beneath and the last swing low, and a stop inside a support band moves to that band's low edge
         var asOf = new DateOnly(2026, 9, 4);
         var bands = new List<Level> { new(90m, 95m, LevelSeries.Support, false, 1, true, []) };
         var flat = Enumerable.Range(0, 10)

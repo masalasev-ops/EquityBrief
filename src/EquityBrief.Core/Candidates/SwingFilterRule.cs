@@ -27,7 +27,7 @@ public sealed class SwingFilterRule : GateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "873513ec4ff7";
+    public override string Version => "abcf6df67b7d";
 
     // The settings' own names as a version stores them, then the trade gate's input and the market gate.
     public override IReadOnlyList<string> Parameters { get; } =
@@ -37,8 +37,6 @@ public sealed class SwingFilterRule : GateEvaluator
         "depthLow",
         "depthHigh",
         "dryUpCeiling",
-        "tightnessCeiling",
-        "breakoutVolumeMultiple",
         "rewardToRiskFloor",
         "stopLow",
         "stopHigh",
@@ -57,8 +55,6 @@ public sealed class SwingFilterRule : GateEvaluator
             ["depthLow"] = settings.DepthLow,
             ["depthHigh"] = settings.DepthHigh,
             ["dryUpCeiling"] = settings.DryUpCeiling,
-            ["tightnessCeiling"] = settings.TightnessCeiling,
-            ["breakoutVolumeMultiple"] = settings.BreakoutVolumeMultiple,
             ["rewardToRiskFloor"] = settings.RewardToRiskFloor,
             ["stopLow"] = settings.StopLow,
             ["stopHigh"] = settings.StopHigh,
@@ -81,8 +77,6 @@ public sealed class SwingFilterRule : GateEvaluator
             parameters["depthLow"],
             parameters["depthHigh"],
             parameters["dryUpCeiling"],
-            parameters["tightnessCeiling"],
-            parameters["breakoutVolumeMultiple"],
             parameters["rewardToRiskFloor"],
             parameters["stopLow"],
             parameters["stopHigh"],

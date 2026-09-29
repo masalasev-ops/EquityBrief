@@ -659,7 +659,7 @@ public class RuleVersionsScored
         for (var at = 0; at < sources.Length; at++)
         {
             var moved = sources.ToArray();
-            moved[at] += "\n// a changed line";
+            moved[at] += "\ninternal static class Moved { }";
 
             Assert.NotEqual(RuleVersionScorer.CodeVersion, SourcePin.Of(moved, RuleVersionScorer.CodeVersionDeclaration));
         }
@@ -696,6 +696,39 @@ public class RuleVersionsScored
         Assert.Contains("0 line(s)", Assert.Throws<InvalidOperationException>(() => SourcePin.Of([beside], declaration)).Message, StringComparison.Ordinal);
         Assert.Contains("2 line(s)", Assert.Throws<InvalidOperationException>(() => SourcePin.Of([once, once], declaration)).Message, StringComparison.Ordinal);
         Assert.Contains("0 line(s)", Assert.Throws<InvalidOperationException>(() => SourcePin.Of([body], declaration)).Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ACommentOrABlankLineMovesNoPinAndEveryOtherEditDoes()
+    {
+        // A comment reworded, a citation renamed, a comment added and a blank line added each leave the
+        // pin where it was; a changed constant, a comment written after code on its line and a changed
+        // string holding the two slashes each move it.
+        const string declaration = "public const string CodeVersion =";
+        var source =
+            $"namespace Probe;\n\n// A rule's reason, in words.\n// see: A decision's name\npublic static class Rule\n{{\n    {declaration} \"000000000000\";\n\n    public const int Lookback = 10;\n\n    public const string Words = \"// not a comment\";\n}}\n";
+        var pin = SourcePin.Of([source], declaration);
+
+        Assert.Equal(pin, SourcePin.Of([source.Replace("A rule's reason, in words.", "The rule's reason, reworded.", StringComparison.Ordinal)], declaration));
+        Assert.Equal(pin, SourcePin.Of([source.Replace("see: A decision's name", "see: A decision renamed since", StringComparison.Ordinal)], declaration));
+        Assert.Equal(pin, SourcePin.Of([source.Replace("public static class Rule\n", "public static class Rule\n    // a comment added\n", StringComparison.Ordinal)], declaration));
+        Assert.Equal(pin, SourcePin.Of([source.Replace("public const int Lookback = 10;\n", "public const int Lookback = 10;\n\n\n", StringComparison.Ordinal)], declaration));
+
+        Assert.NotEqual(pin, SourcePin.Of([source.Replace("Lookback = 10;", "Lookback = 12;", StringComparison.Ordinal)], declaration));
+        Assert.NotEqual(pin, SourcePin.Of([source.Replace("Lookback = 10;", "Lookback = 10; // ten sessions", StringComparison.Ordinal)], declaration));
+        Assert.NotEqual(pin, SourcePin.Of([source.Replace("\"// not a comment\"", "\"// changed\"", StringComparison.Ordinal)], declaration));
+
+        // The ladder rules' own sources, every comment in them reworded, pin where they did.
+        var reworded = RuleVersionScorer.CodeVersionSources
+            .Select(path => File.ReadAllText(Path.Combine(Repository.Root, path)))
+            .Select(text => string.Join(
+                "\n",
+                text.Replace("\r\n", "\n", StringComparison.Ordinal)
+                    .Split('\n')
+                    .Select(line => line.TrimStart().StartsWith("//", StringComparison.Ordinal) ? line + " reworded" : line)))
+            .ToArray();
+
+        Assert.Equal(RuleVersionScorer.CodeVersion, SourcePin.Of(reworded, RuleVersionScorer.CodeVersionDeclaration));
     }
 
     [Fact]
@@ -1505,8 +1538,13 @@ public class RuleVersionsScored
                 .Count(pair => pair.First != pair.Second);
         }
 
-        // The ladder expectation names three tranches whose stop the trailing rule sets.
-        Assert.True(trailed >= 3, $"{trailed} tranche(s) stop anywhere but the band beneath, expected at least 3.");
+        // The ladder expectation names three tranches whose swing low the trailing rule takes, KEYS's first
+        // and third and AAPL's second, and each of those lows sits inside the band beneath, so each stop moves
+        // on to that band's low edge, which is where the band beneath puts it: over the fixture the two rules
+        // agree on every tranche, and a low in the gap between two bands, where they still differ, is
+        // constructed in `fixture-expectations`.
+        // see: The trailing stop is the higher of the band beneath and the last swing low, and a stop inside a support band moves to that band's low edge
+        Assert.Equal(0, trailed);
     }
 
     [Fact]

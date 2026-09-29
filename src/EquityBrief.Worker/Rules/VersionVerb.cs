@@ -12,7 +12,7 @@ namespace EquityBrief.Worker.Rules;
 //
 // Its own class rather than a local function in the program, so the suite runs
 // the verb a person runs.
-// see: A ladder rule's version is measured beside that rule's live window, and both count against the bound
+// see: A ladder rule's version is measured beside that rule's live window, and both count against a bound of eighteen
 public static class VersionVerb
 {
     public const string Name = "version";

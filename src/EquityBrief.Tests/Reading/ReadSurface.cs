@@ -122,7 +122,7 @@ public partial class ReadSurface
             CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked"),
             CheckReach.Key("15.9 Name", "Gates, the exclusions with a key saying how to read it"),
             CheckReach.Key("15.10 Run", "Swing filter funnel, how many members each gate passed in order and how many it removed"),
-            CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's two families"),
+            CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's families on a night that held a breakout"),
             CheckReach.Key("15.10 Run", "Swing filter funnel, what each exclusion removed and how many pass"),
             CheckReach.Key("15.10 Run", "Swing filter funnel, the version the night ran under"),
 

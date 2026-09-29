@@ -1205,7 +1205,7 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked"),
         CheckReach.Key("15.9 Name", "Gates, the exclusions with a key saying how to read it"),
         CheckReach.Key("15.10 Run", "Swing filter funnel, how many members each gate passed in order and how many it removed"),
-        CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's two families"),
+        CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's families on a night that held a breakout"),
         CheckReach.Key("15.10 Run", "Swing filter funnel, what each exclusion removed and how many pass"),
         CheckReach.Key("15.10 Run", "Swing filter funnel, the version the night ran under"),
         CheckReach.Key(Scope.CatalogueTable, "Swing filter"),
@@ -1214,13 +1214,11 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.MatrixTable, "Filter counts"),
         CheckReach.Key(Scope.StoresTable, "Gate results"),
         CheckReach.Key(Scope.StoresTable, "Filter versions"),
-        CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it)."),
         CheckReach.Key(Scope.LimitsTable, "Market gate"),
         CheckReach.Key(Scope.LimitsTable, "Strength gate"),
         CheckReach.Key(Scope.LimitsTable, "Pullback depth"),
         CheckReach.Key(Scope.LimitsTable, "Volume dry-up"),
-        CheckReach.Key(Scope.LimitsTable, "Base tightness"),
-        CheckReach.Key(Scope.LimitsTable, "Breakout volume"),
         CheckReach.Key(Scope.LimitsTable, "Trade reward to risk"),
         CheckReach.Key(Scope.LimitsTable, "Trade stop distance"),
         CheckReach.Key(Scope.LimitsTable, "Earnings exclusion"),
@@ -1354,6 +1352,16 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.9 Name", "Peers, each row carrying the close"),
     ];
 
+    // Rows phase 12 added and its prediction counted that a later correction took out again: the base's
+    // tightness and the breakout's volume, section 17's two thresholds for the breakout the filter read beside
+    // the pullback, taken out with the family on the operator's ruling of 2026-09-26. They are in neither
+    // list above, so only phase 12's own pair, whose prediction counted them, subtracts them.
+    static readonly string[] PhaseTwelveAddedThenTakenOut =
+    [
+        CheckReach.Key(Scope.LimitsTable, "Base tightness"),
+        CheckReach.Key(Scope.LimitsTable, "Breakout volume"),
+    ];
+
     // Rows phase 12 took out of the document: 11.9's region stating each reason's share against its
     // target, read as its six parts, and section 17's two targets, which 12.3 replaced with the Calibration
     // region when the reasons stopped choosing the list.
@@ -1464,17 +1472,18 @@ public partial class ArchitectureConformance
         Assert.All(PhaseTwelveBeyondThePrediction, key => Assert.Contains(key, PhaseTwelveRows));
         Assert.All(PhaseTwelveBeyondThePrediction, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
-        Assert.All(TakenOutAfterPhaseTwelve, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+        Assert.All([.. TakenOutAfterPhaseTwelve, .. PhaseTwelveAddedThenTakenOut], key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
-        var actual = predicted + PhaseTwelveBeyondThePrediction.Length - PhaseTwelveNotLanded - TakenOutAfterPhaseTwelve.Length;
+        var actual = predicted + PhaseTwelveBeyondThePrediction.Length - PhaseTwelveNotLanded - TakenOutAfterPhaseTwelve.Length - PhaseTwelveAddedThenTakenOut.Length;
 
         Assert.Equal(
             (actual, 0, 0, actual),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum. 725 from the
-        // 12.6 correction that brings the model profiles, its seven claims named in their own list.
-        Assert.Equal((550, 725), (predicted, actual));
+        // 12.6 correction that brings the model profiles, its seven claims named in their own list, and 723 from
+        // the 12.2 correction that takes the breakout's two thresholds out with the family.
+        Assert.Equal((550, 723), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

@@ -99,9 +99,9 @@ public partial class ReadSurface
             before = passed;
         }
 
-        var pullbacks = rows.Count(row => row[0] == "1" && row[1] == "1" && row[5] == "pullback");
-
-        Assert.Contains($"data-pullbacks=\"{pullbacks}\" data-breakouts=\"0\"", card, StringComparison.Ordinal);
+        // The filter reads pullbacks alone, so a night holding no breakout draws no count of setup families.
+        Assert.DoesNotContain(rows, row => row[5] == "breakout");
+        Assert.DoesNotContain("data-breakouts", card, StringComparison.Ordinal);
         Assert.Contains($"<tr data-step=\"excluded\" data-passed=\"{rows.Count(row => row[7] == "1")}\" data-removed=\"0\">", card, StringComparison.Ordinal);
         Assert.Contains("No filter version is open, so the night ran on section 17's proposed values.", card, StringComparison.Ordinal);
         Assert.Contains("The six reasons drew this evening's list, and these counts decided nothing on it.", card, StringComparison.Ordinal);
@@ -110,5 +110,18 @@ public partial class ReadSurface
         var earlier = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/run/2026-09-02"));
 
         Assert.Contains("no swing filter results are stored for this night", Assert.Single(Blocks(earlier, "<section class=\"card\"[^>]* data-card=\"funnel\">.*?</section>")), StringComparison.Ordinal);
+
+        // A night stored before the filter read pullbacks alone may hold a breakout, and draws its families:
+        // one row through the market and the trend read as a breakout, the pullbacks among the rest counted
+        // off the stored rows as before.
+        var breakout = SwingRows(store, $"SELECT ticker, market, trend FROM gate_result WHERE session_date = '{GatesNight}' AND market = 1 AND trend = 1 AND family IS NULL ORDER BY ticker LIMIT 1;");
+
+        Assert.Single(breakout);
+        store.Execute($"UPDATE gate_result SET family = 'breakout' WHERE session_date = '{GatesNight}' AND ticker = '{breakout[0][0]}';");
+
+        var held = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{GatesNight}")), "<section class=\"card\"[^>]* data-card=\"funnel\">.*?</section>"));
+        var pullbacks = rows.Count(row => row[0] == "1" && row[1] == "1" && row[5] == "pullback");
+
+        Assert.Contains($"data-pullbacks=\"{pullbacks}\" data-breakouts=\"1\">({pullbacks} pullback(s), 1 breakout(s))", held, StringComparison.Ordinal);
     }
 }

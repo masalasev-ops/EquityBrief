@@ -23,7 +23,7 @@ public sealed class VolumeAgainstTheNight : CandidateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "ece4387e462b";
+    public override string Version => "e031a258e0aa";
 
     public override IReadOnlyList<string> Reads => [NightValues.VolumeRatio, NightValues.NightMedianRatio];
 

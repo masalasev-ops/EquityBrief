@@ -9080,3 +9080,80 @@ Now:
 > | the most one research answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `32768` |
 > ... and a call already made keeps the price its run log row recorded (see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp). The answer budget is the job's and not the profile's, so a switch to a model that counts its reasoning inside its answer wants a budget that holds both: DeepSeek ran on `32768` from 6.7, and Claude Sonnet 5.5 on `16000` for the day it wrote research.
 Why: the operator switched research back to DeepSeek on 2026-09-29, and the shipped values are the table's.
+
+### 2026-09-29 - ARCHITECTURE.html - the swing filter reads pullbacks alone
+Authorised by: The swing filter reads pullbacks alone, and a breakout returns only as a registered candidate built from its measured record
+Was:
+> The setup is a pullback into an anchored support band from the high of the last 20 sessions, or a tight base breaking out through a band on volume. The trigger is the setup's event arriving, ...
+> <li>Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired ...
+> <tr><td>Swing filter funnel</td><td>how many members each gate passed in order and how many it removed, the setup's two families, what each exclusion removed ...
+> <tr><td>Base tightness</td><td>the range's tightness below 0.7, proposed</td><td>a base whose last two weeks moved under seven tenths of the last ten is one the price has stopped arguing about</td><td>fixture-expectations, over constructed members on both sides of the threshold and at it</td></tr>
+> <tr><td>Breakout volume</td><td>volume at least 1.5 times the fifty-day average on the session clearing the band, proposed</td><td>a break on ordinary volume is as likely to fail as to hold</td><td>fixture-expectations, over constructed members on both sides of the threshold and at it</td></tr>
+Now:
+> The setup is a pullback into an anchored support band from the high of the last 20 sessions, on volume that dried up while it came down, and it is the one setup the filter reads: a tight base breaking out through a band on volume was measured over eight years at about five names a year, too few for the loop ever to judge, and was removed, to return only as a registered candidate (see: The swing filter reads pullbacks alone, and a breakout returns only as a registered candidate built from its measured record). The trigger is the pullback's event arriving, ...
+> <li>Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired ...
+> <tr><td>Swing filter funnel</td><td>how many members each gate passed in order and how many it removed, the setup's families on a night that held a breakout, what each exclusion removed ...
+> the two section 17 rows removed
+Why: item 2 of the operator's ruling of 2026-09-26, the breakout family removed from the gates, section 11 and section 17, landing after the night of 2026-09-28 with item 3 in one change and one remedy.
+
+### 2026-09-29 - ARCHITECTURE.html - a stop inside a support band moves to that band's low edge
+Authorised by: The trailing stop is the higher of the band beneath and the last swing low, and a stop inside a support band moves to that band's low edge
+Was:
+> ... and a trailing stop that can sit below the range floor is not trailing anything. (see: The trailing stop is the higher of the band beneath and the last swing low)</p>
+Now:
+> ... and a trailing stop that can sit below the range floor is not trailing anything. A stop that lands inside a support band, above its low edge and at or below its high edge, moves to that band's low edge, and again where that edge sits inside another, ... (see: The trailing stop is the higher of the band beneath and the last swing low, and a stop inside a support band moves to that band's low edge)</p>
+Why: item 3 of the operator's ruling of 2026-09-26, a stop never inside a band, so the report's plan and the list's trade agree about where a stock's stop is.
+
+### 2026-09-29 - ARCHITECTURE.html - the night's wall clock is twenty minutes and its deadline an hour, and the bound of eighteen is settled
+Authorised by: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move
+Was:
+> <tr><td>Nightly wall clock, at index size</td><td>a night's arithmetic, every step up to the close, bounded by 5 minutes, proposed until five nights that ran on the schedule over the whole index are read on the run page's operational header, at which point it becomes that measurement plus stated headroom with the headroom's reason beside it. ...</td><td>a scheduled run that overruns the evening is one you stop trusting, and a limit set to the figure that measured it is passed by construction by the night that set it</td>
+> ... the arithmetic as a whole, every step up to the close, bounded by 15 minutes, ... (see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move) ... 15 minutes because it is three times the wall clock stated above, ... It moves with that row: the wall clock is proposed until five scheduled nights at index size are read on the run page's operational header, and the deadline follows at three times whatever the limit becomes, ...
+> ... which is 18 at once, marked proposed; ... (owes: The rule version bound set from nights the version scorer ran) (see: A ladder rule's version is measured beside that rule's live window, and both count against the bound)</td><td>... which puts the night at 703 seconds against a deadline of 900. The merge distance has the lower cap because its versions replay the level stage, and 4 of it would take the night past the deadline on its own; ... It grows with versions times names and never with a request. The night it is projected from already runs past the 5 minutes the nightly wall clock row proposes, which that row's operating obligation settles from scheduled nights, so this bound is held against the deadline the night is stopped at rather than against that proposal</td>
+Now:
+> <tr><td>Nightly wall clock, at index size</td><td>a night's arithmetic, every step up to the close, bounded by 20 minutes, settled by the operator from ten nights that ran on the schedule over the whole index, which took 363 to 665 seconds to the close (see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move). ...</td><td>... passed by construction by the night that set it, so the limit carries the slowest night measured and nearly as much again: the night runs on the operator's own machine, where a slow night costs nobody anything, over a store on a spinning disk</td>
+> ... the arithmetic as a whole, every step up to the close, bounded by 60 minutes, ... (see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move) ... 60 minutes because it is three times the wall clock stated above, ... It moves with that row: the deadline follows at three times whatever the limit becomes, ...
+> ... which is 18 at once, settled by the operator with the night's deadline; ... (see: A ladder rule's version is measured beside that rule's live window, and both count against a bound of eighteen)</td><td>... which puts the night at 703 seconds against a deadline of 3600. The merge distance has the lower cap because its versions replay the level stage, each one costing more than every other version the register admits together; ... It grows with versions times names and never with a request</td>
+Why: the operator's ruling of 2026-09-28, reading ten scheduled nights: "how does it matter how long it takes. It's running locally."
+
+### 2026-09-29 - BUILD_PLAN.md - the filter reads pullbacks alone, and the wall clock and the version bound are settled
+Authorised by: The swing filter reads pullbacks alone, and a breakout returns only as a registered candidate built from its measured record
+Was:
+> To the policy settled at 2.0 (see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move). ...
+> ... which is eighteen at once, marked proposed, ... (see: A ladder rule's version is measured beside that rule's live window, and both count against the bound). ... which puts the night at 703 seconds against the deadline of 900. ...
+> The swing filter evaluates every member every night: the market gate on breadth, the trend and relative strength gate, the pullback and the tight base breakout with which of the two passed, the trigger, ...
+> ... (owes: The quarters fetch measured on a peak reporting night).
+> ... (owes: The trend confirmation's nights settled from flip-backs), and the reasons' thresholds are discharged with the region that answered them ...
+> | **The nightly wall clock at index size, measured from nights that ran on the schedule** | 5.7 | operating | 5 scheduled nights over the whole index, read on the run page's Calibration region against its trigger, which 12.3 builds, as the nights run for the session the clock fell on. One night run by hand is an observation and a limit needs a distribution, which is why it stood at 5.1 and then at 5.7 and is produced by neither. When it fires, section 17's row becomes that measurement plus stated headroom with the headroom's reason, and the deadline follows at three times it in the document and in `RetryPolicy.Standard` together. Nothing is unguarded meanwhile: the night's deadline has bounded every night since 2.2 |
+> | **The rule version bound set from nights the version scorer ran** | 8.0 | operating | 5 scheduled nights at index size on which the version scorer's step replayed at least one merge distance version and one version of another rule, read on the run page's Calibration region against its trigger, which 12.3 builds, off the lines the operational header, which 8.6 fills, draws for that step's duration and the versions it replayed of each kind, apart from any row a person ran by hand. The bound is at most two windows of the merge distance and four of each other ladder rule, each rule's live window among them, eighteen at once, marked proposed, and its arithmetic is the night of 2026-09-14: ... adds 208 seconds and sits at 703 against a deadline of 900. A projection is not a measurement, and no checkpoint accumulates nights, so the trigger is read rather than produced. When it fires the bound is set from the scorer's own measured step with stated headroom, and the section 17 row loses its proposed marker |
+Now:
+> To the policy settled at 2.0 (see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move). ...
+> ... which is eighteen at once, settled by the operator on 2026-09-28, ... (see: A ladder rule's version is measured beside that rule's live window, and both count against a bound of eighteen). ... which puts the night at 703 seconds against the deadline of 3600. ...
+> The swing filter evaluates every member every night: the market gate on breadth, the trend and relative strength gate, the pullback, the trigger, ...
+> ... (owes: The quarters fetch measured on a peak reporting night). From the operator's ruling of 2026-09-26 the filter reads pullbacks alone, ... In the same window, on the operator's ruling of 2026-09-28, the night's wall clock is twenty minutes and its deadline an hour, the bound of eighteen versions scored at once is settled, and a comment or a blank line moves no pin (owes: The nightly wall clock at index size, measured from nights that ran on the schedule) (owes: The rule version bound set from nights the version scorer ran).
+> ... (owes: The trend confirmation's nights settled from flip-backs), until the operator's ruling of 2026-09-28 settled the wall clock and the version bound, whose two lines the region draws no longer, and the reasons' thresholds are discharged ...
+> both rows `12.2, discharged`, each by the operator's ruling of 2026-09-28 that the 12.2 correction of 2026-09-29 builds, with what each read before
+Why: the rulings of 2026-09-26 and 2026-09-28 land in one window and one remedy, and the two operating rows are settled by ruling rather than by their triggers.
+
+### 2026-09-29 - RUNBOOK.md - a rule correction naming no plan, the settings without the breakout's two, and a comment moving no pin
+Authorised by: The swing filter reads pullbacks alone, and a breakout returns only as a registered candidate built from its measured record
+Was:
+> ... each gate relaxed with every other held, and the setup's two families, under six settings: ...
+> The settings are `breadthFloor`, `strengthFloor`, `depthLow`, `depthHigh`, `dryUpCeiling`, `tightnessCeiling`, `breakoutVolumeMultiple`, `rewardToRiskFloor`, `stopLow`, `stopHigh`, `earningsWindowSessions` and `arrivalSessions`, ...
+> ... the version beside it under the same parameter names (see: A ladder rule's version is measured beside that rule's live window, and both count against the bound):
+> ... so any edit to one of them, a comment included, is a new code version, and the next night with a live window open stops at the rule versions step. `version --list` names each live window the build no longer hashes to before a night stops on it (see: The ladder rules' code version pins every source a live ladder rule or its replay runs through).
+Now:
+> ... each gate relaxed with every other held, and the pullbacks among them, under six settings: ...
+> A rule correction that names no plan moves no setting and opens the next version with every setting as the open one held it, written as the code now writes a version's settings. ... `shape --rule-correction --restarts 0 --evidence "..."` ...
+> The settings are `breadthFloor`, `strengthFloor`, `depthLow`, `depthHigh`, `dryUpCeiling`, `rewardToRiskFloor`, `stopLow`, `stopHigh`, `earningsWindowSessions` and `arrivalSessions`, ...
+> ... the version beside it under the same parameter names (see: A ladder rule's version is measured beside that rule's live window, and both count against a bound of eighteen):
+> ... so any edit to a line of code in one of them is a new code version, and the next night with a live window open stops at the rule versions step; a comment, a decision citation among them, and a blank line move no pin, so an edit to those alone needs nothing closed. ... (see: The ladder rules' code version pins every source a live ladder rule or its replay runs through, its comments and blank lines aside).
+Why: the remedy for this window is a rule correction that names no plan, the filter holds two settings fewer, and the pins read past comments.
+
+### 2026-09-29 - SCHEMA.md - the version bound's decision renamed
+Authorised by: A ladder rule's version is measured beside that rule's live window, and both count against a bound of eighteen
+Was:
+> ... `live` rows included (see: A ladder rule's version is measured beside that rule's live window, and both count against the bound).
+Now:
+> ... `live` rows included (see: A ladder rule's version is measured beside that rule's live window, and both count against a bound of eighteen).
+Why: the decision it cited is superseded, and a live citation to a superseded decision is refused.
