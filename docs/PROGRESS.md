@@ -30653,16 +30653,24 @@ Mutated:    the rule, stated before the run: the mechanism each rule the brief o
                checklist test: red in it.
             P4 the fixture's models file naming claude-sonnet for research, filtered to `fixture-expectations`'
                profile tests: red in the pinned test alone.
-            Results: 126R
-Held:       126H
+            Results: one run each in a detached worktree at 89864c6, this entry's commit, filtered as stated, each
+            edit made there and reverted, and the tree read clean after. The whole suite ran green over 89864c6 in the
+            gates, 1539 of 1539. P1 turned the missing-key test red and left the other 36 green. P2 turned the boundary
+            theory's 2026-09-15 case and the checklist test red and left the other six green. P3 turned the checklist
+            test red. P4 turned the pinned test red and left the other three profile tests green.
+Held:       red in every test predicted, and in no other.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1539 of 1539 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 44 tables, 725 claims, 725 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 126P placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            0 unexamined, 736 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
             41 of 41 roster checks carried and all 41 run, 1539 of 1539 tests.
-            Both gates ran over the tree carrying this entry, 126SHA, in a worktree beside the repository, and the
-            operator's store under `data/` was not touched by either.
+            Both gates ran over the tree carrying this entry, 89864c6, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either. The first run of `tools/ci.ps1` over the same
+            tree failed at the suite on `TheSurfaceReadsTheStoreAndTheReportUnderItsCheckoutWhereverItIsStarted`,
+            which starts the read surface as a process of its own and waits sixty seconds for it to listen; run alone
+            there it passed in four seconds, this branch touches nothing that starts the surface, and the run above is
+            the second, green whole.
 Carried:    MDT's report, outstanding since the night of 2026-09-28, written on claude-sonnet once this merges. The
             actual cost of each of the first five reports written on claude-sonnet, recorded beside the estimate of
             0.84 to 1.30 dollars, and of the labeller's first five nights beside its table, correction A's. The news
