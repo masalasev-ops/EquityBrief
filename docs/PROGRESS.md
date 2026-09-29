@@ -30734,3 +30734,125 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    MDT's DeepSeek regenerate, once the UTC day of its Claude pass has passed, and the comparison of the two
             reports section by section. The four correction A records still owed, over whichever days research names
             Claude Sonnet 5.5.
+
+### 12.5 ruling - the sweep runs end to end unattended over the live store opened read-only, its stage approvals waived for this run, and nothing is registered or frozen before the operator reads its report   2026-09-29
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, registers nothing, and signs nothing off.
+Asked:      the operator, on 2026-09-29, after the 12.5 ruling of the same day and before any of its work was built,
+            word for word:
+            > Run the sweep (Phase 12 / 12.5) end to end, unattended, and leave a report for
+            > the operator to review. The operator waives the stage-by-stage approvals for
+            > this run: exploration runs to the end, and nothing is registered or frozen. The
+            > freeze waits for the operator.
+            >
+            > === When ===
+            > Build it now on its branch, with its tests. Its computing starts only after
+            > item 2 has merged and its commands have run (pullbacks only, a stop never inside
+            > a support band, the 1-hour deadline, the pin fix), so it replays the corrected
+            > rules; rebase the branch on that merge before the first computed session. The
+            > news labeller and the fundamentals candidate wait until the sweep is done; the
+            > fundamentals candidate is registered at the freeze, not before.
+            >
+            > === The live store, read-only ===
+            > The operator rules it reads the live store directly, with no copy, since nothing
+            > is frozen by this run:
+            >   - opened read-only, never immutable, since nights write to it between chunks;
+            >     reopened after every night
+            >   - it writes nothing to the store: its progress chunks, results file and report
+            >     live in files outside it
+            >   - the history it replays ends at the last session stored when computing
+            >     starts, fixed for the whole run, so nights added meanwhile change nothing it
+            >     reads
+            >   - every read is short: read what a chunk needs, close the transaction, then
+            >     compute. State the store's journal mode, and prove with a test that a sweep
+            >     read in progress never blocks a write by a drain, the labeller or the night
+            >     and never causes "database is locked"
+            >
+            > === One long-running process that looks after itself ===
+            >   - it saves its progress in chunks, by session and by block of variations
+            >   - it stops by 23:00 UTC on a weekday, waits until the night's, the queue's and
+            >     any drain's lock files are released, and resumes from its last saved chunk
+            >   - a chunk that fails is retried once; failing again, it stops and writes what
+            >     it has into the report, saying where and why
+            >   - if the measured time for the whole run projects beyond five days, it stops
+            >     after stage 1 and reports rather than running on
+            > It runs from the branch's build and needs no merge; the pull request is opened
+            > for review and merged after the operator has read the report.
+            >
+            > === Decisions it takes itself, each recorded in the report ===
+            >   - The trigger's freshness: computed per combination of the dials that feed it,
+            >     so the trigger keeps its current meaning. If that projects stage 1 past its
+            >     limit, first firing is defined on the trigger's own condition instead, said
+            >     at the top of the report.
+            >   - The timing checks on the first 20 sessions, the first 50 designs and stage
+            >     2's first design are measured and recorded, not waited on.
+            >   - Stage 2 runs on the five strongest designs by the ruling's own ranking.
+            >
+            > === The report ===
+            > One HTML page at a stated path, served by the app, and a PROGRESS entry pointing
+            > at it, in this order:
+            >   1. The proposed starting point in plain words, each check with its value, and
+            >      how it differs from today's live rule.
+            >   2. The proposed variants, up to six, each one change described in plain words
+            >      with its evidence against the four tests.
+            >   3. Stage 1's ranking of designs, with the live rule's own design and settings
+            >      marked and ranked beside the five taken forward.
+            >   4. The plateau maps from stage 2, each region year by year.
+            >   5. What the ruling asks to be stated: the missing-departure share, what could
+            >      not be replayed as it stood, and a non-band stop if that design reached
+            >      stage 2.
+            >   6. Machine time per stage, every decision it took itself, and anything that
+            >      failed or was left out.
+            > Every figure is labelled as history. End with the exact registration command
+            > the freeze would use, not run.
+            "Item 2" is the change the reply of the same day named: items 2 and 3 of the 12.2 ruling of 2026-09-26,
+            breakouts removed and a stop moved to the low edge of a band it sits inside, with the night's one-hour
+            deadline and the pin that ignores comments, which ride in the same window.
+Ruled:      at a glance, what this changes in the 12.5 ruling before it:
+            - The order. The sweep is built now on a branch of its own with its tests, and computes only once item 2
+              has merged and its commands have run, so it replays the rules as corrected; the branch is rebased on
+              that merge before its first computed session. The news labeller, the 12.6 ruling's pull requests 3 and
+              4, and the fundamentals candidate wait until the sweep is done, where the 12.6 ruling ordered the
+              labeller before the sweep, and the fundamentals candidate is registered at the freeze and not before.
+            - The store. The sweep reads the live store directly, opened read-only and never immutable, reopened
+              after every night, and writes nothing to it, its progress, results and report kept in files outside
+              the store, where the 12.5 ruling read a copy placed on the C: SSD. The history it replays ends at the
+              last session stored when computing starts, fixed for the whole run, and every read is short, its
+              transaction closed before anything is computed.
+            - The approvals, waived for this run. Stage 1's ranking and the stage 2 proposal are not put to the
+              operator before stage 2 runs, the measured timing of the first 20 sessions, the first 50 designs and
+              stage 2's first design is recorded rather than waited on, and stage 2 runs on the five strongest designs
+              by the 12.5 ruling's own ranking. Nothing is registered or frozen: the starting point and the variants
+              are proposed in the report, and the freeze waits for the operator.
+            - The machine. One process that stops by 23:00 UTC on a weekday, waits until the night's, the queue's and
+              any drain's lock files are released, and resumes from its last saved chunk; a chunk failing twice stops
+              it, and its report says where and why; a run whose measured time projects beyond five days stops after
+              stage 1 and reports.
+            - The report. One HTML page at a stated path, served by the app, and a PROGRESS entry pointing at it, in
+              the six parts listed, every figure labelled as history, ending with the registration command the freeze
+              would use, not run. The pull request is merged after the operator has read the report.
+Found:      reading the code before the build, the trigger's current meaning is its event alone. The night stores
+            each member's `trigger_event` whether or not its setup held, `SwingGates` returning the pullback's event
+            for every member and `SwingFilter` writing it on every row, and the arrival reads that event off the
+            sessions before the night. So a close above the previous session's high counts as the trigger's first
+            firing on its session whatever the depth, the volume bar or the band floor read there. The one part of
+            the event reading more than the day's prices is its second clause, a close back inside or above the band
+            after a session below its low edge, whose band is the anchored support band holding the close: a
+            structural choice of the design and no dial. No dial feeds the freshness, so it is one column per design
+            computed once per session, and the two readings the operator names come to the same trigger; the 12.5
+            ruling's premise that an earlier night's setup enters the arrival is not how the trigger reads. The
+            minimum band strength is read as a condition on tonight's setup band alone, which leaves the event where
+            the live rule has it, and the sweep's equivalence test still carries the constructed history the fifth
+            review asked for, a pullback holding under one depth and failing under another on the nights before a
+            trigger.
+Changed:    this entry alone.
+Tests:      none added here.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1539 of 1539 tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 725 claims, 725 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 736 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1539 of 1539 tests.
+            Both gates ran over the tree carrying this entry, a7218d9, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    item 2 and its commands; the sweep, its report and its pull request, merged once the operator has read
+            the report; the freeze, on the operator's word.
