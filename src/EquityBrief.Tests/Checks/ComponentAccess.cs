@@ -49,9 +49,11 @@ public partial class ComponentAccess
             // 12.6's correction giving each section a profile, the section trial.
             CheckReach.Key(Scope.CatalogueTable, "Section trial"),
             CheckReach.Key(Scope.MatrixTable, "Section trial"),
-            // 12.5's correction, the sweep history.
+            // 12.5's correction, the sweep history, and its rerun's point-in-time check.
             CheckReach.Key(Scope.CatalogueTable, "Sweep history"),
             CheckReach.Key(Scope.MatrixTable, "Sweep history"),
+            CheckReach.Key(Scope.CatalogueTable, "Sweep point in time"),
+            CheckReach.Key(Scope.MatrixTable, "Sweep point in time"),
 
             // 12.1, the swing reader.
             CheckReach.Key(Scope.CatalogueTable, "Swing reader"),
@@ -563,13 +565,14 @@ public partial class ComponentAccess
 
         Assert.Empty(faults);
 
-        // The six that write no store, stated in advance: the page, the renderer, the
+        // The eight that write no store, stated in advance: the page, the renderer, the
         // trend classifier, which hands its label to the ladder builder, from 6.11 the
         // report exporter, whose file is kept wherever the person exporting chooses,
         // from 12.2 the filter counts, which print the shape counts and open the store read-only,
-        // from 12.6 the comparison files, written to a folder the repository ignores, and from 12.5 the
-        // sweep history, which opens the store read-only and keeps its chunks and its report in a folder beside it.
-        Assert.Equal(["ComparisonFiles", "FilterCounts", "MarkRenderer", "ReportExporter", "SinglePageApp", "SweepHistory", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // from 12.6 the comparison files, written to a folder the repository ignores, from 12.5 the
+        // sweep history, which opens the store read-only and keeps its chunks and its report in a folder beside it,
+        // and the sweep's point-in-time check, which reads scratch stores of its own the night's components wrote.
+        Assert.Equal(["ComparisonFiles", "FilterCounts", "MarkRenderer", "ReportExporter", "SinglePageApp", "SweepHistory", "SweepPointInTime", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(

@@ -12,7 +12,8 @@ using EquityBrief.Worker.Filter;
 namespace EquityBrief.Worker.Sweep;
 
 // One name's series and the readings the sweep takes of it on every session it holds, each the function the
-// night calls or the live rule's own read over another window, computed once over the whole series.
+// night calls or the live rule's own read over another window, computed once over the whole series. Wilder's
+// averages are seeded where the night's year of bars begins on each session, as the night seeds them.
 public sealed class SweepSeries
 {
     public required SweepName Name { get; init; }
@@ -22,6 +23,9 @@ public sealed class SweepSeries
     // Each bar's place among the history's sessions.
     public required int[] SessionAt { get; init; }
 
+    // The first bar of the year the night held on each bar's session.
+    public required int[] WindowStart { get; init; }
+
     public required double[] Sma20 { get; init; }
 
     public required double[] Sma50 { get; init; }
@@ -29,6 +33,8 @@ public sealed class SweepSeries
     public required double[] Sma200 { get; init; }
 
     public required double[] Atr { get; init; }
+
+    public required double[] Rsi { get; init; }
 
     public required double[] Volume50 { get; init; }
 
@@ -55,6 +61,29 @@ public sealed class SweepSeries
     public required double[] Depth { get; init; }
 
     public required double[] DryUp { get; init; }
+
+    // The conditions' readings: the highest high of the last 252 sessions, the range's tightness, the session's
+    // volume over the fifty-session average before it, whether the RSI rose on the session, and by reference
+    // high the sessions since it, the largest gap down inside the pullback and the lowest RSI since the high.
+    public required double[] High252 { get; init; }
+
+    public required double[] Tightness { get; init; }
+
+    public required double[] VolumeRatio { get; init; }
+
+    public required bool[] RsiUp { get; init; }
+
+    public required int[] SinceHigh { get; init; }
+
+    public required double[] GapDown { get; init; }
+
+    public required double[] RsiLow { get; init; }
+
+    // Each surprise's reaction bar, the first bar on or after its reaction session, and for each bar the newest
+    // surprise whose reaction bar is on or before it, -1 where none.
+    public required int[] SurpriseBar { get; init; }
+
+    public required int[] NewestSurprise { get; init; }
 }
 
 // The sweep's per-name arithmetic: every reading a design's axes choose between, the bands and setups, the
@@ -64,8 +93,8 @@ public static class SweepColumns
 {
     public static readonly DateOnly FirstScored = new(2019, 1, 2);
 
-    // The arrival window's longest, the eight sessions the finest freshness reads back.
-    public const int LongestWindow = 8;
+    // The arrival window's longest, the fourteen sessions the widest freshness the search may look at reads back.
+    public const int LongestWindow = 14;
 
     // The gap check's reach, the year of sessions the night checks a name's series over.
     public const int GapSessions = 252;
@@ -80,7 +109,6 @@ public static class SweepColumns
         var sma20 = Nan(count);
         var sma50 = Nan(count);
         var sma200 = Nan(count);
-        var atr = Nan(count);
         var volume50 = Nan(count);
 
         if (count > 0)
@@ -102,11 +130,13 @@ public static class SweepColumns
                     case IndicatorSeries.Sma20: sma20[position] = value; break;
                     case IndicatorSeries.Sma50: sma50[position] = value; break;
                     case IndicatorSeries.Sma200: sma200[position] = value; break;
-                    case IndicatorSeries.Atr14: atr[position] = value; break;
                     case IndicatorSeries.VolAvg50: volume50[position] = value; break;
                 }
             }
         }
+
+        var windowStart = SweepWindows.WindowStarts(bars);
+        var (atr, rsi) = SweepWindows.Wilder(bars, windowStart);
 
         var swings = SwingSeries.For([.. bars.Select(bar => new SwingBar(bar.Session, bar.High, bar.Low))])
             .OrderBy(swing => swing.ConfirmedOn)
@@ -141,13 +171,21 @@ public static class SweepColumns
             gap[bar] = bar - first + 1 < at[bar] - start + 1;
         }
 
+        var highs = SweepAxes.ReferenceHighs.Count;
         var label = new string[count];
         var uptrend = new byte[count];
         var return63 = Nan(count);
         var return126 = Nan(count);
         var twelve = Nan(count);
-        var depth = Nan(count * SweepAxes.ReferenceHighs.Count);
-        var dryUp = Nan(count * SweepAxes.ReferenceHighs.Count);
+        var depth = Nan(count * highs);
+        var dryUp = Nan(count * highs);
+        var high252 = Nan(count);
+        var tightness = Nan(count);
+        var volumeRatio = Nan(count);
+        var rsiUp = new bool[count];
+        var sinceHigh = new int[count * highs];
+        var gapDown = Nan(count * highs);
+        var rsiLow = Nan(count * highs);
 
         for (var bar = 0; bar < count; bar++)
         {
@@ -156,8 +194,9 @@ public static class SweepColumns
             decimal? longAverage = double.IsNaN(sma200[bar]) ? null : Statistic.ToPrice(sma200[bar]);
 
             // The classifier reads the last two swings of each kind, which are the last confirmed, since a swing
-            // is confirmed three sessions after its own.
-            var recent = swings.AsSpan(Math.Max(0, confirmed[bar] - 12), Math.Min(12, confirmed[bar])).ToArray();
+            // is confirmed three sessions after its own, among the swings the night's year of bars holds.
+            var oldest = bars[windowStart[bar]].Session;
+            var recent = swings.AsSpan(Math.Max(0, confirmed[bar] - 24), Math.Min(24, confirmed[bar])).ToArray().Where(swing => swing.SessionDate >= oldest).TakeLast(12).ToArray();
 
             label[bar] = TrendSeries.For(close, shortAverage, longAverage, recent).State;
 
@@ -184,14 +223,46 @@ public static class SweepColumns
             return63[bar] = SweepReadings.ReturnOver(bars, bar, SwingReadings.ReturnShortSessions) ?? double.NaN;
             return126[bar] = SweepReadings.ReturnOver(bars, bar, SwingReadings.ReturnLongSessions) ?? double.NaN;
             twelve[bar] = SweepReadings.ReturnOver(bars, bar, SweepAxes.TwelveMonthSessions, SweepAxes.LatestMonthSessions) ?? double.NaN;
+            high252[bar] = SweepWindows.HighestHigh(bars, bar, SweepConditions.HighSessions);
+            tightness[bar] = SweepWindows.Tightness(bars, bar);
+            volumeRatio[bar] = SweepWindows.VolumeRatio(bars, bar, volume50);
+            rsiUp[bar] = bar > 0 && !double.IsNaN(rsi[bar]) && !double.IsNaN(rsi[bar - 1]) && rsi[bar] > rsi[bar - 1];
 
-            for (var high = 0; high < SweepAxes.ReferenceHighs.Count; high++)
+            for (var high = 0; high < highs; high++)
             {
                 var (d, v) = SweepReadings.PullbackOver(bars, bar, SweepAxes.ReferenceHighs[high], Held(atr[bar]), Held(volume50[bar]));
+                var since = SweepWindows.SessionsSinceHigh(bars, bar, SweepAxes.ReferenceHighs[high]);
 
-                depth[(bar * SweepAxes.ReferenceHighs.Count) + high] = d ?? double.NaN;
-                dryUp[(bar * SweepAxes.ReferenceHighs.Count) + high] = v ?? double.NaN;
+                depth[(bar * highs) + high] = d ?? double.NaN;
+                dryUp[(bar * highs) + high] = v ?? double.NaN;
+                sinceHigh[(bar * highs) + high] = since;
+                gapDown[(bar * highs) + high] = SweepWindows.LargestGapDown(bars, bar, since, atr[bar]);
+                rsiLow[(bar * highs) + high] = since < 0 ? double.NaN : LowestOver(rsi, bar - since, bar);
             }
+        }
+
+        var surpriseBar = new int[name.Surprises.Count];
+        var newestSurprise = new int[count];
+
+        Array.Fill(newestSurprise, -1);
+
+        for (var surprise = 0; surprise < name.Surprises.Count; surprise++)
+        {
+            var one = name.Surprises[surprise];
+
+            // A report before the open or of unstated timing moves that day's bar, and one after the close the
+            // next session's, as the earnings rule reads a print.
+            surpriseBar[surprise] = Array.FindIndex(bars, bar => one.After ? bar.Session > one.EventDate : bar.Session >= one.EventDate);
+        }
+
+        for (int bar = 0, newest = -1, next = 0; bar < count; bar++)
+        {
+            while (next < surpriseBar.Length && surpriseBar[next] >= 0 && surpriseBar[next] <= bar)
+            {
+                newest = next++;
+            }
+
+            newestSurprise[bar] = newest;
         }
 
         return new SweepSeries
@@ -199,10 +270,12 @@ public static class SweepColumns
             Name = name,
             Bars = bars,
             SessionAt = at,
+            WindowStart = windowStart,
             Sma20 = sma20,
             Sma50 = sma50,
             Sma200 = sma200,
             Atr = atr,
+            Rsi = rsi,
             Volume50 = volume50,
             Swings = swings,
             Confirmed = confirmed,
@@ -215,11 +288,36 @@ public static class SweepColumns
             ReturnTwelveLessOne = twelve,
             Depth = depth,
             DryUp = dryUp,
+            High252 = high252,
+            Tightness = tightness,
+            VolumeRatio = volumeRatio,
+            RsiUp = rsiUp,
+            SinceHigh = sinceHigh,
+            GapDown = gapDown,
+            RsiLow = rsiLow,
+            SurpriseBar = surpriseBar,
+            NewestSurprise = newestSurprise,
         };
     }
 
-    // Each session's cross-section: the members read on it, each measure's place among them, and the breadth.
-    public sealed record Session(double? Breadth, Dictionary<int, double>[] Strength);
+    static double LowestOver(double[] values, int from, int to)
+    {
+        var lowest = double.NaN;
+
+        for (var at = Math.Max(0, from); at <= to; at++)
+        {
+            if (!double.IsNaN(values[at]) && (double.IsNaN(lowest) || values[at] < lowest))
+            {
+                lowest = values[at];
+            }
+        }
+
+        return lowest;
+    }
+
+    // Each session's cross-section: the members read on it, each measure's place among them, the breadth, and
+    // each sector's rank by the median 126-session return of its members labelled on the session, 1 the strongest.
+    public sealed record Session(double? Breadth, Dictionary<int, double>[] Strength, IReadOnlyDictionary<string, int> SectorRanks);
 
     // The places and the breadth over every session. The members read on a session are those the index held with
     // a bar on it and no gap, as the night reads its members, and the members counted are every name the index
@@ -284,7 +382,43 @@ public static class SweepColumns
             .Select(pair => (series[pair.Name].Bars[pair.Bar].Close, series[pair.Name].Sma200[pair.Bar]))
             .ToArray();
 
-        return new Session(SwingReadings.BreadthOf(members, held).Share, [live, placesLong, placesTwelve]);
+        return new Session(SwingReadings.BreadthOf(members, held).Share, [live, placesLong, placesTwelve], SectorRanks(series, longReturns));
+    }
+
+    // Each sector's rank by the median of its labelled members' 126-session returns, the highest median first;
+    // a name with no sector is in no sector's median and is ranked in none.
+    public static IReadOnlyDictionary<string, int> SectorRanks(IReadOnlyList<SweepSeries> series, IReadOnlyList<(int Name, double Return)> returns)
+    {
+        var bySector = new Dictionary<string, List<double>>(StringComparer.Ordinal);
+
+        foreach (var (name, value) in returns)
+        {
+            if (series[name].Name.Sector is not { } sector)
+            {
+                continue;
+            }
+
+            if (!bySector.TryGetValue(sector, out var held))
+            {
+                bySector[sector] = held = [];
+            }
+
+            held.Add(value);
+        }
+
+        var ranks = new Dictionary<string, int>(StringComparer.Ordinal);
+        var rank = 0;
+
+        foreach (var (sector, _) in bySector
+            .Select(pair => (Sector: pair.Key, Median: SwingReadings.Median([.. pair.Value]) ?? double.NaN))
+            .Where(pair => !double.IsNaN(pair.Median))
+            .OrderByDescending(pair => pair.Median)
+            .ThenBy(pair => pair.Sector, StringComparer.Ordinal))
+        {
+            ranks[sector] = ++rank;
+        }
+
+        return ranks;
     }
 
     static double? Held(double value) => double.IsNaN(value) ? null : value;

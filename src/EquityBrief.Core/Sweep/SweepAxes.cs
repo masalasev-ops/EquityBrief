@@ -240,8 +240,60 @@ public sealed record SweepGrid(
         [MarketOff, 0.40, 0.45, 0.50, 0.55],
         [0, 2, 4, 6]);
 
+    // The fine grid with up to two values beyond each end the rule allows, at the spacing of the last two tested,
+    // for the search to look beyond a grid end the proposal's depth runs into: a strength place is at most 1, no
+    // depth is shallower than half a move, a trigger cannot be fresher than tonight, a band's least strength has
+    // no value under nought, and the dry-up's and the market's other ends are off. The stop's two bounds hold
+    // two values each and are not extended. The tested range of each dial is the fine grid's own.
+    public static SweepGrid Extended { get; } = new(
+        [0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.67, 0.75, 0.85, 0.95, 1.0],
+        [0.5, 1, 1.5, 2, 2.5, 3],
+        [2, 3, 4, 5, 6, 8, 10, 12],
+        [0.4, 0.6, 0.8, 1.0, 1.25, 1.5, 2.0, Off],
+        [1, 2, 3, 5, 8, 11, 14],
+        [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0],
+        [(0.5, 4), (1, 2.5), (0.5, 2.5), (1, 4)],
+        [MarketOff, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65],
+        [0, 2, 4, 6, 8, 10]);
+
     // The dials a cumulative table runs over besides the stop bounds, whose options it is read at one by one.
     public const int OrderedDials = 8;
+
+    // The index of a value on one of this grid's dials, and -1 where the dial does not hold it.
+    public static int IndexOf(IReadOnlyList<double> levels, double value)
+    {
+        for (var at = 0; at < levels.Count; at++)
+        {
+            if (levels[at] == value || (double.IsInfinity(levels[at]) && double.IsInfinity(value) && Math.Sign(levels[at]) == Math.Sign(value)))
+            {
+                return at;
+            }
+        }
+
+        return -1;
+    }
+
+    public static int IndexOf(IReadOnlyList<int> levels, int value) => levels.ToList().IndexOf(value);
+
+    // A setting of another grid carried onto this one, every value looked up by its own; refused where a value
+    // is not held.
+    public DialSetting Carry(SweepGrid from, DialSetting setting)
+    {
+        int Held(int at) => at < 0 ? throw new InvalidOperationException("The grid does not hold a value of the setting carried onto it.") : at;
+
+        var (low, high) = from.StopBounds[setting.Stop];
+
+        return new DialSetting(
+            Held(IndexOf(StrengthBars, from.StrengthBars[setting.Strength])),
+            Held(IndexOf(DepthLows, from.DepthLows[setting.DepthLow])),
+            Held(IndexOf(DepthHighs, from.DepthHighs[setting.DepthHigh])),
+            Held(IndexOf(DryUpCeilings, from.DryUpCeilings[setting.DryUp])),
+            Held(IndexOf(Freshness, from.Freshness[setting.Freshness])),
+            Held(IndexOf(RewardToRiskFloors, from.RewardToRiskFloors[setting.RewardToRisk])),
+            Held(StopBounds.ToList().IndexOf((low, high))),
+            Held(IndexOf(MarketFloors, from.MarketFloors[setting.Market])),
+            Held(IndexOf(BandStrengths, from.BandStrengths[setting.Band])));
+    }
 
     public IReadOnlyList<int> Sizes =>
     [
@@ -290,6 +342,9 @@ public readonly record struct DialSetting(
     // The live filter's settings on the coarse grid: strength 0.50, depth 1 to 5, dry-up under 1.5, freshness 3,
     // reward to risk 1.5, the stop 0.5 to 4 typical moves, the market at 45% and band strength 0.
     public static DialSetting LiveOnCoarse { get; } = new(1, 1, 1, 1, 1, 1, 0, 1, 0);
+
+    // The same settings on the fine grid, which holds every one of them.
+    public static DialSetting LiveOnFine { get; } = new(2, 1, 2, 3, 2, 2, 0, 2, 0);
 
     // The cell this setting reads in a table of the grid's ordered dials.
     public int Cell(SweepGrid grid)

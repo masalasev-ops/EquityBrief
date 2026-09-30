@@ -1106,21 +1106,49 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
         "text/html; charset=utf-8");
 });
 
-// The sweep's report, section 15.18: the page the sweep wrote beside the store, served as it stands. The
-// surface computes none of it; where no run has written one, the page says so.
+// The sweep's report, section 15.18: the page the newest run wrote beside the store, served as it stands with
+// the earlier runs linked above it, and a named run's page under the route. The surface computes none of it;
+// where no run has written one, the page says so.
 // see: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night
-app.MapGet(EquityBrief.Core.Sweep.SweepFolder.Route, (StoreLocation store) =>
-{
-    var report = Path.Combine(
-        EquityBrief.Core.Sweep.SweepFolder.Resolve(builder.Configuration[EquityBrief.Core.Sweep.SweepFolder.Key], store.DataRoot),
-        EquityBrief.Core.Sweep.SweepFolder.ReportFile);
+app.MapGet(EquityBrief.Core.Sweep.SweepFolder.Route, (StoreLocation store) => SweepReportPage(store, null));
+app.MapGet(EquityBrief.Core.Sweep.SweepFolder.Route + "/{run}", (StoreLocation store, string run) => SweepReportPage(store, run));
 
-    return File.Exists(report)
-        ? Results.Content(File.ReadAllText(report), "text/html; charset=utf-8")
-        : Results.Content(
+IResult SweepReportPage(StoreLocation store, string? run)
+{
+    var root = EquityBrief.Core.Sweep.SweepFolder.Resolve(builder.Configuration[EquityBrief.Core.Sweep.SweepFolder.Key], store.DataRoot);
+    var runs = EquityBrief.Core.Sweep.SweepFolder.Runs(root);
+    string? report;
+
+    if (run is null)
+    {
+        report = EquityBrief.Core.Sweep.SweepFolder.NewestReport(root);
+    }
+    else if (EquityBrief.Core.Sweep.SweepFolder.IsRunName(run) && File.Exists(Path.Combine(root, run, EquityBrief.Core.Sweep.SweepFolder.ReportFile)))
+    {
+        report = Path.Combine(root, run, EquityBrief.Core.Sweep.SweepFolder.ReportFile);
+    }
+    else
+    {
+        return Results.NotFound();
+    }
+
+    if (report is null)
+    {
+        return Results.Content(
             "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>Sweep report</title></head><body><p>No sweep has written its report yet. The sweep writes it when it finishes, or where it stopped.</p></body></html>",
             "text/html; charset=utf-8");
-});
+    }
+
+    var links = string.Join(
+        " ",
+        runs.Select(name => $"<a href=\"{EquityBrief.Core.Sweep.SweepFolder.Route}/{name}\">{System.Net.WebUtility.HtmlEncode(name)}</a>")
+            .Concat(File.Exists(Path.Combine(root, EquityBrief.Core.Sweep.SweepFolder.ReportFile)) ? [$"<a href=\"{EquityBrief.Core.Sweep.SweepFolder.Route}\">the first run</a>"] : Array.Empty<string>()));
+    var page = File.ReadAllText(report);
+    var nav = $"<nav class=\"runs\" data-runs=\"{runs.Count}\">Runs: {links}</nav>";
+    var at = page.IndexOf("<main>", StringComparison.Ordinal);
+
+    return Results.Content(at < 0 ? nav + page : page.Insert(at + "<main>".Length, nav), "text/html; charset=utf-8");
+}
 
 // The researched names, section 15.8's researched region on a route of its own.
 app.MapGet("/screens/researched", async (ReadApi read, SinglePageApp page) =>

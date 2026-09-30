@@ -319,7 +319,12 @@ public class PriceStorageForm
         // walk's wins over its resolved paths a second time, for the exit that
         // moves the stop, the nights listing over the nights, a variant's picks
         // outside the starting point's over its own, the index-nights with no bar
-        // over them all, and a design's viable settings over its settings.
+        // over them all, and a design's viable settings over its settings. The
+        // rerun adds seven more: the nights listing over the nights again in the
+        // summary a search reads, an exit's viable settings over its settings, a
+        // setting's edge read as the double the median sorts, a step (c) row's
+        // viable count as the figure it ranks by, and the whole numbers of the
+        // freshness and band strength dials read as the values a space labels, twice each.
         Assert.Equal(
             [
                 "CandidateRecord.cs: (double)inside.Length",
@@ -349,9 +354,16 @@ public class PriceStorageForm
                 "Statistic.cs: (double)price",
                 "Statistic.cs: (double)ratio",
                 "SweepMeasures.cs: (double)NightsListing",
+                "SweepMeasures.cs: (double)nightsListing",
                 "SweepPlateau.cs: (double)picks.Count",
                 "SweepReport.cs: (double)inputs.IndexNightsWithoutABar",
-                "SweepStages.cs: (double)viable",
+                "SweepSearch.cs: (double)one.Edge",
+                "SweepSearch.cs: (double)row.Viable",
+                "SweepSpace.cs: (double)value",
+                "SweepSpace.cs: (double)value",
+                "SweepSpace.cs: (double)value",
+                "SweepSpace.cs: (double)value",
+                "SweepStages.cs: (double)viable[exit]",
                 "TrendClassifier.cs: (double)value",
                 "VersionRecord.cs: (double)atLeast",
                 "VersionRecord.cs: (double?)null",

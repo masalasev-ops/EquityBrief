@@ -28,6 +28,7 @@ public enum Store
     Calendar,
     PulledBar,
     PulledEarnings,
+    PulledSurprise,
     Indicator,
     Swing,
     VolumeProfile,

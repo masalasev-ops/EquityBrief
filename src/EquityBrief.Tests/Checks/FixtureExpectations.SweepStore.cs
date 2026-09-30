@@ -443,4 +443,52 @@ public partial class FixtureExpectations
         // Nothing was written to the store: the run log holds only the rows the two nights wrote.
         Assert.DoesNotContain(SweepRows(store, "SELECT run_id FROM run_log;"), run => run.Contains("sweep", StringComparison.OrdinalIgnoreCase));
     }
+
+    [Fact]
+    public async Task AWholeRunOverTheFixtureRunsEveryStageWritesItsReportAndTouchesNeitherTheStoreNorTheFirstRun()
+    {
+        // The fixture's store, its 4 names over a year: a run from the candidates through the point-in-time
+        // check, stage 1, the two condition steps and stage 2 to the report, in a run folder of its own under
+        // the sweep's folder, with the root's own report left as it was. Few candidates meet any floor over
+        // four names, so the report proposes nothing and says so, and every stage is recorded in the state.
+        using var store = await FixtureExpectations.WithTwoNights();
+
+        var root = Path.Combine(store.Root, SweepFolder.Name);
+        var run = Path.Combine(root, SweepFolder.RunName(SweepNoon));
+
+        Directory.CreateDirectory(root);
+        File.WriteAllText(Path.Combine(root, SweepFolder.ReportFile), "the first run's report");
+        Directory.CreateDirectory(run);
+
+        var log = new StringWriter(CultureInfo.InvariantCulture);
+        var runner = new SweepRunner(FixedClock.At(SweepNoon, SessionZones.UnitedStates), store.Root, store.DatabaseFile, run, log);
+        var exit = await runner.RunAsync();
+
+        SweepRelease(store);
+
+        var state = runner.Load();
+
+        Assert.True(exit == 0, log.ToString());
+        Assert.True(state.Finished);
+        Assert.True(state.CandidatesDone && state.PointInTimeDone && state.RanksDone && state.TrialsDone && state.CrossDone);
+        Assert.Equal(0, state.PointInTimeDifferences);
+        Assert.Equal(SweepRunner.BuildId, state.Build);
+        Assert.Equal(["read", "series", "candidates", "point-in-time", "stage1", "step-b", "step-c"], state.Seconds.Keys.Take(7));
+        Assert.True(File.Exists(Path.Combine(run, "point-in-time.json")));
+        Assert.True(File.Exists(Path.Combine(run, "conditions.json")));
+        Assert.NotEmpty(Directory.GetFiles(Path.Combine(run, "cross"), "chunk-*.json"));
+
+        var report = File.ReadAllText(Path.Combine(run, SweepFolder.ReportFile));
+
+        Assert.Contains("7. The point-in-time result", report, StringComparison.Ordinal);
+        Assert.Contains("3. The seven conditions", report, StringComparison.Ordinal);
+        Assert.Contains("No difference.", report, StringComparison.Ordinal);
+        Assert.Equal("the first run's report", File.ReadAllText(Path.Combine(root, SweepFolder.ReportFile)));
+        Assert.Equal([SweepFolder.RunName(SweepNoon)], SweepFolder.Runs(root));
+        Assert.Equal(Path.Combine(run, SweepFolder.ReportFile), SweepFolder.NewestReport(root));
+
+        // A finished run is never written again.
+        Assert.Equal(2, await runner.RunAsync());
+        Assert.DoesNotContain(SweepRows(store, "SELECT run_id FROM run_log;"), row => row.Contains("sweep", StringComparison.OrdinalIgnoreCase));
+    }
 }

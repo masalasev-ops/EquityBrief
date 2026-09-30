@@ -1200,6 +1200,15 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Sweep variants"),
         CheckReach.Key(Scope.LimitsTable, "Sweep run"),
         CheckReach.Key(Scope.FailureTable, "A chunk of the sweep fails twice"),
+        // The rerun's claims, on the operator's rulings of 2026-09-30.
+        CheckReach.Key(Scope.CatalogueTable, "Sweep point in time"),
+        CheckReach.Key(Scope.MatrixTable, "Sweep point in time"),
+        CheckReach.Key(Scope.LimitsTable, "Sweep edge"),
+        CheckReach.Key(Scope.LimitsTable, "Sweep conditions"),
+        CheckReach.Key(Scope.LimitsTable, "Sweep point in time"),
+        CheckReach.Key(Scope.LimitsTable, "Sweep search"),
+        CheckReach.Key(Scope.FailureTable, "The point-in-time check finds a difference"),
+        CheckReach.Key(Scope.FailureTable, "A sweep candidate with no sector label"),
     ];
 
     // Phase 12's rows, each written by the checkpoint that draws or asserts it, so none reads as out
@@ -1535,9 +1544,11 @@ public partial class ArchitectureConformance
         // correction writing the comparisons to files, the section trials row's three parts gone and the comparison
         // files' rows in the catalogue and the matrix come, and 748 from the 12.2 correction reading one open
         // trade per stock on the pages, with tonight's Still open row as its nine parts, Past picks' two parts
-        // and section 18's row, and 755 from the 12.5 correction that brings the sweep, its seven claims named
-        // in theirs.
-        Assert.Equal((550, 755), (predicted, actual));
+        // and section 18's row, 755 from the 12.5 correction that brings the sweep, its seven claims named
+        // in theirs, and 763 from the 12.5 correction that reruns it on the edge, its eight more: the
+        // point-in-time check's catalogue and matrix rows, section 17's edge, conditions, point in time and
+        // search rows, and section 18's two.
+        Assert.Equal((550, 763), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

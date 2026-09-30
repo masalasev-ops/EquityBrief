@@ -11,8 +11,10 @@ using EquityBrief.Worker.Filter;
 namespace EquityBrief.Worker.Sweep;
 
 // One plan's answers under the eight exits: its reward to risk and stop distance, and under each exit whether it
-// won, lost, ran out of sessions or was never entered, the bar its own paths set, the break-even it planned, and
-// what the trade came to in multiples of the risk it planned.
+// won, lost, ran out of sessions or was never entered, the bar its own paths set, the break-even it planned,
+// what the trade came to in multiples of the risk it planned, the sessions until it ended and so freed the
+// stock, and what the same plan entered at the same close on every member that night came to, the benchmark
+// the edge is read against.
 public sealed class SweepPlanOutcomes
 {
     public const byte Immature = 0;
@@ -24,16 +26,28 @@ public sealed class SweepPlanOutcomes
     public double RewardToRisk;
     public double StopMoves;
     public readonly byte[] Code = new byte[8];
-    public readonly float[] Null = new float[8];
-    public readonly float[] BreakEven = new float[8];
-    public readonly float[] Multiple = new float[8];
+    public readonly float[] Null = [float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN];
+    public readonly float[] BreakEven = [float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN];
+    public readonly float[] Multiple = [float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN];
+
+    // The sessions from the listing to the session the trade ended on, which it blocks the stock through; a
+    // trade the history ran out on blocks it for the cap.
+    public readonly short[] Ends = new short[8];
+
+    public readonly float[] Benchmark = [float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN];
+
+    // The trade's edge under an exit: its result less the benchmark, and none where either is missing.
+    public float EdgeAt(int exit) => float.IsNaN(Multiple[exit]) || float.IsNaN(Benchmark[exit]) ? float.NaN : Multiple[exit] - Benchmark[exit];
 }
 
-// One member-session some setting of the grid could list: every reading each axis chooses between, and each plan
-// with its outcomes. A member-session no setting of either grid could list is not kept, since no variation's
-// count reads it.
+// One member-session some setting of the grid could list: every reading each axis chooses between, each plan
+// with its outcomes, and the readings the seven conditions take. A member-session no setting of either grid
+// could list is not kept, since no variation's count reads it.
 public sealed class SweepCandidate
 {
+    // The sessions back the trigger's arrival and the turn-up day's volume are read over, the longest window.
+    public const int Backs = SweepColumns.LongestWindow + 1;
+
     public int Name;
     public int Session;
     public int Year;
@@ -56,6 +70,27 @@ public sealed class SweepCandidate
 
     public readonly SweepPlanOutcomes?[] Plans = new SweepPlanOutcomes?[7];
 
+    // The conditions' readings: the close over the 52-week high; the sector's rank, -1 where the name carries no
+    // sector; the volume ratio on each session back the trigger may have fired on; the lowest RSI since each
+    // reference high and whether the RSI rose on each session back; the sessions since the newest surprise's
+    // reaction session and its size, -1 and none where there is none; the tightness; and the sessions since
+    // each reference high with the largest gap down inside that pullback.
+    public float HighRatio = float.NaN;
+    public sbyte SectorRank = -1;
+    public readonly float[] TurnVolume = new float[Backs];
+    public readonly float[] RsiLow = [float.NaN, float.NaN, float.NaN];
+    public short RsiUpMask;
+    public short SurpriseSessions = -1;
+    public float SurprisePercent = float.NaN;
+    public float Tightness = float.NaN;
+    public readonly short[] PullbackSessions = [-1, -1, -1];
+    public readonly float[] GapMoves = [float.NaN, float.NaN, float.NaN];
+
+    public SweepCandidate()
+    {
+        Array.Fill(TurnVolume, float.NaN);
+    }
+
     public static int AgeAt(TriggerKind trigger, SupportKind support) => ((int)trigger * 3) + (int)support;
 
     public static int PlanAt(PlanRule rule, SupportKind support) => rule switch
@@ -64,6 +99,19 @@ public sealed class SweepCandidate
         PlanRule.NearestBands => 1 + (int)support,
         _ => 4 + (int)support,
     };
+
+    // The readings the conditions take under one design: the reference high's place and the trigger's age.
+    public ConditionSetting.Readings Readings(int high, int age) => new(
+        HighRatio,
+        SectorRank,
+        age >= 0 && age < Backs ? TurnVolume[age] : float.NaN,
+        RsiLow[high],
+        age >= 0 && age < Backs && ((RsiUpMask >> age) & 1) != 0,
+        SurpriseSessions,
+        SurprisePercent,
+        Tightness,
+        PullbackSessions[high],
+        GapMoves[high]);
 
     public void Write(BinaryWriter writer)
     {
@@ -112,7 +160,37 @@ public sealed class SweepCandidate
                 writer.Write(plan.Null[exit]);
                 writer.Write(plan.BreakEven[exit]);
                 writer.Write(plan.Multiple[exit]);
+                writer.Write(plan.Ends[exit]);
+                writer.Write(plan.Benchmark[exit]);
             }
+        }
+
+        writer.Write(HighRatio);
+        writer.Write(SectorRank);
+
+        foreach (var value in TurnVolume)
+        {
+            writer.Write(value);
+        }
+
+        foreach (var value in RsiLow)
+        {
+            writer.Write(value);
+        }
+
+        writer.Write(RsiUpMask);
+        writer.Write(SurpriseSessions);
+        writer.Write(SurprisePercent);
+        writer.Write(Tightness);
+
+        foreach (var value in PullbackSessions)
+        {
+            writer.Write(value);
+        }
+
+        foreach (var value in GapMoves)
+        {
+            writer.Write(value);
         }
     }
 
@@ -163,9 +241,39 @@ public sealed class SweepCandidate
                 plan.Null[exit] = reader.ReadSingle();
                 plan.BreakEven[exit] = reader.ReadSingle();
                 plan.Multiple[exit] = reader.ReadSingle();
+                plan.Ends[exit] = reader.ReadInt16();
+                plan.Benchmark[exit] = reader.ReadSingle();
             }
 
             candidate.Plans[at] = plan;
+        }
+
+        candidate.HighRatio = reader.ReadSingle();
+        candidate.SectorRank = reader.ReadSByte();
+
+        for (var at = 0; at < candidate.TurnVolume.Length; at++)
+        {
+            candidate.TurnVolume[at] = reader.ReadSingle();
+        }
+
+        for (var at = 0; at < candidate.RsiLow.Length; at++)
+        {
+            candidate.RsiLow[at] = reader.ReadSingle();
+        }
+
+        candidate.RsiUpMask = reader.ReadInt16();
+        candidate.SurpriseSessions = reader.ReadInt16();
+        candidate.SurprisePercent = reader.ReadSingle();
+        candidate.Tightness = reader.ReadSingle();
+
+        for (var at = 0; at < candidate.PullbackSessions.Length; at++)
+        {
+            candidate.PullbackSessions[at] = reader.ReadInt16();
+        }
+
+        for (var at = 0; at < candidate.GapMoves.Length; at++)
+        {
+            candidate.GapMoves[at] = reader.ReadSingle();
         }
 
         return candidate;
@@ -173,7 +281,8 @@ public sealed class SweepCandidate
 }
 
 // Pass three: for each member-session some setting could list, the bands the level builder would have drawn that
-// night, each support's setup band, each trigger's arrival over the sessions before, and each plan's outcomes.
+// night, each support's setup band, each trigger's arrival over the sessions before, each plan's outcomes, and
+// the readings the seven conditions take.
 public static class SweepCandidates
 {
     // One name's bands on one of its bars, as the level builder draws them and as the gates read them.
@@ -190,7 +299,7 @@ public static class SweepCandidates
     {
         var found = new List<SweepCandidate>();
         var bands = new Dictionary<int, Bands>();
-        var grid = SweepGrid.Fine;
+        var grid = SweepGrid.Extended;
         var coarse = SweepGrid.Coarse;
         var loosestStrength = Math.Min(grid.LoosestStrength, coarse.LoosestStrength);
         var highs = SweepAxes.ReferenceHighs.Count;
@@ -370,7 +479,7 @@ public static class SweepCandidates
                     continue;
                 }
 
-                candidate.Plans[at] = Outcomes(plan, after, close, volatility, seed, series.Bars, bar);
+                candidate.Plans[at] = Outcomes(plan, after, close, volatility, seed, series, bar);
                 kept = true;
             }
 
@@ -380,14 +489,57 @@ public static class SweepCandidates
             }
 
             candidate.Earnings = SessionsToEarnings(series.Name.Prints, calendar, session);
+            Conditions(candidate, series, bar, cross);
             found.Add(candidate);
         }
 
         return found;
     }
 
+    // The readings the seven conditions take of one candidate, each as the data stood on the session.
+    static void Conditions(SweepCandidate candidate, SweepSeries series, int bar, SweepColumns.Session cross)
+    {
+        var highs = SweepAxes.ReferenceHighs.Count;
+        var close = Statistic.FromPrice(series.Bars[bar].Close);
+
+        candidate.HighRatio = double.IsNaN(series.High252[bar]) || series.High252[bar] <= 0 ? float.NaN : (float)(close / series.High252[bar]);
+        candidate.SectorRank = series.Name.Sector is { } sector && cross.SectorRanks.TryGetValue(sector, out var rank) ? (sbyte)Math.Min(rank, sbyte.MaxValue) : (sbyte)-1;
+        candidate.Tightness = (float)series.Tightness[bar];
+
+        for (var back = 0; back < SweepCandidate.Backs; back++)
+        {
+            if (bar - back < 0)
+            {
+                break;
+            }
+
+            candidate.TurnVolume[back] = (float)series.VolumeRatio[bar - back];
+
+            if (series.RsiUp[bar - back])
+            {
+                candidate.RsiUpMask |= (short)(1 << back);
+            }
+        }
+
+        for (var high = 0; high < highs; high++)
+        {
+            candidate.RsiLow[high] = (float)series.RsiLow[(bar * highs) + high];
+            candidate.PullbackSessions[high] = (short)Math.Min(series.SinceHigh[(bar * highs) + high], short.MaxValue);
+            candidate.GapMoves[high] = (float)series.GapDown[(bar * highs) + high];
+        }
+
+        var newest = series.NewestSurprise[bar];
+
+        if (newest >= 0)
+        {
+            candidate.SurpriseSessions = (short)Math.Min(bar - series.SurpriseBar[newest], short.MaxValue);
+            candidate.SurprisePercent = (float)series.Name.Surprises[newest].Percent;
+        }
+    }
+
     // The level builder's bands on one of a name's bars, over the window ending on it, the averages it holds
-    // and the swings confirmed by it, and none where the window is short or the bar holds no typical move.
+    // and the swings confirmed by it inside the year the night holds, and none where the window is short or the
+    // bar holds no typical move.
     public static IReadOnlyList<Level> LevelsOn(SweepSeries series, int bar)
     {
         if (bar + 1 < Core.Volume.VolumeProfileSeries.Window || double.IsNaN(series.Atr[bar]))
@@ -417,7 +569,16 @@ public static class SweepCandidates
             indicators[IndicatorSeries.Sma200] = series.Sma200[bar];
         }
 
-        return SessionReplay.BandsOver(window, indicators, series.Swings.AsSpan(0, series.Confirmed[bar]).ToArray());
+        return SessionReplay.BandsOver(window, indicators, SwingsHeld(series, bar));
+    }
+
+    // The swings the night's store held on a bar's session: confirmed by it, and made inside the year of bars
+    // the store keeps.
+    public static Swing[] SwingsHeld(SweepSeries series, int bar)
+    {
+        var oldest = series.Bars[series.WindowStart[bar]].Session;
+
+        return [.. series.Swings.AsSpan(0, series.Confirmed[bar]).ToArray().Where(swing => swing.SessionDate >= oldest)];
     }
 
     // The ladder's first tranche, as the night's listing keeps it: the zone's middle as the entry, its stop, the
@@ -435,9 +596,7 @@ public static class SweepCandidates
             .Take(Math.Min(bar + 1, LadderSeries.ConditionLookback))
             .Select(one => new LadderBar(one.Session, one.High, one.Low, one.Close))
             .ToArray();
-        var lows = series.Swings
-            .AsSpan(0, series.Confirmed[bar])
-            .ToArray()
+        var lows = SwingsHeld(series, bar)
             .Where(swing => swing.Direction == SwingSeries.Low)
             .OrderBy(swing => swing.SessionDate)
             .Select(swing => swing.Price)
@@ -454,10 +613,12 @@ public static class SweepCandidates
         return new SweepPlan(entry, stop, target, ratio, Statistic.FromPrice(entry - stop) / series.Atr[bar], plan.Tranches[0].HighEdge);
     }
 
-    // Each exit's outcome, scored as the live scorer scores a setup, and the calibrated bar its paths set.
-    static SweepPlanOutcomes Outcomes(SweepPlan plan, IReadOnlyList<ReturnBar> after, decimal close, double? volatility, int seed, SweepBar[] bars, int bar)
+    // Each exit's outcome, scored as the live scorer scores a setup, the calibrated bar its paths set, and the
+    // sessions the trade blocks the stock for.
+    static SweepPlanOutcomes Outcomes(SweepPlan plan, IReadOnlyList<ReturnBar> after, decimal close, double? volatility, int seed, SweepSeries series, int bar)
     {
         var outcomes = new SweepPlanOutcomes { RewardToRisk = Statistic.FromRatio(plan.RewardToRisk), StopMoves = plan.StopMoves };
+        var bars = series.Bars;
 
         for (var exit = 0; exit < SweepAxes.Exits; exit++)
         {
@@ -477,6 +638,19 @@ public static class SweepCandidates
             outcomes.BreakEven[exit] = result.BreakEven is { } planned ? (float)planned : float.NaN;
             outcomes.Null[exit] = float.NaN;
             outcomes.Multiple[exit] = float.NaN;
+            outcomes.Ends[exit] = (short)ForwardReturnSeries.SetupSessionCap;
+
+            if (result.ResolvedOn is { } ended)
+            {
+                for (var at = 0; at < after.Count; at++)
+                {
+                    if (after[at].SessionDate == ended)
+                    {
+                        outcomes.Ends[exit] = (short)Math.Max(1, series.SessionAt[bar + at + 1] - series.SessionAt[bar]);
+                        break;
+                    }
+                }
+            }
 
             if (result.EnteredAt is { } fill && fill > plan.Stop)
             {

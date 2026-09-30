@@ -2542,19 +2542,51 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(LimitsTable, "Sweep grid")] = new Scoped(
             Verdict.Pass,
-            "the grid's counts are the ones its axes make, every setting's figures read off a design's table are the ones reading it directly gives over constructed candidates, the first stage's viable count and median are the ones every coarse setting read directly gives, and a tie on every figure takes one place through the design nearest the live rule's",
+            "the grid's counts are the ones its axes make, the walk keeps the picks the pages' open trade rule keeps over the same listings, every setting's summary is the record read in full with the rule inside over constructed candidates, the first stage's viable count and median edge are the ones every coarse setting read directly gives, and the strongest distinct rows skip a tie and rank a design with too few viable settings below every other",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Sweep starting point")] = new Scoped(
             Verdict.Pass,
-            "over a constructed map whose best single setting is off the plateau the proposal is the plateau's centre, a plateau missing a floor proposes nothing, three quarters of a setting's neighbours are enough and fewer are not, a record one year carries is refused, and the report says the results read better than the market was a tenth over the threshold and not at it",
+            "over landscapes worked by hand depth is the fewest single steps on any dial with the ends the grid does not limit, the leaders are in edge order and the deepest is proposed with ties to the edge and to the live rule, a leader trailing the live rule in a recent year is passed over, a record one year carries is refused, across the designs the deeper within the margin is chosen and a deeper one outside it is not, and the report says the results read better than the market was a tenth over the threshold and not at it",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Sweep variants")] = new Scoped(
             Verdict.Pass,
-            "each of the four tests refuses a variant on its own and passes it at its edge",
+            "each of the four tests refuses a variant on its own on the edge and passes it at its edge, and the live design's structural neighbours are twenty-three",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Sweep run")] = new Scoped(
             Verdict.Pass,
-            "over a clock the run's own wait moves the run pauses at the window's edges and not a minute before, goes on two polls after a night lets its lock go and after a drain's, gives up a night that never came, and a run stopped after a chunk goes on from the next and holds what an unstopped run holds",
+            "over a clock the run's own wait moves the run pauses at the window's edges and not a minute before, goes on two polls after a night lets its lock go and after a drain's, gives up a night that never came, a run stopped after a chunk goes on from the next and holds what an unstopped run holds, a run's folder is named by its instant with the newest report found, and a finished run or another build's is refused",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Sweep edge")] = new Scoped(
+            Verdict.Pass,
+            "the benchmark is worked by hand over three members under both exits with the edge read from it and none where a series runs out, and the walk keeps one open trade a stock as the pages' rule does with the boundary by hand",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Sweep conditions")] = new Scoped(
+            Verdict.Pass,
+            "each condition's reading is worked by hand at its edge over constructed bars, a setting is kept at six years and two recent and not at five or one, a condition survives on six designs and not five with both its settings carried as a dial, and every survivor is crossed on and off at its middle",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Sweep point in time")] = new Scoped(
+            Verdict.Pass,
+            "over the fixture's two-night store every name-session is rebuilt with the night's own components and found the same, a seed difference constructed is named, the sample draws its counts and adds the live list's, and Wilder's averages over a window match the indicator series' own",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Sweep search")] = new Scoped(
+            Verdict.Pass,
+            "over landscapes worked by hand the sample covers every value of every dial equally under one seed, depth reads a grid end and an end the grid does not limit, the refinement takes the deepest move and stops when none is deeper, a grid end is looked beyond with the proposal moving into it, a dial's own end is named as a limit, and the slices hold every other dial at the starting point",
+            ByExpectations),
+        [CheckReach.Key(CatalogueTable, "Sweep point in time")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the stores it reads and that it writes none, and the declaration matches this row, its matrix row and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Sweep point in time")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(FailureTable, "The point-in-time check finds a difference")] = new Scoped(
+            Verdict.Pass,
+            "a seed difference constructed on one name's bar is found and named with both figures, and the page a stopped run writes lists it and proposes nothing",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A sweep candidate with no sector label")] = new Scoped(
+            Verdict.Pass,
+            "a name with no sector is ranked in no sector and reads no rank, a sector condition that is on fails it, and one that is off passes it",
             ByExpectations),
         [CheckReach.Key(FailureTable, "A chunk of the sweep fails twice")] = new Scoped(
             Verdict.Pass,
@@ -3228,6 +3260,8 @@ internal static class Scope
         ["History pull"] = "12.2",
         // The operator's rulings of 2026-09-29, built as 12.5's correction.
         ["Sweep history"] = "12.5",
+        // The operator's rulings of 2026-09-30, the sweep's rerun, built as 12.5's correction.
+        ["Sweep point in time"] = "12.5",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -4307,8 +4341,10 @@ internal static class Scope
         ["Both lists on tonight's page empty on a night the swing filter listed"] = "12.7",
         // The model profiles, a 12.6 correction.
         ["A paid job's profile names a key the secrets file does not hold"] = "12.6",
-        // The sweep, a 12.5 correction.
+        // The sweep, a 12.5 correction, and its rerun.
         ["A chunk of the sweep fails twice"] = "12.5",
+        ["The point-in-time check finds a difference"] = "12.5",
+        ["A sweep candidate with no sector label"] = "12.5",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -4383,11 +4419,15 @@ internal static class Scope
         ["Sector sites"] = "12.6",
         ["Report rates"] = "12.6",
         ["Section review"] = "12.6",
-        // The sweep, a 12.5 correction.
+        // The sweep, a 12.5 correction, and its rerun.
         ["Sweep grid"] = "12.5",
         ["Sweep starting point"] = "12.5",
         ["Sweep variants"] = "12.5",
         ["Sweep run"] = "12.5",
+        ["Sweep edge"] = "12.5",
+        ["Sweep conditions"] = "12.5",
+        ["Sweep point in time"] = "12.5",
+        ["Sweep search"] = "12.5",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

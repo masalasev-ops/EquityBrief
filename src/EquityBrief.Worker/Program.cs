@@ -38,7 +38,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "history-pull" => await HistoryPullRun(args),
     "quarters" => await QuartersRun(args),
     "measure-sources" => await MeasureSources(args),
-    "sweep" => await SweepRun(),
+    "sweep" => await SweepRun(args),
     _ => NoVerb(),
 };
 
@@ -70,12 +70,14 @@ static int NoVerb()
         "first stored night, for the trigger's arrival alone, with '--remove' taking those sessions' replayed results out once no " +
         "night can read them, and " +
         "'history-pull --from <yyyy-MM-dd>' stores the daily bars and earnings prints of every name the index held from that " +
-        "date to tonight apart from the store's own, each row marked by its pull, with '--purge <pull>' removing a pull whole, and " +
+        "date to tonight apart from the store's own, each row marked by its pull, '--surprises' with it stores the earnings " +
+        "surprises the calendar files over the span instead, and '--purge <pull>' removes a pull whole, and " +
         "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill, and " +
         "'measure-sources --sector <sector> --sites <a,b> --industries <x,y>' searches each proposed site for each declined " +
         "industry as a theme pass does and says which would join the sector's sites, writing a report and nothing to the store. '--live' " +
         "'sweep' replays the swing filter over the stored history across its designs and settings, reading the store and " +
-        "writing nothing to it, and writes its report beside it, going on from its last saved chunk when started again. '--live' " +
+        "writing nothing to it, and writes its report in a run folder of its own beside it, '--run <name>' going on with a " +
+        "run started before from its last saved chunk. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -255,19 +257,32 @@ static async Task<int> QuartersRun(string[] args)
 }
 
 // The sweep, by hand and never from the night: one process that reads the store, computes in chunks saved
-// beside it, pauses for every night and writes its report. The verb's work is in `SweepRunner`, so a test runs
-// the runner the verb runs.
+// beside it, pauses for every night and writes its report. Each run writes to a folder of its own under the
+// sweep's folder, named by the instant it started, and '--run <name>' goes on with a run started before. The
+// verb's work is in `SweepRunner`, so a test runs the runner the verb runs.
 // see: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night
-static async Task<int> SweepRun()
+static async Task<int> SweepRun(string[] args)
 {
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
-    var folder = EquityBrief.Core.Sweep.SweepFolder.Resolve(configuration[EquityBrief.Core.Sweep.SweepFolder.Key], store.DataRoot);
+    var clock = SystemClock.ForUnitedStatesSessions();
+    var root = EquityBrief.Core.Sweep.SweepFolder.Resolve(configuration[EquityBrief.Core.Sweep.SweepFolder.Key], store.DataRoot);
+    var run = VerbArguments.Value(args, "--run");
+
+    if (run is not null && (!EquityBrief.Core.Sweep.SweepFolder.IsRunName(run) || !Directory.Exists(Path.Combine(root, run))))
+    {
+        Console.Error.WriteLine($"sweep: no run named '{run}' is under {root}; the runs are {string.Join(", ", EquityBrief.Core.Sweep.SweepFolder.Runs(root).DefaultIfEmpty("none"))}.");
+
+        return 2;
+    }
+
+    var folder = Path.Combine(root, run ?? EquityBrief.Core.Sweep.SweepFolder.RunName(clock.UtcNow));
 
     Directory.CreateDirectory(folder);
+    Console.Out.WriteLine("run " + Path.GetFileName(folder));
 
     return await new EquityBrief.Worker.Sweep.SweepRunner(
-        SystemClock.ForUnitedStatesSessions(),
+        clock,
         store.DataRoot,
         store.DatabaseFile,
         folder,

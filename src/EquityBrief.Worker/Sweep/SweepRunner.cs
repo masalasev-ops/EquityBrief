@@ -10,13 +10,16 @@ namespace EquityBrief.Worker.Sweep;
 // The sweep as one long-running process that looks after itself.
 //
 // It reads the history once, when computing starts, and fixes its end there. It then works in chunks, each saved
-// to a file under the sweep's folder beside the store and never in it: the candidates by blocks of sessions, stage
-// 1's ranking by blocks of designs, and stage 2 by design. A process started again reads what the saved chunks
-// hold and goes on from the first one missing. Before each chunk it waits: while a night, the overnight queue or a
-// drain holds its lock file, and on a weekday from 23:00 UTC, or from earlier where the chunk would run past it,
-// until the night that falls then has taken its lock and let it go. A chunk that fails is tried once more, and
-// failing again the run stops and the report says where and why. The first chunks of each stage are timed, and a
-// run whose projection passes five days stops after stage 1 and reports rather than running on.
+// to a file under the run's folder beside the store and never in it: the candidates by blocks of sessions with
+// their benchmarks, the point-in-time check, stage 1's ranking by blocks of designs, step (b)'s trials, step
+// (c)'s crossings by blocks, and stage 2 by design. A process started again reads what the saved chunks hold
+// and goes on from the first one missing, under the build that started the run and no other, and a finished run
+// is never written again. Before each chunk it waits: while a night, the overnight queue or a drain holds its
+// lock file, and on a weekday from 23:00 UTC, or from earlier where the chunk would run past it, until the night
+// that falls then has taken its lock and let it go. A chunk that fails is tried once more, and failing again the
+// run stops and the report says where and why. The first chunks of each stage are timed, a run whose projection
+// passes five days stops after stage 1 and reports rather than running on, and stage 2's sample shrinks where
+// the whole run would pass five days, never its dials.
 // see: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night
 public sealed class SweepRunner
 {
@@ -24,7 +27,8 @@ public sealed class SweepRunner
     public const int SessionsPerChunk = 100;
     public const int FirstDesigns = 50;
     public const int DesignsPerChunk = 50;
-    public const int CarriedForward = 5;
+    public const int CrossingsPerChunk = 50;
+    public const int CarriedForward = SweepSearch.Carried;
 
     // The night's pause: from 23:00 UTC on a weekday, and the latest the run waits for a night that never came.
     public static readonly TimeSpan PauseFrom = TimeSpan.FromHours(23);
@@ -52,13 +56,19 @@ public sealed class SweepRunner
 
     string Of(params string[] parts) => Path.Combine([folder, .. parts]);
 
-    // The run's saved state: the history's end, its fingerprint, the chunks done, the timings and anything that
-    // failed.
+    // The build a run is computed by, which a run started again must match: the module's own id, new on every
+    // build, so a saved chunk is never joined by one computed by other code.
+    public static string BuildId => typeof(SweepRunner).Assembly.ManifestModule.ModuleVersionId.ToString("n");
+
+    // The run's saved state: the history's end, its fingerprint, the build, the chunks done, the timings and
+    // anything that failed.
     public sealed class State
     {
         public string? Through { get; set; }
 
         public string? Fingerprint { get; set; }
+
+        public string? Build { get; set; }
 
         public DateTimeOffset? Started { get; set; }
 
@@ -66,15 +76,29 @@ public sealed class SweepRunner
 
         public bool CandidatesDone { get; set; }
 
+        public bool PointInTimeDone { get; set; }
+
+        public int PointInTimeDifferences { get; set; }
+
         public int RankChunks { get; set; }
 
         public bool RanksDone { get; set; }
 
-        public List<string> FineDone { get; set; } = [];
+        public bool TrialsDone { get; set; }
+
+        public int CrossChunks { get; set; }
+
+        public bool CrossDone { get; set; }
+
+        public List<string> SearchDone { get; set; } = [];
 
         public bool Finished { get; set; }
 
         public bool StoppedAfterStageOne { get; set; }
+
+        public bool StoppedAtPointInTime { get; set; }
+
+        public double SampleBudgetSeconds { get; set; } = SweepSearch.SampleBudget.TotalSeconds;
 
         public Dictionary<string, double> Seconds { get; set; } = [];
 
@@ -84,6 +108,8 @@ public sealed class SweepRunner
 
         public List<string> Pauses { get; set; } = [];
 
+        public List<string> Decisions { get; set; } = [];
+
         public double? ProjectedHours { get; set; }
     }
 
@@ -91,7 +117,7 @@ public sealed class SweepRunner
     {
         var path = Of("state.json");
 
-        return File.Exists(path) ? JsonSerializer.Deserialize<State>(File.ReadAllText(path)) ?? new State() : new State();
+        return File.Exists(path) ? JsonSerializer.Deserialize<State>(File.ReadAllText(path), Json) ?? new State() : new State();
     }
 
     void Save(State state)
@@ -99,7 +125,7 @@ public sealed class SweepRunner
         var path = Of("state.json");
         var next = path + ".next";
 
-        File.WriteAllText(next, JsonSerializer.Serialize(state, new JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(next, JsonSerializer.Serialize(state, Json));
         File.Move(next, path, overwrite: true);
     }
 
@@ -111,13 +137,32 @@ public sealed class SweepRunner
         File.AppendAllText(Of("sweep.log"), stamped + Environment.NewLine);
     }
 
+    // The options every saved file is written and read with: a figure a setting has none of is NaN, which the
+    // serializer refuses unless told to write it by name.
+    public static readonly JsonSerializerOptions Json = new() { WriteIndented = true, NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals };
+
     public async Task<int> RunAsync(CancellationToken cancellation = default)
     {
         Directory.CreateDirectory(Of(SweepFolder.CandidatesFolder));
         Directory.CreateDirectory(Of("ranks"));
-        Directory.CreateDirectory(Of("fine"));
+        Directory.CreateDirectory(Of("cross"));
+        Directory.CreateDirectory(Of("search"));
 
         var state = Load();
+
+        if (state.Finished)
+        {
+            Say("this run finished and is never written again; start another run to sweep again");
+
+            return 2;
+        }
+
+        if (state.Build is { } build && build != BuildId)
+        {
+            Say(FormattableString.Invariant($"this run was started by build {build} and this is build {BuildId}; a run goes on under the build that started it, so start another run"));
+
+            return 2;
+        }
 
         try
         {
@@ -163,6 +208,7 @@ public sealed class SweepRunner
 
         state.Through = through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         state.Fingerprint ??= inputs.Fingerprint;
+        state.Build ??= BuildId;
         state.Started ??= clock.UtcNow;
         Save(state);
 
@@ -170,6 +216,19 @@ public sealed class SweepRunner
         var sessionAt = calendar.Select((session, index) => (session, index)).ToDictionary(pair => pair.session, pair => pair.index);
         var firstScored = Array.FindIndex(calendar, session => session >= SweepColumns.FirstScored);
         var nights = calendar.Length - firstScored;
+
+        // The series are needed by the candidates and by the point-in-time check, so they are computed on every
+        // start; they take seconds.
+        watch.Restart();
+        var series = new SweepSeries[inputs.Names.Count];
+
+        Parallel.For(0, inputs.Names.Count, Parallelism(), name => series[name] = SweepColumns.Series(inputs.Names[name], sessionAt));
+
+        var sessions = SweepColumns.Sessions(series, calendar);
+        var members = SweepBenchmark.On(series, calendar.Length);
+
+        state.Seconds["series"] = watch.Elapsed.TotalSeconds;
+        Say(FormattableString.Invariant($"series and cross-sections read over {inputs.Names.Count} name(s) and {calendar.Length} session(s) in {watch.Elapsed.TotalSeconds:0} s"));
 
         List<SweepCandidate> candidates;
 
@@ -179,16 +238,6 @@ public sealed class SweepRunner
         }
         else
         {
-            watch.Restart();
-            var series = new SweepSeries[inputs.Names.Count];
-
-            Parallel.For(0, inputs.Names.Count, Parallelism(), name => series[name] = SweepColumns.Series(inputs.Names[name], sessionAt));
-
-            var sessions = SweepColumns.Sessions(series, calendar);
-
-            state.Seconds["series"] = watch.Elapsed.TotalSeconds;
-            Say(FormattableString.Invariant($"series and cross-sections read over {inputs.Names.Count} name(s) and {calendar.Length} session(s) in {watch.Elapsed.TotalSeconds:0} s"));
-
             var chunks = CandidateChunks(firstScored, calendar.Length);
 
             for (var chunk = state.CandidateChunks; chunk < chunks.Count; chunk++)
@@ -204,9 +253,12 @@ public sealed class SweepRunner
 
                     Parallel.For(0, series.Length, Parallelism(), name => found[name] = SweepCandidates.For(series[name], name, sessions, calendar, firstScored, from, to));
 
+                    var all = found.SelectMany(list => list).OrderBy(one => one.Session).ThenBy(one => one.Name).ToArray();
+
+                    SweepBenchmark.Fill(all, series, members, Parallelism().MaxDegreeOfParallelism);
+
                     using var file = File.Create(Of(SweepFolder.CandidatesFolder, FormattableString.Invariant($"chunk-{chunk:0000}.bin")));
                     using var writer = new BinaryWriter(file);
-                    var all = found.SelectMany(list => list).OrderBy(one => one.Session).ThenBy(one => one.Name).ToArray();
 
                     writer.Write(all.Length);
 
@@ -226,7 +278,7 @@ public sealed class SweepRunner
                     var perSession = chunkWatch.Elapsed.TotalSeconds / (to - from);
                     var hours = perSession * (calendar.Length - firstScored) / 3600;
 
-                    state.Timings.Add(FormattableString.Invariant($"the candidates over the first {to - from} sessions took {chunkWatch.Elapsed.TotalSeconds:0.0} s, {perSession:0.00} s a session, projecting {hours:0.0} hours over the {calendar.Length - firstScored} scored sessions"));
+                    state.Timings.Add(FormattableString.Invariant($"the candidates with their benchmarks over the first {to - from} sessions took {chunkWatch.Elapsed.TotalSeconds:0.0} s, {perSession:0.00} s a session, projecting {hours:0.0} hours over the {calendar.Length - firstScored} scored sessions"));
                 }
 
                 Save(state);
@@ -239,6 +291,42 @@ public sealed class SweepRunner
         }
 
         Say(FormattableString.Invariant($"{candidates.Count} candidate(s) held"));
+
+        // The point-in-time check, before stage 1, and the run stops on any difference.
+        PointInTimeResult pointInTime;
+
+        if (state.PointInTimeDone && File.Exists(Of("point-in-time.json")))
+        {
+            pointInTime = JsonSerializer.Deserialize<PointInTimeResult>(File.ReadAllText(Of("point-in-time.json")), Json)!;
+        }
+        else
+        {
+            var checkWatch = Stopwatch.StartNew();
+            var samples = SweepPointInTime.Sample(series, candidates, calendar, inputs.LiveListed, SweepSearch.Seed);
+            var scratch = Path.Combine(Path.GetTempPath(), "equitybrief-sweep", SweepFolder.RunName(state.Started!.Value));
+
+            Say(FormattableString.Invariant($"rebuilding {samples.Count} name-session(s) with the night's own components, {inputs.LiveListed.Count} of them the live list's"));
+
+            pointInTime = await new SweepPointInTime(scratch, Parallelism().MaxDegreeOfParallelism).CheckAsync(series, samples, inputs.LiveListed.Count, cancellation);
+
+            File.WriteAllText(Of("point-in-time.json"), JsonSerializer.Serialize(pointInTime, Json));
+            state.PointInTimeDone = true;
+            state.PointInTimeDifferences = pointInTime.Differences.Count;
+            state.Seconds["point-in-time"] = checkWatch.Elapsed.TotalSeconds;
+            state.Timings.Add(FormattableString.Invariant($"the point-in-time check rebuilt {pointInTime.Compared} name-session(s) in {checkWatch.Elapsed.TotalSeconds:0.0} s and found {pointInTime.Differences.Count} difference(s)"));
+            Save(state);
+            Say(state.Timings[^1]);
+        }
+
+        if (!pointInTime.Clean)
+        {
+            state.StoppedAtPointInTime = true;
+            Save(state);
+            File.WriteAllText(Of(SweepFolder.ReportFile), SweepReport.StoppedAtPointInTime(state, pointInTime));
+            Say("the sweep did not read every session as it stood; the run stops before stage 1 and the report lists every difference: " + Of(SweepFolder.ReportFile));
+
+            return 1;
+        }
 
         // Stage 1.
         var selections = SweepAxes.Designs(selectionOnly: true);
@@ -257,7 +345,7 @@ public sealed class SweepRunner
 
                 Parallel.For(0, slice.Length, Parallelism(), at => ranks[at] = SweepStages.Rank(candidates, slice[at], nights));
 
-                File.WriteAllText(Of("ranks", FormattableString.Invariant($"chunk-{chunk:0000}.json")), JsonSerializer.Serialize(ranks.SelectMany(list => list).Select(RankRow.Of).ToArray()));
+                File.WriteAllText(Of("ranks", FormattableString.Invariant($"chunk-{chunk:0000}.json")), JsonSerializer.Serialize(ranks.SelectMany(list => list).Select(RankRow.Of).ToArray(), Json));
 
                 return Task.CompletedTask;
             });
@@ -269,8 +357,8 @@ public sealed class SweepRunner
             {
                 var perDesign = chunkWatch.Elapsed.TotalSeconds / slice.Length;
 
-                state.Timings.Add(FormattableString.Invariant($"stage 1 over its first {slice.Length} selection designs, each with its 8 exits and 19,683 coarse settings, took {chunkWatch.Elapsed.TotalSeconds:0.0} s, {perDesign:0.00} s a design, projecting {perDesign * selections.Count / 3600:0.0} hours over the {selections.Count} selection designs"));
-                state.ProjectedHours = ((state.Seconds.GetValueOrDefault("read") + state.Seconds.GetValueOrDefault("series") + state.Seconds.GetValueOrDefault("candidates")) / 3600)
+                state.Timings.Add(FormattableString.Invariant($"stage 1 over its first {slice.Length} selection designs, each with its 8 exits and 19,683 coarse settings walked with one open trade a stock, took {chunkWatch.Elapsed.TotalSeconds:0.0} s, {perDesign:0.00} s a design, projecting {perDesign * selections.Count / 3600:0.0} hours over the {selections.Count} selection designs"));
+                state.ProjectedHours = ((state.Seconds.GetValueOrDefault("read") + state.Seconds.GetValueOrDefault("series") + state.Seconds.GetValueOrDefault("candidates") + state.Seconds.GetValueOrDefault("point-in-time")) / 3600)
                     + (perDesign * selections.Count / 3600);
             }
 
@@ -282,62 +370,179 @@ public sealed class SweepRunner
         Save(state);
 
         var rows = ReadRanks();
-        var carried = Carried(rows);
-
-        // Stage 2, stopped where the whole run projects past five days.
-        var fine = new Dictionary<SweepDesign, SweepVariation[]>();
 
         if (state.ProjectedHours is { } projected && TimeSpan.FromHours(projected) > Longest)
         {
             state.StoppedAfterStageOne = true;
+            state.Finished = true;
+            Save(state);
             Say(FormattableString.Invariant($"the run projects {projected:0.0} hours, past five days, so it stops after stage 1"));
+
+            var stoppedReport = SweepReport.Build(inputs, candidates, rows, [], [], [], [], [], pointInTime, state, nights, calendar, firstScored);
+
+            File.WriteAllText(Of(SweepFolder.ReportFile), stoppedReport);
+            Say("the report is written: " + Of(SweepFolder.ReportFile));
+
+            return 0;
+        }
+
+        // Step (b): each condition setting alone on the ten strongest designs at their coarse centres.
+        var strongest = SweepStages.Strongest(rows, SweepSearch.DesignsTried);
+        IReadOnlyList<ConditionTrial> trials;
+        IReadOnlyList<ConditionVerdict> verdicts;
+
+        if (state.TrialsDone && File.Exists(Of("conditions.json")))
+        {
+            var saved = JsonSerializer.Deserialize<ConditionsFile>(File.ReadAllText(Of("conditions.json")), Json)!;
+
+            trials = saved.Trials;
+            verdicts = saved.Verdicts;
         }
         else
         {
-            for (var at = 0; at < carried.Length; at++)
+            var stepWatch = Stopwatch.StartNew();
+            var found = new List<ConditionTrial>();
+
+            await WaitForTheStoreAsync(state, TimeSpan.FromMinutes(10), cancellation);
+
+            await RetriedAsync(state, "step (b), each condition setting alone on the ten strongest designs", () =>
             {
-                var design = carried[at].Design;
-                var saved = Of("fine", FormattableString.Invariant($"design-{at}.bin"));
+                var perDesign = new List<ConditionTrial>[strongest.Length];
 
-                if (state.FineDone.Contains(design.Key) && File.Exists(saved))
+                Parallel.For(0, strongest.Length, Parallelism(), at =>
                 {
-                    fine[design] = ReadVariations(saved);
+                    var design = strongest[at].Design;
+                    var picks = SweepStages.Picks(candidates, design);
+                    var centre = SweepSearch.CoarseCentre(picks, design, nights);
+                    var baseline = SweepStages.Measures(picks, design, centre, ConditionSetting.Off, nights);
 
-                    continue;
-                }
-
-                var designWatch = Stopwatch.StartNew();
-
-                await WaitForTheStoreAsync(state, EstimateFor("stage2", state), cancellation);
-
-                SweepVariation[]? variations = null;
-
-                await RetriedAsync(state, "stage 2 for " + design.Key, () =>
-                {
-                    variations = SweepStages.Fine(candidates, design, nights);
-                    WriteVariations(saved, variations);
-
-                    return Task.CompletedTask;
+                    perDesign[at] = [.. SweepConditions.Settings.Select(pair => SweepSearch.Trial(picks, design, centre, pair.Condition, pair.Setting, baseline, nights))];
                 });
 
-                fine[design] = variations!;
-                state.Seconds["stage2"] = state.Seconds.GetValueOrDefault("stage2") + designWatch.Elapsed.TotalSeconds;
+                found.AddRange(perDesign.SelectMany(list => list));
 
-                if (state.FineDone.Count == 0)
-                {
-                    state.Timings.Add(FormattableString.Invariant($"stage 2's first design, {SweepGrid.Fine.Variations:N0} fine settings, took {designWatch.Elapsed.TotalSeconds:0.0} s"));
-                }
+                return Task.CompletedTask;
+            });
 
-                state.FineDone.Add(design.Key);
-                Save(state);
-                Say(FormattableString.Invariant($"stage 2 for {design.Key} in {designWatch.Elapsed.TotalSeconds:0} s"));
+            trials = found;
+            verdicts = SweepSearch.Verdicts(trials);
+            File.WriteAllText(Of("conditions.json"), JsonSerializer.Serialize(new ConditionsFile(trials, verdicts), Json));
+            state.TrialsDone = true;
+            state.Seconds["step-b"] = stepWatch.Elapsed.TotalSeconds;
+            state.Timings.Add(FormattableString.Invariant($"step (b), {SweepConditions.Settings.Count} condition settings on {strongest.Length} designs, {trials.Count} trials, took {stepWatch.Elapsed.TotalSeconds:0.0} s"));
+            Save(state);
+            Say(state.Timings[^1]);
+        }
+
+        var survivors = verdicts.Where(verdict => verdict.Survives).Select(verdict => verdict.Condition).ToArray();
+
+        Say(FormattableString.Invariant($"{survivors.Length} condition(s) survive step (b): {string.Join(", ", survivors.Select(SweepConditions.Name))}"));
+
+        // Step (c): every survivor on and off at its middle, crossed with the ten designs and their structural
+        // neighbours over the coarse settings.
+        var combinations = SweepSearch.Combinations(survivors);
+        var crossings = strongest
+            .Select(row => row.Design.Selection)
+            .SelectMany(selection => new[] { selection }.Concat(SweepSearch.SelectionNeighbours(selection)))
+            .Distinct()
+            .SelectMany(selection => combinations.Select(combination => (Selection: selection, Combination: combination)))
+            .ToArray();
+        var crossChunks = (crossings.Length + CrossingsPerChunk - 1) / CrossingsPerChunk;
+
+        for (var chunk = state.CrossChunks; chunk < crossChunks && !state.CrossDone; chunk++)
+        {
+            var slice = crossings.Skip(chunk * CrossingsPerChunk).Take(CrossingsPerChunk).ToArray();
+            var chunkWatch = Stopwatch.StartNew();
+
+            await WaitForTheStoreAsync(state, EstimateFor("cross", state), cancellation);
+
+            await RetriedAsync(state, FormattableString.Invariant($"step (c) crossings {(chunk * CrossingsPerChunk) + 1} to {(chunk * CrossingsPerChunk) + slice.Length}"), () =>
+            {
+                var results = new IReadOnlyList<CombinationRow>[slice.Length];
+
+                Parallel.For(0, slice.Length, Parallelism(), at => results[at] = SweepSearch.Cross(candidates, slice[at].Selection, slice[at].Combination, nights));
+
+                File.WriteAllText(Of("cross", FormattableString.Invariant($"chunk-{chunk:0000}.json")), JsonSerializer.Serialize(results.SelectMany(list => list).ToArray(), Json));
+
+                return Task.CompletedTask;
+            });
+
+            state.CrossChunks = chunk + 1;
+            state.Seconds["step-c"] = state.Seconds.GetValueOrDefault("step-c") + chunkWatch.Elapsed.TotalSeconds;
+
+            if (chunk == 0)
+            {
+                var perCrossing = chunkWatch.Elapsed.TotalSeconds / slice.Length;
+
+                state.Timings.Add(FormattableString.Invariant($"step (c) over its first {slice.Length} crossings of a selection design and a combination, {combinations.Count} combination(s) of {survivors.Length} survivor(s), took {chunkWatch.Elapsed.TotalSeconds:0.0} s, {perCrossing:0.00} s a crossing, projecting {perCrossing * crossings.Length / 3600:0.0} hours over the {crossings.Length} crossings"));
             }
+
+            Save(state);
+            Say(FormattableString.Invariant($"step (c) chunk {chunk + 1} of {crossChunks} in {chunkWatch.Elapsed.TotalSeconds:0} s"));
+        }
+
+        state.CrossDone = true;
+        Save(state);
+
+        var crossRows = ReadCross();
+        var carried = SweepSearch.StrongestRows(crossRows, CarriedForward);
+
+        // Stage 2, by design, the sample's budget shrunk where the whole run would pass five days.
+        var results = new List<SweepDesignResult>();
+        var liveMeasures = SweepStages.Direct(candidates, SweepDesign.Live, SweepGrid.Extended.Carry(SweepGrid.Fine, DialSetting.LiveOnFine), ConditionSetting.Off, nights);
+
+        for (var at = 0; at < carried.Count; at++)
+        {
+            var row = carried[at];
+            var design = RankRow.Parse(row.DesignKey);
+            var combination = ConditionSetting.FromIndexes(row.Combination.Split(',').Select(part => int.Parse(part, CultureInfo.InvariantCulture)).ToArray());
+            var saved = Of("search", FormattableString.Invariant($"design-{at}.json"));
+
+            if (state.SearchDone.Contains(row.DesignKey + "@" + row.Combination) && File.Exists(saved))
+            {
+                results.Add(JsonSerializer.Deserialize<SweepDesignResult>(File.ReadAllText(saved), Json)!);
+
+                continue;
+            }
+
+            var elapsedHours = (clock.UtcNow - state.Started!.Value).TotalHours;
+            var left = Longest.TotalHours - elapsedHours;
+            var designsLeft = carried.Count - at;
+
+            if (left / designsLeft < state.SampleBudgetSeconds / 3600)
+            {
+                state.SampleBudgetSeconds = Math.Max(60, left / designsLeft * 3600);
+                state.Decisions.Add(FormattableString.Invariant($"the sample's budget shrank to {state.SampleBudgetSeconds / 3600:0.00} hours a design before design {at + 1}, since the whole run would have passed five days; the dials and the conditions are unchanged"));
+                Save(state);
+                Say(state.Decisions[^1]);
+            }
+
+            var designWatch = Stopwatch.StartNew();
+
+            await WaitForTheStoreAsync(state, TimeSpan.FromSeconds(state.SampleBudgetSeconds) + TimeSpan.FromMinutes(30), cancellation);
+
+            SweepDesignResult? result = null;
+
+            await RetriedAsync(state, "stage 2 for " + row.DesignKey + " under " + row.Combination, () =>
+            {
+                result = Search(candidates, design, combination, liveMeasures, nights, TimeSpan.FromSeconds(state.SampleBudgetSeconds));
+                File.WriteAllText(saved, JsonSerializer.Serialize(result, Json));
+
+                return Task.CompletedTask;
+            });
+
+            results.Add(result!);
+            state.Seconds["stage2"] = state.Seconds.GetValueOrDefault("stage2") + designWatch.Elapsed.TotalSeconds;
+            state.Timings.Add(FormattableString.Invariant($"stage 2's design {at + 1}, {result!.SampleSize:N0} sampled settings of {result.GridSize:N0} at {result.PerPointSeconds * 1000:0.00} ms each and {result.Evaluations:N0} evaluations in all, took {designWatch.Elapsed.TotalSeconds:0.0} s"));
+            state.SearchDone.Add(row.DesignKey + "@" + row.Combination);
+            Save(state);
+            Say(state.Timings[^1]);
         }
 
         state.Finished = true;
         Save(state);
 
-        var report = SweepReport.Build(inputs, candidates, rows, carried.Select(row => row.Design).ToArray(), fine, state, nights, calendar, firstScored);
+        var report = SweepReport.Build(inputs, candidates, rows, trials, verdicts, crossRows, carried, results, pointInTime, state, nights, calendar, firstScored);
 
         File.WriteAllText(Of(SweepFolder.ReportFile), report);
         Say("the report is written: " + Of(SweepFolder.ReportFile));
@@ -345,56 +550,91 @@ public sealed class SweepRunner
         return 0;
     }
 
-    // Stage 1's ranking: the share of a design's coarse settings viable, the median result of the viable ones
-    // breaking a tie, then the design nearer the live rule's, counted in structural choices, and its key.
-    public static IReadOnlyList<RankRow> Ranked(IEnumerable<RankRow> rows) =>
-        [
-            .. rows
-                .OrderByDescending(row => row.ViableShare)
-                .ThenByDescending(row => row.MedianMultiple ?? double.MinValue)
-                .ThenBy(row => ChoicesFromTheLiveRule(row.Design))
-                .ThenBy(row => row.Key, StringComparer.Ordinal),
-        ];
-
-    // Two designs whose stage 1 figures are the same to the last digit read the history the same way, the trend
-    // rule's versions reading an uptrend alike being the common case, so stage 2 takes the five strongest whose
-    // figures differ, each tie read through the design nearest the live rule's.
-    public static RankRow[] Carried(IEnumerable<RankRow> rows)
+    // Stage 2 for one design: the coarse settings under its combination, the sample within the budget, the line
+    // fixed, the leaders' depth, the proposal, its refinement, the look beyond a grid end and the slices.
+    public static SweepDesignResult Search(IReadOnlyList<SweepCandidate> candidates, SweepDesign design, ConditionSetting combination, SweepMeasures live, int nights, TimeSpan budget)
     {
-        var carried = new List<RankRow>();
+        var space = SweepSpace.For(combination.On);
+        var picks = SweepStages.Picks(candidates, design);
+        var search = new SweepDesignSearch(design, picks, nights, space);
+        var parallelism = Parallelism().MaxDegreeOfParallelism;
+        var notes = new List<string>();
 
-        foreach (var row in Ranked(rows))
+        search.EvaluateCoarse(combination, parallelism);
+
+        var (sampleSize, gridSize, perPoint) = search.EvaluateSample(budget, SweepSearch.Seed, parallelism);
+
+        search.FixTheLine(SweepSearch.PlateauMargin);
+
+        var leaders = search.LeadersOf(SweepSearch.Leaders);
+        var (proposal, trailing) = search.Propose(leaders, live);
+        var refinement = new List<string>();
+        var extensions = new List<string>();
+        var limits = new List<string>();
+        IReadOnlyList<SweepSlice> slices = [];
+
+        if (proposal is not null)
         {
-            if (carried.Count == CarriedForward)
+            proposal = search.Refine(proposal, live, refinement);
+            proposal = search.Extend(proposal, live, refinement, extensions, limits);
+            slices = search.Slices(proposal.Point);
+        }
+        else
+        {
+            notes.Add(leaders.Count == 0 ? "no evaluated setting meets the floors, so there is no leader and no proposal" : "every leader trails the live rule's edge in a recent year, so none is proposed");
+        }
+
+        // The same design at the other margins, each proposed and refined from the same leaders, so the operator
+        // can rule the margin over what each gives; the ruled line is put back after.
+        var otherMargins = new List<SweepMarginProposal>();
+        var line = search.Line;
+
+        foreach (var margin in SweepSearch.OtherMargins)
+        {
+            if (float.IsNaN(search.BestEdge))
             {
                 break;
             }
 
-            if (!carried.Any(held => SameFigures(held, row)))
+            search.SetLine(search.BestEdge - (float)margin);
+
+            var (other, _) = search.Propose(leaders, live);
+
+            if (other is not null)
             {
-                carried.Add(row);
+                other = search.Refine(other, live, []);
+                otherMargins.Add(new SweepMarginProposal(margin, space.Describe(other.Point), other.Summary.Edge, other.Depth.Depth));
+            }
+            else
+            {
+                otherMargins.Add(new SweepMarginProposal(margin, "none stands", float.NaN, 0));
             }
         }
 
-        return [.. carried];
+        search.SetLine(line);
+
+        return new SweepDesignResult(
+            design.Key,
+            combination.Key,
+            [.. combination.On],
+            gridSize,
+            sampleSize,
+            perPoint,
+            search.Evaluations,
+            search.BestEdge,
+            search.Line,
+            leaders.Count,
+            trailing,
+            proposal,
+            refinement,
+            extensions,
+            limits,
+            slices,
+            otherMargins,
+            notes);
     }
 
-    public static bool SameFigures(RankRow one, RankRow other) =>
-        one.Viable == other.Viable && one.MedianMultiple == other.MedianMultiple;
-
-    public static int ChoicesFromTheLiveRule(SweepDesign design)
-    {
-        var live = SweepDesign.Live;
-
-        return (design.Strength != live.Strength ? 1 : 0)
-            + (design.Uptrend != live.Uptrend ? 1 : 0)
-            + (design.Support != live.Support ? 1 : 0)
-            + (design.ReferenceHigh != live.ReferenceHigh ? 1 : 0)
-            + (design.Trigger != live.Trigger ? 1 : 0)
-            + (design.Plan != live.Plan ? 1 : 0)
-            + (design.Hold != live.Hold || design.BreakEven != live.BreakEven ? 1 : 0)
-            + (design.EarningsWindow != live.EarningsWindow ? 1 : 0);
-    }
+    sealed record ConditionsFile(IReadOnlyList<ConditionTrial> Trials, IReadOnlyList<ConditionVerdict> Verdicts);
 
     // A chunk run, and run once more where it fails; failing again the run stops, its report written with what
     // it has, saying where and why.
@@ -428,6 +668,7 @@ public sealed class SweepRunner
     {
         "candidates" => TimeSpan.FromSeconds(Math.Max(60, state.Seconds.GetValueOrDefault("candidates") / Math.Max(1, state.CandidateChunks) * 1.5)),
         "ranks" => TimeSpan.FromSeconds(Math.Max(60, state.Seconds.GetValueOrDefault("stage1") / Math.Max(1, state.RankChunks) * 1.5)),
+        "cross" => TimeSpan.FromSeconds(Math.Max(60, state.Seconds.GetValueOrDefault("step-c") / Math.Max(1, state.CrossChunks) * 1.5)),
         _ => TimeSpan.FromMinutes(5),
     };
 
@@ -567,113 +808,13 @@ public sealed class SweepRunner
         return [.. candidates.OrderBy(one => one.Session).ThenBy(one => one.Name)];
     }
 
-    // One design's stage 2 settings in index order, the stop and cell read back from where each sits.
-    public static void WriteVariations(string path, SweepVariation[] variations)
-    {
-        var next = path + ".next";
-
-        using (var file = File.Create(next))
-        using (var writer = new BinaryWriter(file))
-        {
-            writer.Write(variations.Length);
-
-            foreach (var one in variations)
-            {
-                writer.Write(one.Share);
-                writer.Write(one.BreakEven);
-                writer.Write(one.NoSkill);
-                writer.Write(one.AverageMultiple);
-                writer.Write(one.Scored);
-                writer.Write(one.YearsBeatingBreakEven);
-                writer.Write(one.WithoutBestYear);
-                writer.Write(one.Blocks);
-                writer.Write(one.Listing);
-            }
-        }
-
-        File.Move(next, path, overwrite: true);
-    }
-
-    public static SweepVariation[] ReadVariations(string path)
-    {
-        var grid = SweepGrid.Fine;
-
-        using var file = File.OpenRead(path);
-        using var reader = new BinaryReader(file);
-        var variations = new SweepVariation[reader.ReadInt32()];
-
-        for (var at = 0; at < variations.Length; at++)
-        {
-            variations[at] = new SweepVariation(
-                at / grid.CellsPerStop,
-                at % grid.CellsPerStop,
-                reader.ReadSingle(),
-                reader.ReadSingle(),
-                reader.ReadSingle(),
-                reader.ReadSingle(),
-                reader.ReadInt32(),
-                reader.ReadByte(),
-                reader.ReadBoolean(),
-                reader.ReadByte(),
-                reader.ReadSingle());
-        }
-
-        return variations;
-    }
-
     List<RankRow> ReadRanks() =>
-        [.. Directory.GetFiles(Of("ranks"), "chunk-*.json").Order(StringComparer.Ordinal).SelectMany(path => JsonSerializer.Deserialize<RankRow[]>(File.ReadAllText(path)) ?? [])];
+        [.. Directory.GetFiles(Of("ranks"), "chunk-*.json").Order(StringComparer.Ordinal).SelectMany(path => JsonSerializer.Deserialize<RankRow[]>(File.ReadAllText(path), Json) ?? [])];
+
+    List<CombinationRow> ReadCross() =>
+        [.. Directory.GetFiles(Of("cross"), "chunk-*.json").Order(StringComparer.Ordinal).SelectMany(path => JsonSerializer.Deserialize<CombinationRow[]>(File.ReadAllText(path), Json) ?? [])];
 
     static ParallelOptions Parallelism() => new() { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount - 2) };
-}
-
-// Stage 1's row for one design as the run saves it.
-public sealed record RankRow(
-    string Key,
-    int Settings,
-    int Viable,
-    double ViableShare,
-    double? MedianMultiple,
-    int? LiveScored,
-    double? LiveShare,
-    double? LiveBreakEven,
-    double? LiveNoSkill,
-    double? LiveMultiple,
-    int? LiveYearsBeatingBoth)
-{
-    // Read back from the key, which is what the file holds.
-    [System.Text.Json.Serialization.JsonIgnore]
-    public SweepDesign Design => Parse(Key);
-
-    public static RankRow Of(SweepDesignRank rank) =>
-        new(
-            rank.Design.Key,
-            rank.Settings,
-            rank.Viable,
-            rank.ViableShare,
-            rank.MedianMultiple,
-            rank.Live?.Scored,
-            rank.Live?.Share,
-            rank.Live?.BreakEven,
-            rank.Live?.NoSkill,
-            rank.Live?.AverageMultiple,
-            rank.Live?.YearsBeatingBoth);
-
-    public static SweepDesign Parse(string key)
-    {
-        var parts = key.Split('|');
-
-        return new SweepDesign(
-            Enum.Parse<StrengthMeasure>(parts[0]),
-            Enum.Parse<UptrendRule>(parts[1]),
-            Enum.Parse<SupportKind>(parts[2]),
-            int.Parse(parts[3], CultureInfo.InvariantCulture),
-            Enum.Parse<TriggerKind>(parts[4]),
-            Enum.Parse<PlanRule>(parts[5]),
-            int.Parse(parts[6], CultureInfo.InvariantCulture),
-            parts[7] == "breakeven",
-            int.Parse(parts[8], CultureInfo.InvariantCulture));
-    }
 }
 
 public sealed class SweepStopped(string message, Exception inner) : Exception(message, inner);

@@ -6,20 +6,30 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Sweep;
 
-// One member of the index on any session of the history, with its series, the spans the index held it for, and
-// the earnings dates on file for it.
+// One earnings surprise as filed: the report date, whether it was reported after the close, and the surprise
+// in per cent as the provider states it.
+public sealed record SweepSurprise(DateOnly EventDate, bool After, double Percent);
+
+// One member of the index on any session of the history, with its series, the spans the index held it for, the
+// earnings dates on file for it, the sector it carries as filed today, and its surprises as filed.
 public sealed record SweepName(
     string Ticker,
     SweepBar[] Bars,
     IReadOnlyList<(DateOnly? Joined, DateOnly? Left)> Spans,
-    DateOnly[] Prints)
+    DateOnly[] Prints,
+    string? Sector = null,
+    IReadOnlyList<SweepSurprise>? SurprisesFiled = null)
 {
+    public IReadOnlyList<SweepSurprise> Surprises => SurprisesFiled ?? [];
+
     public bool MemberOn(DateOnly session) =>
         Spans.Any(span => (span.Joined is not { } joined || joined <= session) && (span.Left is not { } left || left > session));
 }
 
 // The history the sweep replays, read once from the live store and held for the whole run: the sessions, every
-// name the index held on one of them with its series, and the index-nights no bar was served for.
+// name the index held on one of them with its series, the index-nights no bar was served for, and where the
+// surprises came from: the pulled surprises where a pull stored any with a percent, the calendar's own year
+// otherwise, which holds today's members alone.
 public sealed record SweepHistoryInputs(
     DateOnly Through,
     DateOnly[] Sessions,
@@ -28,7 +38,16 @@ public sealed record SweepHistoryInputs(
     long IndexNightsWithoutABar,
     int NamesWithoutBars,
     int NamesMissingSomeSessions,
-    string Fingerprint);
+    string Fingerprint,
+    string SurpriseSource = SweepHistory.NoSurprises,
+    int Surprises = 0,
+    int NamesWithoutASector = 0,
+    IReadOnlyList<(string Ticker, DateOnly Session)>? LiveListedNameSessions = null)
+{
+    // The name-sessions the live list listed through the history's end, which the point-in-time check adds to
+    // its sample.
+    public IReadOnlyList<(string Ticker, DateOnly Session)> LiveListed => LiveListedNameSessions ?? [];
+}
 
 // The sweep's one read of the store.
 //
@@ -54,11 +73,18 @@ public sealed class SweepHistory : IComponent
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.PulledEarnings, Touch.Read),
+            new StoreTouch(Store.PulledSurprise, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
+            new StoreTouch(Store.GateResult, Touch.Read),
         ],
         Feeds: []);
 
     const string Index = "GSPC";
+
+    // Where the surprises the fifth condition reads came from.
+    public const string PulledSurprises = "pulled";
+    public const string CalendarSurprises = "calendar";
+    public const string NoSurprises = "none";
 
     readonly string databaseFile;
 
@@ -123,6 +149,24 @@ public sealed class SweepHistory : IComponent
             }
         }
 
+        // The sector as filed today, the newest observation of a ticker's span winning.
+        var sectors = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, "SELECT ticker, sector FROM membership WHERE index_code = $index AND sector IS NOT NULL ORDER BY observed_at;", [("$index", Index)], cancellation))
+        {
+            sectors[row.GetString(0)] = row.GetString(1);
+        }
+
+        var (surprises, surpriseSource) = await SurprisesAsync(connection, cancellation);
+
+        // The name-sessions the live list listed, through the history's end.
+        var liveListed = new List<(string Ticker, DateOnly Session)>();
+
+        await foreach (var row in RowsAsync(connection, "SELECT ticker, session_date FROM gate_result WHERE passed = 1 AND session_date <= $through ORDER BY session_date, ticker;", [("$through", through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))], cancellation))
+        {
+            liveListed.Add((row.GetString(0), Date(row.GetString(1))));
+        }
+
         var names = new List<SweepName>();
         var stamp = through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         var fingerprint = new System.Text.StringBuilder();
@@ -137,7 +181,13 @@ public sealed class SweepHistory : IComponent
             fingerprint.Append(ticker).Append(':').Append(series.Length.ToString(CultureInfo.InvariantCulture)).Append(':')
                 .Append(series.Sum(bar => bar.Close).ToString(CultureInfo.InvariantCulture)).Append(';');
 
-            names.Add(new SweepName(ticker, series, held, [.. (prints.GetValueOrDefault(ticker) ?? [])]));
+            names.Add(new SweepName(
+                ticker,
+                series,
+                held,
+                [.. (prints.GetValueOrDefault(ticker) ?? [])],
+                sectors.GetValueOrDefault(ticker),
+                [.. (surprises.GetValueOrDefault(ticker) ?? []).OrderBy(surprise => surprise.EventDate)]));
 
             if (++read % 100 == 0)
             {
@@ -156,7 +206,81 @@ public sealed class SweepHistory : IComponent
             withoutBar,
             namesWithout,
             namesMissing,
-            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(fingerprint.ToString())))[..16].ToLowerInvariant());
+            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(fingerprint.ToString())))[..16].ToLowerInvariant(),
+            surpriseSource,
+            surprises.Sum(pair => pair.Value.Count),
+            names.Count(name => name.Sector is null && name.Spans.Count > 0),
+            liveListed);
+    }
+
+    // The surprises the fifth condition reads: every pulled surprise carrying a percent where a pull stored any,
+    // which reaches the years before the store's own, and the calendar's own prints otherwise, whose detail
+    // carries the provider's surprise for today's members over the year the calendar holds. The pulled table is
+    // read only where the store holds it, since a store migrated before it exists holds none.
+    static async Task<(Dictionary<string, List<SweepSurprise>> Surprises, string Source)> SurprisesAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        var surprises = new Dictionary<string, List<SweepSurprise>>(StringComparer.Ordinal);
+
+        void Add(string ticker, DateOnly date, string timing, double percent)
+        {
+            if (!surprises.TryGetValue(ticker, out var held))
+            {
+                surprises[ticker] = held = [];
+            }
+
+            held.Add(new SweepSurprise(date, timing == "after", percent));
+        }
+
+        var pulledTableHeld = false;
+
+        await foreach (var row in RowsAsync(connection, "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'pulled_surprise';", [], cancellation))
+        {
+            pulledTableHeld = true;
+        }
+
+        if (pulledTableHeld)
+        {
+            await foreach (var row in RowsAsync(connection, "SELECT ticker, event_date, timing, surprise_percent FROM pulled_surprise WHERE surprise_percent IS NOT NULL;", [], cancellation))
+            {
+                Add(row.GetString(0), Date(row.GetString(1)), row.GetString(2), row.GetDouble(3));
+            }
+        }
+
+        if (surprises.Count > 0)
+        {
+            return (surprises, PulledSurprises);
+        }
+
+        await foreach (var row in RowsAsync(connection, "SELECT ticker, event_date, timing, detail FROM calendar WHERE kind = 'earnings';", [], cancellation))
+        {
+            if (SurpriseIn(row.GetString(3)) is { } percent)
+            {
+                Add(row.GetString(0), Date(row.GetString(1)), row.GetString(2), percent);
+            }
+        }
+
+        return (surprises, surprises.Count > 0 ? CalendarSurprises : NoSurprises);
+    }
+
+    // The provider's surprise as the calendar's detail carries it, a number kept as text, and none where the
+    // detail carries no number there.
+    public static double? SurpriseIn(string detail)
+    {
+        try
+        {
+            using var document = System.Text.Json.JsonDocument.Parse(detail);
+
+            if (!document.RootElement.TryGetProperty("surprise", out var value) || value.ValueKind != System.Text.Json.JsonValueKind.String)
+            {
+                return null;
+            }
+
+            return double.TryParse(value.GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var percent) ? percent : null;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return null;
+        }
     }
 
     // The pulled series scaled by the median of the stored closes over the pulled ones across the sessions both
@@ -192,6 +316,7 @@ public sealed class SweepHistory : IComponent
                     High = Core.Prices.PriceForm.Round(bar.High * factor, Core.Prices.Statistic.Places),
                     Low = Core.Prices.PriceForm.Round(bar.Low * factor, Core.Prices.Statistic.Places),
                     Close = Core.Prices.PriceForm.Round(bar.Close * factor, Core.Prices.Statistic.Places),
+                    Open = Core.Prices.PriceForm.Round(bar.Open * factor, Core.Prices.Statistic.Places),
                 }),
             .. stored,
         ];
@@ -244,7 +369,7 @@ public sealed class SweepHistory : IComponent
 
         await foreach (var row in RowsAsync(
             connection,
-            $"SELECT session_date, high, low, close, volume FROM {table} WHERE ticker = $ticker AND session_date <= $through ORDER BY session_date;",
+            $"SELECT session_date, high, low, close, volume, open FROM {table} WHERE ticker = $ticker AND session_date <= $through ORDER BY session_date;",
             [("$ticker", ticker), ("$through", through)],
             cancellation))
         {
@@ -253,7 +378,8 @@ public sealed class SweepHistory : IComponent
                 Money.FromStorage(row.GetString(1)),
                 Money.FromStorage(row.GetString(2)),
                 Money.FromStorage(row.GetString(3)),
-                row.GetInt64(4)));
+                row.GetInt64(4),
+                Money.FromStorage(row.GetString(5))));
         }
 
         return [.. bars];

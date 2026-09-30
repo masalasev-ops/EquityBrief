@@ -3,8 +3,9 @@ using EquityBrief.Core.Prices;
 
 namespace EquityBrief.Core.Sweep;
 
-// One session of one name as the sweep reads it.
-public readonly record struct SweepBar(DateOnly Session, decimal High, decimal Low, decimal Close, long Volume);
+// One session of one name as the sweep reads it. The open is read for the gap inside a pullback alone, and a bar
+// read before it was carried holds nought there.
+public readonly record struct SweepBar(DateOnly Session, decimal High, decimal Low, decimal Close, long Volume, decimal Open = 0);
 
 // A plan read off one support band or one average: its entry, stop and target, their reward to risk rounded as
 // the trade gate rounds it, and the stop's distance below the entry in typical moves.

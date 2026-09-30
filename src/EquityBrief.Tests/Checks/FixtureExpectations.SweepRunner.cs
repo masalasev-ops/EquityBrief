@@ -164,4 +164,46 @@ public partial class FixtureExpectations
         Assert.Contains("stage 2 for a design failed twice and the run stopped there", page, StringComparison.Ordinal);
         Assert.Contains("Nothing is proposed and nothing registered.", page, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task EachRunHasAFolderOfItsOwnAndAFinishedRunOrOneFromAnotherBuildIsNeverWrittenAgain()
+    {
+        // A run's folder is named by the instant it started, newest first among the runs, and the newest report
+        // is the newest run's that holds one, or the root's where no run does.
+        var root = Path.Combine(Path.GetTempPath(), "equitybrief-tests", Guid.NewGuid().ToString("n"), EquityBrief.Core.Sweep.SweepFolder.Name);
+
+        Directory.CreateDirectory(root);
+
+        Assert.Equal("20260930T204732Z", EquityBrief.Core.Sweep.SweepFolder.RunName(new DateTimeOffset(2026, 9, 30, 20, 47, 32, TimeSpan.Zero)));
+        Assert.True(EquityBrief.Core.Sweep.SweepFolder.IsRunName("20260930T204732Z"));
+        Assert.False(EquityBrief.Core.Sweep.SweepFolder.IsRunName("candidates"));
+        Assert.Empty(EquityBrief.Core.Sweep.SweepFolder.Runs(root));
+        Assert.Null(EquityBrief.Core.Sweep.SweepFolder.NewestReport(root));
+
+        File.WriteAllText(Path.Combine(root, EquityBrief.Core.Sweep.SweepFolder.ReportFile), "the first run");
+        Directory.CreateDirectory(Path.Combine(root, "20261001T120000Z"));
+        Directory.CreateDirectory(Path.Combine(root, "20261002T120000Z"));
+        Directory.CreateDirectory(Path.Combine(root, "candidates"));
+        File.WriteAllText(Path.Combine(root, "20261001T120000Z", EquityBrief.Core.Sweep.SweepFolder.ReportFile), "the second run");
+
+        Assert.Equal(["20261002T120000Z", "20261001T120000Z"], EquityBrief.Core.Sweep.SweepFolder.Runs(root));
+        Assert.Equal(Path.Combine(root, "20261001T120000Z", EquityBrief.Core.Sweep.SweepFolder.ReportFile), EquityBrief.Core.Sweep.SweepFolder.NewestReport(root));
+
+        // A finished run is never written again, and a run started by another build is not gone on with; each
+        // says so and computes nothing.
+        var (finished, _, _) = SweepWaiting(SweepUtc(9, 29, 12, 0), SweepNothing);
+        var folder = Path.Combine(root, "20261002T120000Z");
+        var runner = new SweepRunner(new SweepClock(SweepUtc(9, 29, 12, 0)), root, Path.Combine(root, "none.db"), folder, TextWriter.Null);
+
+        File.WriteAllText(Path.Combine(folder, "state.json"), "{\"Finished\": true}");
+        Assert.Equal(2, await runner.RunAsync());
+
+        File.WriteAllText(Path.Combine(folder, "state.json"), "{\"Build\": \"another build\"}");
+        Assert.Equal(2, await runner.RunAsync());
+        Assert.Contains("this run was started by build another build", File.ReadAllText(Path.Combine(folder, "sweep.log")), StringComparison.Ordinal);
+        Assert.NotEqual("another build", SweepRunner.BuildId);
+        Assert.Equal(32, SweepRunner.BuildId.Length);
+
+        _ = finished;
+    }
 }

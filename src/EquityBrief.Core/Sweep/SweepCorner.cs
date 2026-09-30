@@ -56,7 +56,7 @@ public readonly record struct SweepCorner(
         return new SweepCorner(strengthLast, depthLowLast, depthHighFirst, dryUpFirst, freshFirst, rewardLast, marketLast, bandLast, stopMask);
     }
 
-    // Whether the candidate passes a setting, read directly rather than off the table: what the table is held to.
+    // Whether the candidate passes a setting, read directly: what every walk reads.
     public bool Passes(DialSetting setting) =>
         setting.Strength <= StrengthLast
         && setting.DepthLow <= DepthLowLast
@@ -67,11 +67,6 @@ public readonly record struct SweepCorner(
         && setting.Market <= MarketLast
         && setting.Band <= BandLast
         && (StopMask & (1 << setting.Stop)) != 0;
-
-    // The cell a candidate is laid in on its table: the last level of each dial passed up to one, and the first
-    // of each passed from one.
-    public int Cell(SweepGrid grid) =>
-        new DialSetting(StrengthLast, DepthLowLast, DepthHighFirst, DryUpFirst, FreshFirst, RewardLast, 0, MarketLast, BandLast).Cell(grid);
 
     static int LastAtOrBelow(IReadOnlyList<double> levels, double value)
     {
@@ -176,110 +171,4 @@ public readonly record struct SweepCorner(
 
         return last;
     }
-}
-
-// A table over a grid at one of its stop options: for every setting of the other dials, the sum of a vector of
-// figures over the candidates that setting passes. Each candidate the stop option passes is laid once in its
-// corner cell, and the cumulative sums along each dial then carry it to every cell whose setting passes it: along
-// a dial passed up to a last level, from the top level down; along a dial passed from a first level, from the
-// bottom up. One stop option to a table, so the finest grid's table is read an option at a time.
-public sealed class SweepTable
-{
-    // The direction each ordered dial accumulates in, in the order a cell is indexed: true where a candidate
-    // passes the levels up to a last one.
-    static readonly bool[] UpToALast = [true, true, false, false, false, true, true, true];
-
-    readonly SweepGrid grid;
-    readonly int width;
-    readonly int stop;
-    readonly float[][] cells;
-
-    public SweepTable(SweepGrid grid, int width, int stop)
-    {
-        this.grid = grid;
-        this.width = width;
-        this.stop = stop;
-        cells = [new float[grid.CellsPerStop * width]];
-    }
-
-    public int Width => width;
-
-    public int Stop => stop;
-
-    public void Add(SweepCorner corner, ReadOnlySpan<float> figures)
-    {
-        if ((corner.StopMask & (1 << stop)) == 0)
-        {
-            return;
-        }
-
-        var into = cells[0].AsSpan(corner.Cell(grid) * width, width);
-
-        for (var at = 0; at < width; at++)
-        {
-            into[at] += figures[at];
-        }
-    }
-
-    // Carries every candidate from its corner to every cell passing it. Called once, after the last one is laid.
-    public void Accumulate()
-    {
-        var sizes = grid.Sizes;
-        var strides = new int[sizes.Count];
-
-        strides[^1] = 1;
-
-        for (var dial = sizes.Count - 2; dial >= 0; dial--)
-        {
-            strides[dial] = strides[dial + 1] * sizes[dial + 1];
-        }
-
-        foreach (var table in cells)
-        {
-            for (var dial = 0; dial < sizes.Count; dial++)
-            {
-                var stride = strides[dial];
-                var size = sizes[dial];
-
-                for (var cell = 0; cell < grid.CellsPerStop; cell++)
-                {
-                    var level = cell / stride % size;
-
-                    // Each line along the dial is walked once, from the end its sums start at.
-                    if (UpToALast[dial] ? level != size - 1 : level != 0)
-                    {
-                        continue;
-                    }
-
-                    if (UpToALast[dial])
-                    {
-                        for (var at = size - 2; at >= 0; at--)
-                        {
-                            Carry(table, cell - ((size - 1 - at) * stride), cell - ((size - 2 - at) * stride));
-                        }
-                    }
-                    else
-                    {
-                        for (var at = 1; at < size; at++)
-                        {
-                            Carry(table, cell + (at * stride), cell + ((at - 1) * stride));
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    void Carry(float[] table, int into, int from)
-    {
-        var target = table.AsSpan(into * width, width);
-        var source = table.AsSpan(from * width, width);
-
-        for (var at = 0; at < width; at++)
-        {
-            target[at] += source[at];
-        }
-    }
-
-    public ReadOnlySpan<float> At(int cell) => cells[0].AsSpan(cell * width, width);
 }

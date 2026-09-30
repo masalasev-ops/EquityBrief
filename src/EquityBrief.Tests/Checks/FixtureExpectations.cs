@@ -64,6 +64,14 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.LimitsTable, "Sweep variants"),
             CheckReach.Key(Scope.LimitsTable, "Sweep run"),
             CheckReach.Key(Scope.FailureTable, "A chunk of the sweep fails twice"),
+            // The rerun, on the operator's rulings of 2026-09-30: the edge, the conditions, the point-in-time
+            // check and the search, and section 18's rows about a difference found and a name with no sector.
+            CheckReach.Key(Scope.LimitsTable, "Sweep edge"),
+            CheckReach.Key(Scope.LimitsTable, "Sweep conditions"),
+            CheckReach.Key(Scope.LimitsTable, "Sweep point in time"),
+            CheckReach.Key(Scope.LimitsTable, "Sweep search"),
+            CheckReach.Key(Scope.FailureTable, "The point-in-time check finds a difference"),
+            CheckReach.Key(Scope.FailureTable, "A sweep candidate with no sector label"),
 
             // 12.6's correction, the model profiles: section 17's profiles over the shipped settings and the
             // fixture's own models file, and the half of section 18's row about a key the secrets file does not
