@@ -80,9 +80,9 @@
      "KEYS": {
       "fired": ["at entry zone", "trend state changed"],
       "reading": "the close 327.21 is inside the zone 311.2696 to 332.78, and the trend label moved from range on 2026-09-03 to uptrend",
-      "entryLow": "311.2696", "entryHigh": "332.78", "stop": "306.852", "firstTradedTarget": "366.41",
-      "worked": "the entry is 322.0248, the risk 322.0248 - 306.852 = 15.1728, the reward 44.3852, and 44.3852 / 15.1728 = 2.92531",
-      "rewardToRisk": "2.9253"
+      "entryLow": "311.2696", "entryHigh": "332.78", "stop": "305.42", "firstTradedTarget": "366.41",
+      "worked": "the entry is 322.0248; the uptrend trails the stop to the swing low at 306.852, which is the top edge of the band beneath, 305.42 to 306.852, so it moves to that band's low edge; the risk 322.0248 - 305.42 = 16.6048, the reward 44.3852, and 44.3852 / 16.6048 = 2.67303",
+      "rewardToRisk": "2.6730"
      },
      "AAPL": {
       "fired": ["at entry zone", "crossed a level"],
@@ -108,6 +108,6 @@
     "order": ["KEYS", "AAPL", "MSFT", "NFLX"]
    }
   },
-  "theEarlierNightsOwnPlan": "KEYS is drawn on 2026-09-03 at 2.6730 and on 2026-09-04 at 2.9253, its first tranche's stop having moved from the band at 305.42 in a range to the swing low at 306.852 in an uptrend, so the earlier night's row carries its own night's ratio and not the newer one"
+  "theEarlierNightsOwnPlan": "MSFT is drawn on 2026-09-03 on its zone 507.9797 to 517.78 stopped at 492.1166 and on 2026-09-04 on 492.1166 to 501.9168 stopped at 485.1401, so the earlier night's row carries its own night's plan and not the newer one. KEYS is drawn at 2.6730 on both: its first tranche's stop is the band beneath's low edge, 305.42, in the range of 2026-09-03 and again in the uptrend of 2026-09-04, where the swing low at 306.852 the stop trails to is that band's top edge and moves to its low edge"
  }
 }

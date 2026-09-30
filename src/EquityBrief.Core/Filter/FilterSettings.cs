@@ -16,18 +16,18 @@ public enum TradeInput
     Clear,
 }
 
-// The swing filter's settings: the nine thresholds its gates and its exclusion read, and which plan the
-// trade gate reads. Section 17 states each as proposed; the store's open filter version, where one is
-// open, carries its own.
+// The swing filter's settings: the thresholds its gates and its exclusion read, and which plan the trade
+// gate reads. Section 17 states each as proposed; the store's open filter version, where one is open,
+// carries its own. A version opened before the filter read pullbacks alone also names the base's
+// tightness and the breakout's volume, which nothing reads any more.
 // see: The swing filter's starting settings are ruled from shape counts before tonight's list switches to it
+// see: The swing filter reads pullbacks alone, and a breakout returns only as a registered candidate built from its measured record
 public sealed record FilterSettings(
     double BreadthFloor,
     double StrengthFloor,
     double DepthLow,
     double DepthHigh,
     double DryUpCeiling,
-    double TightnessCeiling,
-    double BreakoutVolumeMultiple,
     double RewardToRiskFloor,
     double StopLow,
     double StopHigh,
@@ -45,10 +45,6 @@ public sealed record FilterSettings(
     public const double ProposedDepthHigh = 5;
 
     public const double ProposedDryUpCeiling = 1;
-
-    public const double ProposedTightnessCeiling = 0.7;
-
-    public const double ProposedBreakoutVolumeMultiple = 1.5;
 
     public const double ProposedRewardToRiskFloor = 2;
 
@@ -68,8 +64,6 @@ public sealed record FilterSettings(
         ProposedDepthLow,
         ProposedDepthHigh,
         ProposedDryUpCeiling,
-        ProposedTightnessCeiling,
-        ProposedBreakoutVolumeMultiple,
         ProposedRewardToRiskFloor,
         ProposedStopLow,
         ProposedStopHigh,
@@ -87,8 +81,6 @@ public sealed record FilterSettings(
             ["depthLow"] = DepthLow,
             ["depthHigh"] = DepthHigh,
             ["dryUpCeiling"] = DryUpCeiling,
-            ["tightnessCeiling"] = TightnessCeiling,
-            ["breakoutVolumeMultiple"] = BreakoutVolumeMultiple,
             ["rewardToRiskFloor"] = RewardToRiskFloor,
             ["stopLow"] = StopLow,
             ["stopHigh"] = StopHigh,
@@ -122,7 +114,8 @@ public sealed record FilterSettings(
 
     // A version's settings, every one of them named: a version missing one is refused rather than
     // read with a proposed value filled in, since a filter run on a value nobody accepted is not the
-    // version it names.
+    // version it names. A setting the filter no longer reads, the base's tightness and the breakout's
+    // volume on a version opened before breakouts were removed, is passed over.
     public static FilterSettings Read(string json)
     {
         using var document = JsonDocument.Parse(json);
@@ -141,8 +134,6 @@ public sealed record FilterSettings(
             Number("depthLow"),
             Number("depthHigh"),
             Number("dryUpCeiling"),
-            Number("tightnessCeiling"),
-            Number("breakoutVolumeMultiple"),
             Number("rewardToRiskFloor"),
             Number("stopLow"),
             Number("stopHigh"),

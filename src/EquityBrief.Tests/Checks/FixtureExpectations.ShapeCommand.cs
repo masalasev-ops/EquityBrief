@@ -257,6 +257,54 @@ public partial class FixtureExpectations
     }
 
     [Fact]
+    public async Task ARuleCorrectionNamingNoPlanOpensTheNextVersionWrittenAsTheCodeWritesItAndRegistersTheFamilyAgain()
+    {
+        // A version opened before the filter read pullbacks alone names the base's tightness and the
+        // breakout's volume; a correction naming no plan opens the next with every setting it held, the
+        // plan among them, and without the two, registers the family again at one instant, and is refused
+        // once the open version is written as the code writes it.
+        // see: The swing filter reads pullbacks alone, and a breakout returns only as a registered candidate built from its measured record
+        var threeAt = new DateTimeOffset(2026, 9, 6, 22, 0, 0, TimeSpan.Zero);
+        var familyAt = new DateTimeOffset(2026, 9, 7, 22, 0, 0, TimeSpan.Zero);
+        var correctedAt = new DateTimeOffset(2026, 9, 29, 22, 0, 0, TimeSpan.Zero);
+        var stored = Ruled.Write().Replace("\"rewardToRiskFloor\"", "\"tightnessCeiling\":0.7,\"breakoutVolumeMultiple\":1.5,\"rewardToRiskFloor\"", StringComparison.Ordinal);
+
+        Assert.Contains("tightnessCeiling", stored, StringComparison.Ordinal);
+
+        using var store = await FamilyStore(threeAt, versionOpen: false);
+
+        store.Execute($"INSERT INTO filter_version (version, settings, opened_at, closed_at, evidence) VALUES ('1', '{stored}', '2026-09-05T22:00:00Z', NULL, 'the ruling');");
+
+        Assert.Equal(0, (await RegisterVerbAt(store, familyAt, RegisterVerb.TheFamily)).Code);
+
+        var (corrected, said) = await ShapeVerb(store, correctedAt, "--rule-correction", "--restarts", "0", "--evidence", "the operator's ruling of 2026-09-26: pullbacks alone");
+
+        Assert.Equal(0, corrected);
+        Assert.StartsWith(
+            $"shape: filter version 2 opened, closing 1, its trade gate reading the {FilterSettings.Word(Ruled.Trade)} plan and every other setting as version 1 held it, written as the code now writes a version's settings; retired 6 and registered 6 at one instant",
+            said,
+            StringComparison.Ordinal);
+
+        var opened = Text(store, "SELECT settings FROM filter_version WHERE version = '2';");
+
+        Assert.Equal(Ruled.Write(), opened);
+        Assert.DoesNotContain("tightnessCeiling", opened, StringComparison.Ordinal);
+        Assert.DoesNotContain("breakoutVolumeMultiple", opened, StringComparison.Ordinal);
+        Assert.Equal(1, Scalar(store, "SELECT COUNT(DISTINCT registered_at) FROM candidate_register WHERE registered_at = '2026-09-29T22:00:00Z';"));
+        Assert.Equal(
+            [.. TheSwingFamily.For("2", Ruled).Select(one => one.Candidate)],
+            TextRows(store, "SELECT candidate FROM candidate_register WHERE event = 'registered' AND registered_at = '2026-09-29T22:00:00Z' ORDER BY id;"));
+
+        // The next correction naming no plan would change nothing, and is refused with nothing changed.
+        var before = ShapeTables(store);
+        var (again, againSaid) = await ShapeVerb(store, correctedAt.AddMinutes(1), "--rule-correction", "--restarts", "0", "--evidence", "twice");
+
+        Assert.Equal(1, again);
+        Assert.Contains("filter version 2's settings are already written as the code writes them, so the correction would change nothing. Nothing was changed.", againSaid, StringComparison.Ordinal);
+        Assert.Equal(before, ShapeTables(store));
+    }
+
+    [Fact]
     public void TheBoundCountsTheRetirementsAnAcceptanceWritesAndNoOther()
     {
         var at = new DateTimeOffset(2026, 9, 26, 12, 0, 0, TimeSpan.Zero);

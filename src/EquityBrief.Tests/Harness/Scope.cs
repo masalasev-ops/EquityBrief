@@ -561,9 +561,9 @@ internal static class Scope
             Verdict.Pass,
             "each gate's count passing it and every gate before it, and what it removed, are drawn whole and read back off the run page against counts the test makes from the stored rows",
             ByReadSurface),
-        [CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's two families")] = new Scoped(
+        [CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's families on a night that held a breakout")] = new Scoped(
             Verdict.Pass,
-            "the pullbacks and the breakouts among the members through the market and the trend are drawn whole and read back against the stored rows",
+            "a night holding no breakout draws no families, and one holding a breakout draws the pullbacks and the breakouts among the members through the market and the trend whole, read back against the stored rows",
             ByReadSurface),
         [CheckReach.Key("15.10 Run", "Swing filter funnel, what each exclusion removed and how many pass")] = new Scoped(
             Verdict.Pass,
@@ -637,14 +637,6 @@ internal static class Scope
             Verdict.Pass,
             "a dry-up a step under the ceiling passes and one at it fails, over constructed members",
             ByExpectations),
-        [CheckReach.Key(LimitsTable, "Base tightness")] = new Scoped(
-            Verdict.Pass,
-            "a tightness a step under the ceiling passes and one at it fails, over constructed members",
-            ByExpectations),
-        [CheckReach.Key(LimitsTable, "Breakout volume")] = new Scoped(
-            Verdict.Pass,
-            "volume at exactly the multiple passes and a step under it fails, over constructed members",
-            ByExpectations),
         [CheckReach.Key(LimitsTable, "Trade reward to risk")] = new Scoped(
             Verdict.Pass,
             "a reward to risk at the floor passes and a step under it fails, over constructed members, on each plan the trade gate can read",
@@ -665,7 +657,7 @@ internal static class Scope
             Verdict.Pass,
             "each gate reading an absent value fails with the reason it is absent and none passes on an absence, over constructed members and the fixture's member the night read nothing for",
             ByExpectations),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback and the tight base breakout, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it).")] = new Scoped(
             Verdict.Pass,
             "the night runs the step after the listings and before the facts, writes a row for every member, and records its session as listed by the swing filter",
             ByNight),
@@ -3536,7 +3528,7 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked")] = "12.2",
         [CheckReach.Key("15.9 Name", "Gates, the exclusions with a key saying how to read it")] = "12.2",
         [CheckReach.Key("15.10 Run", "Swing filter funnel, how many members each gate passed in order and how many it removed")] = "12.2",
-        [CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's two families")] = "12.2",
+        [CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's families on a night that held a breakout")] = "12.2",
         [CheckReach.Key("15.10 Run", "Swing filter funnel, what each exclusion removed and how many pass")] = "12.2",
         [CheckReach.Key("15.10 Run", "Swing filter funnel, the version the night ran under")] = "12.2",
         // 12.1's readings, each part owed where it is drawn.
@@ -3809,7 +3801,7 @@ internal static class Scope
         [CheckReach.Key("15.9 Name", "Gates")] =
             ["each of the five gates with whether it passed and why", "the setup's family and whether the trigger's event happened", "the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked", "the exclusions with a key saying how to read it"],
         [CheckReach.Key("15.10 Run", "Swing filter funnel")] =
-            ["how many members each gate passed in order and how many it removed", "the setup's two families", "what each exclusion removed and how many pass", "the version the night ran under"],
+            ["how many members each gate passed in order and how many it removed", "the setup's families on a night that held a breakout", "what each exclusion removed and how many pass", "the version the night ran under"],
         [CheckReach.Key("15.10 Run", "Harness")] =
             ["passed", "failed", "unexamined"],
 
@@ -4212,8 +4204,6 @@ internal static class Scope
         ["Relative strength windows"] = "12.1",
         ["Pullback depth"] = "12.2",
         ["Volume dry-up"] = "12.2",
-        ["Base tightness"] = "12.2",
-        ["Breakout volume"] = "12.2",
         ["Trade reward to risk"] = "12.2",
         ["Trade stop distance"] = "12.2",
         ["Earnings exclusion"] = "12.2",

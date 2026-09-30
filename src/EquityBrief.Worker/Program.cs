@@ -103,7 +103,7 @@ static async Task<int> Register(string[] args)
 // decision a person takes, and a night that opened or closed its own windows
 // would be changing what it measures while it measures it. The verb's work is
 // in `VersionVerb`, so a test runs the verb a person runs rather than a copy of it.
-// see: A ladder rule's version is measured beside that rule's live window, and both count against the bound
+// see: A ladder rule's version is measured beside that rule's live window, and both count against a bound of eighteen
 static async Task<int> VersionWindows(string[] args)
 {
     var configuration = Configuration();

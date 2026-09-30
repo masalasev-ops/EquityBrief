@@ -362,7 +362,7 @@ public sealed record ShapeProposalRow(
     string? Reason,
     string? Opened);
 
-public sealed record TriggerReads(int ClockNights, IReadOnlyList<string> VersionSteps, int? ConfirmationNights, string? ConfirmationVersion);
+public sealed record TriggerReads(int? ConfirmationNights, string? ConfirmationVersion);
 
 // One member's swing filter result on a night as the filter stored it: each gate's pass, the family
 // and the trigger, the trade read three ways, the exclusions, the rank among the names passing, and
@@ -2368,20 +2368,6 @@ public sealed class ReadApi : IComponent
         LIMIT 1;
     ";
 
-    // A night run for the session the clock fell on carries no named session in its run id, and one
-    // run by hand for a named session does.
-    const string ClockNightCloses = @"
-        SELECT COUNT(DISTINCT run_id)
-        FROM run_log
-        WHERE stage = 'close' AND outcome = 'ok' AND run_id LIKE 'night-%' AND run_id NOT LIKE '%-for-%';
-    ";
-
-    const string ClockNightVersionSteps = @"
-        SELECT detail
-        FROM run_log
-        WHERE stage = 'rule-versions' AND outcome = 'ok' AND run_id LIKE 'night-%' AND run_id NOT LIKE '%-for-%';
-    ";
-
     const string OpenTrendVersions = @"
         SELECT version, parameters, opened_at
         FROM rule_version
@@ -2484,28 +2470,6 @@ public sealed class ReadApi : IComponent
     {
         await using var connection = Open();
 
-        int clockNights;
-
-        await using (var command = connection.CreateCommand())
-        {
-            command.CommandText = ClockNightCloses;
-            clockNights = Convert.ToInt32(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
-        }
-
-        var steps = new List<string>();
-
-        await using (var command = connection.CreateCommand())
-        {
-            command.CommandText = ClockNightVersionSteps;
-
-            await using var reader = await command.ExecuteReaderAsync();
-
-            while (await reader.ReadAsync())
-            {
-                steps.Add(reader.IsDBNull(0) ? string.Empty : reader.GetString(0));
-            }
-        }
-
         // The trend version whose new label has to hold more than one night, read off its stored parameters.
         (string Version, string OpenedAt)? confirmation = null;
 
@@ -2542,7 +2506,7 @@ public sealed class ReadApi : IComponent
             confirmationNights = Convert.ToInt32(await command.ExecuteScalarAsync(), CultureInfo.InvariantCulture);
         }
 
-        return new TriggerReads(clockNights, steps, confirmationNights, confirmation?.Version);
+        return new TriggerReads(confirmationNights, confirmation?.Version);
     }
 
     // The swing filter's columns, in the order every read of them takes them.

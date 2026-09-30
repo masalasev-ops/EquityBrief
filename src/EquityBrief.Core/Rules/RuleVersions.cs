@@ -91,10 +91,9 @@ public static class LadderRules
 // merge distance and four of each other rule, each rule's live window among them,
 // so the fullest register they admit replays one merge distance version and
 // twelve others, 208 seconds, which puts the night at 703 against a deadline of
-// 900. A projection is not a measurement, and the row that settles it reads the
-// scorer's own nights.
-// owes: The rule version bound set from nights the version scorer ran
-// see: A ladder rule's version is measured beside that rule's live window, and both count against the bound
+// 3600. The operator settled the caps and their sum of eighteen on 2026-09-28,
+// with the night's deadline at an hour.
+// see: A ladder rule's version is measured beside that rule's live window, and both count against a bound of eighteen
 public static class RuleVersions
 {
     // At most two windows of the merge distance, four of each other rule, and

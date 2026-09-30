@@ -135,11 +135,14 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public void TheBreakoutPassesATightBaseClearingABandAboveThePreviousCloseOnOneAndAHalfTimesItsVolume()
+    public void ATightBaseClearingABandOnHeavyVolumeIsNoSetupSinceTheFilterReadsPullbacksAlone()
     {
-        // No pullback, its depth one typical move; a band 95 to 99 sitting at the previous close of 95 and
-        // cleared by a close of 102; tightness 0.69; volume 1,500 against a fifty-day average of 1,000,
-        // exactly one and a half times. Worked by hand, a breakout, and its trigger is the break itself.
+        // What the filter read as a breakout until breakouts were removed: no pullback, its depth one typical
+        // move; a band 95 to 99 sitting at the previous close of 95 and cleared by a close of 102; tightness
+        // 0.69; volume 1,500 against a fifty-day average of 1,000, one and a half times. Worked by hand under
+        // the pullback's rule alone, the depth is under the floor of 2 and the close sits in no band, so the
+        // setup fails, names no family, and the trigger's arrival is read as for any name with no setup.
+        // see: The swing filter reads pullbacks alone, and a breakout returns only as a registered candidate built from its measured record
         var breakout = Passing() with
         {
             Reading = Passing().Reading! with { Depth = 1.0, Tightness = 0.69 },
@@ -151,16 +154,17 @@ public partial class FixtureExpectations
 
         var result = Gates(breakout);
 
-        Assert.Equal(SwingGates.Breakout, result.Family);
-        Assert.True(Passed(result, SwingGates.Trigger));
-        Assert.Equal(7, result.BandStrength);
+        Assert.Null(result.Family);
+        Assert.False(Passed(result, SwingGates.Setup));
+        Assert.Equal("no pullback: depth 1.00 outside 2 to 5 typical moves, the close is inside no anchored support band", Reason(result, SwingGates.Setup));
+        Assert.False(Passed(result, SwingGates.Trigger));
+        Assert.Null(result.BandStrength);
+        Assert.False(result.Passed);
 
-        // One share under the multiple, a tightness at the ceiling, a band below the previous close, and a
-        // close only at the band's top edge each leave no breakout.
-        Assert.Null(Gates(breakout with { Volume = 1499 }).Family);
-        Assert.Null(Gates(breakout with { Reading = breakout.Reading! with { Tightness = 0.7 } }).Family);
-        Assert.Null(Gates(breakout with { PreviousClose = 95.01m }).Family);
-        Assert.Null(Gates(breakout with { Close = 99m }).Family);
+        // The setup's values name the pullback's band test alone.
+        var values = result.Gates.Single(gate => gate.Name == SwingGates.Setup).Values;
+
+        Assert.Equal(["band high", "band low", "depth", "dry-up", "family", SwingGates.PullbackBandValue], values.Keys.Order(StringComparer.Ordinal));
     }
 
     [Fact]

@@ -41,7 +41,7 @@ public partial class FixtureExpectations
         for (var at = 0; at < sources.Length; at++)
         {
             var moved = sources.ToArray();
-            moved[at] += "\n// a changed line";
+            moved[at] += "\ninternal static class Moved { }";
 
             Assert.NotEqual(SwingFilter.CodeVersion, SourcePin.Of(moved, SwingFilter.CodeVersionDeclaration));
         }

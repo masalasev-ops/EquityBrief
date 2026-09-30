@@ -10,7 +10,7 @@ namespace EquityBrief.Tests.Providers;
 // wait for rather than off a clock. A backoff proved by waiting six seconds is
 // a backoff nobody runs twice, and a test nobody runs twice is one that gets a
 // Skip attribute the first time it is inconvenient.
-// see: A feed is tried three times with a doubling backoff, and the night has a deadline it cannot move
+// see: A feed is tried three times with a doubling backoff, and the night has an hour's deadline it cannot move
 public class ProviderRequestTests
 {
     static readonly RetryPolicy Fast = RetryPolicy.Standard with { Timeout = TimeSpan.FromMilliseconds(50) };

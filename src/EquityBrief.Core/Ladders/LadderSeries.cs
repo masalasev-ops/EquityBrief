@@ -195,7 +195,7 @@ public static class LadderSeries
         // not be classified carries none either: the label decides whether a
         // plan exists, and a plan placed on a label nobody could read is a
         // purchase on an unmeasured input.
-        // see: The trailing stop is the higher of the band beneath and the last swing low
+        // see: The trailing stop is the higher of the band beneath and the last swing low, and a stop inside a support band moves to that band's low edge
         if (trendState is TrendState.Downtrend)
         {
             return new Ladder([], [], null, "the trend is down, so no tranche is placed", []);
@@ -261,9 +261,11 @@ public static class LadderSeries
                 low,
                 high,
                 ConditionFor(band, close, typicalMove, recent),
-                rules.StopTrailsTheLastHigherLow
-                    ? StopFor(band, beneath?.LowEdge, trendState, swingLows ?? [])
-                    : beneath?.LowEdge));
+                OutsideEverySupportBand(
+                    rules.StopTrailsTheLastHigherLow
+                        ? StopFor(band, beneath?.LowEdge, trendState, swingLows ?? [])
+                        : beneath?.LowEdge,
+                    bands)));
         }
 
         // The whole position is wrong below the lowest band the structure
@@ -303,7 +305,7 @@ public static class LadderSeries
     // floor. In an uptrend it trails: the stop is the higher of that band and
     // the most recent swing low beneath the tranche, so it rises as the
     // structure makes higher lows and is never looser than the range rule.
-    // see: The trailing stop is the higher of the band beneath and the last swing low
+    // see: The trailing stop is the higher of the band beneath and the last swing low, and a stop inside a support band moves to that band's low edge
     //
     // Taking the higher of the two rather than the swing low alone is what keeps
     // the rule meaningful. Read literally, "the stop trails the last higher low"
@@ -334,6 +336,29 @@ public static class LadderSeries
         var last = trailing[^1];
 
         return beneath is { } floor ? Math.Max(floor, last) : last;
+    }
+
+    // A stop inside a support band, above its low edge and at or below its high
+    // edge, moved to that band's low edge, and again where that edge sits inside
+    // another, so no stop is one a close the band holds takes out. A swing low is
+    // most often a band's own member, so the stop that trails it lands on the band
+    // beneath's top edge or inside it, where a close still inside the band ends a
+    // trade the band was meant to protect. Each move is to a lower price, so the
+    // walk ends.
+    // see: The trailing stop is the higher of the band beneath and the last swing low, and a stop inside a support band moves to that band's low edge
+    public static decimal? OutsideEverySupportBand(decimal? stop, IReadOnlyList<Level> bands)
+    {
+        if (stop is not { } placed)
+        {
+            return null;
+        }
+
+        while (bands.FirstOrDefault(band => band.Role == LevelSeries.Support && band.LowEdge < placed && placed <= band.HighEdge) is { } holding)
+        {
+            placed = holding.LowEdge;
+        }
+
+        return placed;
     }
 
     // One exit per resistance band above the price, at most five, the nearest

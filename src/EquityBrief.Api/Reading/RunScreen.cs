@@ -1130,33 +1130,21 @@ public static class RunScreen
             blocks);
     }
 
-    // The count each of five operating obligations waits on, against its trigger, where no other surface
-    // draws one: the nights the clock chose the session for, the research passes carrying a recorded
-    // cost, the nights the version step replayed both kinds of version, the event book's resolved
-    // setups, which nothing scores yet, and the nights of trend labels under the version holding a new
-    // label for more than one night.
-    // owes: The nightly wall clock at index size, measured from nights that ran on the schedule
+    // The count each of three operating obligations waits on, against its trigger, where no other surface
+    // draws one: the research passes carrying a recorded cost, the event book's resolved setups, which
+    // nothing scores yet, and the nights of trend labels under the version holding a new label for more
+    // than one night. The night's wall clock and the bound on versions scored at once were settled by the
+    // operator's ruling of 2026-09-28 and wait on no count.
     // owes: The spend cap set from the passes the ledger has priced
-    // owes: The rule version bound set from nights the version scorer ran
     // owes: The event setups' triggers calibrated from resolved setups
     // owes: The trend confirmation's nights settled from flip-backs
     public static IReadOnlyList<TriggerLine> Triggers(TriggerReads reads, PricedCalls priced) =>
     [
         new(
-            "wall clock",
-            reads.ClockNights,
-            5,
-            "night(s) run for the session the clock fell on have closed, which is what the schedule runs, against the five the night's wall clock is set from"),
-        new(
             "spend cap",
             priced.Passes,
             20,
             "research pass(es) carry a recorded cost, against the twenty the spend cap is set from"),
-        new(
-            "version bound",
-            reads.VersionSteps.Count(ReplayedBothKinds),
-            5,
-            "night(s) run for the session the clock fell on replayed a merge distance version and another rule's, against the five the bound on versions scored at once is set from"),
         new(
             "event setups",
             0,
@@ -1170,13 +1158,6 @@ public static class RunScreen
                 ? $"night(s) of trend labels scored under '{version}' since its window opened, against the sixty its nights are settled from"
                 : "night(s) of trend labels: no version holding a new label for more than one night is open, so nothing counts toward the sixty"),
     ];
-
-    // A version step's line replayed both kinds where it replayed at least one merge distance version
-    // and at least one version of another rule, read off the words the scorer writes.
-    static bool ReplayedBothKinds(string detail) =>
-        Regex.Match(detail, @"(\d+) replayed with (\d+) of the merge distance") is { Success: true } replayed
-            && int.Parse(replayed.Groups[2].Value, CultureInfo.InvariantCulture) >= 1
-            && int.Parse(replayed.Groups[1].Value, CultureInfo.InvariantCulture) > int.Parse(replayed.Groups[2].Value, CultureInfo.InvariantCulture);
 
     // The paid calls the log carries a recorded cost for, counted, their passes counted
     // by the run each was made under, and summed, off the rows the read surface handed back,

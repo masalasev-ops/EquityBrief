@@ -74,10 +74,10 @@ public sealed class RuleVersionScorer : IComponent
 
     // The pin of every source the live ladder rules and their replay run through, less
     // the line below; `rule-versions-scored` derives the list from the compiled code.
-    // see: The ladder rules' code version pins every source a live ladder rule or its replay runs through
+    // see: The ladder rules' code version pins every source a live ladder rule or its replay runs through, its comments and blank lines aside
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "fd934631fb3b";
+    public const string CodeVersion = "8ae51b59cb91";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
