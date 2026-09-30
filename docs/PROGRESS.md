@@ -33299,3 +33299,54 @@ Carried:    track 2 whole, after track 1 has merged and on the operator's go: th
             the run's record, the rerun's branch, the surprise pull the operator runs, the run and its report; the
             plateau margin, the 6 of 10 designs, the 100 leaders and the 4-hour budget, each proposed and the
             operator's to rule at track 4; and the freeze at track 6 with one remedy through `tools/remedy`.
+
+### 12.2 - correction: every remedy is issued by one committed script over a file beside the change that owes it, where the remedy of 2026-09-29 ran from a script in a session's scratch folder naming the operator's drive   2026-09-30
+Corrects:   the 12.2 correction of 2026-09-29, whose remedy of seventeen commands was printed in its entry and run by
+            the operator on 2026-09-30 from a script the building session left in its own scratch folder, hard-coding
+            the main checkout's drive and path; and every remedy before it, each issued as a list of commands in an
+            entry and typed or scripted afresh. Item 8 of the operator's brief of 2026-09-30, the 12.2 ruling above,
+            which the operator's go of the same day set building as track 1.
+Asked:      "The operator ran #282's remedy on 2026-09-30. Confirm it from the store: the rule-version windows
+            reopened and filter version 4 open. Commit the remedy script under tools/ and point the RUNBOOK at it,
+            so any future remedy is issued the same way." Confirmed in the ruling above: the eight ladder windows
+            closed from 02:14:02Z to 02:14:15Z and opened again from 02:14:17Z to 02:14:30Z on 8ae51b59cb91, filter
+            version 4 opened at 02:14:32Z, and candidates 51 to 56 retired and 57 to 62 registered at 02:14:33Z.
+Repaired:   - `tools/remedy`, a bash script beside `tools/remedy.ps1`, which hands to it through `run-bash.ps1` as
+              every other entry point does. It takes a remedy file and `--list` or `--from N`, runs from the
+              repository root, reads every line that is not blank and not a comment as one step, builds the worker
+              once and runs each step through it with no rebuild, printing the step's number before it and stopping
+              at the first failure with that step's exit code and the step to start from again. `--list` prints
+              the steps numbered and runs nothing. A run is refused with exit 3 while the night's lock file stands
+              under the data root, `EquityBrief__DataRoot` where set and `data/` otherwise, since a remedy closes
+              the windows a running night scores under; a missing file, a step number that is not one from 1 and a
+              start past the last step are each refused with exit 2 and a named message.
+            - `tools/remedies/2026-09-29-12.2-pullbacks-alone.txt`, the seventeen steps the operator ran, one a
+              line as the correction's entry prints the arguments after `--`, under a comment saying what the file
+              is for and when it ran. Every remedy after it is a file beside its change, and an entry's `Remedy:`
+              field names the file.
+            - RUNBOOK gains "Running a remedy", and CLAUDE.md's layout block and commands table name the script and
+              the folder, the prior text in CHANGELOG.
+            - `ComponentAccess.DispatchedVerbs`, which reads the worker's verbs off its switch, is opened to the
+              remedy files' test.
+Guarded:    two tests, new, in `RemedyTests`: every remedy file under `tools/remedies/` is made of steps whose verbs
+            the worker dispatches, the first holding seventeen, sixteen `version` and one `shape --rule-correction`;
+            and the script run through the bash the machine carries lists the seventeen steps numbered in order and
+            runs nothing, refuses a run with exit 3 under a lock file in a scratch data root before any step, and
+            refuses `--from 0`, `--from 18` and a file that is not there with exit 2. On a machine with no bash the
+            second test asserts it is not Windows, as the wrapper tests do.
+Written:    RUNBOOK's section; CLAUDE.md's rows; and the prior text of each in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      +2, the count the third correction entry after this one records.
+Claims:     none moved: no row of `ARCHITECTURE.html` changes.
+Pins:       none of the sources edited is in the three pin lists, so no version moves and nothing is owed before a
+            night.
+Mutated:    the rule, stated before the run: the one refusal the ruling asks for, reversed alone, filtered to the
+            remedy tests.
+            Predicted:
+            K1 the lock check removed, so a run under the lock file builds and runs: red in the second remedy test
+               at its lock assertion, and in no other.
+            Results: 299K1
+Held:       299H1
+Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry and the two correction entries after
+            it, 299SHA1, whose figures the last of them records.
+Carried:    every later remedy issued through the script, the freeze's at track 6 first.

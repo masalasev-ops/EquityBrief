@@ -9658,3 +9658,29 @@ Was:
 Now:
 > **One track at a time.** Work runs one track at a time, in the order the newest queue ruling in `PROGRESS.md` sets, and the next track starts only after the current one has merged with the operator's go. Every report to the operator opens with that queue: done, in progress, next. The list itself lives in the ruling entry and not here, because a second copy of it goes stale the moment a track merges.
 Why: the operator's brief of 2026-09-30 asked for the rule to be recorded in CLAUDE.md; the list stays in the ruling entry so that a second copy cannot go stale the moment a track merges.
+
+### 2026-09-30 - CLAUDE.md - the layout and the commands name the remedy script and its files
+Authorised by: the 12.2 ruling of 2026-09-30, item 8, every remedy issued by one committed script
+Was:
+>                   migrate  migrate.ps1   apply migrations
+>                   nightly  nightly.ps1   what the scheduler calls, not run by CI
+> | Run a night by hand | `tools/nightly.ps1` | `tools/nightly` | PowerShell on Windows, bash on macOS |
+Now:
+>                   migrate  migrate.ps1   apply migrations
+>                   nightly  nightly.ps1   what the scheduler calls, not run by CI
+>                   remedy  remedy.ps1   run a remedy file, the worker commands a change owes the
+>                                  operator's store, one a line in order, stopping at the first failure
+>                   remedies/      one file per remedy, named by date, checkpoint and what it does,
+>                                  committed with the change that owes it
+> | Run a night by hand | `tools/nightly.ps1` | `tools/nightly` | PowerShell on Windows, bash on macOS |
+> | Run a remedy | `tools/remedy.ps1 <file>` | `tools/remedy <file>` | PowerShell on Windows, bash on macOS |
+Why: a script in the tree is a command the layout and the table name, and the remedy of 2026-09-29 ran from a script in a session's scratch folder that named the operator's drive.
+
+### 2026-09-30 - RUNBOOK.md - a section on running a remedy
+Authorised by: the 12.2 ruling of 2026-09-30, item 8, every remedy issued by one committed script
+Was:
+> (no prior text: the section "Running a remedy" is new, placed after "Closing and opening a window again after midnight in New York costs the coming session" and before "Moving the installation")
+Now:
+> ### Running a remedy
+> A remedy is the worker commands a change owes the operator's store ... It is committed as a file under `tools/remedies/` ... the entry's `Remedy:` field names the file. It is run once, from the main checkout after its fast-forward to the merge, with no night, drain or queue running, and before midnight in New York where the choice is there: `tools/remedy.ps1 tools/remedies/2026-09-29-12.2-pullbacks-alone.txt` ... The script builds the worker once, runs each step in order printing its number before it, and stops at the first step that fails with that step's exit code ... `--from N` starts at step N and `--list` prints the steps numbered and runs nothing. It is refused while the night's lock file stands under the data root ...
+Why: the operator asked that any future remedy be issued the same way, and the runbook is where a person is told how.

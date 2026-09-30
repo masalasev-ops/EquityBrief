@@ -59,6 +59,10 @@ Do not read the whole corpus. It is small on purpose and it is still larger than
                   verify-phase  verify-phase.ps1   the phase report
                   migrate  migrate.ps1   apply migrations
                   nightly  nightly.ps1   what the scheduler calls, not run by CI
+                  remedy  remedy.ps1   run a remedy file, the worker commands a change owes the
+                                 operator's store, one a line in order, stopping at the first failure
+                  remedies/      one file per remedy, named by date, checkpoint and what it does,
+                                 committed with the change that owes it
                   run-bash.ps1   the one place a .ps1 hands its work to a bash script
                   wrapper-probe  wrapper-probe.ps1   a script that prints on both streams
                                  and fails, so the suite can prove a wrapper returns both
@@ -101,6 +105,7 @@ global.json       pins the SDK to the 10.0.3xx feature band
 | **Verify a phase** | `tools/verify-phase.ps1` | `tools/verify-phase` | PowerShell on Windows, bash on macOS |
 | Apply migrations | `tools/migrate.ps1` | `tools/migrate` | PowerShell on Windows, bash on macOS |
 | Run a night by hand | `tools/nightly.ps1` | `tools/nightly` | PowerShell on Windows, bash on macOS |
+| Run a remedy | `tools/remedy.ps1 <file>` | `tools/remedy <file>` | PowerShell on Windows, bash on macOS |
 
 **The target framework is `net10.0`, pinned in one place.** `global.json` at the root holds the SDK to the 10.0.3xx feature band and rolls forward to the latest installed, and `src/Directory.Build.props` carries the framework, nullable reference types and warnings as errors for all six projects. Before this the workflow was the only statement of the version anywhere, which left the two machines free to build against something CI never sees.
 
