@@ -51,6 +51,24 @@ if (checkout is not null && Directory.Exists(Path.Combine(checkout, "src", "Equi
     });
 }
 
+// The comparison command: started with its verb the surface writes the comparison files into the checkout's folder
+// for them, from the checkout's store, and exits without listening.
+// see: The drafts compared beside a report and the research template's before and after counts are written to files by a command, and drawn on no page
+if (args.Length > 0 && args[0] == ComparisonFiles.Verb)
+{
+    var store = StoreLocation.Within(checkout, builder.Configuration[StoreLocation.DataRootKey]);
+
+    foreach (var line in await ComparisonCommand.WriteAsync(
+        new ReadApi(store.DatabaseFile, SystemClock.ForUnitedStatesSessions()),
+        new ComparisonFiles(new MarkRenderer()),
+        Path.Combine(checkout ?? Directory.GetCurrentDirectory(), ComparisonFiles.Folder)))
+    {
+        Console.WriteLine("comparisons: " + line);
+    }
+
+    return;
+}
+
 builder.Services.AddSingleton<IClock>(SystemClock.ForUnitedStatesSessions());
 builder.Services.AddSingleton(_ =>
     StoreLocation.Within(checkout, builder.Configuration[StoreLocation.DataRootKey]));
@@ -1180,7 +1198,7 @@ app.MapGet("/screens/run/{night?}", async (
     var compare = RunScreen.Compare(dated, versions, register, version, shadowPicks, await read.EvaluatedOnAsync(dated), await read.GateResultsAsync(dated));
 
     // The research region's seven nights, and each report written over them read section by section.
-    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports, and no trial's drafts
     var week = await WeekOf(read, dated);
     var reports = RunScreen.Reports(await read.ReportRowsAsync(), await read.ReportVersionsAsync(), week.Count > 0 ? week[0].Night : dated, dated);
 

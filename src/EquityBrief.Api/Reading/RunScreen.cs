@@ -1437,7 +1437,7 @@ public static class RunScreen
     // The reports drawn are those dated on or after the first of the seven nights and on or before the night;
     // each section's rates are read over the newest twenty reports up to the night that warranted it, and the
     // both-sides count over the newest twenty that drafted the two cases, with the count read where fewer exist.
-    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports, and no trial's drafts
     public static ReportsView Reports(IReadOnlyList<RunStageRow> rows, IReadOnlyList<WrittenVersion> versions, DateOnly from, DateOnly night)
     {
         var written = versions
@@ -1477,21 +1477,9 @@ public static class RunScreen
         }
 
         var newest = reports.OrderByDescending(report => report.Day).ThenByDescending(report => report.RunId, StringComparer.Ordinal).ToArray();
+        var (bothSides, drafted) = BothSidesOver(newest, ReportsView.RateWindow);
 
-        ReportCell CellOf(ReportRow report, string section) => report.Cells.Single(cell => cell.Section == section);
-
-        var rates = ClaimRules.Sections
-            .Select(section =>
-            {
-                var read = newest.Select(report => CellOf(report, section)).Where(cell => cell.Outcome != ReportsView.NotWarranted).Take(ReportsView.RateWindow).ToArray();
-
-                return new SectionRate(section, read.Length, read.Count(cell => cell.Outcome == ReportsView.FirstTime), read.Count(cell => cell.Outcome == ReportsView.LeftOut));
-            })
-            .ToArray();
-
-        var drafted = newest.Select(report => CellOf(report, ClaimRules.TwoCasesSection)).Where(cell => cell.Drafts > 0).Take(ReportsView.RateWindow).ToArray();
-
-        // A trial's row and a review's for one section of one report are one row of the region, the trial's first.
+        // A trial's row and a review's for one section of one report are one entry, the trial's first.
         var trials = rows
             .Where(row => passes.ContainsKey(row.RunId)
                 && (row.Stage.StartsWith(ReadApi.TrialStage + ":", StringComparison.Ordinal) || row.Stage.StartsWith(ReadApi.ReviewStage + ":", StringComparison.Ordinal)))
@@ -1504,10 +1492,70 @@ public static class RunScreen
         return new ReportsView(
             [.. newest.Where(report => report.Day >= from)],
             newest.Length,
-            rates,
-            drafted.Count(cell => cell.BothSides),
-            drafted.Length,
+            RatesOver(newest, ReportsView.RateWindow),
+            bothSides,
+            drafted,
             trials);
+    }
+
+    // Each section's share passed first time and share left out over the reports handed in, newest first, read over
+    // at most the window's number of those that warranted it.
+    public static IReadOnlyList<SectionRate> RatesOver(IReadOnlyList<ReportRow> newest, int window) =>
+    [
+        .. ClaimRules.Sections.Select(section =>
+        {
+            var read = newest.Select(report => CellOf(report, section)).Where(cell => cell.Outcome != ReportsView.NotWarranted).Take(window).ToArray();
+
+            return new SectionRate(section, read.Length, read.Count(cell => cell.Outcome == ReportsView.FirstTime), read.Count(cell => cell.Outcome == ReportsView.LeftOut));
+        }),
+    ];
+
+    // Of the reports handed in, newest first, the first window's number that drafted the two cases, and how many of those
+    // carried a figure on both sides in any draft.
+    public static (int BothSides, int Drafted) BothSidesOver(IReadOnlyList<ReportRow> newest, int window)
+    {
+        var drafted = newest.Select(report => CellOf(report, ClaimRules.TwoCasesSection)).Where(cell => cell.Drafts > 0).Take(window).ToArray();
+
+        return (drafted.Count(cell => cell.BothSides), drafted.Length);
+    }
+
+    static ReportCell CellOf(ReportRow report, string section) => report.Cells.Single(cell => cell.Section == section);
+
+    // What the comparison command writes, read over every report the store holds: each section a trial or a review
+    // asked for beside a report; each section's rates over the ten reports whose passes started before the research
+    // prompt's addendum merged and the ten that started after it; and, over the reports started after the two cases
+    // were asked to argue each fact on one side, the first twenty that drafted the two cases and how many carried a
+    // figure on both sides. A report is placed by the instant its run is named for, since a day holds several.
+    // see: The drafts compared beside a report and the research template's before and after counts are written to files by a command, and drawn on no page
+    public static ComparisonView Comparisons(IReadOnlyList<RunStageRow> rows, IReadOnlyList<WrittenVersion> versions)
+    {
+        var all = Reports(rows, versions, DateOnly.MinValue, DateOnly.MaxValue);
+
+        var started = all.Reports
+            .Select(report => (Report: report, At: PassRun.StartedAt(report.RunId)))
+            .Where(one => one.At is not null)
+            .Select(one => (one.Report, At: one.At!.Value))
+            .ToArray();
+
+        ReportRow[] Newest(IEnumerable<(ReportRow Report, DateTimeOffset At)> reports) =>
+            [.. reports.OrderByDescending(one => one.At).Select(one => one.Report)];
+
+        var before = Newest(started.Where(one => one.At < ComparisonView.AddendumMergedAt).OrderByDescending(one => one.At).Take(ComparisonView.RatesWindow));
+        var after = Newest(started.Where(one => one.At >= ComparisonView.AddendumMergedAt).OrderBy(one => one.At).Take(ComparisonView.RatesWindow));
+
+        var sinceTheAsk = Newest(started
+            .Where(one => one.At >= ComparisonView.AskChangedAt && CellOf(one.Report, ClaimRules.TwoCasesSection).Drafts > 0)
+            .OrderBy(one => one.At)
+            .Take(ComparisonView.BothSidesWindow));
+
+        return new ComparisonView(
+            all.Trials,
+            before,
+            after,
+            RatesOver(before, ComparisonView.RatesWindow),
+            RatesOver(after, ComparisonView.RatesWindow),
+            sinceTheAsk,
+            BothSidesOver(sinceTheAsk, ComparisonView.BothSidesWindow).BothSides);
     }
 
     static ReportCell Cell(

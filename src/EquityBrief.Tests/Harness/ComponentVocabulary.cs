@@ -99,6 +99,7 @@ internal static class ComponentVocabulary
         ["none"] = [],
         ["read API"] = [],
         ["a file the user chooses"] = [],
+        ["files in the checkout's sampleReports folder"] = [],
         ["every component that writes appends"] = [DataStore.RunLog],
         ["the store's schema"] = [],
         ["the store's schema version"] = [],

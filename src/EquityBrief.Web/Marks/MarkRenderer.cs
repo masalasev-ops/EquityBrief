@@ -422,7 +422,7 @@ public sealed record ResearchPicture(NightSpend Spend, IReadOnlyList<ResearchNig
 // with why, or not warranted where it stood from an earlier day; what its own calls cost, a trial's left out;
 // how many drafts the pass wrote of it; and for the two cases whether any of those drafts carried a figure on
 // both sides.
-// see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+// see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports, and no trial's drafts
 public sealed record ReportCell(string Section, string Outcome, string? Why, decimal Cost, int Drafts, bool BothSides);
 
 // One report: the pass's run, its stock and the day it wrote for, what its calls cost, a trial's left out, and a
@@ -469,8 +469,40 @@ public sealed record ReportsView(
     public const string NotWarranted = "not warranted";
 
     // How many of the newest reports a section's rates and the two cases' count are read over.
-    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports, and no trial's drafts
     public const int RateWindow = 20;
+}
+
+// What the comparison command writes: each section a trial or a review asked for beside a report; the ten reports
+// before the research prompt's addendum merged and the ten after, newest first, with each section's rates over each;
+// and the reports since the two cases were asked to argue each fact on one side that drafted them, at most twenty,
+// newest first, with how many carried a figure on both sides.
+// see: The drafts compared beside a report and the research template's before and after counts are written to files by a command, and drawn on no page
+public sealed record ComparisonView(
+    IReadOnlyList<TrialRow> Trials,
+    IReadOnlyList<ReportRow> Before,
+    IReadOnlyList<ReportRow> After,
+    IReadOnlyList<SectionRate> RatesBefore,
+    IReadOnlyList<SectionRate> RatesAfter,
+    IReadOnlyList<ReportRow> SinceTheAsk,
+    int BothSides)
+{
+    // The reports each side of the addendum's merge the rates are compared over, the reports after the two cases' ask
+    // changed that the both-sides count is read at, and the accepted drafts measured before the ask changed that the
+    // count is set beside.
+    public const int RatesWindow = 10;
+    public const int BothSidesWindow = 20;
+    public const int BaselineBothSides = 5;
+    public const int BaselineDrafted = 8;
+
+    // The instants the addendum's change and the two cases' ask merged into the build the passes run; a report counts
+    // as after one where its pass started at or after it.
+    public static readonly DateTimeOffset AddendumMergedAt = new(2026, 9, 30, 11, 40, 11, TimeSpan.Zero);
+    public static readonly DateTimeOffset AskChangedAt = new(2026, 9, 30, 4, 54, 22, TimeSpan.Zero);
+
+    public bool RatesReady => Before.Count == RatesWindow && After.Count == RatesWindow;
+
+    public bool BothSidesReady => SinceTheAsk.Count == BothSidesWindow;
 }
 
 // A version running beside the live list, as the Run page's learning region draws it: what it changes in
@@ -6817,7 +6849,7 @@ public sealed class MarkRenderer : IComponent
     // calls cost, the two cases' cell marked where a draft carried a figure on both sides; each section left out
     // with why beneath, numbered as its cell is; the count of the newest reports' two cases carrying a figure on
     // both sides; and each section's rates over the newest twenty reports that warranted it.
-    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports, and no trial's drafts
     public string ReportsRegion(ReportsView view, string nameRoute)
     {
         // A store holding no report says so rather than drawing a table of rates read over nothing.
@@ -6908,11 +6940,12 @@ public sealed class MarkRenderer : IComponent
         return region.ToString();
     }
 
-    // Each section a trial asked for beside a report, in section 15.10's detail: one numbered row a section with the
-    // pass's model and the trial's, each with how it came out, its rounds and what they cost, and the two models'
-    // drafts side by side folded beneath it, in two columns on a wide screen and one on a narrow one. Nothing is
-    // drawn while no trial has written a row.
+    // Each section a trial or a review asked for beside a report, as a comparison file carries it: one numbered row a
+    // section with the pass's model, the trial's and the review's, each with how it came out, its rounds and what they
+    // cost, and every model's drafts side by side folded beneath it, in columns on a wide screen and one beneath
+    // another on a narrow one. Nothing is composed where no trial or review has written a row.
     // see: A trial asks a second profile for named sections beside a report, and ships naming none
+    // see: The drafts compared beside a report and the research template's before and after counts are written to files by a command, and drawn on no page
     public string TrialsRegion(IReadOnlyList<TrialRow> trials, string nameRoute)
     {
         if (trials.Count == 0)

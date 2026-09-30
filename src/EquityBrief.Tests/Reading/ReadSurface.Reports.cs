@@ -14,9 +14,9 @@ namespace EquityBrief.Tests.Reading;
 
 // read-surface, how each report did and the section trials: each report's cells, costs, the rates over the newest
 // twenty reports and the both-sides count worked by hand over constructed run logs and versions, read through the
-// read API's own queries over a constructed store and back off the rendered page, and a trial's two sides drawn
-// with their drafts side by side.
-// see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+// read API's own queries over a constructed store and back off the rendered page, and a trial's two sides composed
+// with their drafts side by side for the comparison files.
+// see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports, and no trial's drafts
 // see: A trial asks a second profile for named sections beside a report, and ships naming none
 public partial class ReadSurface
 {
@@ -28,9 +28,6 @@ public partial class ReadSurface
         CheckReach.Key("15.10 Run", "How each report did, a cell per section saying whether it passed first time or on retry or was left out with why or was not warranted, with what its own calls cost and none of a trial's"),
         CheckReach.Key("15.10 Run", "How each report did, the two cases' cell marked where a draft of the pass carried a figure on both sides, with how many of the newest twenty reports' two cases did"),
         CheckReach.Key("15.10 Run", "How each report did, each section's share passed first time and its share left out over the newest twenty reports that warranted it"),
-        CheckReach.Key("15.10 Run", "Section trials, one row per section a trial or a review asked for with its report and each model's outcome and rounds and cost"),
-        CheckReach.Key("15.10 Run", "Section trials, the drafts side by side folded beneath"),
-        CheckReach.Key("15.10 Run", "Section trials, drawn only while a trial or a review has written a row"),
         CheckReach.Key(Scope.LimitsTable, "Report rates"),
     ];
 
@@ -281,7 +278,7 @@ public partial class ReadSurface
     }
 
     [Fact]
-    public async Task ATrialsSectionsAreDrawnWithBothModelsDraftsSideBySide()
+    public async Task ATrialsSectionsAreComposedWithBothModelsDraftsSideBySide()
     {
         using var store = EclStore();
         var api = Api(store);
@@ -300,8 +297,8 @@ public partial class ReadSurface
         Assert.Equal([TrialDraft], asked.Drafts);
         Assert.Null(trial.Review);
 
-        // Drawn as a column a side folded beneath the row, one beneath another on a narrow screen, each round's
-        // paragraphs whole.
+        // Composed as a column a side folded beneath the row, one beneath another on a narrow screen, each round's
+        // paragraphs whole, as the comparison file carries it.
         var drawn = WebUtility.HtmlDecode(new MarkRenderer().TrialsRegion(view.Trials, SinglePageApp.NameRoute));
 
         Assert.Contains("<details class=\"trial-drafts\"><summary>The 2 drafts side by side</summary><div class=\"trial-pair\">", drawn, StringComparison.Ordinal);
@@ -311,25 +308,10 @@ public partial class ReadSurface
         Assert.Contains(".trial-sides,.trial-pair{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:16px}", Stylesheet.Css, StringComparison.Ordinal);
         Assert.Contains("@media (max-width:640px){ .trial-sides,.trial-pair{grid-auto-flow:row;grid-auto-columns:auto} }", Stylesheet.Css, StringComparison.Ordinal);
 
-        // On the page while a trial has written a row, and not at all where none has.
-        using (var host = new PassHost(store.Root) { Clock = FixedClock.At(DateTimeOffset.Parse("2026-09-11T12:00:00Z", CultureInfo.InvariantCulture), SessionZones.UnitedStates) })
-        using (var client = host.CreateClient())
-        {
-            Assert.Contains("data-card=\"trials\"", await client.GetStringAsync("/screens/run/2026-09-10"), StringComparison.Ordinal);
-        }
-
+        // Nothing is composed where no trial or review has written a row.
         store.Execute($"DELETE FROM run_log WHERE stage LIKE '{ReadApi.TrialStage}:%';");
 
-        // A second later, since the surface records its own start under the instant it came up at.
-        using (var host = new PassHost(store.Root) { Clock = FixedClock.At(DateTimeOffset.Parse("2026-09-11T12:00:01Z", CultureInfo.InvariantCulture), SessionZones.UnitedStates) })
-        using (var client = host.CreateClient())
-        {
-            var page = await client.GetStringAsync("/screens/run/2026-09-10");
-
-            Assert.Contains("data-fold=\"reports\"", page, StringComparison.Ordinal);
-            Assert.DoesNotContain("data-card=\"trials\"", page, StringComparison.Ordinal);
-        }
-
+        Assert.Empty(RunScreen.Reports(await api.ReportRowsAsync(), await api.ReportVersionsAsync(), night.AddDays(-6), night).Trials);
         Assert.Equal(string.Empty, new MarkRenderer().TrialsRegion([], SinglePageApp.NameRoute));
     }
 
