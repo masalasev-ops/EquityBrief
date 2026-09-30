@@ -184,7 +184,16 @@ public sealed record PickCell(
     double? BreakEven,
     // The state the member's reported quarters gave it on its listing night, and null on a night that
     // stored no readings, which the row says it was not read on.
-    string? State = null);
+    string? State = null,
+    // Where the listing repeated a trade still open, the night that trade was listed on, and null where
+    // the listing is itself the kept trade. A repeat is drawn with its mark and counted in no total.
+    // see: A repeat listing made before the rule reached the filter is marked and counted once
+    DateOnly? RepeatOf = null);
+
+// One stock the swing filter passed on a night while a trade the live list recommended for it on an
+// earlier night is still open, with that trade as Past picks draws it as of the night.
+// see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
+public sealed record StillOpenCell(string Ticker, PickCell Trade);
 
 // What became of a trade, in the words its status cell and its filter chip draw, and the one value each
 // is filtered by. A trade whose outcome row is missing is its own status and in no filter but all.
@@ -229,7 +238,10 @@ public sealed record PicksSummary(
     int MinimumNights,
     double? TargetShare,
     double? BreakEven,
-    double? AverageResult)
+    double? AverageResult,
+    // The listings that repeated a trade still open, drawn with their mark and in none of the counts above.
+    // see: A repeat listing made before the rule reached the filter is marked and counted once
+    int Repeats = 0)
 {
     public int Finished => Target + Stopped + Time;
 
@@ -305,9 +317,10 @@ public sealed record FunnelView(
 public sealed record GateLine(string Gate, bool Passed, string Reason);
 
 // A name's swing filter result on a night as its page draws it: the five gates with their reasons,
-// the family and the trigger, the trade read three ways with the plan the trade gate read, the
-// exclusions and the notes, and its rank where it passed. The plan clear of the noise enters at the same
-// close as the plan at the nearest bands.
+// the family and the trigger, the trade read from the ladder's first tranche and from the one swing plan
+// the night's live rule read, the exclusions and the notes, and its rank where it passed. Both swing plans
+// are carried, entered at the one close, and the page draws the one the live plan names and never the
+// other, which is a registered candidate's.
 public sealed record GatesView(
     DateOnly Session,
     string Version,
@@ -330,7 +343,11 @@ public sealed record GatesView(
     decimal? ClearTarget = null,
     double? ClearRewardToRisk = null,
     double? ClearStopMoves = null,
-    string? Input = null);
+    string? Input = null,
+    // The plan the night's live rule read, by its word: the trade gate's stored input, or where the row
+    // stores none the plan its night's filter version reads, the choice Past picks makes.
+    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    string? LivePlan = null);
 
 // The night's market reading as the swing reader stored it: the members, the breadth over the ones
 // read with how many it was counted over, the same over the shorter average as context, and the
@@ -685,7 +702,11 @@ public sealed record ListingCell(
     // in plain words, how far that is as a share of the bar, and the trade's entry, stop and target where
     // one exists. Null on every row of tonight's list itself.
     // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
-    EquityBrief.Core.Filter.MissedGate? Missed = null);
+    EquityBrief.Core.Filter.MissedGate? Missed = null,
+    // Where the row repeats a trade the live list recommended for the name on an earlier night that is still
+    // open, that night; the row is drawn where the filter put it and marked. Null on every other row.
+    // see: A repeat listing made before the rule reached the filter is marked and counted once
+    DateOnly? RepeatOf = null);
 
 // The state a member's reported quarters gave it on a night and the sentences its readings say, which
 // tonight's row draws beside the trend word, the sentences showing while the word is under the pointer
@@ -2741,6 +2762,78 @@ public sealed class MarkRenderer : IComponent
         return strip.ToString();
     }
 
+    // "Still open", section 15.7's region between the list and "Close to a buy point": one row per stock the
+    // swing filter passed on the night while a trade the live list recommended for it on an earlier night is
+    // still open, with the night it was listed, the trade line and where the price stands against that
+    // trade's stop and target, each figure whole on its element; a line where there is none.
+    // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
+    public string StillOpen(IReadOnlyList<StillOpenCell> rows, DateOnly night)
+    {
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<section class=\"still-open\" data-night=\"{DayOf(night)}\" data-count=\"{rows.Count}\">");
+
+        if (rows.Count == 0)
+        {
+            region.Append("<p class=\"degraded\" data-still-open=\"0\">No stock the swing filter passed tonight has a trade from an earlier night still open.</p></section>");
+
+            return region.ToString();
+        }
+
+        region.Append(Invariant, $"<p class=\"list-count\" data-drawn=\"{rows.Count}\">{(rows.Count == 1 ? "One stock" : rows.Count.ToString(Invariant) + " stocks")} passed the swing filter tonight while a trade from an earlier night is still open.</p>");
+        region.Append("<div class=\"tbl-wrap\"><table class=\"still-open-table\"><thead><tr>");
+
+        foreach (var (heading, says) in new[]
+        {
+            ("#", "The row's place, in the list's own order."),
+            ("Name", "The stock, opening its page for the night its open trade was listed on."),
+            ("Listed", "The night the open trade was listed on."),
+            ("Trade line", "The open trade's stop, buy and target, with where the price stands on the line."),
+            ("Where the price stands", "The newest close against the open trade's stop and target, and whether the trade ended at this close."),
+        })
+        {
+            region.Append(TippedHeading(heading, says, heading == "#" ? "place" : null));
+        }
+
+        region.Append("</tr></thead><tbody>");
+
+        foreach (var (row, place) in rows.Select((row, at) => (row, at + 1)))
+        {
+            var trade = row.Trade;
+            var page = Formatted($"#/name/{Uri.EscapeDataString(row.Ticker)}/{DayOf(trade.Night)}");
+
+            region.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-night=\"{DayOf(trade.Night)}\" data-status=\"{trade.Status}\">");
+            region.Append(Invariant, $"<td class=\"place\" data-place=\"{place}\">{place}</td>");
+            region.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"{page}\">{Escaped(row.Ticker)}</a>{(trade.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
+            region.Append(Invariant, $"<td class=\"num\">{DayOf(trade.Night)}</td>");
+            region.Append(Invariant, $"<td>{TradeLine(trade)}</td>");
+            region.Append(Invariant, $"<td class=\"stands\" data-now=\"{StoredPrice(trade.NowClose)}\" data-stop=\"{StoredPrice(trade.Stop)}\" data-target=\"{StoredPrice(trade.Target)}\">{Escaped(Stands(trade))}</td></tr>");
+        }
+
+        region.Append("</tbody></table></div></section>");
+
+        return region.ToString();
+
+        // Where the price stands against the open trade, in words: the newest close against the stop and
+        // the target while the trade is open, and the outcome where it ended at this night's own close,
+        // which frees the stock from the next night.
+        static string Stands(PickCell trade)
+        {
+            var against = trade.Stop is { } stop && trade.Target is { } target
+                ? Formatted($"against a stop of {Price(stop)} and a target of {Price(target)}")
+                : "against a plan with no stop or no target stored";
+
+            return trade.Status switch
+            {
+                PickStatus.Open => trade.NowClose is { } now && trade.NowOn is { } on
+                    ? Formatted($"{Price(now)} on {DayOf(on)}, {against}")
+                    : Formatted($"no close stored to place, {against}"),
+                PickStatus.Missing => Formatted($"no outcome stored, {against}; read as open until its sessions run out"),
+                _ => Formatted($"{PickStatus.Words(trade.Status).ToLowerInvariant()} at this close, {against}; free again from the next night"),
+            };
+        }
+    }
+
     // What a row with no reward to risk says where it carries no reason of its own.
     public const string NoRewardToRiskStated = "the plan states no reward to risk";
 
@@ -2884,7 +2977,7 @@ public sealed class MarkRenderer : IComponent
             // see: Selecting a row draws its plan beneath the list and is no navigation
             list.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-fired-count=\"{row.FiredCount}\" data-strength=\"{row.Strength}\" ");
             list.Append(Invariant, $"data-day-change=\"{Change(row.DayChangePct)}\" data-trend-state=\"{Escaped(row.TrendState ?? NotClassified)}\" ");
-            list.Append(Invariant, $"data-selects=\"{Escaped(row.Ticker)}\" data-select-href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\">");
+            list.Append(Invariant, $"data-selects=\"{Escaped(row.Ticker)}\" data-select-href=\"#/night/{row.SessionDate:yyyy-MM-dd}?name={Uri.EscapeDataString(row.Ticker)}\"{(row.RepeatOf is { } again ? Formatted($" data-repeat-of=\"{DayOf(again)}\"") : string.Empty)}>");
 
             // The row's place in the order the rows are drawn in, counted from one.
             list.Append(Invariant, $"<td class=\"place\" data-place=\"{place}\">{place}</td>");
@@ -2892,6 +2985,14 @@ public sealed class MarkRenderer : IComponent
             // The name, a link opening the name's own page, which is what a reader following a ticker
             // expects.
             list.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>");
+
+            // Where the row repeats a trade still open, the mark saying so, until the rule reaches the filter
+            // and the stock is excluded rather than listed.
+            // see: A repeat listing made before the rule reached the filter is marked and counted once
+            if (row.RepeatOf is { } repeated)
+            {
+                list.Append(Invariant, $"<span class=\"listed-again\" data-repeat-of=\"{DayOf(repeated)}\">listed again while the trade from {DayOf(repeated)} is open</span>");
+            }
             // What the link opens is a report where one was written and the name's
             // page where none was, so it is drawn with the words of whichever it is:
             // a link calling itself a report for a name holding none is the page
@@ -3831,13 +3932,21 @@ public sealed class MarkRenderer : IComponent
             ? "No reading of its reported quarters is stored for this night."
             : says.Heading.TrimEnd('.') + ".";
 
-        var (entry, stop, target) = gates?.Input == FilterSettings.ClearWord
-            ? (gates.SwingEntry, gates.ClearStop, gates.ClearTarget)
-            : (gates?.SwingEntry, gates?.SwingStop, gates?.SwingTarget);
+        // The plan the night's live rule read and never a candidate's: section 10's or the nearest bands' as
+        // the row's live plan names, and the ladder's first tranche where the trade gate read that.
+        // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+        var (entry, stop, target) = gates?.LivePlan switch
+        {
+            FilterSettings.ClearWord => (gates!.SwingEntry, gates.ClearStop, gates.ClearTarget),
+            FilterSettings.SwingWord => (gates!.SwingEntry, gates.SwingStop, gates.SwingTarget),
+            _ => ((decimal?)null, (decimal?)null, (decimal?)null),
+        };
 
         var plan = gates is not null && entry is { } buy && stop is { } exit && target is { } sell
-            ? Formatted($"{Capitalised(PlanWords(gates.Input == FilterSettings.ClearWord ? FilterSettings.ClearWord : FilterSettings.SwingWord))}{(gates.Input is FilterSettings.ClearWord or FilterSettings.SwingWord ? ", the plan the trade gate read" : string.Empty)}: in at {Price(buy)}, stop {Price(exit)}, target {Price(sell)}.")
-            : "No plan with an entry, a stop and a target is stored for this night.";
+            ? Formatted($"{Capitalised(PlanWords(gates.LivePlan!))}, the plan the trade gate read: in at {Price(buy)}, stop {Price(exit)}, target {Price(sell)}.")
+            : gates is { LivePlan: FilterSettings.LadderWord, LadderRewardToRisk: { } ratio, LadderStopMoves: { } moves }
+                ? Formatted($"{Capitalised(PlanWords(FilterSettings.LadderWord))}, the plan the trade gate read: reward to risk {ratio:0.00}, its stop {moves:0.00} typical moves below the entry.")
+                : "No plan with an entry, a stop and a target is stored for this night.";
 
         var drawn = new StringBuilder();
 
@@ -5759,9 +5868,11 @@ public sealed class MarkRenderer : IComponent
     };
 
     // A name's gates, section 15.9's row: each of the five with whether it passed and why, the setup's
-    // family and the trigger, the trade read from the ladder's first tranche, from the swing trade at the
-    // nearest bands and from the swing trade clear of the noise with the one the trade gate read marked,
-    // and the exclusions and notes, each whole on its element as the store holds it.
+    // family and the trigger, the trade read from the ladder's first tranche and from the one swing plan
+    // the night's live rule read, marked, and the exclusions and notes, each whole on its element as the
+    // store holds it. The other swing plan is a registered candidate's, and drawing its entry, stop and
+    // target for a stock is the evaluation a candidate waits for, so it is drawn on no night.
+    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
     public string GatesTable(string ticker, GatesView view)
     {
         var region = new StringBuilder();
@@ -5788,13 +5899,24 @@ public sealed class MarkRenderer : IComponent
 
         region.Append("<div class=\"tbl-wrap\"><table class=\"trade-table\"><tr><th>Plan</th><th>Reward to risk</th><th>Stop below the entry</th></tr>");
         region.Append(Invariant, $"<tr data-plan=\"{FilterSettings.LadderWord}\" data-read=\"{Read(FilterSettings.LadderWord)}\" data-reward-to-risk=\"{Whole(view.LadderRewardToRisk)}\" data-stop-moves=\"{Whole(view.LadderStopMoves)}\"><td>{Capitalised(PlanWords(FilterSettings.LadderWord))}{Marked(FilterSettings.LadderWord)}</td><td class=\"num\">{Ratio(view.LadderRewardToRisk)}</td><td class=\"num\">{Moves(view.LadderStopMoves)}</td></tr>");
-        region.Append(Invariant, $"<tr data-plan=\"{FilterSettings.SwingWord}\" data-read=\"{Read(FilterSettings.SwingWord)}\" data-entry=\"{Plain(view.SwingEntry)}\" data-stop=\"{Plain(view.SwingStop)}\" data-target=\"{Plain(view.SwingTarget)}\" data-reward-to-risk=\"{Whole(view.SwingRewardToRisk)}\" data-stop-moves=\"{Whole(view.SwingStopMoves)}\"><td>{Capitalised(PlanWords(FilterSettings.SwingWord))}: in at {Entry()}, stop {Level(view.SwingStop)}, target {Level(view.SwingTarget)}{Marked(FilterSettings.SwingWord)}</td><td class=\"num\">{Ratio(view.SwingRewardToRisk)}</td><td class=\"num\">{Moves(view.SwingStopMoves)}</td></tr>");
-        region.Append(Invariant, $"<tr data-plan=\"{FilterSettings.ClearWord}\" data-read=\"{Read(FilterSettings.ClearWord)}\" data-entry=\"{Plain(view.SwingEntry)}\" data-stop=\"{Plain(view.ClearStop)}\" data-target=\"{Plain(view.ClearTarget)}\" data-reward-to-risk=\"{Whole(view.ClearRewardToRisk)}\" data-stop-moves=\"{Whole(view.ClearStopMoves)}\"><td>{Capitalised(PlanWords(FilterSettings.ClearWord))}: in at {Entry()}, stop {Level(view.ClearStop)}, target {Level(view.ClearTarget)}{Marked(FilterSettings.ClearWord)}</td><td class=\"num\">{Ratio(view.ClearRewardToRisk)}</td><td class=\"num\">{Moves(view.ClearStopMoves)}</td></tr>");
+
+        // The one swing plan the night's live rule read, and never the other.
+        switch (view.LivePlan)
+        {
+            case FilterSettings.SwingWord:
+                region.Append(Invariant, $"<tr data-plan=\"{FilterSettings.SwingWord}\" data-read=\"{Read(FilterSettings.SwingWord)}\" data-entry=\"{Plain(view.SwingEntry)}\" data-stop=\"{Plain(view.SwingStop)}\" data-target=\"{Plain(view.SwingTarget)}\" data-reward-to-risk=\"{Whole(view.SwingRewardToRisk)}\" data-stop-moves=\"{Whole(view.SwingStopMoves)}\"><td>{Capitalised(PlanWords(FilterSettings.SwingWord))}: in at {Entry()}, stop {Level(view.SwingStop)}, target {Level(view.SwingTarget)}{Marked(FilterSettings.SwingWord)}</td><td class=\"num\">{Ratio(view.SwingRewardToRisk)}</td><td class=\"num\">{Moves(view.SwingStopMoves)}</td></tr>");
+                break;
+
+            case FilterSettings.ClearWord:
+                region.Append(Invariant, $"<tr data-plan=\"{FilterSettings.ClearWord}\" data-read=\"{Read(FilterSettings.ClearWord)}\" data-entry=\"{Plain(view.SwingEntry)}\" data-stop=\"{Plain(view.ClearStop)}\" data-target=\"{Plain(view.ClearTarget)}\" data-reward-to-risk=\"{Whole(view.ClearRewardToRisk)}\" data-stop-moves=\"{Whole(view.ClearStopMoves)}\"><td>{Capitalised(PlanWords(FilterSettings.ClearWord))}: in at {Entry()}, stop {Level(view.ClearStop)}, target {Level(view.ClearTarget)}{Marked(FilterSettings.ClearWord)}</td><td class=\"num\">{Ratio(view.ClearRewardToRisk)}</td><td class=\"num\">{Moves(view.ClearStopMoves)}</td></tr>");
+                break;
+        }
+
         region.Append("</table></div>");
 
-        string Read(string plan) => view.Input == plan ? "yes" : "no";
+        string Read(string plan) => view.LivePlan == plan ? "yes" : "no";
 
-        string Marked(string plan) => view.Input == plan ? " <span class=\"plan-read\">(the plan the trade gate read)</span>" : string.Empty;
+        string Marked(string plan) => view.LivePlan == plan ? " <span class=\"plan-read\">(the plan the trade gate read)</span>" : string.Empty;
 
         string Entry() => view.SwingEntry is { } entry ? Price(entry) : "no close";
 
@@ -6184,7 +6306,7 @@ public sealed class MarkRenderer : IComponent
         {
             var page = Formatted($"#/name/{Uri.EscapeDataString(row.Ticker)}/{DayOf(row.Night)}");
 
-            table.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-night=\"{DayOf(row.Night)}\" data-status=\"{row.Status}\" data-plan=\"{Escaped(row.Plan)}\">");
+            table.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-night=\"{DayOf(row.Night)}\" data-status=\"{row.Status}\" data-plan=\"{Escaped(row.Plan)}\"{(row.RepeatOf is { } again ? Formatted($" data-repeat-of=\"{DayOf(again)}\"") : string.Empty)}>");
             table.Append(named
                 ? Formatted($"<td class=\"num\">{DayOf(row.Night)}</td><td class=\"c-nm\"><a class=\"nm\" href=\"{page}\"><span class=\"tk\">{Escaped(row.Ticker)}</span>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</a></td>")
                 : Formatted($"<td class=\"num\"><a href=\"{page}\">{DayOf(row.Night)}</a></td>"));
@@ -6202,7 +6324,11 @@ public sealed class MarkRenderer : IComponent
             }
 
             table.Append(Invariant, $"<td>{TradeLine(row)}</td>");
-            table.Append(Invariant, $"<td class=\"status\">{PickStatus.Words(row.Status)}</td>");
+
+            // The status, and on a listing that repeated a trade still open, the mark saying so: the row is
+            // drawn as the night stored it and counted in no total.
+            // see: A repeat listing made before the rule reached the filter is marked and counted once
+            table.Append(Invariant, $"<td class=\"status\">{PickStatus.Words(row.Status)}{(row.RepeatOf is { } repeated ? Formatted($"<span class=\"listed-again\" data-repeat-of=\"{DayOf(repeated)}\">listed again while the trade from {DayOf(repeated)} was open</span>") : string.Empty)}</td>");
             table.Append(Invariant, $"<td class=\"r num\" data-sessions=\"{(row.Sessions is { } counted ? counted.ToString(Invariant) : "none")}\">{(row.Sessions is { } sessions ? sessions.ToString(Invariant) : "<span class=\"degraded\">not counted</span>")}</td>");
             table.Append(row.Status == PickStatus.Open
                 ? "<td class=\"r res open\" data-result=\"open\">open</td>"
@@ -6243,6 +6369,14 @@ public sealed class MarkRenderer : IComponent
         if (summary.Missing > 0)
         {
             counts.Append(Invariant, $"<p class=\"degraded\" data-missing=\"{summary.Missing}\">{summary.Missing} trade{(summary.Missing == 1 ? " has" : "s have")} no outcome row stored, so {(summary.Missing == 1 ? "it counts" : "they count")} as listed and in no status.</p>");
+        }
+
+        // The listings that repeated a trade still open: drawn below with their mark, and in none of the
+        // counts above, since each is one move counted already.
+        // see: A repeat listing made before the rule reached the filter is marked and counted once
+        if (summary.Repeats > 0)
+        {
+            counts.Append(Invariant, $"<p class=\"repeats\" data-repeats=\"{summary.Repeats}\">{summary.Repeats} listing{(summary.Repeats == 1 ? " was" : "s were")} made again while an earlier trade was open, drawn and not counted.</p>");
         }
 
         if (summary.TargetShare is not { } share)
@@ -6318,12 +6452,17 @@ public sealed class MarkRenderer : IComponent
             _ => count.ToString(Invariant) + " times",
         };
 
+        // A listing that repeated a trade still open is drawn with its mark and counted in no group.
+        // see: A repeat listing made before the rule reached the filter is marked and counted once
+        var counted = earlier.Where(pick => pick.RepeatOf is null).ToArray();
+        var repeats = earlier.Count - counted.Length;
+
         var groups = new[] { PickStatus.Open, PickStatus.Target, PickStatus.Stopped, PickStatus.Time, PickStatus.Missing }
-            .Select(status => (Status: status, Count: earlier.Count(pick => pick.Status == status)))
+            .Select(status => (Status: status, Count: counted.Count(pick => pick.Status == status)))
             .Where(group => group.Count > 0)
             .Select(group => (group.Status == PickStatus.Open ? "still open" : PickStatus.Words(group.Status).ToLowerInvariant()) + " " + Times(group.Count));
 
-        return Formatted($"<p class=\"picked\" data-ticker=\"{Escaped(ticker)}\" data-picked=\"{earlier.Count}\">Picked {Times(earlier.Count)}: {string.Join(", ", groups)}.</p>")
+        return Formatted($"<p class=\"picked\" data-ticker=\"{Escaped(ticker)}\" data-picked=\"{counted.Length}\" data-repeats=\"{repeats}\">Picked {Times(counted.Length)}: {string.Join(", ", groups)}{(repeats > 0 ? Formatted($"; listed again {Times(repeats)} while an earlier trade was open, drawn and not counted") : string.Empty)}.</p>")
             + PicksTable(earlier, named: false);
     }
 

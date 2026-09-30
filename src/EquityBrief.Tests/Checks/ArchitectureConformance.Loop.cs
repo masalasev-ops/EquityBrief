@@ -1223,7 +1223,7 @@ public partial class ArchitectureConformance
         // fixture's row.
         CheckReach.Key("15.9 Name", "Gates, each of the five gates with whether it passed and why"),
         CheckReach.Key("15.9 Name", "Gates, the setup's family and whether the trigger's event happened"),
-        CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked"),
+        CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from the one swing plan that night's live rule used with that plan marked and no candidate's plan drawn whichever filter version the night ran under"),
         CheckReach.Key("15.9 Name", "Gates, the exclusions with a key saying how to read it"),
         CheckReach.Key("15.10 Run", "Swing filter funnel, how many members each gate passed in order and how many it removed"),
         CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's families on a night that held a breakout"),
@@ -1346,6 +1346,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.StoresTable, "Pulled history"),
         CheckReach.Key(Scope.LimitsTable, "Swing trade plan"),
         .. Reading.ReadSurface.PastPicksClaims,
+        .. Reading.ReadSurface.OpenTradeClaims,
         CheckReach.Key("15.10 Run", "Shadow candidates, the count of distinct trials and the level each starts at beside it"),
         CheckReach.Key(Scope.LimitsTable, "Distinct trials"),
         .. FundamentalsClaims,
@@ -1461,6 +1462,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.StoresTable, "Pulled history"),
         CheckReach.Key(Scope.LimitsTable, "Swing trade plan"),
         .. Reading.ReadSurface.PastPicksClaims,
+        .. Reading.ReadSurface.OpenTradeClaims,
         CheckReach.Key("15.10 Run", "Shadow candidates, the count of distinct trials and the level each starts at beside it"),
         CheckReach.Key(Scope.LimitsTable, "Distinct trials"),
         .. FundamentalsClaims,
@@ -1514,8 +1516,10 @@ public partial class ArchitectureConformance
         // report did, with its two regions' seven parts and section 17's window, 737 from the 12.6 correction
         // refining the research prompt, with section 17's reports a review runs over, and 736 from the 12.6
         // correction writing the comparisons to files, the section trials row's three parts gone and the comparison
-        // files' rows in the catalogue and the matrix come.
-        Assert.Equal((550, 736), (predicted, actual));
+        // files' rows in the catalogue and the matrix come, and 748 from the 12.2 correction reading one open
+        // trade per stock on the pages, with tonight's Still open row as its nine parts, Past picks' two parts
+        // and section 18's row.
+        Assert.Equal((550, 748), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

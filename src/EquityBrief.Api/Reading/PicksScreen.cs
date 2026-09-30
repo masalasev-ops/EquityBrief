@@ -1,4 +1,5 @@
 using EquityBrief.Core.Bars;
+using EquityBrief.Core.Filter;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Returns;
 using EquityBrief.Web.Marks;
@@ -22,8 +23,20 @@ public static class PicksScreen
     // order that night's list was drawn in, improving businesses first where it stored its readings and the
     // filter's own order where it stored none.
     // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
-    public static IReadOnlyList<PickCell> Cells(IReadOnlyList<PickRow> rows, DateOnly asOf) =>
-        [.. rows.Select(row => Cell(row, asOf))];
+    public static IReadOnlyList<PickCell> Cells(IReadOnlyList<PickRow> rows, DateOnly asOf)
+    {
+        // Each listing walked against the trades before it: a listing made while the stock's kept trade was
+        // still open repeats that trade, and is drawn marked and counted in no total.
+        // see: A repeat listing made before the rule reached the filter is marked and counted once
+        var walked = OpenTrades.Walk(rows.Select(Listing));
+
+        return [.. rows.Select(row => Cell(row, asOf) with { RepeatOf = walked[(row.Ticker, row.Night)] })];
+    }
+
+    // A trade as the open trade rule reads it: the stock, the night, and what became of the plan its night
+    // traded on its capped horizon, with whether an outcome row is stored at all.
+    public static OpenTradeListing Listing(PickRow row) =>
+        new(row.Ticker, row.Night, row.OutcomeStored, row.Outcome, row.ResolvedOn, ForwardReturnSeries.CapOf(row.Plan));
 
     // A name's trades listed before the night its page draws, which is what "On the list before" states:
     // the night's own listing is the page's subject rather than one before it.
@@ -45,7 +58,10 @@ public static class PicksScreen
     // see: An unresolved setup is never a win
     public static PicksSummary Summary(IReadOnlyList<PickCell> cells)
     {
-        var finished = cells.Where(cell => cell.Status is PickStatus.Target or PickStatus.Stopped or PickStatus.Time).ToArray();
+        // A listing that repeated a trade still open is one move counted already, so it is in no count.
+        // see: A repeat listing made before the rule reached the filter is marked and counted once
+        var counted = cells.Where(cell => cell.RepeatOf is null).ToArray();
+        var finished = counted.Where(cell => cell.Status is PickStatus.Target or PickStatus.Stopped or PickStatus.Time).ToArray();
         var decided = finished.Where(cell => ForwardReturnSeries.IsScored(Outcome(cell.Status), cell.BreakEven)).ToArray();
         var nights = decided.Select(cell => cell.Night).Distinct().Count();
         var met = decided.Length >= ReasonVerdict.MinimumResolved && nights >= ReasonVerdict.MinimumSessions;
@@ -53,20 +69,21 @@ public static class PicksScreen
         var results = finished.Where(cell => cell.Result is not null).Select(cell => cell.Result!.Value).ToArray();
 
         return new PicksSummary(
-            cells.Count,
-            cells.Select(cell => cell.Night).Distinct().Count(),
-            cells.Count(cell => cell.Status == PickStatus.Open),
+            counted.Length,
+            counted.Select(cell => cell.Night).Distinct().Count(),
+            counted.Count(cell => cell.Status == PickStatus.Open),
             finished.Count(cell => cell.Status == PickStatus.Target),
             finished.Count(cell => cell.Status == PickStatus.Stopped),
             finished.Count(cell => cell.Status == PickStatus.Time),
-            cells.Count(cell => cell.Status == PickStatus.Missing),
+            counted.Count(cell => cell.Status == PickStatus.Missing),
             decided.Length,
             nights,
             ReasonVerdict.MinimumResolved,
             ReasonVerdict.MinimumSessions,
             met ? 100.0 * decided.Count(cell => cell.Status == PickStatus.Target) / decided.Length : null,
             met ? decided.Average(cell => cell.BreakEven!.Value) : null,
-            met && results.Length > 0 ? results.Average() : null);
+            met && results.Length > 0 ? results.Average() : null,
+            cells.Count - counted.Length);
     }
 
     // The stored outcome a status stands for, which the run page's own test of a scored setup reads.

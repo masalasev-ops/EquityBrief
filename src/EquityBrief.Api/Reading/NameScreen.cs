@@ -1103,7 +1103,10 @@ public static class NameScreen
         FundamentalReadingRow? reading = null,
         IReadOnlyList<QuarterDatesRow>? readQuarters = null,
         IReadOnlyList<CloseRow>? peerCloses = null,
-        EquityBrief.Core.Filter.MissedGate? missed = null)
+        EquityBrief.Core.Filter.MissedGate? missed = null,
+        // The plan the filter version the name's gate row was stored under reads, by its word, which names the
+        // plan the night's live rule read where the row itself stores no input.
+        string? versionPlan = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1231,7 +1234,7 @@ public static class NameScreen
             Peers(ticker, universe, peerReadings, night, peerCloses),
             reactions is null ? null : Reactions(reactions),
             swing is null ? null : Swing(swing),
-            gates is null ? null : Gates(gates) with { Rule = listing is { } held && held.SessionDate == gates.SessionDate ? held.ListedBy : ListRules.Reasons },
+            gates is null ? null : Gates(gates, versionPlan) with { Rule = listing is { } held && held.SessionDate == gates.SessionDate ? held.ListedBy : ListRules.Reasons },
             Passed(listing, gates),
             watched,
             earlier,
@@ -1284,11 +1287,18 @@ public static class NameScreen
     }
 
     // A name's swing filter result as the page draws it, each gate's reason and the notes read off the
-    // row's own stored answers.
-    public static GatesView Gates(GateResultRow row)
+    // row's own stored answers, and the plan the night's live rule read: the trade gate's stored input,
+    // or on a row storing none the plan its night's version reads, which is what Past picks trades it on.
+    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    public static GatesView Gates(GateResultRow row, string? versionPlan = null)
     {
         using var document = JsonDocument.Parse(row.Gates);
         var root = document.RootElement;
+
+        var input = root.GetProperty("gates").EnumerateArray()
+            .Where(gate => gate.GetProperty("gate").GetString() == EquityBrief.Core.Filter.SwingGates.Trade)
+            .Select(gate => gate.GetProperty("values").TryGetProperty(EquityBrief.Core.Filter.SwingGates.TradeInputValue, out var held) ? held.GetString() : null)
+            .FirstOrDefault();
 
         return new GatesView(
             row.SessionDate,
@@ -1316,10 +1326,8 @@ public static class NameScreen
             ClearTarget: row.ClearTarget,
             ClearRewardToRisk: row.ClearRewardToRisk,
             ClearStopMoves: row.ClearStopMoves,
-            Input: root.GetProperty("gates").EnumerateArray()
-                .Where(gate => gate.GetProperty("gate").GetString() == EquityBrief.Core.Filter.SwingGates.Trade)
-                .Select(gate => gate.GetProperty("values").TryGetProperty(EquityBrief.Core.Filter.SwingGates.TradeInputValue, out var input) ? input.GetString() : null)
-                .FirstOrDefault());
+            Input: input,
+            LivePlan: input ?? versionPlan ?? EquityBrief.Core.Filter.FilterSettings.Word(EquityBrief.Core.Filter.FilterSettings.Proposed.Trade));
     }
 
     // A name's swing readings as the page draws them, each as the swing reader stored it.

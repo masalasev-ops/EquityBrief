@@ -49,17 +49,15 @@ public partial class ReadSurface
                 card,
                 StringComparison.Ordinal);
 
-            // The trade read three ways, each figure whole on its row, the two swing plans entered at the one
-            // close, and the plan the trade gate read, the ladder's at section 17's proposed values, marked once.
+            // The trade read from the ladder's first tranche, the plan the trade gate read at section 17's
+            // proposed values, marked once, and neither swing plan, both being candidates' plans on a night
+            // whose live rule read the ladder.
+            // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
             Assert.Contains($"<tr data-plan=\"ladder\" data-read=\"yes\" data-reward-to-risk=\"{WholeOf(row[4])}\" data-stop-moves=\"{WholeOf(row[5])}\">", card, StringComparison.Ordinal);
-            Assert.Contains(
-                $"<tr data-plan=\"swing\" data-read=\"no\" data-entry=\"{Plain(row[6])}\" data-stop=\"{Plain(row[7])}\" data-target=\"{Plain(row[8])}\" data-reward-to-risk=\"{WholeOf(row[9])}\" data-stop-moves=\"{WholeOf(row[10])}\">",
-                card,
-                StringComparison.Ordinal);
-            Assert.Contains(
-                $"<tr data-plan=\"clear\" data-read=\"no\" data-entry=\"{Plain(row[6])}\" data-stop=\"{Plain(row[14])}\" data-target=\"{Plain(row[15])}\" data-reward-to-risk=\"{WholeOf(row[16])}\" data-stop-moves=\"{WholeOf(row[17])}\">",
-                card,
-                StringComparison.Ordinal);
+            Assert.DoesNotContain("data-plan=\"swing\"", card, StringComparison.Ordinal);
+            Assert.DoesNotContain("data-plan=\"clear\"", card, StringComparison.Ordinal);
+            Assert.DoesNotContain($"data-stop=\"{Plain(row[7])}\"", card, StringComparison.Ordinal);
+            Assert.DoesNotContain($"data-stop=\"{Plain(row[14])}\"", card, StringComparison.Ordinal);
             Assert.Single(Regex.Matches(card, "the plan the trade gate read"));
             Assert.Contains("<td>The ladder's first tranche <span class=\"plan-read\">(the plan the trade gate read)</span></td>", card, StringComparison.Ordinal);
 
