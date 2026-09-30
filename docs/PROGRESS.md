@@ -31882,14 +31882,14 @@ Changed:    `SourceLists`, `SourceMeasurement` and `ThemeSearch` in Core; the th
 Decisions:  new: "An industry cycle the model declined is named as declined for lack of industry sources" and "A theme
             search adds its sector's sites, and a site joins the list only where a measurement found industry
             material on it", as the ruling planned them.
-Tests:      123T, from 1566:
+Tests:      1570, from 1566:
             `TheFixturesCycleTheModelAnsweredWithNothingIsNamedAsDeclinedWithThePagesItWasHanded`,
             `ACycleDraftCitingNoPageItWasHandedIsDeclinedNotStoredAndNotAskedForAgain`,
             `AThemeSearchAddsItsSectorsSitesAndNoOtherSectorsAndNamesASectorWithNone` and
             `AProposedSiteJoinsItsSectorOnlyWhereItReturnedAnAdmittedPageAboutADeclinedIndustry`. The theme test whose
             two answers held only thinking now reads the declined line, each call's own row still naming what it
             held, and the worker's help names the thirteenth verb.
-Claims:     123C, from 724: section 17's Sector sites, named in phase 12's pair as a row the research template adds.
+Claims:     725, from 724: section 17's Sector sites, named in phase 12's pair as a row the research template adds.
 Pins:       none moves; no source this correction edits is in the three pin lists.
 Recorded:   nothing; no request a recording answers changed.
 Ran:        the previous correction's two commands, after its merge and with no night, queue or drain running, read
@@ -31903,13 +31903,19 @@ Mutated:    the rule, stated before the run: each rule this correction adds reve
                fixture's declined test, the uncited draft test and the thinking-only theme test.
             D2 the sector's sites not added, the list's alone searched: red in the sector test.
             D3 the site rule's density test removed: red in the site rule test.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       123HELD
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            Results: one run each in a detached worktree at ee81ab7, this entry's commit, filtered to the five theme
+            tests the correction adds or changes, each edit made there and reverted, and the tree read clean after.
+            D1 turned the fixture's declined test, the uncited draft test and the thinking-only test red and the
+            other two green. D2 turned the sector test red alone. D3 turned the site rule test red alone, on the
+            page just below the density.
+Held:       red in every test predicted and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1570 of 1570 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 123VP.
-            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 725 claims, 725 PASS, 0 FAIL, 736 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1570 of 1570 tests.
+            Both gates ran over the tree carrying this entry, ee81ab7, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    corrections E to G at 12.6 in that order; a site proposed for each of the other seven sectors once one of
             their industries is declined, which the declined line names.
