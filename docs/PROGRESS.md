@@ -31612,7 +31612,7 @@ Ruled:      the addendum as asked, recorded here as an entry of its own, since t
             night, queue or drain is running. No later session takes this as a go for anything it builds.
 Changed:    this entry alone.
 Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry and the correction entry after it,
-            123SHA, whose figures that entry records.
+            3e557f2, whose figures that entry records.
 Carried:    correction G, after F; the comparison of each section's first-time pass rate and left-out rate over the ten
             reports before G's merge and the ten after it, reported to the operator.
 
@@ -31681,7 +31681,7 @@ Decisions:  new: "A retry names each thing the check refused, and a second draft
 Obligation: "The two cases' figures on both sides counted over twenty reports", operating, created here rather than
             with the run page's region as the ruling had it, since the count starts with this correction's first
             report; it is read on the run page's report region, which F builds at 12.6.
-Tests:      123T, from 1552:
+Tests:      1560, from 1552:
             `ARetryIsToldEachRefusedFigureAndSentenceOnALineOfItsOwnAndNeverTheWholeDraft`,
             `ASecondDraftRepeatingWhatTheFirstWasRefusedForIsLeftOutSayingSoAndOneRefusedForSomethingElseIsNot`,
             `TwoCasesWhoseSidesCannotBeToldApartAreRefusedNamingWhatIsMissing`,
@@ -31696,7 +31696,7 @@ Tests:      123T, from 1552:
             segment commentary to place, stated as constructed; the two cases' rows read nine and eight, counted by
             hand off the new recording; and the calendar test's two cases draft opens on both cases, so the date is
             the one thing refused.
-Claims:     123C, from 723.
+Claims:     723, unchanged: every row this correction edits is one the harness already held, as the plan stated.
 Pins:       none moves; no source this correction edits is in the three pin lists.
 Mutated:    the rule, stated before the run: each new rule reversed alone, filtered to the tests that read it.
             Predicted:
@@ -31713,13 +31713,21 @@ Mutated:    the rule, stated before the run: each new rule reversed alone, filte
                refused-heading test.
             B7 `NameScreen.Refused` anchored on the bare word again, filtered to the retries' tests: red in the
                repeat test.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       123HELD
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            Results: one run each in a detached worktree at 3e557f2, this entry's commit, filtered as stated, each
+            edit made there and reverted, and the tree read clean after. B1 turned the retry test red and left the
+            repeat and sides tests green. B2 turned the repeat test red alone of the three. B3 turned the sides
+            test red alone. B4 turned the not-written and no-research tests red and left the refused and accepted
+            ones green. B5 turned the accepted test red alone of the four. B6 turned the refused-heading test red
+            alone. B7 turned the repeat test red alone, on the sentence holding the word. One run over the
+            summary's four tests with no edit in place, an edit that had not applied, read all four green.
+Held:       red in every test predicted and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1560 of 1560 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 123VP.
-            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 723 claims, 723 PASS, 0 FAIL, 734 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1560 of 1560 tests.
+            Both gates ran over the tree carrying this entry, 3e557f2, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    corrections C to G at 12.6 in that order; the two cases' count over the twenty reports after this
             merge, on its operating row.
