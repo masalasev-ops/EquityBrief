@@ -1,0 +1,24 @@
+# The remedy of the 12.2 correction of 2026-09-29 (pullbacks alone, a stop
+# outside every support band, the night's deadline at an hour, and the pin that
+# reads past comments), as its PROGRESS entry prints it: every pin moved, so the
+# eight ladder windows the store held open are closed, each version before its
+# rule's live window, then opened again, each live window before its versions,
+# and the filter's rule correction opens version 4 and registers the family again.
+# Run by the operator on 2026-09-30 at 02:14 UTC, before midnight in New York.
+version --rule "merge distance" --close "a quarter of a typical move" --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+version --rule "merge distance" --close live --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+version --rule "zone edges from non-average anchors only" --close "non-average anchors only" --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+version --rule "zone edges from non-average anchors only" --close live --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+version --rule "the trend rule" --close "below both averages" --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+version --rule "the trend rule" --close "below both under a cross" --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+version --rule "the trend rule" --close "the new label holds two nights" --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+version --rule "the trend rule" --close live --evidence "the ladder rules' code version moved to 8ae51b59cb91 with the 12.2 correction of 2026-09-29"
+version --rule "merge distance" --live-window
+version --rule "merge distance" --version "a quarter of a typical move" --parameters typicalMoveMultiple=0.25
+version --rule "zone edges from non-average anchors only" --live-window
+version --rule "zone edges from non-average anchors only" --version "non-average anchors only" --parameters zoneEdgesFromNonAverageAnchorsOnly=1
+version --rule "the trend rule" --live-window
+version --trend-version "below both averages"
+version --trend-version "below both under a cross"
+version --trend-version "the new label holds two nights"
+shape --rule-correction --restarts 0 --evidence "the operator's ruling of 2026-09-26: the filter reads pullbacks alone and a stop inside a support band moves to that band's low edge, landing with the night's deadline at an hour and the pin that reads past comments in one change and one remedy"

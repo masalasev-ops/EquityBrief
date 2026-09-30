@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+# Runs a remedy: the worker commands a change owes the operator's store, one
+# set of worker arguments a line in a file under tools/remedies/, in order,
+# stopping at the first failure with that step's exit code.
+#
+# Runs from the repository root, because a relative data root in appsettings.json
+# resolves against the working directory and the store must be the same one
+# whoever calls this and from wherever.
+#
+#   tools/remedy <file>            run every step
+#   tools/remedy <file> --list     print the steps, numbered, and run nothing
+#   tools/remedy <file> --from N   start at step N, for a remedy stopped part way
+#
+# A remedy file holds one step a line, written exactly as its PROGRESS entry
+# prints the arguments after `--`; a blank line and a line starting with # are
+# passed over. It is refused while the night's lock file exists under the data
+# root, which is `EquityBrief__DataRoot` where that is set and data/ otherwise,
+# because a remedy closes and opens the windows a running night is scoring under.
+set -euo pipefail
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$root"
+
+usage() {
+    echo "usage: tools/remedy <file> [--list] [--from N]" >&2
+    exit 2
+}
+
+file="${1:-}"
+[ -n "$file" ] || usage
+shift
+
+list=false
+from=1
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --list) list=true ;;
+        --from)
+            [ $# -ge 2 ] || usage
+            from="$2"
+            shift
+            ;;
+        *)
+            echo "remedy: unknown argument '$1'" >&2
+            usage
+            ;;
+    esac
+    shift
+done
+
+if [ ! -f "$file" ]; then
+    echo "remedy: no such file: $file" >&2
+    exit 2
+fi
+
+case "$from" in
+    ''|*[!0-9]*|0)
+        echo "remedy: --from takes a step number counted from 1, not '$from'" >&2
+        exit 2
+        ;;
+esac
+
+# The steps: every line that is not blank and not a comment, kept whole.
+steps=()
+
+while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+        ''|'#'*) ;;
+        *) steps+=("$line") ;;
+    esac
+done < "$file"
+
+count=${#steps[@]}
+
+if [ "$count" -eq 0 ]; then
+    echo "remedy: $file holds no step" >&2
+    exit 2
+fi
+
+if [ "$list" = true ]; then
+    n=0
+
+    for step in "${steps[@]}"; do
+        n=$((n + 1))
+        echo "$n of $count: $step"
+    done
+
+    exit 0
+fi
+
+if [ "$from" -gt "$count" ]; then
+    echo "remedy: --from $from is past the last step, $count" >&2
+    exit 2
+fi
+
+data_root="${EquityBrief__DataRoot:-data}"
+lock="$data_root/night.lock"
+
+if [ -e "$lock" ]; then
+    echo "remedy: refused, a night holds $lock; run it again once the night has finished" >&2
+    exit 3
+fi
+
+# Built once, so a remedy of seventeen steps does not build seventeen times, and
+# each step then runs the build as it stands.
+dotnet build src/EquityBrief.Worker -nologo -v q
+
+n=0
+
+for step in "${steps[@]}"; do
+    n=$((n + 1))
+
+    if [ "$n" -lt "$from" ]; then
+        continue
+    fi
+
+    echo "=== $n of $count: $step"
+
+    # The line is split into arguments as a shell would, so a quoted evidence
+    # sentence with an apostrophe inside it is one argument, as the entry
+    # printed it. A remedy file is committed beside the change it belongs to.
+    eval "arguments=($step)"
+
+    if ! dotnet run --no-build --project src/EquityBrief.Worker -- "${arguments[@]}"; then
+        code=$?
+        echo "remedy: stopped at step $n of $count with exit $code; run it again with --from $n once the cause is fixed" >&2
+        exit "$code"
+    fi
+done
+
+echo "remedy done: all $count step(s)"

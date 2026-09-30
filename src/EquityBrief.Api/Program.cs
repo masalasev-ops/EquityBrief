@@ -378,7 +378,10 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         reading,
         readQuarters,
         peerCloses,
-        missed);
+        missed,
+        // The plan the gate row's version reads, by its word, naming the plan the night's live rule read where
+        // the row stores no input.
+        gate is null ? null : await VersionPlanOf(read, gate.Version));
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -389,6 +392,25 @@ static async Task<EquityBrief.Core.Filter.FilterSettings> FilterSettingsOf(ReadA
     await read.FilterSettingsAsync(version) is { } json
         ? EquityBrief.Core.Filter.FilterSettings.Read(json)
         : EquityBrief.Core.Filter.FilterSettings.Proposed;
+
+// The plan a filter version's trade gate reads, by its word, read off the version's stored settings as Past
+// picks reads it, and section 17's proposed input where no version row is stored, which is what the filter
+// ran on.
+// see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
+static async Task<string> VersionPlanOf(ReadApi read, string version)
+{
+    if (await read.FilterSettingsAsync(version) is { } json)
+    {
+        using var document = System.Text.Json.JsonDocument.Parse(json);
+
+        if (document.RootElement.TryGetProperty("trade", out var trade) && trade.GetString() is { } word)
+        {
+            return word;
+        }
+    }
+
+    return EquityBrief.Core.Filter.FilterSettings.Word(EquityBrief.Core.Filter.FilterSettings.Proposed.Trade);
+}
 
 // Where the pass a page started stands, which the page asks for while it watches one.
 //
@@ -804,6 +826,13 @@ app.MapGet("/screens/tonight/{night?}", async (
         gates,
         readings);
 
+    // Every trade the live list recommended up to the night, which "Still open" reads and the list's rows
+    // are marked from where one repeats a trade still open.
+    // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
+    IReadOnlyList<PickRow> picks = gates is null ? [] : await read.PicksAsync(dated);
+
+    listed = TonightScreen.MarkedAsRepeats(dated, listed, picks);
+
     // The members one gate short, on a night the swing filter listed, each measured against the settings of
     // the version its result was stored under, and a missed trigger against the firings its own results show.
     // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
@@ -897,7 +926,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             TonightScreen.RuleView(rule, gates, market),
             TonightScreen.Listed(listings),
             held: held,
-            close: nearRows),
+            close: nearRows,
+            stillOpen: gates is null ? null : TonightScreen.StillOpen(dated, gates, picks)),
         "text/html; charset=utf-8");
 });
 

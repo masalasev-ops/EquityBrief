@@ -789,7 +789,8 @@ public partial class ComponentAccess
         Assert.False(ShownIn("the gamma verb, described and never shown", "gamma"));
     }
 
-    static IReadOnlyList<string> DispatchedVerbs(string program)
+    // Every verb the worker dispatches, read off its switch, which the remedy files' test reads as well.
+    internal static IReadOnlyList<string> DispatchedVerbs(string program)
     {
         var table = Regex.Match(program, @"args\[0\] : string\.Empty\) switch\s*\{(.*?)_ => NoVerb\(\)", RegexOptions.Singleline);
 

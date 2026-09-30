@@ -194,6 +194,42 @@ public static class TonightScreen
             ticker => FundamentalState.Place(readingByTicker.GetValueOrDefault(ticker)?.State));
     }
 
+    // "Still open" on a night the swing filter listed: each stock that passed every gate on the night with
+    // nothing excluding it but an open trade, while the trade the live list recommended for it on an earlier
+    // night is still open on this one, with that trade as Past picks draws it as of the night, in the list's
+    // own order. Before the rule reaches the filter the stock stands on the list as well, marked; once it
+    // does, the filter excludes it and this is the one place it is drawn.
+    // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
+    public static IReadOnlyList<StillOpenCell> StillOpen(DateOnly night, IReadOnlyList<GateResultRow> gates, IReadOnlyList<PickRow> picks)
+    {
+        var listings = picks.Select(PicksScreen.Listing).ToArray();
+        var trades = PicksScreen.Cells(picks, night).ToDictionary(cell => (cell.Ticker, cell.Night));
+        var rows = new List<StillOpenCell>();
+
+        foreach (var gate in gates
+            .Where(gate => gate.SessionDate == night && gate.Market && gate.Trend && gate.Setup && gate.Trigger && gate.Trade && gate.Exclusions.All(EquityBrief.Core.Filter.OpenTrades.IsExclusion))
+            .OrderBy(gate => gate.Rank ?? int.MaxValue)
+            .ThenBy(gate => gate.Ticker, StringComparer.Ordinal))
+        {
+            if (EquityBrief.Core.Filter.OpenTrades.OpenOn(gate.Ticker, night, listings) is { } kept && trades.TryGetValue((kept.Ticker, kept.Night), out var trade))
+            {
+                rows.Add(new StillOpenCell(gate.Ticker, trade));
+            }
+        }
+
+        return rows;
+    }
+
+    // The list's rows with each one that repeats a trade still open marked with the night that trade was
+    // listed on, read off the same walk Past picks marks its rows by.
+    // see: A repeat listing made before the rule reached the filter is marked and counted once
+    public static IReadOnlyList<ListingCell> MarkedAsRepeats(DateOnly night, IReadOnlyList<ListingCell> rows, IReadOnlyList<PickRow> picks)
+    {
+        var walked = EquityBrief.Core.Filter.OpenTrades.Walk(picks.Select(PicksScreen.Listing));
+
+        return [.. rows.Select(row => walked.TryGetValue((row.Ticker, night), out var repeat) && repeat is { } of ? row with { RepeatOf = of } : row)];
+    }
+
     // "Close to a buy point" on a night the swing filter listed: every member its stored results show missing
     // exactly one gate with nothing excluding it, each drawn as a row of the list is with the gate it missed,
     // what it had against the bar it needed and how far that is, nearest to qualifying first and a tie in the

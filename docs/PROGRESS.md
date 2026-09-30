@@ -33299,3 +33299,221 @@ Carried:    track 2 whole, after track 1 has merged and on the operator's go: th
             the run's record, the rerun's branch, the surprise pull the operator runs, the run and its report; the
             plateau margin, the 6 of 10 designs, the 100 leaders and the 4-hour budget, each proposed and the
             operator's to rule at track 4; and the freeze at track 6 with one remedy through `tools/remedy`.
+
+### 12.2 - correction: every remedy is issued by one committed script over a file beside the change that owes it, where the remedy of 2026-09-29 ran from a script in a session's scratch folder naming the operator's drive   2026-09-30
+Corrects:   the 12.2 correction of 2026-09-29, whose remedy of seventeen commands was printed in its entry and run by
+            the operator on 2026-09-30 from a script the building session left in its own scratch folder, hard-coding
+            the main checkout's drive and path; and every remedy before it, each issued as a list of commands in an
+            entry and typed or scripted afresh. Item 8 of the operator's brief of 2026-09-30, the 12.2 ruling above,
+            which the operator's go of the same day set building as track 1.
+Asked:      "The operator ran #282's remedy on 2026-09-30. Confirm it from the store: the rule-version windows
+            reopened and filter version 4 open. Commit the remedy script under tools/ and point the RUNBOOK at it,
+            so any future remedy is issued the same way." Confirmed in the ruling above: the eight ladder windows
+            closed from 02:14:02Z to 02:14:15Z and opened again from 02:14:17Z to 02:14:30Z on 8ae51b59cb91, filter
+            version 4 opened at 02:14:32Z, and candidates 51 to 56 retired and 57 to 62 registered at 02:14:33Z.
+Repaired:   - `tools/remedy`, a bash script beside `tools/remedy.ps1`, which hands to it through `run-bash.ps1` as
+              every other entry point does. It takes a remedy file and `--list` or `--from N`, runs from the
+              repository root, reads every line that is not blank and not a comment as one step, builds the worker
+              once and runs each step through it with no rebuild, printing the step's number before it and stopping
+              at the first failure with that step's exit code and the step to start from again. `--list` prints
+              the steps numbered and runs nothing. A run is refused with exit 3 while the night's lock file stands
+              under the data root, `EquityBrief__DataRoot` where set and `data/` otherwise, since a remedy closes
+              the windows a running night scores under; a missing file, a step number that is not one from 1 and a
+              start past the last step are each refused with exit 2 and a named message.
+            - `tools/remedies/2026-09-29-12.2-pullbacks-alone.txt`, the seventeen steps the operator ran, one a
+              line as the correction's entry prints the arguments after `--`, under a comment saying what the file
+              is for and when it ran. Every remedy after it is a file beside its change, and an entry's `Remedy:`
+              field names the file.
+            - RUNBOOK gains "Running a remedy", and CLAUDE.md's layout block and commands table name the script and
+              the folder, the prior text in CHANGELOG.
+            - `ComponentAccess.DispatchedVerbs`, which reads the worker's verbs off its switch, is opened to the
+              remedy files' test.
+Guarded:    two tests, new, in `RemedyTests`: every remedy file under `tools/remedies/` is made of steps whose verbs
+            the worker dispatches, the first holding seventeen, sixteen `version` and one `shape --rule-correction`;
+            and the script run through the bash the machine carries lists the seventeen steps numbered in order and
+            runs nothing, refuses a run with exit 3 under a lock file in a scratch data root before any step, and
+            refuses `--from 0`, `--from 18` and a file that is not there with exit 2. On a machine with no bash the
+            second test asserts it is not Windows, as the wrapper tests do.
+Written:    RUNBOOK's section; CLAUDE.md's rows; and the prior text of each in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      +2, the count the third correction entry after this one records.
+Claims:     none moved: no row of `ARCHITECTURE.html` changes.
+Pins:       none of the sources edited is in the three pin lists, so no version moves and nothing is owed before a
+            night.
+Mutated:    the rule, stated before the run: the one refusal the ruling asks for, reversed alone, filtered to the
+            remedy tests.
+            Predicted:
+            K1 the lock check removed, so a run under the lock file builds and runs: red in the second remedy test
+               at its lock assertion, and in no other.
+            Results: one run in a detached worktree at 880d65b, the tree the gates ran over, filtered to the two
+            remedy tests, the edit made there and reverted, and the tree read clean after. K1 turned the second
+            remedy test red at its lock assertion and left the first green.
+Held:       red where predicted, and nowhere else over the filter.
+Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry and the two correction entries after
+            it, 880d65b, whose figures the last of them records.
+Carried:    every later remedy issued through the script, the freeze's at track 6 first.
+
+### 12.2 - correction: a name's trade table draws the ladder's first tranche and the one swing plan the night's live rule read and no candidate's plan on any version, where it drew both swing plans on every night, the plan at the nearest bands among them from the night it became a candidate's   2026-09-30
+Corrects:   the 12.2 correction of 2026-09-26 that added section 10's plan to every gate row and drew it as a third
+            row of the name page's trade table beside the plan at the nearest bands, which the 12.2 correction of
+            2026-09-27 made a registered candidate's from version 3; the 12.2 ruling of 2026-09-27 placed this table
+            in the same change and remedy run as the items the 12.2 correction of 2026-09-29 built, and that
+            correction left it for a change of its own since it moves no pin. Item 2 of the operator's brief of
+            2026-09-30, the 12.2 ruling above, set building as track 1 on the operator's go the same day.
+Asked:      "A stock's page still draws all three plans every night, including the plan at the nearest bands, which
+            belongs to a registered candidate. As ruled: the table shows the stepped plan and the plan that night's
+            live rule used, and no other. A night listed under an earlier filter version shows the plan live then.
+            Test it off the rendered page for one night of each version, and state why #282's entry says nothing
+            about this item." Why it says nothing is stated in the ruling above: its Carried field defers the
+            table for a change of its own, and its Corrects and Asked fields cite the rulings of 2026-09-26 and
+            2026-09-28 and not the 2026-09-27 ruling that placed the table in the window.
+Repaired:   - `GatesView` carries the plan the night's live rule read by its word, `LivePlan`: the trade gate's
+              stored input, or on a row storing none the plan its night's version reads, read off the version's
+              stored settings as Past picks reads it and section 17's proposed input where no version row is
+              stored. `NameScreen.Gates` sets it, `NameScreen.Region` hands it the version's word, and the name
+              route reads that word off the stored settings with no whole read of them, since a version row can
+              hold the trade word alone.
+            - `MarkRenderer.GatesTable` draws the ladder's first tranche and the one swing row `LivePlan` names,
+              marked as the plan the trade gate read, and never the other; on a night whose trade gate read the
+              ladder it draws the ladder row alone. The gates card's key says the alternative is not drawn because
+              how it would have traded a stock is the evaluation it waits for.
+            - The code-written short version draws the same plan: section 10's or the nearest bands' as the live
+              plan names, and the ladder's tranche with its reward to risk and stop where the gate read that, where
+              it drew the nearest bands' prices on every night whose gate read neither swing plan.
+Guarded:    one test, new, `ANamesTradeTableDrawsTheLadderAndThePlanItsNightsLiveRuleReadAndNoCandidatesPlanOnAnyVersion`,
+            over a constructed store holding one night under no version, the gate reading the ladder, one under
+            version 2 reading the nearest bands with its row storing no input, and one each under versions 3 and 4
+            reading section 10's plan, the two swing plans at prices no other figure on the page carries: each
+            night's page holds the ladder row and the live row and no other, the live row's stop and target as
+            stored, the marker once, and the other swing plan's stop and target nowhere on the page but "On the
+            list before", which draws an earlier night's trade on that night's own live plan. Two tests are
+            changed: the fixture's gates test asserts neither swing row is drawn on a night whose gate read the
+            ladder, and the code-written summary's test asserts the ladder's tranche and no swing price on such a
+            night, where both asserted the nearest bands' prices.
+Written:    section 15.9's Gates row in `ARCHITECTURE.html`, read as its four parts, the third's words moved with
+            it in the harness; and the prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      +1, the count the correction entry after this one records.
+Claims:     none moved: the Gates row's third part is renamed, not added.
+Pins:       none of the sources edited is in the three pin lists, so no version moves and nothing is owed before a
+            night.
+Mutated:    the rule, stated before the run: each rule the ruling states, reversed alone, filtered to the trade
+            table test and the fixture's gates test.
+            Predicted:
+            T1 both swing rows drawn on every night, as before: red in the trade table test on every night and in
+               the fixture's gates test.
+            T2 a row storing no input read as section 10's plan whatever its version reads: red in the trade table
+               test on the version 2 night, and green in the fixture's gates test, whose rows store an input.
+            Results: one run each in a detached worktree at 880d65b, the tree the gates ran over, filtered to the
+            trade table test and the fixture's gates test, each edit made there and reverted, and the tree read
+            clean after. T1 turned both tests red. T2 turned the trade table test red and left the fixture's
+            gates test green.
+Held:       red in every test predicted, and in no other over the filter.
+Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry and the correction entry after it,
+            880d65b, whose figures that entry records.
+Carried:    nothing.
+
+### 12.2 - correction: a stock holds one open trade on each rule's list, read on the pages first, tonight's page drawing each stock passed again while its earlier trade is still open and Past picks marking a repeat listing and counting the move once, where the list listed BDX again two nights after listing it with the trade still open and each listing was scored as its own trade   2026-09-30
+Corrects:   the 12.2 correction of 2026-09-27 that built Past picks, which counted every listing the filter passed
+            as a trade of its own, and the 12.6 correction of 2026-09-25 that switched tonight's list to the swing
+            filter, which lists a stock on every night its trigger stays fresh. Item 3 of the operator's brief of
+            2026-09-30, the 12.2 ruling above, with the operator's two answers there, set building as track 1 on
+            the operator's go the same day.
+Asked:      the rule as the operator ruled it, from the brief: "A trade is the one listed: bought at that night's
+            close, with that night's stop and target. It is open until it reaches its target, its stop or its time
+            limit. A stock with an open trade is not listed again, not even for a different setup. It becomes
+            eligible the night after the trade ends, including the night after a stop. Each rule keeps its own open
+            trades: the live list and every candidate track theirs separately, so one rule's trades never block
+            another's. A stock with an open live trade appears in neither the buy list nor 'Close to a buy point',
+            and frees its place for another stock." And now, on the pages, with no pin moving: a "Still open" line
+            on Tonight, Past picks marking a repeat listing made before the rule reached the filter, and how often
+            a repeat happened on the stored nights; at the freeze the rule joins the filter code and shares its
+            remedy. The operator's answers: a repeat stays on the list, marked, and Still open names it; a repeat
+            is drawn on Past picks with its mark and left out of the counts, with a line saying how many.
+Measured:   on the stored nights, read-only on 2026-09-30 and recorded in the ruling above: four filter nights and
+            seven listings, of which one is a repeat, BDX on 2026-09-29, its trade of 2026-09-25 open with no
+            outcome written.
+Repaired:   - `OpenTrades`, in Core and in no pin list until the freeze: a trade listed on a night is open on a
+              later night while its capped horizon's outcome is undecided or was decided on that later session
+              itself, and frees the stock from the night after; a missing outcome row reads as open until the
+              cap's sessions have passed. `Walk` takes one rule's listings in night order, keeps the first, reads a
+              later one as a repeat while the kept trade is open on its night and as the kept trade otherwise, so a
+              repeat never blocks a later listing; `OpenOn` names the kept trade open on a night among the listings
+              before it. Each rule's trades are walked apart. The exclusion the filter writes from the freeze,
+              "an open trade from <night>", is named here beside the rule that reads it.
+            - Tonight's page draws "Still open" beneath the list on a night the swing filter listed: each stock that
+              passed every gate with no exclusion but an open trade while the trade the live list recommended for it
+              on an earlier night is open on this one, in the list's order, with the night that trade was listed on,
+              the trade line and where the price stands against the trade's stop and target in words, a trade
+              that ended at the night's own close said to free the stock from the next night, and a missing outcome
+              row said to be read as open until its sessions run out; a line where there is none; and a key saying
+              it is not a new trade. `TonightScreen.StillOpen` reads it off the gate rows and every trade Past
+              picks reads, and `MarkedAsRepeats` marks the list's rows off the same walk: before the freeze the
+              stock stays on the list where the filter put it, its row carrying the night of the open trade and
+              the mark "listed again while the trade from <night> is open".
+            - Past picks marks a repeat listing on its row and in its status cell, "listed again while the trade
+              from <night> was open", leaves it out of every count and share, states how many were listed again,
+              drawn and not counted, counts the rows shown against the rows there are where repeats are drawn, and
+              a name's "On the list before" counts the repeats apart in its line.
+Guarded:    six tests, new: in `OpenTradesTests`, a trade ending on a night blocks it and frees the next, whatever it
+            ended as, an undecided trade is open on every later night and no trade on its own, and a missing row is
+            open on the 63rd session after the listing and not the 64th; a chain names the kept trade, a repeat
+            blocking nothing, the first listing after the trade ends kept and the next a repeat of it, and `OpenOn`
+            naming the kept trade open on a night; and two rules walked apart never block each other, the
+            exclusion's words named. In `ReadSurface.StillOpen`, over a constructed store with five stocks listed on
+            an earlier night, one open, one stopped out at the switch night's own close, one whose trade reached its
+            target the session before, one with no outcome row and one open but one gate short on the switch night:
+            tonight's page draws the first, second and fourth on Still open in the list's order with each one's
+            words and trade line, the third and fifth on neither, marks the same three rows on the list and not the
+            third, and says none on the earlier night; Past picks counts six trades over two nights with three
+            listed again, drawn and not counted, marks the three repeats and not the kept trades, keeps the
+            trades' count under a status filter, and the name page's line counts the repeat apart; and a stock
+            whose earlier trade has no outcome row stands on Still open inside the cap saying so, its listing
+            marked, and is a trade of its own past the cap.
+Written:    section 15.7's Still open row, read as the nine parts it enumerates, section 15.17's two rows gaining a
+            part each, and section 18's row in `ARCHITECTURE.html`; two decisions in `DECISIONS.md`; one sentence in
+            the guide's screens card; and the prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves.
+Tests:      1605, from 1596: nine added across the three corrections, two, one and six.
+Claims:     748, from 736: twelve added, where the ruling predicted two. The Still open row was predicted as one
+            claim and is read as the nine parts it enumerates, which is what the harness reads any row listing what
+            a region holds as, and Past picks' two rows each gain a part the prediction did not count; section 18's
+            row is the one the prediction counted. Named here as unpredicted.
+Pins:       none of the sources edited is in the three pin lists, `OpenTrades.cs` among them until the freeze, so
+            no version moves and nothing is owed before a night.
+Mutated:    the rule, stated before the run: each new rule reversed alone, filtered to the tests that read it.
+            Predicted:
+            R1 a trade freed on the night it ends rather than the next, filtered to the open trades tests and the
+               Still open page tests: red in the boundary test and in tonight's page test, whose stopped-out stock
+               leaves Still open.
+            R2 a repeat treated as the kept trade, filtered to the same: red in the chain test.
+            R3 Still open drawing a stock one gate short, the five gates no longer required, filtered to the same:
+               red in tonight's page test, the one-gate-short stock drawn.
+            R4 repeats counted in Past picks' summary, filtered to the same: red in the Past picks test at its
+               counts.
+            Results: one run each in a detached worktree at 880d65b, the tree the gates ran over, filtered to the
+            three open trades tests and the three Still open page tests, each edit made there and reverted, and the
+            tree read clean after. R1 turned the boundary test and tonight's page test red as predicted, and also
+            the chain test, whose trade ending at the close of the 2nd is listed again on that night, and the Past
+            picks test, whose stopped-out stock ends at the switch night's own close. R2 as made wrote the kept
+            trade's verdict over the repeat's, so it turned the chain test red and also the two-rules test,
+            tonight's page test, the Past picks test and the missing-row test, every one reading a repeat. R3
+            turned tonight's page test red and left the other five green. R4 turned the Past picks test red and
+            also the missing-row test, which counts the trades.
+Held:       red in every test predicted; R1, R2 and R4 each also turned red tests the prediction left out, named
+            above, every one of them reading the rule the mutation removed.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1605 of 1605 tests ran
+            with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 748 claims, 748 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 759 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1605 of 1605 tests.
+            Both gates ran over the tree carrying this entry and the two correction entries before it, 880d65b, in
+            a worktree beside the repository, and the operator's store under `data/` was not touched by either.
+Operator:   nothing to run. After the merge the read surface on its port is started again from `main` so the pages
+            draw it.
+Carried:    at the freeze, track 6: the swing filter walks the live list's own trades and writes the exclusion, a
+            stock losing its rank and its place on both lists; each candidate walks its own fires from the shadow
+            column on its own plan's horizon; a trade's end is read from the night's bars before the filler writes;
+            `OpenTrades.cs` joins the three pin lists under the freeze's one remedy; and the code-written summary
+            names a still open stock.

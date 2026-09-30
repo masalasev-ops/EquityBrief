@@ -413,7 +413,7 @@ public partial class ReadSurface
         var tonight = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/name/PA"));
         var region = Assert.Single(Blocks(tonight, "<section class=\"card\" id=\"on-the-list-before\".*?</section>"));
 
-        Assert.Contains("<p class=\"picked\" data-ticker=\"PA\" data-picked=\"1\">Picked once: reached target once.</p>", region, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"picked\" data-ticker=\"PA\" data-picked=\"1\" data-repeats=\"0\">Picked once: reached target once.</p>", region, StringComparison.Ordinal);
 
         var row = PickRowOf(region, "PA", PicksVersionTwoNight);
 

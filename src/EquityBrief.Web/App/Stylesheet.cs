@@ -330,6 +330,9 @@ span[data-last-asked-at]::before{content:none}
 .picks-table a.nm:hover .tk{text-decoration:underline}
 .picks-table .tk{display:block;font-weight:600}
 .picks-table .co{display:block;color:var(--soft);font-size:12px}
+.listed-again{display:block;font:400 12px var(--sans);color:var(--soft);white-space:normal}
+.still-open-table td.stands{font-size:13px}
+.still-open-table .co{display:block;color:var(--soft);font-size:12px}
 .picked{margin:0 0 10px;font-size:14.5px}
 .trade-line{display:block;overflow:visible}
 .tl-track{stroke:var(--s2);stroke-width:1.5}

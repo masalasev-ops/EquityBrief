@@ -840,7 +840,7 @@ public sealed class SinglePageApp : IComponent
                 "The swing filter's gates",
                 marks.GatesTable(ticker, gates) + Cards.Key(
                     "How to read it.",
-                    "Each gate is one question the swing filter asks of every member each night, in order: the market's breadth, the trend and strength, a setup, a trigger new on the night, and a trade worth taking. A name passes only where all five pass and no exclusion applies. The trade is read three ways, from the ladder's first tranche, from the swing trade at the nearest bands and from the swing trade clear of the noise, whose stop sits at least a typical day's move below the entry and whose target sits at least two above it, and the plan marked as read decides the gate.",
+                    "Each gate is one question the swing filter asks of every member each night, in order: the market's breadth, the trend and strength, a setup, a trigger new on the night, and a trade worth taking. A name passes only where all five pass and no exclusion applies. The trade is read from the ladder's first tranche and from the swing plan that night's live rule used, and the plan marked as read decides the gate. An alternative plan being tested in the background is not drawn: how it would have traded a stock is the evaluation it waits for.",
                     gates.Rule == EquityBrief.Core.Shortlist.ListRules.Filter
                         ? "A failed gate names what it read and why it failed, and a name passing all five that no exclusion removes is on that evening's list."
                         : "A failed gate names what it read and why it failed. The six reasons drew that evening's list, so these answers decided nothing on it."),
@@ -1457,7 +1457,8 @@ public sealed class SinglePageApp : IComponent
         ListRuleView? rule = null,
         int? listed = null,
         IReadOnlyList<DateOnly>? held = null,
-        IReadOnlyList<ListingCell>? close = null)
+        IReadOnlyList<ListingCell>? close = null,
+        IReadOnlyList<StillOpenCell>? stillOpen = null)
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -1509,6 +1510,24 @@ public sealed class SinglePageApp : IComponent
                 : "Each one has reached a price its own chart made significant. Most reasons first, then the plan's reward to risk.",
             stamp: Cards.Night(night),
             region: "list"));
+
+        // "Still open", between the list and "Close to a buy point" on a night the swing filter listed: the
+        // stocks that passed every gate tonight while a trade the list recommended for them on an earlier
+        // night is still open. A stock holds one open trade at a time, so none of these is a new trade.
+        // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
+        if (byFilter && stillOpen is not null)
+        {
+            region.Append(Cards.Computed(
+                "Still open",
+                marks.StillOpen(stillOpen, night) + Cards.Key(
+                    "How to read it.",
+                    "Each stock here passed every gate of the swing filter tonight while a trade the list recommended for it on an earlier night is still open: that trade has not reached its target or its stop, and its sessions have not run out. A stock holds one open trade at a time, so this is not a new trade; the row shows where the price stands against the open trade's stop and target, and a trade that ended at tonight's close frees the stock from the next night.",
+                    "Until the rule reaches the filter the stock is still drawn on the list above, marked as listed again; from then on it is excluded there and drawn here alone."),
+                title: "Passed again while an earlier trade is still open",
+                lede: "One open trade per stock: a stock the list already holds is not listed again until the night after its trade ends.",
+                stamp: Cards.Night(night),
+                region: "still-open"));
+        }
 
         // "Close to a buy point", beneath the list on a night the swing filter listed: the members one gate
         // short, drawing the places the list leaves of the twenty, nearest to qualifying first. It recommends
@@ -2118,7 +2137,12 @@ public sealed class SinglePageApp : IComponent
         var body = new StringBuilder();
 
         body.Append(marks.PicksFilters(summary, status));
-        body.Append(Invariant($"<p class=\"list-count\" data-shown=\"{shown.Count}\" data-trades=\"{summary.Listed}\">Showing {shown.Count} of {summary.Listed} trade{(summary.Listed == 1 ? string.Empty : "s")}</p>"));
+        // The rows shown of the rows there are: the trades, and the listings that repeated a trade still open,
+        // drawn with their mark and counted as no trade.
+        // see: A repeat listing made before the rule reached the filter is marked and counted once
+        body.Append(summary.Repeats == 0
+            ? Invariant($"<p class=\"list-count\" data-shown=\"{shown.Count}\" data-trades=\"{summary.Listed}\">Showing {shown.Count} of {summary.Listed} trade{(summary.Listed == 1 ? string.Empty : "s")}</p>")
+            : Invariant($"<p class=\"list-count\" data-shown=\"{shown.Count}\" data-trades=\"{summary.Listed}\" data-repeats=\"{summary.Repeats}\">Showing {shown.Count} of {summary.Listed + summary.Repeats} rows: {summary.Listed} trade{(summary.Listed == 1 ? string.Empty : "s")} and {summary.Repeats} listed again while an earlier trade was open</p>"));
         body.Append(shown.Count == 0
             ? "<p class=\"degraded\" data-shown=\"none\">No trade stands in this status yet.</p>"
             : marks.PicksTable(shown, named: true));

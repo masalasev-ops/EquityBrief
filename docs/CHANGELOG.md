@@ -9658,3 +9658,51 @@ Was:
 Now:
 > **One track at a time.** Work runs one track at a time, in the order the newest queue ruling in `PROGRESS.md` sets, and the next track starts only after the current one has merged with the operator's go. Every report to the operator opens with that queue: done, in progress, next. The list itself lives in the ruling entry and not here, because a second copy of it goes stale the moment a track merges.
 Why: the operator's brief of 2026-09-30 asked for the rule to be recorded in CLAUDE.md; the list stays in the ruling entry so that a second copy cannot go stale the moment a track merges.
+
+### 2026-09-30 - CLAUDE.md - the layout and the commands name the remedy script and its files
+Authorised by: the 12.2 ruling of 2026-09-30, item 8, every remedy issued by one committed script
+Was:
+>                   migrate  migrate.ps1   apply migrations
+>                   nightly  nightly.ps1   what the scheduler calls, not run by CI
+> | Run a night by hand | `tools/nightly.ps1` | `tools/nightly` | PowerShell on Windows, bash on macOS |
+Now:
+>                   migrate  migrate.ps1   apply migrations
+>                   nightly  nightly.ps1   what the scheduler calls, not run by CI
+>                   remedy  remedy.ps1   run a remedy file, the worker commands a change owes the
+>                                  operator's store, one a line in order, stopping at the first failure
+>                   remedies/      one file per remedy, named by date, checkpoint and what it does,
+>                                  committed with the change that owes it
+> | Run a night by hand | `tools/nightly.ps1` | `tools/nightly` | PowerShell on Windows, bash on macOS |
+> | Run a remedy | `tools/remedy.ps1 <file>` | `tools/remedy <file>` | PowerShell on Windows, bash on macOS |
+Why: a script in the tree is a command the layout and the table name, and the remedy of 2026-09-29 ran from a script in a session's scratch folder that named the operator's drive.
+
+### 2026-09-30 - RUNBOOK.md - a section on running a remedy
+Authorised by: the 12.2 ruling of 2026-09-30, item 8, every remedy issued by one committed script
+Was:
+> (no prior text: the section "Running a remedy" is new, placed after "Closing and opening a window again after midnight in New York costs the coming session" and before "Moving the installation")
+Now:
+> ### Running a remedy
+> A remedy is the worker commands a change owes the operator's store ... It is committed as a file under `tools/remedies/` ... the entry's `Remedy:` field names the file. It is run once, from the main checkout after its fast-forward to the merge, with no night, drain or queue running, and before midnight in New York where the choice is there: `tools/remedy.ps1 tools/remedies/2026-09-29-12.2-pullbacks-alone.txt` ... The script builds the worker once, runs each step in order printing its number before it, and stops at the first step that fails with that step's exit code ... `--from N` starts at step N and `--list` prints the steps numbered and runs nothing. It is refused while the night's lock file stands under the data root ...
+Why: the operator asked that any future remedy be issued the same way, and the runbook is where a person is told how.
+
+### 2026-09-30 - ARCHITECTURE.html - the name page's gates row draws the one swing plan the night's live rule used
+Authorised by: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+Was:
+> Section 15.9, Gates: ... the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked, and the exclusions with a key saying how to read it
+Now:
+> Section 15.9, Gates: ... the trade read from the ladder's first tranche and from the one swing plan that night's live rule used with that plan marked and no candidate's plan drawn whichever filter version the night ran under, and the exclusions with a key saying how to read it
+Why: the operator ruled on 2026-09-27 that the plan at the nearest bands is a registered candidate's from version 3 and appears nowhere until it has cleared the minimum evidence, and the 12.2 correction of 2026-09-29 left the table for a change of its own.
+
+### 2026-09-30 - ARCHITECTURE.html - tonight's page gains Still open, Past picks marks a repeat listing, and section 18 gains a still open trade with no outcome row
+Authorised by: A stock holds one open trade on each rule's list, and it is free the night after its trade ends; A repeat listing made before the rule reached the filter is marked and counted once
+Was:
+> Section 15.7: no Still open row, the second list following the list.
+> Section 15.17, How the list's picks have done: ... the share that reached the target first beside the share needed to break even and the average result in multiples of the risk taken, the three always together; a key saying how to read it
+> Section 15.17, Every trade: ... the result as a signed multiple of the risk or open; each column heading saying what its column holds while the pointer is over it (see: Every figure carries a plain-language key); a key saying ...
+> Section 18: no row for a still open trade whose outcome row is missing.
+Now:
+> Section 15.7, Still open: beneath the list on an evening the swing filter listed: one row per stock that passed every gate on the night with nothing excluding it but an open trade while a trade the live list recommended for it on an earlier night is still open on this one, the night that trade was listed on, the trade line, where the price stands against that trade's stop and target, and whether the trade ended at this night's own close and frees the stock from the next night; before the rule reaches the filter the stock stands on the list as well and is marked as listed again while that trade is open; once the rule reaches the filter the stock is excluded there and drawn here alone; a line where there is none; and a key saying it is not a new trade
+> Section 15.17, How the list's picks have done: ... the three always together; a line saying how many were listed again while an earlier trade was open, drawn and not counted (see: A repeat listing made before the rule reached the filter is marked and counted once); a key saying how to read it
+> Section 15.17, Every trade: ... the result as a signed multiple of the risk or open; a repeat listing made while the trade from an earlier night was open marked as listed again and counted once (see: A repeat listing made before the rule reached the filter is marked and counted once); each column heading ...
+> Section 18, A still open trade whose outcome row is missing: the open trade rule reads the trade as open until its cap's sessions have passed ... the Still open row draws the plan and no dot, says no outcome stored and that the trade is read as open until its sessions run out, and Past picks marks the repeat ... a row that is not there says nothing either way ...
+Why: the operator ruled one open trade per stock on 2026-09-30, read on the pages first with no pin moving, after the list listed BDX again two nights after listing it with the trade still open.

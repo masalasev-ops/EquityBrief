@@ -1392,7 +1392,8 @@ public partial class ArchitectureConformance
         // 113 at the 12.7 correction that draws close to a buy point beneath tonight's list.
         // 115 at the 12.6 correction that draws how each report did and the section trials on the Run page.
         // 114 at the 12.6 correction that writes the comparisons to files: the section trials row goes.
-        Assert.Equal(114, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 115 at the 12.2 correction that reads one open trade per stock on the pages: Still open on tonight's.
+        Assert.Equal(115, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1483,8 +1484,9 @@ public partial class ArchitectureConformance
         // retirement date and a report costing more than section 17 names.
         // 379 at the 12.6 correction that draws how each report did and the section trials: the seven parts their
         // two rows state. 376 at the 12.6 correction that writes the comparisons to files: the section trials row's
-        // three parts go with it.
-        Assert.Equal(376, inDocument.Length);
+        // three parts go with it. 387 at the 12.2 correction reading one open trade per stock on the pages:
+        // tonight's Still open row as its nine parts and Past picks' two parts.
+        Assert.Equal(387, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1567,8 +1569,9 @@ public partial class ArchitectureConformance
         // costing more than section 17 names, and section 18's row about a key the secrets file does not hold as
         // its two halves. 355 at 12.6's correction that draws how each report did and the section trials: the
         // seven parts their two rows state. 352 at the 12.6 correction that writes the comparisons to files: the
-        // section trials row's three parts go with it.
-        Assert.Equal(352, checkedElements);
+        // section trials row's three parts go with it. 363 at the 12.2 correction reading one open trade per
+        // stock on the pages: Still open's nine parts and Past picks' two.
+        Assert.Equal(363, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

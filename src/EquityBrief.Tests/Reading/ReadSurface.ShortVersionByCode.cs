@@ -117,18 +117,22 @@ public partial class ReadSurface
 
         Insert(store, $"UPDATE gate_result SET swing_entry = '330.5', swing_stop = '320.25', swing_target = '350.75', clear_stop = '310.5', clear_target = '370.25' WHERE ticker = 'KEYS' AND session_date = {Newest};");
 
-        foreach (var (input, stop, target, words) in (IEnumerable<(string, string, string, string)>)[
-            (EquityBrief.Core.Filter.FilterSettings.ClearWord, "310.5", "370.25", "The swing trade clear of the noise, the plan the trade gate read: "),
-            (EquityBrief.Core.Filter.FilterSettings.SwingWord, "320.25", "350.75", "The swing trade at the nearest bands, the plan the trade gate read: "),
-            (EquityBrief.Core.Filter.FilterSettings.LadderWord, "320.25", "350.75", "The swing trade at the nearest bands: ")])
+        // A night whose trade gate read the ladder draws the ladder's tranche and no swing plan's prices, since
+        // both swing plans are candidates' plans on such a night.
+        // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
+        foreach (var (input, entry, stop, target, words) in (IEnumerable<(string, string, string, string, string)>)[
+            (EquityBrief.Core.Filter.FilterSettings.ClearWord, "330.5", "310.5", "370.25", "The swing trade clear of the noise, the plan the trade gate read: "),
+            (EquityBrief.Core.Filter.FilterSettings.SwingWord, "330.5", "320.25", "350.75", "The swing trade at the nearest bands, the plan the trade gate read: "),
+            (EquityBrief.Core.Filter.FilterSettings.LadderWord, "none", "none", "none", "The ladder's first tranche, the plan the trade gate read: reward to risk ")])
         {
             Insert(store, $"UPDATE gate_result SET gates = json_set(gates, '$.gates[4].values.{EquityBrief.Core.Filter.SwingGates.TradeInputValue}', '{input}') WHERE ticker = 'KEYS' AND session_date = {Newest};");
 
             var drawn = CodeSummary(await NameRoute(host, "KEYS"));
 
-            Assert.Equal("330.5", PartAttribute(drawn, "data-entry"));
+            Assert.Equal(entry, PartAttribute(drawn, "data-entry"));
             Assert.Equal((stop, target), (PartAttribute(drawn, "data-stop"), PartAttribute(drawn, "data-target")));
             Assert.StartsWith(words, Part(drawn, "plan"), StringComparison.Ordinal);
+            Assert.DoesNotContain(input == EquityBrief.Core.Filter.FilterSettings.ClearWord ? "320.25" : "310.5", Part(drawn, "plan"), StringComparison.Ordinal);
         }
     }
 

@@ -532,6 +532,16 @@ Every open, replacement, close and backfill, refused or not, is one row on the r
 
 **Closing and opening a window again after midnight in New York costs the coming session.** A score counts only for a session after the New York date its window opened on, so a window reopened at, say, twenty past midnight Eastern opens on that day's own date and the night that runs that evening is flagged in sample and counts toward no record. Run the remedy before midnight Eastern where the choice is there, and where it is not, read the first counted session as the one after (see: A version's score counts only for a session after the New York date its window opened on).
 
+### Running a remedy
+
+A remedy is the worker commands a change owes the operator's store: the windows closed and opened again where a pin moved, and the filter's rule correction where the family is registered again. It is committed as a file under `tools/remedies/`, named by date, checkpoint and what it does, one step a line written exactly as the change's PROGRESS entry prints the arguments after `--`, with a comment at the top saying what it is for; the entry's `Remedy:` field names the file. It is run once, from the main checkout after its fast-forward to the merge, with no night, drain or queue running, and before midnight in New York where the choice is there:
+
+```
+tools/remedy.ps1 tools/remedies/2026-09-29-12.2-pullbacks-alone.txt
+```
+
+The script builds the worker once, runs each step in order printing its number before it, and stops at the first step that fails with that step's exit code, naming the step to start from again once the cause is fixed: `--from N` starts at step N and `--list` prints the steps numbered and runs nothing. It is refused while the night's lock file stands under the data root, `EquityBrief__DataRoot` where that is set and `data/` otherwise, because a remedy closes the windows a running night scores under. The first file committed is the remedy of the 12.2 correction of 2026-09-29, which the operator ran on 2026-09-30, and every remedy after it is issued the same way: a session that writes a remedy into a scratch folder of its own has left the record.
+
 ---
 
 ## Moving the installation

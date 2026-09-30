@@ -122,7 +122,7 @@ public partial class ReadSurface
             // 12.2, the name's gates and the run page's funnel.
             CheckReach.Key("15.9 Name", "Gates, each of the five gates with whether it passed and why"),
             CheckReach.Key("15.9 Name", "Gates, the setup's family and whether the trigger's event happened"),
-            CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked"),
+            CheckReach.Key("15.9 Name", "Gates, the trade read from the ladder's first tranche and from the one swing plan that night's live rule used with that plan marked and no candidate's plan drawn whichever filter version the night ran under"),
             CheckReach.Key("15.9 Name", "Gates, the exclusions with a key saying how to read it"),
             CheckReach.Key("15.10 Run", "Swing filter funnel, how many members each gate passed in order and how many it removed"),
             CheckReach.Key("15.10 Run", "Swing filter funnel, the setup's families on a night that held a breakout"),
@@ -272,6 +272,10 @@ public partial class ReadSurface
             // The 12.2 correction's Past picks screen, the name page's region, the eighth mark and section
             // 18's two rows for the screen.
             .. PastPicksClaims,
+
+            // The 12.2 correction's one open trade per stock on the pages: Still open on tonight's page, the
+            // two marks on Past picks and section 18's row for a still open trade with no outcome row.
+            .. OpenTradeClaims,
 
             // The fundamentals item's screens: the list's state, its word and its order, what the numbers say,
             // Past picks' state and order, and the three failure rows a reader sees on a page, the quarters
