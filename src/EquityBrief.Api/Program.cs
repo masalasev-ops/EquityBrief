@@ -538,7 +538,7 @@ async Task<(IReadOnlyList<RequestRow> Rows, IReadOnlyList<RequestTime> Times, Pa
             rows,
             await read.PassStartsAsync(rows.Where(row => row.State == ResearchRequests.Writing)),
             estimate,
-            QueuePricing(builder.Configuration),
+            QueuePrices(builder.Configuration),
             clock.UtcNow),
         estimate);
 }
@@ -548,6 +548,23 @@ async Task<(IReadOnlyList<RequestRow> Rows, IReadOnlyList<RequestTime> Times, Pa
 // refusing to draw the queue.
 static EquityBrief.Core.Providers.ResearchPricing? QueuePricing(IConfiguration configuration) =>
     Profile(configuration, EquityBrief.Core.Providers.ModelProfiles.ResearchJob)?.Pricing;
+
+// The windows the drain waits out, the job's profile's and each its sections name, read as the
+// drain reads them, or none where they cannot be read.
+static IReadOnlyList<EquityBrief.Core.Providers.ResearchPricing> QueuePrices(IConfiguration configuration)
+{
+    try
+    {
+        return EquityBrief.Core.Providers.ModelProfiles.PricesFor(
+            key => configuration[key],
+            key => configuration.GetSection(key).GetChildren().Select(child => child.Value),
+            EquityBrief.Core.Providers.ModelProfiles.ResearchJob);
+    }
+    catch (InvalidOperationException)
+    {
+        return [];
+    }
+}
 
 // A paid job's profile as configuration names it, without its key, or none where the job
 // names no profile or one that cannot be read.

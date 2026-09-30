@@ -269,7 +269,7 @@ public static class RequestDrain
         string databaseFile,
         IClock clock,
         Func<string[], Task> pass,
-        ResearchPricing pricing,
+        IReadOnlyList<ResearchPricing> pricings,
         Func<DateTimeOffset, Task> waitUntil,
         CancellationToken cancellation = default)
     {
@@ -293,11 +293,12 @@ public static class RequestDrain
             // run into one, waits for the instant the pricing states before it claims, so the
             // request it will take stays outstanding while it waits and the queue screen reads it
             // as waiting rather than as being written. A drain with nothing outstanding has ended
-            // above, and waits for nothing.
+            // above, and waits for nothing. The windows are those of every profile a pass's sections
+            // may be written by.
             // see: Queued work runs off-peak, and every schedule is written in UTC
             // see: A pass starts only where the longest pass the store holds would end before a peak window opens
             var now = clock.UtcNow;
-            var startsAt = pricing.StartFor(now, await LongestPassAsync(connection, cancellation));
+            var startsAt = ResearchPricing.StartFor(pricings, now, await LongestPassAsync(connection, cancellation));
 
             if (startsAt > now)
             {

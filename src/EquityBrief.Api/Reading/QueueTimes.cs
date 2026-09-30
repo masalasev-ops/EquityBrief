@@ -63,13 +63,13 @@ public static class QueueTimes
         IReadOnlyList<RequestRow> rows,
         IReadOnlyDictionary<RequestRow, DateTimeOffset?> started,
         PassEstimate estimate,
-        ResearchPricing? pricing,
+        IReadOnlyList<ResearchPricing> pricings,
         DateTimeOffset now)
     {
-        // The instant the drain would take a request at, from the one function it calls, so the page
-        // and the drain cannot disagree about when a pass starts.
+        // The instant the drain would take a request at, from the one function it calls over the same
+        // profiles' windows, so the page and the drain cannot disagree about when a pass starts.
         // see: A pass starts only where the longest pass the store holds would end before a peak window opens
-        DateTimeOffset OffPeak(DateTimeOffset at) => pricing is null ? at : pricing.StartFor(at, estimate.Longest ?? TimeSpan.Zero);
+        DateTimeOffset OffPeak(DateTimeOffset at) => ResearchPricing.StartFor(pricings, at, estimate.Longest ?? TimeSpan.Zero);
 
         // Where the next pass can start, and whether that is known: after every pass being
         // written, each expected to end a median after it started and never before now.

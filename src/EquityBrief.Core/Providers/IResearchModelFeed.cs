@@ -317,6 +317,42 @@ public sealed record ResearchPricing
             $"No stretch between peak windows in a week is longer than a pass of {bound}, so no pass can start and end off peak.");
     }
 
+    // The same instant under several pricings at once, for a pass whose sections are written by more than one
+    // profile: each pricing's own start read again from the latest any of them gave, until none of them moves it,
+    // so the pass starts and ends off peak under every one.
+    // see: Research names a profile per section as well as per job, and a Claude profile states its thinking
+    public static DateTimeOffset StartFor(IReadOnlyCollection<ResearchPricing> pricings, DateTimeOffset instant, TimeSpan bound)
+    {
+        var at = instant;
+
+        // Each round moves the instant to the end of a window some pricing names, and a week holds every window of
+        // every pricing, so a start that exists is found well inside this many rounds.
+        for (var round = 0; round < 64 * Math.Max(1, pricings.Count); round++)
+        {
+            var latest = at;
+
+            foreach (var pricing in pricings)
+            {
+                var starts = pricing.StartFor(at, bound);
+
+                if (starts > latest)
+                {
+                    latest = starts;
+                }
+            }
+
+            if (latest == at)
+            {
+                return at;
+            }
+
+            at = latest;
+        }
+
+        throw new InvalidOperationException(
+            $"No stretch in a week is off peak under every profile a pass's sections name for a pass of {bound}, so no pass can start and end off peak.");
+    }
+
     // The instant the next peak window opens after this one, which is always the start of an hour,
     // or none where the pricing names no window in the week ahead.
     public DateTimeOffset? PeakOpensAfter(DateTimeOffset instant)
@@ -399,7 +435,8 @@ public sealed record ResearchModelSettings
         int? answerTokens = null,
         DateOnly? retires = null,
         DateOnly? retiresReadOn = null,
-        string? workspace = null)
+        string? workspace = null,
+        string? thinking = null)
     {
         var named = string.IsNullOrWhiteSpace(format) ? OpenAiFormat : format.Trim();
 
@@ -461,6 +498,51 @@ public sealed record ResearchModelSettings
         RetiresReadOn = retiresReadOn;
         Workspace = string.IsNullOrWhiteSpace(workspace) ? null : workspace.Trim();
         ApiKey = apiKey;
+        Thinking = Thought(thinking, named, Options, profile);
+    }
+
+    // How deeply a Claude profile thinks: off, or an effort level the interface takes, or the provider's default
+    // where none is named. A thinking token budget is not among them, because the models this build calls refuse
+    // one with a 400, so depth is set by effort.
+    // see: Research names a profile per section as well as per job, and a Claude profile states its thinking
+    public const string ThinkingOff = "off";
+
+    public static readonly string[] Efforts = ["low", "medium", "high", "xhigh", "max"];
+
+    public string? Thinking { get; }
+
+    static string? Thought(string? thinking, string format, string? options, string profile)
+    {
+        if (string.IsNullOrWhiteSpace(thinking))
+        {
+            return null;
+        }
+
+        var said = thinking.Trim().ToLowerInvariant();
+        var key = ModelProfiles.Field(profile, ModelProfiles.ThinkingField);
+
+        if (!string.Equals(format, AnthropicFormat, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"'{key}' is '{thinking}', and the profile's format is '{format}'. A thinking setting is sent in Claude's own " +
+                "messages interface alone, so it is refused here rather than sent as something the provider does not take.");
+        }
+
+        if (said != ThinkingOff && !Efforts.Contains(said, StringComparer.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"'{key}' is '{thinking}', and a profile's thinking is '{ThinkingOff}' or an effort level, one of " +
+                $"{string.Join(", ", Efforts)}. A token budget is not one: the models this build calls refuse it with a 400.");
+        }
+
+        if (options is not null && JsonNode.Parse(options) is JsonObject set && set.ContainsKey("thinking"))
+        {
+            throw new InvalidOperationException(
+                $"'{key}' is set and the profile's options set thinking too. One setting states a profile's thinking, so " +
+                "the two are refused rather than one silently replacing the other.");
+        }
+
+        return said;
     }
 
     // The workspace a key not scoped to one names on every request, read from beside the key
@@ -499,7 +581,10 @@ public sealed record ResearchModelSettings
     // The model as a section stores it, with the options it was asked with where there
     // are any. The recording key reads this, so a call asked one way is never answered
     // by a recording made another.
-    public string Identity => Options is null ? Model : Model + " " + Options;
+    public string Identity =>
+        Model
+        + (Thinking is null ? string.Empty : Thinking == ThinkingOff ? " thinking off" : " effort " + Thinking)
+        + (Options is null ? string.Empty : " " + Options);
 
     // Never rendered with the key, because a key that can be printed reaches a log.
     public override string ToString() => $"ResearchModelSettings({Job} on {Profile}: {Identity} at {BaseAddress}, key withheld)";

@@ -178,6 +178,23 @@ public sealed class AnthropicMessagesFeed(HttpClient client, ResearchModelSettin
             };
         }
 
+        // The profile's thinking: off, or an effort level, sent beside the answer's format in the same output settings;
+        // none where the profile names none, which is the provider's default. Off is sent as thinking between tools,
+        // which the models this build calls read as no thinking before the answer: they refuse thinking disabled
+        // with a 400 that names this form, and a request with no tools has nothing between which to think.
+        // see: Research names a profile per section as well as per job, and a Claude profile states its thinking
+        if (settings.Thinking == ResearchModelSettings.ThinkingOff)
+        {
+            body[ThinkingField] = new JsonObject { ["type"] = ThinkingBetweenTools };
+        }
+        else if (settings.Thinking is { } effort)
+        {
+            var output = body[OutputConfigField] as JsonObject ?? new JsonObject();
+
+            output[EffortField] = effort;
+            body[OutputConfigField] = output;
+        }
+
         if (settings.Options is { } options)
         {
             foreach (var (name, value) in JsonNode.Parse(options)!.AsObject())
@@ -188,6 +205,10 @@ public sealed class AnthropicMessagesFeed(HttpClient client, ResearchModelSettin
 
         return body.ToJsonString();
     }
+
+    public const string ThinkingField = "thinking";
+    public const string ThinkingBetweenTools = "between_tools";
+    public const string EffortField = "effort";
 
     // Where a call lists documents, the answer is asked for in the shape the checker reads it by:
     // paragraphs of sentences, each sentence with the number of the listed document it rests on,

@@ -166,7 +166,7 @@ Moving to a new machine: copy the checkout, copy the store file, write the secre
 | EODHD | `EquityBrief:Providers:Eodhd:ApiKey` | `EquityBrief.Worker` |
 | SEC EDGAR | `EquityBrief:Providers:SecEdgar:Contact` | `EquityBrief.Worker` |
 | DeepSeek, the `deepseek` profile's key | `EquityBrief:Models:Research:ApiKey` | `EquityBrief.Worker` |
-| Claude, the key both Claude profiles name | `EquityBrief:Models:Claude:ApiKey` | `EquityBrief.Worker` |
+| Claude, the key every Claude profile names | `EquityBrief:Models:Claude:ApiKey` | `EquityBrief.Worker` |
 | Claude's workspace, where the key is not scoped to one | `EquityBrief:Models:Claude:WorkspaceId` | `EquityBrief.Worker` |
 | Tavily, the search tool | `EquityBrief:Providers:Tavily:ApiKey` | `EquityBrief.Worker` |
 
@@ -213,31 +213,43 @@ The paid models are the one part of the system that costs money, and nothing in 
 | the profile the research job uses | `EquityBrief:Models:Research:Use` | `deepseek` |
 | how long one research call may take, in seconds | `EquityBrief:Models:Research:TimeoutSeconds` | `600` |
 | the most one research answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `32768` |
+| the profile each section of a report is written by, one entry per section in figure 12.2's own names | `EquityBrief:Models:Research:Sections:<section>` | `deepseek` |
+| the profile a trial asks beside a report | `EquityBrief:Models:Research:Trial:Use` | `claude-sonnet-no-thinking` |
+| the sections a trial asks it for, one entry per section | `EquityBrief:Models:Research:Trial:Sections` | `The short version, The two cases` |
+| the reports a trial runs over before it stops | `EquityBrief:Models:Research:Trial:Reports` | `3` |
+| the day a trial counts its reports from, as `yyyy-MM-dd` | `EquityBrief:Models:Research:Trial:From` | `2026-09-30` |
 | the most research may spend in a UTC day, in dollars | `EquityBrief:Spend:DayCap` | `10` |
 | the most research may spend in a UTC month, in dollars | `EquityBrief:Spend:MonthCap` | `50` |
 
 Each profile's fields, under `EquityBrief:Models:Profiles:<profile>`:
 
-| Field | What it holds | `deepseek` | `claude-haiku` | `claude-sonnet` |
-|---|---|---|---|---|
-| `Format` | the wire format the provider serves | `openai` | `anthropic` | `anthropic` |
-| `BaseAddress` | where the provider answers | `https://api.deepseek.com/` | `https://api.anthropic.com/` | `https://api.anthropic.com/` |
-| `Model` | which model answers | `deepseek-flash` | `claude-haiku-4-5-20251001` | `claude-sonnet-5-5` |
-| `Key` | the section of the secrets file holding its `ApiKey` | `Research` | `Claude` | `Claude` |
-| `Options` | the provider's own request fields, written as the JSON object it takes | none | none | none |
-| `Retires` | the earliest date the provider publishes for retiring the model | none | `2026-10-15` | `2027-09-28` |
-| `RetiresReadOn` | the day that date was read | `2026-09-29` | `2026-09-29` | `2026-09-29` |
-| `Prices:CacheHit` | dollars per million prompt tokens the provider serves from its cache | `0.003` | `0.10` | `0.20` |
-| `Prices:CacheWrite` | dollars per million prompt tokens written to its cache | none | `1.25` | `2.50` |
-| `Prices:CacheMiss` | dollars per million prompt tokens it does neither with | `0.15` | `1.00` | `2.00` |
-| `Prices:Output` | dollars per million output tokens, reasoning included | `0.60` | `5.00` | `10.00` |
-| `Prices:PeakHours` | the UTC hours the rates are multiplied in, one entry per window written as a start and an end hour | `01-04, 06-10` | none | none |
-| `Prices:PeakDays` | the days those hours fall on, one entry per day | `Monday, Tuesday, Wednesday, Thursday, Friday` | none | none |
-| `Prices:PeakMultiple` | what the rates are multiplied by in those hours | `2` | none | none |
+| Field | What it holds | `deepseek` | `claude-haiku` | `claude-sonnet` | `claude-sonnet-no-thinking` |
+|---|---|---|---|---|---|
+| `Format` | the wire format the provider serves | `openai` | `anthropic` | `anthropic` | `anthropic` |
+| `BaseAddress` | where the provider answers | `https://api.deepseek.com/` | `https://api.anthropic.com/` | `https://api.anthropic.com/` | `https://api.anthropic.com/` |
+| `Model` | which model answers | `deepseek-flash` | `claude-haiku-4-5-20251001` | `claude-sonnet-5-5` | `claude-sonnet-5-5` |
+| `Key` | the section of the secrets file holding its `ApiKey` | `Research` | `Claude` | `Claude` | `Claude` |
+| `Options` | the provider's own request fields, written as the JSON object it takes | none | none | none | none |
+| `Thinking` | for the `anthropic` format, `off` or an effort level, `low`, `medium`, `high`, `xhigh` or `max`; none is the provider's default | none | none | none | `off` |
+| `Retires` | the earliest date the provider publishes for retiring the model | none | `2026-10-15` | `2027-09-28` | `2027-09-28` |
+| `RetiresReadOn` | the day that date was read | `2026-09-29` | `2026-09-29` | `2026-09-29` | `2026-09-29` |
+| `Prices:CacheHit` | dollars per million prompt tokens the provider serves from its cache | `0.003` | `0.10` | `0.20` | `0.20` |
+| `Prices:CacheWrite` | dollars per million prompt tokens written to its cache | none | `1.25` | `2.50` | `2.50` |
+| `Prices:CacheMiss` | dollars per million prompt tokens it does neither with | `0.15` | `1.00` | `2.00` | `2.00` |
+| `Prices:Output` | dollars per million output tokens, reasoning included | `0.60` | `5.00` | `10.00` | `10.00` |
+| `Prices:PeakHours` | the UTC hours the rates are multiplied in, one entry per window written as a start and an end hour | `01-04, 06-10` | none | none | none |
+| `Prices:PeakDays` | the days those hours fall on, one entry per day | `Monday, Tuesday, Wednesday, Thursday, Friday` | none | none | none |
+| `Prices:PeakMultiple` | what the rates are multiplied by in those hours | `2` | none | none | none |
 
 **Switching a job's model is changing its one word.** Set `EquityBrief:Models:Research:Use` to `deepseek`, `claude-haiku` or `claude-sonnet`, and the next pass the drain starts is written by that profile's model; a pass already running finishes on the model it started with. Nothing else changes: the other profiles stay as they are, a section records the model that wrote it, and a call already made keeps the price its run log row recorded (see: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp). The answer budget is the job's and not the profile's, so a switch to a model that counts its reasoning inside its answer wants a budget that holds both: DeepSeek ran on `32768` from 6.7, and Claude Sonnet 5.5 on `16000` for the day it wrote research.
 
-**Adding a key.** A profile's `Key` names the section of the secrets file holding its key, as `EquityBrief:Models:<Key>:ApiKey` in the worker's `appsettings.Secrets.json`: `Research` for DeepSeek, as it has been since 6.7, and `Claude` for both Claude profiles. A Claude key that is not scoped to a workspace is refused by the provider on every request until the workspace it bills to is named beside it, as `EquityBrief:Models:Claude:WorkspaceId`, the `wrkspc_` identifier the provider's console shows for the workspace; a key made inside a workspace needs none. A job whose profile names a key the secrets file does not hold stops with a plain line saying which profile and which key, on the pass's own run log row, which the drain settles the request under and the run page draws; no other profile answers for it (see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names).
+**Switching one section's model is changing its word in the map.** `EquityBrief:Models:Research:Sections` holds one entry per section in figure 12.2's own names, each naming a profile, and that section is written by it while the others stay on theirs; a section the map does not hold is written by the job's `Use`. It ships naming `deepseek` for all nine, so nothing moves until a word is changed. A map naming a section figure 12.2 does not name, or a profile the profiles do not hold, stops the research job at startup with a line naming it. A pass asks each profile its sections name whether it answers before it starts, each profile's calls go through a spend cap of its own against the same day and month caps, since the caps sum every call on the run log, and a section records the model that wrote it. The drain waits out the peak windows of the job's `Use` and of every profile the map names together, and the queue page states the start it will take from the same windows (see: Research names a profile per section as well as per job, and a Claude profile states its thinking).
+
+**A Claude profile states its thinking.** `Thinking` is `off`, or an effort level from `low` to `max`, or none for the provider's default. Off is sent as `"thinking":{"type":"between_tools"}`, which the model reads as no thinking before the answer; Sonnet 5.5 refused `{"type":"disabled"}` with a 400 naming that form, and refused a thinking token budget with a 400 naming the effort level in its place, both captured in the fixture on 2026-09-30, so a budget is not a setting. An effort level is sent as `output_config.effort`, beside the answer's format where the request asks for one. A `Thinking` on an `openai` profile, or beside options setting `thinking` or `output_config` themselves, is refused at startup, and a model asked with a thinking setting is recorded as a different writer from the same model asked without one, as `claude-sonnet-5-5 thinking off`.
+
+**A trial asks a second profile beside a report, and never writes into it.** Where `EquityBrief:Models:Research:Trial:Use` names a profile, a pass that wrote any of the trial's sections in its paid lane, first time, is followed by the trial: each of those sections asked of the trial's profile with the request the pass built for its first draft, the same facts file and documents, and for the short version the sections the pass had accepted. The answer is checked in memory by the claim checker's rules and told once what was refused, as a pass's retry is. It writes no research section, so the page draws the pass's report whatever the trial wrote; it writes one run log row a section under the pass's run, with the stage `section trial: <section>`, holding each round's draft, verdict and price, the outcome and the cost, and each of its calls is written as `research call: <section>, trial`, which the run page leaves out of the pass count and the report costs. It stops by itself once it has run over `Reports` reports since `From` for its profile. As shipped it asks Claude Sonnet 5.5 with thinking off for the short version and the two cases over three reports, at most four calls a report (see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it). To end one early, blank its `Use`; to choose its model for a section, change that section's word in the map.
+
+**Adding a key.** A profile's `Key` names the section of the secrets file holding its key, as `EquityBrief:Models:<Key>:ApiKey` in the worker's `appsettings.Secrets.json`: `Research` for DeepSeek, as it has been since 6.7, and `Claude` for every Claude profile. A Claude key that is not scoped to a workspace is refused by the provider on every request until the workspace it bills to is named beside it, as `EquityBrief:Models:Claude:WorkspaceId`, the `wrkspc_` identifier the provider's console shows for the workspace; a key made inside a workspace needs none. A job whose profile names a key the secrets file does not hold stops with a plain line saying which profile and which key, on the pass's own run log row, which the drain settles the request under and the run page draws; no other profile answers for it (see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names).
 
 **Adding a profile** is one more entry under `EquityBrief:Models:Profiles` with the fields above. A provider serving the OpenAI chat completions format takes `openai`, and Claude's own messages interface takes `anthropic`; another format is refused at startup rather than answered by one of these. A provider with no peak pricing names no peak hours, and its multiple is then read as one; a provider charging nothing apart for a cache write names no write rate. Options are the provider's own fields sent beside the request, as DeepSeek takes `{"thinking":{"type":"disabled"}}` to answer without reasoning first. A model asked with options is recorded as a different writer from the same model asked without them.
 

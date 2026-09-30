@@ -23,6 +23,7 @@ using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Quarters;
 using EquityBrief.Worker.Research;
 using EquityBrief.Worker.Rules;
+using Microsoft.Extensions.Configuration;
 
 namespace EquityBrief.Tests.Checks;
 
@@ -55,6 +56,14 @@ public class PinnedConstants
 
         Assert.Empty(StatedFigures.Unheld(stated, census));
     }
+
+    // The reports a trial runs over, which the shipped settings hold rather than a constant, since the operator sets it.
+    static decimal ShippedTrialReports() =>
+        decimal.Parse(
+            new ConfigurationBuilder()
+                .AddJsonFile(Providers.ResearchModelFeedTests.ShippedConfiguration)
+                .Build()[ModelProfiles.JobField(ModelProfiles.ResearchJob, ResearchLane.TrialField) + ":Reports"]!,
+            CultureInfo.InvariantCulture);
 
     static IReadOnlyList<HeldFigure> SectionSeventeen(
         ArchitectureTable limits,
@@ -126,6 +135,7 @@ public class PinnedConstants
             new("Research staleness triggers", "90", Staleness.BaselineDays, "Staleness.BaselineDays"),
             new("Spend cap", "10", SpendCaps.DefaultDay, "SpendCaps.DefaultDay"),
             new("Spend cap", "50", SpendCaps.DefaultMonth, "SpendCaps.DefaultMonth"),
+            new("Section trial", "3", ShippedTrialReports(), "the shipped EquityBrief:Models:Research:Trial:Reports"),
             new("Paid model retirement warning", "30", ModelProfiles.RetirementWarningDays, "ModelProfiles.RetirementWarningDays"),
             new("A report named for its cost", "2", SpendCaps.ReportNamedAbove, "SpendCaps.ReportNamedAbove"),
             new("Risk kinds", "7", RiskFields.Kinds.Length, "RiskFields.Kinds.Length"),

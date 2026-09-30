@@ -489,6 +489,20 @@ public class ResearchModelFeedTests
             Assert.Equal(Holds(key), Stated(key));
         }
 
+        // The map of sections, one row standing for every section, which ships naming one profile for all of them.
+        var sections = ModelProfiles.JobField(ModelProfiles.ResearchJob, ModelProfiles.SectionsField);
+
+        Assert.Equal(ClaimRules.Sections.Order(StringComparer.Ordinal), shipped.GetSection(sections).GetChildren().Select(child => child.Key).Order(StringComparer.Ordinal));
+        Assert.All(shipped.GetSection(sections).GetChildren(), child => Assert.Equal(child.Value, Stated(sections + ":<section>")));
+
+        // The trial's settings, a key to a row.
+        foreach (var field in new[] { ModelProfiles.UseField, ModelProfiles.SectionsField, "Reports", "From" })
+        {
+            var key = ModelProfiles.JobField(ModelProfiles.ResearchJob, ResearchLane.TrialField) + ":" + field;
+
+            Assert.Equal(Holds(key), Stated(key));
+        }
+
         Assert.Equal(SpendCaps.DefaultDay, decimal.Parse(Stated(SpendCaps.DayKey), CultureInfo.InvariantCulture));
         Assert.Equal(SpendCaps.DefaultMonth, decimal.Parse(Stated(SpendCaps.MonthKey), CultureInfo.InvariantCulture));
 
@@ -504,7 +518,7 @@ public class ResearchModelFeedTests
         string[] fields =
         [
             ModelProfiles.FormatField, ModelProfiles.BaseAddressField, ModelProfiles.ModelField, ModelProfiles.KeyField,
-            ModelProfiles.OptionsField, ModelProfiles.RetiresField, ModelProfiles.RetiresReadOnField,
+            ModelProfiles.OptionsField, ModelProfiles.ThinkingField, ModelProfiles.RetiresField, ModelProfiles.RetiresReadOnField,
             .. new[]
             {
                 ResearchPricing.CacheHitField, ResearchPricing.CacheWriteField, ResearchPricing.CacheMissField, ResearchPricing.OutputField,

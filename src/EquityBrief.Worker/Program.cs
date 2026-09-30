@@ -398,9 +398,17 @@ static async Task<int> ResearchPass(string[] args)
     // with a line the run page draws and the drain settles the request under, and no other
     // profile is asked instead.
     // see: A paid model is one interface with an implementation per wire format, and a job never falls back from the profile it names
+    // Each section's profile and the trial's with it, a section or a profile the map names that the settings do not
+    // hold refusing the job by name the same way.
+    // see: Research names a profile per section as well as per job, and a Claude profile states its thinking
+    IReadOnlyDictionary<string, ResearchModelSettings> sectionSettings;
+    ResearchTrial? trial;
+
     try
     {
         research = ResearchLane.Settings(configuration);
+        sectionSettings = ResearchLane.Sections(configuration, research);
+        trial = ResearchLane.Trial(configuration);
     }
     catch (InvalidOperationException refusal)
     {
@@ -456,17 +464,44 @@ static async Task<int> ResearchPass(string[] args)
     var cap = new SpendCap(feeds.ResearchModel, caps, clock, database);
     var checker = new ClaimChecker(clock, database);
 
+    // One cap a profile, the job's own for its `Use`, so every paid call of the pass goes through a cap holding the
+    // model that writes that section.
+    var profileCaps = new Dictionary<string, SpendCap>(StringComparer.Ordinal) { [research.Profile] = cap };
+
+    SpendCap CapFor(ResearchModelSettings settings)
+    {
+        if (!profileCaps.TryGetValue(settings.Profile, out var held))
+        {
+            profileCaps[settings.Profile] = held = new SpendCap(feeds.ModelFor(settings), caps, clock, database);
+        }
+
+        return held;
+    }
+
+    var models = new SectionModels(cap, sectionSettings.ToDictionary(entry => entry.Key, entry => CapFor(entry.Value), StringComparer.Ordinal));
+
     var outcome = await new ResearchRunner(
         new StalenessJudge(clock, database),
         sections => new ProseWriter(feeds.LocalModel, local, sections, clock, database),
         cap,
         checker,
-        new ThemeResearchRunner(cap, checker, feeds.Search, lists.Industry, research.Pricing, clock, database, lists.Sectors),
+        new ThemeResearchRunner(models.For(ClaimRules.CycleSection), checker, feeds.Search, lists.Industry, (sectionSettings.GetValueOrDefault(ClaimRules.CycleSection) ?? research).Pricing, clock, database, lists.Sectors),
         feeds.Archive,
         feeds.NameNews,
         lane,
         clock,
-        database).RunAsync(ticker, runId, new ResearchPassRequest(regenerate, args.Contains("--paid-for-local")));
+        database,
+        models).RunAsync(ticker, runId, new ResearchPassRequest(regenerate, args.Contains("--paid-for-local")));
+
+    // The trial, after a pass that wrote one of its sections through the paid lane at the first draft.
+    // see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
+    if (trial is not null && outcome.Written.Any(written => trial.Sections.Contains(written.Section, StringComparer.Ordinal) && !written.Retry))
+    {
+        foreach (var tried in await new SectionTrial(CapFor(trial.Profile), trial, clock, database).RunAsync(ticker, runId))
+        {
+            Console.WriteLine(FormattableString.Invariant($"research: trial of {tried.Section} on {trial.Profile.Profile}, {tried.Outcome} over {tried.Rounds} round(s) for ${tried.Cost}"));
+        }
+    }
 
     Console.WriteLine(
         FormattableString.Invariant($"research: {ticker} {outcome.Outcome}, {outcome.Written.Count} section(s) written, ")
@@ -487,16 +522,19 @@ static async Task<int> Drain()
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
     var clock = SystemClock.ForUnitedStatesSessions();
-    ResearchPricing pricing;
+    IReadOnlyList<ResearchPricing> pricings;
 
-    // The windows the research job's profile states, read without its key: a key the secrets
-    // file does not hold stops each pass on the pass's own row, which the drain settles the
-    // request under, rather than stopping the drain where nothing would draw why.
+    // The windows the research job's profiles state, its own and each its sections name, read
+    // without their keys: a key the secrets file does not hold stops each pass on the pass's own
+    // row, which the drain settles the request under, rather than stopping the drain where
+    // nothing would draw why.
     try
     {
-        pricing = ResearchLane.Profile(configuration)?.Pricing
+        _ = ResearchLane.Profile(configuration)?.Pricing
             ?? throw new InvalidOperationException(
                 $"'{ModelProfiles.Use(ModelProfiles.ResearchJob)}' names no profile with prices, so no pass can be priced.");
+
+        pricings = ResearchLane.Prices(configuration);
     }
     catch (InvalidOperationException refusal)
     {
@@ -525,7 +563,7 @@ static async Task<int> Drain()
         store.DatabaseFile,
         clock,
         ResearchPass,
-        pricing,
+        pricings,
         until =>
         {
             Console.WriteLine(

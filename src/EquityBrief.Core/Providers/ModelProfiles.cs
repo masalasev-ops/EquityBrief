@@ -48,6 +48,12 @@ public static class ModelProfiles
     public const string PricesField = "Prices";
     public const string RetiresField = "Retires";
     public const string RetiresReadOnField = "RetiresReadOn";
+    public const string ThinkingField = "Thinking";
+
+    // The research job's map from a section to the profile that writes it, beside its `Use`, which writes every
+    // section the map names none for.
+    // see: Research names a profile per section as well as per job, and a Claude profile states its thinking
+    public const string SectionsField = "Sections";
 
     // Where the secrets file holds the key a profile names: that section's own `ApiKey`, and
     // beside it the workspace a key not scoped to one has to name on every request, where the
@@ -103,9 +109,19 @@ public static class ModelProfiles
 
     // A job's settings, the key read from where its profile names it, through the two ways a
     // caller holds its configuration: the value at a key, and the values listed under one.
-    public static ResearchModelSettings Resolve(Func<string, string?> value, Func<string, IEnumerable<string?>> values, string job)
+    public static ResearchModelSettings Resolve(Func<string, string?> value, Func<string, IEnumerable<string?>> values, string job) =>
+        ResolveProfile(value, values, job, ProfileFor(value, job));
+
+    // One named profile's settings for a job, refused by name where the profiles do not hold it.
+    public static ResearchModelSettings ResolveProfile(Func<string, string?> value, Func<string, IEnumerable<string?>> values, string job, string profile)
     {
-        var profile = ProfileFor(value, job);
+        if (string.IsNullOrWhiteSpace(value(Field(profile, ModelField))) && string.IsNullOrWhiteSpace(value(Field(profile, FormatField))))
+        {
+            throw new InvalidOperationException(
+                $"The {job} job names the profile '{profile}', which '{ProfilesSection}' does not hold. The job stops here and " +
+                "no other profile answers for it.");
+        }
+
         var keyName = value(Field(profile, KeyField));
 
         return new ResearchModelSettings(
@@ -122,7 +138,8 @@ public static class ModelProfiles
             Whole(value, JobField(job, AnswerTokensField)),
             Date(value, Field(profile, RetiresField)),
             Date(value, Field(profile, RetiresReadOnField)),
-            string.IsNullOrWhiteSpace(keyName) ? null : value(WorkspacePath(keyName.Trim())));
+            string.IsNullOrWhiteSpace(keyName) ? null : value(WorkspacePath(keyName.Trim())),
+            value(Field(profile, ThinkingField)));
     }
 
     // A job's profile without its key, for the read surface, which states prices, peak windows
@@ -144,6 +161,25 @@ public static class ModelProfiles
             ResearchPricing.From(Prices(profile), value, values),
             Date(value, Field(profile, RetiresField)),
             Date(value, Field(profile, RetiresReadOnField)));
+    }
+
+    // The prices of every profile a job's pass may call, without their keys: the one its `Use` names, then each other
+    // profile its map of sections names, once each, so a pass waits for the peak windows of all of them. A profile
+    // with no prices adds nothing here, and its job refuses it at startup.
+    // see: Research names a profile per section as well as per job, and a Claude profile states its thinking
+    public static IReadOnlyList<ResearchPricing> PricesFor(Func<string, string?> value, Func<string, IEnumerable<string?>> values, string job)
+    {
+        var profiles = new List<string> { ProfileFor(value, job) };
+
+        foreach (var named in values(JobField(job, SectionsField)))
+        {
+            if (named?.Trim() is { Length: > 0 } profile && !profiles.Contains(profile, StringComparer.Ordinal))
+            {
+                profiles.Add(profile);
+            }
+        }
+
+        return [.. profiles.Select(profile => ResearchPricing.From(Prices(profile), value, values)).OfType<ResearchPricing>()];
     }
 
     // Whether a profile's retirement date falls within the warning's reach of a day: on or

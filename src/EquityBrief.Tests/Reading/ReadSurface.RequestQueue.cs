@@ -569,7 +569,7 @@ public partial class ReadSurface
 
                 return Task.CompletedTask;
             },
-            Providers.ResearchModelFeedTests.Pinned().Pricing,
+            [Providers.ResearchModelFeedTests.Pinned().Pricing],
             _ => throw new InvalidOperationException("nothing here is at peak, so nothing waits"));
 
         Assert.Equal((1, 0), (taken, written));
