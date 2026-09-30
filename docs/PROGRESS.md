@@ -32054,13 +32054,13 @@ Changed:    `ClaimRules` in Core; the read surface's two queries, the stage word
             stated counts of the screens' rows and parts.
 Decisions:  new: "The run page draws how each report's sections came out and each section's rates over the newest twenty
             reports", as the ruling planned it.
-Tests:      123T, from 1577:
+Tests:      1582, from 1577:
             `EachReportsSectionsAreReadAsTheyCameOutWithWhatTheirOwnCallsCost`,
             `EachSectionsRatesAreReadOverTheNewestTwentyReportsThatWarrantedIt`,
             `AFigureOnBothSidesIsCountedFromEveryDraftOfTheTwoCasesAndNotWhereTheSidesCannotBeCut`,
             `ATrialsSectionsAreDrawnWithBothModelsDraftsSideBySide` and `ATrialsSpendIsKeptOutOfEveryReportsCost`, as
             the plan predicted. The run page's colour check reads the report table among its pictures.
-Claims:     123C, from 728: the two rows' seven parts and section 17's Report rates, named in phase 12's pair as rows
+Claims:     736, from 728: the two rows' seven parts and section 17's Report rates, named in phase 12's pair as rows
             the research template adds, where the plan predicted the one row of section 17 and not the regions'
             parts.
 Pins:       none moves; no source this correction edits is in the three pin lists.
@@ -32071,13 +32071,20 @@ Mutated:    the rule, stated before the run: each rule this correction adds reve
             F2 a trial's calls counted in a report's cost: red in the report test and the trial spend test.
             F3 the rate window unbounded: red in the rates test.
             F4 the both-sides count reading the accepted draft alone: red in the both-sides test.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       123HELD
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            Results: one run each in a detached worktree at f51f94f, this entry's commit, filtered to the five tests
+            the correction adds, each edit made there and reverted, and the tree read clean after. F1 turned the
+            report test and the trial test red and the other three green. F2 turned the report test and the trial
+            spend test red, and the trial test as well, whose pass side reads the two cases' cell and its cost, which
+            the trial's call joined. F3 turned the rates test red alone. F4 turned the both-sides test red alone, the
+            refused first draft carrying 18.5% on both sides no longer counted.
+Held:       red in every test predicted, and in one more for F2, the trial test, for the reason above.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1582 of 1582 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` 123VP
-            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 736 claims, 736 PASS, 0 FAIL, 747 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1582 of 1582 tests.
+            Both gates ran over the tree carrying this entry, f51f94f, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Operator:   nothing to run; the read surface on 5152 is started again from `main` after the merge to draw the region.
 Carried:    correction G at 12.6; the section trial's reports read to the operator at its third report, read on the
