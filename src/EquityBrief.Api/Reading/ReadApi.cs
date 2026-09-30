@@ -627,10 +627,12 @@ public sealed class ReadApi : IComponent
         WHERE substr(stage, 1, length($prefix)) = $prefix AND spend != $nothing AND json_valid(detail);
     ";
 
+    // A trial's calls are left out, being spend beside a report rather than on it.
+    // see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
     const string PaidCallSpends = @"
         SELECT run_id, spend
         FROM run_log
-        WHERE substr(stage, 1, length($prefix)) = $prefix AND spend != $nothing;
+        WHERE substr(stage, 1, length($prefix)) = $prefix AND spend != $nothing AND instr(stage, $trial) = 0;
     ";
 
     // The newest accepted version of each of a name's sections.
@@ -3335,6 +3337,7 @@ public sealed class ReadApi : IComponent
         command.CommandText = PaidCallSpends;
         command.Parameters.AddWithValue("$prefix", PaidCallStage + ":");
         command.Parameters.AddWithValue("$nothing", NothingSpent);
+        command.Parameters.AddWithValue("$trial", ", " + EquityBrief.Core.Research.TrialCalls.Round);
 
         var spends = new List<(string, decimal)>();
 

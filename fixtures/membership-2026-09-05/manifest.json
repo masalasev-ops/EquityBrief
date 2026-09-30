@@ -540,6 +540,34 @@
       "trimmedTo": "nothing. The whole body of the status 404 the provider answered with, a not_found_error naming the model, which bills nothing."
     },
     {
+      "file": "anthropic-thinking-budget-refused.json",
+      "endpoint": "Claude's own messages interface at https://api.anthropic.com, with the key in the x-api-key header and never in the address, the anthropic-version header 2023-06-01, and the anthropic-workspace-id header naming the operator's Default workspace",
+      "query": "POST https://api.anthropic.com/v1/messages with model claude-sonnet-5-5, max_tokens 2048, the system prompt 'Answer in one sentence, stating only what the message states.', a user message stating KEYS's close of 333.42 on 2026-09-04 and asking for it in one sentence, thinking of type enabled with a budget_tokens of 1024, and stream false",
+      "fetchedAt": "2026-09-30T05:55:19Z",
+      "trimmedTo": "nothing. The whole body of the status 400 the provider answered with, an invalid_request_error saying thinking of type enabled is not supported for this model and naming adaptive thinking and an effort level in its place, which bills nothing. It is why a profile's thinking is off or an effort level and never a token budget."
+    },
+    {
+      "file": "anthropic-thinking-disabled-refused.json",
+      "endpoint": "Claude's own messages interface at https://api.anthropic.com, with the key in the x-api-key header and never in the address, the anthropic-version header 2023-06-01, and the anthropic-workspace-id header naming the operator's Default workspace",
+      "query": "POST https://api.anthropic.com/v1/messages as anthropic-thinking-budget-refused.json's request with thinking of type disabled in place of the budget",
+      "fetchedAt": "2026-09-30T05:55:20Z",
+      "trimmedTo": "nothing. The whole body of the status 400 the provider answered with, an invalid_request_error saying thinking is turned off on this model by sending thinking of type between_tools instead of disabled, which bills nothing. It is why a profile's thinking off is sent as between_tools."
+    },
+    {
+      "file": "anthropic-thinking-off.json",
+      "endpoint": "Claude's own messages interface at https://api.anthropic.com, with the key in the x-api-key header and never in the address, the anthropic-version header 2023-06-01, and the anthropic-workspace-id header naming the operator's Default workspace",
+      "query": "POST https://api.anthropic.com/v1/messages as anthropic-thinking-budget-refused.json's request with thinking of type between_tools in place of the budget",
+      "fetchedAt": "2026-09-30T05:55:37Z",
+      "trimmedTo": "nothing. The response's Date header and its whole body as they arrived, wrapped as the feed's recordings of this interface are: one text block and no thinking block, stop reason end_turn, 65 input tokens and 33 output tokens with no thinking, priced at 0.00046 dollars by claude-sonnet's configured rates."
+    },
+    {
+      "file": "anthropic-thinking-effort.json",
+      "endpoint": "Claude's own messages interface at https://api.anthropic.com, with the key in the x-api-key header and never in the address, the anthropic-version header 2023-06-01, and the anthropic-workspace-id header naming the operator's Default workspace",
+      "query": "POST https://api.anthropic.com/v1/messages as anthropic-thinking-budget-refused.json's request with no thinking field and an output_config holding an effort of high",
+      "fetchedAt": "2026-09-30T05:55:21Z",
+      "trimmedTo": "nothing. The response's Date header and its whole body as they arrived, wrapped as the feed's recordings of this interface are: one text block, stop reason end_turn, 66 input tokens and 33 output tokens with no thinking, priced at 0.000462 dollars by claude-sonnet's configured rates."
+    },
+    {
       "file": "model-section-5ed8a11d0d064235bc0ec88463c606b5.json",
       "endpoint": "v1/chat/completions on the operator's local model runtime, LM Studio serving qwen/qwen3.5-9b",
       "query": "POST http://127.0.0.1:1234/v1/chat/completions for The key under each figure on AAPL in the local lane, its first draft, handed 0 document(s): the request SectionPrompt builds under the instructions of 2026-09-29, keyed 5ed8a11d0d064235bc0ec88463c606b5, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",

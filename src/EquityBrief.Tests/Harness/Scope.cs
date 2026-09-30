@@ -605,6 +605,14 @@ internal static class Scope
             Verdict.Pass,
             "every cell of the row is asserted against the declaration, the blanks included",
             ByAccess),
+        [CheckReach.Key(CatalogueTable, "Section trial")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the stores it reads and the run log it appends to, and the declaration matches this row, its matrix row and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Section trial")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
         [CheckReach.Key(StoresTable, "Pulled history")] = new Scoped(
             Verdict.Pass,
             "both tables' columns and types are asserted against SCHEMA.md",
@@ -2453,6 +2461,10 @@ internal static class Scope
         [CheckReach.Key(LimitsTable, "Sector sites")] = new Scoped(
             Verdict.Pass,
             "a site joins with an admitted page about a declined industry at the density the pass hands a page at, and not with a refused page, one just below the density, one about an industry the sector did not decline or another site's page, over constructed results, the page count read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Section trial")] = new Scoped(
+            Verdict.Pass,
+            "a trial over the fixture's pass writes no section row, records its own model and the pass's draft it was asked beside, stands its calls under the trial's round once each on the run, left out of the report's priced calls, and asks nothing on the report past the count it names, the count read off the document against the shipped setting",
             ByExpectations),
         [CheckReach.Key(FailureTable, "A paid job's profile names a key the secrets file does not hold, the job stops before it fetches or asks anything and no other profile answers for it; a research pass writes the plain line saying which profile and which key as its own run log row, which the drain settles the request under as refused")] = new Scoped(
             Verdict.Pass,

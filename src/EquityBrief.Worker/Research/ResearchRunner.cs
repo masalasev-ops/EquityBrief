@@ -69,8 +69,12 @@ public sealed class ResearchRunner(
     INameNewsFeed news,
     IReadOnlyList<string> localLane,
     IClock clock,
-    string databaseFile) : IComponent
+    string databaseFile,
+    SectionModels? models = null) : IComponent
 {
+    // Each paid section's cap, the job's own for every section the research job's map names no profile for.
+    readonly SectionModels sectionModels = models ?? new SectionModels(cap);
+
     public static ComponentAccess Access => new(
         Stores:
         [
@@ -312,9 +316,11 @@ public sealed class ResearchRunner(
         // it fetches anything, and does not start where it does not. That includes the
         // theme, which is part of the pass.
         // see: A research pass does not start where the research model does not answer
-        if (paid.Count > 0 && await cap.UnreachableAsync(cancellation) is { } unreachable)
+        // Each profile the paid sections are written by is asked, the cycle's among them where the theme is wanted.
+        // see: Research names a profile per section as well as per job, and a Claude profile states its thinking
+        if (paid.Count > 0 && await UnreachableAsync(themeWanted ? [.. paid, ClaimRules.CycleSection] : paid, cancellation) is { } unreachable)
         {
-            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, Unavailable, verdict.State, recorded, unreachable, notWritten), 0, cap.Probes, cancellation);
+            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, Unavailable, verdict.State, recorded, unreachable, notWritten), 0, sectionModels.Probes, cancellation);
         }
 
         // The theme next, where that is what went stale, and before the name's own documents,
@@ -326,10 +332,10 @@ public sealed class ResearchRunner(
 
         if (themeWanted)
         {
-            var probesBefore = cap.Probes;
+            var probesBefore = sectionModels.Probes;
             var themed = await themes.RunAsync(industry!, runId, cancellation, sector);
 
-            themeProbes = cap.Probes - probesBefore;
+            themeProbes = sectionModels.Probes - probesBefore;
 
             var stands = await NewestThemeAsync(connection, industry!, cancellation);
 
@@ -340,7 +346,7 @@ public sealed class ResearchRunner(
 
             if (warranted.Count == 0)
             {
-                return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, Written, verdict.State, recorded, null, notWritten), 0, cap.Probes - themeProbes, cancellation);
+                return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, Written, verdict.State, recorded, null, notWritten), 0, sectionModels.Probes - themeProbes, cancellation);
             }
         }
 
@@ -360,11 +366,11 @@ public sealed class ResearchRunner(
                     : ", and the pass refreshed its industry's cycle, which every name in that industry reads"
                 : string.Empty);
 
-            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, NoFactsFile, verdict.State, recorded, reason, notWritten), 0, cap.Probes - themeProbes, cancellation);
+            return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, NoFactsFile, verdict.State, recorded, reason, notWritten), 0, sectionModels.Probes - themeProbes, cancellation);
         }
 
         var documentsBefore = await CountAsync(connection, DocumentsHeld, null, null, cancellation);
-        var paidBefore = await CountAsync(connection, PaidSectionsHeld, ticker, cap.Model, cancellation);
+        var paidBefore = await PaidHeldAsync(connection, ticker, cancellation);
 
         // ---- the documents ----
 
@@ -600,9 +606,9 @@ public sealed class ResearchRunner(
         // Measured off the store: the documents this pass stored and the sections the
         // paid lane inserted. The prose writer's rows are on its own row.
         var rows = await CountAsync(connection, DocumentsHeld, null, null, cancellation) - documentsBefore
-            + await CountAsync(connection, PaidSectionsHeld, ticker, cap.Model, cancellation) - paidBefore;
+            + await PaidHeldAsync(connection, ticker, cancellation) - paidBefore;
 
-        return await RecordAsync(connection, runId, startedAt, outcome, rows, news.Requests + archive.Requests + cap.Probes - themeProbes, cancellation, intake.Detail);
+        return await RecordAsync(connection, runId, startedAt, outcome, rows, news.Requests + archive.Requests + sectionModels.Probes - themeProbes, cancellation, intake.Detail);
     }
 
     // Whether this pass writes a section, from its newest version and the judge's
@@ -682,6 +688,10 @@ public sealed class ResearchRunner(
             var section = sections[at];
             var given = handed.TryGetValue(section, out var documents) ? documents : [];
 
+            // The section's own profile, through its own cap.
+            // see: Research names a profile per section as well as per job, and a Claude profile states its thinking
+            var sectionCap = sectionModels.For(section);
+
             if (ClaimRules.IsResearched(section) && given.Count == 0)
             {
                 notWritten.Add(new UnwrittenSection(section, ProseWriter.NothingHanded));
@@ -727,14 +737,14 @@ public sealed class ResearchRunner(
             // leaves it out saying no admissible source was found and no call is paid for.
             if (ClaimRules.IsResearched(section) && admitted.Length == 0)
             {
-                await InsertAsync(connection, ticker, section, version, dated, cap.Model, string.Empty, [.. given.Select(document => document.Id)], cancellation);
-                written.Add(new WrittenSection(section, version, cap.Model, retry is not null));
+                await InsertAsync(connection, ticker, section, version, dated, sectionCap.Model, string.Empty, [.. given.Select(document => document.Id)], cancellation);
+                written.Add(new WrittenSection(section, version, sectionCap.Model, retry is not null));
 
                 continue;
             }
 
             var request = SectionPrompt.PaidRequest(
-                cap.Model,
+                sectionCap.Model,
                 ticker,
                 section,
                 facts,
@@ -743,14 +753,14 @@ public sealed class ResearchRunner(
                 summarised,
                 night);
 
-            var call = await cap.AskAsync(request, runId, round, cancellation);
+            var call = await sectionCap.AskAsync(request, runId, round, cancellation);
 
             // An answer that arrived empty or cut short is asked for once more, under a stage of
             // its own so both calls and what each cost stand on the run log.
             // see: An answer that comes back empty or cut short is asked for once more
             if (call.Unusable)
             {
-                call = await cap.AskAsync(request, runId, AskedAgain(round), cancellation);
+                call = await sectionCap.AskAsync(request, runId, AskedAgain(round), cancellation);
             }
 
             if (call.Paused)
@@ -770,8 +780,8 @@ public sealed class ResearchRunner(
                 continue;
             }
 
-            await InsertAsync(connection, ticker, section, version, dated, cap.Model, answer.Text, request.DocumentIds, cancellation);
-            written.Add(new WrittenSection(section, version, cap.Model, retry is not null));
+            await InsertAsync(connection, ticker, section, version, dated, sectionCap.Model, answer.Text, request.DocumentIds, cancellation);
+            written.Add(new WrittenSection(section, version, sectionCap.Model, retry is not null));
         }
 
         return null;
@@ -1096,6 +1106,33 @@ public sealed class ResearchRunner(
         return parsed.RootElement.TryGetProperty("cik", out var cik) && cik.ValueKind == JsonValueKind.String && cik.GetString() is { Length: > 0 } value
             ? value
             : null;
+    }
+
+    // The name's sections every profile of the paid lane has written, which the pass counts before and after.
+    async Task<long> PaidHeldAsync(SqliteConnection connection, string ticker, CancellationToken cancellation)
+    {
+        var held = 0L;
+
+        foreach (var model in sectionModels.Models)
+        {
+            held += await CountAsync(connection, PaidSectionsHeld, ticker, model, cancellation);
+        }
+
+        return held;
+    }
+
+    // Whether each profile a set of sections is written by answers, asked once a profile; the first that does not.
+    async Task<string?> UnreachableAsync(IEnumerable<string> sections, CancellationToken cancellation)
+    {
+        foreach (var sectionCap in sectionModels.For(sections))
+        {
+            if (await sectionCap.UnreachableAsync(cancellation) is { } unreachable)
+            {
+                return unreachable;
+            }
+        }
+
+        return null;
     }
 
     static async Task<long> CountAsync(SqliteConnection connection, string sql, string? ticker, string? model, CancellationToken cancellation)

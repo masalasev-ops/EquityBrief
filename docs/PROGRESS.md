@@ -31919,3 +31919,93 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             operator's store under `data/` was not touched by either.
 Carried:    corrections E to G at 12.6 in that order; a site proposed for each of the other seven sectors once one of
             their industries is declined, which the declined line names.
+
+### 12.6 - correction: the research job names a profile per section, a Claude profile states its thinking as off or an effort level, and a trial asks a second profile for named sections beside three reports and writes nothing into them, where one model wrote every section and nothing let a failing section be tried on another   2026-09-30
+Corrects:   the research job, on item 5 of the operator's research template of 2026-09-29, word for word in the ruling
+            entry above, the fourth of the six corrections that ruling plans.
+Asked:      a model per section, thinking set per profile, and a trial of a second model on named sections whose
+            drafts are set beside the report's own, so a section's model is chosen on its drafts.
+Repaired:   - A profile per section. `EquityBrief:Models:Research:Sections` maps each of the nine sections to a profile
+              word and ships naming `deepseek` for all nine, so nothing moves until a word is changed. A section is
+              asked of its own profile through a spend cap of its own over the one ledger and records that profile's
+              identity; a map naming a section figure 12.2 does not name, or a profile the profiles do not hold, stops
+              the job at startup by name. A pass asks each profile its sections name whether it answers; the industry
+              cycle's peak check reads the cycle's own profile; and the drain waits out the peak windows of every
+              profile the map names together, the queue page stating the same start from the same windows.
+            - Thinking. A Claude profile's `Thinking` is `off` or an effort level, `low` to `max`, and none is the
+              provider's default. Off is sent as `"thinking":{"type":"between_tools"}` and an effort level as
+              `output_config.effort` beside the answer's format. A thinking setting on the `openai` format, a token
+              budget, or one beside options setting `thinking` or `output_config` themselves is refused at startup,
+              and the identity names it, as `claude-sonnet-5-5 thinking off`. The profile `claude-sonnet-no-thinking`
+              ships beside the three.
+            - The trial. `EquityBrief:Models:Research:Trial` names `claude-sonnet-no-thinking`, the short version and
+              the two cases, 3 reports and 2026-09-30. After a pass writes one of those sections in its paid lane at the
+              first draft, the trial asks its profile with the request the pass built for that draft, checks the answer
+              in memory by the checker's rules with one retry told what was refused, writes no research section and
+              writes a `section trial: <section>` row under the pass's run, and stops by itself at its third report. Its
+              calls stand as `research call: <section>, trial`, which the run page leaves out of the pass count and
+              the report costs.
+Found:      two faults of the plan's own design, caught before either shipped. The plan sent thinking off as
+            `{"type":"disabled"}`; captured on 2026-09-30, Sonnet 5.5 refuses that with a 400 naming `between_tools` as
+            the form that turns thinking off, and that form answered with no thinking, so off is sent as it. And the
+            trial's section row first carried its cost in `spend` beside its calls' own rows, which would have counted
+            each trial call twice against the caps, which sum every row; the row now spends nothing and keeps its cost
+            in its detail, and the trial's test asserts each call is counted once on the run.
+Recorded:   four captures of Sonnet 5.5 on 2026-09-30 over one small request, the key and workspace read from the main
+            checkout's secrets file and never printed: a thinking budget refused with a 400 and thinking disabled
+            refused with a 400, which bill nothing, and between tools and an effort of high answered, 65 and 66 prompt
+            tokens with 33 output each and no thinking, $0.00046 and $0.000462 at claude-sonnet's rates, $0.000922 in
+            all. The thinking-off answers over the fixture's two sections the plan estimated at $0.20 were not made: the
+            trial writes nothing a later recording would answer, so its test asks a scripted model under the trial's
+            identity, and the live trial keeps its own drafts on the run log over its three reports.
+Changed:    `ResearchModelSettings`, `ModelProfiles`, `ResearchPricing` and `AnthropicMessagesFeed` in Core, and
+            `TrialCalls`; the worker's `SectionModels`, `SectionTrial`, `ResearchLane`, the research runner's per-section
+            caps and probe, the drain's windows and the research and drain verbs; the read surface's pass count, priced
+            calls and queue windows; the shipped settings' map, trial and profile; the fixture's four captures and their
+            manifest entries; the model paragraph, the section trial's rows in the component catalogue and the read and
+            write matrix, the paid model profiles row and a row of section 17, Section trial, in `ARCHITECTURE.html`;
+            RUNBOOK's settings, profile table and three paragraphs; SCHEMA's run log; 12.6's text and a carried
+            obligation in `BUILD_PLAN.md`; the fixture-expectations row of `.claude/rules/checks.md`; the prior text of
+            each spec edit in `CHANGELOG.md`; the harness's scope, pins, reach, phase 12 claims and phase 12's count of
+            operating rows; and the ten call sites of the drain and the queue times in the suite, which hand a list.
+Decisions:  new: "Research names a profile per section as well as per job, and a Claude profile states its thinking" and
+            "A trial asks a second profile for named sections after a report and records its drafts beside the report,
+            never in it", as the ruling planned them.
+Tests:      123T, from 1570:
+            `ASectionMappedToAnotherProfileIsAskedOfThatModelWhileTheRestStayOnTheJobs`,
+            `ASectionOrAProfileTheSettingsDoNotHoldRefusesTheJobByName`,
+            `AClaudeProfileWithThinkingOffSendsThinkingBetweenToolsAndIsNamedForIt`,
+            `AnEffortLevelIsSentBesideTheAnswersFormatInOneOutputSetting`,
+            `ATrialWritesNoSectionRowRecordsBothModelsAndStopsAtTheReportsItNames`,
+            `ATrialsCallsAreLeftOutOfTheReportsTheRunPageCounts` and
+            `APassWaitsOutThePeakWindowsOfEveryProfileItsSectionsName`, seven where the plan predicted six, the last for
+            the drain's windows the plan named and listed no test for. The runbook's settings test now holds the map,
+            the trial's settings and every profile's `Thinking` to the shipped file.
+Claims:     123C, from 725: section 17's Section trial and the section trial's rows in the component catalogue and
+            the read and write matrix, named in phase 12's pair as rows the research template adds, where the plan
+            predicted the one row of section 17 and not the component's two.
+Opened:     one carried obligation, "The section trial's reports read to the operator", operating at 3 reports, so
+            phase 12 has opened six and five stand operating.
+Pins:       none moves; no source this correction edits is in the three pin lists.
+Mutated:    the rule, stated before the run: each rule this correction adds reversed alone, filtered to the tests that
+            read it.
+            Predicted:
+            E1 `SectionModels.For(section)` returning the job's cap: red in the section test.
+            E2 thinking not sent, neither off nor an effort: red in the thinking-off test and the effort test.
+            E3 the trial's bound removed: red in the trial test, at the fourth report.
+            E4 the trial writing its draft as a research section row: red in the trial test.
+            E5 the drain's windows read from the first profile alone: red in the windows test.
+            E6 the trial's section row spending its cost: red in the trial test, at the run's sum.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       123HELD
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` 123VP
+            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Operator:   nothing to run. The trial runs itself on the first three reports whose pass writes the short version or
+            the two cases at the first draft after the merge, at most four Claude calls a report, and the read surface
+            on 5152 is started again from `main` after the merge so the run page leaves the trial's calls out.
+Carried:    corrections F and G at 12.6 in that order, F drawing the trial's rows side by side; the section trial's
+            reports read to the operator at its third report.

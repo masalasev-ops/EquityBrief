@@ -66,6 +66,11 @@ public sealed record OnDemandFeeds(
     // carries the two in columns of their own.
     public int ModelCalls => LocalModel.Requests + ResearchModel.Requests;
 
+    // The research model for another profile the research job names for a section or a trial, recorded or live as
+    // the research job's own is, so a pass never reaches one profile live and another from a recording.
+    // see: Research names a profile per section as well as per job, and a Claude profile states its thinking
+    public Func<ResearchModelSettings, IResearchModelFeed> ModelFor { get; init; } = ResearchModelFeeds.Live;
+
     public static OnDemandFeeds FromFixture(string folder, ResearchModelSettings research) =>
         new(
             RecordedFundamentalsFeed.FromFolder(folder),
@@ -73,7 +78,10 @@ public sealed record OnDemandFeeds(
             new RecordedLocalModelFeed(folder),
             new RecordedResearchModelFeed(folder, research),
             new RecordedNameNewsFeed(folder),
-            new RecordedSearchFeed(folder));
+            new RecordedSearchFeed(folder))
+        {
+            ModelFor = settings => new RecordedResearchModelFeed(folder, settings),
+        };
 
     public static OnDemandFeeds Live(string? baseAddress, string? apiKey, string? archiveContact, string? searchKey, LocalModelSettings local, ResearchModelSettings research) =>
         new(

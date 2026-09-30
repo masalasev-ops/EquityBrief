@@ -9329,3 +9329,81 @@ Was:
 Now:
 > ... under which the drain settles the request refused; and the fixture's industry cycle, which the model answered with nothing twice, is named as declined for lack of industry sources ... and a proposed site joins its sector only with an admitted page about a declined industry at the density rule, over constructed results in and out |
 Why: the check holds what the correction naming a declined cycle builds.
+
+### 2026-09-30 - ARCHITECTURE.html - the research job maps each section to a profile, a Claude profile states its thinking, and a trial asks a second profile beside a report
+Authorised by: Research names a profile per section as well as per job, and a Claude profile states its thinking
+Was:
+> ... Which profile the research job names is the operator's to switch, and switching its model is changing that word and nothing else; a job whose profile names a key the secrets file does not hold stops, and no other profile answers for it. The report footer always says which model wrote what, with the options it was asked with. (see: A local model writes prose from numbers and each paid job names the hosted model the operator chooses in configuration) ...
+> <tr><td>Paid model profiles</td><td>... a job whose profile names a key the secrets file does not hold stops, and no other profile answers for it (see: ...) (see: ...)</td>...
+> (section 17 held no row named Section trial)
+Now:
+> ... and no other profile answers for it. The research job also maps each section to a profile word, so one section can be written by another model while the rest stay on the job's, and a Claude profile states its thinking as off or an effort level. A trial asks a second profile for named sections after a report over a stated number of reports, and records its drafts beside the report on the run log and never in it. The report footer always says which model wrote what, with the options it was asked with. (see: Research names a profile per section as well as per job, and a Claude profile states its thinking) (see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it) (see: ...) ...
+> <tr><td>Paid model profiles</td><td>... and no other profile answers for it. The research job maps each section to a profile word, its own for a section the map does not hold, and a Claude profile's thinking is off or an effort level and never a token budget (see: ...) (see: ...) (see: Research names a profile per section as well as per job, and a Claude profile states its thinking)</td>...
+> <tr><td>Section trial</td><td>a trial asks its profile for the sections it names beside 3 reports counted from the day it names, and then stops by itself; it writes no research section, and its calls are left out of a report's count and cost (see: ...)</td>...</tr>
+Why: the research template of 2026-09-29, item 5: one model wrote every section and nothing let a section that keeps failing be tried on another, and the trial is how the operator compares two models' drafts before changing a section's word.
+
+### 2026-09-30 - RUNBOOK.md - the per-section map, the trial's settings, a Claude profile's thinking and the profile that ships with thinking off
+Authorised by: Research names a profile per section as well as per job, and a Claude profile states its thinking
+Was:
+> | the most one research answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `32768` |
+> | the most research may spend in a UTC day, in dollars | `EquityBrief:Spend:DayCap` | `10` |
+> | Field | What it holds | `deepseek` | `claude-haiku` | `claude-sonnet` |
+> (no `Thinking` row, and no column for `claude-sonnet-no-thinking`)
+> | Claude, the key both Claude profiles name | `EquityBrief:Models:Claude:ApiKey` | `EquityBrief.Worker` |
+> ... `Research` for DeepSeek, as it has been since 6.7, and `Claude` for both Claude profiles. ...
+> (no paragraphs on switching one section's model, a Claude profile's thinking or a trial)
+Now:
+> | the most one research answer may run to, in tokens | `EquityBrief:Models:Research:AnswerTokens` | `32768` |
+> | the profile each section of a report is written by, one entry per section in figure 12.2's own names | `EquityBrief:Models:Research:Sections:<section>` | `deepseek` |
+> | the profile a trial asks beside a report | `EquityBrief:Models:Research:Trial:Use` | `claude-sonnet-no-thinking` |
+> | the sections a trial asks it for, one entry per section | `EquityBrief:Models:Research:Trial:Sections` | `The short version, The two cases` |
+> | the reports a trial runs over before it stops | `EquityBrief:Models:Research:Trial:Reports` | `3` |
+> | the day a trial counts its reports from, as `yyyy-MM-dd` | `EquityBrief:Models:Research:Trial:From` | `2026-09-30` |
+> | the most research may spend in a UTC day, in dollars | `EquityBrief:Spend:DayCap` | `10` |
+> | Field | What it holds | `deepseek` | `claude-haiku` | `claude-sonnet` | `claude-sonnet-no-thinking` |
+> | `Thinking` | for the `anthropic` format, `off` or an effort level, `low`, `medium`, `high`, `xhigh` or `max`; none is the provider's default | none | none | none | `off` |
+> | Claude, the key every Claude profile names | `EquityBrief:Models:Claude:ApiKey` | `EquityBrief.Worker` |
+> ... `Research` for DeepSeek, as it has been since 6.7, and `Claude` for every Claude profile. ...
+> **Switching one section's model is changing its word in the map.** ... **A Claude profile states its thinking.** ... **A trial asks a second profile beside a report, and never writes into it.** ...
+Why: the settings the correction adds are the operator's to change, and the suite holds every row of these tables to the value the shipped file carries.
+
+### 2026-09-30 - SCHEMA.md - a trial's calls and its section rows on the run log
+Authorised by: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
+Was:
+> (no paragraph on a trial's rows)
+Now:
+> **A trial's calls stand in the ledger under a round of their own, and its section rows spend nothing.** From the 12.6 correction giving each section a profile, a trial's call is written by the spend cap under the pass's run as `research call: The two cases, trial`, ... and a `detail` holding the ticker, the section, the trial's profile and model, the pass's version it was asked beside ..., the outcome, the calls and the cost. The trial counts the reports it has run over by the distinct runs holding such rows for its profile from its first day, which is what stops it (see: ...).
+Why: the trial writes two kinds of row the run log did not hold before, and the caps and the run page read one of them by its stage's words.
+
+### 2026-09-30 - .claude/rules/checks.md - fixture-expectations reaches a profile per section, a Claude profile's thinking and the trial
+Authorised by: Research names a profile per section as well as per job, and a Claude profile states its thinking
+Was:
+> ... and a proposed site joins its sector only with an admitted page about a declined industry at the density rule, over constructed results in and out |
+Now:
+> ... over constructed results in and out; and a section the research job's map names another profile for is asked of that profile's model alone ... and a trial over the fixture's pass writes no section row, records its own model beside the pass's draft it was asked beside, stands its calls under the trial's round once each on the run, left out of the report's priced calls and the run page's pass count, and asks nothing past the reports it names |
+Why: the check holds what the correction giving each section a profile builds.
+
+### 2026-09-30 - BUILD_PLAN.md - 12.6 carries the section trial's reports read to the operator
+Authorised by: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
+Was:
+> (the carried obligations held no row for the section trial)
+Now:
+> | **The section trial's reports read to the operator** | 12.6 | operating | 3 reports the section trial ran beside, which is the count it stops at as shipped, read on the run page's section trials region, which 12.6 builds. ... the row is discharged by that report (see: ...) |
+Why: the trial runs itself after the merge and stops at its third report, and the plan's report of those three to the operator is carried where the reconciliation reads it rather than remembered.
+
+### 2026-09-30 - BUILD_PLAN.md - 12.6's text names the profile per section and the trial, and cites the trial's row
+Authorised by: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
+Was:
+> ... and the run page's report region counts the drafts carrying a figure on both sides over the reports after the ask changed (owes: The two cases' figures on both sides counted over twenty reports).
+Now:
+> ... (owes: The two cases' figures on both sides counted over twenty reports). The research job names a profile per section, a Claude profile states its thinking, and a trial asks a second profile for named sections beside a stated number of reports, which the run page's section trials region draws beside the pass's own drafts (owes: The section trial's reports read to the operator).
+Why: an operating row is cited back by the checkpoint that builds its surface, and 12.6 builds the region the trial's reports are read on.
+
+### 2026-09-30 - ARCHITECTURE.html - the component catalogue and the read and write matrix carry the section trial
+Authorised by: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
+Was:
+> (the catalogue and the matrix held no row for the section trial)
+Now:
+> <tr><td><b>Section trial</b></td><td>research</td><td>after a research pass that wrote a section the trial names at its first draft, until it has run over the reports it names</td><td>research store, facts, source documents, run log</td><td>run log</td><td>asks a second profile, through a spend cap holding that profile's model, ... It writes no research section, only its rows beside the pass's own on the run log, and stops by itself once it has run over the reports it names (see: ...)</td></tr>
+> <tr><td>Section trial</td> ... R under facts, research and theme, and sources, and R W under the run log</tr>
+Why: the trial is a component that reads three stores and writes the run log, and `component-access` holds every class declaring its access to a catalogue row and a matrix row.

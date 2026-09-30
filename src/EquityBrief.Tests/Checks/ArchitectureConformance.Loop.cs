@@ -1168,12 +1168,16 @@ public partial class ArchitectureConformance
     ];
 
     // 12.6's corrections on the research template of 2026-09-29: section 17's seven kinds an event risk is given,
-    // which the correction returning the risks as fields adds, and the page a sector's site returns to join the
-    // list, which the correction naming a declined cycle adds.
+    // which the correction returning the risks as fields adds, the page a sector's site returns to join the
+    // list, which the correction naming a declined cycle adds, and the reports a trial runs over with the trial's
+    // catalogue and matrix rows, which the correction giving each section a profile adds.
     static readonly string[] ResearchTemplateClaims =
     [
         CheckReach.Key(Scope.LimitsTable, "Risk kinds"),
         CheckReach.Key(Scope.LimitsTable, "Sector sites"),
+        CheckReach.Key(Scope.LimitsTable, "Section trial"),
+        CheckReach.Key(Scope.CatalogueTable, "Section trial"),
+        CheckReach.Key(Scope.MatrixTable, "Section trial"),
     ];
 
     // Phase 12's rows, each written by the checkpoint that draws or asserts it, so none reads as out
@@ -1495,9 +1499,11 @@ public partial class ArchitectureConformance
         // Stated, so a claim added or lost without being named here moves this rather than the sum. 725 from the
         // 12.6 correction that brings the model profiles, its seven claims named in their own list, 723 from
         // the 12.2 correction that takes the breakout's two thresholds out with the family, 724 from the 12.6
-        // correction that returns the risks as fields, with section 17's seven kinds an event risk is given, and 725
-        // from the 12.6 correction naming a declined cycle, with section 17's page a sector's site joins by.
-        Assert.Equal((550, 725), (predicted, actual));
+        // correction that returns the risks as fields, with section 17's seven kinds an event risk is given, 725
+        // from the 12.6 correction naming a declined cycle, with section 17's page a sector's site joins by, and
+        // 728 from the 12.6 correction giving each section a profile, with section 17's reports a trial runs over
+        // and the trial's rows in the catalogue and the matrix.
+        Assert.Equal((550, 728), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

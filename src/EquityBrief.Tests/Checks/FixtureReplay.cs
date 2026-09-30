@@ -313,22 +313,29 @@ public class FixtureReplay
         LocalModelSettings? localSettings = null,
         IFilingsArchiveFeed? archive = null,
         INameNewsFeed? news = null,
-        ISearchFeed? search = null)
+        ISearchFeed? search = null,
+        IReadOnlyDictionary<string, IResearchModelFeed>? sectionFeeds = null)
     {
         var cap = new SpendCap(paid ?? new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned()), caps ?? Core.Spending.SpendCaps.Default, clock, store.DatabaseFile);
         var checker = new ClaimChecker(clock, store.DatabaseFile);
+
+        // A section another profile writes, through a cap of its own, as the verb composes one.
+        var models = new SectionModels(
+            cap,
+            sectionFeeds?.ToDictionary(entry => entry.Key, entry => new SpendCap(entry.Value, caps ?? Core.Spending.SpendCaps.Default, clock, store.DatabaseFile), StringComparer.Ordinal));
 
         return new(
             new StalenessJudge(clock, store.DatabaseFile),
             sections => new ProseWriter(localModel ?? local ?? new RecordedLocalModelFeed(Folder()), localSettings ?? new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
             cap,
             checker,
-            Themer(store, clock, cap, checker, search),
+            Themer(store, clock, models.For(ClaimRules.CycleSection), checker, search),
             archive ?? new RecordedFilingsArchiveFeed(Folder()),
             news ?? new RecordedNameNewsFeed(Folder()),
             lane ?? ProseWriter.DefaultLane,
             clock,
-            store.DatabaseFile);
+            store.DatabaseFile,
+            models);
     }
 
     // The theme research runner a replayed pass holds, over the committed recordings and the

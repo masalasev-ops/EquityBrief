@@ -46,6 +46,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "History pull"),
             CheckReach.Key(Scope.MatrixTable, "History pull"),
 
+            // 12.6's correction giving each section a profile, the section trial.
+            CheckReach.Key(Scope.CatalogueTable, "Section trial"),
+            CheckReach.Key(Scope.MatrixTable, "Section trial"),
+
             // 12.1, the swing reader.
             CheckReach.Key(Scope.CatalogueTable, "Swing reader"),
             CheckReach.Key(Scope.MatrixTable, "Swing reader"),

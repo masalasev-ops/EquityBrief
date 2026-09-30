@@ -289,7 +289,7 @@ public partial class ReadSurface
 
                 return Task.CompletedTask;
             },
-            Providers.ResearchModelFeedTests.Pinned().Pricing,
+            [Providers.ResearchModelFeedTests.Pinned().Pricing],
             until =>
             {
                 waits.Add(until);
@@ -341,7 +341,7 @@ public partial class ReadSurface
 
                 return Task.CompletedTask;
             },
-            pricing,
+            [pricing],
             until =>
             {
                 waits.Add(until);
@@ -358,7 +358,7 @@ public partial class ReadSurface
                 [Request("KEYS", "2026-09-20T12:00:00Z", ResearchRequests.Outstanding)],
                 new Dictionary<RequestRow, DateTimeOffset?>(),
                 QueueTimes.Estimate([TimeSpan.FromMinutes(26), TimeSpan.FromMinutes(4)]),
-                pricing,
+                [pricing],
                 UtcAt(now)));
 
         Assert.Equal((now == begins ? TimeBasis.Now : TimeBasis.PeakEnds, UtcAt(begins)), (time.Basis, time.Starts!.Value));
@@ -377,7 +377,7 @@ public partial class ReadSurface
             store.DatabaseFile,
             clock,
             _ => throw new InvalidOperationException("nothing is outstanding, so no pass runs"),
-            Providers.ResearchModelFeedTests.Pinned().Pricing,
+            [Providers.ResearchModelFeedTests.Pinned().Pricing],
             until =>
             {
                 waits.Add(until);
@@ -411,7 +411,7 @@ public partial class ReadSurface
 
                 return Task.CompletedTask;
             },
-            Providers.ResearchModelFeedTests.Pinned().Pricing,
+            [Providers.ResearchModelFeedTests.Pinned().Pricing],
             until =>
             {
                 waits.Add(until);
@@ -463,11 +463,11 @@ public partial class ReadSurface
 
                             return Task.CompletedTask;
                         },
-                        pricing,
+                        [pricing],
                         NoWait);
                 }
             },
-            pricing,
+            [pricing],
             NoWait);
 
         Assert.Equal(["KEYS"], held);

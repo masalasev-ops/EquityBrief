@@ -1408,6 +1408,7 @@ public static class RunScreen
             night.Log
                 .Where(row => row.RunId.StartsWith(EquityBrief.Core.Research.PassRun.Prefix, StringComparison.Ordinal)
                     && row.Stage.StartsWith("research call", StringComparison.Ordinal)
+                    && !EquityBrief.Core.Research.TrialCalls.Is(row.Stage)
                     && row.Outcome == Ok)
                 .Select(row => row.RunId)
                 .Distinct(StringComparer.Ordinal)
