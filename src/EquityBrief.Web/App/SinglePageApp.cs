@@ -639,7 +639,8 @@ public sealed class SinglePageApp : IComponent
         FilterWhy? passed = null,
         bool? watched = null,
         IReadOnlyList<PickCell>? earlier = null,
-        (DateOnly Evening, EquityBrief.Core.Filter.MissedGate Gate)? missed = null)
+        (DateOnly Evening, EquityBrief.Core.Filter.MissedGate Gate)? missed = null,
+        NumbersSayView? says = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -849,8 +850,41 @@ public sealed class SinglePageApp : IComponent
                 region: "gates"));
         }
 
-        // The short version, the first written region section 4 lists, with its date beside it.
-        Draw(AtTheTop);
+        // The short version, the first written region section 4 lists, with its date beside it. Where no
+        // accepted one stands, code writes one from computed parts and its heading says why: the checker
+        // left the model's out, the pass did not write it, or no research has been written for the name.
+        // see: The short version is written last from the sections that passed, and one left out is replaced by a summary code writes
+        if (sections.Any(section => string.Equals(section.Section, MarkRenderer.TheShortVersion, StringComparison.Ordinal)))
+        {
+            Draw(AtTheTop);
+        }
+        else
+        {
+            // The industry's cycle is its theme's and is drawn for every member, so it is not research
+            // written for this name.
+            var fellBack = (leftOut ?? []).Any(section => string.Equals(section.Section, MarkRenderer.TheShortVersion, StringComparison.Ordinal));
+            var namedNotWritten = (notWritten ?? []).Any(section => string.Equals(section.Section, MarkRenderer.TheShortVersion, StringComparison.Ordinal));
+            var nothingWritten = !sections.Any(section => !string.Equals(section.Section, EquityBrief.Core.Research.ClaimRules.CycleSection, StringComparison.Ordinal))
+                && (leftOut ?? []).Count == 0;
+
+            Card(SectionId(MarkRenderer.TheShortVersion), MarkRenderer.TheShortVersion, Cards.Computed(
+                MarkRenderer.TheShortVersion,
+                marks.ShortVersionByCode(
+                    ticker,
+                    fellBack ? MarkRenderer.ShortVersionRefused
+                        : !namedNotWritten && nothingWritten ? MarkRenderer.ShortVersionNoResearch
+                        : MarkRenderer.ShortVersionNotWritten,
+                    night,
+                    passed,
+                    missed,
+                    firedReasons,
+                    says,
+                    gates),
+                title: "The short version, written by code",
+                stamp: Cards.Night(session),
+                id: SectionId(MarkRenderer.TheShortVersion),
+                region: "code-summary"));
+        }
 
         // How it got here, the twelve-month picture above the table of the biggest moves,
         // each move numbered on the picture as it is in the table.

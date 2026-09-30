@@ -115,10 +115,16 @@ public static class SectionPrompt
         // tells the reader nothing about this one, and a confirmation that is a bare threshold,
         // or one the next quarter crosses by construction, confirms nothing about the risk.
         // see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws
+        // Each point a reason and not a figure restated, a change with its size so a small one reads as small,
+        // and a fact on one side only. No change figure is listed, so a size is given by the two listed figures
+        // or in words against the base, since a difference the writer works out is a figure no fact holds.
+        // see: The two cases are asked to argue a fact on one side only, and a draft doing otherwise is counted rather than refused
         ["The two cases"] =
             "Write the bull case as one paragraph that begins \"The bull case\", then the bear case as a second paragraph that begins \"The bear case\". "
             + "Give each point its own sentence, and end each case with a sentence saying what it needs to see at the next report. "
-            + "Make each point specific to this company and its latest documents, and leave out any sentence that could be said of any company.",
+            + "Make each point specific to this company and its latest documents, and leave out any sentence that could be said of any company. "
+            + "Make each point a reason, not a figure restated. Describe a change with its size, so a small change reads as small, using the listed figures at both ends or words against its base, "
+            + "and never a difference you work out yourself. Let each fact argue one side only: a figure used in the bull case does not appear in the bear case, closing sentences included.",
         ["The risks, each with what would confirm it"] =
             "Name each risk to the company that the documents support, each in a paragraph of its own. Begin each with its ordinal and the word risk, as \"The first risk is\", "
             + "and follow it with one sentence that begins \"That risk would be confirmed by\" and names an observable event that would tell the risk apart from ordinary movement, "
@@ -263,13 +269,14 @@ public static class SectionPrompt
             }
         }
 
-        // The one retry, told why the first draft was refused, because a second draft
-        // written blind would fail for the same reason.
+        // The one retry, told each thing the first draft was refused for and what to do about it, because
+        // a second draft written blind would fail for the same reason and one told only the reason wrote
+        // new figures in place of the ones refused. The brief is written by `RetryBrief` from the refused
+        // draft and never carries the draft itself.
+        // see: A retry names each thing the check refused, and a second draft repeating one is left out
         if (refusedBecause is { Length: > 0 })
         {
-            prompt.Append("\nYour previous draft of this section was refused by the checker for: ")
-                .Append(refusedBecause)
-                .Append(". Write it again so that it is not.\n");
+            prompt.Append('\n').Append(refusedBecause.Trim()).Append('\n');
         }
 
         return prompt.ToString();

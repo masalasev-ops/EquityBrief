@@ -226,7 +226,7 @@ public class ModelProfilesTests
 
     // The fixture's recording of the short version Claude Sonnet 5.5 wrote over KEYS on the claude-sonnet
     // profile, its first draft, which the checker accepted.
-    const string ClaudesShortVersion = "research-call-e507a2a58766d96358388f806364e236.json";
+    const string ClaudesShortVersion = "research-call-109e3f1f4d40e7daebd664a794f5653b.json";
 
     [Fact]
     public void AnAnswerHoldingOnlyThinkingIsUnusableNamesWhatItHeldAndIsPricedAtWhatWasBilled()

@@ -67,6 +67,11 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
     // a reader of one row can tell it from a section that never had a source.
     public const string RejectedTwice = "rejected twice";
 
+    // What such a fallback adds where the second draft carried something the first was
+    // refused for, by the same rule over the same text: the retry was told it by name.
+    // see: A retry names each thing the check refused, and a second draft repeating one is left out
+    public const string RepeatedOnRetry = "the retry repeating what the first draft was refused for";
+
     // A source list a writer stored that is not a list of ids. A defect in the
     // writer rather than a property of the prose, and refused as its own reason
     // rather than read as an empty list, which would say no admissible source was
@@ -90,7 +95,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
     // The version before this one, which is what decides whether a refusal is a
     // first attempt or the retry.
     const string EarlierResearch = @"
-        SELECT status, as_of, reject_reason
+        SELECT status, as_of, reject_reason, prose, source_ids
         FROM research_section
         WHERE ticker = $subject AND section = $section AND version < $version
         ORDER BY version DESC
@@ -98,7 +103,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
     ";
 
     const string EarlierTheme = @"
-        SELECT status, as_of, reject_reason
+        SELECT status, as_of, reject_reason, prose, source_ids
         FROM theme_section
         WHERE theme = $subject AND section = $section AND version < $version
         ORDER BY version DESC
@@ -294,10 +299,47 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
         // same day. A version after a fallback, or a refusal on a later day, is a
         // fresh first attempt, so the bound is one retry per pass rather than one
         // for the section for all time.
-        return previous is { Status: Rejected } earlier
-            && string.Equals(earlier.AsOf, pending.AsOf, StringComparison.Ordinal)
-            ? (Fallback, $"{RejectedTwice}: {verdict.Reason}", earlier.Reason)
-            : (Rejected, verdict.Reason, null);
+        if (previous is not { Status: Rejected } earlier || !string.Equals(earlier.AsOf, pending.AsOf, StringComparison.Ordinal))
+        {
+            return (Rejected, verdict.Reason, null);
+        }
+
+        // Left out either way, and said to have repeated where the second draft carries a
+        // thing the first was refused for, by the same rule over the same text, since the
+        // retry was told each of them by name. The first draft is read again by the same
+        // rules over the same facts file, and its own source list, as the retry was told it.
+        // see: A retry names each thing the check refused, and a second draft repeating one is left out
+        var first = await SourcesAsync(connection, transaction, earlier.SourceIds, cancellation) is { } earlierSources
+            ? ClaimRules.Check(pending.Section, earlier.Prose, facts, earlierSources, night).Findings
+            : [];
+
+        return (Fallback, Repeats(first, verdict.Findings) ? $"{RejectedTwice}, {RepeatedOnRetry}: {verdict.Reason}" : $"{RejectedTwice}: {verdict.Reason}", earlier.Reason);
+    }
+
+    // Whether a second draft's findings carry one of the first's, the same rule over the
+    // same offending text read without case.
+    public static bool Repeats(IReadOnlyList<ClaimFinding> first, IReadOnlyList<ClaimFinding> second) =>
+        second.Any(finding => first.Any(before =>
+            string.Equals(before.Reason, finding.Reason, StringComparison.Ordinal)
+            && string.Equals(before.Offending, finding.Offending, StringComparison.OrdinalIgnoreCase)));
+
+    // A stored source list read as the checker reads one, a null where an id resolves to no
+    // stored row, and none at all where the list is not a list of ids.
+    static async Task<IReadOnlyList<StoredDocument?>?> SourcesAsync(SqliteConnection connection, SqliteTransaction transaction, string sourceIds, CancellationToken cancellation)
+    {
+        if (!TryIds(sourceIds, out var ids))
+        {
+            return null;
+        }
+
+        var sources = new List<StoredDocument?>();
+
+        foreach (var id in ids)
+        {
+            sources.Add(await DocumentAsync(connection, transaction, id, cancellation));
+        }
+
+        return sources;
     }
 
     static bool TryIds(string json, out IReadOnlyList<string> ids)
@@ -353,7 +395,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
         return pending;
     }
 
-    sealed record Earlier(string Status, string AsOf, string? Reason);
+    sealed record Earlier(string Status, string AsOf, string? Reason, string Prose, string SourceIds);
 
     static async Task<Earlier?> EarlierAsync(
         SqliteConnection connection,
@@ -373,7 +415,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         return await reader.ReadAsync(cancellation)
-            ? new Earlier(reader.GetString(0), reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2))
+            ? new Earlier(reader.GetString(0), reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2), reader.GetString(3), reader.GetString(4))
             : null;
     }
 

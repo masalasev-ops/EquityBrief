@@ -743,13 +743,36 @@ public partial class FixtureExpectations
         Assert.Equal(["paused"], Query(store, "SELECT outcome FROM run_log WHERE run_id = 'research-cap-reached' AND stage = 'research';"));
     }
 
+    // The short version is asked after the other sections and handed the ones the checker accepted before
+    // it was asked, and never a draft the checker refused, whose figures it would otherwise copy.
+    // see: The short version is written last from the sections that passed, and one left out is replaced by a summary code writes
+    [Fact]
+    public async Task TheShortVersionIsHandedTheSectionsTheCheckerAcceptedAndNoDraftItRefused()
+    {
+        var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
+
+        using var store = await FixtureReplay.ResearchedAsync(paid: paid);
+
+        var summary = paid.Asked.First(request => request.Section == MarkRendererShortVersion).Prompt;
+        var refused = Query(store, $"SELECT prose FROM research_section WHERE ticker = 'KEYS' AND section <> '{MarkRendererShortVersion}' AND status IN ('rejected', 'fallback') AND prose <> '';");
+        var accepted = Query(store, $"SELECT prose FROM research_section WHERE ticker = 'KEYS' AND section <> '{MarkRendererShortVersion}' AND status = 'accepted' AND version = 1 AND prose <> '';");
+
+        // Both kinds stand in the replay, so neither half of this is read over nothing.
+        Assert.NotEmpty(refused);
+        Assert.NotEmpty(accepted);
+        Assert.All(refused, prose => Assert.DoesNotContain(prose.Trim(), summary, StringComparison.Ordinal));
+        Assert.All(accepted, prose => Assert.Contains(prose.Trim(), summary, StringComparison.Ordinal));
+    }
+
+    const string MarkRendererShortVersion = EquityBrief.Web.Marks.MarkRenderer.TheShortVersion;
+
     [Fact]
     public async Task TheLocalModelUnavailableLeavesTheLocalLaneAbsentAndThePassWritesThePaidLane()
     {
         // The paid lane's sections are written while the local model is not answering, and
         // the local lane's are left absent with their reason, which the page reads. The short
         // version is in the local lane here, so every paid call is one the default pass made,
-        // the two cases and the risks each written again after the checker refused a figure.
+        // the risks written again after the checker refused a figure.
         using var fresh = await FixtureReplay.ReplayedForResearchAsync();
 
         var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
@@ -761,7 +784,7 @@ public partial class FixtureExpectations
             [.. ProseWriter.DefaultLane, "The short version"],
             outcome.NotWritten.Where(line => line.Reason.StartsWith(ProseWriter.Unavailable, StringComparison.Ordinal)).Select(line => line.Section).ToArray());
         Assert.Equal(
-            [ClaimRules.CauseSection, "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The two cases", "The risks, each with what would confirm it"],
+            [ClaimRules.CauseSection, "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The risks, each with what would confirm it"],
             outcome.Written.Select(section => section.Section).ToArray());
         Assert.All(outcome.Written, section => Assert.Equal(paid.Identity, section.Model));
         Assert.Equal("0", Query(fresh, $"SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS' AND model = '{LocalModelSettings.DefaultModel}';").Single());
@@ -1121,7 +1144,7 @@ public partial class FixtureExpectations
         // Every other section still holds a date to the facts file.
         Assert.Equal(
             ClaimRules.UnknownDate,
-            string.Join("; ", ClaimRules.Check("The two cases", "Keysight presents on September 11, 2026 [D1].", [], sources, night).Findings.Select(finding => finding.Reason)));
+            string.Join("; ", ClaimRules.Check("The two cases", "The bull case is that Keysight presents on September 11, 2026 [D1].\n\nThe bear case is that it presents little [D1].", [], sources, night).Findings.Select(finding => finding.Reason)));
     }
 
     // ---- an answer the provider billed and that cannot be stored ----

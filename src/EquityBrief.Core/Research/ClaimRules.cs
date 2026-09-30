@@ -143,6 +143,60 @@ public static class ClaimRules
     public const string FigureNamedForAnotherPeriod = "a figure the facts file holds for a period longer than a quarter, in a sentence naming a period of another length";
     public const string ClaimOfCandour = "a sentence claiming candour in the word the corpus bans";
     public const string EmDashed = "a sentence carrying an em dash";
+    public const string TwoCasesWithoutSides = "two cases not written as the bull case and the bear case";
+
+    // ---- the two cases ----
+
+    // The section holding the case for a name and the case against it, and the words each case opens on.
+    public const string TwoCasesSection = "The two cases";
+    public const string CaseFor = "The bull case";
+    public const string CaseAgainst = "The bear case";
+
+    // A section's claims in the order they were written: each sentence as the checker reads it, each
+    // paragraph read on its own so a paragraph's end is always a claim's end.
+    public static IReadOnlyList<string> Rows(string prose) =>
+    [
+        .. prose.Split(["\r\n\r\n", "\n\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .SelectMany(paragraph => Sentences(paragraph))
+            .Select(sentence => sentence.Text),
+    ];
+
+    // The two cases cut into the case for and the case against, where the rows open on the bull case: the
+    // case against starts at the first row opening on the bear case, whichever paragraph that row is in,
+    // and runs to the end. None where the rows say neither, since a boundary guessed at would put one
+    // case's words under the other's. The page draws the two halves by this cut and the checker refuses
+    // a draft it cannot make.
+    // see: The two cases are asked to argue a fact on one side only, and a draft doing otherwise is counted rather than refused
+    public static (IReadOnlyList<string> For, IReadOnlyList<string> Against)? CaseSides(IReadOnlyList<string> rows)
+    {
+        if (rows.Count == 0 || !rows[0].StartsWith(CaseFor, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var against = -1;
+
+        for (var at = 1; at < rows.Count; at++)
+        {
+            if (rows[at].StartsWith(CaseAgainst, StringComparison.Ordinal))
+            {
+                against = at;
+
+                break;
+            }
+        }
+
+        return against < 0 ? null : ([.. rows.Take(against)], [.. rows.Skip(against)]);
+    }
+
+    // What a two cases draft the cut cannot make is missing, which is what its refusal names in place of
+    // one of the draft's own sentences.
+    static string? SidesMissing(IReadOnlyList<string> rows) =>
+        rows.Count == 0 || CaseSides(rows) is not null
+            ? null
+            : !rows[0].StartsWith(CaseFor, StringComparison.Ordinal)
+                ? "the first sentence does not open on \"" + CaseFor + "\""
+                : "no sentence opens on \"" + CaseAgainst + "\"";
 
     // The corpus's two prose rules, held to every written sentence of every section as they
     // are to every file the repository tracks. The word is assembled from its parts, as the
@@ -180,6 +234,13 @@ public static class ClaimRules
         var cause = string.Equals(section, CauseSection, StringComparison.Ordinal);
         var calendar = string.Equals(section, CalendarSection, StringComparison.Ordinal);
         var moves = cause ? MoveWindows.In(facts) : [];
+
+        // The two cases are refused where the case for and the case against cannot be told apart, since
+        // the page draws them as two halves and a rule reading one side against the other has none to read.
+        if (string.Equals(section, TwoCasesSection, StringComparison.Ordinal) && Rows(prose) is var rows && SidesMissing(rows) is { } missing)
+        {
+            findings.Add(new ClaimFinding(rows[0], missing, TwoCasesWithoutSides));
+        }
 
         foreach (var sentence in Sentences(prose))
         {

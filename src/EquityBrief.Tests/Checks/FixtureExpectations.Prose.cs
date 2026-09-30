@@ -212,7 +212,11 @@ public partial class FixtureExpectations
             Assert.Equal([$"{ClaimRules.ComputedSection}|{ClaimChecker.Rejected}"], first.Checked.Select(section => $"{section.Section}|{section.Status}"));
             Assert.Equal([ClaimRules.ComputedSection], again.Written.Where(section => section.Retry).Select(section => section.Section));
             Assert.DoesNotContain("previous draft", feed.Asked[0].Prompt, StringComparison.Ordinal);
-            Assert.Contains($"Your previous draft of this section was refused by the checker for: {ClaimRules.UnmatchedFigure}", feed.Asked[1].Prompt, StringComparison.Ordinal);
+            Assert.Contains(RetryBrief.Opening, feed.Asked[1].Prompt, StringComparison.Ordinal);
+            Assert.Contains(
+                $"- \"999.99\" in the sentence \"Keysight closed at 999.99 on the night.\": {ClaimRules.UnmatchedFigure}. {RetryBrief.Do(ClaimRules.UnmatchedFigure)}",
+                feed.Asked[1].Prompt,
+                StringComparison.Ordinal);
             Assert.Equal([$"{ClaimRules.ComputedSection}|{ClaimChecker.Accepted}"], second.Checked.Select(section => $"{section.Section}|{section.Status}"));
             Assert.Equal(
                 [$"1|{ClaimChecker.Rejected}", $"2|{ClaimChecker.Accepted}"],

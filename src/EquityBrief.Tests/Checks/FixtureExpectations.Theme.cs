@@ -689,7 +689,11 @@ public partial class FixtureExpectations
         // refused for the figure, the second accepted. The 6.9 sweep found the retry unasserted.
         Assert.Equal(2, model.Asked.Count);
         Assert.DoesNotContain("previous draft", model.Asked[0].Prompt, StringComparison.Ordinal);
-        Assert.Contains($"Your previous draft of this section was refused by the checker for: {ClaimRules.UnmatchedFigure}", model.Asked[1].Prompt, StringComparison.Ordinal);
+        Assert.Contains(RetryBrief.Opening, model.Asked[1].Prompt, StringComparison.Ordinal);
+        Assert.Contains(
+            $"- \"35.1%\" in the sentence \"Sales across the industry rose 35.1% in the quarter [D1].\": {ClaimRules.UnmatchedFigure}. {RetryBrief.Do(ClaimRules.UnmatchedFigure)}",
+            model.Asked[1].Prompt,
+            StringComparison.Ordinal);
 
         Assert.Equal(
             [$"1|{ClaimChecker.Rejected}", $"2|{ClaimChecker.Accepted}"],

@@ -2383,7 +2383,7 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "The short version")] = new Scoped(
             Verdict.Pass,
-            "the accepted short version is drawn above the chart, the table of moves and every other written section, its paragraphs the stored prose drawn as text and its date beneath them with its model on the element, read back against the store, and a name with none draws none",
+            "the accepted short version is drawn above the chart, the table of moves and every other written section, its paragraphs the stored prose drawn as text and its date beneath them with its model on the element, read back against the store, and a name with none draws a summary written by code under the heading its record names, refused, not written or no research, each part read off the page against the store and the plan the trade gate read",
             ByReadSurface),
         [CheckReach.Key("15.9 Name", "What it sells, the numbers, the cycle, the two cases, the risks")] = new Scoped(
             Verdict.Pass,

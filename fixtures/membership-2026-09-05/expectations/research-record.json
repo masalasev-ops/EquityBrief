@@ -64,10 +64,9 @@
     { "section": "The risks, each with what would confirm it", "version": 1, "lane": "paid", "status": "rejected" },
     { "section": "The risks, each with what would confirm it", "version": 2, "lane": "paid", "status": "accepted" },
     { "section": "The segment commentary", "version": 1, "lane": "local", "status": "rejected" },
-    { "section": "The segment commentary", "version": 2, "lane": "local", "status": "accepted" },
+    { "section": "The segment commentary", "version": 2, "lane": "local", "status": "fallback" },
     { "section": "The short version", "version": 1, "lane": "paid", "status": "accepted" },
-    { "section": "The two cases", "version": 1, "lane": "paid", "status": "rejected" },
-    { "section": "The two cases", "version": 2, "lane": "paid", "status": "accepted" },
+    { "section": "The two cases", "version": 1, "lane": "paid", "status": "accepted" },
     { "section": "What the company sells", "version": 1, "lane": "local", "status": "accepted" }
   ],
   "stages": [
@@ -82,7 +81,6 @@
     "research call: The risks, each with what would confirm it",
     "claims",
     "prose, round 2",
-    "research call: The two cases, round 2",
     "research call: The risks, each with what would confirm it, round 2",
     "research call: The short version, round 2",
     "claims, round 2",
@@ -90,9 +88,9 @@
   ],
   "modelCalls": {
     "local": 4,
-    "paid": 7
+    "paid": 6
   },
-  "spend": "0.034261866",
+  "spend": "0.029617026",
   "theme": {
     "theme": "Scientific & Technical Instruments",
     "searches": 12,
@@ -111,24 +109,23 @@
         "The segment commentary": 2,
         "The key under each figure": 1,
         "The dated calendar items": 1,
-        "The two cases": 2,
-        "The risks, each with what would confirm it": 2
+        "The two cases": 1,
+        "The risks, each with what would confirm it": 2,
+        "The short version": 2
       },
-      "fallback": [
-        "The short version"
-      ],
-      "calls": 13,
-      "spend": "0.039359082"
+      "fallback": [],
+      "calls": 12,
+      "spend": "0.038825430"
     },
     "local": {
       "accepted": {
         "The cause of each large move": 1,
         "What the company sells": 1,
-        "The segment commentary": 2,
         "The key under each figure": 1
       },
       "fallback": [
         "The dated calendar items",
+        "The segment commentary",
         "The two cases",
         "The risks, each with what would confirm it",
         "The short version"

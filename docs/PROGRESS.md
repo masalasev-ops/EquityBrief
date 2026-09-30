@@ -31547,3 +31547,179 @@ Carried:    corrections B to F at 12.6 in that order, C merged only on the opera
             the baseline of 5 of 8, a refusal coming back only if the share has not fallen, carried as an operating
             row that F adds with the region it is read on; and the trial's three reports set before the operator to
             choose a profile for each of the two sections, carried the same way.
+
+### 12.6 ruling - an addendum to the research template: five refinements to the research prompt and a review pass behind a setting that ships off, built as a seventh pull request after the run page's, planned before anything is built   2026-09-30
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-30, while the first correction of the research template was being built, as a
+            dated addendum to the template's ruling entry above, word for word:
+            > Addendum to the research template plan (Phase 12 / 12.6), dated 2026-09-30.
+            > Record it as a dated addendum under the plan's ruling entry in PROGRESS, word
+            > for word. It changes nothing in PRs A to F, which build as approved. It is built
+            > as PR G, after F has merged.
+            >
+            > Found by reading SectionPrompt.cs, the prompt every research call sends.
+            >
+            > === PR G: five refinements to the research prompt ===
+            > 1. The ask after the documents: keep each section's ask where it is and repeat
+            >    it after the documents and the sections already written, headed "Now write
+            >    the section:", word for word. With several long documents the ask is
+            >    otherwise far behind where the model writes.
+            > 2. Who the reader is: add to the instructions that the reader is deciding
+            >    whether to hold a swing trade in this stock over the next weeks to few
+            >    months, so each section chooses what could move the stock before and at the
+            >    next report and leaves out what would not.
+            > 3. An alternative, not only a prohibition: a figure found only in a document and
+            >    not under Facts is stated in words, never as a figure; a change with no listed
+            >    figure for its size is described in words against its base.
+            > 4. Each document marked by kind beside its title: a company filing or release, a
+            >    news report, or an opinion or promotional piece, by a stated rule from its
+            >    source. A point rests on filings and news reports; an opinion piece is cited
+            >    only as what someone argues, and said to be that. Once the news labeller
+            >    exists, its kind label is used where it has labelled the article.
+            > 5. For the two cases and the risks, one short weak point and one strong point
+            >    as examples, written with no digit so nothing can be copied or refused: a weak
+            >    point restates that sales grew; a strong one says the growth came from a
+            >    one-off that will not repeat, citing where.
+            >
+            > === PR G: a review pass, behind a setting that ships off ===
+            > 6. A second DeepSeek call for the two cases and the risks, handed its own draft
+            >    and the rules, checking each sentence (a reason or a restated figure, its size
+            >    weighed, specific to this company, a confirmation that is what the risk coming
+            >    true looks like) and returning a revision, which the claim check reads as
+            >    usual. Run it on three reports, and draw them on PR F's trial region beside
+            >    the other drafts with each cost: DeepSeek, DeepSeek reviewed, and Claude where
+            >    the trial has one.
+            >
+            > === Measured ===
+            > Re-record once for PR G and state its cost. Over the ten reports after G merges,
+            > compare each section's first-time pass rate and left-out rate on the run page
+            > with the ten before, and report both to the operator.
+            >
+            > Tests: one per refinement over the fixture's prompts, the review pass off by
+            > default and drawn beside the others when on, each mutated and seen red.
+            and, before it and beside it, that the corrections are built one after another without waiting for the
+            operator, word for word:
+            > Do B and C to completion. Dont wait for me. Finish it
+            > Do them all one after another. Dont wait for me. I need other things to be done as well so finish the whole plan
+Ruled:      the addendum as asked, recorded here as an entry of its own, since this record is appended to and never
+            edited: corrections B to F build as the template's ruling above states them, and a seventh, G, follows the
+            run page's, carrying the five refinements, the review pass behind a setting that ships off, one
+            re-recording with its cost, and the comparison of each section's rates over the ten reports before and
+            after it. The operator's words to take C to completion without waiting are read as the go the template's
+            ruling asked for before C merges, and as nothing more: C's own entry states the commands, the deadline and
+            what is lost if they are missed before C merges, as that ruling requires, and the session the operator gave
+            those words runs the two commands after C's merge because the operator asked that C be finished, once no
+            night, queue or drain is running. No later session takes this as a go for anything it builds.
+Changed:    this entry alone.
+Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry and the correction entry after it,
+            123SHA, whose figures that entry records.
+Carried:    correction G, after F; the comparison of each section's first-time pass rate and left-out rate over the ten
+            reports before G's merge and the ten after it, reported to the operator.
+
+### 12.6 - correction: a retry is told each thing its first draft was refused for and one repeating it is left out saying so, a short version left out is replaced by one code writes under a heading naming why, and the two cases are asked to argue each fact on one side and refused only where their sides cannot be told apart, where a retry was told one line, the section read first could be missing and one figure could argue both cases   2026-09-30
+Corrects:   the research every report is written by, on items 1 and 3 of the operator's research template of
+            2026-09-29 as its ruling above records them with the first review's changes, the first of the six
+            corrections that ruling plans.
+Asked:      item 1 and item 3 of the template and items 5 and 6 of the first review, word for word in the ruling
+            entry above: a retry names each refused item, a second draft repeating one is left out and the page says
+            it repeated; the short version keeps the facts-file rule alone and a summary code writes stands where it
+            is left out, headed by the actual reason; and the two cases are asked, not refused, for a figure on both
+            sides, with the refusal of a draft whose sides cannot be found kept.
+Repaired:   - The retry. `RetryBrief.For` reads the refused draft again with `ClaimRules.Check` over the facts file
+              and the source list it was checked against, the draft's own stored ids resolved among the documents
+              the pass handed the section, and writes one line for each thing refused, the figure, date or
+              citation with the sentence it sits in, or the sentence where the rule refuses a sentence, the rule,
+              and what to do, under an opening saying the new draft must contain none of them. It never pastes the
+              draft back. The paid lane, the local lane and the theme's retry all use it, and the paid lane tells a
+              section refused on the same day by an earlier pass the same way, since the checker reads the new
+              draft as that one's retry.
+            - A repeat. On a second refusal `ClaimChecker` reads the first draft's findings again the same way,
+              and where a second-draft finding shares a first-draft finding's rule and offending text, case aside,
+              the reason reads `rejected twice, the retry repeating what the first draft was refused for: ...`.
+              `NameScreen.Refused` matches that form and the plain one whole, so the words "rejected twice" inside
+              a refused sentence never put that sentence on the name page.
+            - The short version by code. Where no accepted short version stands for the page's night, the name
+              page draws one `MarkRenderer.ShortVersionByCode` writes from three computed parts: why the name is or
+              is not on the list, dated where the page is for an earlier night and called tonight's where it is
+              not; the state its reported quarters give it with the heading its numbers open on; and the entry,
+              stop and target of the swing trade the trade gate read. Its heading says the model's was refused by
+              the claim check where the checker left it out, was not written where the newest pass named it not
+              written or research was written without it, and that no research has been written for the name
+              where nothing was, the industry's cycle, which is its theme's, aside. No model is asked and nothing
+              is stored.
+            - The two cases. The ask adds each point a reason and not a restated figure, a change stated with its
+              size from the listed figures at both ends or in words against its base, and each fact on one side
+              only, closing sentences included. `ClaimRules.CaseSides` cuts the case for and the case against as
+              the page draws them, the page now reading it from Core, and a draft whose first sentence does not open
+              on the bull case, or with no sentence opening on the bear case, is refused with `two cases not written
+              as the bull case and the bear case`. A figure on both sides is not refused.
+Recorded:   every recording keyed on a changed prompt made again off-peak on 2026-09-30 between 04:01Z and 04:08Z:
+            17 answers, DeepSeek $0.0287 over 7 calls, Claude $0.2634 over 3 calls, and the local model's 7 at no
+            cost, $0.2920 in all against the plan's estimate of DeepSeek $0.08 and Claude $0.30; 18 recordings no
+            test asks for any longer removed with their manifest entries, and the one test reading Claude's short
+            version by name moved to the new one, which the checker accepted as it did the old.
+Measured:   over the new recordings, read off the replay: the default pass wrote the two cases at its first draft,
+            where the old recording's was refused once, and the local model's segment commentary, told each figure
+            its first draft was refused for, wrote another the facts file does not hold and was left out, where the
+            one-line retry had been accepted, so the pass wrote seven of its eight sections for $0.0296 against
+            $0.0343. In the lane comparison the paid model's short version, left out before, was accepted on its
+            retry, and every paid section stands; the local model's retries repeated a refused figure or date in
+            three of the five sections it retried, each left out saying so.
+Changed:    `RetryBrief` in Core; `ClaimRules`' two cases rule and the sides it cuts; `SectionPrompt`'s two cases ask
+            and retry block; the paid lane, the local lane, the theme pass and the checker's second refusal;
+            `NameScreen.Refused`; the name page's short version card and `MarkRenderer.ShortVersionByCode`; section 4's
+            intro and short version row, section 12.2's claim rejection and two cases rows and a paragraph of its
+            own, and 15.9's short version row in `ARCHITECTURE.html`; BUILD_PLAN's 12.6 text and one operating row;
+            the claim-admissibility and read-surface rows of `.claude/rules/checks.md`; the prior text of each spec
+            edit in `CHANGELOG.md`; RUNBOOK's cost of a pass over the fixture; the phase's stated count of
+            operating rows and the short version's claim in the harness's scope; and the fixture's recordings,
+            manifest and research record expectation.
+Decisions:  new: "A retry names each thing the check refused, and a second draft repeating one is left out", "The
+            short version is written last from the sections that passed, and one left out is replaced by a summary
+            code writes" and "The two cases are asked to argue a fact on one side only, and a draft doing otherwise
+            is counted rather than refused", each as the ruling planned them.
+Obligation: "The two cases' figures on both sides counted over twenty reports", operating, created here rather than
+            with the run page's region as the ruling had it, since the count starts with this correction's first
+            report; it is read on the run page's report region, which F builds at 12.6.
+Tests:      123T, from 1552:
+            `ARetryIsToldEachRefusedFigureAndSentenceOnALineOfItsOwnAndNeverTheWholeDraft`,
+            `ASecondDraftRepeatingWhatTheFirstWasRefusedForIsLeftOutSayingSoAndOneRefusedForSomethingElseIsNot`,
+            `TwoCasesWhoseSidesCannotBeToldApartAreRefusedNamingWhatIsMissing`,
+            `TheShortVersionIsHandedTheSectionsTheCheckerAcceptedAndNoDraftItRefused`,
+            `AShortVersionTheCheckerLeftOutIsReplacedByOneWrittenByCodeUnderTheRefusedHeadingEachPartReadAgainstTheStore`,
+            `AShortVersionTheNewestPassDidNotWriteIsReplacedUnderTheNotWrittenHeading`,
+            `ANameWithNoResearchDrawsAShortVersionByCodeUnderTheHeadingThatImpliesNoModel` and
+            `ANameWithAnAcceptedShortVersionDrawsTheModelsAndNotOneWrittenByCode`. The prose and theme retry tests
+            assert the new opening and the itemised line where they asserted the one line; the read surface's
+            refusal test asserts the repeat's words agree with the worker's; the tests stating how many sections a
+            pass over the fixture draws state six where they stated seven, the order test constructing an accepted
+            segment commentary to place, stated as constructed; the two cases' rows read nine and eight, counted by
+            hand off the new recording; and the calendar test's two cases draft opens on both cases, so the date is
+            the one thing refused.
+Claims:     123C, from 723.
+Pins:       none moves; no source this correction edits is in the three pin lists.
+Mutated:    the rule, stated before the run: each new rule reversed alone, filtered to the tests that read it.
+            Predicted:
+            B1 `RetryBrief.For` returning the old one line, `refused by the checker for: <reason>`, filtered to the
+               retries' tests: red in the retry test.
+            B2 `Repeats` returning false, filtered to the same: red in the repeat test.
+            B3 the two cases' sides refusal removed from `ClaimRules.Check`, filtered to the same: red in the sides
+               test.
+            B4 the summary's heading drawn with the refused reason in all three states, filtered to the summary's
+               tests: red in the not-written and no-research tests.
+            B5 the code's summary drawn beside an accepted short version, filtered to the same: red in the accepted
+               test.
+            B6 the plan read from the swing pair whatever the trade gate read, filtered to the same: red in the
+               refused-heading test.
+            B7 `NameScreen.Refused` anchored on the bare word again, filtered to the retries' tests: red in the
+               repeat test.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       123HELD
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 123VP.
+            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    corrections C to G at 12.6 in that order; the two cases' count over the twenty reports after this
+            merge, on its operating row.

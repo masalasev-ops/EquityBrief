@@ -77,7 +77,7 @@ public sealed class ThemeResearchRunner(
     public const string NoPageAboutTheIndustry = "the searches returned no page about the industry";
 
     const string NewestCycle = @"
-        SELECT version, as_of, status, reject_reason
+        SELECT version, as_of, status, reject_reason, prose, source_ids
         FROM theme_section
         WHERE theme = $theme AND section = $section
         ORDER BY version DESC
@@ -239,7 +239,12 @@ public sealed class ThemeResearchRunner(
             {
                 var before = written.Count;
 
-                stopped = await WriteAsync(connection, theme, asOf, stored, refused.Reason, runId, ResearchRunner.SecondRound, written, notWritten, cancellation);
+                // The retry names each thing the first draft was refused for, read again against no facts
+                // file, since a theme has none, and the pages the pass stored.
+                // see: A retry names each thing the check refused, and a second draft repeating one is left out
+                var brief = RetryBrief.For(ClaimRules.CycleSection, refused.Prose, [], ResearchRunner.Resolved(refused.SourceIds, stored), null, refused.Reason);
+
+                stopped = await WriteAsync(connection, theme, asOf, stored, brief, runId, ResearchRunner.SecondRound, written, notWritten, cancellation);
 
                 if (written.Count > before)
                 {
@@ -479,7 +484,7 @@ public sealed class ThemeResearchRunner(
         await insert.ExecuteNonQueryAsync(cancellation);
     }
 
-    public sealed record Newest(int Version, DateOnly AsOf, string Status, string? Reason);
+    public sealed record Newest(int Version, DateOnly AsOf, string Status, string? Reason, string Prose = "", string SourceIds = "[]");
 
     public static async Task<Newest?> NewestAsync(SqliteConnection connection, string theme, CancellationToken cancellation)
     {
@@ -496,7 +501,9 @@ public sealed class ThemeResearchRunner(
                 reader.GetInt32(0),
                 DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.GetString(2),
-                reader.IsDBNull(3) ? null : reader.GetString(3))
+                reader.IsDBNull(3) ? null : reader.GetString(3),
+                reader.GetString(4),
+                reader.GetString(5))
             : null;
     }
 
