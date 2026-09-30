@@ -43,7 +43,7 @@ public sealed record ClaimCheckOutcome(IReadOnlyList<CheckedSection> Checked)
 // fetches. It makes no request and no model call: the retry is the writer's,
 // and what this component decides is whether a second refusal is a retry or the
 // end of the pass.
-public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
+public sealed class ClaimChecker(IClock clock, string databaseFile, int retries = ClaimChecker.Retries) : IComponent
 {
     public static ComponentAccess Access => new(
         Stores:
@@ -63,14 +63,24 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
     public const string Rejected = "rejected";
     public const string Fallback = "fallback";
 
-    // What a fallback after a second refusal says before the refusal itself, so
-    // a reader of one row can tell it from a section that never had a source.
-    public const string RejectedTwice = "rejected twice";
+    // How many times one pass asks again for a section the checker refused before it is
+    // left out. A draft refused for a figure the facts file does not hold was often
+    // accepted when told the figure by name, and each retry costs a fraction of a cent.
+    // see: A retry names each thing the check refused, and a section refused on its third retry is left out
+    public const int Retries = 3;
 
-    // What such a fallback adds where the second draft carried something the first was
-    // refused for, by the same rule over the same text: the retry was told it by name.
-    // see: A retry names each thing the check refused, and a second draft repeating one is left out
-    public const string RepeatedOnRetry = "the retry repeating what the first draft was refused for";
+    // The retries this checker allows, which every writer's rounds read so the two agree. Every
+    // shipped checker allows `Retries`; a replay of recordings made while a section had one retry
+    // is checked under that one, since a further retry would ask for an answer nobody recorded.
+    public int RetriesAllowed => retries;
+
+    // What a fallback after the last retry says before the refusal itself, so a reader of
+    // one row can tell it from a section that never had a source.
+    public const string RejectedOnEveryRetry = "rejected on every retry";
+
+    // What such a fallback adds where the last retry carried something the draft before it
+    // was refused for, by the same rule over the same text: the retry was told it by name.
+    public const string LastRetryRepeated = "the last retry repeating what the draft before it was refused for";
 
     // A source list a writer stored that is not a list of ids. A defect in the
     // writer rather than a property of the prose, and refused as its own reason
@@ -92,14 +102,14 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
         ORDER BY theme, section, version;
     ";
 
-    // The version before this one, which is what decides whether a refusal is a
-    // first attempt or the retry.
+    // The versions before this one, newest first and as many as the retries, which is what
+    // decides whether a refusal is asked for again or left out.
     const string EarlierResearch = @"
         SELECT status, as_of, reject_reason, prose, source_ids, parts
         FROM research_section
         WHERE ticker = $subject AND section = $section AND version < $version
         ORDER BY version DESC
-        LIMIT 1;
+        LIMIT $retries;
     ";
 
     const string EarlierTheme = @"
@@ -107,7 +117,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
         FROM theme_section
         WHERE theme = $subject AND section = $section AND version < $version
         ORDER BY version DESC
-        LIMIT 1;
+        LIMIT $retries;
     ";
 
     // The newest facts file on or before the day the section was written that the
@@ -293,30 +303,33 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
             return (Fallback, verdict.Reason, null);
         }
 
-        var previous = await EarlierAsync(connection, transaction, pending, theme, cancellation);
+        // The refusals written immediately before this one on the same day, newest first. A
+        // version after a fallback or an acceptance, or a refusal on a later day, starts the
+        // count again, so the bound is the retries of one pass rather than of the section for
+        // all time.
+        var refusedBefore = (await EarlierAsync(connection, transaction, pending, theme, retries, cancellation))
+            .TakeWhile(earlier => earlier.Status == Rejected && string.Equals(earlier.AsOf, pending.AsOf, StringComparison.Ordinal))
+            .ToList();
 
-        // The retry, which is a refusal immediately after a refusal written on the
-        // same day. A version after a fallback, or a refusal on a later day, is a
-        // fresh first attempt, so the bound is one retry per pass rather than one
-        // for the section for all time.
-        if (previous is not { Status: Rejected } earlier || !string.Equals(earlier.AsOf, pending.AsOf, StringComparison.Ordinal))
+        // see: A retry names each thing the check refused, and a section refused on its third retry is left out
+        if (refusedBefore.Count < retries)
         {
             return (Rejected, verdict.Reason, null);
         }
 
-        // Left out either way, and said to have repeated where the second draft carries a
-        // thing the first was refused for, by the same rule over the same text, since the
-        // retry was told each of them by name. The first draft is read again by the same
-        // rules over the same facts file, and its own source list, as the retry was told it.
-        // see: A retry names each thing the check refused, and a second draft repeating one is left out
-        var first = await SourcesAsync(connection, transaction, earlier.SourceIds, cancellation) is { } earlierSources
-            ? ClaimRules.Check(pending.Section, earlier.Prose, facts, earlierSources, night, earlier.Parts).Findings
+        // Left out either way, and said to have repeated where the last retry carries a thing
+        // the draft before it was refused for, by the same rule over the same text, since the
+        // retry was told each of them by name. That draft is read again by the same rules over
+        // the same facts file, and its own source list, as the retry was told it.
+        var before = refusedBefore[0];
+        var told = await SourcesAsync(connection, transaction, before.SourceIds, cancellation) is { } beforeSources
+            ? ClaimRules.Check(pending.Section, before.Prose, facts, beforeSources, night, before.Parts).Findings
             : [];
 
-        return (Fallback, Repeats(first, verdict.Findings) ? $"{RejectedTwice}, {RepeatedOnRetry}: {verdict.Reason}" : $"{RejectedTwice}: {verdict.Reason}", earlier.Reason);
+        return (Fallback, Repeats(told, verdict.Findings) ? $"{RejectedOnEveryRetry}, {LastRetryRepeated}: {verdict.Reason}" : $"{RejectedOnEveryRetry}: {verdict.Reason}", before.Reason);
     }
 
-    // Whether a second draft's findings carry one of the first's, the same rule over the
+    // Whether a retry's findings carry one of the draft's before it, the same rule over the
     // same offending text read without case.
     public static bool Repeats(IReadOnlyList<ClaimFinding> first, IReadOnlyList<ClaimFinding> second) =>
         second.Any(finding => first.Any(before =>
@@ -398,11 +411,12 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
 
     sealed record Earlier(string Status, string AsOf, string? Reason, string Prose, string SourceIds, string? Parts);
 
-    static async Task<Earlier?> EarlierAsync(
+    static async Task<IReadOnlyList<Earlier>> EarlierAsync(
         SqliteConnection connection,
         SqliteTransaction transaction,
         PendingSection pending,
         bool theme,
+        int limit,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -412,12 +426,18 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
         command.Parameters.AddWithValue("$subject", pending.Subject);
         command.Parameters.AddWithValue("$section", pending.Section);
         command.Parameters.AddWithValue("$version", pending.Version);
+        command.Parameters.AddWithValue("$retries", limit);
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
-        return await reader.ReadAsync(cancellation)
-            ? new Earlier(reader.GetString(0), reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.IsDBNull(5) ? null : reader.GetString(5))
-            : null;
+        var earlier = new List<Earlier>();
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            earlier.Add(new Earlier(reader.GetString(0), reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.IsDBNull(5) ? null : reader.GetString(5)));
+        }
+
+        return earlier;
     }
 
     // The facts file with the night it was computed for, which the calendar section's
@@ -483,8 +503,8 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
     }
 
     // The run log's line. Every section moved is named with its outcome, and a
-    // fallback after a second refusal carries both attempts' offending text, which
-    // is what section 18 promises: the first attempt's reason is on its own row
+    // fallback after the last retry carries its offending text and the draft's before
+    // it, which is what section 18 promises: that draft's reason is on its own row
     // and would otherwise be a row a person has to know to look for.
     public static string Detail(ClaimCheckOutcome outcome)
     {
@@ -500,7 +520,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
 
             if (section.EarlierReason is { } earlier)
             {
-                line += "; the first attempt: " + earlier;
+                line += "; the draft before it: " + earlier;
             }
         }
 

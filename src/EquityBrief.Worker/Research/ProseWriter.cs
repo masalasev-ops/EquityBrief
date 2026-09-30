@@ -235,8 +235,7 @@ public sealed class ProseWriter(
                 continue;
             }
 
-            // The one retry: the newest version was refused today, so this draft is
-            // told why.
+            // A retry: the newest version was refused today, so this draft is told why.
             var retry = today && newest!.Status == "rejected";
 
             var handed = documents.TryGetValue(section, out var given) ? given : [];
@@ -254,9 +253,9 @@ public sealed class ProseWriter(
             // admissible source was found rather than the writer deciding that.
             var admitted = handed.Where(document => document.Admitted).ToArray();
 
-            // The retry names each thing the first draft was refused for, read again over the facts file
+            // The retry names each thing the draft before it was refused for, read again over the facts file
             // and the source list it was checked against, the documents this pass handed the section.
-            // see: A retry names each thing the check refused, and a second draft repeating one is left out
+            // see: A retry names each thing the check refused, and a section refused on its third retry is left out
             var request = SectionPrompt.Request(
                 settings.Model,
                 ticker,
@@ -276,7 +275,7 @@ public sealed class ProseWriter(
             // A cause with no document inside any move has nothing a sentence could
             // rest on, which code knows before a call is made, so none is. Asked
             // anyway, the model wrote a paragraph saying why it could not write one,
-            // and that paragraph cost a call and the section's one retry.
+            // and that paragraph cost a call and a retry.
             // see: A cause of a move rests only on a document published inside that move
             if (string.Equals(section, ClaimRules.CauseSection, StringComparison.Ordinal)
                 && SectionPrompt.MovesWithDocuments(facts, Prompted(admitted)).Count == 0)

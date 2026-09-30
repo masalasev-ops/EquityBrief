@@ -11,7 +11,8 @@ namespace EquityBrief.Worker.Research;
 // addressed by the identifier that fetch stores and the pass reads the company's own release from
 // there. A regenerate fetches whatever is held, so the report is written from the figures as they
 // stand on the day it runs, and asks first whether a pass for the name ran to the end today, since
-// the pass will then start nothing and a fetch would buy nothing. Null where it was not asked.
+// the pass will then start nothing, or write only what that pass left out from the figures it
+// fetched, and a fetch would buy nothing. Null where it was not asked.
 // see: A name's facts file is assembled again for its night when an open fetches its fundamentals
 // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
 public static class PassFigures

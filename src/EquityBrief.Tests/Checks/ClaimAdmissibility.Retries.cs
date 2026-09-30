@@ -5,11 +5,11 @@ using EquityBrief.Worker.Research;
 
 namespace EquityBrief.Tests.Checks;
 
-// claim-admissibility, what a retry is told and what a second refusal says: each thing the first draft was
-// refused for named on a line of its own with what to do about it and the draft never pasted back, a second
-// draft carrying one of them left out saying it repeated it, and two cases whose sides cannot be told apart
-// refused.
-// see: A retry names each thing the check refused, and a second draft repeating one is left out
+// claim-admissibility, what a retry is told and what the last refusal says: each thing the draft before it was
+// refused for named on a line of its own with what to do about it and the draft never pasted back, a section
+// asked again up to three times and left out at its third retry, saying so where that retry repeated what the
+// draft before it was refused for, and two cases whose sides cannot be told apart refused.
+// see: A retry names each thing the check refused, and a section refused on its third retry is left out
 public partial class ClaimAdmissibility
 {
     static readonly StoredDocument AnAdmittedDocument = new(
@@ -41,59 +41,75 @@ public partial class ClaimAdmissibility
         Assert.Equal(2, brief.Split('\n').Count(line => line.StartsWith("- ", StringComparison.Ordinal)));
         Assert.DoesNotContain(Kept, brief, StringComparison.Ordinal);
 
-        // Each figure refusal says to remove it or replace it from the facts file, and each uncited sentence
-        // to remove it or cite it.
+        // Each figure refusal says to remove it or replace it from the facts file, a number in words that it
+        // may also say what it shows with no number and no count word, and each uncited sentence to remove it
+        // or cite it.
         Assert.Contains("replace it with a figure listed under Facts", RetryBrief.Do(ClaimRules.UnmatchedFigure), StringComparison.Ordinal);
+        Assert.Contains("no count word such as dozens, hundreds or thousands", RetryBrief.Do(ClaimRules.UnmatchableFigure), StringComparison.Ordinal);
         Assert.Contains("end it with the marker of the listed document", RetryBrief.Do(ClaimRules.Uncited), StringComparison.Ordinal);
     }
 
-    [Fact]
-    public async Task ASecondDraftRepeatingWhatTheFirstWasRefusedForIsLeftOutSayingSoAndOneRefusedForSomethingElseIsNot()
+    // One section's drafts checked one after another on the same day, as a pass's rounds check them.
+    internal static async Task CheckedInTurn(TemporaryStore store, IReadOnlyList<Written> drafts, string run, int firstVersion = 1)
     {
+        for (var at = 0; at < drafts.Count; at++)
+        {
+            Pending(store, drafts[at], firstVersion + at);
+            await Checker(store).RunAsync($"{run}-{firstVersion + at}");
+        }
+    }
+
+    [Fact]
+    public async Task ARefusedSectionIsAskedAgainUpToItsThirdRetryAndLeftOutThereSayingWhetherTheRetryRepeated()
+    {
+        var poisoned = SectionNamed("a poisoned paragraph");
+        var clean = SectionNamed("a clean computed paragraph");
+
+        // The same refused thing on every draft: each refusal before the last retry kept for another, and the
+        // last retry left out, saying it repeated what the draft before it was refused for, drawn by its rule.
         using var store = await WithSources();
 
-        var poisoned = SectionNamed("a poisoned paragraph");
-
-        // The same refused thing twice: left out, saying the retry repeated it, drawn by its rule.
-        Pending(store, poisoned, 1);
-        await Checker(store).RunAsync("check-repeat-first");
-        Pending(store, poisoned, 2);
-        await Checker(store).RunAsync("check-repeat-second");
+        await CheckedInTurn(store, [.. Enumerable.Repeat(poisoned, ClaimChecker.Retries + 1)], "check-repeat");
 
         var repeated = Stored(store, poisoned.Section);
 
-        Assert.Equal([ClaimChecker.Rejected, ClaimChecker.Fallback], [.. repeated.Select(row => row.Status)]);
-        Assert.StartsWith($"{ClaimChecker.RejectedTwice}, {ClaimChecker.RepeatedOnRetry}: ", repeated[1].Reason!, StringComparison.Ordinal);
-        Assert.StartsWith($"{ClaimChecker.RejectedTwice}, {ClaimChecker.RepeatedOnRetry}: {ClaimRules.UnmatchedFigure}", NameScreen.Refused(repeated[1].Reason!), StringComparison.Ordinal);
+        Assert.Equal([.. Enumerable.Repeat(ClaimChecker.Rejected, ClaimChecker.Retries), ClaimChecker.Fallback], [.. repeated.Select(row => row.Status)]);
+        Assert.StartsWith($"{ClaimChecker.RejectedOnEveryRetry}, {ClaimChecker.LastRetryRepeated}: ", repeated[^1].Reason!, StringComparison.Ordinal);
+        Assert.StartsWith($"{ClaimChecker.RejectedOnEveryRetry}, {ClaimChecker.LastRetryRepeated}: {ClaimRules.UnmatchedFigure}", NameScreen.Refused(repeated[^1].Reason!), StringComparison.Ordinal);
 
-        // The word can stand inside a refused sentence, and the page still never draws that sentence, last
-        // part or not, in either form of the reason.
-        const string Sentence = "Shareholders rejected twice the proposed merger.";
+        // A draft passing at the last retry is accepted, however many were refused before it that day.
+        using var late = await WithSources();
+
+        await CheckedInTurn(late, [.. Enumerable.Repeat(poisoned, ClaimChecker.Retries), clean], "check-late");
+
+        Assert.Equal([.. Enumerable.Repeat(ClaimChecker.Rejected, ClaimChecker.Retries), ClaimChecker.Accepted], [.. Stored(late, poisoned.Section).Select(row => row.Status)]);
+
+        // The words can stand inside a refused sentence, and the page still never draws that sentence, last
+        // part or not, in every form of the reason, those rows written while a section had one retry among them.
+        const string Sentence = "Shareholders rejected twice, then rejected on every retry, the proposed merger.";
 
         foreach (var reason in (string[])[
-            $"{ClaimChecker.RejectedTwice}: {ClaimRules.Uncited}: {Sentence}",
-            $"{ClaimChecker.RejectedTwice}: {ClaimRules.Uncited}: {Sentence}; {ClaimRules.UnmatchedFigure}: 5%",
-            $"{ClaimChecker.RejectedTwice}, {ClaimChecker.RepeatedOnRetry}: {ClaimRules.Uncited}: {Sentence}; {ClaimRules.UnmatchedFigure}: 5%"])
+            $"{ClaimChecker.RejectedOnEveryRetry}: {ClaimRules.Uncited}: {Sentence}",
+            $"{ClaimChecker.RejectedOnEveryRetry}: {ClaimRules.Uncited}: {Sentence}; {ClaimRules.UnmatchedFigure}: 5%",
+            $"{ClaimChecker.RejectedOnEveryRetry}, {ClaimChecker.LastRetryRepeated}: {ClaimRules.Uncited}: {Sentence}; {ClaimRules.UnmatchedFigure}: 5%",
+            $"{NameScreen.RejectedTwice}: {ClaimRules.Uncited}: {Sentence}",
+            $"{NameScreen.RejectedTwice}: {ClaimRules.Uncited}: {Sentence}; {ClaimRules.UnmatchedFigure}: 5%",
+            $"{NameScreen.RejectedTwice}, {NameScreen.RepeatedOnRetry}: {ClaimRules.Uncited}: {Sentence}; {ClaimRules.UnmatchedFigure}: 5%"])
         {
             Assert.DoesNotContain(Sentence, NameScreen.Refused(reason), StringComparison.Ordinal);
             Assert.Contains(ClaimRules.Uncited, NameScreen.Refused(reason), StringComparison.Ordinal);
         }
 
-        // A second draft refused for something the first was not: left out, and not said to repeat.
+        // A last retry refused for something the draft before it was not: left out, and not said to repeat.
         using var other = await WithSources();
 
-        var clean = SectionNamed("a clean computed paragraph");
-
-        Pending(other, poisoned, 1);
-        await Checker(other).RunAsync("check-other-first");
-        Pending(other, clean with { Prose = clean.Prose + " The close was 123456.78 on the night." }, 2);
-        await Checker(other).RunAsync("check-other-second");
+        await CheckedInTurn(other, [.. Enumerable.Repeat(poisoned, ClaimChecker.Retries), clean with { Prose = clean.Prose + " The close was 123456.78 on the night." }], "check-other");
 
         var moved = Stored(other, poisoned.Section);
 
-        Assert.Equal([ClaimChecker.Rejected, ClaimChecker.Fallback], [.. moved.Select(row => row.Status)]);
-        Assert.StartsWith($"{ClaimChecker.RejectedTwice}: ", moved[1].Reason!, StringComparison.Ordinal);
-        Assert.DoesNotContain(ClaimChecker.RepeatedOnRetry, moved[1].Reason!, StringComparison.Ordinal);
+        Assert.Equal(ClaimChecker.Fallback, moved[^1].Status);
+        Assert.StartsWith($"{ClaimChecker.RejectedOnEveryRetry}: ", moved[^1].Reason!, StringComparison.Ordinal);
+        Assert.DoesNotContain(ClaimChecker.LastRetryRepeated, moved[^1].Reason!, StringComparison.Ordinal);
     }
 
     [Fact]

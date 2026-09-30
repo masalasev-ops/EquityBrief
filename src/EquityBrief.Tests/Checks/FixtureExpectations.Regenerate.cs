@@ -55,7 +55,7 @@ public partial class FixtureExpectations
         // A pass written to the end whose model could not be reached for a section of its report lost that section
         // to the connection, and it is not the day's report: a regenerate the same day runs. A trial's or a
         // review's call that could not be reached is no part of the report and leaves the pass the day's.
-        // see: A pass the model could not be reached for on a section of the report is not the day's report
+        // see: A regenerate on the day a report was written writes only the sections that report left out, and a report the connection cut is not the day's
         using var store = await FixtureReplay.ReplayedForResearchAsync();
 
         var first = await FixtureReplay.Researcher(store, ResearchClock, archive: new NoRelease(), news: new NoArticles()).RunAsync("KEYS", "research-cut-short");

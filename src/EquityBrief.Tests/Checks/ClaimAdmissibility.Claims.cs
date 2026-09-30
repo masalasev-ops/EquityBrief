@@ -266,7 +266,7 @@ public partial class ClaimAdmissibility
     // ---- the retry ----
 
     [Fact]
-    public async Task ASectionRefusedTwiceFallsBackWithBothAttemptsOffendingTextKept()
+    public async Task ASectionRefusedOnEveryRetryFallsBackWithItsDraftsOffendingTextKept()
     {
         using var store = await WithSources();
 
@@ -275,24 +275,29 @@ public partial class ClaimAdmissibility
         Pending(store, SectionNamed(attempts.First), 1);
         await Checker(store).RunAsync("check-first");
 
-        Pending(store, SectionNamed(attempts.Second), 2);
-        var outcome = await Checker(store).RunAsync("check-second");
+        for (var version = 2; version <= ClaimChecker.Retries; version++)
+        {
+            Pending(store, SectionNamed(attempts.Second), version);
+            await Checker(store).RunAsync($"check-{version}");
+        }
+
+        Pending(store, SectionNamed(attempts.Second), ClaimChecker.Retries + 1);
+        var outcome = await Checker(store).RunAsync("check-last");
 
         var rows = Stored(store, attempts.Section);
 
-        Assert.Equal([ClaimChecker.Rejected, ClaimChecker.Fallback], [.. rows.Select(row => row.Status)]);
+        Assert.Equal([.. Enumerable.Repeat(ClaimChecker.Rejected, ClaimChecker.Retries), ClaimChecker.Fallback], [.. rows.Select(row => row.Status)]);
 
-        // Both attempts' offending text, the first on its own row and the second
-        // on the fallback, and the run log line naming both, which is section
-        // 18's promise.
+        // Each draft's offending text on its own row and the last on the fallback, and the run log
+        // line naming the last and the draft before it, which is section 18's promise.
         Assert.Contains("66.3%", rows[0].Reason!, StringComparison.Ordinal);
-        Assert.StartsWith(ClaimChecker.RejectedTwice, rows[1].Reason!, StringComparison.Ordinal);
-        Assert.Contains("66.3%", rows[1].Reason!, StringComparison.Ordinal);
+        Assert.StartsWith(ClaimChecker.RejectedOnEveryRetry, rows[^1].Reason!, StringComparison.Ordinal);
+        Assert.Contains("66.3%", rows[^1].Reason!, StringComparison.Ordinal);
 
-        var detail = RunLogDetail(store, "check-second");
+        var detail = RunLogDetail(store, "check-last");
 
         Assert.Contains("fell back", detail, StringComparison.Ordinal);
-        Assert.Contains("the first attempt: " + rows[0].Reason, detail, StringComparison.Ordinal);
+        Assert.Contains("the draft before it: " + rows[^2].Reason, detail, StringComparison.Ordinal);
         Assert.Equal(1, outcome.FellBack);
     }
 
@@ -315,40 +320,44 @@ public partial class ClaimAdmissibility
     }
 
     [Fact]
-    public async Task TheRetryIsOneRatherThanUnboundedAssertedOverTheStore()
+    public async Task TheRetriesAreBoundedRatherThanUnboundedAssertedOverTheStore()
     {
-        // Six consecutive refusals of one section on one day. The store never
-        // holds two rejected versions in a row: every refusal after a refusal
-        // falls back, and every refusal after a fallback is a fresh first attempt.
-        // Asserted over the rows rather than over any count the checker returned.
+        // Twice the retries and two more of consecutive refusals of one section on one
+        // day. The store never holds more rejected versions in a row than the first
+        // draft and its retries before the last: the refusal at the last retry falls
+        // back, and every refusal after a fallback is a fresh first attempt. Asserted
+        // over the rows rather than over any count the checker returned.
+        // see: A retry names each thing the check refused, and a section refused on its third retry is left out
         using var store = await WithSources();
 
         var poisoned = SectionNamed("a poisoned paragraph");
+        var drafts = 2 * (ClaimChecker.Retries + 1);
 
-        for (var version = 1; version <= 6; version++)
+        for (var version = 1; version <= drafts; version++)
         {
             Pending(store, poisoned, version);
             await Checker(store).RunAsync("check-" + version.ToString(CultureInfo.InvariantCulture));
         }
 
         var statuses = Stored(store, ClaimRules.ComputedSection).Select(row => row.Status).ToArray();
+        string[] pass = [.. Enumerable.Repeat(ClaimChecker.Rejected, ClaimChecker.Retries), ClaimChecker.Fallback];
 
-        Assert.Equal(
-            [ClaimChecker.Rejected, ClaimChecker.Fallback, ClaimChecker.Rejected, ClaimChecker.Fallback, ClaimChecker.Rejected, ClaimChecker.Fallback],
-            statuses);
+        Assert.Equal([.. pass, .. pass], statuses);
 
-        Assert.DoesNotContain(
-            statuses.Zip(statuses.Skip(1)),
-            pair => pair.First == ClaimChecker.Rejected && pair.Second == ClaimChecker.Rejected);
+        // No run of refusals longer than the first draft and its retries before the last.
+        var longest = statuses.Aggregate((Run: 0, Longest: 0), (at, status) =>
+            status == ClaimChecker.Rejected ? (at.Run + 1, Math.Max(at.Longest, at.Run + 1)) : (0, at.Longest)).Longest;
+
+        Assert.Equal(ClaimChecker.Retries, longest);
 
         // And a refusal on a later day is a new pass, not the retry of an old one.
-        Pending(store, poisoned, 7);
+        Pending(store, poisoned, drafts + 1);
         await Checker(store).RunAsync("check-later-day-first");
 
-        Pending(store, poisoned, 8, asOf: "2026-09-09");
+        Pending(store, poisoned, drafts + 2, asOf: "2026-09-09");
         await Checker(store).RunAsync("check-later-day");
 
-        Assert.Equal(ClaimChecker.Rejected, Stored(store, ClaimRules.ComputedSection).Single(row => row.Version == 8).Status);
+        Assert.Equal(ClaimChecker.Rejected, Stored(store, ClaimRules.ComputedSection).Single(row => row.Version == drafts + 2).Status);
     }
 
     [Fact]
@@ -553,7 +562,10 @@ public partial class ClaimAdmissibility
         }
 
         // The attempts, each in a store of its own so one pair's versions cannot
-        // be read as the other's retry.
+        // be read as the other's retry: the first paragraph, then the second asked
+        // again at each retry while it is refused, as a pass's rounds ask it.
+        var retries = expected.GetProperty("retriesPerPass").GetInt32();
+
         foreach (var pair in expected.GetProperty("attempts").EnumerateObject())
         {
             using var attempted = await WithSources();
@@ -561,8 +573,12 @@ public partial class ClaimAdmissibility
 
             Pending(attempted, SectionNamed(first), 1);
             await Checker(attempted).RunAsync("check-first");
-            Pending(attempted, SectionNamed(second), 2);
-            await Checker(attempted).RunAsync("check-second");
+
+            for (var retry = 1; retry <= retries && Stored(attempted, section)[^1].Status == ClaimChecker.Rejected; retry++)
+            {
+                Pending(attempted, SectionNamed(second), retry + 1);
+                await Checker(attempted).RunAsync($"check-retry-{retry}");
+            }
 
             Assert.Equal(
                 [.. pair.Value.EnumerateArray().Select(status => status.GetString()!)],
@@ -582,7 +598,7 @@ public partial class ClaimAdmissibility
             ["status", "reject_reason"],
             [.. expected.GetProperty("columnsTheCheckerWrites").EnumerateArray().Select(column => column.GetString()!)]);
 
-        Assert.Equal(1, expected.GetProperty("retriesPerPass").GetInt32());
+        Assert.Equal(ClaimChecker.Retries, retries);
     }
 
     // ---- the reader, over constructed text ----

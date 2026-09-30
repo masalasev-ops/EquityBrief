@@ -18,11 +18,11 @@
     "a cause of the move the release falls inside": { "status": "accepted", "reason": null }
   },
   "attempts": {
-    "rejected twice": ["rejected", "fallback"],
+    "rejected twice": ["rejected", "rejected", "rejected", "fallback"],
     "rejected then accepted": ["rejected", "accepted"]
   },
   "numbersInTheCleanComputedParagraph": { "figures": 8, "windows": 2, "dates": 1 },
   "columnsTheCheckerWrites": ["status", "reject_reason"],
-  "retriesPerPass": 1,
-  "note": "two rows' worth of reason are kept for a section refused twice, the first attempt's on its own rejected row and the second's on the fallback row, and the run log line for the second check names both. The clean paragraphs are asserted accepted in the same run as the refusals, because a checker that refused everything would satisfy every refusal above and fail only these two."
+  "retriesPerPass": 3,
+  "note": "each attempt is the first paragraph of its pair followed by the second asked again at each retry while it is refused, so a pair whose second is refused every time is refused at the first draft and at each retry before the last and falls back at the third retry, and a pair whose second is accepted stops at its first retry. Each draft's reason is kept on its own row, the last on the fallback row, and the run log line for the last check names it and the draft before it. The clean paragraphs are asserted accepted in the same run as the refusals, because a checker that refused everything would satisfy every refusal above and fail only these two."
 }

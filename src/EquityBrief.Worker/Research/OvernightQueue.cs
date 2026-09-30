@@ -277,28 +277,38 @@ public sealed class OvernightQueue(
 
             if (written.Count > 0)
             {
-                // The one retry, as a pass on demand takes it: a section the checker
-                // refused on this pass is written once more, told why.
-                var once = await checker.RunAsync(runId, cancellation: cancellation);
-                var retry = once.Checked
-                    .Where(section => string.Equals(section.Subject, ticker, StringComparison.Ordinal)
-                        && string.Equals(section.Status, ClaimChecker.Rejected, StringComparison.Ordinal))
-                    .Select(section => section.Section)
-                    .Distinct(StringComparer.Ordinal)
-                    .ToArray();
+                // The retries, as a pass on demand takes them: a section the checker
+                // refused on this pass is written again, told why, until it is accepted
+                // or the checker leaves it out at its last retry.
+                // see: A retry names each thing the check refused, and a section refused on its third retry is left out
+                var check = await checker.RunAsync(runId, cancellation: cancellation);
 
-                if (retry.Length > 0)
+                for (var round = 2; round <= 1 + checker.RetriesAllowed; round++)
                 {
-                    var again = await writerFor(retry).WriteAsync(ticker, NoDocuments, runId, ResearchRunner.SecondRound, cancellation);
+                    var retry = check.Checked
+                        .Where(section => string.Equals(section.Subject, ticker, StringComparison.Ordinal)
+                            && string.Equals(section.Status, ClaimChecker.Rejected, StringComparison.Ordinal))
+                        .Select(section => section.Section)
+                        .Distinct(StringComparer.Ordinal)
+                        .ToArray();
+
+                    if (retry.Length == 0)
+                    {
+                        break;
+                    }
+
+                    var again = await writerFor(retry).WriteAsync(ticker, NoDocuments, runId, ResearchRunner.Round(round), cancellation);
 
                     written.AddRange(again.Written);
                     notWritten.AddRange(again.NotWritten);
                     calls += again.ModelCalls;
 
-                    if (again.Written.Count > 0)
+                    if (again.Written.Count == 0)
                     {
-                        await checker.RunAsync(runId, ResearchRunner.SecondRound, cancellation);
+                        break;
                     }
+
+                    check = await checker.RunAsync(runId, ResearchRunner.Round(round), cancellation);
                 }
             }
 

@@ -277,24 +277,30 @@ public sealed class ThemeResearchRunner(
                 await checker.RunForThemeAsync(runId, cancellation: cancellation);
             }
 
-            // The one retry, told why the first draft was refused.
-            if (stopped is null
-                && await NewestAsync(connection, theme, cancellation) is { Status: ClaimChecker.Rejected } refused
-                && refused.AsOf == asOf)
+            // The retries, each told why the draft before it was refused, until one is accepted or the
+            // checker leaves the section out at its last retry.
+            for (var round = 2; stopped is null && round <= 1 + checker.RetriesAllowed; round++)
             {
+                if (await NewestAsync(connection, theme, cancellation) is not { Status: ClaimChecker.Rejected } refused || refused.AsOf != asOf)
+                {
+                    break;
+                }
+
                 var before = written.Count;
 
-                // The retry names each thing the first draft was refused for, read again against no facts
+                // The retry names each thing the draft before it was refused for, read again against no facts
                 // file, since a theme has none, and the pages the pass stored.
-                // see: A retry names each thing the check refused, and a second draft repeating one is left out
+                // see: A retry names each thing the check refused, and a section refused on its third retry is left out
                 var brief = RetryBrief.For(ClaimRules.CycleSection, refused.Prose, [], ResearchRunner.Resolved(refused.SourceIds, stored), null, refused.Reason);
 
-                stopped = await WriteAsync(connection, theme, sector, asOf, stored, brief, runId, ResearchRunner.SecondRound, written, notWritten, handed, cancellation);
+                stopped = await WriteAsync(connection, theme, sector, asOf, stored, brief, runId, ResearchRunner.Round(round), written, notWritten, handed, cancellation);
 
-                if (written.Count > before)
+                if (written.Count == before)
                 {
-                    await checker.RunForThemeAsync(runId, ResearchRunner.SecondRound, cancellation);
+                    break;
                 }
+
+                await checker.RunForThemeAsync(runId, ResearchRunner.Round(round), cancellation);
             }
         }
 

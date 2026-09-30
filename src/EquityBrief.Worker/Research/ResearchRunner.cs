@@ -133,6 +133,8 @@ public sealed class ResearchRunner(
     public const string SecondRound = "round 2";
     public const string ThirdRound = "round 3";
 
+    public static string Round(int number) => "round " + number.ToString(CultureInfo.InvariantCulture);
+
     // The suffix a second ask of one section carries on the run log, after the round it was
     // asked in.
     public const string AskedAgainSuffix = "asked again";
@@ -183,7 +185,7 @@ public sealed class ResearchRunner(
     // and a detail that is not JSON is passed over, since other stages write a sentence.
     // A pass the model could not be reached for on a call of the report's own did not run
     // to the end, whatever else it wrote: a trial's or a review's call is no part of it.
-    // see: A pass the model could not be reached for on a section of the report is not the day's report
+    // see: A regenerate on the day a report was written writes only the sections that report left out, and a report the connection cut is not the day's
     const string RanOnSession = @"
         SELECT COUNT(*) FROM run_log AS ran
         WHERE ran.stage = $stage
@@ -271,13 +273,20 @@ public sealed class ResearchRunner(
         //
         // A regenerate is the one ask that is held to the day as well: it rewrites every section
         // with the paid model, so a second on the same day would pay for the same report twice.
+        // On the day a report was written, a regenerate writes the sections that report left out
+        // and nothing it wrote, so the second pays only for what the first did not buy, and where
+        // it left nothing out the regenerate starts nothing.
         // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
-        if ((asked.Refresh || !asked.PaidForLocal) && await RanTodayAsync(connection, ticker, asOf, cancellation))
+        // see: A regenerate on the day a report was written writes only the sections that report left out, and a report the connection cut is not the day's
+        var newest = await NewestAsync(connection, ticker, cancellation);
+        var ranToday = (asked.Refresh || !asked.PaidForLocal) && await RanTodayAsync(connection, ticker, asOf, cancellation);
+        var fillLeftOut = ranToday && asked.Refresh && newest.Values.Any(one => one.Status == ClaimChecker.Fallback && one.AsOf == asOf);
+
+        if (ranToday && !fillLeftOut)
         {
             return await RecordAsync(connection, runId, startedAt, Outcome(ticker, asOf, NotWarranted, verdict.State, [], asked.Refresh ? RegeneratedToday : RanToday), 0, 0, cancellation);
         }
 
-        var newest = await NewestAsync(connection, ticker, cancellation);
         var (industry, sector) = await IndustryAsync(connection, ticker, cancellation);
 
         var notWritten = new List<UnwrittenSection>();
@@ -303,7 +312,7 @@ public sealed class ResearchRunner(
                 continue;
             }
 
-            if (Warranted(section, newest.GetValueOrDefault(section), verdict, asOf))
+            if (Warranted(section, newest.GetValueOrDefault(section), verdict, asOf, fillLeftOut))
             {
                 warranted.Add(section);
             }
@@ -512,7 +521,7 @@ public sealed class ResearchRunner(
             await checker.RunAsync(runId, cancellation: cancellation);
         }
 
-        // ---- round two: the one retry, and the short version from what was accepted ----
+        // ---- round two: the first retry, and the short version from what was accepted ----
 
         var afterFirst = await NewestAsync(connection, ticker, cancellation);
 
@@ -560,33 +569,56 @@ public sealed class ResearchRunner(
             await checker.RunAsync(runId, SecondRound, cancellation);
         }
 
-        // ---- round three: the short version's one retry ----
+        // ---- the rounds after: every section the checker refused again asked once more ----
 
-        if (summaryWarranted && !paused)
+        // A section's retries run from round two and the short version's from round three,
+        // since its first draft is written in round two, so the last round is the short
+        // version's last retry. The checker leaves a section out at its last retry, so a
+        // section still refused is one with a retry left.
+        // see: A retry names each thing the check refused, and a section refused on its third retry is left out
+        for (var round = 3; !paused && round <= 2 + checker.RetriesAllowed; round++)
         {
-            var afterSecond = await NewestAsync(connection, ticker, cancellation);
+            var before = await NewestAsync(connection, ticker, cancellation);
 
-            if (afterSecond.GetValueOrDefault(summary) is { Status: ClaimChecker.Rejected } refused && refused.AsOf == asOf)
+            bool Refused(string section) =>
+                before.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } refused
+                && refused.AsOf == ProseWriter.DatedOn(section, asOf, night);
+
+            var againLocal = local.Where(Refused).ToArray();
+            var againPaid = paid.Where(section => section != summary && Refused(section)).ToArray();
+            var againSummary = summaryWarranted && !local.Contains(summary, StringComparer.Ordinal) && Refused(summary);
+
+            if (againLocal.Length == 0 && againPaid.Length == 0 && !againSummary)
             {
-                var beforeThird = written.Count;
+                break;
+            }
 
-                if (local.Contains(summary, StringComparer.Ordinal))
-                {
-                    var prose = await writerFor([summary]).WriteAsync(ticker, handed, runId, ThirdRound, cancellation);
+            var named = Round(round);
+            var beforeRound = written.Count;
 
-                    written.AddRange(prose.Written);
-                    notWritten.AddRange(prose.NotWritten);
-                }
-                else
-                {
-                    stopped = await PaidAsync(connection, ticker, asOf, night, facts!, handed, [summary], afterSecond, runId, ThirdRound, written, notWritten, cancellation, Accepted(afterSecond, summary));
-                    paused = stopped is not null;
-                }
+            if (againLocal.Length > 0)
+            {
+                var prose = await writerFor(againLocal).WriteAsync(ticker, handed, runId, named, cancellation);
 
-                if (written.Count > beforeThird)
-                {
-                    await checker.RunAsync(runId, ThirdRound, cancellation);
-                }
+                written.AddRange(prose.Written);
+                notWritten.AddRange(prose.NotWritten);
+            }
+
+            if (againPaid.Length > 0)
+            {
+                stopped = await PaidAsync(connection, ticker, asOf, night, facts!, handed, againPaid, before, runId, named, written, notWritten, cancellation);
+                paused = stopped is not null;
+            }
+
+            if (againSummary && !paused)
+            {
+                stopped = await PaidAsync(connection, ticker, asOf, night, facts!, handed, [summary], before, runId, named, written, notWritten, cancellation, Accepted(before, summary));
+                paused = stopped is not null;
+            }
+
+            if (written.Count > beforeRound)
+            {
+                await checker.RunAsync(runId, named, cancellation);
             }
         }
 
@@ -626,7 +658,9 @@ public sealed class ResearchRunner(
     // verdict. A section waiting on the checker, accepted today, or left out today is
     // not written again today, so a second open of a name costs nothing; an accepted
     // section is written again where the judge names it stale; anything refused, or
-    // left out on an earlier day, or never written, is written.
+    // left out on an earlier day, or never written, is written. A regenerate on the day
+    // a report was written writes the sections left out today as well.
+    // see: A regenerate on the day a report was written writes only the sections that report left out, and a report the connection cut is not the day's
     //
     // Over the judge's own standings from 6.10, so the overnight queue asks the question
     // this pass asks rather than a second statement of it.
@@ -636,19 +670,19 @@ public sealed class ResearchRunner(
     // paid lane, which writes it where the page asks the paid model for the local lane or the
     // machine cannot hold it, writes it from that file again, dated by the same night.
     // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
-    public static bool Warranted(string section, SectionStanding? newest, StalenessVerdict verdict, DateOnly asOf) =>
+    public static bool Warranted(string section, SectionStanding? newest, StalenessVerdict verdict, DateOnly asOf, bool fillLeftOut = false) =>
         newest switch
         {
             null => true,
             { Status: ClaimChecker.Pending } => false,
             { Status: ClaimChecker.Accepted } accepted => accepted.AsOf != asOf
                 && (verdict.StaleSections.Contains(section, StringComparer.Ordinal) || string.Equals(section, ClaimRules.ComputedSection, StringComparison.Ordinal)),
-            { Status: ClaimChecker.Fallback } left => left.AsOf != asOf,
+            { Status: ClaimChecker.Fallback } left => left.AsOf != asOf || fillLeftOut,
             _ => true,
         };
 
-    static bool Warranted(string section, Newest? newest, StalenessVerdict verdict, DateOnly asOf) =>
-        Warranted(section, newest is null ? null : new SectionStanding(section, newest.AsOf, newest.Status), verdict, asOf);
+    static bool Warranted(string section, Newest? newest, StalenessVerdict verdict, DateOnly asOf, bool fillLeftOut) =>
+        Warranted(section, newest is null ? null : new SectionStanding(section, newest.AsOf, newest.Status), verdict, asOf, fillLeftOut);
 
     // Whether a name's pass refreshes its theme, by the rule its own sections are judged by
     // with one difference. The judge's triggers are the name's, and the theme is not one of
@@ -732,11 +766,11 @@ public sealed class ResearchRunner(
             // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
             var dated = ProseWriter.DatedOn(section, asOf, night);
 
-            // The retry names each thing the first draft was refused for, read again over the facts file and
-            // the source list it was checked against, the documents this pass handed the section. A draft
-            // refused on the same day by an earlier pass is the first draft too, since the checker reads
+            // The retry names each thing the draft before it was refused for, read again over the facts file
+            // and the source list it was checked against, the documents this pass handed the section. A draft
+            // refused on the same day by an earlier pass is a draft before it too, since the checker reads
             // this one as its retry.
-            // see: A retry names each thing the check refused, and a second draft repeating one is left out
+            // see: A retry names each thing the check refused, and a section refused on its third retry is left out
             var refused = refusedIn?.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } inThisPass
                 ? inThisPass
                 : newest is { Status: ClaimChecker.Rejected } earlier && earlier.AsOf == dated ? earlier : null;

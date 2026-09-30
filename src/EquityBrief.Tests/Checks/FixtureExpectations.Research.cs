@@ -318,8 +318,27 @@ public partial class FixtureExpectations
         Assert.Equal(ResearchRunner.Written, later.Outcome);
         Assert.NotEqual(0, news.Requests);
 
-        // Once one has, a regenerate that day starts nothing and warrants nothing.
+        // Once one has, a regenerate that day writes what that report left out and asks for no section
+        // it accepted, so it pays for nothing twice; here it stops at the model that does not answer.
+        // see: A regenerate on the day a report was written writes only the sections that report left out, and a report the connection cut is not the day's
+        var newest = Query(store, "SELECT section || '|' || status || '|' || as_of FROM research_section r WHERE ticker = 'KEYS' AND version = (SELECT MAX(version) FROM research_section WHERE ticker = r.ticker AND section = r.section);")
+            .Select(row => row.Split('|'))
+            .ToDictionary(parts => parts[0], parts => (Status: parts[1], AsOf: parts[2]), StringComparer.Ordinal);
+        var leftOut = newest.Where(one => one.Value is { Status: ClaimChecker.Fallback, AsOf: "2026-09-08" }).Select(one => one.Key).ToArray();
+
+        Assert.NotEmpty(leftOut);
+
+        var fill = await FixtureReplay.Researcher(store, ResearchClock, paid: new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned(), unreachable))
+            .RunAsync("KEYS", "research-warranted-fill", new ResearchPassRequest(Refresh: true));
+
+        Assert.NotEqual(ResearchRunner.RegeneratedToday, fill.Reason);
+        Assert.All(leftOut, section => Assert.Contains(section, fill.Warranted));
+        Assert.DoesNotContain(fill.Warranted, section => newest.TryGetValue(section, out var one) && one is { Status: ClaimChecker.Accepted, AsOf: "2026-09-08" });
+
+        // And where that day's report left nothing out, a regenerate that day starts nothing and warrants nothing.
         // see: A regenerated report is written whole by the paid model from the company's figures as they stand on the day it runs, once a name a day
+        store.Execute("UPDATE research_section SET status = 'accepted', reject_reason = NULL WHERE ticker = 'KEYS' AND status = 'fallback' AND as_of = '2026-09-08';");
+
         var regenerate = await FixtureReplay.Researcher(store, ResearchClock, paid: new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned(), unreachable))
             .RunAsync("KEYS", "research-warranted-regenerate", new ResearchPassRequest(Refresh: true));
 

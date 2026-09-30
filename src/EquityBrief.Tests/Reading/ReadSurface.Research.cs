@@ -148,9 +148,9 @@ public partial class ReadSurface
     [Fact]
     public async Task ThePageNamesEveryRuleThatRefusedASectionAndNeverTheWordsOfTheRefusedDraft()
     {
-        // The page states the second refusal in the checker's own word.
-        Assert.Equal(ClaimChecker.RejectedTwice, NameScreen.RejectedTwice);
-        Assert.Equal(ClaimChecker.RepeatedOnRetry, NameScreen.RepeatedOnRetry);
+        // The page states the last refusal in the checker's own words.
+        Assert.Equal(ClaimChecker.RejectedOnEveryRetry, NameScreen.RejectedOnEveryRetry);
+        Assert.Equal(ClaimChecker.LastRetryRepeated, NameScreen.LastRetryRepeated);
 
         var admitted = new StoredDocument(
             "d1", "https://a.test/a", "a release", new DateOnly(2026, 9, 1),
@@ -196,12 +196,12 @@ public partial class ReadSurface
         // The reason as the checker composes and stores it, and as the page states it:
         // every rule, the extracted text beside the two rules that carry one, the two
         // figures collected under their one rule, and no sentence of the draft anywhere.
-        var stored = ClaimChecker.RejectedTwice + ": " + string.Join(
+        var stored = ClaimChecker.RejectedOnEveryRetry + ": " + string.Join(
             "; ",
             findings.Select(finding => $"{finding.Reason}: {finding.Offending}"));
 
         Assert.Equal(
-            ClaimChecker.RejectedTwice + ": " +
+            ClaimChecker.RejectedOnEveryRetry + ": " +
             ClaimRules.UnmatchedFigure + ": 12.34, 56.78; " +
             ClaimRules.Uncited + "; " +
             ClaimRules.CitationOutOfRange + ": D4; " +

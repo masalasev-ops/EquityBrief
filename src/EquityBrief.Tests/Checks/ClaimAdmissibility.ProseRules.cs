@@ -60,17 +60,16 @@ public partial class ClaimAdmissibility
         Assert.Equal(ClaimChecker.Rejected, first.Status);
         Assert.Equal($"{rule}: {sentence}", first.Reason);
 
-        // Asked for once more, and the second draft carrying it too is left out.
-        Pending(store, carrying, 2);
-        await Checker(store).RunAsync("check-prose-rule-second");
+        // Asked for again up to its last retry, and the last draft carrying it too is left out.
+        await CheckedInTurn(store, [.. Enumerable.Repeat(carrying, ClaimChecker.Retries)], "check-prose-rule-again", firstVersion: 2);
 
         var rows = Stored(store, carrying.Section);
 
-        Assert.Equal([ClaimChecker.Rejected, ClaimChecker.Fallback], [.. rows.Select(row => row.Status)]);
-        Assert.StartsWith(ClaimChecker.RejectedTwice, rows[1].Reason!, StringComparison.Ordinal);
+        Assert.Equal([.. Enumerable.Repeat(ClaimChecker.Rejected, ClaimChecker.Retries), ClaimChecker.Fallback], [.. rows.Select(row => row.Status)]);
+        Assert.StartsWith(ClaimChecker.RejectedOnEveryRetry, rows[^1].Reason!, StringComparison.Ordinal);
 
         // The name page names the rule and never draws the sentence carrying the word or the dash.
-        var drawn = NameScreen.Refused(rows[1].Reason!);
+        var drawn = NameScreen.Refused(rows[^1].Reason!);
 
         Assert.Contains(rule, drawn, StringComparison.Ordinal);
         Assert.DoesNotContain(carried, drawn, StringComparison.OrdinalIgnoreCase);

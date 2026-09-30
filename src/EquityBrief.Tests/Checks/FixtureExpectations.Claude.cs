@@ -19,7 +19,9 @@ public partial class FixtureExpectations
     {
         var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.PinnedClaude());
 
-        using var store = await FixtureReplay.ResearchedAsync(paid: paid);
+        // Replayed under the one retry a section had when Claude's answers were recorded, since a further
+        // retry would ask Claude for an answer nobody recorded, and no Claude call is made to record one.
+        using var store = await FixtureReplay.ResearchedAsync(paid: paid, retries: 1);
 
         // Every paid call was Claude's, and each section it wrote is on the store under its model.
         Assert.NotEmpty(paid.Asked);
@@ -42,7 +44,7 @@ public partial class FixtureExpectations
         var summary = written.Where(row => row.StartsWith("The short version|", StringComparison.Ordinal)).ToArray();
 
         Assert.Equal(["The short version|" + ClaimChecker.Rejected, "The short version|" + ClaimChecker.Fallback], summary.Select(row => string.Join('|', row.Split('|')[..2])));
-        Assert.All(summary, row => Assert.Matches($"^The short version\\|[a-z]+\\|({Regex.Escape(ClaimChecker.RejectedTwice)}: )?({Regex.Escape(ClaimRules.UnmatchedFigure)}|{Regex.Escape(ClaimRules.UnknownDate)}): ", row));
+        Assert.All(summary, row => Assert.Matches($"^The short version\\|[a-z]+\\|({Regex.Escape(ClaimChecker.RejectedOnEveryRetry)}: )?({Regex.Escape(ClaimRules.UnmatchedFigure)}|{Regex.Escape(ClaimRules.UnknownDate)}): ", row));
 
         // The cause, which Claude found nothing in the documents beside each move to write from: answered with
         // a thinking block and no text, asked for once more, and left out saying so, with no draft stored.
