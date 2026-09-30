@@ -1420,6 +1420,226 @@ public static class RunScreen
                     : 0))),
     ];
 
+    // How each report came out. A report is a research pass whose paid model answered at least once, dated by the
+    // day its own row names; each is read off its own rows and the versions it wrote, as the checker left them:
+    //
+    // - a section the pass did not warrant stood from an earlier day;
+    // - one whose accepted version was the pass's first draft passed first time, and one whose accepted version
+    //   was its retry passed on retry;
+    // - any other warranted section was left out, with the line the pass's row names it by, or the checker's
+    //   refusal as the name page words it, or that it was not written.
+    //
+    // The industry cycle is read off the theme pass under the same run. A section's cost is its own calls under the
+    // run, every round, and a report's is every call; a trial's calls are neither. The two cases' cell is marked
+    // where any draft of the pass carried a figure on both sides, the first as well as the retry, since the count
+    // measures the ask and not what the checker let through.
+    //
+    // The reports drawn are those dated on or after the first of the seven nights and on or before the night;
+    // each section's rates are read over the newest twenty reports up to the night that warranted it, and the
+    // both-sides count over the newest twenty that drafted the two cases, with the count read where fewer exist.
+    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+    public static ReportsView Reports(IReadOnlyList<RunStageRow> rows, IReadOnlyList<WrittenVersion> versions, DateOnly from, DateOnly night)
+    {
+        var written = versions
+            .GroupBy(version => (version.Owner, version.Section, version.Version))
+            .ToDictionary(group => group.Key, group => group.First());
+
+        var reports = new List<ReportRow>();
+        var passes = new Dictionary<string, (ReportRow Report, PassDetail Pass)>(StringComparer.Ordinal);
+
+        foreach (var run in rows.GroupBy(row => row.RunId, StringComparer.Ordinal))
+        {
+            if (run.FirstOrDefault(row => row.Stage == ReadApi.ResearchStage) is not { } own
+                || PassDetail.Read(own.Detail) is not { } pass
+                || pass.Day > night)
+            {
+                continue;
+            }
+
+            var calls = run.Where(row => row.Stage.StartsWith(ReadApi.PaidCallStage + ":", StringComparison.Ordinal) && !TrialCalls.Is(row.Stage)).ToArray();
+
+            if (!calls.Any(row => row.Outcome == Ok))
+            {
+                continue;
+            }
+
+            var theme = run.FirstOrDefault(row => row.Stage == ReadApi.ThemeStage) is { } themed ? PassDetail.Read(themed.Detail) : null;
+
+            var report = new ReportRow(
+                run.Key,
+                pass.Ticker,
+                pass.Day,
+                calls.Sum(row => Money(row.Spend)),
+                [.. ClaimRules.Sections.Select(section => Cell(section, pass, theme, calls, written))]);
+
+            reports.Add(report);
+            passes[run.Key] = (report, pass);
+        }
+
+        var newest = reports.OrderByDescending(report => report.Day).ThenByDescending(report => report.RunId, StringComparer.Ordinal).ToArray();
+
+        ReportCell CellOf(ReportRow report, string section) => report.Cells.Single(cell => cell.Section == section);
+
+        var rates = ClaimRules.Sections
+            .Select(section =>
+            {
+                var read = newest.Select(report => CellOf(report, section)).Where(cell => cell.Outcome != ReportsView.NotWarranted).Take(ReportsView.RateWindow).ToArray();
+
+                return new SectionRate(section, read.Length, read.Count(cell => cell.Outcome == ReportsView.FirstTime), read.Count(cell => cell.Outcome == ReportsView.LeftOut));
+            })
+            .ToArray();
+
+        var drafted = newest.Select(report => CellOf(report, ClaimRules.TwoCasesSection)).Where(cell => cell.Drafts > 0).Take(ReportsView.RateWindow).ToArray();
+
+        var trials = rows
+            .Where(row => row.Stage.StartsWith(ReadApi.TrialStage + ":", StringComparison.Ordinal) && passes.ContainsKey(row.RunId))
+            .Select(row => Trial(row, passes[row.RunId].Report, passes[row.RunId].Pass, written))
+            .OfType<TrialRow>()
+            .ToArray();
+
+        return new ReportsView(
+            [.. newest.Where(report => report.Day >= from)],
+            newest.Length,
+            rates,
+            drafted.Count(cell => cell.BothSides),
+            drafted.Length,
+            trials);
+    }
+
+    static ReportCell Cell(
+        string section,
+        PassDetail pass,
+        PassDetail? theme,
+        IReadOnlyList<RunStageRow> calls,
+        IReadOnlyDictionary<(string Owner, string Section, int Version), WrittenVersion> versions)
+    {
+        var cost = calls.Where(row => CallFor(row.Stage, section)).Sum(row => Money(row.Spend));
+
+        if (!pass.Warranted.Contains(section, StringComparer.Ordinal))
+        {
+            return new ReportCell(section, ReportsView.NotWarranted, null, cost, 0, false);
+        }
+
+        var (owner, drafts) = section == ClaimRules.CycleSection
+            ? (theme?.Owner ?? string.Empty, theme?.Written.Where(one => one.Section == section).ToArray() ?? [])
+            : (pass.Owner, pass.Written.Where(one => one.Section == section).ToArray());
+
+        var held = drafts.Select(one => (one.Retry, Version: versions.GetValueOrDefault((owner, section, one.Version)))).ToArray();
+
+        var bothSides = section == ClaimRules.TwoCasesSection
+            && held.Any(one => one.Version is { Prose.Length: > 0 } version && ClaimRules.FiguresOnBothSides(version.Prose) is { Count: > 0 });
+
+        if (held.FirstOrDefault(one => one.Version is { Status: Accepted }) is { Version: not null } passed)
+        {
+            return new ReportCell(section, passed.Retry ? ReportsView.OnRetry : ReportsView.FirstTime, null, cost, drafts.Length, bothSides);
+        }
+
+        var refused = held.Select(one => one.Version?.RejectReason).LastOrDefault(reason => reason is not null);
+        var why = pass.NotWritten.FirstOrDefault(one => one.Section == section).Reason
+            ?? (refused is null ? NotWrittenLine : NameScreen.Refused(refused));
+
+        return new ReportCell(section, ReportsView.LeftOut, why, cost, drafts.Length, bothSides);
+    }
+
+    // A section's own calls: its stage names the section, alone or with the round it was asked in.
+    static bool CallFor(string stage, string section)
+    {
+        var named = ReadApi.PaidCallStage + ": " + section;
+
+        return stage == named || stage.StartsWith(named + ", ", StringComparison.Ordinal);
+    }
+
+    static TrialRow? Trial(
+        RunStageRow row,
+        ReportRow report,
+        PassDetail pass,
+        IReadOnlyDictionary<(string Owner, string Section, int Version), WrittenVersion> versions)
+    {
+        try
+        {
+            using var detail = JsonDocument.Parse(row.Detail);
+            var root = detail.RootElement;
+            var section = root.GetProperty("section").GetString()!;
+            var own = report.Cells.Single(cell => cell.Section == section);
+
+            // The pass's drafts of the section in the order it wrote them, first draft first.
+            var drafts = pass.Written
+                .Where(one => one.Section == section)
+                .Select(one => versions.GetValueOrDefault((pass.Owner, section, one.Version))?.Prose ?? string.Empty)
+                .ToArray();
+
+            var rounds = root.GetProperty("rounds").EnumerateArray().ToArray();
+
+            return new TrialRow(
+                row.RunId,
+                report.Ticker,
+                report.Day,
+                section,
+                new TrialSide(root.GetProperty("compared").GetProperty("model").GetString() ?? string.Empty, own.Outcome, drafts.Length, own.Cost, drafts),
+                new TrialSide(
+                    root.GetProperty("model").GetString() ?? string.Empty,
+                    root.GetProperty("outcome").GetString() ?? string.Empty,
+                    rounds.Length,
+                    Money(root.GetProperty("cost").GetString() ?? NothingSpentText),
+                    [.. rounds.Select(round => round.TryGetProperty("prose", out var prose) && prose.ValueKind == JsonValueKind.String ? prose.GetString()! : string.Empty)]));
+        }
+        catch (Exception unread) when (unread is JsonException or KeyNotFoundException or InvalidOperationException)
+        {
+            return null;
+        }
+    }
+
+    const string Accepted = "accepted";
+    const string NotWrittenLine = "not written";
+    const string NothingSpentText = "0";
+
+    static decimal Money(string spend) =>
+        decimal.TryParse(spend, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var amount) ? amount : 0m;
+
+    // What a pass's or a theme pass's row says it did: whose report it was and the day it wrote for, the sections it
+    // warranted, each version it wrote with whether that was a retry, and each section it did not write with why.
+    sealed record PassDetail(
+        string Owner,
+        string Ticker,
+        DateOnly Day,
+        IReadOnlyList<string> Warranted,
+        IReadOnlyList<(string Section, int Version, bool Retry)> Written,
+        IReadOnlyList<(string Section, string? Reason)> NotWritten)
+    {
+        public static PassDetail? Read(string detail)
+        {
+            try
+            {
+                using var parsed = JsonDocument.Parse(detail);
+                var root = parsed.RootElement;
+
+                string Text(string name) => root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString()! : string.Empty;
+
+                IEnumerable<JsonElement> List(string name) =>
+                    root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Array ? value.EnumerateArray() : [];
+
+                if (!DateOnly.TryParseExact(Text("asOf"), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var day))
+                {
+                    return null;
+                }
+
+                var ticker = Text("ticker");
+
+                return new PassDetail(
+                    ticker.Length > 0 ? ticker : Text("theme"),
+                    ticker,
+                    day,
+                    [.. List("warranted").Where(one => one.ValueKind == JsonValueKind.String).Select(one => one.GetString()!)],
+                    [.. List("written").Select(one => (one.GetProperty("section").GetString()!, one.GetProperty("version").GetInt32(), one.GetProperty("retry").GetBoolean()))],
+                    [.. List("notWritten").Select(one => (one.GetProperty("section").GetString()!, one.TryGetProperty("reason", out var reason) && reason.ValueKind == JsonValueKind.String ? reason.GetString() : null))]);
+            }
+            catch (Exception unread) when (unread is JsonException or KeyNotFoundException or InvalidOperationException)
+            {
+                return null;
+            }
+        }
+    }
+
     // A version's name as a link carries it: its words in lower case with every run of anything else one dash.
     public static string Slug(string candidate) =>
         Regex.Replace(candidate.ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');

@@ -189,6 +189,48 @@ public static class ClaimRules
         return against < 0 ? null : ([.. rows.Take(against)], [.. rows.Skip(against)]);
     }
 
+    // The figures the case for carries that the case against carries too: a figure of the case for matched by one of
+    // the case against, both percentages or neither, whose values agree within the coarser of the two roundings the
+    // prose writes, each as the case for wrote it and once. None where the cut cannot be made, which the checker
+    // refuses, so a draft whose sides nobody can tell apart is not read as carrying nothing on both. Dates, years,
+    // labels and windows are not figures here, since one date may rightly open both cases.
+    // see: The two cases are asked to argue a fact on one side only, and a draft doing otherwise is counted rather than refused
+    public static IReadOnlyList<string>? FiguresOnBothSides(string prose)
+    {
+        if (CaseSides(Rows(prose)) is not { } sides)
+        {
+            return null;
+        }
+
+        static ProseFigure[] Read(IEnumerable<string> rows) =>
+            [.. rows.SelectMany(Figures).Where(figure => figure.Kind == FigureKind.Figure)];
+
+        static decimal Value(ProseFigure figure) => figure.Magnitude * figure.Scale;
+
+        static decimal HalfUnit(ProseFigure figure)
+        {
+            var unit = 1m;
+
+            for (var place = 0; place < figure.Decimals; place++)
+            {
+                unit /= 10m;
+            }
+
+            return unit * figure.Scale / 2m;
+        }
+
+        var against = Read(sides.Against);
+
+        return
+        [
+            .. Read(sides.For)
+                .Where(one => against.Any(other =>
+                    other.Percent == one.Percent && Math.Abs(Value(one) - Value(other)) <= Math.Max(HalfUnit(one), HalfUnit(other))))
+                .Select(one => one.Text)
+                .Distinct(StringComparer.Ordinal),
+        ];
+    }
+
     // What a two cases draft the cut cannot make is missing, which is what its refusal names in place of
     // one of the draft's own sentences.
     static string? SidesMissing(IReadOnlyList<string> rows) =>

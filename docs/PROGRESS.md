@@ -32016,3 +32016,77 @@ Operator:   nothing to run. The trial runs itself on the first three reports who
             on 5152 is started again from `main` after the merge so the run page leaves the trial's calls out.
 Carried:    corrections F and G at 12.6 in that order, F drawing the trial's rows side by side; the section trial's
             reports read to the operator at its third report.
+
+### 12.6 - correction: the run page draws how each report did, section by section with what each cost, the figures on both sides of the two cases counted, each section's rates over the newest twenty reports and each section a trial asked for side by side, where the page said how many reports were written and nothing of which sections keep failing   2026-09-30
+Corrects:   the run page, on items 5 and 6 of the operator's research template of 2026-09-29, word for word in the
+            ruling entry above, the fifth of the six corrections that ruling plans.
+Asked:      one row per report with each section's outcome and cost, the two cases' figures on both sides counted
+            against the baseline of 5 of 8, each section's rates over the newest twenty reports, and the trial's drafts
+            side by side.
+Repaired:   - How each report did. A report is a research pass whose paid model answered at least once. The run page's
+              detail folds a region drawing each report of the seven nights the research region reads, numbered, with
+              its stock, day and cost, and a cell for each section: first, retry, out with why numbered beneath, or
+              earlier where it stood from an earlier day, each with what its own calls cost, every round, and none of
+              a trial's. The industry cycle is read off the theme pass under the same run. A store holding no report
+              says so in one line.
+            - Figures on both sides. `ClaimRules.FiguresOnBothSides` cuts the two cases as the page does and returns
+              the case for's figures the case against carries too, both percentages or neither, within the coarser
+              of the two roundings; a draft it cannot cut is read as nothing. The two cases' cell is marked where any
+              of the pass's drafts carried one, and the region states how many of the newest twenty reports that
+              drafted the two cases did.
+            - Rates. Each section's share passed first time and share left out over the newest twenty reports up to
+              the night that warranted it, the count read stated where fewer exist.
+            - Section trials. Each section a trial asked for, the pass's model and the trial's with their outcomes,
+              rounds and costs, and the two drafts side by side in a fold, stacked on a narrow screen; drawn only while
+              a trial has written a row.
+Measured:   rendered from the operator's store opened read-only on 2026-09-30 for the night of 2026-09-29, through
+            the same queries and projection, into a standalone page with the app's stylesheet and card, and
+            screenshot at 1280 and 520 pixels wide: 10 reports held and 9 drawn over the seven nights. The industry
+            cycle passed first time in 0 of 10 and was left out in 9 of 10, AAPL's passing on its retry, which is the
+            finding the ruling measured. The short version was left out in 4 of 10. 6 of the 9 reports' two cases
+            drafts carried a figure on both sides, first draft or retry, against the 5 of 8 accepted drafts the ruling
+            measured before the ask changed, which counted accepted drafts alone. No trial row stands yet.
+Changed:    `ClaimRules` in Core; the read surface's two queries, the stage words it states and `RunScreen.Reports`;
+            the renderer's two regions, their records and the stylesheet; the run page's composition; two rows of
+            section 15.10, its Reads line and a row of section 17, Report rates, in `ARCHITECTURE.html`; a paragraph
+            of RUNBOOK; the read-surface row of `.claude/rules/checks.md`; the prior text of each spec edit in
+            `CHANGELOG.md`; and the harness's scope, parts, due points, pins, reach, the phase 12 claims and three
+            stated counts of the screens' rows and parts.
+Decisions:  new: "The run page draws how each report's sections came out and each section's rates over the newest twenty
+            reports", as the ruling planned it.
+Tests:      1582, from 1577:
+            `EachReportsSectionsAreReadAsTheyCameOutWithWhatTheirOwnCallsCost`,
+            `EachSectionsRatesAreReadOverTheNewestTwentyReportsThatWarrantedIt`,
+            `AFigureOnBothSidesIsCountedFromEveryDraftOfTheTwoCasesAndNotWhereTheSidesCannotBeCut`,
+            `ATrialsSectionsAreDrawnWithBothModelsDraftsSideBySide` and `ATrialsSpendIsKeptOutOfEveryReportsCost`, as
+            the plan predicted. The run page's colour check reads the report table among its pictures.
+Claims:     736, from 728: the two rows' seven parts and section 17's Report rates, named in phase 12's pair as rows
+            the research template adds, where the plan predicted the one row of section 17 and not the regions'
+            parts.
+Pins:       none moves; no source this correction edits is in the three pin lists.
+Mutated:    the rule, stated before the run: each rule this correction adds reversed alone, filtered to the five tests
+            it adds.
+            Predicted:
+            F1 a retry's accepted version read as passing first time: red in the report test and the trial test.
+            F2 a trial's calls counted in a report's cost: red in the report test and the trial spend test.
+            F3 the rate window unbounded: red in the rates test.
+            F4 the both-sides count reading the accepted draft alone: red in the both-sides test.
+            Results: one run each in a detached worktree at f51f94f, this entry's commit, filtered to the five tests
+            the correction adds, each edit made there and reverted, and the tree read clean after. F1 turned the
+            report test and the trial test red and the other three green. F2 turned the report test and the trial
+            spend test red, and the trial test as well, whose pass side reads the two cases' cell and its cost, which
+            the trial's call joined. F3 turned the rates test red alone. F4 turned the both-sides test red alone, the
+            refused first draft carrying 18.5% on both sides no longer counted.
+Held:       red in every test predicted, and in one more for F2, the trial test, for the reason above.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1582 of 1582 tests ran
+            with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 736 claims, 736 PASS, 0 FAIL, 747 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1582 of 1582 tests.
+            Both gates ran over the tree carrying this entry, f51f94f, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Operator:   nothing to run; the read surface on 5152 is started again from `main` after the merge to draw the region.
+Carried:    correction G at 12.6; the section trial's reports read to the operator at its third report, read on the
+            region this correction draws; the two cases' figures on both sides reported at the twentieth report after
+            the ask changed.

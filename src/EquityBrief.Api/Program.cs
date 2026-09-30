@@ -1179,6 +1179,11 @@ app.MapGet("/screens/run/{night?}", async (
     var versions = RunScreen.Versions(register, edge, shadowPicks);
     var compare = RunScreen.Compare(dated, versions, register, version, shadowPicks, await read.EvaluatedOnAsync(dated), await read.GateResultsAsync(dated));
 
+    // The research region's seven nights, and each report written over them read section by section.
+    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+    var week = await WeekOf(read, dated);
+    var reports = RunScreen.Reports(await read.ReportRowsAsync(), await read.ReportVersionsAsync(), week.Count > 0 ? week[0].Night : dated, dated);
+
     return Results.Content(
         page.RunRegion(
             marks,
@@ -1245,7 +1250,7 @@ app.MapGet("/screens/run/{night?}", async (
             fresh: RunScreen.Freshness(everyListing, dated, first),
             research: new ResearchPicture(
                 TonightScreen.Spend(dated, await SpentOn(read, dated), caps),
-                RunScreen.Research(await WeekOf(read, dated))),
+                RunScreen.Research(week)),
             worries: RunScreen.Worries(
                 await read.StaleNamesAsync(index, dated),
                 how,
@@ -1255,7 +1260,8 @@ app.MapGet("/screens/run/{night?}", async (
                 [.. EquityBrief.Core.Providers.ModelProfiles.Jobs.Select(job => Profile(builder.Configuration, job)).OfType<EquityBrief.Core.Providers.ModelProfile>()]),
             background: versions,
             compare: compare,
-            checkpoints: RunScreen.Checkpoints(edge)),
+            checkpoints: RunScreen.Checkpoints(edge),
+            reports: reports),
         "text/html; charset=utf-8");
 });
 
