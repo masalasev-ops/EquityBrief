@@ -156,6 +156,8 @@ Named, and cited by name. A violation is a defect regardless of what else is tru
 
 **Anything issued in conversation that will later be cited must land in the repo when it is issued,** not afterwards. A citation to something that lives only in a chat transcript is a hole in the record.
 
+**One track at a time.** Work runs one track at a time, in the order the newest queue ruling in `PROGRESS.md` sets, and the next track starts only after the current one has merged with the operator's go. Every report to the operator opens with that queue: done, in progress, next. The list itself lives in the ruling entry and not here, because a second copy of it goes stale the moment a track merges.
+
 **Prose.** Standard keyboard punctuation, no em dashes. State the mechanism rather than asserting a virtue: write "every number in the prose exists in the facts file", not "the reports are truthful". One word is banned outright across the corpus and in chat, and a grep enforces it, exempting only this sentence, which has to contain the string in order to name it: the banned string is `honest` and every form of it. The operator does not want it, and a claim of candour is exactly the kind of virtue-assertion this rule already rejects.
 
 ## Definition of done for a checkpoint
