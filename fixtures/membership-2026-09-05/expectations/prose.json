@@ -80,7 +80,7 @@
         },
         "modelCalls": 2,
         "verdicts": {
-          "The cause of each large move": "fallback",
+          "The cause of each large move": "rejected",
           "The segment commentary": "accepted"
         }
       }
@@ -88,7 +88,7 @@
     "causeNames": [
       "2026-08-24"
     ],
-    "causeNamesNote": "the sessions each draft of the cause section names as a move's end, which is the one move the release falls inside and no other. Both drafts of the recordings made on 2026-09-30 were refused for a figure the release states and the facts file does not hold, so the cause is left out, and what either draft names is read all the same, because which move a draft ties the release to is the pairing's work and not the checker's"
+    "causeNamesNote": "the sessions each draft of the cause section names as a move's end, which is the one move the release falls inside and no other. Both drafts of the recordings made on 2026-09-30 were refused for a figure the release states and the facts file does not hold, so the cause is refused again at its first retry and kept for the next, and what either draft names is read all the same, because which move a draft ties the release to is the pairing's work and not the checker's"
   },
   "keyFactsAsRead": {
     "note": "each worked by hand from the rule the decision that the key under each figure is handed its facts as a reader reads them states, over KEYS's stored values where the fixture carries them and a few chosen to reach each branch: an indicator named with its window as days before it, money and counts of a million or more in millions, billions or trillions with the word to at most two places, a growth or a margin as a percentage to one place, any other figure past two places to two, rounding half away from zero, and a reading the claim checker would not match to the stored value handed as stored. The last is a growth of 12.5, twelve and a half times, whose percentage the checker reads only of a fraction below ten.",

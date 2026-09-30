@@ -347,11 +347,11 @@ public static class SectionPrompt
         // see: The research prompt repeats each section's ask after the documents, names its reader and marks each document by kind
         prompt.Append('\n').Append(NowWrite).Append('\n').Append(ask).Append('\n');
 
-        // The one retry, told each thing the first draft was refused for and what to do about it, because
-        // a second draft written blind would fail for the same reason and one told only the reason wrote
-        // new figures in place of the ones refused. The brief is written by `RetryBrief` from the refused
+        // A retry, told each thing the draft before it was refused for and what to do about it, because
+        // a draft written blind would fail for the same reason and one told only the reason wrote new
+        // figures in place of the ones refused. The brief is written by `RetryBrief` from the refused
         // draft and never carries the draft itself.
-        // see: A retry names each thing the check refused, and a second draft repeating one is left out
+        // see: A retry names each thing the check refused, and a section refused on its third retry is left out
         if (refusedBecause is { Length: > 0 })
         {
             prompt.Append('\n').Append(refusedBecause.Trim()).Append('\n');

@@ -1781,14 +1781,28 @@ public static class NameScreen
         ];
     }
 
-    // The word a fallback after a second refusal carries before the refusal itself. The
-    // worker's own constant cannot be referenced from here, so the word is stated and
+    // The words a fallback after the last retry carries before the refusal itself. The
+    // worker's own constant cannot be referenced from here, so the words are stated and
     // `read-surface` asserts the two agree.
-    public const string RejectedTwice = "rejected twice";
+    public const string RejectedOnEveryRetry = "rejected on every retry";
 
-    // What a fallback carries after that word where the retry repeated what its first draft
-    // was refused for, stated here for the same reason and asserted against the worker's.
+    // What a fallback carries after those words where the last retry repeated what the draft
+    // before it was refused for, stated here for the same reason and asserted against the worker's.
+    public const string LastRetryRepeated = "the last retry repeating what the draft before it was refused for";
+
+    // The two a fallback carried while a section had one retry, which rows written then still hold.
+    public const string RejectedTwice = "rejected twice";
     public const string RepeatedOnRetry = "the retry repeating what the first draft was refused for";
+
+    // Each form a fallback's reason opens with, a repeat before the plain form of its words, so the
+    // longer is matched where both are there.
+    static readonly string[] RefusedMarks =
+    [
+        RejectedOnEveryRetry + ", " + LastRetryRepeated + ": ",
+        RejectedOnEveryRetry + ": ",
+        RejectedTwice + ", " + RepeatedOnRetry + ": ",
+        RejectedTwice + ": ",
+    ];
 
     // The four rules whose finding records the draft's own sentence as the offending text.
     // Every other rule records something the checker extracted, a figure, a date, a window
@@ -1807,17 +1821,16 @@ public static class NameScreen
     // this is what the page a name is read on shows, and not what is kept.
     // see: A refused draft's own words are kept on the row and drawn on the evidence page, and never on the name page
     //
-    // A second draft that repeated what the first was refused for carries that between the
-    // word and the rules. Each form is matched whole, since the word alone can stand in a
+    // A retry that repeated what the draft before it was refused for carries that between the
+    // words and the rules. Each form is matched whole, since the words alone can stand in a
     // refused sentence and a match there would draw that sentence.
-    // see: A retry names each thing the check refused, and a second draft repeating one is left out
+    // see: A retry names each thing the check refused, and a section refused on its third retry is left out
     public static string Refused(string reason)
     {
-        var repeated = RejectedTwice + ", " + RepeatedOnRetry + ": ";
-        var mark = reason.Contains(repeated, StringComparison.Ordinal) ? repeated : RejectedTwice + ": ";
-        var at = reason.LastIndexOf(mark, StringComparison.Ordinal);
+        var mark = RefusedMarks.FirstOrDefault(one => reason.Contains(one, StringComparison.Ordinal));
+        var at = mark is null ? -1 : reason.LastIndexOf(mark, StringComparison.Ordinal);
 
-        if (at < 0)
+        if (mark is null || at < 0)
         {
             return reason;
         }

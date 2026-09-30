@@ -32609,3 +32609,83 @@ Operator:   nothing to run. After the merge the main checkout's worker is built 
             has its comparison file; 5152 is started again without it once they are written, and the shipped
             setting stays at three.
 Carried:    nothing.
+
+### 12.6 - correction: a refused section is asked for again up to three times, a regenerate the same day writes what the day's report left out, and the retry for a number in words is told to say it with none, where one retry left sections out of each of the day's reports   2026-09-30
+Corrects:   the retry 12.6's itemised retries kept at one a pass, the claim checker's hard rule with it, and the
+            regenerate 5.8's correction held to the day, which refused to write again what the day's report left out.
+Asked:      the operator, on 2026-09-30. BDX, MO and IT, regenerated after the 6.7 and 5.8 corrections, came back
+            with sections left out: BDX its risks, IT its dated calendar items, MO its risks, two cases and short
+            version, each refused by the checker at the first draft and at its one retry. The operator said:
+            > i do  not want the gaps. I want  them  all generated properly
+            and, told why BDX's risks were left out and asked whether the prompt was right:
+            > No calls to  claude until i say so
+            Offered three changes in one message, up to three retries each naming what was wrong, sharper retry
+            notes (no count words, and a document marker on every sentence), and a regenerate the same day
+            rewriting only the left-out sections, the operator said:
+            > ok proceed. But do the 3  in one PR. We can fix any other issues later
+Found:      BDX's risks, read off the store: the first draft wrote "the almost 4,000 pending federal cases", a figure
+            an article gave that the facts file does not hold; the retry, told "Remove it, or replace it with a
+            figure listed under Facts, copied or rounded.", wrote "thousands of related product liability cases
+            remain pending", which the checker refuses as a number in words, and the section was left out. The
+            instruction every section is asked under already says to state such a figure without the number; no
+            line said a count word such as thousands is a number too.
+Repaired:   the claim checker counts the refusals of a section written on the day immediately before a draft and
+            leaves the section out at the third retry, so a section is asked for again up to three times, the count
+            starting again after a fallback, an acceptance or on a later day. The research pass asks every refused
+            section again in further rounds, the short version's retries a round after the others as its first
+            draft is written in round two; the theme pass and the overnight queue loop the same way, each reading the
+            checker's own count so the two agree. The line a retry is told for a number in words adds that it may
+            say what the figure shows with no number and no count word, such as many or a large number. The last
+            refusal reads "rejected on every retry", with "the last retry repeating what the draft before it was
+            refused for" where it did; the name page reads those and the forms rows written under one retry carry.
+            On the day a report was written, a regenerate writes the sections that report left out, and none it
+            accepted; where it left nothing out, it starts nothing, as the once-a-day rule has it.
+Not built:  two of the offered changes, each because it would change a request a Claude recording is keyed on
+            and the operator had ruled no Claude call. The line a retry is told for a figure the facts file does not
+            hold is unchanged: changed, it moved the retry the fixture's Claude pass recorded for its short version.
+            BDX's case is reached through the number-in-words line instead, which the draft after "thousands" is
+            told. And the line for a sentence naming no document is unchanged: it already says to end the sentence
+            on the marker of the document stating it, so a sharper line was not needed. The fixture's Claude pass is
+            replayed under the one retry its answers were recorded with, the checker taking its count as a setting
+            every shipped checker leaves at three. The name page still offers no Regenerate on the day a report ran.
+Changed:    `ClaimChecker.cs`, `ResearchRunner.cs`, `ThemeResearchRunner.cs`, `OvernightQueue.cs`, `ProseWriter.cs`,
+            `PassFigures.cs`, `RetryBrief.cs`, `SectionPrompt.cs` (comments), `NameScreen.cs`; tests in
+            `ClaimAdmissibility.Retries.cs`, `.Claims.cs`, `.ProseRules.cs`, `FixtureExpectations.Research.cs`,
+            `.Prose.cs`, `.Claude.cs`, `.Regenerate.cs`, `FixtureReplay.cs`, `ReadSurface.cs`, `ReadSurface.Research.cs`;
+            the fixture's `claims.json`, `prose.json` and `research-record.json` expectations and six new recordings
+            with their manifest entries; `CLAUDE.md`, `docs/ARCHITECTURE.html`, `docs/RUNBOOK.md`,
+            `.claude/rules/checks.md`, `docs/DECISIONS.md`, `docs/CHANGELOG.md`.
+Decisions:  new, **A retry names each thing the check refused, and a section refused on its third retry is left
+            out**, superseding **A retry names each thing the check refused, and a second draft repeating one is left
+            out**; new, **A regenerate on the day a report was written writes only the sections that report left
+            out, and a report the connection cut is not the day's**, superseding **A pass the model could not be
+            reached for on a section of the report is not the day's report**. Both superseded entries moved to
+            Previously decided, and every citation of them in code and specs moved to the new names.
+Recorded:   six answers of the local model, qwen/qwen3.5-9b on the operator's machine, the local lane's extra
+            retries of the two cases, the risks and the short version over the fixture's KEYS, at no cost. No
+            DeepSeek answer was needed and no Claude answer was asked for: the recorder refused every Claude call.
+Tests:      123T, from 1596. The checker's retry test, the bound over the store, the claims expectation, the prose
+            rules and the fixture's release, lane comparison and token estimate now count three retries; the
+            warranted test adds a regenerate the same day writing what the report left out and none it accepted,
+            then starting nothing once nothing is left out.
+Claims:     123C, from 736.
+Pins:       none moves; no source in the three pin lists is touched.
+Mutated:    the rule, stated before the run: each property this correction adds broken alone.
+            M1, the checker's bound back at one retry. Predicted: red, the retry test, the bound over the store
+            and the claims expectation.
+            M2, the research pass's further rounds removed. Predicted: red, the lane comparison's call count and
+            the token estimate's recordings asked for.
+            M3, a regenerate the same day never filling what the report left out. Predicted: red, the warranted
+            test, the regenerate refused as already written.
+            M4, the number-in-words line back at its old words. Predicted: red, the retry brief test.
+            Results: 123HELD
+Held:       123HELD
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
+            `data-ci` and never `data`.
+            123VP
+            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Operator:   nothing to run. After the merge the main checkout's worker is built again and BDX, MO and IT are each
+            pressed with Regenerate, which writes the sections each report left out.
+Carried:    nothing.

@@ -248,11 +248,12 @@ public class FixtureReplay
         IReadOnlyList<string>? lane = null,
         bool paidForLocal = false,
         RecordedLocalModelFeed? local = null,
-        RecordedResearchModelFeed? paid = null)
+        RecordedResearchModelFeed? paid = null,
+        int retries = ClaimChecker.Retries)
     {
         var store = await ReplayedForResearchAsync();
 
-        await Researcher(store, FixedClock.At(Night, SessionZones.UnitedStates), lane, local, paid).RunAsync(ResearchName, "replay-research", new ResearchPassRequest(PaidForLocal: paidForLocal));
+        await Researcher(store, FixedClock.At(Night, SessionZones.UnitedStates), lane, local, paid, retries: retries).RunAsync(ResearchName, "replay-research", new ResearchPassRequest(PaidForLocal: paidForLocal));
 
         return store;
     }
@@ -314,10 +315,11 @@ public class FixtureReplay
         IFilingsArchiveFeed? archive = null,
         INameNewsFeed? news = null,
         ISearchFeed? search = null,
-        IReadOnlyDictionary<string, IResearchModelFeed>? sectionFeeds = null)
+        IReadOnlyDictionary<string, IResearchModelFeed>? sectionFeeds = null,
+        int retries = ClaimChecker.Retries)
     {
         var cap = new SpendCap(paid ?? new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned()), caps ?? Core.Spending.SpendCaps.Default, clock, store.DatabaseFile);
-        var checker = new ClaimChecker(clock, store.DatabaseFile);
+        var checker = new ClaimChecker(clock, store.DatabaseFile, retries);
 
         // A section another profile writes, through a cap of its own, as the verb composes one.
         var models = new SectionModels(

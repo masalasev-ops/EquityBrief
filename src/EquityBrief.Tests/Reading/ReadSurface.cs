@@ -3711,11 +3711,12 @@ public partial class ReadSurface
             FixedClock.At(new DateTimeOffset(2026, 9, 8, 21, 10, 0, TimeSpan.Zero), SessionZones.UnitedStates),
             store.DatabaseFile);
 
-        // Refused twice on one day, which falls back.
-        ClaimAdmissibility.Pending(store, ClaimAdmissibility.SectionNamed("a poisoned paragraph"), 1);
-        await checker.RunAsync("check-first");
-        ClaimAdmissibility.Pending(store, ClaimAdmissibility.SectionNamed("a poisoned paragraph"), 2);
-        await checker.RunAsync("check-second");
+        // Refused at its first draft and at every retry on one day, which falls back at the last.
+        for (var version = 1; version <= EquityBrief.Worker.Research.ClaimChecker.Retries + 1; version++)
+        {
+            ClaimAdmissibility.Pending(store, ClaimAdmissibility.SectionNamed("a poisoned paragraph"), version);
+            await checker.RunAsync($"check-{version}");
+        }
 
         // No admissible source, which falls back on its first check.
         ClaimAdmissibility.Pending(store, ClaimAdmissibility.SectionNamed("a section with no admissible source"), 1);
@@ -3759,12 +3760,12 @@ public partial class ReadSurface
 
         Assert.Contains("data-left-out=\"2\"", region, StringComparison.Ordinal);
 
-        // Refused twice: the line names the section and carries both the word that
-        // says it was the retry and the figure the facts file did not hold.
+        // Refused at every retry: the line names the section and carries both the words
+        // that say it was the last retry and the figure the facts file did not hold.
         var twice = Regex.Match(region, "<p class=\"left-out\" data-section=\"The key under each figure\">([^<]*)</p>");
 
         Assert.True(twice.Success);
-        Assert.Contains("rejected twice", twice.Groups[1].Value, StringComparison.Ordinal);
+        Assert.Contains(EquityBrief.Worker.Research.ClaimChecker.RejectedOnEveryRetry, twice.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains("66.3%", twice.Groups[1].Value, StringComparison.Ordinal);
 
         // No admissible source: the line says so in the words section 18 uses.

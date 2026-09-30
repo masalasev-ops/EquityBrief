@@ -2,16 +2,19 @@ using EquityBrief.Core.Facts;
 
 namespace EquityBrief.Core.Research;
 
-// What a section's one retry is told: each thing the checker refused in the first draft, a line each, with
+// What a section's retry is told: each thing the checker refused in the draft before it, a line each, with
 // what to do about it, and never the refused draft itself.
 //
 // A retry told only the checker's reason wrote a second draft carrying new figures in place of the one it was
 // refused for, taken from other sections' refused drafts, and was left out. So the refused draft is read again
 // by the checker's own rules over the same facts file and the same source list, which gives the same findings
-// the checker stored, and each finding becomes a line naming the figure, date, citation or sentence and what a
-// second draft does with it: a figure or a date removed or replaced by one the facts file lists, a sentence
-// citing nothing removed or ended on the marker of the document that states it.
-// see: A retry names each thing the check refused, and a second draft repeating one is left out
+// the checker stored, and each finding becomes a line naming the figure, date, citation or sentence and what the
+// next draft does with it: a figure or a date removed or replaced by one the facts file lists, a sentence
+// citing nothing removed or ended on the marker of the document that states it. A retry told to remove or replace
+// a figure a document gives wrote "thousands of cases" in place of "almost 4,000", which the checker refuses as a
+// number in words, so the line for a number in words names the way that passes, saying what it shows with no
+// number and no count word.
+// see: A retry names each thing the check refused, and a section refused on its third retry is left out
 public static class RetryBrief
 {
     public const string Opening =
@@ -57,7 +60,7 @@ public static class RetryBrief
     public static string Do(string rule) => rule switch
     {
         ClaimRules.UnmatchedFigure => "Remove it, or replace it with a figure listed under Facts, copied or rounded.",
-        ClaimRules.UnmatchableFigure => "Remove it, or write it in digits as a figure listed under Facts.",
+        ClaimRules.UnmatchableFigure => "Remove it, write it in digits as a figure listed under Facts, or say what it shows with no number and no count word such as dozens, hundreds or thousands, as many or a large number.",
         ClaimRules.UnknownWindow => "Remove it, or name a window the facts listed carry.",
         ClaimRules.UnknownDate => "Remove it, or replace it with a date listed under Facts.",
         ClaimRules.FigureNamedForAnotherPeriod => "Name the period the fact is listed for, or remove the figure.",
