@@ -33068,7 +33068,7 @@ Ruled:      the operator, on 2026-09-30, approving the plan after the third revi
             Still open row and the section 18 row; no migration, no pin moved, no recording.
 Changed:    CLAUDE.md's Conventions gain the one track rule, an addition recorded in CHANGELOG; and this entry.
 Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry and the ruling entry after it,
-            298SHA1, whose figures that entry records.
+            c765470, whose figures that entry records.
 Carried:    track 1, built as three 12.2 corrections on the operator's go and none before it; the filter half of
             one open trade per stock and `OpenTrades` joining the pin lists at the freeze, track 6; and every later
             remedy issued through `tools/remedy`.
@@ -33291,9 +33291,9 @@ Ruled:      the operator, on 2026-09-30, the plan approved after the third revie
               budget, within the five-day bound with the sample shrinking where it would not be. The report's
               figures land as a documents pull request, and then track 3.
 Changed:    this entry alone.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 298T1 of 298T1 tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1596 of 1596 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
-            `data-ci` and never `data`, over the tree carrying this entry and the 12.2 ruling before it, 298SHA1,
+            `data-ci` and never `data`, over the tree carrying this entry and the 12.2 ruling before it, c765470,
             in a worktree beside the repository; `tools/verify-phase.ps1` not run, these entries changing no code.
 Carried:    track 2 whole, after track 1 has merged and on the operator's go: the push and the draft pull request,
             the run's record, the rerun's branch, the surprise pull the operator runs, the run and its report; the
