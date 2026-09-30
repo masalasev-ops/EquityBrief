@@ -3935,11 +3935,15 @@ public sealed class MarkRenderer : IComponent
         // The plan the night's live rule read and never a candidate's: section 10's or the nearest bands' as
         // the row's live plan names, and the ladder's first tranche where the trade gate read that.
         // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
-        var (entry, stop, target) = gates?.LivePlan switch
+        decimal? entry;
+        decimal? stop;
+        decimal? target;
+
+        (entry, stop, target) = gates?.LivePlan switch
         {
             FilterSettings.ClearWord => (gates!.SwingEntry, gates.ClearStop, gates.ClearTarget),
             FilterSettings.SwingWord => (gates!.SwingEntry, gates.SwingStop, gates.SwingTarget),
-            _ => ((decimal?)null, (decimal?)null, (decimal?)null),
+            _ => (null, null, null),
         };
 
         var plan = gates is not null && entry is { } buy && stop is { } exit && target is { } sell
