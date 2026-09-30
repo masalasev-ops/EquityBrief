@@ -33836,8 +33836,10 @@ Written:    section 13.9, the History pull, Sweep history and Sweep point in tim
             `CHANGELOG.md`; and the reader's guide's paragraph.
 Expected:   derived: no expectation file moves; the fixture's two nights are read by the point-in-time check against
             the night's own components, which is the expectation the check is.
-Tests:      302T1, from 1605: seventeen added.
-Claims:     302C1, from 755: eight added, the point-in-time check's catalogue and matrix rows, section 17's edge,
+Tests:      1640, from 1605: thirty-five run more, the seventeen added, the sweep's first run's eighteen now on
+            main's tree, and the first run's table equivalence gone; the suite's count on main before either
+            sweep commit was 1605.
+Claims:     763, from 755: eight added, the point-in-time check's catalogue and matrix rows, section 17's edge,
             conditions, point in time and search rows, and section 18's two, each named in `SweepClaims`.
 Pins:       none moves: the sweep's files are in no pin list, and no pinned source is touched. Migration 51 creates
             `pulled_surprise`, owed to the operator's `tools/migrate.ps1` before the surprise pull and the run.
@@ -33859,15 +33861,28 @@ Mutated:    the rule, stated before the run: the mechanism each rule the rulings
             S20 depth taken as the largest single-dial move rather than the smallest: red in the depth test.
             S21 the starting point taken by depth alone across designs: red in the across-designs test alone.
             S22 the look beyond a grid end skipped: red in the grid-end test alone.
-            Results: 302M1
-Held:       302H1
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 302T1 of 302T1 tests ran
+            Results: one run each in a detached worktree at 6f539b0, this entry's first commit, filtered to the
+            tests named, each edit made there and reverted, and the tree read clean after. S8 turned the
+            point-in-time test red alone. S9 turned the walk test and the summary test red. S10 turned the
+            benchmark test red alone. S11 turned the leaders test red alone. S12 turned the leaders test and the
+            refinement test red. S13 turned the variants test red alone. S14 turned the conditions test red alone.
+            S15 turned the step (b) test and the pinned constants red. S16 turned the surprise pull's test red
+            alone. S17 turned the step (b) test red alone. S18 turned the sample test red alone. S19 as written,
+            the off clause dropped from the grid's limit, survived: every off value sits at the end of its dial's
+            list, where the clause freeing a dial's own end already frees it, so the edit changed nothing the
+            depth reads; re-made as the reversal the rule needs, an off end made to limit depth, it turned the
+            depth test and the grid-end test red. S20 turned the depth test red alone. S21 turned the
+            across-designs test red alone. S22 turned the grid-end test red alone.
+Held:       red in every test predicted, and in no other, S19 once re-made as the reversal the rule needs; the
+            clause it dropped stays, stating the rule where the code reads it, and the survival is recorded here
+            as what it is: a guard the second clause makes redundant, not an assertion that cannot fail.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1640 of 1640 tests ran
             with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 45 tables, 302C1 claims, 302C1 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 302P1 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 302T1 of 302T1 tests.
-            Both gates ran over the tree carrying this entry, 302SHA1, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 763 claims, 763 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 774 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1640 of 1640 tests.
+            Both gates ran over the tree carrying this entry, cec6be5, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    the migration and the surprise pull on the main checkout, the run started from a Release build outside
             it, the entry pointing at its report, and the freeze on the operator's word; the draft pull request of the
