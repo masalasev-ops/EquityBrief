@@ -31971,7 +31971,7 @@ Changed:    `ResearchModelSettings`, `ModelProfiles`, `ResearchPricing` and `Ant
 Decisions:  new: "Research names a profile per section as well as per job, and a Claude profile states its thinking" and
             "A trial asks a second profile for named sections after a report and records its drafts beside the report,
             never in it", as the ruling planned them.
-Tests:      123T, from 1570:
+Tests:      1577, from 1570:
             `ASectionMappedToAnotherProfileIsAskedOfThatModelWhileTheRestStayOnTheJobs`,
             `ASectionOrAProfileTheSettingsDoNotHoldRefusesTheJobByName`,
             `AClaudeProfileWithThinkingOffSendsThinkingBetweenToolsAndIsNamedForIt`,
@@ -31981,7 +31981,7 @@ Tests:      123T, from 1570:
             `APassWaitsOutThePeakWindowsOfEveryProfileItsSectionsName`, seven where the plan predicted six, the last for
             the drain's windows the plan named and listed no test for. The runbook's settings test now holds the map,
             the trial's settings and every profile's `Thinking` to the shipped file.
-Claims:     123C, from 725: section 17's Section trial and the section trial's rows in the component catalogue and
+Claims:     728, from 725: section 17's Section trial and the section trial's rows in the component catalogue and
             the read and write matrix, named in phase 12's pair as rows the research template adds, where the plan
             predicted the one row of section 17 and not the component's two.
 Opened:     one carried obligation, "The section trial's reports read to the operator", operating at 3 reports, so
@@ -31996,13 +31996,20 @@ Mutated:    the rule, stated before the run: each rule this correction adds reve
             E4 the trial writing its draft as a research section row: red in the trial test.
             E5 the drain's windows read from the first profile alone: red in the windows test.
             E6 the trial's section row spending its cost: red in the trial test, at the run's sum.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       123HELD
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            Results: one run each in a detached worktree at 5a75195, this entry's commit, filtered to the seven tests
+            the correction adds, each edit made there and reverted, and the tree read clean after. E1 turned the
+            section test red alone. E2 turned the thinking-off test and the effort test red and the other five green.
+            E3 turned the trial test red alone, at the fourth report, which asked for both sections again. E4 turned the
+            trial test red alone. E5 turned the windows test red alone. E6 turned the trial test red alone, at the
+            run's sum, which read 0.039656206 against 0.038256206, the trial's cost counted twice.
+Held:       red in every test predicted and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1577 of 1577 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` 123VP
-            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 728 claims, 728 PASS, 0 FAIL, 739 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1577 of 1577 tests.
+            Both gates ran over the tree carrying this entry, 5a75195, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Operator:   nothing to run. The trial runs itself on the first three reports whose pass writes the short version or
             the two cases at the first draft after the merge, at most four Claude calls a report, and the read surface
