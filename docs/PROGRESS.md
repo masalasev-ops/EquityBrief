@@ -33600,9 +33600,9 @@ Ruled:      the operator, on 2026-09-30, in the 12.5 ruling above: the branch pu
             ruling states, nothing registered or frozen, which is track 2's next step and the 12.5 correction
             after this entry.
 Changed:    this entry alone.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 300T1 of 300T1 tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1605 of 1605 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
-            `data-ci` and never `data`, over the tree carrying this entry, 300SHA1, in a worktree beside the
+            `data-ci` and never `data`, over the tree carrying this entry, 26ac82e, in a worktree beside the
             repository; `tools/verify-phase.ps1` not run, this entry changing no code.
 Carried:    the rerun, built as a 12.5 correction on a branch from `main` carrying the sweep's two commits, and
             pull request 300 closed without merging once the rerun's merges.
