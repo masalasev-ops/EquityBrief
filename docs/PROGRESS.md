@@ -31316,3 +31316,234 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    the remedy above, the operator's to run after the merge; and the name page's trade table drawing only
             the stepped plan and the plan the night's live rule used, queued on 2026-09-27 to land with items 2 and
             3, which this window leaves for a change of its own since it moves no pin and needs no remedy.
+
+### 12.6 ruling - the research template: a retry names each thing the check refused, a short version left out is replaced by a summary code writes, risks come back as fields, the two cases are asked to argue a fact on one side and counted, a declined industry cycle is named with the sources it lacks, research names a model per section with a three-report trial, and the run page draws how each report did, planned and approved before anything is built   2026-09-30
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-29, word for word:
+            > The research template: standing rules for every report written from now on, by
+            > any model, with the checks the code can make on each section every night. The
+            > ECL and MDT reports of 2026-09-29 are the evidence and are named only as
+            > examples; nothing here is specific to a name.
+            >
+            > === 1. The short version is written last ===
+            > The section read first is the one most often missing: rejected for figures the
+            > facts file does not hold (ECL), or for uncited sentences (MDT on Claude). For
+            > every report:
+            >   - The short version is written after the other sections, from what they said
+            >     and passed, and carries no figure they did not.
+            >   - A retry of any section names what the check rejected, the figures or the
+            >     sentences, and asks for them to be removed or replaced from the facts file.
+            >     A retry that repeats the rejected text is not sent again.
+            >
+            > === 2. Risks are returned as structured fields ===
+            > Each risk comes back as: the risk; the observable that would confirm it; the
+            > direction that confirms it; the level; and one sentence saying why that
+            > movement means the risk is coming true. The code then checks, for every report:
+            >   - no two risks share the same observable
+            >   - the level is a figure the facts file holds
+            > The instruction states that the confirming event is what would be seen if the
+            > risk came true. As examples: a valuation risk is confirmed by the multiple
+            > falling, not by it staying high; and three risks confirmed by the same miss of
+            > guidance cannot be told apart.
+            >
+            > === 3. The two cases: reasons, weighed, one side each ===
+            > For every report, the instruction states:
+            >   - each point is a reason, not a restated figure
+            >   - a change is described with its size, so a small one reads as small; for
+            >     example, a 2-cent raise on $8 of guidance
+            >   - a fact argues one side only
+            > The code checks the last: a cited figure appearing in both the case for and the
+            > case against fails the section, retried once as in 1.
+            >
+            > === 4. The industry cycle, for every industry ===
+            > Both models have returned nothing for it, having reasoned and then declined.
+            > Find why across every industry researched so far: list what documents each
+            > theme pass had, and whether the model declined for lack of industry sources.
+            > If so, the page says the section was declined for lack of industry sources,
+            > not that the answer was empty; state what the theme pass would need to gather,
+            > and propose it.
+            >
+            > === 5. A model per section, through the same switch ===
+            > Extend the model profiles so research can name a profile per section as well as
+            > per job. The default stays DeepSeek for every section, so nothing changes until
+            > the operator changes a word. Claude profiles gain a thinking setting, off or a
+            > stated budget. Measure, over the next three reports, the short version and the
+            > two cases on claude-sonnet with thinking off beside DeepSeek's, with each
+            > section's cost, and show them side by side for the operator to choose.
+            >
+            > === 6. How every night's report did, on the run page ===
+            > For each report written: each section's outcome, whether it passed first time,
+            > passed on retry, or was left out and why; and its cost. Over time, each
+            > section's rate of passing first time and of being left out, so a section that
+            > keeps failing is seen without anyone opening a report.
+            >
+            > === Documents and tests ===
+            > The instructions and each rule's reason in the architecture's research section,
+            > stated for any day and any name. Tests over the fixture's names, not one report:
+            > the short version drawn only from passed sections; a retry naming its rejected
+            > figures; two risks sharing an observable failing; a figure in both cases failing;
+            > a declined theme shown as declined; a section's profile switch changing the model
+            > called; and the run page's per-section outcomes. Mutate each check and confirm
+            > each goes red.
+            Asked to plan it first, the planning session put four questions, and the operator answered, word for
+            word. On which rule "a retry that repeats the rejected text is not sent again" meant:
+            > Retry names each item (Recommended)
+            the option reading: the retry prompt lists each rejected figure, date or sentence with what to do about
+            it and never pastes the rejected draft back in, and a second draft repeating one is left out with the
+            page saying it repeated. On how code tells that two risks share an observable:
+            > A listed fact's name wherever one fits, so sharing is an exact match and code
+            > can later read whether the risk came true. A risk no fact can show, such as a
+            > lawsuit, a regulatory decision or a competitor's launch, names an event instead,
+            > marked as an event and given one kind from a fixed list: legal, regulatory,
+            > competitive, acquisition, management, supply, other. No two risks share a fact,
+            > and no two event risks share a kind. Real risks without a number must still be
+            > listed.
+            On how a change's size is written, where the facts file holds tonight's guidance and not its change:
+            > Listed figures or words (Recommended)
+            the option reading: sized with figures the facts file lists or in words against its base, no new facts
+            added, the brief's 2-cent example refused as written. On how far the industry sources go:
+            > Build the declined line, propose sites per sector, and measure them for the
+            > seven declined industries. Then apply a stated rule instead of waiting for me: a
+            > proposed site goes into source-lists.json only if it returned admissible
+            > industry material for its sector in the measurement. Report which sites went in,
+            > which did not, and why.
+            Then, on the plan, the first review, word for word:
+            > Research template plan:
+            >
+            > === 1. The short version: drop the accepted-sections rule, add a fallback ===
+            > The rule "every figure must match a figure in the accepted sections" is too
+            > strict, and it was mine: 4 of the 6 accepted short versions would have been
+            > refused for quoting the close and the averages, which the facts file already
+            > vouches for. Figures from articles, ECL's actual fault, are already refused by
+            > the facts-file rule. Drop the new rule; keep the facts-file rule and the retry
+            > that names each refused item, which is the fix. Record in the decision that the
+            > narrower rule was too broad and why.
+            >
+            > Add a fallback so the section read first is never empty: when the short version
+            > is left out, the page draws a short summary written by code from computed parts
+            > only (why it is on the list, the business state and its heading, the plan's
+            > entry, stop and target), headed as written by code because the model's draft was
+            > refused. Test it off the rendered page.
+            >
+            > === 2. The two cases: instruction and count, not a refusal ===
+            > The rule refusing a figure on both sides would have refused 5 of the 8 accepted
+            > drafts, and a figure can rightly appear on both: raised guidance on the bull
+            > side, growth slowing towards that same guidance on the bear side. Keep the
+            > instruction that a fact argues one side only and that each point is a reason,
+            > drop the refusal, and count drafts carrying a figure on both sides on the run
+            > page's report region. The no-sides refusal stays. After 20 reports, report the
+            > count to the operator; a refusal comes back only if the instruction has not
+            > brought it down.
+            >
+            > === 3. PR C waits for the operator's go ===
+            > PR C leaves the operator a migration and a restart before the next night. Under
+            > the merge rule it is not merged until the operator says go, with the commands,
+            > the deadline and what is lost if they are missed stated first. The other PRs,
+            > with no operator step, merge as planned.
+            >
+            > Everything else is approved as written: the retry naming each item and the
+            > repeat rule, risks as fields with facts or event kinds, the declined line and the
+            > sector sites with their measurement and rule, a model per section with thinking
+            > set by effort level, the three-report trial, and the run page regions.
+            and the approval, word for word:
+            > Research template plan approved, with one wording fix.
+            >
+            > The code-written summary's heading states the actual reason, read from the same
+            > record the page already uses: "the model's short version was refused by the
+            > claim check" where it fell back; "the model's short version was not written"
+            > where the pass named it not written; and, where no research has been written for
+            > the name, the heading says so and no model is implied. Test each of the three
+            > headings off the rendered page.
+Ruled:      at a glance, for every report by any model on any day:
+            - A retry names each thing the check refused. The refused draft is read again by the same rules over the
+              same facts file and sources, and each finding becomes a line naming the figure, date or sentence and
+              what to do with it: a figure or date removed or replaced by one the facts file lists, an uncited
+              sentence removed or ended on the marker of the document stating it. The refused draft is never pasted
+              back. A second draft carrying a finding the first was refused for, by the same rule over the same
+              text, is left out, and the name page says the retry repeated it. The paid lane, the local lane and the
+              theme pass retry this way.
+            - The short version is written last from the sections that passed and is held to the facts file's
+              rule, as every section is. The rule the brief asked for, that it carry no figure the sections it
+              summarises did not, is withdrawn before it was built: it would have refused 4 of the 6 short versions
+              the checker had accepted, for quoting the close and the averages the facts file vouches for, and the
+              fault it was aimed at, figures copied from articles, is the facts-file rule's to refuse. Where no
+              accepted short version stands for a name's night, the page draws a summary code writes from computed
+              parts alone: why the name is or is not on the list, its business state with the heading its numbers
+              open on, and the plan's entry, stop and target. Its heading states why it is there, read from the
+              record the page already reads: the model's short version was refused by the claim check, was not
+              written, or no research has been written for the name, in which case no model is implied.
+            - The risks come back as fields: the risk and the document it rests on; what would confirm it, a
+              listed fact's name with the direction and the level, or where no fact can show it an event with one
+              kind of legal, regulatory, competitive, acquisition, management, supply or other; and one sentence on
+              why, with its document. Code composes the prose the page already draws. The checker refuses two risks
+              naming one fact, two event risks of one kind, a kind outside the seven, a fact the file does not
+              list, and a level that is not a figure the file holds. The ask says the confirming event is what
+              would be seen if the risk came true.
+            - The two cases are asked for reasons and not restated figures, for a change stated with its size from
+              the listed figures or in words against its base, and for a fact arguing one side only. A figure on
+              both sides is counted on the run page and not refused: a refusal would have refused 5 of the 8
+              accepted drafts in shape, and one figure can rightly stand on both. A draft whose two sides cannot be
+              found is refused.
+            - The industry cycle a model declined, by an empty answer or a draft citing nothing, is named on the
+              page as declined for lack of industry sources, with how many pages about the industry the searches
+              found and from which sites, and, where the member's sector has no sites of its own, that the source
+              list carries none. A theme search adds the sites of the opening member's sector to the general list.
+              Sites are proposed for the four sectors of the six declined industries and measured, and a site joins
+              its sector where the measurement found at least one page admissibility admitted and the density rule
+              reads as about a declined industry of that sector.
+            - Research names a model profile per section as well as per job, shipped naming DeepSeek for every
+              section, so nothing changes until the operator changes a word. A Claude profile states its thinking
+              as off or an effort level, since the provider refuses a token budget on this model family. A trial
+              asks Claude Sonnet 5.5 with thinking off for the short version and the two cases after each of the
+              next three reports, from the same inputs the pass used, checks each draft in memory, stores no
+              section, records both beside the report on the run log, and stops by itself after three.
+            - The run page draws how each report did, each section passed first time, passed on retry, left out
+              with why, or not warranted, with its cost, and each section's rates of passing first time and of
+              being left out over the newest twenty reports; the drafts carrying a figure on both sides, counted;
+              and the trial's drafts side by side with each model's outcome and cost.
+            - The order: this entry, then five corrections at 12.6, each carrying its own decisions, architecture
+              rows and obligation rows with the code that builds them, since no row of the architecture is written
+              ahead of its code: B the retries, the short version's summary and the two cases; C the risks, whose
+              migration and restart make it merge only on the operator's go, told the commands, the deadline and
+              what is lost if they are missed; D the industry cycle and its sources; E a model per section,
+              thinking and the trial; F the run page.
+Found:      measured read-only over the operator's store on 2026-09-30:
+            - The industry cycle. Ten theme passes over nine industries, the pages each pass first stored, so each
+              count is a floor, a page counted as about the industry by the density rule the pass hands pages by,
+              each pass named by its session: Semiconductors, NVDA on 09-18, 26 stored, 24 admitted, 12 about it
+              and 10 handed, written and left out on its retry for a signpost sentence citing nothing; Consumer
+              Electronics, AAPL on 09-27, 19, 17, 11 and 10, accepted on its retry; Diagnostics & Research, DGX on
+              09-23 and 09-24, 20, 18 and 5 then 6, 6 and 2, empty both times; Aerospace & Defense, RTX on 09-23, 16, 16
+              and 5, empty; Auto Manufacturers, GM on 09-24, 11, 11 and 1, a draft saying nothing in the documents
+              supported the section and then an empty answer; Healthcare Plans, HUM on 09-25, 10, 10 and 3, a draft
+              saying it could not write the section and then an empty answer; Medical Devices, MDT on 09-29 on
+              Claude, 12, 11 and 5, an answer holding thinking alone; Specialty Chemicals, ECL on 09-29, 6, 6 and 2,
+              empty twice. The two industries
+              handed ten pages about the industry were written, and the six handed one to five declined, over seven
+              passes, which the brief counts as seven. Most of those pages were Statista market pages, the Bureau
+              of Labor Statistics' occupation pages and census tables. The industry list is technology, energy and
+              macroeconomic sites and carries none for health care, chemicals, defence, cars or insurers. Each empty
+              answer billed $0.0003 to $0.0017 on DeepSeek and $0.083694 on Claude.
+            - The two cases. Of the 9 accepted drafts, 8 open on the bull case and hold a sentence opening on the
+              bear case, and 5 of those 8 carry one figure on both sides: NVDA's of 09-18, HUM's of 09-25, ECL's of
+              09-29 and both of MDT's of 09-29, Claude's and DeepSeek's.
+            - The short version. Of the 6 accepted, 4 carry a figure no section accepted for the name by that day
+              carries, RTX's, DGX's, GM's and MDT's DeepSeek one, each quoting the close, the averages or a total
+              from the facts file. ECL's was left out: its first draft was refused for one date, and its retry,
+              told only the reason, added six figures the facts file does not hold, several of them from other
+              sections' refused first drafts.
+            - The risks. Of the 10 accepted, 5 open on "The first risk is", the shape the page parts them by.
+            - The reports. 11 passes that ran to their end or were paused, over 8 names.
+            - A thinking budget. The provider's reference for this model family refuses `budget_tokens` with a 400
+              and sets depth by `output_config.effort`; correction E captures Sonnet 5.5's own answer to one.
+Changed:    this entry alone.
+Tests:      none added here.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1552 of 1552 tests ran
+            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
+            `data-ci` and never `data`, over the tree carrying this entry, cd1cc76, in a worktree beside the
+            repository; `tools/verify-phase.ps1` not run, this entry changing no code.
+Carried:    corrections B to F at 12.6 in that order, C merged only on the operator's go; the count of two cases
+            drafts carrying a figure on both sides over the twenty reports after B, reported to the operator beside
+            the baseline of 5 of 8, a refusal coming back only if the share has not fallen, carried as an operating
+            row that F adds with the region it is read on; and the trial's three reports set before the operator to
+            choose a profile for each of the two sections, carried the same way.
