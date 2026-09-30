@@ -1289,7 +1289,7 @@ public static class NameScreen
     // A name's swing filter result as the page draws it, each gate's reason and the notes read off the
     // row's own stored answers, and the plan the night's live rule read: the trade gate's stored input,
     // or on a row storing none the plan its night's version reads, which is what Past picks trades it on.
-    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
     public static GatesView Gates(GateResultRow row, string? versionPlan = null)
     {
         using var document = JsonDocument.Parse(row.Gates);

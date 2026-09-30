@@ -9686,7 +9686,7 @@ Now:
 Why: the operator asked that any future remedy be issued the same way, and the runbook is where a person is told how.
 
 ### 2026-09-30 - ARCHITECTURE.html - the name page's gates row draws the one swing plan the night's live rule used
-Authorised by: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+Authorised by: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 Was:
 > Section 15.9, Gates: ... the trade read from the ladder's first tranche and from both swing plans with the one the trade gate read marked, and the exclusions with a key saying how to read it
 Now:

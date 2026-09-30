@@ -8,7 +8,7 @@ namespace EquityBrief.Tests.Reading;
 // ladder's first tranche and the one swing plan the night's live rule read, and no plan of a candidate that was
 // not live on the night, whichever filter version the night ran under. Read off the rendered name page for one
 // night of each version over a constructed store, each plan at prices no other plan shares.
-// see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+// see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public partial class ReadSurface
 {
     const string TradeTableTicker = "TT";

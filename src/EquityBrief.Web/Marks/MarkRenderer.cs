@@ -346,7 +346,7 @@ public sealed record GatesView(
     string? Input = null,
     // The plan the night's live rule read, by its word: the trade gate's stored input, or where the row
     // stores none the plan its night's filter version reads, the choice Past picks makes.
-    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
     string? LivePlan = null);
 
 // The night's market reading as the swing reader stored it: the members, the breadth over the ones
@@ -3934,7 +3934,7 @@ public sealed class MarkRenderer : IComponent
 
         // The plan the night's live rule read and never a candidate's: section 10's or the nearest bands' as
         // the row's live plan names, and the ladder's first tranche where the trade gate read that.
-        // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+        // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
         var (entry, stop, target) = gates?.LivePlan switch
         {
             FilterSettings.ClearWord => (gates!.SwingEntry, gates.ClearStop, gates.ClearTarget),
@@ -5872,7 +5872,7 @@ public sealed class MarkRenderer : IComponent
     // the night's live rule read, marked, and the exclusions and notes, each whole on its element as the
     // store holds it. The other swing plan is a registered candidate's, and drawing its entry, stop and
     // target for a stock is the evaluation a candidate waits for, so it is drawn on no night.
-    // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+    // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
     public string GatesTable(string ticker, GatesView view)
     {
         var region = new StringBuilder();

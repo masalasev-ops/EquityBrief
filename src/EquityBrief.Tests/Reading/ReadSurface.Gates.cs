@@ -52,7 +52,7 @@ public partial class ReadSurface
             // The trade read from the ladder's first tranche, the plan the trade gate read at section 17's
             // proposed values, marked once, and neither swing plan, both being candidates' plans on a night
             // whose live rule read the ladder.
-            // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+            // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
             Assert.Contains($"<tr data-plan=\"ladder\" data-read=\"yes\" data-reward-to-risk=\"{WholeOf(row[4])}\" data-stop-moves=\"{WholeOf(row[5])}\">", card, StringComparison.Ordinal);
             Assert.DoesNotContain("data-plan=\"swing\"", card, StringComparison.Ordinal);
             Assert.DoesNotContain("data-plan=\"clear\"", card, StringComparison.Ordinal);

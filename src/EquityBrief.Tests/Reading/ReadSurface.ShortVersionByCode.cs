@@ -119,7 +119,7 @@ public partial class ReadSurface
 
         // A night whose trade gate read the ladder draws the ladder's tranche and no swing plan's prices, since
         // both swing plans are candidates' plans on such a night.
-        // see: Candidate conditions are registered before they are scored, and scored in shadow before they are shown
+        // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
         foreach (var (input, entry, stop, target, words) in (IEnumerable<(string, string, string, string, string)>)[
             (EquityBrief.Core.Filter.FilterSettings.ClearWord, "330.5", "310.5", "370.25", "The swing trade clear of the noise, the plan the trade gate read: "),
             (EquityBrief.Core.Filter.FilterSettings.SwingWord, "330.5", "320.25", "350.75", "The swing trade at the nearest bands, the plan the trade gate read: "),
