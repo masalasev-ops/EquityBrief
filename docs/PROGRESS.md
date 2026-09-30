@@ -32664,11 +32664,12 @@ Decisions:  new, **A retry names each thing the check refused, and a section ref
 Recorded:   six answers of the local model, qwen/qwen3.5-9b on the operator's machine, the local lane's extra
             retries of the two cases, the risks and the short version over the fixture's KEYS, at no cost. No
             DeepSeek answer was needed and no Claude answer was asked for: the recorder refused every Claude call.
-Tests:      123T, from 1596. The checker's retry test, the bound over the store, the claims expectation, the prose
-            rules and the fixture's release, lane comparison and token estimate now count three retries; the
-            warranted test adds a regenerate the same day writing what the report left out and none it accepted,
-            then starting nothing once nothing is left out.
-Claims:     123C, from 736.
+Tests:      1596, from 1596, none added: three tests are renamed for the bound they now assert, the retry test,
+            the fallback test and the bound over the store. The checker's retry test, the bound over the store,
+            the claims expectation, the prose rules and the fixture's release, lane comparison and token estimate
+            now count three retries; the warranted test adds a regenerate the same day writing what the report
+            left out and none it accepted, then starting nothing once nothing is left out.
+Claims:     736, from 736.
 Pins:       none moves; no source in the three pin lists is touched.
 Mutated:    the rule, stated before the run: each property this correction adds broken alone.
             M1, the checker's bound back at one retry. Predicted: red, the retry test, the bound over the store
@@ -32678,13 +32679,22 @@ Mutated:    the rule, stated before the run: each property this correction adds 
             M3, a regenerate the same day never filling what the report left out. Predicted: red, the warranted
             test, the regenerate refused as already written.
             M4, the number-in-words line back at its old words. Predicted: red, the retry brief test.
-            Results: 123HELD
-Held:       123HELD
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            Results: one run each in a detached worktree at 2e157f2, this entry's commit, filtered to the tests the
+            mutation reaches, each reverted before the next and the tree read clean after the last. M1 turned six
+            red: the three predicted, and the fallback test and the em dash and banned word tests, each of which
+            reads the fallback on the last retry. M2 turned four red: the two predicted, and the Claude pass test,
+            whose short version is retried in a further round, and the research record, whose rows the further
+            rounds write. M3 turned the warranted test red and no other. M4 turned the retry brief test red and no
+            other.
+Held:       all four red where predicted. M1 and M2 each also turned red tests not predicted, named above, every
+            one of them reading the retries the mutation removed.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1596 of 1596 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
             `data-ci` and never `data`.
-            123VP
-            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 736 claims, 736 PASS, 0 FAIL, 747 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1596 of 1596 tests.
+            Both gates ran over the tree carrying this entry, 2e157f2, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Operator:   nothing to run. After the merge the main checkout's worker is built again and BDX, MO and IT are each
             pressed with Regenerate, which writes the sections each report left out.
