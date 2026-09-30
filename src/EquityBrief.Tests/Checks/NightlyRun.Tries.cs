@@ -148,8 +148,10 @@ public partial class NightlyRun
         using var store = new TemporaryStore();
 
         // A deadline no step can meet: each try passes it at its first cancellable step and is tried again, so
-        // four tries each stop on their own deadline rather than on one spent before them.
-        var (code, _, _, waits) = await TriedNightAsync(store, failures: 0, deadline: TimeSpan.FromTicks(1));
+        // four tries each stop on their own deadline rather than on one spent before them. It is zero, which a
+        // cancellation source applies as it is made; any longer one is applied by a timer, and a try can reach
+        // its close before that timer runs.
+        var (code, _, _, waits) = await TriedNightAsync(store, failures: 0, deadline: TimeSpan.Zero);
 
         Assert.Equal(1, code);
         Assert.Equal(3, waits.Count);
