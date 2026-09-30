@@ -33345,10 +33345,12 @@ Mutated:    the rule, stated before the run: the one refusal the ruling asks for
             Predicted:
             K1 the lock check removed, so a run under the lock file builds and runs: red in the second remedy test
                at its lock assertion, and in no other.
-            Results: 299K1
-Held:       299H1
+            Results: one run in a detached worktree at 880d65b, the tree the gates ran over, filtered to the two
+            remedy tests, the edit made there and reverted, and the tree read clean after. K1 turned the second
+            remedy test red at its lock assertion and left the first green.
+Held:       red where predicted, and nowhere else over the filter.
 Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry and the two correction entries after
-            it, 299SHA1, whose figures the last of them records.
+            it, 880d65b, whose figures the last of them records.
 Carried:    every later remedy issued through the script, the freeze's at track 6 first.
 
 ### 12.2 - correction: a name's trade table draws the ladder's first tranche and the one swing plan the night's live rule read and no candidate's plan on any version, where it drew both swing plans on every night, the plan at the nearest bands among them from the night it became a candidate's   2026-09-30
@@ -33402,10 +33404,13 @@ Mutated:    the rule, stated before the run: each rule the ruling states, revers
                the fixture's gates test.
             T2 a row storing no input read as section 10's plan whatever its version reads: red in the trade table
                test on the version 2 night, and green in the fixture's gates test, whose rows store an input.
-            Results: 299T1R
-Held:       299T1H
+            Results: one run each in a detached worktree at 880d65b, the tree the gates ran over, filtered to the
+            trade table test and the fixture's gates test, each edit made there and reverted, and the tree read
+            clean after. T1 turned both tests red. T2 turned the trade table test red and left the fixture's
+            gates test green.
+Held:       red in every test predicted, and in no other over the filter.
 Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry and the correction entry after it,
-            299SHA1, whose figures that entry records.
+            880d65b, whose figures that entry records.
 Carried:    nothing.
 
 ### 12.2 - correction: a stock holds one open trade on each rule's list, read on the pages first, tonight's page drawing each stock passed again while its earlier trade is still open and Past picks marking a repeat listing and counting the move once, where the list listed BDX again two nights after listing it with the trade still open and each listing was scored as its own trade   2026-09-30
@@ -33469,8 +33474,8 @@ Written:    section 15.7's Still open row, read as the nine parts it enumerates,
             part each, and section 18's row in `ARCHITECTURE.html`; two decisions in `DECISIONS.md`; one sentence in
             the guide's screens card; and the prior text in `CHANGELOG.md`.
 Expected:   derived: no expectation file moves.
-Tests:      299T1, from 1596: nine added across the three corrections, two, one and six.
-Claims:     299C1, from 736: twelve added, where the ruling predicted two. The Still open row was predicted as one
+Tests:      1605, from 1596: nine added across the three corrections, two, one and six.
+Claims:     748, from 736: twelve added, where the ruling predicted two. The Still open row was predicted as one
             claim and is read as the nine parts it enumerates, which is what the harness reads any row listing what
             a region holds as, and Past picks' two rows each gain a part the prediction did not count; section 18's
             row is the one the prediction counted. Named here as unpredicted.
@@ -33486,15 +33491,24 @@ Mutated:    the rule, stated before the run: each new rule reversed alone, filte
                red in tonight's page test, the one-gate-short stock drawn.
             R4 repeats counted in Past picks' summary, filtered to the same: red in the Past picks test at its
                counts.
-            Results: 299R1R
-Held:       299R1H
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 299T1 of 299T1 tests ran
+            Results: one run each in a detached worktree at 880d65b, the tree the gates ran over, filtered to the
+            three open trades tests and the three Still open page tests, each edit made there and reverted, and the
+            tree read clean after. R1 turned the boundary test and tonight's page test red as predicted, and also
+            the chain test, whose trade ending at the close of the 2nd is listed again on that night, and the Past
+            picks test, whose stopped-out stock ends at the switch night's own close. R2 as made wrote the kept
+            trade's verdict over the repeat's, so it turned the chain test red and also the two-rules test,
+            tonight's page test, the Past picks test and the missing-row test, every one reading a repeat. R3
+            turned tonight's page test red and left the other five green. R4 turned the Past picks test red and
+            also the missing-row test, which counts the trades.
+Held:       red in every test predicted; R1, R2 and R4 each also turned red tests the prediction left out, named
+            above, every one of them reading the rule the mutation removed.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1605 of 1605 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 44 tables, 299C1 claims, 299C1 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 299P1 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 299T1 of 299T1 tests.
-            Both gates ran over the tree carrying this entry and the two correction entries before it, 299SHA1, in
+            `tools/verify-phase.ps1` green at 44 tables, 748 claims, 748 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 759 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1605 of 1605 tests.
+            Both gates ran over the tree carrying this entry and the two correction entries before it, 880d65b, in
             a worktree beside the repository, and the operator's store under `data/` was not touched by either.
 Operator:   nothing to run. After the merge the read surface on its port is started again from `main` so the pages
             draw it.
