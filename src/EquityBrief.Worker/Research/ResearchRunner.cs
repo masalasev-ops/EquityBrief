@@ -181,12 +181,22 @@ public sealed class ResearchRunner(
     // A pass for this name that ran to the end on this session. The name is inside the
     // detail rather than in a column, so it is read with the store's own JSON function,
     // and a detail that is not JSON is passed over, since other stages write a sentence.
+    // A pass the model could not be reached for on a call of the report's own did not run
+    // to the end, whatever else it wrote: a trial's or a review's call is no part of it.
+    // see: A pass the model could not be reached for on a section of the report is not the day's report
     const string RanOnSession = @"
-        SELECT COUNT(*) FROM run_log
-        WHERE stage = $stage
-          AND outcome = $written
-          AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.ticker') END = $ticker
-          AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.asOf') END = $as_of;
+        SELECT COUNT(*) FROM run_log AS ran
+        WHERE ran.stage = $stage
+          AND ran.outcome = $written
+          AND CASE WHEN json_valid(ran.detail) THEN json_extract(ran.detail, '$.ticker') END = $ticker
+          AND CASE WHEN json_valid(ran.detail) THEN json_extract(ran.detail, '$.asOf') END = $as_of
+          AND NOT EXISTS (
+              SELECT 1 FROM run_log AS asked
+              WHERE asked.run_id = ran.run_id
+                AND substr(asked.stage, 1, length($call)) = $call
+                AND asked.outcome = $unreachable
+                AND instr(asked.stage, $trial) = 0
+                AND instr(asked.stage, $review) = 0);
     ";
 
     const string InsertDocument = @"
@@ -254,8 +264,9 @@ public sealed class ResearchRunner(
         // warranted got a row, and a section that pass found nothing to write from has
         // none, so a second open would fetch the year's news and the release again to
         // find the same nothing. A pass the cap paused or the model did not answer did
-        // not run to the end, and the page's two explicit asks run because each asks for
-        // something the first pass did not do.
+        // not run to the end, nor did one the model could not be reached for on a section,
+        // and the page's two explicit asks run because each asks for something the first
+        // pass did not do.
         // see: A name opened again on the day its research pass ran starts no second pass unless the page asks for one
         //
         // A regenerate is the one ask that is held to the day as well: it rewrites every section
@@ -1084,6 +1095,10 @@ public sealed class ResearchRunner(
         command.Parameters.AddWithValue("$written", Written);
         command.Parameters.AddWithValue("$ticker", ticker);
         command.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$call", SpendCap.Stage + ": ");
+        command.Parameters.AddWithValue("$unreachable", SpendCap.Unavailable);
+        command.Parameters.AddWithValue("$trial", ", " + TrialCalls.Round);
+        command.Parameters.AddWithValue("$review", ", " + TrialCalls.ReviewRound);
 
         return Convert.ToInt64(await command.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture) > 0;
     }
