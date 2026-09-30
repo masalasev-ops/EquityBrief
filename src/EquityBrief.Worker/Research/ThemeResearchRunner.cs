@@ -19,7 +19,16 @@ public sealed record ThemePassOutcome(
     int Admitted,
     IReadOnlyList<string> OffList,
     IReadOnlyList<string> Snippets,
-    string? Reason);
+    string? Reason)
+{
+    // The pages the theme's call was handed, each with its site and how densely it names the industry, which
+    // the run log keeps so a pass that wrote nothing can be read for what it had to write from.
+    public IReadOnlyList<HandedPage> Handed { get; init; } = [];
+}
+
+// One page a theme call was handed: its stored id, its site, its title and its mentions of the industry in every
+// ten thousand characters.
+public sealed record HandedPage(string Id, string Site, string Title, double Mentions);
 
 // The theme research runner. One pass for one theme, which is one industry the index names.
 //
@@ -45,7 +54,8 @@ public sealed class ThemeResearchRunner(
     IReadOnlyList<string> industryList,
     ResearchPricing pricing,
     IClock clock,
-    string databaseFile) : IComponent
+    string databaseFile,
+    IReadOnlyDictionary<string, IReadOnlyList<string>>? sectorSites = null) : IComponent
 {
     public static ComponentAccess Access => new(
         Stores:
@@ -75,6 +85,39 @@ public sealed class ThemeResearchRunner(
     // Why a cycle is not written where every page the searches kept only mentions the industry.
     // see: A theme page is handed to the model only where its text names the industry
     public const string NoPageAboutTheIndustry = "the searches returned no page about the industry";
+
+    // Why a cycle is not written where the model was handed pages about the industry and wrote nothing from them:
+    // both answers empty, or a draft citing none of them. What the searches found is named with it, and the
+    // sector where the source list carries no site of its own for it, which is what a review adds sites for.
+    // see: An industry cycle the model declined is named as declined for lack of industry sources
+    public const string Declined = "declined for lack of industry sources";
+
+    public static string DeclinedLine(IReadOnlyList<StoredDocument> about, string industry, string? sector, bool sectorHasSites) =>
+        FormattableString.Invariant($"{Declined}: the searches found {about.Count} page(s) about {industry}, from {Listed(about.Select(page => Site(page.Url)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray())}, and the model wrote nothing from them")
+        + NoSiteOfItsOwn(sector, sectorHasSites);
+
+    public static string NoSiteOfItsOwn(string? sector, bool sectorHasSites) =>
+        sector is { Length: > 0 } && !sectorHasSites ? "; the source list carries no site of its own for the " + sector + " sector" : string.Empty;
+
+    // A page's site as the list names sites: its host without the leading www.
+    public static string Site(string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var address)
+            ? address.Host.StartsWith("www.", StringComparison.OrdinalIgnoreCase) ? address.Host[4..] : address.Host
+            : url;
+
+    static string Listed(IReadOnlyList<string> names) =>
+        names.Count <= 1 ? string.Concat(names) : string.Join(", ", names.Take(names.Count - 1)) + " and " + names[^1];
+
+    static readonly System.Text.RegularExpressions.Regex Marker = new(@"\[D\d+\]", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    // The sites a theme search reads for a member of a sector: the list's own, and the sector's where it has any.
+    // see: A theme search adds its sector's sites, and a site joins the list only where a measurement found industry material on it
+    IReadOnlyList<string> SitesFor(string? sector) =>
+        sector is not null && sectorSites?.TryGetValue(sector, out var own) == true
+            ? [.. industryList.Concat(own).Distinct(StringComparer.OrdinalIgnoreCase)]
+            : industryList;
+
+    bool SectorHasSites(string? sector) => sector is not null && sectorSites?.TryGetValue(sector, out var own) == true && own.Count > 0;
 
     const string NewestCycle = @"
         SELECT version, as_of, status, reject_reason, prose, source_ids
@@ -129,8 +172,9 @@ public sealed class ThemeResearchRunner(
             $rows_written, 0, $network_requests, '0', $detail);
     ";
 
-    public async Task<ThemePassOutcome> RunAsync(string theme, string runId, CancellationToken cancellation = default)
+    public async Task<ThemePassOutcome> RunAsync(string theme, string runId, CancellationToken cancellation = default, string? sector = null)
     {
+        var industrySites = SitesFor(sector);
         var startedAt = clock.UtcNow;
         var asOf = clock.SessionDateAt(startedAt);
         var requestsBefore = search.Requests + cap.Probes;
@@ -175,7 +219,7 @@ public sealed class ThemeResearchRunner(
 
         // One search a site, every one made before anything is stored.
         // see: A theme pass searches each site on the industry list alone, and hands the model a bounded set of the pages they return
-        var queries = ThemeSearch.For(theme, asOf, industryList);
+        var queries = ThemeSearch.For(theme, asOf, industrySites);
         var answers = new List<SearchAnswer>();
 
         // A tool that does not answer, or refuses, leaves the stored record as it was: the
@@ -194,7 +238,7 @@ public sealed class ThemeResearchRunner(
         }
 
         var answer = ThemeSearch.Merged(answers);
-        var intake = ThemeSearch.Of(answer, industryList);
+        var intake = ThemeSearch.Of(answer, industrySites);
         var documents = SourceDocuments.Of(intake.Fetched, asOf.AddMonths(-ThemeSearch.WindowMonths), asOf, startedAt);
         var documentsBefore = await CountAsync(connection, DocumentsHeld, null, cancellation);
         var sectionsBefore = await CountAsync(connection, SectionsHeld, theme, cancellation);
@@ -215,15 +259,16 @@ public sealed class ThemeResearchRunner(
 
         var written = new List<WrittenSection>();
         var notWritten = new List<UnwrittenSection>();
+        var handed = new List<HandedPage>();
         string? stopped = null;
 
         if (stored.Count == 0)
         {
-            notWritten.Add(new UnwrittenSection(ClaimRules.CycleSection, NothingStored(answer, intake)));
+            notWritten.Add(new UnwrittenSection(ClaimRules.CycleSection, NothingStored(answer, intake) + NoSiteOfItsOwn(sector, SectorHasSites(sector))));
         }
         else
         {
-            stopped = await WriteAsync(connection, theme, asOf, stored, null, runId, null, written, notWritten, cancellation);
+            stopped = await WriteAsync(connection, theme, sector, asOf, stored, null, runId, null, written, notWritten, handed, cancellation);
 
             // Under the theme's own stage, since a name's pass runs this one inside its run and
             // checks its own sections after it.
@@ -244,7 +289,7 @@ public sealed class ThemeResearchRunner(
                 // see: A retry names each thing the check refused, and a second draft repeating one is left out
                 var brief = RetryBrief.For(ClaimRules.CycleSection, refused.Prose, [], ResearchRunner.Resolved(refused.SourceIds, stored), null, refused.Reason);
 
-                stopped = await WriteAsync(connection, theme, asOf, stored, brief, runId, ResearchRunner.SecondRound, written, notWritten, cancellation);
+                stopped = await WriteAsync(connection, theme, sector, asOf, stored, brief, runId, ResearchRunner.SecondRound, written, notWritten, handed, cancellation);
 
                 if (written.Count > before)
                 {
@@ -263,7 +308,10 @@ public sealed class ThemeResearchRunner(
             stored.Count(document => document.Admitted),
             intake.OffList,
             intake.Snippets,
-            stopped);
+            stopped)
+        {
+            Handed = [.. handed.DistinctBy(page => page.Id)],
+        };
 
         var rows = await CountAsync(connection, DocumentsHeld, null, cancellation) - documentsBefore
             + await CountAsync(connection, SectionsHeld, theme, cancellation) - sectionsBefore;
@@ -291,6 +339,7 @@ public sealed class ThemeResearchRunner(
     async Task<string?> WriteAsync(
         SqliteConnection connection,
         string theme,
+        string? sector,
         DateOnly asOf,
         IReadOnlyList<StoredDocument> stored,
         string? refusedBecause,
@@ -298,6 +347,7 @@ public sealed class ThemeResearchRunner(
         string? round,
         List<WrittenSection> written,
         List<UnwrittenSection> notWritten,
+        List<HandedPage> handed,
         CancellationToken cancellation)
     {
         var version = ((await NewestAsync(connection, theme, cancellation))?.Version ?? 0) + 1;
@@ -307,10 +357,12 @@ public sealed class ThemeResearchRunner(
         // Pages admitted and none about the industry: nothing is asked and nothing is paid for.
         if (kept.Length > 0 && admitted.Length == 0)
         {
-            notWritten.Add(new UnwrittenSection(ClaimRules.CycleSection, NoPageAboutTheIndustry));
+            notWritten.Add(new UnwrittenSection(ClaimRules.CycleSection, NoPageAboutTheIndustry + NoSiteOfItsOwn(sector, SectorHasSites(sector))));
 
             return null;
         }
+
+        handed.AddRange(admitted.Take(ThemeSearch.MostPages).Select(page => new HandedPage(page.Id, Site(page.Url), page.Title, Math.Round(ThemeSearch.Mentions(page, theme), 2))));
 
         if (admitted.Length == 0)
         {
@@ -339,11 +391,20 @@ public sealed class ThemeResearchRunner(
             return call.Verdict.Line;
         }
 
+        // Handed pages about the industry and answered with nothing twice, or with a draft citing none of them: the
+        // model declined, which is named for what the searches found rather than as an empty answer, and a draft
+        // citing nothing is not stored or asked for again, since a retry repeated the decline each time it ran.
+        // see: An industry cycle the model declined is named as declined for lack of industry sources
+        if (call.Unusable || call.Answer is { } uncited && !Marker.IsMatch(uncited.Text))
+        {
+            notWritten.Add(new UnwrittenSection(ClaimRules.CycleSection, DeclinedLine(admitted, theme, sector, SectorHasSites(sector))));
+
+            return null;
+        }
+
         if (call.Answer is not { } answer)
         {
-            notWritten.Add(new UnwrittenSection(
-                ClaimRules.CycleSection,
-                call.Unusable ? ProseWriter.NoUsableAnswer + ": " + call.Failure : call.Failure ?? "the research model returned nothing"));
+            notWritten.Add(new UnwrittenSection(ClaimRules.CycleSection, call.Failure ?? "the research model returned nothing"));
 
             return null;
         }
@@ -415,6 +476,7 @@ public sealed class ThemeResearchRunner(
             offList = outcome.OffList,
             shortOfADocument = outcome.Snippets,
             documents,
+            handed = outcome.Handed.Select(page => new { id = page.Id, site = page.Site, title = page.Title, mentions = page.Mentions }),
         });
 
     async Task<StoredDocument> StoreAsync(SqliteConnection connection, SqliteTransaction transaction, StoredDocument row, CancellationToken cancellation)

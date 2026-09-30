@@ -2450,6 +2450,10 @@ internal static class Scope
             Verdict.Pass,
             "every kind the row lists is accepted for an event risk, a kind outside them refused naming it and two event risks of one kind refused, over constructed answers, the kinds read off the document against the constant",
             ByAdmissibility),
+        [CheckReach.Key(LimitsTable, "Sector sites")] = new Scoped(
+            Verdict.Pass,
+            "a site joins with an admitted page about a declined industry at the density the pass hands a page at, and not with a refused page, one just below the density, one about an industry the sector did not decline or another site's page, over constructed results, the page count read off the document against the constant",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "A paid job's profile names a key the secrets file does not hold, the job stops before it fetches or asks anything and no other profile answers for it; a research pass writes the plain line saying which profile and which key as its own run log row, which the drain settles the request under as refused")] = new Scoped(
             Verdict.Pass,
             "with DeepSeek's key held and Claude's not, the research job naming Claude is refused in the line naming the profile and the key's path, no settings are resolved for another profile, and the pass's own row carries the line with no call and no spend, under which the drain settles the request refused",
@@ -4238,8 +4242,9 @@ internal static class Scope
         ["Paid model profiles"] = "12.6",
         ["Paid model retirement warning"] = "12.6",
         ["A report named for its cost"] = "12.6",
-        // The research template, a 12.6 correction.
+        // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
+        ["Sector sites"] = "12.6",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

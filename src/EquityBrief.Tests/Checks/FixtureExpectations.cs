@@ -134,6 +134,9 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.LimitsTable, "Met tolerance"),
             CheckReach.Key(Scope.LimitsTable, "Earnings quality"),
             CheckReach.Key(Scope.LimitsTable, "Valuation position"),
+
+            // 12.6, the page a sector's site joins the industry list by, which the declined cycle's tests read.
+            CheckReach.Key(Scope.LimitsTable, "Sector sites"),
             CheckReach.Key(Scope.FixtureTable, "reported quarters"),
 
             // 11.5, the floor a name's industry has to reach before it is the name's group.

@@ -31834,3 +31834,88 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, 159c919, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    corrections D to G at 12.6 in that order; the migration and the restart above, run after the merge.
+
+### 12.6 - correction: an industry cycle the model declined is named as declined for lack of industry sources with what the searches found and the sector the list has no site of its own for, and a theme search adds its sector's sites, thirteen admitted by a measurement, where the page said the answer was empty and the list carried nothing for health care, chemicals, defense, autos or insurers   2026-09-30
+Corrects:   the theme pass, on item 4 of the operator's research template of 2026-09-29 and the operator's fourth
+            answer, both word for word in the ruling entry above, the third of the six corrections that ruling plans.
+Asked:      find why the industry cycle is declined across every industry researched, name it on the page as
+            declined for lack of industry sources where it was, and state and propose what the theme pass would need;
+            build the declined line, propose sites per sector, measure them for the declined industries, and admit a
+            site only where the measurement found admissible industry material on it for its sector, reporting which
+            went in, which did not and why.
+Repaired:   - Declined, named. The theme pass names a cycle declined where a call was made over at least one page
+              about the industry and both answers came back empty or cut short, or the answer cited none of the
+              pages: "declined for lack of industry sources: the searches found {n} page(s) about {industry}, from
+              {sites}, and the model wrote nothing from them", and, where the list carries no site of its own for
+              the member's sector, "; the source list carries no site of its own for the {sector} sector". A draft
+              citing none of its pages is not stored and not asked for again. A pass handed no page about the
+              industry, and one storing nothing, name the sector the same way. The line reaches the name page through
+              the pass's row as the reason did, in place of the empty answer.
+            - Handed. The theme pass's row keeps each page its call was handed, with its id, its site, its title
+              and how densely it names the industry.
+            - Sector sites. `source-lists.json` carries `industry.sectors`, and a theme search reads the list's sites
+              and those of the sector the membership row names beside the industry, one search a site.
+            - The measurement. The worker's `measure-sources` verb runs the pass's own search, admissibility and
+              density rule over each proposed site for each declined industry of its sector, writes nothing to the
+              store and writes its report under `artifacts/`; `SourceMeasurement.Joins` is the rule.
+Measured:   on 2026-09-30, 26 searches for the six declined industries, one site and one industry at a time over the
+            quarter to the day, against the search tool's free allowance, the key read into the verb's environment
+            from the main checkout's secrets file and never printed. Pages about the industry, of those admitted, of
+            those returned: Healthcare, for Diagnostics & Research, Healthcare Plans and Medical Devices, cms.gov
+            0/3/3, 3/3/3 and 2/3/3, fda.gov 3/3/3 for the first, kff.org 3/3/3 for the second, advamed.org 3/3/3,
+            0/3/3 and 3/3/3, ahip.org 1/1/3 for the second; Industrials, for Aerospace & Defense, aia-aerospace.org
+            3/3/3, faa.gov 1/3/3, defense.gov 1/3/3 and iata.org nothing; Consumer Cyclical, for Auto Manufacturers,
+            coxautoinc.com 3/3/3, acea.auto 1/3/3, nada.org nothing and bea.gov 0/1/1; Basic Materials, for Specialty
+            Chemicals, americanchemistry.com 1/1/1, cefic.org 3/3/3 and icis.com 3/3/3. By the rule, thirteen of the
+            sixteen joined, all five for Healthcare, three for Industrials, two for Consumer Cyclical and all three
+            for Basic Materials; iata.org and nada.org stayed out for returning nothing, and bea.gov for its one
+            admitted page not being about the industry. The fixture's KEYS is in Technology, which carries no site
+            of its own, so its theme's searches and recordings are unchanged, and its line now reads declined, from
+            statista.com and bls.gov, naming the Technology sector.
+Changed:    `SourceLists`, `SourceMeasurement` and `ThemeSearch` in Core; the theme pass, the name's pass's read of the
+            member's sector and the worker's `measure-sources` verb; `source-lists.json`'s sectors, their measured
+            note and its review date; the theme research runner's row, the source lists' and theme search's rows, a
+            row of section 17, Sector sites, and the failure table's theme row in `ARCHITECTURE.html`; a section of
+            RUNBOOK; the fixture-expectations row of `.claude/rules/checks.md`; the prior text of each spec edit in
+            `CHANGELOG.md`; the harness's scope, pins and phase 12 claims; and the fixture's research record
+            expectation.
+Decisions:  new: "An industry cycle the model declined is named as declined for lack of industry sources" and "A theme
+            search adds its sector's sites, and a site joins the list only where a measurement found industry
+            material on it", as the ruling planned them.
+Tests:      1570, from 1566:
+            `TheFixturesCycleTheModelAnsweredWithNothingIsNamedAsDeclinedWithThePagesItWasHanded`,
+            `ACycleDraftCitingNoPageItWasHandedIsDeclinedNotStoredAndNotAskedForAgain`,
+            `AThemeSearchAddsItsSectorsSitesAndNoOtherSectorsAndNamesASectorWithNone` and
+            `AProposedSiteJoinsItsSectorOnlyWhereItReturnedAnAdmittedPageAboutADeclinedIndustry`. The theme test whose
+            two answers held only thinking now reads the declined line, each call's own row still naming what it
+            held, and the worker's help names the thirteenth verb.
+Claims:     725, from 724: section 17's Sector sites, named in phase 12's pair as a row the research template adds.
+Pins:       none moves; no source this correction edits is in the three pin lists.
+Recorded:   nothing; no request a recording answers changed.
+Ran:        the previous correction's two commands, after its merge and with no night, queue or drain running, read
+            off the machine's processes and the run log: `tools/migrate.ps1` from the main checkout at a0870a8
+            applied migration 50 to the operator's store, and the read surface on 5152 was stopped and started again
+            from `main`, whose name page for ECL then drew the short version written by code and the risks table.
+Mutated:    the rule, stated before the run: each rule this correction adds reversed alone, filtered to the tests that
+            read it.
+            Predicted:
+            D1 the declined detection removed, the old empty-answer line and an uncited draft stored: red in the
+               fixture's declined test, the uncited draft test and the thinking-only theme test.
+            D2 the sector's sites not added, the list's alone searched: red in the sector test.
+            D3 the site rule's density test removed: red in the site rule test.
+            Results: one run each in a detached worktree at ee81ab7, this entry's commit, filtered to the five theme
+            tests the correction adds or changes, each edit made there and reverted, and the tree read clean after.
+            D1 turned the fixture's declined test, the uncited draft test and the thinking-only test red and the
+            other two green. D2 turned the sector test red alone. D3 turned the site rule test red alone, on the
+            page just below the density.
+Held:       red in every test predicted and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1570 of 1570 tests ran
+            with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 725 claims, 725 PASS, 0 FAIL, 736 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1570 of 1570 tests.
+            Both gates ran over the tree carrying this entry, ee81ab7, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    corrections E to G at 12.6 in that order; a site proposed for each of the other seven sectors once one of
+            their industries is declined, which the declined line names.

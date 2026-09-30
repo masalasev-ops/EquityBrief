@@ -1,6 +1,6 @@
 {
-  "reviewedOn": "2026-09-13",
-  "reviewBy": "2027-03-13",
+  "reviewedOn": "2026-09-30",
+  "reviewBy": "2027-03-30",
   "note": "Two lists, drafted at 1.7 from the coverage measurement recorded in PROGRESS.md. They govern the theme and company searches the research pass makes against the open web. They do not govern the licensed news feed: that feed delivers 1173 of 1253 measured articles under one domain, and the domain is the aggregator rather than the writing outlet, so a domain filter over it would discard everything or nothing. Admissibility is judged per document after the fetch in both cases. (see: Two source lists govern the open web, and the licensed feed is a channel rather than a list)",
   "companyNews": {
     "purpose": "reporting about a named company: results, guidance, management, transactions",
@@ -46,6 +46,30 @@
     "gated": [
       "ihsmarkit.com"
     ],
+    "sectors": {
+      "Healthcare": [
+        "cms.gov",
+        "fda.gov",
+        "kff.org",
+        "advamed.org",
+        "ahip.org"
+      ],
+      "Industrials": [
+        "aia-aerospace.org",
+        "faa.gov",
+        "defense.gov"
+      ],
+      "Consumer Cyclical": [
+        "coxautoinc.com",
+        "acea.auto"
+      ],
+      "Basic Materials": [
+        "americanchemistry.com",
+        "cefic.org",
+        "icis.com"
+      ]
+    },
+    "sectorsNote": "The sites a theme search adds to the list above for a member the index names in the sector, each proposed for a sector whose industries the model had declined to write a cycle for and admitted only by the rule stated in advance: a site joins where, for at least one declined industry of its sector, it returned at least one page admissibility admitted and the density rule reads as about that industry. Measured on 2026-09-30 by the worker's measure-sources verb, one search a site and an industry over the quarter to that day, 26 searches in all. Pages about the industry, of those admitted, of those returned: Healthcare, for Diagnostics & Research, Healthcare Plans and Medical Devices, cms.gov 0 of 3 of 3, 3 of 3 of 3 and 2 of 3 of 3; fda.gov 3 of 3 of 3 for Diagnostics & Research and nothing for the other two; kff.org 3 of 3 of 3 for Healthcare Plans and nothing for the other two; advamed.org 3 of 3 of 3, 0 of 3 of 3 and 3 of 3 of 3; ahip.org 1 of 1 of 3 for Healthcare Plans, one result short of a document, and nothing for the other two; all five joined. Industrials, for Aerospace & Defense: aia-aerospace.org 3 of 3 of 3, faa.gov 1 of 3 of 3 and defense.gov 1 of 3 of 3 joined; iata.org returned nothing and stayed out. Consumer Cyclical, for Auto Manufacturers: coxautoinc.com 3 of 3 of 3 and acea.auto 1 of 3 of 3 joined; nada.org returned nothing and bea.gov one admitted page that is not about the industry, and both stayed out. Basic Materials, for Specialty Chemicals: americanchemistry.com 1 of 1 of 1, cefic.org 3 of 3 of 3 and icis.com 3 of 3 of 3 joined. The other seven sectors carry no site of their own, and a declined cycle names the sector it lacks sites for, which is what prompts proposals for it. (see: A theme search adds its sector's sites, and a site joins the list only where a measurement found industry material on it)",
     "gatedNote": "Measured at 6.9 by a search that ran, one a site over the quarter to 2026-09-08 for an industry the site covers. Kept on the list and expected to return nothing to an automated fetch: ihsmarkit.com returned no result. The two other sites marked here until then were guesses the search contradicted: statista.com returned ten pages of ten with their text and a publish date, and digitimes.com three of ten, the other seven arriving as snippets."
   },
   "reviewNote": "Reviewed at 6.0 against the coverage measurement 1.7 took, and the review's finding is what the measurement can and cannot settle. It cannot review either list by domain: it measured the licensed news feed, which these lists do not govern, and that feed carried 1,173 of 1,253 articles under one domain because the domain in the payload is the aggregator rather than the writing outlet. So no entry is added or removed on its evidence, and doing so would be tuning a search list on a feed. What it does settle is recorded here. The three writing outlets it observed inside the article text, Business Wire, Globe Newswire and Bloomberg, are all on the company-news list already. Every one of the 1,253 articles carried retrievable text, so the document a claim rests on arrives with the feed row and the unretrievable-text case admissibility must refuse is a search-tool case rather than a feed case. And coverage thins by about four to one from the top of the index to the bottom, 883 articles for the top third against 175 for the bottom over the same fortnight with one name of thirty drawing none, which says that the bottom of the index has material for a per-name pass and not much of it. The industry list still has no evidence behind it at all, which 1.7 named and this review confirms rather than repairs: nothing can measure it until a search runs against it.",

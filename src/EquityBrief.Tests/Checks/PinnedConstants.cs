@@ -134,6 +134,7 @@ public class PinnedConstants
             new("Theme search parameters", "5", ThemeSearch.MentionsPerTenThousand, "ThemeSearch.MentionsPerTenThousand"),
             new("Theme search parameters", "10,000", ThemeSearch.CountedOver, "ThemeSearch.CountedOver"),
             new("Theme search parameters", "30,000", ThemeSearch.CharactersAPage, "ThemeSearch.CharactersAPage"),
+            new("Sector sites", "1", SourceMeasurement.PagesToJoin, "SourceMeasurement.PagesToJoin"),
             new(Admissible, "6.3", null, Checkpoint, () => Landed("6.3")),
             new(Admissible, "3", Admissibility.SentencesInAParagraph, "Admissibility.SentencesInAParagraph"),
             new(Admissible, "40", Admissibility.WordsInAParagraph, "Admissibility.WordsInAParagraph"),

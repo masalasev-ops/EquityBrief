@@ -37,13 +37,14 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "filter-history" => await FilterHistoryRun(args),
     "history-pull" => await HistoryPullRun(args),
     "quarters" => await QuartersRun(args),
+    "measure-sources" => await MeasureSources(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. Twelve are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 13 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -69,7 +70,9 @@ static int NoVerb()
         "night can read them, and " +
         "'history-pull --from <yyyy-MM-dd>' stores the daily bars and earnings prints of every name the index held from that " +
         "date to tonight apart from the store's own, each row marked by its pull, with '--purge <pull>' removing a pull whole, and " +
-        "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill. '--live' " +
+        "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill, and " +
+        "'measure-sources --sector <sector> --sites <a,b> --industries <x,y>' searches each proposed site for each declined " +
+        "industry as a theme pass does and says which would join the sector's sites, writing a report and nothing to the store. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -173,6 +176,55 @@ static async Task<int> HistoryPullRun(string[] args)
         store.DatabaseFile,
         Console.Out,
         Console.Error);
+}
+
+// A sector's proposed sites measured for its declined industries before any joins the industry list. The search
+// is the live tool's; nothing is written to the store, and the report goes under the working folder's artifacts.
+// see: A theme search adds its sector's sites, and a site joins the list only where a measurement found industry material on it
+static async Task<int> MeasureSources(string[] args)
+{
+    var configuration = Configuration();
+    var sector = Argument(args, "--sector");
+    string[] sites = Argument(args, "--sites")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+    string[] industries = Argument(args, "--industries")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+
+    if (sector is null || sites.Length == 0 || industries.Length == 0)
+    {
+        Console.Error.WriteLine("measure-sources: name the sector with '--sector', its proposed sites with '--sites a,b' and the declined industries with '--industries x,y'.");
+
+        return 1;
+    }
+
+    ISearchFeed search;
+
+    try
+    {
+        search = TavilySearchFeed.Live(configuration[TavilySearchFeed.ApiKeyName]);
+    }
+    catch (InvalidOperationException refusal)
+    {
+        Console.Error.WriteLine("measure-sources: " + refusal.Message);
+
+        return 1;
+    }
+
+    var (file, verdicts) = await SourceMeasurementRun.RunAsync(
+        search,
+        SystemClock.ForUnitedStatesSessions(),
+        sector,
+        sites,
+        industries,
+        Path.Combine(Directory.GetCurrentDirectory(), "artifacts"));
+
+    foreach (var verdict in verdicts)
+    {
+        Console.WriteLine(FormattableString.Invariant(
+            $"measure-sources: {verdict.Site} {(verdict.Joins ? "joins" : "stays out")}, {verdict.About} page(s) about a declined industry of {verdict.Admitted} admitted, {verdict.Stored} stored and {verdict.Results} returned"));
+    }
+
+    Console.WriteLine("measure-sources: " + search.Requests.ToString(CultureInfo.InvariantCulture) + " search(es), report " + file);
+
+    return 0;
 }
 
 // The quarters step run by hand, outside the night, the fourth carve-out's own asks taken when the
@@ -409,7 +461,7 @@ static async Task<int> ResearchPass(string[] args)
         sections => new ProseWriter(feeds.LocalModel, local, sections, clock, database),
         cap,
         checker,
-        new ThemeResearchRunner(cap, checker, feeds.Search, lists.Industry, research.Pricing, clock, database),
+        new ThemeResearchRunner(cap, checker, feeds.Search, lists.Industry, research.Pricing, clock, database, lists.Sectors),
         feeds.Archive,
         feeds.NameNews,
         lane,

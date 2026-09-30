@@ -11,11 +11,41 @@ public sealed record SourceLists(IReadOnlyList<string> CompanyNews, IReadOnlyLis
 {
     public const string FileName = "source-lists.json";
 
+    // The industry list's sites for one sector, searched beside the list's own for a theme whose member the index
+    // names in that sector, each having returned a page about one of the sector's industries when it was measured.
+    // see: A theme search adds its sector's sites, and a site joins the list only where a measurement found industry material on it
+    public IReadOnlyDictionary<string, IReadOnlyList<string>> Sectors { get; init; } =
+        new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
+
+    // The sites a theme search reads for a member of a sector: the list's own and the sector's, each once.
+    public IReadOnlyList<string> IndustryFor(string? sector) =>
+        sector is not null && Sectors.TryGetValue(sector, out var own) ? [.. Industry.Concat(own).Distinct(StringComparer.OrdinalIgnoreCase)] : Industry;
+
     public static SourceLists Read(string file)
     {
         using var document = JsonDocument.Parse(File.ReadAllText(file));
 
-        return new SourceLists(Sites(document.RootElement, "companyNews", file), Sites(document.RootElement, "industry", file));
+        return new SourceLists(Sites(document.RootElement, "companyNews", file), Sites(document.RootElement, "industry", file))
+        {
+            Sectors = SectorSites(document.RootElement),
+        };
+    }
+
+    static Dictionary<string, IReadOnlyList<string>> SectorSites(JsonElement root)
+    {
+        var sectors = new Dictionary<string, IReadOnlyList<string>>(StringComparer.Ordinal);
+
+        if (root.TryGetProperty("industry", out var industry)
+            && industry.TryGetProperty("sectors", out var named)
+            && named.ValueKind == JsonValueKind.Object)
+        {
+            foreach (var sector in named.EnumerateObject().Where(sector => sector.Value.ValueKind == JsonValueKind.Array))
+            {
+                sectors[sector.Name] = [.. sector.Value.EnumerateArray().Select(site => site.GetString() ?? string.Empty).Where(site => site.Length > 0)];
+            }
+        }
+
+        return sectors;
     }
 
     static IReadOnlyList<string> Sites(JsonElement root, string list, string file)
