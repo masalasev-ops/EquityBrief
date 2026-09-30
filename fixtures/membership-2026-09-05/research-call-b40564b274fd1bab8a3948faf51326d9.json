@@ -1,0 +1,40 @@
+{
+  "date": "Wed, 30 Sep 2026 10:36:03 GMT",
+  "response": {
+    "model": "claude-sonnet-5-5",
+    "id": "msg_011CfZUaCGieLiesv8rJTfp5",
+    "type": "message",
+    "role": "assistant",
+    "content": [
+      {
+        "type": "thinking",
+        "thinking": "",
+        "signature": "CAQS2ggKEAgSGAI4AUIIdGhpbmtpbmcSDIwQzcCxlXJSXOXztRoMUDA5MqLiAGZuRk5rIjBNwxLQuYCJ6SfRYn\u002BdbT4WrF5ZE/PyQ04oXcKF\u002BxexIbBF/6KmUZ9Jv5\u002Bu2xmW/Hoq9wcK0hkZ7MBUsQzxXPsvPXoWWJz555Lk\u002BCRGq\u002BQ\u002BmpFriZYII22/Ai1RIADoKYUVZ31jYcy6W\u002BjWTs\u002BOvtStKdTeF6ZSnj3XDRprfXJLKS7BJ4xYw5xI/86ZlOUjNWEdyJGZVGz5Fu4xK1IIB8a2\u002B9J0V7oTymhamUEJ1l3U9j\u002BFjamhWR8BtLKN9OgYVfs62FXyVU7KfQPilQtYMWYDqBFjezvSvBXjui/VNyc4DygTUKv4Mow\u002Boqq1aj2OOGAkH42\u002B4LEcqQq6HK5Mmf\u002BifIbQR6yii9ARWMWSe0CjV0xtFAqd4D5V0Bmksrwj7ZzXiAPRhzo0WC4T3KCwoOAC\u002BgzMGKnZt6\u002BaGLtV9vy0sPU/R4caOtBT33\u002B3f0ei0BhY\u002BbkyLPNpyh4NRox2zZAIaUr/K2T\u002Bsrft2F8s7TvyquDOXGldRVwWJFFB8EFv/vXcLPtAzCVRIu//b2GqmkywHSxymQNmiBYl1fPIRvSfnlBXGV7DWVM7LsnWwQbRIjbwB\u002B7JukgRj0nnOj3mGX7uLDrs\u002B0C9oY/ILnp/1dhgtoWeuIfnZ7SMS8wsPEYcbm/KPplaYNee5wTUJkoTfcsKhCdH5R79Xd78hUtyq8y4iiMf1vIbF4InZFhJDrwl5\u002B0T0YTkevMOXa8QFLKtTzO18dYRxenQzgdmhOLw73P1e1sJVQGlAZ5InGgSEQ5sBr5yLnwFyuP37hZh5/Awo8ZoP5N8ff4IoNujRSYUpyja5N20\u002B\u002B6BES2G\u002Bh8WXyo4XeJkcQtmefUh\u002BgAs4RfWuuih5ijhtjA2HkAs/B9OPhwPcHg/pWZEPWu7o571Suop\u002BnOgKoZ3R5MVkAjsSatelmpd3aldLzmx5Jx0YjDp5VWUbfLBQQAQ1byRWJwdbr924g7RZ5sXFgt9l1xLYcjmaqvAREnPdowTsEgjWwo5c4PtQM499OfoUEBcmoc5u4l1U1g0e\u002BXKHAx2rpDOced3Z5M7yr5erQ1WyJTracPW1sMgDIXuYKKgLGzSrbtS7xieHSVDhnJ5/qQ6Y\u002BOhL4coMZMojlox9T1klbQSeRAPAczqDjnAkgwYC1dn64sXWgBpNEovNLxCtZv7tTZtFYi1IQSrIBmODQdtAtlK/CcK2N7VZ/\u002BZLHvcty7KxNKCO\u002BPDCg07DcTVN3Nsd/ie\u002BPlryxDa2CqXHnNavGX3IrNiSFSPqt5VBTFsYm6ZU0Sn/68JFrsLhGawk\u002BXQjUXBV9In49cU4rngOjeQmxJV9IDD4EYtDsAmbmKXEQhiBlS8odfDZBBGnVQKI7iUB2KZGsvK/J8QY0pbCrLvgq9BqM8SlddPUvDvPaoMFC78QKinroVVNMpuhrWYvrhzk3vBGAE="
+      },
+      {
+        "type": "text",
+        "text": "{\u0022paragraphs\u0022:[]}"
+      }
+    ],
+    "container": null,
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "usage": {
+      "input_tokens": 11006,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+        "ephemeral_5m_input_tokens": 0,
+        "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 190,
+      "output_tokens_details": {
+        "thinking_tokens": 177
+      },
+      "service_tier": "standard",
+      "inference_geo": "global"
+    },
+    "diagnostics": null
+  }
+}

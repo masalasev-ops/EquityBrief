@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-h6edodu9125hnqujxcfg6j",
+  "object": "chat.completion",
+  "created": 1790764495,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The bull case rests on record revenue of $1.85 billion and non-GAAP net income of $531 million which reflects core performance excluding non-recurring items [D1]. Orders surged 56% year-on-year to $2.09 billion driven by AI infrastructure demand particularly in wireline where revenue surpassed wireless for the first time [D1]. The Communications Solutions Group generated its first $1 billion quarter with commercial communications revenue jumping 56% reflecting rapid scaling of the AI infrastructure ecosystem [D3]. Management raised its fourth-quarter revenue guidance to a range of $1.930 billion to $1.950 billion representing year-over-year growth of approximately 37% at the midpoint [D1]. Operating margin expanded by more than 800 basis points compared with the previous year as operating leverage translated strong demand into improved financial performance [D2]. Free cash flow reached $403 million providing the company with additional financial flexibility while it continued to return capital through its share repurchase programme [D2]. The stock trades at a forward price to earnings of 20.6612 which is lower than the trailing price to earnings of 45.8862 suggesting potential for re-rating if growth sustains [Facts]. Analysts have increased their consensus estimates with three estimates moving higher compared to no negative revision over the last 30 days indicating growing optimism over the company's earnings prospects [D5]. The bull case needs to see that revenue in the fourth quarter falls within the raised guidance range and that order growth remains robust at or above $2 billion for the third consecutive quarter.\n\nThe bear case hinges on management cautioning that supply chain constraints will remain the governor of near-term revenue conversion for the next several quarters [D3]. The company noted that the supply environment is less flexible today than a year ago which could limit the ability to convert demand into revenue despite a growing pipeline [D4]. One-time tariff impacts in fiscal 2026 artificially pulled up profitability and will not repeat creating a high comparison bar for future earnings [D3]. Management stated that demand is far exceeding their ability to supply at this point which suggests fulfillment risks could cap top-line growth even if orders remain strong [D3]. The stock closed the last trading session at $321.87 which is below the immediate resistance high edge of 366.41 indicating potential downside pressure before reaching key technical levels [Facts]. Analysts have expressed skepticism about price targets due to business incentives that may result in inflated estimates and a lack of unbiasedness in setting them [D5]. The bear case needs to see that supply constraints do not materially delay revenue recognition in the fourth quarter or cause significant order cancellations.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 19140,
+    "completion_tokens": 566,
+    "total_tokens": 19706,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

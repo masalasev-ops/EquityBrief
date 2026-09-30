@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Research;
 using EquityBrief.Worker.Research;
@@ -29,12 +30,19 @@ public partial class FixtureExpectations
         Assert.NotEmpty(written);
         Assert.All(written, row => Assert.DoesNotContain(ClaimRules.Uncited, row, StringComparison.Ordinal));
 
-        // The two cases, the risks and the short version, which the comparison found refused or general, each
-        // accepted.
-        foreach (var section in new[] { "The two cases", "The risks, each with what would confirm it", "The short version" })
+        // The two cases and the risks, which the comparison found refused or general, each accepted.
+        foreach (var section in new[] { "The two cases", "The risks, each with what would confirm it" })
         {
             Assert.Contains(written, row => row.StartsWith(section + "|" + ClaimChecker.Accepted + "|", StringComparison.Ordinal));
         }
+
+        // The short version, asked again under the refined prompt, is refused twice and left out, each time for a
+        // figure or a date a document states that the facts file does not hold, and never for a sentence naming
+        // no document.
+        var summary = written.Where(row => row.StartsWith("The short version|", StringComparison.Ordinal)).ToArray();
+
+        Assert.Equal(["The short version|" + ClaimChecker.Rejected, "The short version|" + ClaimChecker.Fallback], summary.Select(row => string.Join('|', row.Split('|')[..2])));
+        Assert.All(summary, row => Assert.Matches($"^The short version\\|[a-z]+\\|({Regex.Escape(ClaimChecker.RejectedTwice)}: )?({Regex.Escape(ClaimRules.UnmatchedFigure)}|{Regex.Escape(ClaimRules.UnknownDate)}): ", row));
 
         // The cause, which Claude found nothing in the documents beside each move to write from: answered with
         // a thinking block and no text, asked for once more, and left out saying so, with no draft stored.

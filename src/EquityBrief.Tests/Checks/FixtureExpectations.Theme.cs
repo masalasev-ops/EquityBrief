@@ -544,16 +544,22 @@ public partial class FixtureExpectations
         Assert.Equal(before, Query(store, "SELECT * FROM theme_section;"));
         Assert.Equal([$"{ThemeResearchRunner.Unavailable}|2"], Query(store, "SELECT outcome, network_requests FROM run_log WHERE run_id = 'research-search-down' AND stage = 'theme research';"));
 
-        // The name is written from its own filings and news, every section but the cycle, and the
+        // The name is written from its own filings and news, every section but the cycle and the
+        // cause of each large move, which the recorded model answered with nothing twice, and the
         // cycle is absent with the reason.
         Assert.Equal(ResearchRunner.Written, outcome.Outcome);
         Assert.Equal(
-            ClaimRules.Sections.Where(section => section != ClaimRules.CycleSection).Order(StringComparer.Ordinal),
+            ClaimRules.Sections.Where(section => section != ClaimRules.CycleSection && section != ClaimRules.CauseSection).Order(StringComparer.Ordinal),
             Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS' ORDER BY section;").Order(StringComparer.Ordinal));
         Assert.Equal(
-            [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{unavailable}"],
+            [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{unavailable}", CauseNotWritten()],
             outcome.NotWritten.Select(line => $"{line.Section}|{line.Reason}").ToArray());
     }
+
+    // The line the research record states the cause of each large move is not written with, which the recorded model's
+    // two empty answers to it leave on every pass over the fixture's KEYS.
+    static string CauseNotWritten() =>
+        $"{ClaimRules.CauseSection}|{Expected("research-record").GetProperty("notWritten").GetProperty(ClaimRules.CauseSection).GetString()}";
 
     [Fact]
     public async Task AThemeRefreshThatFailsLeavesTheNamesOtherSectionsWrittenAndTheRecordAsItWas()
@@ -568,13 +574,14 @@ public partial class FixtureExpectations
         Assert.Equal(1, refused.Requests);
         Assert.Empty(Query(store, "SELECT theme FROM theme_section;"));
 
-        // Every section of the name's own is written and stored, the cycle is omitted with the one
+        // Every section of the name's own is written and stored but the cause of each large move,
+        // which the recorded model answered with nothing twice, the cycle is omitted with the one
         // line saying the theme could not be refreshed, and the theme record is as it was.
         Assert.Equal(ResearchRunner.Written, outcome.Outcome);
-        Assert.Equal(8, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';").Count);
+        Assert.Equal(7, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';").Count);
         Assert.DoesNotContain(ClaimRules.CycleSection, Query(store, "SELECT DISTINCT section FROM research_section WHERE ticker = 'KEYS';"));
         Assert.Equal(
-            [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{refused.Line}"],
+            [$"{ClaimRules.CycleSection}|{ResearchRunner.ThemeNotRefreshed}{refused.Line}", CauseNotWritten()],
             outcome.NotWritten.Select(line => $"{line.Section}|{line.Reason}").ToArray());
     }
 

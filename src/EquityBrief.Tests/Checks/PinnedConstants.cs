@@ -57,12 +57,13 @@ public class PinnedConstants
         Assert.Empty(StatedFigures.Unheld(stated, census));
     }
 
-    // The reports a trial runs over, which the shipped settings hold rather than a constant, since the operator sets it.
-    static decimal ShippedTrialReports() =>
+    // The reports a trial or a review runs over, which the shipped settings hold rather than a constant, since the
+    // operator sets it.
+    static decimal ShippedTrialReports(string field = ResearchLane.TrialField) =>
         decimal.Parse(
             new ConfigurationBuilder()
                 .AddJsonFile(Providers.ResearchModelFeedTests.ShippedConfiguration)
-                .Build()[ModelProfiles.JobField(ModelProfiles.ResearchJob, ResearchLane.TrialField) + ":Reports"]!,
+                .Build()[ModelProfiles.JobField(ModelProfiles.ResearchJob, field) + ":Reports"]!,
             CultureInfo.InvariantCulture);
 
     static IReadOnlyList<HeldFigure> SectionSeventeen(
@@ -136,6 +137,7 @@ public class PinnedConstants
             new("Spend cap", "10", SpendCaps.DefaultDay, "SpendCaps.DefaultDay"),
             new("Spend cap", "50", SpendCaps.DefaultMonth, "SpendCaps.DefaultMonth"),
             new("Section trial", "3", ShippedTrialReports(), "the shipped EquityBrief:Models:Research:Trial:Reports"),
+            new("Section review", "3", ShippedTrialReports(ResearchLane.ReviewField), "the shipped EquityBrief:Models:Research:Review:Reports"),
             new("Report rates", "20", EquityBrief.Web.Marks.ReportsView.RateWindow, "ReportsView.RateWindow"),
             new("Report rates", "20", EquityBrief.Web.Marks.ReportsView.RateWindow, "ReportsView.RateWindow, for the two cases' count"),
             new("Paid model retirement warning", "30", ModelProfiles.RetirementWarningDays, "ModelProfiles.RetirementWarningDays"),

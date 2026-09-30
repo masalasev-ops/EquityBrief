@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-bqnrtzohilrinu9kd0eioh",
+  "object": "chat.completion",
+  "created": 1790764279,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Apple Inc. closed at 316.22, trading above the 50-day average of 315.64 and the 20-day average of 313.54 while remaining below the immediate resistance high edge of 320.28. The stock has beaten estimates for eight consecutive quarters with an operating margin of 32.6 per cent that compares favorably to 30.0 per cent a year earlier. Sales growth on a year earlier reached 16.4 per cent, reflecting the improving business state read from the quarter to 2026-06-30. The 14-day average true range of 7.50 and a relative strength index of 50.26 indicate current volatility levels near the midpoint of the scale.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1639,
+    "completion_tokens": 173,
+    "total_tokens": 1812,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

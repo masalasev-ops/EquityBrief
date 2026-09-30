@@ -440,7 +440,7 @@ public sealed class ProseWriter(
     }
 
     static PromptDocument[] Prompted(IEnumerable<StoredDocument> admitted) =>
-        [.. admitted.Select(document => new PromptDocument(document.Id, document.Title, document.PublishedOn, document.Body!))];
+        [.. admitted.Select(document => PromptDocument.From(document))];
 
     sealed record Newest(int Version, DateOnly AsOf, string Status, string? Reason, string Prose, string SourceIds, string? Parts);
 

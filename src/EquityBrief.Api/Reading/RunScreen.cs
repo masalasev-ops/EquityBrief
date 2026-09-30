@@ -1491,10 +1491,14 @@ public static class RunScreen
 
         var drafted = newest.Select(report => CellOf(report, ClaimRules.TwoCasesSection)).Where(cell => cell.Drafts > 0).Take(ReportsView.RateWindow).ToArray();
 
+        // A trial's row and a review's for one section of one report are one row of the region, the trial's first.
         var trials = rows
-            .Where(row => row.Stage.StartsWith(ReadApi.TrialStage + ":", StringComparison.Ordinal) && passes.ContainsKey(row.RunId))
-            .Select(row => Trial(row, passes[row.RunId].Report, passes[row.RunId].Pass, written))
-            .OfType<TrialRow>()
+            .Where(row => passes.ContainsKey(row.RunId)
+                && (row.Stage.StartsWith(ReadApi.TrialStage + ":", StringComparison.Ordinal) || row.Stage.StartsWith(ReadApi.ReviewStage + ":", StringComparison.Ordinal)))
+            .Select(row => (Row: row, Side: Asked(row)))
+            .Where(one => one.Side is not null)
+            .GroupBy(one => (one.Row.RunId, one.Side!.Value.Section))
+            .Select(group => Trial(group.Key.RunId, group.Key.Section, passes[group.Key.RunId].Report, passes[group.Key.RunId].Pass, written, [.. group.Select(one => one.Side!.Value)]))
             .ToArray();
 
         return new ReportsView(
@@ -1549,39 +1553,51 @@ public static class RunScreen
         return stage == named || stage.StartsWith(named + ", ", StringComparison.Ordinal);
     }
 
-    static TrialRow? Trial(
-        RunStageRow row,
+    // The pass's own side read off its cell and the versions it wrote, first draft first, beside the sides asked.
+    static TrialRow Trial(
+        string runId,
+        string section,
         ReportRow report,
         PassDetail pass,
-        IReadOnlyDictionary<(string Owner, string Section, int Version), WrittenVersion> versions)
+        IReadOnlyDictionary<(string Owner, string Section, int Version), WrittenVersion> versions,
+        IReadOnlyList<(string Section, string Compared, TrialSide Side)> asked)
+    {
+        var own = report.Cells.Single(cell => cell.Section == section);
+
+        var drafts = pass.Written
+            .Where(one => one.Section == section)
+            .Select(one => versions.GetValueOrDefault((pass.Owner, section, one.Version))?.Prose ?? string.Empty)
+            .ToArray();
+
+        return new TrialRow(
+            runId,
+            report.Ticker,
+            report.Day,
+            section,
+            new TrialSide(asked[0].Compared, own.Outcome, drafts.Length, own.Cost, drafts, TrialSide.OfPass),
+            [.. asked.Select(one => one.Side).OrderBy(side => side.Side == TrialSide.OfTrial ? 0 : 1)]);
+    }
+
+    // One trial's or review's row read as its side: the model asked, how it came out, its rounds, cost and drafts, and
+    // the model of the pass's draft it was asked beside. None where the row cannot be read.
+    static (string Section, string Compared, TrialSide Side)? Asked(RunStageRow row)
     {
         try
         {
             using var detail = JsonDocument.Parse(row.Detail);
             var root = detail.RootElement;
-            var section = root.GetProperty("section").GetString()!;
-            var own = report.Cells.Single(cell => cell.Section == section);
-
-            // The pass's drafts of the section in the order it wrote them, first draft first.
-            var drafts = pass.Written
-                .Where(one => one.Section == section)
-                .Select(one => versions.GetValueOrDefault((pass.Owner, section, one.Version))?.Prose ?? string.Empty)
-                .ToArray();
-
             var rounds = root.GetProperty("rounds").EnumerateArray().ToArray();
 
-            return new TrialRow(
-                row.RunId,
-                report.Ticker,
-                report.Day,
-                section,
-                new TrialSide(root.GetProperty("compared").GetProperty("model").GetString() ?? string.Empty, own.Outcome, drafts.Length, own.Cost, drafts),
+            return (
+                root.GetProperty("section").GetString()!,
+                root.GetProperty("compared").GetProperty("model").GetString() ?? string.Empty,
                 new TrialSide(
                     root.GetProperty("model").GetString() ?? string.Empty,
                     root.GetProperty("outcome").GetString() ?? string.Empty,
                     rounds.Length,
                     Money(root.GetProperty("cost").GetString() ?? NothingSpentText),
-                    [.. rounds.Select(round => round.TryGetProperty("prose", out var prose) && prose.ValueKind == JsonValueKind.String ? prose.GetString()! : string.Empty)]));
+                    [.. rounds.Select(round => round.TryGetProperty("prose", out var prose) && prose.ValueKind == JsonValueKind.String ? prose.GetString()! : string.Empty)],
+                    row.Stage.StartsWith(ReadApi.ReviewStage + ":", StringComparison.Ordinal) ? TrialSide.OfReview : TrialSide.OfTrial));
         }
         catch (Exception unread) when (unread is JsonException or KeyNotFoundException or InvalidOperationException)
         {

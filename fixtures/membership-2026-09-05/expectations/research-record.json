@@ -6,7 +6,7 @@
     "research_section",
     "source_document"
   ],
-  "frozen": "what each recorded model wrote and the claim checker's verdict on it, what each paid call cost, and that the research model answered the theme's call with nothing twice, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived.",
+  "frozen": "what each recorded model wrote and the claim checker's verdict on it, what each paid call cost, and that the research model answered the theme's call and the cause of each large move with nothing twice each, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived. The recordings were made again on 2026-09-30 under the refined prompt, and what they read moved: the segment commentary and the short version passed on their retries where each had been left out, the two cases and the risks passed at their first draft as before, and the cause of each large move, which had passed, came back with reasoning and no text twice and is not written.",
   "ticker": "KEYS",
   "night": "2026-09-08",
   "window": {
@@ -28,7 +28,8 @@
     ]
   },
   "notWritten": {
-    "The industry cycle": "the theme could not be refreshed: declined for lack of industry sources: the searches found 2 page(s) about Scientific & Technical Instruments, from statista.com and bls.gov, and the model wrote nothing from them; the source list carries no site of its own for the Technology sector"
+    "The industry cycle": "the theme could not be refreshed: declined for lack of industry sources: the searches found 2 page(s) about Scientific & Technical Instruments, from statista.com and bls.gov, and the model wrote nothing from them; the source list carries no site of its own for the Technology sector",
+    "The cause of each large move": "the model's answer came back empty or cut short twice"
   },
   "documents": {
     "fetched": 9,
@@ -58,14 +59,13 @@
     ]
   },
   "versions": [
-    { "section": "The cause of each large move", "version": 1, "lane": "paid", "status": "accepted" },
     { "section": "The dated calendar items", "version": 1, "lane": "paid", "status": "accepted" },
     { "section": "The key under each figure", "version": 1, "lane": "local", "status": "accepted" },
     { "section": "The risks, each with what would confirm it", "version": 1, "lane": "paid", "status": "accepted" },
     { "section": "The segment commentary", "version": 1, "lane": "local", "status": "rejected" },
-    { "section": "The segment commentary", "version": 2, "lane": "local", "status": "fallback" },
+    { "section": "The segment commentary", "version": 2, "lane": "local", "status": "accepted" },
     { "section": "The short version", "version": 1, "lane": "paid", "status": "rejected" },
-    { "section": "The short version", "version": 2, "lane": "paid", "status": "fallback" },
+    { "section": "The short version", "version": 2, "lane": "paid", "status": "accepted" },
     { "section": "The two cases", "version": 1, "lane": "paid", "status": "accepted" },
     { "section": "What the company sells", "version": 1, "lane": "local", "status": "accepted" }
   ],
@@ -76,6 +76,7 @@
     "theme research",
     "prose",
     "research call: The cause of each large move",
+    "research call: The cause of each large move, asked again",
     "research call: The dated calendar items",
     "research call: The two cases",
     "research call: The risks, each with what would confirm it",
@@ -89,9 +90,9 @@
   ],
   "modelCalls": {
     "local": 4,
-    "paid": 6
+    "paid": 7
   },
-  "spend": "0.033025638",
+  "spend": "0.03369171",
   "theme": {
     "theme": "Scientific & Technical Instruments",
     "searches": 12,
@@ -99,14 +100,13 @@
     "admitted": 11,
     "handed": 2,
     "paid": 2,
-    "spend": "0.003830568"
+    "spend": "0.002664936"
   },
   "themeNote": "the theme's searches, its two calls and what they cost are the theme's, made inside the name's pass and under its run. The name's own calls and spend above, and the lane comparison below, leave them out, since both runs of the comparison make the same calls.",
   "comparison": {
     "paid": {
       "accepted": {
-        "The cause of each large move": 1,
-        "What the company sells": 2,
+        "What the company sells": 1,
         "The segment commentary": 2,
         "The key under each figure": 1,
         "The dated calendar items": 1,
@@ -116,17 +116,17 @@
       },
       "fallback": [],
       "calls": 11,
-      "spend": "0.038878104"
+      "spend": "0.038743068"
     },
     "local": {
       "accepted": {
         "The cause of each large move": 1,
         "What the company sells": 1,
-        "The key under each figure": 1
+        "The segment commentary": 2,
+        "The key under each figure": 1,
+        "The dated calendar items": 2
       },
       "fallback": [
-        "The dated calendar items",
-        "The segment commentary",
         "The two cases",
         "The risks, each with what would confirm it",
         "The short version"

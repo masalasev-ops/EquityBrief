@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-o3n40r51g5iccmv24mrnkc",
+  "object": "chat.completion",
+  "created": 1790764303,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Microsoft Corporation trades at a close of 493.95 within an uptrend supported by a 20-day average of 494.46 and a 50-day average of 450.95, while the 200-day average sits at 429.54. The company maintains an operating margin of 45.1 per cent compared to 44.9 per cent a year earlier after beating estimates for eight consecutive quarters with zero misses. Recent earnings reactions show mixed price moves including a 15.51 per cent increase following the latest report on 2026-07-30 and a 12.59 per cent surprise, alongside a 4.40 per cent surprise after the session on 2026-04-30. The stock faces immediate resistance at 506.35 and support between 491.30 and 500.60 as it navigates these technical levels.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2049,
+    "completion_tokens": 217,
+    "total_tokens": 2266,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

@@ -33,22 +33,22 @@
     {
       "options": null,
       "cacheHitTokens": 0,
-      "cacheMissTokens": 246,
-      "completionTokens": 58,
-      "created": "2026-09-29T18:25:54Z",
+      "cacheMissTokens": 354,
+      "completionTokens": 47,
+      "created": "2026-09-30T10:27:55Z",
       "peak": false,
-      "price": "0.0000717",
-      "priceWorked": "246 uncached prompt tokens at 0.15 and 58 completion tokens at 0.60, a million each, on a Tuesday at 18:25 UTC, outside both peak windows: 36.9 and 34.8, 71.7 in a million"
+      "price": "0.0000813",
+      "priceWorked": "354 uncached prompt tokens at 0.15 and 47 completion tokens at 0.60, a million each, on a Wednesday at 10:27 UTC, outside both peak windows: 53.1 and 28.2, 81.3 in a million"
     },
     {
       "options": "{\"thinking\":{\"type\":\"disabled\"}}",
       "cacheHitTokens": 0,
-      "cacheMissTokens": 221,
-      "completionTokens": 8,
-      "created": "2026-09-29T18:26:03Z",
+      "cacheMissTokens": 329,
+      "completionTokens": 9,
+      "created": "2026-09-30T10:39:20Z",
       "peak": false,
-      "price": "0.00003795",
-      "priceWorked": "221 uncached prompt tokens at 0.15 and 8 completion tokens at 0.60: 33.15 and 4.8, 37.95 in a million"
+      "price": "0.00005475",
+      "priceWorked": "329 uncached prompt tokens at 0.15 and 9 completion tokens at 0.60: 49.35 and 5.4, 54.75 in a million"
     }
   ],
   "verdicts": [

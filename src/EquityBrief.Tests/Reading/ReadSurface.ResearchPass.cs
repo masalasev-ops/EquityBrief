@@ -239,7 +239,7 @@ public partial class ReadSurface
         Assert.True(written.Success, "KEYS draws no two cases, and this is what reads them.");
 
         // The fixture's two cases as the recorded writer answered the ask: two paragraphs, the
-        // first opening on the bull case with nine sentences and the second on the bear case with
+        // first opening on the bull case with eleven sentences and the second on the bear case with
         // eight, counted by hand off the recording, every one ending on the marker of its document.
         var stored = Rows(store, "SELECT prose FROM research_section r WHERE ticker = 'KEYS' AND section = 'The two cases' AND status = 'accepted' " +
             "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted');")
@@ -254,7 +254,7 @@ public partial class ReadSurface
         var cases = CasesDrawn(written.Value);
 
         Assert.Equal(["The case for", "The case against"], [.. cases.Select(one => one.Label ?? "no label")]);
-        Assert.Equal([9, 8], [.. cases.Select(one => one.Rows.Count)]);
+        Assert.Equal([11, 8], [.. cases.Select(one => one.Rows.Count)]);
 
         // Each case is its own paragraph cut at its sentences, unchanged and in the order written.
         Assert.Equal([.. paragraphs], [.. cases.Select(one => string.Join(" ", one.Rows))]);
@@ -339,20 +339,20 @@ public partial class ReadSurface
             "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted');")
             .Single()[0];
 
-        // The fixture's risks as the recorded writer answered them, seven risks as fields, five confirmed by a
-        // listed fact and two by an event, counted by hand off the recording, which code composed into a
-        // paragraph each opening on its ordinal and followed by a sentence opening its confirmation. So every
-        // part states its confirmation apart and the section is a table, a risk to a row beside what would
-        // confirm it, each row its paragraph cut and never edited.
+        // The fixture's risks as the recorded writer answered them, four risks as fields, each confirmed by a
+        // listed fact, counted by hand off the recording, which code composed into a paragraph each opening on
+        // its ordinal and followed by a sentence opening its confirmation. So every part states its
+        // confirmation apart and the section is a table, a risk to a row beside what would confirm it, each
+        // row its paragraph cut and never edited.
         var paragraphs = stored.Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         var table = RiskRows(written.Value);
 
-        Assert.Equal(7, paragraphs.Length);
-        Assert.Contains("<table class=\"risks-table\" data-parts=\"7\"><tr><th>Risk</th><th>What would confirm it</th></tr>", written.Value, StringComparison.Ordinal);
-        Assert.Equal(7, table.Count);
+        Assert.Equal(4, paragraphs.Length);
+        Assert.Contains("<table class=\"risks-table\" data-parts=\"4\"><tr><th>Risk</th><th>What would confirm it</th></tr>", written.Value, StringComparison.Ordinal);
+        Assert.Equal(4, table.Count);
         Assert.Equal([.. paragraphs], [.. table.Select(row => row.Risk + " " + row.Confirmation)]);
         Assert.Equal(
-            ["The first risk", "The second risk", "The third risk", "The fourth risk", "The fifth risk", "The sixth risk", "The seventh risk"],
+            ["The first risk", "The second risk", "The third risk", "The fourth risk"],
             [.. table.Select(row => string.Join(' ', row.Risk.Split(' ').Take(3)))]);
         Assert.All(table, row => Assert.StartsWith("That risk would be confirmed by", row.Confirmation, StringComparison.Ordinal));
         Assert.DoesNotContain("class=\"risks\"", written.Value, StringComparison.Ordinal);
@@ -471,25 +471,17 @@ public partial class ReadSurface
     {
         using var store = await FixtureReplay.ResearchedAsync();
 
-        // Six accepted over one pass, stated in advance: the local model's segment commentary and the
-        // short version were each refused twice over the recordings and left out.
-        Assert.Equal(6, Accepted(store, "KEYS").Count);
-
-        // A segment commentary the checker accepted, constructed on the sources its first draft cited,
-        // so the order below places every region section 4 names.
-        Insert(
-            store,
-            "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) SELECT ticker, section, 3, as_of, 'a writer', 'accepted', " +
-            "'The Communications Solutions Group led the quarter [D1].', source_ids, NULL " +
-            "FROM research_section WHERE ticker = 'KEYS' AND section = 'The segment commentary' AND version = 1;");
+        // Seven accepted over one pass, stated in advance: the segment commentary and the short version
+        // on their retries and the rest at their first draft, while the cause of each large move came
+        // back with no text twice over the recordings and is not written.
+        Assert.Equal(7, Accepted(store, "KEYS").Count);
 
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
 
-        // Seven, and the six beside the cause of each move drawn as sections, the cause being drawn
-        // in the moves table where it is written.
-        Assert.Equal(7, Accepted(store, "KEYS").Count);
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 6);
-        Assert.DoesNotContain("<p class=\"not-written\" data-section=\"The cause of each large move\">", page, StringComparison.Ordinal);
+        // All seven drawn as sections, and the cause of each move, which the moves table draws where
+        // it is written, said to be not written.
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
+        Assert.Contains("<p class=\"not-written\" data-section=\"The cause of each large move\">", page, StringComparison.Ordinal);
 
         int At(string marker) => page.IndexOf(marker, StringComparison.Ordinal);
         int Section(string section) => At($"<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"{WebUtility.HtmlEncode(section)}\"");
@@ -721,7 +713,7 @@ public partial class ReadSurface
         Assert.True(state.Success);
         Assert.StartsWith("the research is stale: ", state.Groups[1].Value, StringComparison.Ordinal);
         Assert.Contains($"a filing dated {filed} arrived after it was written", state.Groups[1].Value, StringComparison.Ordinal);
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 5);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
         Assert.All(Regex.Matches(page, "<section class=\"written-section\" data-ticker=\"KEYS\" data-section=\"[^\"]*\" data-as-of=\"([^\"]*)\"").Select(match => match.Groups[1].Value), date => Assert.Equal("2026-08-01", date));
 
         // The option to have them rewritten, with its cost before it.
@@ -751,7 +743,7 @@ public partial class ReadSurface
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
 
         Assert.Contains("<p class=\"research-paused\" data-cap=\"day\" data-resumes-at=\"2026-09-16T00:00:00Z\">", page, StringComparison.Ordinal);
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 5);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
 
         // Stale as well, and still no control, because a press would be refused at the cap.
         Assert.Contains("data-state=\"stale\"", page, StringComparison.Ordinal);
@@ -786,7 +778,7 @@ public partial class ReadSurface
         // page says what the pass came to.
         var page = await ResearchedPage(store, "KEYS", nextDay);
 
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 5);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
         Assert.Matches(
             "<p class=\"research-pass\" data-outcome=\"unavailable\" data-as-of=\"2026-09-09\">the research model did not answer when a pass was asked for on 2026-09-09, so the pass did not start and the stored research is shown as written",
             page);

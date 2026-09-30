@@ -225,8 +225,9 @@ public class ModelProfilesTests
     }
 
     // The fixture's recording of the short version Claude Sonnet 5.5 wrote over KEYS on the claude-sonnet
-    // profile, its first draft, which the checker accepted.
-    const string ClaudesShortVersion = "research-call-109e3f1f4d40e7daebd664a794f5653b.json";
+    // profile, its first draft, which the checker refused for a figure an article states and for no sentence
+    // naming no document.
+    const string ClaudesShortVersion = "research-call-fb65e403485478c57c0d3e080bc137da.json";
 
     [Fact]
     public void AnAnswerHoldingOnlyThinkingIsUnusableNamesWhatItHeldAndIsPricedAtWhatWasBilled()
@@ -254,6 +255,12 @@ public class ModelProfilesTests
         Assert.Equal(string.Empty, AnswerText.Visible(Answered));
         Assert.Equal(string.Empty, AnswerText.Visible(" ​﻿\n"));
         Assert.Equal("A sentence [D1].", AnswerText.Visible("​A sentence [D1].​ "));
+
+        // What DeepSeek answered for the fixture's industry cycle on 2026-09-30, a lone marker, is no answer either,
+        // and neither are several; a marker inside a sentence leaves the sentence as it is.
+        Assert.Equal(string.Empty, AnswerText.Visible("[D1]"));
+        Assert.Equal(string.Empty, AnswerText.Visible(" [D1] [D2]\n[D3] "));
+        Assert.Equal("[D1] opens a sentence.", AnswerText.Visible("[D1] opens a sentence."));
 
         // The captured section with its text replaced by it is no section, and is billed all the same.
         var capture = System.Text.Json.Nodes.JsonNode.Parse(Captured("anthropic-section-sonnet.json"))!;

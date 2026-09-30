@@ -76,7 +76,7 @@ public partial class ReadSurface
         var page = await ResearchedPage(store, "KEYS", AWeekLater);
 
         // Every section the name wrote of its own, under the date the store holds, and no cycle.
-        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 5);
+        AssertEveryAcceptedSectionIsDrawnWithItsOwnDate(store, page, 7);
         Assert.False(WrittenOnThePage(page, ClaimRules.CycleSection).Success);
 
         // And one line saying the theme could not be refreshed.

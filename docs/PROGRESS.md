@@ -32090,3 +32090,126 @@ Operator:   nothing to run; the read surface on 5152 is started again from `main
 Carried:    correction G at 12.6; the section trial's reports read to the operator at its third report, read on the
             region this correction draws; the two cases' figures on both sides reported at the twentieth report after
             the ask changed.
+
+### 12.6 - correction: every section's prompt says its ask again after the documents, names its reader, says what to do with a figure no fact holds, marks each document by kind and gives the two cases and the risks a weak point and a strong one, and a review of a section's own draft ships off, where the ask stood far above long documents, the reader went unnamed and an opinion piece read as a report   2026-09-30
+Corrects:   the research prompt every section is asked with, on the addendum of 2026-09-30 to the research template,
+            word for word in its ruling entry above, the last of the seven corrections the template and its addendum
+            plan.
+Asked:      the five refinements the addendum names, a review pass behind a setting that ships off, drawn beside the
+            trial's drafts, one re-recording with its cost stated, and each section's rates over the ten reports before
+            and after compared for the operator.
+Repaired:   - The ask again. Every section's prompt says its ask again, word for word, under "Now write the
+              section:", after the documents and the sections already written and before a retry's brief.
+            - The reader. The instructions name the reader as someone deciding whether to hold a swing trade in the
+              stock over the next weeks to few months, so a section keeps what could move it before and at its next
+              report; the section still describes and never prescribes.
+            - The alternative. What a figure only a document gives shows is said without the number, as that
+              orders rose sharply, never as a figure and never spelled out, and a change no listed figure sizes is
+              described the same way against its base.
+            - A lone marker. An answer holding nothing but citation markers is no answer, as one holding only an
+              invisible character already was, so it is asked for once more and, for the industry cycle, named as
+              declined.
+            - Kinds. `DocumentKinds` reads each document's address: the archive and the release wires are a
+              company filing or release; opinion sites and the contributors' part of a mixed site are an opinion or
+              promotional piece; every other address is a news report. The kind stands beside each title, and the
+              instructions say a point rests on a filing, a release or a report and an opinion is cited only as its
+              writer's argument. No news labeller exists yet, so none is read.
+            - Examples. The two cases and the risks each close their ask with a weak point and a strong one, with no
+              digit in either.
+            - The review. `EquityBrief:Models:Research:Review` ships naming no profile. Named, it follows a pass that
+              wrote the two cases or the risks at the first draft, asks the profile with the pass's request and its
+              own draft handed back under `ReviewBrief`'s checks, reads the revision by the checker's rules in memory,
+              writes a `section review:` row beside the pass's and never into the report, stands its calls under the
+              review's round, stops after three reports, and is drawn in the section trials region beside the pass's
+              drafts and the trial's, named as the model reviewing its draft.
+Found:      three faults. Two were read off the first recording made under the refinements, at 10:01 to 10:24 UTC. The
+            alternative was first written as stating such a figure "in words", and the writer spelled the numbers
+            out: the two cases' first draft carried "above two billion dollars" and "eighty to ninety per cent of its
+            hundred million dollar cost synergy target", and the risks' and the short version's first drafts were
+            refused for figures in words the same way, each passing only on its retry. The sentence was reworded to
+            say what the figure shows without the number, and every recording was made again. And the fixture's
+            industry cycle came back as "[D1]" alone, after 951 tokens of reasoning, which the checker read as a
+            sentence citing a document and accepted as the theme's record; an answer holding nothing but markers is
+            now no answer. The third was found by this correction's own review test once it ran the review under a
+            pass's run id: the price the run page states for each pass left a trial's calls out and counted a
+            review's, because the query that reads every answered call's spend named the trial's round alone. It
+            names both.
+Recorded:   every recording the fixture's pass reads, made again under the refined prompt, since each is keyed on the
+            whole request: 59 recordings in place of 59, 36 of the local model's and 23 paid, with the 59 they
+            supersede and 62 made and superseded inside this correction removed, and each manifest entry written
+            again. Made twice, the second after the first found the alternative's fault: first Claude at 07:08 to
+            07:14 UTC for $0.6275 over 9 calls, DeepSeek at 10:01 to 10:19 UTC, once its peak window had closed, for
+            $0.0750 over 17, and the thinking-off answer at 10:24 for $0.00005; then, under the reworded alternative,
+            at 10:27 to 10:37 UTC, DeepSeek for $0.0513 over 15 calls and Claude for $0.4541 over 7, and the
+            thinking-off answer at 10:39 for $0.00005. In all $0.1265 on DeepSeek and $1.0816 on Claude, $1.2081,
+            against the template's estimate for a re-recording of $0.13 and $0.65, one round of each where two were
+            made. What the recordings read moved, each a reading of a recording and not a figure a rule produces. On
+            DeepSeek the segment commentary and the short version passed on their retries where each had been left
+            out, the two cases and the risks passed at their first draft as before, and the cause of each large
+            move, which had passed, came back twice with reasoning and no text and is not written. On the local
+            model the release's cause was refused twice for a figure the release states and left out, where it had
+            passed. On Claude the two cases and the risks passed at their first draft as before, and the short
+            version, which had passed, was refused for "12", a count of price targets an article gives, then for
+            the two conference dates, and left out; no draft of either model was refused for a sentence naming no
+            document. A pass over the fixture's KEYS costs $0.0337 on DeepSeek, from $0.0330, and $0.0387 with every
+            section paid, from $0.0389; the fixture's Semiconductors cycle $0.0021, from $0.0023.
+Changed:    `SectionPrompt`, `DocumentKinds`, `ReviewBrief` and `TrialCalls` in Core, and `AnswerText`, which reads
+            a lone marker as no answer; the prompt documents the
+            research runner, the prose writer, the theme search and the trial build; `SectionTrial`'s review mode,
+            `ResearchLane.Review` and the research verb; the read surface's review stage, the trials region's
+            sides, and the paid calls' spend, which leaves a review's round out as it does a trial's; the shipped
+            settings' review; the fixture's recordings and their manifest entries, and the readings of them the
+            prose, research record, spend and theme record expectations and the tests over them carry; section 12's
+            key, the catalogue's section trial row, section 15.10's section trials row and a row of section 17,
+            Section review, in `ARCHITECTURE.html`; RUNBOOK's review rows and paragraph and what a pass costs;
+            SCHEMA's run log; 12.6's text
+            in `BUILD_PLAN.md`; the fixture-expectations row of `.claude/rules/checks.md`; the prior text of each spec
+            edit in `CHANGELOG.md`; the harness's scope, parts, due points, pins, reach and the phase 12 claims; and
+            two paragraphs of the reader's guide, `docs/HOW_IT_WORKS.html`, on a refused section and on seeing which
+            sections keep failing, which the corrections since the ruling brought.
+Decisions:  new: "The research prompt repeats each section's ask after the documents, names its reader and marks each
+            document by kind" and "A review asks a section's model to check its own draft against the section's rules,
+            behind a setting that ships off".
+Tests:      1587, from 1582:
+            `EveryRequestSaysItsAskAgainAfterEverythingItIsHandedAndBeforeAnyRetrysBrief`,
+            `EveryRequestNamesItsReaderAndWhatToDoWithAFigureNoFactHolds`,
+            `EveryDocumentIsListedWithItsKindReadFromItsAddress`,
+            `TheTwoCasesAndTheRisksAreGivenAWeakPointAndAStrongOneWithNoDigit` and
+            `AReviewIsOffAsShippedAndWhenNamedChecksItsOwnDraftBesideTheReportAndIsDrawnBesideTheTrial`, five for six
+            refinements, the reader and the alternative read by one test. The first four read every request the
+            fixture's pass asks through feeds that answer a request no recording holds with nothing, so a changed
+            prompt is still asked and read. The trial's region test reads its sides as a list.
+Claims:     737, from 736: section 17's Section review, named in phase 12's pair; the section trials row's three
+            parts were reworded to take the review, their keys moved and their count did not.
+Pins:       none moves; no source this correction edits is in the three pin lists.
+Mutated:    the rule, stated before the run: each refinement and the review's one rule reversed alone, filtered to the
+            five tests this correction adds.
+            Predicted:
+            G1 the ask not said again: red in the ask test, and in the review test, which replays the fixture's
+               recorded pass and so misses every recording a changed prompt no longer matches.
+            G2 the reader's sentence taken out: red in the reader test, and in the review test for that reason.
+            G3 the alternative's sentence taken out: red in the reader test, and in the review test for that reason.
+            G4 no kind written beside a title: red in the kind test, and in the review test for that reason.
+            G5 the examples taken out of the two asks: red in the examples test, and in the review test for that
+               reason.
+            G6 the review not handed the pass's draft: red in the review test alone.
+            Results: one run each in a detached worktree at 058c882, this entry's commit, filtered to the five tests
+            the correction adds, each edit made there and reverted, and the tree read clean after. G1 turned the ask
+            test and the review test red and the other three green. G2 turned the reader test and the review test
+            red. G3 turned the reader test and the review test red. G4 turned the kind test and the review test
+            red. G5 turned the examples test and the review test red. G6 turned the review test red alone.
+Held:       red in every test predicted and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1587 of 1587 tests ran
+            with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 737 claims, 737 PASS, 0 FAIL, 748 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1587 of 1587 tests.
+            Both gates ran over the tree carrying this entry, 058c882, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Operator:   nothing to run; the read surface on 5152 is started again from `main` after the merge, so the run page's
+            price of a pass leaves a review's calls out. The review ships off; to run it on three reports, set
+            `EquityBrief:Models:Research:Review:Use` to `deepseek`.
+Carried:    each section's first-time pass rate and left-out rate over the ten reports after this merge, set beside the
+            ten before it, reported to the operator; the section trial's reports read to the operator at its third
+            report; the two cases' figures on both sides reported at the twentieth report after the ask changed.

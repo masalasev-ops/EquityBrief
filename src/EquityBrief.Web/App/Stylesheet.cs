@@ -672,12 +672,12 @@ tr.band[data-role='resistance'] td:first-child::before{content:"";display:inline
 .trial-list{list-style:none;margin:0;padding:0}
 .trial{border-top:1px solid var(--hair);padding:10px 0}
 .trial-head{margin:0 0 6px;font-weight:600}
-.trial-sides,.trial-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.trial-sides,.trial-pair{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:16px}
 .trial-side{margin:0;font-size:14px}
 .trial-column h4{margin:6px 0;font-size:13px}
 .trial-round{font-size:12px;color:var(--soft);margin:8px 0 2px}
 .trial-draft p{margin:0 0 6px;font-size:14px}
-@media (max-width:640px){ .trial-sides,.trial-pair{grid-template-columns:1fr} }
+@media (max-width:640px){ .trial-sides,.trial-pair{grid-auto-flow:row;grid-auto-columns:auto} }
 @media (max-width:900px){ .run-pair{grid-template-columns:1fr} .ns-figures{grid-template-columns:repeat(2,minmax(0,1fr))} .wr-tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .learning-picture .lp-clocks,.compare-picture .cp-body,.cp-groups,.cp-tiles{grid-template-columns:1fr} .ck-row{grid-template-columns:1fr} }
 
 @media (max-width:640px){

@@ -25,7 +25,12 @@ public sealed record TrialOutcome(string Section, string Outcome, int Rounds, de
 // research section row is written, so the page draws the pass's report whatever the trial wrote, and the trial stops
 // by itself once it has run over the reports it names.
 // see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
-public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock, string databaseFile) : IComponent
+//
+// A review is the same pass over the same request with the pass's own first draft handed back and the checks each of
+// its sentences is read against, asked of the profile the review names, which may be the one that wrote the draft. It
+// is recorded under a stage and a round of its own, counts its own reports and is drawn beside the trial's.
+// see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
+public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock, string databaseFile, bool review = false) : IComponent
 {
     public static ComponentAccess Access => new(
         Stores:
@@ -41,6 +46,8 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
     // which the run page leaves out of a report's cost and count.
     public const string Stage = "section trial";
     public const string Round = TrialCalls.Round;
+    public const string ReviewStage = "section review";
+    public const string ReviewRound = TrialCalls.ReviewRound;
 
     public const string FirstTime = "first time";
     public const string OnRetry = "on retry";
@@ -49,12 +56,18 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
 
     public static string StageFor(string section) => Stage + ": " + section;
 
+    public static string ReviewStageFor(string section) => ReviewStage + ": " + section;
+
+    string Named(string section) => review ? ReviewStageFor(section) : StageFor(section);
+
+    string Asked => review ? ReviewRound : Round;
+
     // The section written last from the others, as the pass names it.
     static string Summary => ClaimRules.Sections[^1];
 
     const string TrialReports = @"
         SELECT COUNT(DISTINCT run_id) FROM run_log
-        WHERE stage LIKE 'section trial:%'
+        WHERE substr(stage, 1, length($stage)) = $stage
           AND started_at >= $from
           AND CASE WHEN json_valid(detail) THEN json_extract(detail, '$.profile') END = $profile;
     ";
@@ -118,9 +131,10 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
         foreach (var section in trial.Sections)
         {
             // The pass's first draft of the section in its paid lane, which the trial is asked beside, and nothing
-            // where the pass wrote none or wrote it with the trial's own profile.
+            // where the pass wrote none or, for a trial, wrote it with the trial's own profile. A review reads the
+            // draft of whichever model wrote it, its own among them.
             if (pass.Written.FirstOrDefault(written => written.Section == section && !written.Retry) is not { } first
-                || string.Equals(first.Model, cap.Model, StringComparison.Ordinal)
+                || (!review && string.Equals(first.Model, cap.Model, StringComparison.Ordinal))
                 || await VersionAsync(connection, ticker, section, first.Version, cancellation) is not { } version)
             {
                 continue;
@@ -159,17 +173,20 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
         CancellationToken cancellation)
     {
         var startedAt = clock.UtcNow;
-        var documents = admitted.Select(document => new PromptDocument(document.Id, document.Title, document.PublishedOn, document.Body!)).ToArray();
+        var documents = admitted.Select(document => PromptDocument.From(document)).ToArray();
         var rounds = new List<object>();
         var cost = 0m;
         var calls = 0;
-        string? retry = null;
+
+        // A review's first round is handed the pass's draft and the checks; a refused answer is told what was refused,
+        // as any retry is.
+        string? retry = review ? ReviewBrief.For(section, version.Prose) : null;
         var outcome = NotAnswered;
 
         for (var round = 1; round <= 2; round++)
         {
             var request = SectionPrompt.PaidRequest(cap.Model, ticker, section, facts, documents, retry, summarised, night);
-            var call = await cap.AskAsync(request, runId, round == 1 ? Round : Round + ", " + ResearchRunner.SecondRound, cancellation);
+            var call = await cap.AskAsync(request, runId, round == 1 ? Asked : Asked + ", " + ResearchRunner.SecondRound, cancellation);
 
             calls++;
             cost += call.Price;
@@ -202,7 +219,7 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
 
         record.CommandText = AppendRun;
         record.Parameters.AddWithValue("$run_id", runId);
-        record.Parameters.AddWithValue("$stage", StageFor(section));
+        record.Parameters.AddWithValue("$stage", Named(section));
         record.Parameters.AddWithValue("$started_at", Instant(startedAt));
         record.Parameters.AddWithValue("$ended_at", Instant(clock.UtcNow));
         record.Parameters.AddWithValue("$outcome", outcome);
@@ -210,6 +227,7 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
         {
             ticker,
             section,
+            mode = review ? ReviewRound : Round,
             profile = trial.Profile.Profile,
             model = cap.Model,
             compared = new { version = version.Number, model = version.Model, status = version.Status, prose = version.Prose },
@@ -235,6 +253,7 @@ public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock
         await using var command = connection.CreateCommand();
 
         command.CommandText = TrialReports;
+        command.Parameters.AddWithValue("$stage", (review ? ReviewStage : Stage) + ":");
         command.Parameters.AddWithValue("$from", trial.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$profile", trial.Profile.Profile);
 

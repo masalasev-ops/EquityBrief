@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 
 namespace EquityBrief.Core.Providers;
 
@@ -30,9 +31,15 @@ public sealed record ResearchAnswer(
 // characters Unicode sets apart from visible text, the zero-width space among them. An
 // answer holding nothing a reader can see is no answer whichever model wrote it: told to
 // write nothing, a writer answered with a single zero-width space, which a trim of white
-// space alone keeps and the checker then read as a sentence.
+// space alone keeps and the checker then read as a sentence. An answer holding nothing but the
+// markers a sentence cites its documents by is no answer either: asked for an industry's cycle
+// its pages did not support, a writer answered with a lone marker, which the checker read as a
+// sentence citing a document and accepted.
+// see: An industry cycle the model declined is named as declined for lack of industry sources
 public static class AnswerText
 {
+    static readonly Regex MarkersOnly = new(@"^(?:\s*\[D\d+\]\s*)+$", RegexOptions.CultureInvariant);
+
     public static string Visible(string text)
     {
         static bool Invisible(char character) =>
@@ -51,7 +58,9 @@ public static class AnswerText
             end--;
         }
 
-        return text[start..end];
+        var visible = text[start..end];
+
+        return MarkersOnly.IsMatch(visible) ? string.Empty : visible;
     }
 }
 

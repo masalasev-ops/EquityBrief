@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-m10n62051hhvat8nkqlx8",
+  "object": "chat.completion",
+  "created": 1790764197,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Microsoft Corporation trades at a close of 493.95 within an uptrend where the 20-day average of 494.34 and the 50-day average of 448.52 indicate strong momentum relative to the 200-day average of 429.45. The latest quarter shows earnings reaction with an actual of 4.74 against an estimate of 4.21, resulting in a move per cent of 15.51 on the session of 2026-07-30 following a report date of 2026-07-29. Valuation metrics reflect an operating margin of 45.1 per cent which is higher than the operating margin a year earlier of 44.9 per cent, supported by sales growth on a year earlier of 17.7 per cent.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2050,
+    "completion_tokens": 191,
+    "total_tokens": 2241,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

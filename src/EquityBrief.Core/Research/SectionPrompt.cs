@@ -5,9 +5,15 @@ using EquityBrief.Core.Providers;
 
 namespace EquityBrief.Core.Research;
 
-// One document as a prompt carries it: the position the prose cites it by, and
-// what it says.
-public sealed record PromptDocument(string Id, string Title, DateOnly? PublishedOn, string Body);
+// One document as a prompt carries it: the position the prose cites it by, what it
+// says, and the kind of document it is where that was read from its address.
+public sealed record PromptDocument(string Id, string Title, DateOnly? PublishedOn, string Body, string? Kind = null)
+{
+    // A stored document as a prompt lists it, its kind read from its address.
+    // see: The research prompt repeats each section's ask after the documents, names its reader and marks each document by kind
+    public static PromptDocument From(StoredDocument document, string? body = null) =>
+        new(document.Id, document.Title, document.PublishedOn, body ?? document.Body ?? string.Empty, DocumentKinds.Of(document.Url));
+}
 
 // What a model is asked to write for one section, built from the facts file and
 // the documents handed in and nothing else.
@@ -43,11 +49,20 @@ public static class SectionPrompt
     // either. And nothing to write is no text at all: a writer told only to write nothing
     // answered with an invisible character and, asked again, with sentences saying so.
     // see: A written section describes the company and never proposes a trade, a holding or a plan for income
+    //
+    // Two sentences name what to do beside what not to do: what a figure a document gives and the facts do not shows
+    // is said without the number, and so is a change no listed figure sizes, since a writer told only what to leave
+    // out wrote the figure anyway, and one told to state it in words spelled the number out, which the checker
+    // refuses as it refuses the figure. And the reader is named, so a section chooses what could move the stock over the weeks a swing trade is
+    // held for and leaves out what would not, which is still a description and never a plan.
+    // see: The research prompt repeats each section's ask after the documents, names its reader and marks each document by kind
     public const string Instructions =
         "You write one section of an equity research report. Write plain prose with no headings, no lists, no markdown and no preamble. "
         + "Every figure you write must be one of the facts listed, copied or rounded, and written in digits. Write no figure that is not listed, and no date that is not listed. "
+        + "Where a document gives a figure that is not listed under Facts, say what it shows without the number, such as that orders rose sharply or that most of the growth came from a single segment, and never write it as a figure or spell the number out; describe a change no listed figure sizes the same way, against its base. "
         + "Round an amount of money to millions or billions and write the unit, write a margin as a percentage, and write any other figure to at most two decimal places. "
         + "Write a count from one to ten in words and anything larger in digits. "
+        + "The reader is deciding whether to hold a swing trade in this stock over the next weeks to few months, so choose what could move the stock before and at its next report and leave out what would not. "
         + "Describe the company and never prescribe: propose no trade, no holding, no adding or trimming and no plan for income, because the trade plan is computed separately. "
         + "Write no em dash, and never call a statement or a view candid or frank. "
         + "If the facts and documents do not support the section, answer with no text at all: no character, no mark and no sentence saying so.";
@@ -60,7 +75,15 @@ public static class SectionPrompt
     // risk's own sentence ahead of the confirmation it cited, and a short version's framing.
     public const string Citing =
         "End every sentence with the document it rests on, written as [D1] for the first document listed, [D2] for the second, and so on, "
-        + "the sentence opening a paragraph as well as the rest. Write no sentence that no listed document supports, and none about what you are writing or leaving out.";
+        + "the sentence opening a paragraph as well as the rest. Write no sentence that no listed document supports, and none about what you are writing or leaving out. "
+        + Kinds;
+
+    // Each document is listed with its kind, and a point rests on what a company filed or a reporter reported: an
+    // opinion or a promotion is what its writer argues, and a section citing one says that it is.
+    // see: The research prompt repeats each section's ask after the documents, names its reader and marks each document by kind
+    public const string Kinds =
+        "Each document is marked as a " + DocumentKinds.Filed + ", a " + DocumentKinds.News + " or an " + DocumentKinds.Opinion + ". "
+        + "Rest a point on a filing, a release or a news report, and cite an opinion or promotional piece only for what its writer argues, saying that it is their argument.";
 
     // The instructions for a call, which carry the citation rule where there is
     // something to cite.
@@ -74,7 +97,8 @@ public static class SectionPrompt
         "You write one section of an equity research report as the JSON object the section asks for, with no markdown, no code fence and no preamble.";
 
     public const string CitingFields =
-        "Name the listed document each field rests on by its number, 1 for the first document listed, 2 for the second, and so on, and write no marker inside a field.";
+        "Name the listed document each field rests on by its number, 1 for the first document listed, 2 for the second, and so on, and write no marker inside a field. "
+        + Kinds;
 
     public static string System(IReadOnlyList<PromptDocument> documents, string section) =>
         RiskFields.IsRisks(section)
@@ -138,7 +162,8 @@ public static class SectionPrompt
             + "Give each point its own sentence, and end each case with a sentence saying what it needs to see at the next report. "
             + "Make each point specific to this company and its latest documents, and leave out any sentence that could be said of any company. "
             + "Make each point a reason, not a figure restated. Describe a change with its size, so a small change reads as small, using the listed figures at both ends or words against its base, "
-            + "and never a difference you work out yourself. Let each fact argue one side only: a figure used in the bull case does not appear in the bear case, closing sentences included.",
+            + "and never a difference you work out yourself. Let each fact argue one side only: a figure used in the bull case does not appear in the bear case, closing sentences included. "
+            + Examples.TwoCases,
         // The risks are asked for as fields, which code composes into the paragraphs the page draws, so that
         // what confirms each is a listed fact or an event of one kind and code can tell two risks apart. A
         // confirmation is what would be seen if the risk came true, and three risks confirmed by one miss of
@@ -155,7 +180,8 @@ public static class SectionPrompt
             + "A valuation risk is confirmed by the multiple falling, not by it staying high, and three risks confirmed by the same miss of guidance cannot be told apart, "
             + "so no two risks name the same fact and no two event risks share a kind. Never use a level the next quarter crosses by construction. "
             + "Write why as words completing \"because\", saying why that movement means the risk is coming true, and whyDocument as the number of the listed document that says so. "
-            + "List a real risk even where no figure can show it.",
+            + "List a real risk even where no figure can show it. "
+            + Examples.Risks,
         // What is true and what is argued about, and never a plan: the plan is computed by code
         // and drawn in its own region. The one section that sums the others up is the one a
         // writer opens paragraphs in with a short signpost citing nothing, so it is told that a
@@ -166,6 +192,22 @@ public static class SectionPrompt
             + "Every sentence, however short, states something a listed document says and ends with its marker, so write no sentence that only introduces, joins or sums up the others. "
             + "Describe it and propose nothing: the trade plan is computed and drawn separately, so write no trade, no holding, no adding or trimming and no plan for income.",
     };
+
+    // A weak point and a strong one for the two sections a writer most often fills with points that could be said of
+    // any company, written with no digit, so nothing in them can be copied into a draft or refused in one.
+    // see: The research prompt repeats each section's ask after the documents, names its reader and marks each document by kind
+    public static class Examples
+    {
+        public const string TwoCases =
+            "For example, a weak point restates that sales grew; a strong one says the growth came from a one-off order that will not repeat, citing the document that says so.";
+
+        public const string Risks =
+            "For example, a weak risk says that competition is intense; a strong one names the rival's launch a document describes and what it would take from the company, citing where.";
+    }
+
+    // Where the ask is said again: after the documents and the sections already written, which can run long enough
+    // that the ask at the top is far behind where the model writes.
+    public const string NowWrite = "Now write the section:";
 
     // The segment commentary over a table that files no quarter. The quarter's ask above
     // stays word for word, since every recording of it is keyed on it.
@@ -270,8 +312,14 @@ public static class SectionPrompt
             {
                 var document = documents[index];
 
-                prompt.Append("[D").Append((index + 1).ToString(CultureInfo.InvariantCulture)).Append("] ")
-                    .Append(document.Title);
+                prompt.Append("[D").Append((index + 1).ToString(CultureInfo.InvariantCulture)).Append("] ");
+
+                if (document.Kind is { Length: > 0 } kind)
+                {
+                    prompt.Append(kind).Append(": ");
+                }
+
+                prompt.Append(document.Title);
 
                 if (document.PublishedOn is { } published)
                 {
@@ -294,6 +342,10 @@ public static class SectionPrompt
                 prompt.Append(name).Append(":\n").Append(prose.Trim()).Append("\n\n");
             }
         }
+
+        // The ask again, word for word, after everything handed in and before any retry's brief.
+        // see: The research prompt repeats each section's ask after the documents, names its reader and marks each document by kind
+        prompt.Append('\n').Append(NowWrite).Append('\n').Append(ask).Append('\n');
 
         // The one retry, told each thing the first draft was refused for and what to do about it, because
         // a second draft written blind would fail for the same reason and one told only the reason wrote

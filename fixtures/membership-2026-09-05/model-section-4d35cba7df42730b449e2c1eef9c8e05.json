@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-eyyydl4d6dr0wvb10np3ju",
+  "object": "chat.completion",
+  "created": 1790764293,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The session ended on 2026-08-24 saw a decline driven by the results release exhibit which reported third quarter financials showing revenue of 1.85 billion and non-GAAP net income of 531 million alongside an improved full-year outlook [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 12207,
+    "completion_tokens": 62,
+    "total_tokens": 12269,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

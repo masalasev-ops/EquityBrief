@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-v06fxj0dt4kcweiuk422h",
+  "object": "chat.completion",
+  "created": 1790764484,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The session 2026-08-24 saw shares fall as the news report from 2026-08-19 highlighted a sharp decline in stock price following the record third-quarter results and strong guidance, which [D1] attributes to the market reaction after the earnings release.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 9659,
+    "completion_tokens": 65,
+    "total_tokens": 9724,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

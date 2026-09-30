@@ -176,7 +176,7 @@ public static class ThemeSearch
     [
         .. admitted
             .Take(MostPages)
-            .Select(document => new PromptDocument(document.Id, document.Title, document.PublishedOn, Opening(document.Body!))),
+            .Select(document => PromptDocument.From(document, Opening(document.Body!))),
     ];
 
     // A page's first characters, cut short of a character the cut would split in two.

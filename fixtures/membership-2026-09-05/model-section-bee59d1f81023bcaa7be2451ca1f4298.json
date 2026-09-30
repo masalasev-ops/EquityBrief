@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-kja7pfqluyebhkpyki2u5g",
+  "object": "chat.completion",
+  "created": 1790764440,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock closed at 493.95 within an uptrend supported by a 20-day average of 494.34 and a 50-day average of 448.52, while the 200-day average sits at 429.45. The latest quarter reported on 2026-07-30 showed an earnings reaction actual of 4.74 against an estimate of 4.21, resulting in a surprise of 12.59 per cent and a move of 15.51 per cent after the report date of 2026-07-29. Valuation metrics include an operating margin of 45.1 per cent compared to 44.9 per cent a year earlier, with sales growth of 18.1 per cent for the same quarter a year before and 17.7 per cent on a year earlier. Technical indicators show a 14-day average true range of 11.19 and a relative strength index of 56.17, indicating moderate momentum within the Technology sector group.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2049,
+    "completion_tokens": 244,
+    "total_tokens": 2293,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

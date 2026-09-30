@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-pggnksd208f1y5615ii4i",
+  "object": "chat.completion",
+  "created": 1790764336,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Apple Inc. closed at 316.22 within an uptrend where the 50-day average of 315.64 sits just below the price while the 20-day average of 313.54 and the 200-day average of 283.69 provide further support levels. The latest earnings reaction on session 2026-07-31 showed an actual of 2.02 against an estimate of 1.88, resulting in a move per cent of -7.35 despite a surprise per cent of 7.45. Technical indicators include a MACD of 2.25 with a histogram of 0.92 and a signal line of 1.32, alongside a 14-day average true range of 7.50 and a 14-day relative strength index of 50.26. Immediate resistance edges are located at 320.28 and 319.07 while immediate support edges sit at 316.02 and 304.79, with session volume recorded at 35.42 million against a 20-day average volume of 39.18 million.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1879,
+    "completion_tokens": 269,
+    "total_tokens": 2148,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}
