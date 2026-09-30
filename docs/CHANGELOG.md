@@ -9650,3 +9650,11 @@ Now:
 > `claim-admissibility`: ... its draft at the last retry left out and named on the name page by its rule and never by its sentence; and a retry is told each thing the draft before it was refused for, a line each with the rule and what to do and never the draft whole, a number in words told it may be said with no number and no count word, a section asked again up to three times and kept for another retry until the last, a last retry carrying one of them again left out saying it repeated, one refused for something new left out without saying so, and one passing at the last retry accepted, the refusals in a row never more than the first draft and its retries before the last and counted again after a fallback or on a later day, and a two cases draft ...
 > `read-surface`: ... and a section a checker refused at every retry is named on the page by every rule that refused it, with what the checker extracted beside each rule and never the draft's own sentence, repeats collected under their rule, a reason stored while a section had one retry read the same way, and a reason carrying no last refusal drawn as it was stored, ...
 Why: the checks hold what the correction bringing three retries builds.
+
+### 2026-09-30 - CLAUDE.md - the conventions gain one track at a time
+Authorised by: the operator's ruling of 2026-09-30, recorded as the 12.2 ruling "one track at a time in a queue the operator sees, the trade table drawing the live plan alone, one open trade per stock, and every remedy issued by one committed script" in PROGRESS.md
+Was:
+> (no prior text: the paragraph is new, placed between "Anything issued in conversation that will later be cited must land in the repo when it is issued" and "Prose")
+Now:
+> **One track at a time.** Work runs one track at a time, in the order the newest queue ruling in `PROGRESS.md` sets, and the next track starts only after the current one has merged with the operator's go. Every report to the operator opens with that queue: done, in progress, next. The list itself lives in the ruling entry and not here, because a second copy of it goes stale the moment a track merges.
+Why: the operator's brief of 2026-09-30 asked for the rule to be recorded in CLAUDE.md; the list stays in the ruling entry so that a second copy cannot go stale the moment a track merges.

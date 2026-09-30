@@ -32699,3 +32699,603 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Operator:   nothing to run. After the merge the main checkout's worker is built again and BDX, MO and IT are each
             pressed with Regenerate, which writes the sections each report left out.
 Carried:    nothing.
+
+### 12.2 ruling - one track at a time in a queue the operator sees, the trade table drawing the live plan alone, one open trade per stock, and every remedy issued by one committed script, planned and approved before anything is built   2026-09-30
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-30, in a session told to plan alone while the research template's pull
+            requests were built in another, word for word:
+            > Plan only, in this session. Another session is building the research template
+            > (PRs A to G) in EquityBrief-view, and the nightly run builds from the main
+            > checkout.
+            >   - Do not create a branch, edit a file, commit, or run anything that writes, in
+            >     any checkout. Read origin/main as it stands; if you need a checkout to read
+            >     from, make a new worktree of your own, never EquityBrief-view or the main
+            >     checkout.
+            >   - Items 2 and 3 touch the same page code as the research template's PRs B and
+            >     F. Plan them against main, and name every file and region where they will
+            >     meet that work, so the build rebases cleanly after G merges.
+            >   - Once I approve the plan, record it as a PROGRESS ruling entry only after the
+            >     research template has merged. Build nothing until I say go at that point.
+            then the brief, word for word, whose items 1, 2, 3 and 8 this entry rules on and whose items 4 to 7 the
+            12.5 ruling after it rules on:
+            > After the research template (PRs A to G) has merged: corrections, one open trade
+            > per stock, and the sweep rerun widened to seven new conditions.
+            >
+            > === 1. One track at a time, in a queue the operator can see ===
+            > Work on one piece at a time, in this order; start the next only after the
+            > current one has merged with the operator's go. Every report to the operator opens
+            > with the queue: done, in progress, next. Record this rule in CLAUDE.md.
+            >   1. This prompt's items 2 and 3 (page and rule changes)
+            >   2. The sweep: pushed, recorded, rerun (items 4 to 7)
+            >   3. The night built from a clean copy of the code, as ruled
+            >   4. The operator reviews the sweep and approves a starting point and variants
+            >   5. The fundamentals candidate, code only
+            >   6. The freeze: the chosen design, the one-open-trade rule and the fundamentals
+            >      candidate in one change with one remedy, on the operator's go
+            >   7. The news labeller and its screens
+            >   8. Phase 12 sign-off, in a fresh session
+            >   9. The preview command
+            >
+            > === 2. The trade table, missing from #282 ===
+            > A stock's page still draws all three plans every night, including the plan at the
+            > nearest bands, which belongs to a registered candidate. As ruled: the table shows
+            > the stepped plan and the plan that night's live rule used, and no other. A night
+            > listed under an earlier filter version shows the plan live then. Test it off the
+            > rendered page for one night of each version, and state why #282's entry says
+            > nothing about this item.
+            >
+            > === 3. One open trade per stock ===
+            > The live list re-listed BDX two nights after listing it, with the first trade
+            > still open. The trigger stays fresh for several sessions, so one setup can be
+            > listed on consecutive nights, and each listing is scored as its own trade: one
+            > move counted two or three times, in the live record and in the sweep's history.
+            >
+            > The rule, as the operator ruled it:
+            >   - A trade is the one listed: bought at that night's close, with that night's
+            >     stop and target. It is open until it reaches its target, its stop or its time
+            >     limit.
+            >   - A stock with an open trade is not listed again, not even for a different
+            >     setup. It becomes eligible the night after the trade ends, including the
+            >     night after a stop.
+            >   - Each rule keeps its own open trades: the live list and every candidate track
+            >     theirs separately, so one rule's trades never block another's.
+            >   - A stock with an open live trade appears in neither the buy list nor "Close
+            >     to a buy point", and frees its place for another stock.
+            >
+            > Now, on the pages, with no pin moving:
+            >   - Tonight draws a "Still open" line: each stock the filter passes while its
+            >     earlier trade is open, with the night it was listed and where the price
+            >     stands against that trade's stop and target.
+            >   - Past picks marks a repeat listing made before the rule reached the filter as
+            >     "listed again while the trade from <night> was open".
+            >   - State how often a repeat listing happened on the stored nights.
+            > At the freeze, the rule joins the filter code in the freeze's change and shares
+            > its remedy. Every trade before the freeze is outside every checkpoint anyway, so
+            > repeats before then are never judged.
+            >
+            > === 4. The sweep: into the repository and recorded ===
+            > The sweep's code ran from a branch that was never pushed, and nothing records its
+            > run. Push the branch and open its pull request for review, not merging. Add a
+            > PROGRESS entry recording the run of 2026-09-29 17:39 to 17:58 UTC: its figures,
+            > the commit it ran on, and that it predates #282, so it replayed the old stop rule.
+            >
+            > === 5. The rerun's corrections ===
+            > Rerun on main. Nothing is registered or frozen.
+            >   - Point in time, proved: rebuild at least 200 name-sessions across the eight
+            >     years with the nightly builders from bars truncated at that session, and
+            >     compare the bands, swings and trend label with what the sweep used. Any
+            >     difference is fixed before anything else is read. Explain how that stage took
+            >     1 second.
+            >   - One open trade per stock, applied inside every variation before anything is
+            >     counted. State for the proposed and the live rule the trades before and after,
+            >     and how the edge and each year moved.
+            >   - Rank on the edge: the average result minus what no skill scored from the same
+            >     starts, overall and year by year. Use it for every ranking, the plateau, the
+            >     starting point and the variants. Show the raw average beside it.
+            >   - The plateau on the edge: settings within a stated margin of their design's
+            >     best edge; the proposal is the most interior of them. The proposal's edge must
+            >     not trail the live rule's in any of the three most recent years.
+            >   - The support choice applied: show that "any band" and "anchored bands only"
+            >     admit different stocks, since they came out identical to the last digit.
+            >   - Variants tested on every structural choice and on two-step dial changes as
+            >     well as one-step. If fewer than three pass the four tests, report the
+            >     strongest three, each naming the test it fails and by how much.
+            >
+            > === 6. Seven new conditions, tested in steps ===
+            > The operator wants the search wide, not fixed on the parameters the live rule
+            > happens to have. Add these seven, each computed from data as it stood on the
+            > session, and state for each its settings, their reason, and anything read as it
+            > stands today rather than as it stood then:
+            >   1. Near the 52-week high: how close the close sits to its high of the past
+            >      year (George and Hwang 2004).
+            >   2. Sector strength: whether the stock's sector ranks among the stronger ones on
+            >      its recent return (Moskowitz and Grinblatt 1999). State that sector labels
+            >      are as the provider files them today.
+            >   3. Volume on the turn-up day, against its average.
+            >   4. A momentum reset: the 14-day RSI dipped below a level during the pullback
+            >      and has turned up.
+            >   5. A recent earnings beat: the last report beat its estimate, within a stated
+            >      number of sessions (Bernard and Thomas 1989), read from the stored earnings
+            >      history as a surprise, never from restated figures.
+            >   6. Tightening during the pullback: the daily ranges shrank as it dipped.
+            >   7. The pullback's shape: how many sessions it lasted, and whether it held a gap
+            >      down larger than a stated multiple of the typical move.
+            >
+            > The search, in three steps:
+            >   a. Rerun stage 1 with item 5's corrections, to rank the designs on the edge.
+            >   b. One at a time: each new condition, at each of its settings, added alone to
+            >      the ten strongest distinct designs. It is kept if it raises the edge over the
+            >      same design without it in at least six of the eight years, including two of
+            >      the three most recent, above the trade floor.
+            >   c. Combine the survivors: cross them with each other and with the structural
+            >      choices, rerun stage 2's fine search around the strongest designs, then
+            >      apply the plateau, recent-years and variant tests as in item 5. A surviving
+            >      condition can be the one change of a variant.
+            > State each step's size and measured time before it runs on, and report which
+            > conditions were kept, which were dropped, and each one's edge year by year.
+            >
+            > === 7. Running it and the report ===
+            > It runs unattended under the rules already ruled: the live store opened
+            > read-only with short reads, progress saved in chunks, stopping before each night
+            > and resuming after it, one retry per chunk, and stopping after stage 1 if the
+            > whole run projects beyond five days.
+            >
+            > The report, one HTML page and a PROGRESS entry, in this order:
+            >   1. The proposed starting point in plain words, each check with its value, and
+            >      how it differs from today's live rule.
+            >   2. The proposed variants, each one change in plain words with its evidence
+            >      against the four tests.
+            >   3. The seven conditions: kept or dropped, and why, year by year.
+            >   4. The strongest candidates side by side with the live rule, year by year, on
+            >      the edge and the raw average, with trades before and after one open trade
+            >      per stock.
+            >   5. The plateau maps, on the edge.
+            >   6. What was stated as it stands today rather than as it stood, the
+            >      missing-departure share, and a non-band stop if that design is proposed,
+            >      flagged as the operator's decision.
+            >   7. The point-in-time check's result, machine time per step, every decision it
+            >      took itself, and anything that failed.
+            > End with the registration command the freeze would use, not run.
+            >
+            > === 8. The remedy is part of the record ===
+            > The operator ran #282's remedy on 2026-09-30. Confirm it from the store: the
+            > rule-version windows reopened and filter version 4 open. Commit the remedy script
+            > under tools/ and point the RUNBOOK at it, so any future remedy is issued the same
+            > way.
+Answered:   four questions put to the operator before the plan was written, each answered with the option marked
+            recommended; the first two belong to the 12.5 ruling after this entry and are recorded once, here:
+            > What should the edge subtract as 'what no skill scored from the same starts'? The simulated no-skill
+            > walk has no drift in price, so its average result from any start is minus the round trip over the
+            > risk, about -0.01 to -0.03 of the risk, for every design. Ranked on that, the edge repeats the raw
+            > average. = Same plan, every member (Recommended): For each trade, the same plan (stop and target at
+            > the same distances in each stock's own typical moves, the same exit) entered at the same night's close
+            > on every index member, scored on real bars. It takes out the market's own move over those days, so
+            > the edge is what picking the stock added. Computed once per candidate in the candidates stage, a few
+            > extra minutes.
+            > Condition 5 (a recent earnings beat): the store holds estimates only for reports from 2023-08 on, and
+            > only for today's 503 members. How should the rerun treat it? = Pull the surprises (Recommended):
+            > Extend the history pull so the earnings calendar's actual, estimate and surprise percent are stored
+            > beside each pulled print back to 2018 (migration, about one request per calendar month, marked by
+            > the pull and removable whole), run by your command. The surprise percent is split-proof. If one
+            > captured answer shows the calendar carries no estimates, fall back to the next option.
+            > Before the freeze the filter still lists a stock whose earlier trade is open (BDX on 09-29). On
+            > Tonight, where does that stock go? = Stays on the list, marked (Recommended): The row stays where
+            > the filter put it, marked 'listed again while the trade from 2026-09-25 is open', and the 'Still
+            > open' line names it with where the price stands. The page never disagrees with what the night stored
+            > or with Past picks.
+            > Past picks' summary card ('How the list's picks have done') counts BDX's two listings as two trades
+            > today. After the mark, does a marked repeat count? = Row drawn, not counted (Recommended): The
+            > repeat stays a row with its mark, and the summary counts each move once, with a line saying how many
+            > repeats are drawn and left out of the counts.
+Reviewed:   three review messages, each folded into the plan before the operator approved it after the third, and
+            each about the sweep, so the 12.5 ruling after this entry reads them from here, word for word:
+            > three changes to the sweep's search.
+            >
+            > === 1. Carry every surviving condition ===
+            > Step c carries every condition that survives step b, not at most three. All
+            > seven on and off is 128 combinations; crossed with the ten designs and their 23
+            > structural neighbours that is about 30,000 designs, fewer than stage 1's 46,656.
+            > State the size and measured time before it runs on, as planned. The operator's
+            > instruction was a wide search, not one fixed on a few parameters.
+            >
+            > === 2. Conditions enter the fine search as dials, not at their best setting ===
+            > Choosing each condition's best setting in step b is the peak pick the plateau
+            > rule exists to avoid. In stage 2, each surviving condition's settings are dials
+            > beside the others (off and each tested setting), so the plateau, the
+            > most-interior proposal and the variants' one-change neighbours all cover them.
+            > State stage 2's size per design with them added.
+            >
+            > === 3. A band difference is fixed with the night's own builder ===
+            > The sweep builds bands with SessionReplay.BandsOver, not the night's
+            > LevelBuilder. If the point-in-time comparison finds any band difference beyond
+            > the Wilder seed, the fix is to build the sweep's bands with the night's own
+            > level code, and the check must then show zero, as planned.
+            >
+            > Everything else is approved as written: step 0 after G merges, track 1's trade
+            > table, one open trade per stock on the pages with the filter part at the freeze,
+            > the committed remedy script, the sweep pushed and recorded, the rerun's
+            > corrections, the edge against the same plan on every member, the plateau margin
+            > shown at three widths for the operator to rule, the seven conditions and their
+            > settings, the surprise pull behind the operator's go, and the order.
+            then:
+            > Sweep plan:  one change to how stage 2 searches.
+            >
+            > === Stage 2 searches and measures depth, instead of filling the grid ===
+            > With every surviving condition as dials, stage 2 reaches 6.45 x 10^11 settings per
+            > design, and the narrowing fallback still leaves 6.3 x 10^9, each needing its own
+            > one-open-trade pass. If most conditions survive, the run stops after step c and
+            > proposes nothing, which is the outcome the operator most wants to succeed. The
+            > cause is the most-interior rule measured as Chebyshev distance over the whole grid,
+            > which needs every point computed. Replace it:
+            >
+            >   - Depth along each dial. A setting's depth is the smallest number of steps any
+            >     single dial can move, either way, before the setting leaves the plateau, each
+            >     dial moved alone with the others held; the grid-end rule for "off" is kept. It
+            >     matches how variants are defined, one change at a time, and costs about two
+            >     evaluations per dial per step.
+            >   - Find the strong region by sampling. For each of the five designs: every coarse
+            >     setting, plus a sample of fine settings across the whole grid, every dial and
+            >     every condition value included, drawn with a stated seed and sized to the
+            >     measured time. State the sample size and its share of the grid.
+            >   - Measure depth around the leaders. Take the leading settings by edge that meet
+            >     the floors, state how many, and compute each one's depth by moving each dial
+            >     alone. The proposal is the deepest, ties to the higher edge, then to the
+            >     setting nearest the live rule. Then apply the recent-years rule as planned.
+            >   - Refine once. Around the proposal, evaluate every one-step and two-step
+            >     single-dial move; if any is deeper and meets every test, take it and repeat,
+            >     stating each step.
+            >   - Plateau maps as slices. For the report, two-dial slices through the proposal,
+            >     the others held at the proposal, for the pairs the reader picks.
+            >
+            > This replaces the Chebyshev rule, the full fine grid with conditions multiplied,
+            > and the narrowing fallback. The five-day bound stays; with sampling it should not
+            > bind, and if it would, the sample shrinks, never the dials or the conditions. Tests:
+            > depth worked by hand over a constructed grid, including a condition at "off"; the
+            > sample covering every dial value; the refinement stopping when no move is deeper.
+            > Mutation: depth taken as the largest rather than the smallest single-dial move,
+            > expected red.
+            then:
+            > Sweep plan:  two changes to how the starting point is chosen.
+            >
+            > === 1. Across the five designs, edge first, then depth ===
+            > Each design's plateau is measured against its own best edge, so a flat but weaker
+            > design can be deeper than a stronger one. Across the five designs: keep the
+            > proposals whose edge is within the plateau margin of the highest proposal's edge,
+            > then take the deepest of those, ties to the higher edge, then nearest the live
+            > rule. The report shows all five proposals with their edge and depth, and which
+            > were kept by the margin.
+            >
+            > === 2. A grid end on a many-valued dial is looked beyond ===
+            > The exemption from grid ends stands for "off" and for two-value dials. Where the
+            > proposal's depth runs into a grid end on a dial with three or more values, extend
+            > that dial by up to two values beyond the end, at the same spacing and within what
+            > the rule allows, evaluate them, and measure depth again before proposing. A dial
+            > that cannot be extended, or whose extension still sits at the end, is named in the
+            > report as a limit of the search. Test it with a constructed grid whose best region
+            > lies past the tested end.
+            The brief, the answers, the three reviews and the approved plan are in the local prompts archive as
+            `2026-09-30-12.2-queue-*.md`.
+Measured:   read-only, on 2026-09-30 with no night running, on the operator's store and on `main` at e3c693a:
+            - The remedy of the 12.2 correction of 2026-09-29 ran, as item 8 asks to be confirmed. The eight
+              ladder windows closed from 02:14:02Z to 02:14:15Z on 2026-09-30 and opened again from 02:14:17Z to
+              02:14:30Z, every one on the ladder rules' code version 8ae51b59cb91; filter version 3 closed and
+              version 4 opened at 02:14:32Z; candidates 51 to 56 were retired and 57 to 62 registered at 02:14:33Z
+              on swing-filter abcf6df67b7d. That was 22:14 in New York on 2026-09-29, before midnight as the
+              correction asked. The night of 2026-09-29 had run under version 3, so the night of 2026-09-30 is
+              version 4's first. The commands ran from a script in the session's scratch folder that hard-codes
+              the main checkout's drive and path, which `tools/` may not carry.
+            - The stored nights and their repeats, as item 3 asks. Four nights have run under the swing filter:
+              2026-09-24 and 2026-09-25 under version 2, and 2026-09-28 and 2026-09-29 under version 3, listing
+              seven names: CPAY, DVN and KO; BDX; MDT; ECL and BDX. One listing of the seven is a repeat, BDX on
+              2026-09-29, whose trade of 2026-09-25 (stop 179.42, target 190.6357) was open, the closes since
+              being 183.83 and 181.97 and no outcome written. Version 1 held no night, having opened at 10:39Z and
+              closed at 14:04Z on 2026-09-25, before that evening.
+            - Why the 12.2 correction of 2026-09-29 says nothing of the trade table, as item 2 asks. It does not
+              say nothing: its Carried field defers the table "for a change of its own since it moves no pin and
+              needs no remedy". That deferral was the building session's own reading. The 12.2 ruling of
+              2026-09-27 placed the table "in the same change and remedy run as items 2 and 3", and no ruling
+              moved it; the correction's Corrects and Asked fields cite the rulings of 2026-09-26 and 2026-09-28
+              and not the one of 2026-09-27, so its heading and its repairs never name the table, and no
+              obligation row in BUILD_PLAN carried it.
+            - None of the sources track 1 edits is in the three pin lists, the swing filter's, the ladder rules'
+              or the candidates' evaluation sources, so track 1 moves no pin and owes no remedy.
+Ruled:      the operator, on 2026-09-30, approving the plan after the third review:
+            - One track at a time (item 1). Work runs in the queue the brief sets, one track at a time, the next
+              starting only after the current has merged with the operator's go, and every report to the operator
+              opens with the queue: done, in progress, next. The rule is written into CLAUDE.md's Conventions and
+              the list lives here: (1) items 2, 3 and 8 below; (2) the sweep pushed, recorded and rerun, the 12.5
+              ruling after this entry; (3) the night built from a clean copy of the code, on the 12.3 ruling of
+              2026-09-29; (4) the operator reviews the sweep and approves a starting point and variants; (5) the
+              fundamentals candidate, code only; (6) the freeze, the chosen design, the one open trade rule and the
+              fundamentals candidate in one change with one remedy, on the operator's go; (7) the news labeller and
+              its screens; (8) phase 12's sign-off in a fresh session; (9) the preview command. The research
+              template's pull requests, which were in progress when the queue was ruled, merged before this entry.
+            - The trade table (item 2). A name's gates table draws the ladder's first tranche, the stepped plan, and
+              the one swing plan the night's trade gate read, marked as the plan the night's live rule read, read
+              off the gate's stored input on the row; a row storing no input draws the plan the Past picks query
+              reads for its version, section 10's where the version reads it and the nearest bands otherwise. No
+              candidate's plan is drawn (see: Candidate conditions are registered before they are scored, and
+              scored in shadow before they are shown). Tested off the rendered name page over a constructed store
+              with one night under no version and one under each of versions 2, 3 and 4, each plan at distinct
+              prices: the page holds the ladder row and the live row and no stop, target or plan word of the
+              other swing plan anywhere. Mutations: the three rows drawn as before, and the live plan read from
+              the newest version rather than the night's own.
+            - One open trade per stock (item 3), in Core as `OpenTrades`, in no pin list until the freeze. A trade
+              listed on a night is open on a later night while its capped horizon's outcome is undecided or was
+              decided on that later session itself, and it frees the stock from the night after; a missing outcome
+              row reads as open until the cap's sessions have passed. Walking a stock's listings in night order,
+              the first is kept, a later listing is a repeat while the kept trade is open on its night and becomes
+              the kept trade otherwise, so a repeat never blocks a later listing. Each rule's trades are walked
+              apart, and the pages walk the live list's. Tonight gains a "Still open" card between the list and
+              "Close to a buy point": each stock whose five gates passed with no exclusion while its kept live trade
+              from an earlier night is open, with the night it was listed, the trade line and the price against
+              that trade's stop and target in words; before the freeze the stock also stays on the list where the
+              filter put it, marked "listed again while the trade from <night> is open", on the operator's answer.
+              Past picks and a name's "On the list before" mark a repeat "listed again while the trade from
+              <night> was open", and the summary card leaves repeats out of every count and share with a line
+              saying how many are drawn and not counted, on the operator's answer; on the stored nights BDX of
+              2026-09-29 is the one, and the card counts six trades where it counted seven. Section 15's Tonight
+              and Past picks rows, a section 18 row for a still open trade whose outcome row is missing, two
+              decisions and one sentence in the guide's Past picks card. Tested: the boundary, a trade ending on a
+              night blocking it and freeing the next; a chain naming the kept trade; two rules never blocking each
+              other; the Still open card, the Past picks mark and counts, and the section 18 row, each off the
+              rendered page. Mutations, each new rule reversed alone: freed on the night the trade ends, a repeat
+              treated as the kept trade, Still open drawing a stock one gate short, repeats counted in the summary.
+              At the freeze and not before: the swing filter walks the live list's own trades and writes the
+              exclusion "an open trade from <night>", the stock losing its rank and its place on both lists; each
+              candidate walks its own fires from the shadow column on its own plan's horizon; a trade's end is
+              read from the night's bars before the filler writes; `OpenTrades` joins the three pin lists under the
+              freeze's one remedy; and the code-written summary names a still open stock.
+            - Every remedy issued by one committed script (item 8). `tools/remedy` and its `.ps1` beside it, run
+              from the repository root, take a remedy file and `--list` or `--from N`, refuse while the night's
+              lock file exists, build the worker once, run each step through the worker with no rebuild, print the
+              step's number before it and stop at the first failure with its exit code. A remedy file is one set
+              of worker arguments a line, as an entry prints them after `--`, under `tools/remedies/`, named by
+              date, checkpoint and what it does; the 17 steps that ran on 2026-09-30 are committed as the first.
+              RUNBOOK gains a Remedies section and every entry's Remedy field names its file from then on; CLAUDE.md
+              gains the script's layout and command rows. Tested: every remedy file parses into verbs the worker
+              carries; `--list` prints the 17 in order; the lock refuses in a scratch data root.
+            - Where track 1 meets the research template's code, named for the rebase: `MarkRenderer.cs`, the gates
+              table and the picks table and counts against the template's short version summary and run page
+              regions, new methods placed beside their own screen's; `SinglePageApp.cs`, Tonight against Run;
+              `NameScreen.cs`, the gates view against the draft sentence rules; `Program.cs`, the Tonight route
+              against the Run route; `ARCHITECTURE.html`, sections 15.7, 15.9's gates row, 15.17 and a row in 18
+              against the template's section 12, 15.9's short version rows, 15.10 and 17; and `PROGRESS.md` and
+              `CHANGELOG.md`, appended after the template's entries. The trade table test reads the whole page, so
+              it also asserts the template's code-written summary shows no candidate's plan.
+            Track 1 is one branch with one commit and one correction entry an item, gates run once over the final
+            tree. Predicted: tests +9, two for the script, one for the table and six for the rule; claims +2, the
+            Still open row and the section 18 row; no migration, no pin moved, no recording.
+Changed:    CLAUDE.md's Conventions gain the one track rule, an addition recorded in CHANGELOG; and this entry.
+Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry and the ruling entry after it,
+            298SHA1, whose figures that entry records.
+Carried:    track 1, built as three 12.2 corrections on the operator's go and none before it; the filter half of
+            one open trade per stock and `OpenTrades` joining the pin lists at the freeze, track 6; and every later
+            remedy issued through `tools/remedy`.
+
+### 12.5 ruling - the sweep rerun on main, ranked on the edge with one open trade per stock and seven new conditions tested in steps, planned and approved before anything is built   2026-09-30
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-30, items 4 to 7 of the brief the 12.2 ruling above records word for word,
+            with the two answers about the edge and the earnings surprises and the three reviews it records.
+Measured:   read-only on 2026-09-30, on the operator's store, the sweep's own folder under `data/` and the branch:
+            - The run. The sweep ran from 17:39:26Z to 17:58:08Z on 2026-09-29 from a Release build of 1797e76 on
+              `phase-12-5-sweep`, history through 2026-09-28: 826 names over 2,196 sessions, 1,945 scored; the
+              read 10 s, the series 2 s, 253,373 candidates in 6 min 4 s over 21 chunks, stage 1 over 46,656
+              designs at 19,683 coarse settings in 10 min 55 s over 117 chunks, stage 2 over 5 designs at 2,016,000
+              fine settings each in 23 s; no pause and no failure. It proposed the centre of a plateau of 1,654,185
+              settings: 2,969 trades scored of 2,996 listed, won 34.8% against a break-even of 22.4% and no skill
+              at 28.7%, an average result of 0.347 times the risk, and the live rule replayed over the same history
+              at 4,583 trades, 39.8% and 0.197, its design ranked 633 of 46,656; 0 of 18 one-change variants
+              passed the four tests. The branch's own entry still holds its placeholders, its gates never having
+              run over that commit.
+            - The premise that the run predates the 12.2 correction of 2026-09-29 does not hold for its code. The
+              run started seven hours before that correction merged, but its build carried the correction's own
+              commits from before their rebase, 050c0ad and fc78f6c, and against `main` the stop, gate, ladder,
+              level, swing and indicator sources at 1797e76 are identical, the one differing file being the
+              sweep's own `SessionReplay.cs`. So the run replayed pullbacks alone and the stop moved out of a band,
+              not the old stop rule, and the record says so with that diff as its evidence.
+            - How the series stage took 1 second, as item 5 asks. It computes, once a name over the whole history,
+              the averages, Wilder's ATR, the swings each masked by the session that confirmed it, the classifier's
+              label a bar, the returns and the depth and dry-up, then the cross-sections: arithmetic over about
+              1.8 million bars on 16 cores. It builds no bands; the report's label says bands, but the bands are
+              built a candidate session at a time in the 6-minute candidates stage over a window ending on that
+              session, by `SessionReplay.BandsOver` and not the night's `LevelBuilder`. Point in time rests on each
+              series being causal, which was never shown, and Wilder's ATR and RSI are seeded from a series' first
+              bars, so a value over the whole history and the night's over its one year can differ in the low
+              digits.
+            - The support choice. The trial recorded any band and an anchored band reading alike on 253,324 of the
+              253,373 candidates; the 49 that differ are candidates whose only band holding the close is made of
+              averages alone, and none of them reached a listing in the designs ranked, which is why the two came
+              out equal to the last digit while the code applies the choice.
+            - The data the new conditions need. Stored earnings estimates start at report dates in August 2023, in
+              the reported quarters and the fundamentals, for the 503 members of today alone; the pulled earnings
+              hold dates alone; the provider's earnings calendar answer carries the actual, the estimate, the
+              difference and the surprise percent a print, at a weight of one a request. Sector labels: 321 of the
+              324 members that have left the index carry none.
+            - The edge as the brief words it. The sweep's no skill walk has no drift in price, so from any start
+              its expected exit is the entry and its average result is minus the round trip over the risk, about
+              -0.01 to -0.03, for every design; an edge against it repeats the raw average, which is why the
+              operator was asked what it subtracts.
+Ruled:      the operator, on 2026-09-30, the plan approved after the third review, every review folded in:
+            - Pushed and recorded (item 4). `phase-12-5-sweep` is pushed as it ran, at 1797e76, and a draft pull
+              request opened for review and not merging, saying its entry's placeholders were never filled and
+              that the rerun's pull request supersedes it; the branch is kept. A documents pull request adds a
+              12.5 ruling entry recording the run's figures above, the proposal's and the live rule's year tables,
+              the stage times and the diff showing the run's stop sources equal `main`'s.
+            - The rerun's corrections (item 5), on a branch from `main` after track 1, carrying the sweep's two
+              commits and then:
+              Point in time, proved: after the candidates and before stage 1, 200 name-sessions, 25 a scored year
+              with 13 from candidate sessions and 12 from member-sessions holding a year of bars, drawn with a
+              stated seed, and every name-session the live list listed; each rebuilt by the night's own components
+              through their own stage code over one small scratch store cleared between samples and deleted after,
+              holding that name's year of bars to the session and the session before; compared exactly on each
+              band's edges, role, strength and anchor flag, the swings inside the window, the live label and its
+              three versions, the averages, the ATR, the RSI and the fifty-day volume. Any difference stops the run
+              before stage 1 and the report lists every one. Wilder's seed is the expected difference, fixed by
+              computing each reading over the night's own one-year window a session. A band, swing or label
+              difference left after that is fixed by building the sweep's bands with the night's own level code,
+              on the first review: `LevelBuilder.cs` is in two pin lists and its band building reads the store, so
+              the night's components run unchanged over one scratch store a worker thread under the system's temp
+              folder, a name at a time with its bars appended session by session, the sweep reading the bands back,
+              the stores deleted at the end, its size every member-session the strength, depth and trend prefilter
+              passes, estimated at 10 minutes to 2 hours on 16 workers and stated before it runs on. The check
+              must show zero before anything else runs; it is estimated at 2 to 7 minutes.
+              One open trade per stock inside every variation: the cumulative tables cannot apply it, since a looser
+              setting can add an earlier listing that blocks a later one, so each variation is counted by one pass
+              over its design's candidates in name and session order, a listed candidate kept unless the stock's
+              kept trade is open on its session, one pass serving all eight exits with an open-until marker each;
+              an equivalence test holds the walk to `OpenTrades`; stage 1 is estimated at 2 to 10 hours against 11
+              minutes, measured on its first chunk and projected before it runs on.
+              The edge, on the operator's answer: a candidate's benchmark under a plan and exit is the average
+              result of the same plan entered at the same session's close on every member the index held with a
+              bar and no gap, the stop and target at the same distances in each member's own typical moves, scored
+              on real closes with the sweep's own walk; the edge is the trade's result less that, overall and a
+              year; computed once in the candidates stage, about 1.4 x 10^11 steps, estimated at a few minutes; the
+              raw average shown beside it everywhere, the calibrated no skill share kept in the viability test.
+              The plateau on the edge: the settings within 0.05 of the risk (proposed) of their design's best edge
+              that meet the floors, 300 scored trades after one open trade per stock, 6 of 8 years beating
+              break-even and no skill, 22 of 30 blocks and a stock listed on 60% of nights; the margin derived from
+              the first run's maps, where one step on most dials moved the result 0.01 to 0.04, the report also
+              showing the starting point found at 0.03 and 0.08, the margin the operator's to rule at track 4. The
+              proposal must not trail the live rule's edge in 2024, 2025 or 2026, the next deepest taken where it
+              does and none proposed where none passes.
+              Variants: every structural alternative, 23, and each dial one and two steps either way, the
+              surviving conditions' dials among them, each one change from the starting point, held to the four
+              tests on the edge; fewer than three passing, the strongest three by edge reported each naming the
+              test it fails and by how much.
+              The support choice: the report counts, a carried design and the live settings each, the
+              member-sessions each choice admits and the listings that differ with their tickers and sessions,
+              names the 49 setup-level differences, and states where no listing differs that the two read the
+              history alike and share one rank.
+              Run folders: each run writes under `data/sweep/<start instant>/`, the first run's files untouched at
+              the folder's root, the route serving the newest report and linking the earlier; the fingerprint gains
+              the sweep's code pin and a finished run is never written again; the series stage's label corrected.
+            - Seven conditions (item 6), each read from the data as it stood on the session, no pinned file edited:
+              (1) the close over the highest high of the 252 sessions to the session, at least 0.80, 0.85, 0.90 or
+              0.95, on George and Hwang (2004), a pullback of 1.5 to 5 moves sitting about 3% to 15% under a recent
+              high; adjusted highs, dividends inside the year shifting the ratio slightly and splits not at all.
+              (2) The stock's sector's rank among the eleven by its median 126-session return over the members
+              labelled on the session, top 3, 4, 5 or 6, on Moskowitz and Grinblatt (1999); sector labels as the
+              provider files them today, a member with no label kept and not removed, since removing the departed
+              would flatter the condition, the report stating how many candidates that covers. (3) The trigger
+              event's session volume over the fifty-session average to the session before, at least 1.0, 1.25,
+              1.5 or 2.0. (4) Wilder's 14-day RSI below 30, 35, 40 or 45 on a session since the reference high and
+              up on the trigger's session. (5) The newest print whose reaction session is on or before the session,
+              its surprise percent as filed, within 20, 40 or 63 sessions, above 0 or at least 5%, on Bernard and
+              Thomas (1989); the calendar as served today, the percent split-proof, the actual never read. (6) The
+              tightness the stored reading's own function gives, at most 0.6, 0.75 or 0.9. (7) The pullback's
+              shape: at most 10, 15 or 25 sessions since the reference high, and a gap down inside it of more than
+              1.0, 1.5 or 2.0 typical moves removing it; opens on adjusted bars. 31 settings in all.
+              Condition 5's data, on the operator's answer: a table `pulled_surprise` (ticker, event date, the
+              actual and the estimate as TEXT, the surprise percent as REAL, the pull), written by the history pull
+              alone, marked by its pull, removed whole by it and read by no night, filled by
+              `history-pull --surprises --from 2018-01-01`, one earnings calendar request a calendar month, about
+              106 at weight one, for the names the index held over the span, under the next migration after 50, run
+              by the operator. Where the first captured answer carries no estimates, the condition reads the stored
+              years from August 2023 for today's members alone, flagged as reading survivors, judged year by year
+              and admitted as a variant only.
+              The search: (a) stage 1 again, ranked on the edge. (b) Each condition setting added alone to the ten
+              strongest distinct designs at each design's coarse plateau centre, 320 variations; kept on a design
+              where it raises the edge in 6 of 8 years including 2 of 2024 to 2026 with at least 300 scored trades;
+              a setting survives where kept on at least 6 of the 10 designs (proposed), a no-effect setting passing
+              one design with probability 34 in 256 and every setting's count of ten printed since the designs are
+              correlated; a condition survives where any of its settings does, and no best setting is chosen, on
+              the first review. (c) Every surviving condition crossed on and off, on at the middle of its tested
+              settings fixed before any result is read, the looser middle on an even count, condition 5 at a
+              40-session window and any beat and condition 7 at 15 sessions and a 1.5-move gap; with s survivors
+              2^s combinations, at most 128, crossed with the ten designs and each one's 23 one-change structural
+              neighbours, at most 30,720 designs at the coarse settings against stage 1's 46,656, at most 25,600
+              selection passes against 5,832, estimated at one to three times stage 1's measured time and projected
+              from its first chunk; the five strongest distinct designs on the edge go to stage 2.
+              Stage 2, the conditions as dials, on the first review, and searched by sampling and measured for
+              depth, on the second: each surviving condition's settings are dials beside the nine existing ones,
+              holding off and each tested setting, the stop's bounds becoming two ordered dials, the nearest at
+              0.5 or 1 and the farthest at 2.5 or 4 typical moves; the dials in order with off at the loose end:
+              condition 1 off, 0.80, 0.85, 0.90, 0.95; condition 2 off, top 6, 5, 4, 3; condition 3 off, 1.0,
+              1.25, 1.5, 2.0; condition 4 off, 45, 40, 35, 30; condition 5 window off, 63, 40, 20 by beat above 0
+              or at least 5%; condition 6 off, 0.9, 0.75, 0.6; condition 7 length off, 25, 15, 10 by gap off, 2.0,
+              1.5, 1.0. The grid a design is searched over runs from 2,016,000 settings with no survivor to
+              6.45 x 10^11 with all seven, and stage 2 no longer fills it. (1) The strong region by sampling: a
+              design's every coarse setting with the conditions at its step (c) combination, plus a sample of the
+              whole fine grid drawn with a stated seed and balanced so every value of every dial, each off among
+              them, appears equally often, sized to a budget of 4 hours a design (proposed) from the first 10,000
+              sampled settings' measured time and never more than the grid, about 48 to 240 million settings a
+              design at stage 1's rate, the report stating each design's sample and its share of the grid. (2) The
+              plateau's line fixed, the best edge among the evaluated settings meeting the floors less the margin,
+              before any depth is measured. (3) Depth around the 100 highest-edge evaluated settings meeting the
+              floors (proposed): depth along one dial is the single steps it can move one way with the others held
+              before the setting leaves the plateau, and a setting's depth the smallest over every dial and both
+              directions; at most 19 dials, so at most 228 evaluations a leader and 22,800 a design; the proposal
+              is the deepest leader, ties to the higher edge then to the setting nearest the live rule, then the
+              recent-years rule. Beyond off, and at either end of a two-value dial, condition 5's beat size and the
+              stop's two, the grid does not limit depth, and a move changing no reading is not a step. (4) Refined:
+              every one-step and two-step single-dial move around the proposal, at most 76, each measured for
+              depth, a deeper one meeting every test taken, the deepest first with ties to the higher edge, the
+              round repeated until none is deeper and each stated. (5) A grid end on a dial of three or more values
+              looked beyond, on the third review: that dial extended by up to two values beyond the end at the
+              spacing of its last two and within what the rule allows, evaluated, depth measured again and the
+              refinement run again with the extension open to it before proposing; a dial that cannot be extended
+              or whose extension still leaves the depth at the new end named in the report as a limit of the
+              search. The extensions fixed before the run: strength 0.3 to 0.2 and 0.1, 0.85 to 0.95 and 1.0;
+              reward to risk 1 to 0.75 and 0.5, 3 to 3.5 and 4; depth low 0.5 to 0, 2 to 2.5 and 3 below the depth
+              high; depth high 3 to 2 above the depth low, 8 to 10 and 12; dry-up 0.8 to 0.6 and 0.4; freshness 1
+              not extended, a trigger being no fresher than tonight, 8 to 11 and 14; market 55% to 60% and 65%; band
+              strength 0 not extended, 6 to 8 and 10; conditions 1 to 4 and 6 at their tight end alone, 0.95 to
+              1.0, top 3 to 2 and 1, 2.0 to 2.5 and 3.0, 30 to 25 and 20, 0.6 to 0.45 and 0.3; condition 5's window
+              20 not extended; condition 7's length 10 to 5 and gap 1.0 to 0.5. The candidates stage keeps every
+              member-session an extended value could list, strength below 0.3, depth below 0.5 or above 8 and
+              freshness to 14 among them, so an extension needs no second pass over the history, the count's growth
+              measured and stated. (6) Across the five designs, edge first then depth, on the third review: each
+              design's plateau being measured against its own best edge, the proposals kept are those within the
+              plateau margin of the highest proposal's edge, the starting point the deepest of those, ties to the
+              higher edge then nearest the live rule, the report showing all five with their edge and depth and
+              which the margin kept. (7) The plateau maps as slices: every pair of dials through the starting point
+              with the others held there, at most 171 pairs of 49 cells, the page drawing one pair at a time from
+              two lists and opening on the first run's pairs. The five-day bound stays and the sample shrinks where
+              it would bind, never the dials or the conditions; stage 2 is about 20 hours at the proposed budget.
+              Before each step runs on, its size and its first chunk's measured time go to the log, the state file
+              and the report's seventh part.
+            - The run and the report (item 7). It runs under the 12.5 ruling of 2026-09-29: the store read-only in
+              short reads, chunks, a pause for each night, one retry a chunk and a stop after stage 1 where the
+              whole run projects past five days. The report is one page and an entry in the brief's order, ending
+              with the registration command the freeze would use, not run. Tested, about 31: the point in time
+              check catching a constructed seed difference and finding zero after the fix over the fixture, the
+              scratch store path giving the bands the night's builder stores for the fixture's two nights; the
+              walk equal to `OpenTrades`; the rule applied inside a variation; the benchmark worked by hand over
+              three members; depth by hand over a constructed grid with a condition at off, a two-value dial and a
+              move changing no reading; a grid whose best region lies past the tested end reached by the extension;
+              a dial that cannot be extended named as a limit; a flatter design outside the margin of the best
+              proposal's edge not chosen however deep; the sample covering every value of every dial; the leaders'
+              order and the proposal's ties; the refinement stopping when no move is deeper; the slices holding
+              every other dial at the starting point; the recent-years rule; variant coverage and the strongest
+              three fallback; the support choice's admission; one as-it-stood test a condition; step (b) with no
+              best setting chosen; step (c) carrying every survivor on and off at its middle; a run past five days
+              shrinking the sample and keeping every dial; run folders and a stale fingerprint refused; the surprise
+              pull's store, marking and refusal of tonight. Mutations S8 to S22, each predicted before it runs:
+              point in time comparing nothing; freed on the trade's last session; the calibrated null as the
+              benchmark; the highest-edge leader proposed rather than the deepest; the recent-years rule off; no
+              two-step variants; the 52-week high reading one bar past the session; a setting surviving on one
+              design; surprises written into the pulled earnings; step (c) carrying only the three strongest
+              conditions; the sample leaving out a condition's off; the far side of off read as outside the
+              plateau; depth taken as the largest single-dial move rather than the smallest; the starting point
+              taken by depth alone across designs; the look beyond a grid end skipped. Claims: 7 carried from the
+              sweep's commits and 10 new, a point in time row in 13.9, a section 16 row for the pulled surprises,
+              section 17's margin, year test, 6 of 10 designs, 200 samples, 100 leaders, 4-hour budget and two
+              values beyond an end, and a section 18 row for a candidate with no sector label. The rebase meets the
+              research template's `measure-sources` in the worker's verb list and the verbs test.
+            - Running it. After the operator's go and the merge, the operator runs `tools/migrate.ps1`, restarts
+              the read surface and runs the surprise pull, before the run starts; missed, the read surface shows
+              the schema notice until restarted and condition 5 has nothing to read. The sweep starts from a
+              Release build of `main` outside the main checkout with the data root at the main checkout's `data`.
+              Estimated: stage 1 2 to 10 hours, step (c) 2 to 30 hours, stage 2 about 20 hours at the proposed
+              budget, within the five-day bound with the sample shrinking where it would not be. The report's
+              figures land as a documents pull request, and then track 3.
+Changed:    this entry alone.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 298T1 of 298T1 tests ran
+            with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
+            `data-ci` and never `data`, over the tree carrying this entry and the 12.2 ruling before it, 298SHA1,
+            in a worktree beside the repository; `tools/verify-phase.ps1` not run, these entries changing no code.
+Carried:    track 2 whole, after track 1 has merged and on the operator's go: the push and the draft pull request,
+            the run's record, the rerun's branch, the surprise pull the operator runs, the run and its report; the
+            plateau margin, the 6 of 10 designs, the 100 leaders and the 4-hour budget, each proposed and the
+            operator's to rule at track 4; and the freeze at track 6 with one remedy through `tools/remedy`.
