@@ -33710,14 +33710,164 @@ Mutated:    the rule, stated before the run: the mechanism each rule the rulings
             test host on the printing fault above; with the fix applied in the worktree it turned the five carried
             test red and left the other seventeen green, and both edits were reverted there.
 Held:       red in every test predicted, and in no other, S7 once the fault it found was fixed.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 129T1 of 129T1 tests ran
-            with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
-            `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 44 tables, 730 claims, 730 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 129P1 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 129T1 of 129T1 tests.
-            Both gates ran over the tree carrying this entry, 129SHA1, in a worktree beside the repository, and the
-            operator's store under `data/` was not touched by either.
+Verified:   neither gate ran over the commit that carried this entry, 1e2aeef on `phase-12-5-sweep`, whose figures
+            above are the ones its build measured and whose run of 2026-09-29 the 12.5 ruling of 2026-09-30 records;
+            the branch was pushed for review and not merged. The gates first ran over this entry in the tree of the
+            12.5 correction of 2026-09-30 below, which carries this entry's commits and reruns the sweep, and that
+            entry states their figures; the operator's store under `data/` was not touched by either.
 Carried:    the sweep's run over the live store, started from this branch's build once item 2 has merged and its
             remedy has run, and the entry pointing at its report; the pull request, merged once the operator has read
             the report; and the freeze, on the operator's word.
+
+### 12.5 - correction: the sweep reruns on the edge over the same plan entered on every member, with one open trade a stock inside every variation, seven conditions tested in steps, a point-in-time check before stage 1, a sampled search measuring depth one dial at a time, a run folder a run, and the surprises pulled beside the pulled prints, where the first run ranked on the raw average, scored a stock's repeated listings as separate trades, never showed it read each session as it stood and searched the live rule's dials alone   2026-09-30
+Corrects:   the 12.5 correction of 2026-09-29 that built the sweep, whose run of that day is recorded in the 12.5
+            ruling of 2026-09-30, on the 12.5 ruling of 2026-09-30 that planned this rerun, items 4 to 7 of the
+            operator's queue, and the three reviews recorded whole in it.
+Asked:      the operator, on 2026-09-30: the sweep rerun on main, ranked on the edge with one open trade per stock
+            inside every variation, the seven conditions in three steps, point in time proved over at least 200
+            name-sessions before anything is ranked, the support choice shown, the variants including two-step
+            moves, and the run's report in seven parts ending with the registration command not run; in the
+            first review, every surviving condition carried, the conditions entering the fine search as dials and a
+            band difference fixed with the night's own builder; in the second, stage 2 searching by sampling and
+            measuring depth one dial at a time; in the third, the edge first and then the depth across the designs
+            and a grid end on a dial of three or more values looked beyond; and the surprises pulled back to 2018.
+Repaired:   - The edge. `SweepBenchmark` walks, for each candidate, plan and exit, the same plan entered at the
+              session's close on every member with a bar and no gap, the stop and target at the same distances in
+              each member's own typical moves, under each of the 8 exits, and each plan carries the mean; the edge
+              is the trade's result less it, read overall and by year beside the raw average, which stays on every
+              record. The calibrated bar stays in the viability test.
+            - One open trade a stock. `SweepStages.Walk` reads a setting in one pass over its design's candidates in
+              name and session order, keeping a listing unless the stock's kept trade under the exit is still open on
+              its session, one open-until marker a name for each exit, and counting the listings kept off; each plan
+              carries the sessions to its end under each exit, a trade the history ran out on blocking for the cap.
+              The cumulative tables are gone, since a looser setting can add an earlier listing that blocks a later
+              one. Stage 1 ranks by the median edge of a design's viable settings, a design short of 100 viable
+              settings ranking below every other by its share.
+            - The conditions. `SweepConditions` states the seven with 31 settings and the values beyond each tight
+              end; `SweepColumns` reads each as the data stood on the session, the 52-week high, the sector's rank by
+              the median 126-session return of its labelled members with a name carrying no sector kept in and
+              reading no rank, the turn-up day's volume over the fifty-session average before it, Wilder's RSI's low
+              since each reference high and whether it rose on each session back, the newest surprise's reaction
+              session, the tightness, and each pullback's length with the largest gap down inside it, the open now
+              read from the bars; each candidate carries them and reads them under a design's reference high and
+              trigger age. Step (b) tries each setting alone on the 10 strongest distinct designs at their coarse
+              centres and keeps it where the edge rises in 6 of the 8 years, 2 of the last 3, with 300 trades; a
+              condition survives on 6 of the 10, no best setting chosen. Step (c) crosses every survivor on and off at
+              its middle with the ten designs and their 19 selection neighbours over the coarse settings, and the 5
+              strongest distinct rows go on.
+            - Point in time. Wilder's ATR and RSI are seeded where the night's year of bars begins on each session,
+              the swings read are the year's, and `SweepPointInTime` rebuilds 25 name-sessions a scored year, 13
+              candidates and 12 members with a year of bars, drawn with a stated seed, plus every live-listed
+              name-session, with the night's own components over one scratch store a worker, the membership loader
+              and the backfill writing the name's year, the indicator engine, swing finder, volume profile builder and
+              level builder computing it and the trend classifier reading it, and compares the averages, ATR, RSI and
+              fifty-day volume, the year's swings, every band and the live label exactly; a difference stops the run
+              before stage 1 with the page listing every one.
+            - The search. `SweepSpace` holds the dials with the stop split into its two bounds and each surviving
+              condition as a dial off at one end, over the extended grid holding the values beyond each end;
+              `SweepDesignSearch` evaluates every coarse setting under the design's combination, a sample balanced
+              over every value of every dial sized from the first 10,000 settings' time against 4 hours a design,
+              fixes the line at the best edge meeting the floors less 0.05, measures depth around the 100 leaders,
+              counting to 6 with the grid not limiting beyond off, at a two-value dial's end or at a dial's own end and
+              the beat's size no step while its window is off, proposes the deepest that does not trail the live rule
+              in a recent year with ties to the edge and to the live rule, refines by one-step and two-step moves until
+              none is deeper, looks beyond a grid end by up to two values and refines again, names a dial's own end the
+              proposal sits on as a limit, and slices every pair of dials through the starting point. Across the
+              designs the proposals within the margin of the highest edge are kept and the deepest wins; the report
+              states each design's proposal at 0.03 and 0.08 beside it. The variants move each dial one and two steps,
+              the conditions among them, or one of 23 structural choices, judged on the edge, the strongest three
+              reported with what they fail where fewer pass.
+            - The run. `SweepRunner` writes each run to `data/sweep/<start instant>/`, the first run's files untouched
+              at the root, goes on only under the build that started a run, never writes a finished one again, times
+              each step's first chunk into the state and the log, shrinks the second stage's sample where the whole
+              run would pass five days, and the read surface serves the newest report on `/sweep` with the runs linked
+              and each at `/sweep/<run>`. The series stage's label no longer says bands.
+            - The surprises. Migration 51 creates `pulled_surprise`; `history-pull --surprises --from <date>` asks
+              the calendar once a calendar month and stores each held name's prints with the figures as filed and
+              the provider's surprise; a purge removes them with the pull; the sweep reads them where any carry a
+              surprise and the calendar's year otherwise, flagged.
+            - The report, in the ruling's seven parts: the starting point with each check's value and how it differs
+              from the live rule, the variants, the conditions kept or dropped with each setting's count of ten and
+              where each came closest, the strongest candidates beside the live rule year by year on the edge and the
+              raw average with the listings kept off, the plateau maps drawn one pair of dials at a time from two lists,
+              what was read as it stands today with the missing departures and a stop not at a band, and the
+              point-in-time result with the machine time, the decisions and what failed, the support choice's counts
+              among them, ending with the registration command not run.
+            Three decisions: "A starting point is proposed from the deepest setting of a plateau on the edge and never
+            its best variation, and nothing is registered before the operator approves it", superseding the centre's;
+            "The sweep ranks on the edge over the same plan entered on every member, with one open trade a stock and
+            seven conditions tested in steps"; and "The surprises pulled before the store's year sit beside the pulled
+            prints and are read by no night".
+Found:      the exchange closure table covers 2025 on, so the night's gap check reads a series reaching before it as
+            not checked and stops no name, which is what lets the night's own level builder rebuild a 2019 session in
+            the point-in-time check. Wilder's smoothing forgets its seed by thirteen fourteenths a session, so the
+            whole-history seed and the year's differ in the low digits, shown over a series a year longer than the
+            window. A dial's own end, band strength 0 or a freshness of 1, bounds no depth, since the rule allows no
+            value beyond it; read otherwise, no proposal could sit at band strength 0. In a flat landscape the
+            refinement moves the proposal between grid ends as each is looked beyond, so an end the depth never ran
+            into again stays unopened. The provider's surprise is stored as the double SQLite renders, 10 and not
+            10.0.
+Guarded:    seventeen tests, new, in `fixture-expectations` and the history pull's suite: the walk keeps the picks the
+            pages' open trade rule keeps over the same listings with the boundary by hand; every setting's summary is
+            the record read in full with one open trade a stock inside; stage 1's viable count and median edge are the
+            ones each coarse setting read directly gives; the benchmark over three members under both exits and the
+            edge read from it; the variants move each dial one and two steps and change each structural choice once;
+            across the designs the edge comes first and then the depth; a space's points carry the dials and the
+            conditions both ways; depth with the ends the grid does not limit; the leaders' order and the proposal's
+            ties with the deepest over the highest edge; the refinement's rounds; a grid end looked beyond with the
+            proposal moving into it and a dial's own end named; the sample covering every value and the slices holding
+            every other dial; a setting surviving step (b) on six of ten with every survivor crossed; Wilder's averages
+            seeded where the night's year begins; each condition's reading at its edge over constructed bars; the
+            point-in-time check clean over the fixture and catching a seed difference; the sample's counts and the
+            live list's additions; each run's folder with a finished run and another build's refused; a whole run over
+            the fixture through every stage to its report; and the surprise pull stored, marked, purged and refused.
+            Six tests are rewritten from the first run's: the table equivalence as the summary's, stage 1's median
+            as the edge's, the plateau's centre as the four tests on the edge, the ranking with too few viable
+            settings ranking last, the five strongest as the strongest distinct rows, and the saved row with a stage
+            2 result round-tripping NaN. The component checks add the point-in-time check to the silent list and its
+            catalogue and matrix rows, the cast census adds the rerun's seven, the pinned constants add the four rows'
+            figures in their rows' order, and the pulled tables' naming test admits the surprises.
+Written:    section 13.9, the History pull, Sweep history and Sweep point in time catalogue and matrix rows, the
+            Pulled history store row, section 17's four sweep rows rewritten and four added, and section 18's two rows
+            in `ARCHITECTURE.html`; `pulled_surprise` and its ownership row in `SCHEMA.md`; the two pulls and the sweep's
+            run folders in `RUNBOOK.md`; the three decisions with the centre's moved to "Previously decided" in
+            `DECISIONS.md`; `.claude/rules/checks.md`'s `fixture-expectations` row; the prior text of each in
+            `CHANGELOG.md`; and the reader's guide's paragraph.
+Expected:   derived: no expectation file moves; the fixture's two nights are read by the point-in-time check against
+            the night's own components, which is the expectation the check is.
+Tests:      302T1, from 1605: seventeen added.
+Claims:     302C1, from 755: eight added, the point-in-time check's catalogue and matrix rows, section 17's edge,
+            conditions, point in time and search rows, and section 18's two, each named in `SweepClaims`.
+Pins:       none moves: the sweep's files are in no pin list, and no pinned source is touched. Migration 51 creates
+            `pulled_surprise`, owed to the operator's `tools/migrate.ps1` before the surprise pull and the run.
+Mutated:    the rule, stated before the run: the mechanism each rule the rulings state rests on, reversed alone,
+            filtered to the tests named, each in a detached worktree at this entry's commit and reverted.
+            Predicted:
+            S8  the point-in-time check comparing nothing: red in the point-in-time test alone.
+            S9  a stock freed on the session its trade ends: red in the walk test and the summary test.
+            S10 the calibrated null used as the benchmark: red in the benchmark test alone.
+            S11 the highest-edge leader proposed rather than the deepest: red in the leaders test alone.
+            S12 the recent-years rule off: red in the leaders test and the refinement test.
+            S13 no two-step variants: red in the variants test alone.
+            S14 the 52-week high read over one session too few, a reading a bar early: red in the conditions test.
+            S15 a setting surviving on one design: red in the step (b) test and the pinned constants.
+            S16 the surprises written into the pulled prints' table: red in the surprise pull's test.
+            S17 step (c) carrying the three strongest conditions alone: red in the step (b) test.
+            S18 the sample leaving out a condition's off: red in the sample test alone.
+            S19 the far side of off read as outside the plateau: red in the depth test.
+            S20 depth taken as the largest single-dial move rather than the smallest: red in the depth test.
+            S21 the starting point taken by depth alone across designs: red in the across-designs test alone.
+            S22 the look beyond a grid end skipped: red in the grid-end test alone.
+            Results: 302M1
+Held:       302H1
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 302T1 of 302T1 tests ran
+            with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 45 tables, 302C1 claims, 302C1 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 302P1 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 302T1 of 302T1 tests.
+            Both gates ran over the tree carrying this entry, 302SHA1, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    the migration and the surprise pull on the main checkout, the run started from a Release build outside
+            it, the entry pointing at its report, and the freeze on the operator's word; the draft pull request of the
+            first run's branch, closed once this merges.
