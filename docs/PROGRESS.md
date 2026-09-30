@@ -32511,11 +32511,11 @@ Changed:    `src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs`, `I
             added to `docs/ARCHITECTURE.html` section 6.1 with no line of it removed.
 Decisions:  new, **A paid model on the OpenAI format is asked to stream its answer, because a connection silent for a
             minute is cut**, under Feeds and the wire. None superseded.
-Tests:      123T, from 1593: two added, a streamed answer read as the same answer the capture holds whole, with a
+Tests:      1595, from 1593: two added, a streamed answer read as the same answer the capture holds whole, with a
             comment and a blank line before it and the reasoning in pieces beside it, and a stream cut short, ended
             before the provider said it was done and closed partway, each refused in its own words. The request test
             now reads the five fields the feed owns, the stream asked for and its counts.
-Claims:     123C, from 736.
+Claims:     736, from 736: none moves.
 Pins:       none moves; neither feed source is in the three pin lists.
 Mutated:    the rule, stated before the run: each property this correction adds broken alone, filtered to
             `ResearchModelFeedTests`.
@@ -32527,13 +32527,19 @@ Mutated:    the rule, stated before the run: each property this correction adds 
             assertion, the closed connection's own error escaping.
             S4, the counts read only from an event carrying a choice, so the event carrying them alone is passed
             over. Predicted: red, the streamed answer test, the answer refused as carrying no usage.
-            Results: 123HELD
-Held:       123HELD
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            Results: one run each in a detached worktree at 8e70d11, this entry's commit, each reverted before the
+            next and the tree read clean after the last. S1 turned the request test red and no other. S2 turned the
+            cut-short test red at its first assertion, no exception thrown where an answer cut short was expected.
+            S3 turned it red at its second, the closed connection's `IOException` escaping in place of the
+            unreachable line. S4 turned the streamed answer test red, the answer refused as carrying no usage.
+Held:       all four red as predicted, each in the test and at the assertion named and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1595 of 1595 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
             `data-ci` and never `data`.
-            123VP
-            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 736 claims, 736 PASS, 0 FAIL, 747 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1595 of 1595 tests.
+            Both gates ran over the tree carrying this entry, 8e70d11, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Operator:   nothing to run. The worker in the main checkout is built again after the merge, so the next press drains
             with the streamed answer, and BDX is asked for again then.
