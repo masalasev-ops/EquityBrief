@@ -31819,12 +31819,18 @@ Mutated:    the rule, stated before the run: each rule the fields add reversed a
             C2 the shared-kind rule removed: red in the shared-kind test.
             C3 the level rule removed: red in the level test.
             C4 the kind list's check removed: red in the kind test.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       123HELD
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            Results: one run each in a detached worktree at 159c919, this entry's commit, filtered to the five tests
+            over constructed answers, each edit made there and reverted, and the tree read clean after. C1 turned the
+            shared-fact test red and the other four green. C2 turned the shared-kind test red alone. C3 turned the
+            level test red alone, the number rule reading the level past as the correction means it to. C4 turned
+            the kind test red alone.
+Held:       red in every test predicted and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1566 of 1566 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 123VP.
-            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 724 claims, 724 PASS, 0 FAIL, 735 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1566 of 1566 tests.
+            Both gates ran over the tree carrying this entry, 159c919, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    corrections D to G at 12.6 in that order; the migration and the restart above, run after the merge.
