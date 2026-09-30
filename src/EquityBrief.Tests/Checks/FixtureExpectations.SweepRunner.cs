@@ -183,7 +183,7 @@ public partial class FixtureExpectations
         File.WriteAllText(Path.Combine(root, EquityBrief.Core.Sweep.SweepFolder.ReportFile), "the first run");
         Directory.CreateDirectory(Path.Combine(root, "20261001T120000Z"));
         Directory.CreateDirectory(Path.Combine(root, "20261002T120000Z"));
-        Directory.CreateDirectory(Path.Combine(root, "candidates"));
+        Directory.CreateDirectory(Path.Combine(root, EquityBrief.Core.Sweep.SweepFolder.CandidatesFolder));
         File.WriteAllText(Path.Combine(root, "20261001T120000Z", EquityBrief.Core.Sweep.SweepFolder.ReportFile), "the second run");
 
         Assert.Equal(["20261002T120000Z", "20261001T120000Z"], EquityBrief.Core.Sweep.SweepFolder.Runs(root));

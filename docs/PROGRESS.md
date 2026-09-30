@@ -33710,11 +33710,12 @@ Mutated:    the rule, stated before the run: the mechanism each rule the rulings
             test host on the printing fault above; with the fix applied in the worktree it turned the five carried
             test red and left the other seventeen green, and both edits were reverted there.
 Held:       red in every test predicted, and in no other, S7 once the fault it found was fixed.
-Verified:   neither gate ran over the commit that carried this entry, 1e2aeef on `phase-12-5-sweep`, whose figures
-            above are the ones its build measured and whose run of 2026-09-29 the 12.5 ruling of 2026-09-30 records;
-            the branch was pushed for review and not merged. The gates first ran over this entry in the tree of the
-            12.5 correction of 2026-09-30 below, which carries this entry's commits and reruns the sweep, and that
-            entry states their figures; the operator's store under `data/` was not touched by either.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree of the 12.5 correction of
+            2026-09-30 below, which carries this entry's commits and reruns the sweep, at the figures that entry
+            states, and not over 1e2aeef on `phase-12-5-sweep`, the commit that carried this entry alone, over which
+            neither gate ran: its figures above are the ones its build measured, its run of 2026-09-29 is recorded in
+            the 12.5 ruling of 2026-09-30, and its branch was pushed for review and not merged. The operator's store
+            under `data/` was not touched by either gate.
 Carried:    the sweep's run over the live store, started from this branch's build once item 2 has merged and its
             remedy has run, and the entry pointing at its report; the pull request, merged once the operator has read
             the report; and the freeze, on the operator's word.
