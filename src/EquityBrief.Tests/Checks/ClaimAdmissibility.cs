@@ -51,6 +51,9 @@ public partial class ClaimAdmissibility
             // expected rejections, and figure 12.1's two boxes that say a claim is
             // checked and then stored.
             CheckReach.Key(Scope.LimitsTable, "Claim rejection"),
+
+            // 12.6, the kinds an event risk is given, which the risks' own tests read against the checker.
+            CheckReach.Key(Scope.LimitsTable, "Risk kinds"),
             CheckReach.Key(Scope.FixtureTable, "a poisoned paragraph"),
             CheckReach.Key(Scope.FixtureTable, "an unsourced claim"),
             CheckReach.Key("Figure 12.1", "Check every claim"),

@@ -670,6 +670,7 @@ public static class SchemaMigrations
         new Migration(47, "add gate_result's plan clear of the noise", AddClearPlan),
         new Migration(48, "create reported_quarter, quarter_ask and fundamental_reading", CreateReportedQuarters),
         new Migration(49, "add peer_reading.peers", AddPeerPicks),
+        new Migration(50, "add research_section.parts", AddRiskParts),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -1116,6 +1117,15 @@ public static class SchemaMigrations
     // see: Peers are shown by price alone, ten at most with the name's industry first and then the members whose daily moves followed it most closely
     const string AddPeerPicks = @"
         ALTER TABLE peer_reading ADD COLUMN peers TEXT;
+    ";
+
+    // The fields a section's prose was composed from, which the risks are answered as and checked by: a
+    // fact that is not listed, a level the facts file does not hold, a kind outside the seven and two risks
+    // resting on one fact or one kind are read off them. Null for every other section and on a row written
+    // before this migration.
+    // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
+    const string AddRiskParts = @"
+        ALTER TABLE research_section ADD COLUMN parts TEXT;
     ";
 
     // A member's reported quarters, one row per fetch per quarter, the asks that fetched them, and the

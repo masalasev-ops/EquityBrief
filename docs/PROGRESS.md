@@ -31731,3 +31731,106 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             operator's store under `data/` was not touched by either.
 Carried:    corrections C to G at 12.6 in that order; the two cases' count over the twenty reports after this
             merge, on its operating row.
+
+### 12.6 - correction: the risks are returned as fields, each confirmed by a listed fact or by an event of one kind of seven, composed into the prose the page draws and refused where two risks share a fact or a kind, where the risks were free prose and three could rest on one miss of guidance   2026-09-30
+Corrects:   the risks section of every report, on item 2 of the operator's research template of 2026-09-29 and the
+            operator's second answer, both word for word in the ruling entry above, the second of the six corrections
+            that ruling plans.
+Asked:      each risk returned as the risk, the observable that would confirm it, the direction, the level and a
+            sentence saying why, with no two risks sharing an observable and the level a figure the facts file holds;
+            the observable a listed fact's name wherever one fits, and an event given one kind of legal, regulatory,
+            competitive, acquisition, management, supply and other where none does, no two event risks sharing a
+            kind; and real risks with no number still listed.
+Repaired:   - The fields. `RiskFields` in Core reads a risks answer as a JSON object of risks, each with its risk and
+              document, a `confirm` naming a listed fact or an event with its kind, the direction and level a fact
+              takes, and why with its document; composes them into the paragraph a risk the page already draws,
+              "The first risk is ... [Dn]. That risk would be confirmed by ..., because ... [Dn]."; and checks what
+              prose alone could not: a fact the facts file does not list, a direction that is neither rises above
+              nor falls below, a fact with no level, a level that is not a figure the file holds, a kind outside the
+              seven, an event carrying a level, two risks on one fact and two event risks of one kind, and an answer
+              that is not the fields at all.
+            - The check. `ClaimRules.Check` takes the fields beside the prose and, for the risks, adds their findings
+              and reads the fact names and levels they name past the number rule, since a fact's name can carry
+              digits and a level is held by its own rule. The checker reads the fields off the pending row and off
+              the earlier one, and the retry is told each finding in the same words.
+            - The ask. The risks are asked for as the object, with a valuation risk confirmed by the multiple
+              falling and never by it staying high, three risks confirmed by one miss of guidance named as the thing
+              the kinds and facts keep apart, and a real risk with no figure still listed, under instructions opening
+              on the answer's form rather than on plain prose. Claude is asked with a risks schema in place of the
+              sentences schema, and DeepSeek in the format's own JSON mode; the local lane is asked the same prompt.
+            - The store. Migration 50 adds `research_section.parts`, written by the paid lane and the local lane on
+              insert, null for every other section and for an answer that was not the fields.
+Recorded:   the risks' recordings and the short version's, which is handed the risks, made again off-peak on
+            2026-09-30 between 05:00Z and 05:07Z: 9 answers, DeepSeek $0.0271 over 5 calls, Claude $0.1662 over
+            2 calls and the local model's 2 at no cost, $0.1933 in all against the plan's estimate of DeepSeek
+            $0.03 and Claude $0.15; 9 recordings no test asks for any longer removed with their manifest entries.
+            A first attempt was stopped after its first answer: DeepSeek set the direction and the level inside what
+            confirms the risk and opened why on the word the composed sentence carries, which the reader now takes
+            either way, and that answer is kept, its request being unchanged.
+Measured:   over the new recordings, read off the replay: DeepSeek answered seven risks as fields, five confirmed by
+            listed facts and two by events of the regulatory and management kinds, accepted at the first draft;
+            Claude's first draft was refused and its retry accepted; and the local model named facts with their
+            values written into the name, was refused, and answered its retry in a shape that was not the fields.
+            The short version, handed the risks now composed from fields, was refused for one window its first draft
+            named, was told it, and wrote a second draft carrying figures from the articles, left out; in the pass
+            with every section paid it was accepted on its retry. The default pass wrote six of its eight sections
+            for $0.0330.
+Changed:    `RiskFields` and `ClaimRules` in Core, `RetryBrief`'s rules, `SectionPrompt`'s risks ask and instructions,
+            both paid feeds' bodies and the formats' owned fields; the paid lane, the local lane and the checker;
+            migration 50 and SCHEMA's `research_section`; section 4's and 12.2's risks rows, section 16's research
+            store and a row of section 17, Risk kinds, in `ARCHITECTURE.html`; the claim-admissibility and
+            read-surface rows of `.claude/rules/checks.md`; the prior text of each spec edit in `CHANGELOG.md`; the
+            harness's scope, pins and phase 12 claims; the tests' inserts into `research_section`, which name their
+            nine columns; and the fixture's recordings and manifest.
+Decisions:  new: "Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two
+            risks share either", as the ruling planned it.
+Tests:      1566, from 1560:
+            `TwoRisksConfirmedByTheSameFactAreRefusedNamingTheFact`,
+            `TwoEventRisksOfOneKindAreRefusedNamingTheKind`,
+            `ALevelTheFactsFileDoesNotHoldIsRefusedByItsOwnRuleAndOnlyByIt`,
+            `AnEventRiskWithNoLevelAndAFactRiskOnANameCarryingDigitsPassAndAreComposedAPartToARisk`,
+            `AnEventRiskOfAKindOutsideTheSevenIsRefusedAndTheRetryIsToldTheSeven` and
+            `TheRisksAreComposedFromTheFieldsTheirRowStoresAndDrawnARiskToARow`. The schema test reads ten columns
+            in `research_section` with `parts` last and admitting null, and the tests' positional inserts name their
+            nine columns; the byte for byte test reads the risks as the prose composed from their recording; the
+            risks table test reads seven rows, counted by hand off the recording; the tests stating how many
+            sections a pass draws state five where they stated six; and the two tests needing an accepted short
+            version read the pass with every section paid, whose short version was accepted, stated as such.
+Claims:     724, from 723: section 17's Risk kinds, named in phase 12's pair as a row the research template adds.
+Pins:       none moves; no source this correction edits is in the three pin lists.
+Migration:  50, `research_section.parts TEXT`, nullable, so every row written before it reads as a section with no
+            fields and nothing is rewritten.
+Operator:   stated before the merge, as the template's ruling requires. The commands, from the repository root of
+            the main checkout once it is fast-forwarded to the merge, when no night, queue or drain is running:
+            tools/migrate.ps1
+            and the read surface on 5152 stopped and started again from `main`:
+            dotnet run --project src/EquityBrief.Api
+            The deadline: before any report is asked for after the merge, whether by a press or by the night's
+            report pass, and at the latest the next night at 23:30 UTC, which migrates the store as its first step
+            but does not wait for a press made before it. What is lost if they are missed: a report started before
+            the migration makes its paid calls for the sections before the risks and fails where it inserts the
+            risks into a column the store does not have, lost for that name that day with its calls paid for, about
+            $0.05 on DeepSeek; and until 5152 is started again every screen shows the schema notice, since the build
+            it runs names schema 49 and the store will hold 50. This session runs both after the merge, on the
+            operator's words recorded in the addendum's ruling entry above.
+Mutated:    the rule, stated before the run: each rule the fields add reversed alone, filtered to the risks' tests.
+            Predicted:
+            C1 the shared-fact rule removed: red in the shared-fact test.
+            C2 the shared-kind rule removed: red in the shared-kind test.
+            C3 the level rule removed: red in the level test.
+            C4 the kind list's check removed: red in the kind test.
+            Results: one run each in a detached worktree at 159c919, this entry's commit, filtered to the five tests
+            over constructed answers, each edit made there and reverted, and the tree read clean after. C1 turned the
+            shared-fact test red and the other four green. C2 turned the shared-kind test red alone. C3 turned the
+            level test red alone, the number rule reading the level past as the correction means it to. C4 turned
+            the kind test red alone.
+Held:       red in every test predicted and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1566 of 1566 tests ran
+            with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 724 claims, 724 PASS, 0 FAIL, 735 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1566 of 1566 tests.
+            Both gates ran over the tree carrying this entry, 159c919, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    corrections D to G at 12.6 in that order; the migration and the restart above, run after the merge.

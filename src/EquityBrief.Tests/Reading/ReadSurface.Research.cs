@@ -215,7 +215,7 @@ public partial class ReadSurface
 
         Insert(
             store,
-            "INSERT INTO research_section VALUES ('KEYS', 'The two cases', 1, '2026-09-08', 'a/model', 'fallback', '', '[]', " +
+            "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES ('KEYS', 'The two cases', 1, '2026-09-08', 'a/model', 'fallback', '', '[]', " +
             "'" + stored.Replace("'", "''") + "');");
 
         var region = await NamePageWithResearch(store, "KEYS");
@@ -240,7 +240,7 @@ public partial class ReadSurface
         // keeps naming the accepted version's date.
         Insert(
             store,
-            "INSERT INTO research_section VALUES ('KEYS', 'What the company sells', 2, '2026-09-09', 'another/model', 'pending', 'a draft', '[]', NULL);");
+            "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES ('KEYS', 'What the company sells', 2, '2026-09-09', 'another/model', 'pending', 'a draft', '[]', NULL);");
 
         var region = await NamePageWithResearch(store, "KEYS");
 

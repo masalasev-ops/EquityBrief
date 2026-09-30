@@ -249,7 +249,7 @@ public partial class FixtureExpectations
             using var command = connection.CreateCommand();
 
             command.CommandText =
-                "INSERT INTO research_section VALUES ('KEYS', $section, 1, $as_of, 'a writer', 'accepted', 'prose', '[]', NULL);";
+                "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES ('KEYS', $section, 1, $as_of, 'a writer', 'accepted', 'prose', '[]', NULL);";
             command.Parameters.AddWithValue("$section", section);
             command.Parameters.AddWithValue("$as_of", asOf);
             command.ExecuteNonQuery();

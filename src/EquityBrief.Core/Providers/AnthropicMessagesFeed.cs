@@ -170,7 +170,11 @@ public sealed class AnthropicMessagesFeed(HttpClient client, ResearchModelSettin
         {
             body[OutputConfigField] = new JsonObject
             {
-                ["format"] = new JsonObject { ["type"] = "json_schema", ["schema"] = SentencesSchema() },
+                ["format"] = new JsonObject
+                {
+                    ["type"] = "json_schema",
+                    ["schema"] = EquityBrief.Core.Research.RiskFields.IsRisks(wanted.Section) ? RisksSchema() : SentencesSchema(),
+                },
             };
         }
 
@@ -220,6 +224,50 @@ public sealed class AnthropicMessagesFeed(HttpClient client, ResearchModelSettin
             },
         },
         ["required"] = new JsonArray("paragraphs"),
+        ["additionalProperties"] = false,
+    };
+
+    // The risks are asked for as their fields, which code composes into the prose the page draws: each risk
+    // with the document it rests on, a listed fact with its direction and level or an event with one kind of
+    // the seven, and why with its document. The answer's text is the object itself, which the writer reads.
+    // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
+    public static JsonObject RisksSchema() => new()
+    {
+        ["type"] = "object",
+        ["properties"] = new JsonObject
+        {
+            ["risks"] = new JsonObject
+            {
+                ["type"] = "array",
+                ["items"] = new JsonObject
+                {
+                    ["type"] = "object",
+                    ["properties"] = new JsonObject
+                    {
+                        ["risk"] = new JsonObject { ["type"] = "string", ["description"] = "words completing \"The first risk is\", written without a document marker" },
+                        ["riskDocument"] = new JsonObject { ["type"] = "integer", ["description"] = "the number of the listed document that states the risk" },
+                        ["confirm"] = new JsonObject
+                        {
+                            ["type"] = "object",
+                            ["properties"] = new JsonObject
+                            {
+                                ["fact"] = new JsonObject { ["type"] = "string", ["description"] = "a fact's name exactly as it is listed under Facts" },
+                                ["event"] = new JsonObject { ["type"] = "string", ["description"] = "an event in words, only where no listed fact could show the risk" },
+                                ["kind"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray([.. EquityBrief.Core.Research.RiskFields.Kinds.Select(kind => (JsonNode)kind)]) },
+                            },
+                            ["additionalProperties"] = false,
+                        },
+                        ["direction"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray([.. EquityBrief.Core.Research.RiskFields.Directions.Select(direction => (JsonNode)direction)]) },
+                        ["level"] = new JsonObject { ["type"] = "string", ["description"] = "a figure listed under Facts, copied or rounded" },
+                        ["why"] = new JsonObject { ["type"] = "string", ["description"] = "words completing \"because\", written without a document marker" },
+                        ["whyDocument"] = new JsonObject { ["type"] = "integer", ["description"] = "the number of the listed document that says why" },
+                    },
+                    ["required"] = new JsonArray("risk", "riskDocument", "confirm", "why", "whyDocument"),
+                    ["additionalProperties"] = false,
+                },
+            },
+        },
+        ["required"] = new JsonArray("risks"),
         ["additionalProperties"] = false,
     };
 

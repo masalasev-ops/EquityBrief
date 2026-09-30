@@ -9253,3 +9253,46 @@ Now:
 > **What a pass costs.** Over the fixture's KEYS a pass wrote seven of the eight sections it could write, two on the local model and five through the spend cap for $0.0296, a sum that includes the risks asked again after the checker refused a figure in the first draft, since every draft is billed, and is at the off-peak rate, ... the same calls cost twice as much. The local model's segment commentary, told each figure its first draft was refused for, wrote one more the facts file does not hold and was left out. The name page states ...
 > ... Over the fixture's KEYS a pass with every section paid cost $0.0388, ...
 Why: every recording of a changed prompt was made again, and the pass they answer wrote the two cases at the first draft and left the local model's segment commentary out.
+
+### 2026-09-30 - ARCHITECTURE.html - the risks are returned as fields and composed into the prose the page draws
+Authorised by: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
+Was:
+> <tr><td>The risks, each with what would confirm it</td><td>Each risk beside what would confirm it, a risk to a row</td><td>Model, from the research record and the theme record</td>...
+> <tr><td>The risks, each with what would confirm it</td><td>paid</td><td>the same whole set</td><td>each risk the documents support in a paragraph of its own, opening on its ordinal as "The first risk is" and followed by a sentence opening "That risk would be confirmed by" naming an observable event that would tell the risk apart from ordinary movement, stated against the company's guidance or its trend, never a bare threshold and never a figure the next quarter crosses by construction</td><td>the same two rules</td></tr>
+> <tr><td><b>Research store</b></td><td>ticker, and one row per section holding its prose, its own as-of date, the model that wrote it, its source list, and the version it replaced</td>...
+> (section 17 held no row named Risk kinds)
+Now:
+> ... <td>Model, from the research record and the theme record, answered as fields code composes into the prose</td>...
+> ... <td>each risk the documents support returned as fields, the risk with the document stating it, what would be seen if it came true, being a listed fact's name with the direction it moves and the level it crosses wherever a fact could show it and an event with one kind of seven where none could, and why with the document saying so, which code composes into a paragraph a risk opening on its ordinal and a sentence opening "That risk would be confirmed by"; a valuation risk confirmed by the multiple falling and never by it staying high, and never a level the next quarter crosses by construction (see: ...)</td><td>the same two rules, the level held to the facts file as a figure is; an answer not returned as its fields, a fact the file does not list, a kind outside the seven, and two risks confirmed by one fact or two by events of one kind, are refused</td></tr>
+> ... its source list, the version it replaced, and for the risks the fields its prose was composed from</td>...
+> <tr><td>Risk kinds</td><td>7: an event confirming a risk no listed fact could show is one of legal, regulatory, competitive, acquisition, management, supply and other, and no two event risks of one report share a kind (see: ...)</td>...</tr>
+Why: the research template of 2026-09-29, item 2, with the operator's answer on what confirms a risk: nothing stopped three risks being confirmed by one miss of guidance while they were free prose.
+
+### 2026-09-30 - SCHEMA.md - research_section carries the fields the risks are answered as
+Authorised by: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
+Was:
+> | `reject_reason` | TEXT | null unless rejected or fallback |
+> (no `parts` column)
+Now:
+> | `parts` | TEXT | JSON: from migration 50, the fields the risks section is answered as, ... null for every other section, for a risks answer that was not those fields, and on a row written before migration 50 (see: ...) |
+Why: the checker reads what confirms each risk off the fields, and a draft's fields are what its retry is told about.
+
+### 2026-09-30 - .claude/rules/checks.md - claim-admissibility and read-surface reach the risks as fields
+Authorised by: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
+Was:
+> ... and a two cases draft whose case for and case against cannot be told apart refused naming which is missing |
+> ... and a name with an accepted one draws the model's alone |
+Now:
+> ... refused naming which is missing; and the risks answered as fields and composed a paragraph a risk, two risks confirmed by one fact or two event risks of one kind refused naming it, ... with the retry told the seven kinds |
+> ... draws the model's alone; and the fixture's accepted risks are the prose composed from the fields their row stores, drawn a risk to a row in the fields' order, ... none named twice |
+Why: the two checks hold what the correction returning the risks as fields builds.
+
+### 2026-09-30 - RUNBOOK.md - what a pass over the fixture costs, read again from the recordings the risks as fields asked for
+Authorised by: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
+Was:
+> **What a pass costs.** Over the fixture's KEYS a pass wrote seven of the eight sections it could write, two on the local model and five through the spend cap for $0.0296, a sum that includes the risks asked again after the checker refused a figure in the first draft, ... The local model's segment commentary, told each figure its first draft was refused for, wrote one more the facts file does not hold and was left out. ...
+> ... Over the fixture's KEYS a pass with every section paid cost $0.0388, ...
+Now:
+> **What a pass costs.** Over the fixture's KEYS a pass wrote six of the eight sections it could write, two on the local model and four through the spend cap for $0.0330, a sum that includes the short version asked again after the checker refused its first draft, ... and the short version, told the one window its first draft named that the facts file holds no figure for, wrote a second draft carrying figures from the articles and was left out. ...
+> ... Over the fixture's KEYS a pass with every section paid cost $0.0389, ...
+Why: the risks' recordings were made again as fields, the short version's with them since it is handed the risks, and the pass they answer accepted the risks at the first draft and left the short version out.

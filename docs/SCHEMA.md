@@ -705,6 +705,7 @@ Grain: one row per ticker, section and version.
 | `prose` | TEXT | empty where the section had no admissible source to be written from |
 | `source_ids` | TEXT | JSON list of `source_document` ids, in the order the prose cites them |
 | `reject_reason` | TEXT | null unless rejected or fallback |
+| `parts` | TEXT | JSON: from migration 50, the fields the risks section is answered as, `risks`, each with `risk`, `riskDocument`, `confirm` holding a listed `fact` or an `event` with its `kind`, `direction` and `level` where it names a fact, `why` and `whyDocument`, which its prose was composed from and the checker reads; null for every other section, for a risks answer that was not those fields, and on a row written before migration 50 (see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either) |
 
 Primary key: `ticker`, `section`, `version`.
 

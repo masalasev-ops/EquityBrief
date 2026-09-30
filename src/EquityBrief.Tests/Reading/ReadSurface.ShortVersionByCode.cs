@@ -172,7 +172,9 @@ public partial class ReadSurface
     [Fact]
     public async Task ANameWithAnAcceptedShortVersionDrawsTheModelsAndNotOneWrittenByCode()
     {
-        using var store = await FixtureReplay.ResearchedAsync();
+        // The pass with every section paid, whose short version the checker accepted on its retry over the
+        // recordings, where the default pass's was left out.
+        using var store = await FixtureReplay.ResearchedAsync(lane: [], paidForLocal: true);
 
         var page = await NameRoute(store, "KEYS");
 

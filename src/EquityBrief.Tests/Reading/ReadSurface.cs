@@ -3858,7 +3858,7 @@ public partial class ReadSurface
 
         Insert(
             store,
-            "INSERT INTO research_section VALUES ('KEYS', 'What the company sells', 1, '2026-08-10', 'a writer', 'accepted', 'prose', '[]', NULL);");
+            "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES ('KEYS', 'What the company sells', 1, '2026-08-10', 'a writer', 'accepted', 'prose', '[]', NULL);");
 
         var region = await NamePageWithStaleness(store, "KEYS");
         var line = Regex.Match(region, "<p class=\"research-state\" data-state=\"([a-z]+)\">([^<]*)</p>");
@@ -3881,7 +3881,7 @@ public partial class ReadSurface
         // And a section rewritten after both is a record that stands, drawn as such.
         Insert(
             store,
-            "INSERT INTO research_section VALUES ('KEYS', 'What the company sells', 2, '2026-09-05', 'a writer', 'accepted', 'prose', '[]', NULL);");
+            "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES ('KEYS', 'What the company sells', 2, '2026-09-05', 'a writer', 'accepted', 'prose', '[]', NULL);");
 
         Assert.Contains("data-state=\"stands\"", await NamePageWithStaleness(store, "KEYS"), StringComparison.Ordinal);
     }
@@ -3901,7 +3901,7 @@ public partial class ReadSurface
 
         Insert(
             store,
-            "INSERT INTO research_section VALUES ('KEYS', 'The risks, each with what would confirm it', 1, '2026-09-07', 'a writer', " +
+            "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES ('KEYS', 'The risks, each with what would confirm it', 1, '2026-09-07', 'a writer', " +
             "'fallback', '', '[]', 'no admissible source was found');");
 
         var api = Api(store);

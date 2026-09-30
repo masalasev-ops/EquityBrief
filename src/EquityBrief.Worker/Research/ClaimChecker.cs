@@ -79,14 +79,14 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
     public const string UnreadableSources = "a source list that is not a JSON list of document ids";
 
     const string PendingResearch = @"
-        SELECT ticker, section, version, as_of, prose, source_ids
+        SELECT ticker, section, version, as_of, prose, source_ids, parts
         FROM research_section
         WHERE status = 'pending'
         ORDER BY ticker, section, version;
     ";
 
     const string PendingThemes = @"
-        SELECT theme, section, version, as_of, prose, source_ids
+        SELECT theme, section, version, as_of, prose, source_ids, NULL
         FROM theme_section
         WHERE status = 'pending'
         ORDER BY theme, section, version;
@@ -95,7 +95,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
     // The version before this one, which is what decides whether a refusal is a
     // first attempt or the retry.
     const string EarlierResearch = @"
-        SELECT status, as_of, reject_reason, prose, source_ids
+        SELECT status, as_of, reject_reason, prose, source_ids, parts
         FROM research_section
         WHERE ticker = $subject AND section = $section AND version < $version
         ORDER BY version DESC
@@ -103,7 +103,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
     ";
 
     const string EarlierTheme = @"
-        SELECT status, as_of, reject_reason, prose, source_ids
+        SELECT status, as_of, reject_reason, prose, source_ids, NULL
         FROM theme_section
         WHERE theme = $subject AND section = $section AND version < $version
         ORDER BY version DESC
@@ -225,7 +225,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
         return outcome;
     }
 
-    sealed record PendingSection(string Subject, string Section, int Version, string AsOf, string Prose, string SourceIds);
+    sealed record PendingSection(string Subject, string Section, int Version, string AsOf, string Prose, string SourceIds, string? Parts);
 
     async Task<CheckedSection> CheckAsync(
         SqliteConnection connection,
@@ -280,7 +280,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
             ? ([], null)
             : await FactsAsync(connection, transaction, pending.Subject, pending.AsOf, cancellation);
 
-        var verdict = ClaimRules.Check(pending.Section, pending.Prose, facts, sources, night);
+        var verdict = ClaimRules.Check(pending.Section, pending.Prose, facts, sources, night, pending.Parts);
 
         if (verdict.Passes)
         {
@@ -310,7 +310,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
         // rules over the same facts file, and its own source list, as the retry was told it.
         // see: A retry names each thing the check refused, and a second draft repeating one is left out
         var first = await SourcesAsync(connection, transaction, earlier.SourceIds, cancellation) is { } earlierSources
-            ? ClaimRules.Check(pending.Section, earlier.Prose, facts, earlierSources, night).Findings
+            ? ClaimRules.Check(pending.Section, earlier.Prose, facts, earlierSources, night, earlier.Parts).Findings
             : [];
 
         return (Fallback, Repeats(first, verdict.Findings) ? $"{RejectedTwice}, {RepeatedOnRetry}: {verdict.Reason}" : $"{RejectedTwice}: {verdict.Reason}", earlier.Reason);
@@ -389,13 +389,14 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
                 reader.GetInt32(2),
                 reader.GetString(3),
                 reader.GetString(4),
-                reader.GetString(5)));
+                reader.GetString(5),
+                reader.IsDBNull(6) ? null : reader.GetString(6)));
         }
 
         return pending;
     }
 
-    sealed record Earlier(string Status, string AsOf, string? Reason, string Prose, string SourceIds);
+    sealed record Earlier(string Status, string AsOf, string? Reason, string Prose, string SourceIds, string? Parts);
 
     static async Task<Earlier?> EarlierAsync(
         SqliteConnection connection,
@@ -415,7 +416,7 @@ public sealed class ClaimChecker(IClock clock, string databaseFile) : IComponent
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         return await reader.ReadAsync(cancellation)
-            ? new Earlier(reader.GetString(0), reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2), reader.GetString(3), reader.GetString(4))
+            ? new Earlier(reader.GetString(0), reader.GetString(1), reader.IsDBNull(2) ? null : reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.IsDBNull(5) ? null : reader.GetString(5))
             : null;
     }
 

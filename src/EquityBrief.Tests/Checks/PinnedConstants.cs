@@ -128,6 +128,7 @@ public class PinnedConstants
             new("Spend cap", "50", SpendCaps.DefaultMonth, "SpendCaps.DefaultMonth"),
             new("Paid model retirement warning", "30", ModelProfiles.RetirementWarningDays, "ModelProfiles.RetirementWarningDays"),
             new("A report named for its cost", "2", SpendCaps.ReportNamedAbove, "SpendCaps.ReportNamedAbove"),
+            new("Risk kinds", "7", RiskFields.Kinds.Length, "RiskFields.Kinds.Length"),
             new("Theme search parameters", "3", ThemeSearch.ResultsASite, "ThemeSearch.ResultsASite"),
             new("Theme search parameters", "10", ThemeSearch.MostPages, "ThemeSearch.MostPages"),
             new("Theme search parameters", "5", ThemeSearch.MentionsPerTenThousand, "ThemeSearch.MentionsPerTenThousand"),
