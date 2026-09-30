@@ -174,6 +174,10 @@ public sealed record RunStageRow(
     string Spend,
     string Detail);
 
+// One version a research pass or its theme pass wrote, as the store holds it now: the name or the theme it was
+// written for, the section, the version, the status the checker gave it, its prose and why it was refused.
+public sealed record WrittenVersion(string Owner, string Section, int Version, string Status, string Prose, string? RejectReason);
+
 // One row the overnight queue wrote, as the store holds it: the night its detail names,
 // the instant it started, what it came to, and the detail the run page reads the counts
 // from.
@@ -625,6 +629,44 @@ public sealed class ReadApi : IComponent
         SELECT json_extract(detail, '$.created')
         FROM run_log
         WHERE substr(stage, 1, length($prefix)) = $prefix AND spend != $nothing AND json_valid(detail);
+    ";
+
+    // The stages a report is read from beside the pass's own: the theme pass under the same run and a section a
+    // trial asked for. The worker's own constants cannot be referenced from here, so the words are stated and
+    // `read-surface` asserts they agree.
+    public const string ThemeStage = "theme research";
+    public const string TrialStage = "section trial";
+
+    // Every row of every research pass the run page reads its reports from: the pass's own row, the theme pass's,
+    // each paid call and each section a trial asked for.
+    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+    const string ReportRows = @"
+        SELECT run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail
+        FROM run_log
+        WHERE substr(run_id, 1, length($pass)) = $pass
+          AND (stage IN ($research, $theme)
+            OR substr(stage, 1, length($call)) = $call
+            OR substr(stage, 1, length($trial)) = $trial)
+        ORDER BY rowid;
+    ";
+
+    // Each version a research pass or its theme pass says it wrote, as the stores hold it now.
+    const string ReportVersions = @"
+        SELECT r.ticker, r.section, r.version, r.status, r.prose, r.reject_reason
+        FROM run_log l, json_each(l.detail, '$.written') w
+        JOIN research_section r
+          ON r.ticker = json_extract(l.detail, '$.ticker')
+         AND r.section = json_extract(w.value, '$.section')
+         AND r.version = json_extract(w.value, '$.version')
+        WHERE l.stage = $research AND substr(l.run_id, 1, length($pass)) = $pass AND json_valid(l.detail)
+        UNION
+        SELECT t.theme, t.section, t.version, t.status, t.prose, t.reject_reason
+        FROM run_log l, json_each(l.detail, '$.written') w
+        JOIN theme_section t
+          ON t.theme = json_extract(l.detail, '$.theme')
+         AND t.section = json_extract(w.value, '$.section')
+         AND t.version = json_extract(w.value, '$.version')
+        WHERE l.stage = $theme AND substr(l.run_id, 1, length($pass)) = $pass AND json_valid(l.detail);
     ";
 
     // A trial's calls are left out, being spend beside a report rather than on it.
@@ -3349,6 +3391,73 @@ public sealed class ReadApi : IComponent
         }
 
         return spends;
+    }
+
+    // Every run log row the run page reads its reports from, in the order they were written.
+    public async Task<IReadOnlyList<RunStageRow>> ReportRowsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ReportRows;
+        ReportParameters(command);
+        command.Parameters.AddWithValue("$call", PaidCallStage + ":");
+        command.Parameters.AddWithValue("$trial", TrialStage + ":");
+
+        var rows = new List<RunStageRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new RunStageRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                DateTimeOffset.Parse(reader.GetString(2), CultureInfo.InvariantCulture),
+                DateTimeOffset.Parse(reader.GetString(3), CultureInfo.InvariantCulture),
+                reader.GetString(4),
+                reader.GetInt32(5),
+                reader.GetInt32(6),
+                reader.GetInt32(7),
+                reader.GetString(8),
+                reader.IsDBNull(9) ? string.Empty : reader.GetString(9)));
+        }
+
+        return rows;
+    }
+
+    // Each version the research passes and their theme passes wrote.
+    public async Task<IReadOnlyList<WrittenVersion>> ReportVersionsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ReportVersions;
+        ReportParameters(command);
+
+        var versions = new List<WrittenVersion>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            versions.Add(new WrittenVersion(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetInt32(2),
+                reader.GetString(3),
+                reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                reader.IsDBNull(5) ? null : reader.GetString(5)));
+        }
+
+        return versions;
+    }
+
+    static void ReportParameters(SqliteCommand command)
+    {
+        command.Parameters.AddWithValue("$pass", EquityBrief.Core.Research.PassRun.Prefix);
+        command.Parameters.AddWithValue("$research", ResearchStage);
+        command.Parameters.AddWithValue("$theme", ThemeStage);
     }
 
     // The instant every answered paid call came back, as the run log carries it.

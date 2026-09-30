@@ -1595,6 +1595,22 @@ internal static class Scope
             Verdict.Pass, "each night's paid passes worked by hand over constructed run logs, a refused call and a command run by hand counting none", ByReadSurface),
         [CheckReach.Key("15.10 Run", "Research and spend, the reports and the overnight drafts written over those nights")] = new Scoped(
             Verdict.Pass, "the reports and the drafts the queue completed summed over the nights and read off the rendered tiles", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How each report did, one row per report over the seven nights with its stock and day and what it cost")] = new Scoped(
+            Verdict.Pass, "a pass whose paid model answered drawn as a row with the sum of its calls worked by hand and one whose only call was paused drawn as none, read through the read API over a constructed store and back off the rendered page, and a report older than the region's nights held for the rates and not drawn", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How each report did, a cell per section saying whether it passed first time or on retry or was left out with why or was not warranted, with what its own calls cost and none of a trial's")] = new Scoped(
+            Verdict.Pass, "every outcome worked by hand over one constructed pass, the retry's accepted version read as on retry, a fallback's refusal as the name page words it, a declined cycle's line off the theme pass and a section standing from earlier as not warranted, each with its own calls' cost and a trial's calls in none", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How each report did, the two cases' cell marked where a draft of the pass carried a figure on both sides, with how many of the newest twenty reports' two cases did")] = new Scoped(
+            Verdict.Pass, "the detector worked by hand over the coarser rounding, a percentage against an amount and a draft whose sides cannot be cut, and the count over three reports reading a refused first draft whose accepted retry carried none", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How each report did, each section's share passed first time and its share left out over the newest twenty reports that warranted it")] = new Scoped(
+            Verdict.Pass, "worked by hand over more reports than the window holds, the oldest outside it, a section warranted by fewer than the window read over those it had and one warranted by none over none, and at an earlier night over the reports written by then", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Section trials, one row per section a trial asked for with its report and each model's outcome and rounds and cost")] = new Scoped(
+            Verdict.Pass, "the pass's side read off its own cell and versions and the trial's off its row, each outcome, round count and cost worked by hand and read back off the rendered region", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Section trials, the two models' drafts side by side folded beneath")] = new Scoped(
+            Verdict.Pass, "each round's paragraphs drawn whole in a column for each model under a fold, the columns stacked on a narrow screen by the stylesheet's rule", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Section trials, drawn only while a trial has written a row")] = new Scoped(
+            Verdict.Pass, "the region on the run page while a trial row stands and gone once it is removed, the report region still drawn", ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Report rates")] = new Scoped(
+            Verdict.Pass, "the window read off the document against the constant, and the rates and the two cases' count worked by hand at it and below it", ByReadSurface),
         [CheckReach.Key("15.10 Run", "Anything to worry about, a checklist of plain items each turning red with its reason where it fails")] = new Scoped(
             Verdict.Pass, "every item held with no reason, failed with its reason worked by hand, and not read where the night stored nothing", ByReadSurface),
         [CheckReach.Key("15.10 Run", "Anything to worry about, every stock holding the night's prices and every step of the night finished")] = new Scoped(
@@ -3405,6 +3421,13 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Research and spend, the month's spend against the month cap")] = "12.3",
         [CheckReach.Key("15.10 Run", "Research and spend, the reports the paid model wrote on each of the last seven nights")] = "12.3",
         [CheckReach.Key("15.10 Run", "Research and spend, the reports and the overnight drafts written over those nights")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How each report did, one row per report over the seven nights with its stock and day and what it cost")] = "12.6",
+        [CheckReach.Key("15.10 Run", "How each report did, a cell per section saying whether it passed first time or on retry or was left out with why or was not warranted, with what its own calls cost and none of a trial's")] = "12.6",
+        [CheckReach.Key("15.10 Run", "How each report did, the two cases' cell marked where a draft of the pass carried a figure on both sides, with how many of the newest twenty reports' two cases did")] = "12.6",
+        [CheckReach.Key("15.10 Run", "How each report did, each section's share passed first time and its share left out over the newest twenty reports that warranted it")] = "12.6",
+        [CheckReach.Key("15.10 Run", "Section trials, one row per section a trial asked for with its report and each model's outcome and rounds and cost")] = "12.6",
+        [CheckReach.Key("15.10 Run", "Section trials, the two models' drafts side by side folded beneath")] = "12.6",
+        [CheckReach.Key("15.10 Run", "Section trials, drawn only while a trial has written a row")] = "12.6",
         [CheckReach.Key("15.10 Run", "Anything to worry about, a checklist of plain items each turning red with its reason where it fails")] = "12.3",
         [CheckReach.Key("15.10 Run", "Anything to worry about, every stock holding the night's prices and every step of the night finished")] = "12.3",
         [CheckReach.Key("15.10 Run", "Anything to worry about, no research document refused and no section fallen back")] = "12.3",
@@ -3815,6 +3838,10 @@ internal static class Scope
             ["one row per version on a scale from nought to a hundred", "before its first look a locked dashed outline with its trades and blocks so far", "from its first look the share of its trades that reached the target with the break-even they needed and what no skill scored from the same starts and how far luck alone could move it", "the verdict in words"],
         [CheckReach.Key("15.10 Run", "Research and spend")] =
             ["the month's spend against the month cap", "the reports the paid model wrote on each of the last seven nights", "the reports and the overnight drafts written over those nights"],
+        [CheckReach.Key("15.10 Run", "How each report did")] =
+            ["one row per report over the seven nights with its stock and day and what it cost", "a cell per section saying whether it passed first time or on retry or was left out with why or was not warranted, with what its own calls cost and none of a trial's", "the two cases' cell marked where a draft of the pass carried a figure on both sides, with how many of the newest twenty reports' two cases did", "each section's share passed first time and its share left out over the newest twenty reports that warranted it"],
+        [CheckReach.Key("15.10 Run", "Section trials")] =
+            ["one row per section a trial asked for with its report and each model's outcome and rounds and cost", "the two models' drafts side by side folded beneath", "drawn only while a trial has written a row"],
         [CheckReach.Key("15.10 Run", "Anything to worry about")] =
             ["a checklist of plain items each turning red with its reason where it fails", "every stock holding the night's prices and every step of the night finished", "no research document refused and no section fallen back", "every company awaiting a quarter asked on schedule", "no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date", "no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost", "the four harness counts beneath"],
         // 12.2. The name page's gates and the run page's funnel, each read as the parts its row enumerates.
@@ -4257,6 +4284,7 @@ internal static class Scope
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",
+        ["Report rates"] = "12.6",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)

@@ -1653,7 +1653,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<WorryItem>? worries = null,
         IReadOnlyList<VersionLine>? background = null,
         CompareView? compare = null,
-        IReadOnlyList<CheckpointRow>? checkpoints = null)
+        IReadOnlyList<CheckpointRow>? checkpoints = null,
+        ReportsView? reports = null)
     {
         var region = new StringBuilder();
 
@@ -1810,6 +1811,34 @@ public sealed class SinglePageApp : IComponent
             stamp: Cards.Night(night),
             region: "operational"));
         region.Append(Folded);
+
+        // How each report's sections came out, and each section a trial asked for beside a report, drawn only
+        // while a trial has written a row.
+        // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+        if (reports is { } read)
+        {
+            region.Append(Fold("reports", "How each report did, section by section, and each section's rates"));
+            region.Append(Cards.Computed(
+                "Reports",
+                marks.ReportsRegion(read, NameRoute),
+                title: "How each report did",
+                lede: "Each section of each report the paid model wrote over the last seven nights: passed the claim check first time or on its retry, left out, or standing from an earlier day, with what its calls cost.",
+                stamp: Cards.Night(night),
+                region: "reports"));
+
+            if (read.Trials.Count > 0)
+            {
+                region.Append(Cards.Computed(
+                    "Section trials",
+                    marks.TrialsRegion(read.Trials, NameRoute),
+                    title: "Section trials",
+                    lede: "A second model asked for a section beside a report, never written into it: each side's result, rounds and cost, with the two drafts side by side.",
+                    stamp: Cards.Night(night),
+                    region: "trials"));
+            }
+
+            region.Append(Folded);
+        }
 
         // The market on the night: the breadth, the share above the shorter average as context, and how
         // heavily the index traded.

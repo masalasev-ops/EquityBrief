@@ -418,6 +418,49 @@ public sealed record ResearchNight(DateOnly Session, int PaidPasses, int Drafts)
 // up to it.
 public sealed record ResearchPicture(NightSpend Spend, IReadOnlyList<ResearchNight> Nights);
 
+// How one section of one report came out, as the Run page draws it: passed first time or on retry, left out
+// with why, or not warranted where it stood from an earlier day; what its own calls cost, a trial's left out;
+// how many drafts the pass wrote of it; and for the two cases whether any of those drafts carried a figure on
+// both sides.
+// see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+public sealed record ReportCell(string Section, string Outcome, string? Why, decimal Cost, int Drafts, bool BothSides);
+
+// One report: the pass's run, its stock and the day it wrote for, what its calls cost, a trial's left out, and a
+// cell for each section in figure 12.2's order.
+public sealed record ReportRow(string RunId, string Ticker, DateOnly Day, decimal Cost, IReadOnlyList<ReportCell> Cells);
+
+// A section's rates over the newest reports that warranted it: how many were read, and how many of them passed
+// first time and were left out.
+public sealed record SectionRate(string Section, int Reports, int FirstTime, int LeftOut);
+
+// One side of a section a trial asked for: the model, how it came out, its rounds and what they cost, and each
+// round's draft.
+public sealed record TrialSide(string Model, string Outcome, int Rounds, decimal Cost, IReadOnlyList<string> Drafts);
+
+// One section a trial asked for beside a report, the pass's own side and the trial's.
+public sealed record TrialRow(string RunId, string Ticker, DateOnly Day, string Section, TrialSide Pass, TrialSide Trial);
+
+// The reports of the seven nights up to a night, each section's rates over the newest reports that warranted it,
+// how many of the newest reports' two cases drafts carried a figure on both sides out of how many were drafted,
+// and every section a trial asked for up to the night.
+public sealed record ReportsView(
+    IReadOnlyList<ReportRow> Reports,
+    int Held,
+    IReadOnlyList<SectionRate> Rates,
+    int BothSides,
+    int TwoCases,
+    IReadOnlyList<TrialRow> Trials)
+{
+    public const string FirstTime = "passed first time";
+    public const string OnRetry = "passed on retry";
+    public const string LeftOut = "left out";
+    public const string NotWarranted = "not warranted";
+
+    // How many of the newest reports a section's rates and the two cases' count are read over.
+    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+    public const int RateWindow = 20;
+}
+
 // A version running beside the live list, as the Run page's learning region draws it: what it changes in
 // plain words, the stocks it has picked so far, the share of them the live list also picked, and the
 // evidence it has gathered against the floor its first look is read at. Picks only: nothing here is read
@@ -6756,6 +6799,174 @@ public sealed class MarkRenderer : IComponent
 
         return region.ToString();
     }
+
+    // How each report did, in section 15.10's detail: one numbered row for each report of the seven nights with its
+    // stock, its day and what its calls cost, and a cell for each section saying how it came out with what its own
+    // calls cost, the two cases' cell marked where a draft carried a figure on both sides; each section left out
+    // with why beneath, numbered as its cell is; the count of the newest reports' two cases carrying a figure on
+    // both sides; and each section's rates over the newest twenty reports that warranted it.
+    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+    public string ReportsRegion(ReportsView view, string nameRoute)
+    {
+        // A store holding no report says so rather than drawing a table of rates read over nothing.
+        if (view.Held == 0)
+        {
+            return "<div class=\"reports\" data-reports=\"0\" data-held=\"0\"><p class=\"degraded\">No report the paid model wrote is held yet, so there is nothing to read section by section.</p></div>";
+        }
+
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"reports\" data-reports=\"{view.Reports.Count}\" data-held=\"{view.Held}\">");
+        region.Append(Invariant, $"<p class=\"list-count\" data-shown=\"{view.Reports.Count}\" data-held=\"{view.Held}\">Showing {view.Reports.Count} of {view.Held} report{(view.Held == 1 ? string.Empty : "s")}, those written over the last seven nights</p>");
+
+        var why = new List<(int Place, string Line)>();
+
+        if (view.Reports.Count > 0)
+        {
+            region.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table report-table\" data-rows=\"{view.Reports.Count}\"><thead><tr><th class=\"place\">#</th><th>Stock</th><th>Day</th><th class=\"r\">Cost</th>");
+
+            foreach (var section in view.Reports[0].Cells.Select(cell => cell.Section))
+            {
+                region.Append(Invariant, $"<th class=\"c\" data-section=\"{Escaped(section)}\" title=\"{Escaped(section)}\">{Escaped(SectionHead(section))}</th>");
+            }
+
+            region.Append("</tr></thead><tbody>");
+
+            foreach (var (report, place) in view.Reports.Select((report, at) => (report, at + 1)))
+            {
+                region.Append(Invariant, $"<tr data-run=\"{Escaped(report.RunId)}\" data-ticker=\"{Escaped(report.Ticker)}\"><td class=\"place\">{place}</td>");
+                region.Append(Invariant, $"<td><a href=\"{Escaped(nameRoute + report.Ticker)}\">{Escaped(report.Ticker)}</a></td><td>{report.Day:yyyy-MM-dd}</td><td class=\"r\" data-cost=\"{report.Cost}\">{ReportCost(report.Cost)}</td>");
+
+                foreach (var cell in report.Cells)
+                {
+                    var word = cell.Outcome switch
+                    {
+                        ReportsView.FirstTime => "first",
+                        ReportsView.OnRetry => "retry",
+                        ReportsView.LeftOut => "out",
+                        _ => "earlier",
+                    };
+
+                    var note = string.Empty;
+
+                    if (cell.Outcome == ReportsView.LeftOut)
+                    {
+                        why.Add((place, Formatted($"{report.Ticker}, {SectionHead(cell.Section)}: {cell.Why ?? "not written"}")));
+                        note = Formatted($" <sup>{place}</sup>");
+                    }
+
+                    region.Append(Invariant, $"<td class=\"c rc rc-{word}\" data-section=\"{Escaped(cell.Section)}\" data-outcome=\"{Escaped(cell.Outcome)}\" data-cost=\"{cell.Cost}\" data-drafts=\"{cell.Drafts}\" data-both-sides=\"{(cell.BothSides ? "true" : "false")}\">{word}{note}");
+                    region.Append(cell.Outcome == ReportsView.NotWarranted ? string.Empty : "<small>" + ReportCost(cell.Cost) + "</small>");
+                    region.Append(cell.BothSides ? "<small class=\"both\">both sides</small>" : string.Empty);
+                    region.Append("</td>");
+                }
+
+                region.Append("</tr>");
+            }
+
+            region.Append("</tbody></table></div>");
+        }
+
+        region.Append("<p class=\"report-key\">first: passed the claim check at its first draft; retry: passed on its one retry; out: left out, with why below; earlier: stood from an earlier day, so the pass did not write it. Each cost is that section's own calls, a trial's left out.</p>");
+
+        if (why.Count > 0)
+        {
+            region.Append("<ol class=\"report-why\">");
+
+            foreach (var (place, line) in why)
+            {
+                region.Append(Invariant, $"<li data-place=\"{place}\">{place}. {Escaped(line)}</li>");
+            }
+
+            region.Append("</ol>");
+        }
+
+        region.Append(Invariant, $"<p class=\"both-sides\" data-both-sides=\"{view.BothSides}\" data-drafted=\"{view.TwoCases}\">{view.BothSides} of the newest {view.TwoCases} reports' two cases carried a figure on both sides, first draft or retry.</p>");
+
+        region.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table rate-table\" data-window=\"{ReportsView.RateWindow}\"><thead><tr><th class=\"place\">#</th><th>Section</th><th class=\"r\">Passed first time</th><th class=\"r\">Left out</th></tr></thead><tbody>");
+
+        foreach (var (rate, place) in view.Rates.Select((rate, at) => (rate, at + 1)))
+        {
+            region.Append(Invariant, $"<tr data-section=\"{Escaped(rate.Section)}\" data-reports=\"{rate.Reports}\" data-first=\"{rate.FirstTime}\" data-left-out=\"{rate.LeftOut}\"><td class=\"place\">{place}</td><td>{Escaped(rate.Section)}</td>");
+            region.Append(Invariant, $"<td class=\"r\">{rate.FirstTime} of {rate.Reports}</td><td class=\"r\">{rate.LeftOut} of {rate.Reports}</td></tr>");
+        }
+
+        region.Append(Invariant, $"</tbody></table></div><p class=\"report-key\">Each section's rates are read over the newest {ReportsView.RateWindow} reports that warranted it, and over as many as there are where fewer have been written.</p></div>");
+
+        return region.ToString();
+    }
+
+    // Each section a trial asked for beside a report, in section 15.10's detail: one numbered row a section with the
+    // pass's model and the trial's, each with how it came out, its rounds and what they cost, and the two models'
+    // drafts side by side folded beneath it, in two columns on a wide screen and one on a narrow one. Nothing is
+    // drawn while no trial has written a row.
+    // see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
+    public string TrialsRegion(IReadOnlyList<TrialRow> trials, string nameRoute)
+    {
+        if (trials.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"trials\" data-trials=\"{trials.Count}\"><p class=\"list-count\" data-shown=\"{trials.Count}\">Showing all {trials.Count} section{(trials.Count == 1 ? string.Empty : "s")} a trial asked for</p><ol class=\"trial-list\">");
+
+        foreach (var (trial, place) in trials.Select((trial, at) => (trial, at + 1)))
+        {
+            region.Append(Invariant, $"<li class=\"trial\" data-run=\"{Escaped(trial.RunId)}\" data-section=\"{Escaped(trial.Section)}\"><p class=\"trial-head\">{place}. <a href=\"{Escaped(nameRoute + trial.Ticker)}\">{Escaped(trial.Ticker)}</a>, {trial.Day:yyyy-MM-dd}, {Escaped(trial.Section)}</p>");
+            region.Append("<div class=\"trial-sides\">");
+            region.Append(TrialSideLine("pass", trial.Pass));
+            region.Append(TrialSideLine("trial", trial.Trial));
+            region.Append("</div><details class=\"trial-drafts\"><summary>The two drafts side by side</summary><div class=\"trial-pair\">");
+            region.Append(TrialDrafts("pass", trial.Pass));
+            region.Append(TrialDrafts("trial", trial.Trial));
+            region.Append("</div></details></li>");
+        }
+
+        region.Append("</ol></div>");
+
+        return region.ToString();
+
+        static string TrialSideLine(string side, TrialSide drawn) =>
+            Formatted($"<p class=\"trial-side\" data-side=\"{side}\" data-model=\"{Escaped(drawn.Model)}\" data-outcome=\"{Escaped(drawn.Outcome)}\" data-rounds=\"{drawn.Rounds}\" data-cost=\"{drawn.Cost}\"><b>{Escaped(drawn.Model)}</b>: {Escaped(drawn.Outcome)}, {drawn.Rounds} round{(drawn.Rounds == 1 ? string.Empty : "s")}, {ReportCost(drawn.Cost)}</p>");
+
+        static string TrialDrafts(string side, TrialSide drawn)
+        {
+            var column = new StringBuilder();
+
+            column.Append(Invariant, $"<div class=\"trial-column\" data-side=\"{side}\"><h4>{Escaped(drawn.Model)}</h4>");
+
+            foreach (var (draft, round) in drawn.Drafts.Select((draft, at) => (draft, at + 1)))
+            {
+                column.Append(Invariant, $"<div class=\"trial-draft\" data-round=\"{round}\"><p class=\"trial-round\">Round {round}</p>");
+                column.Append(draft.Length == 0 ? "<p class=\"degraded\">no draft</p>" : string.Concat(draft.Split(["\r\n\r\n", "\n\n"], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(paragraph => "<p>" + Escaped(paragraph) + "</p>")));
+                column.Append("</div>");
+            }
+
+            column.Append("</div>");
+
+            return column.ToString();
+        }
+    }
+
+    // A report's cost to the ten-thousandth of a dollar, since a section's call is often less than a cent.
+    static string ReportCost(decimal cost) => "$" + cost.ToString("0.0000", CultureInfo.InvariantCulture);
+
+    // A section's heading in the report table, short enough for a column, its whole name in the heading's title.
+    static string SectionHead(string section) => section switch
+    {
+        "The cause of each large move" => "Moves",
+        "What the company sells" => "Business",
+        "The segment commentary" => "Segments",
+        "The key under each figure" => "Key",
+        "The industry cycle" => "Cycle",
+        "The dated calendar items" => "Calendar",
+        "The two cases" => "Two cases",
+        "The risks, each with what would confirm it" => "Risks",
+        "The short version" => "Short version",
+        _ => section,
+    };
 
     // Anything to worry about, section 15.10's tenth region: each item of the checklist in plain words, held,
     // turned red with its reason where it failed, or a dashed outline where the night stored nothing it could

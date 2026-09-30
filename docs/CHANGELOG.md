@@ -9407,3 +9407,31 @@ Now:
 > <tr><td><b>Section trial</b></td><td>research</td><td>after a research pass that wrote a section the trial names at its first draft, until it has run over the reports it names</td><td>research store, facts, source documents, run log</td><td>run log</td><td>asks a second profile, through a spend cap holding that profile's model, ... It writes no research section, only its rows beside the pass's own on the run log, and stops by itself once it has run over the reports it names (see: ...)</td></tr>
 > <tr><td>Section trial</td> ... R under facts, research and theme, and sources, and R W under the run log</tr>
 Why: the trial is a component that reads three stores and writes the run log, and `component-access` holds every class declaring its access to a catalogue row and a matrix row.
+
+### 2026-09-30 - ARCHITECTURE.html - section 15.10 draws how each report did and the section trials, and section 17 states their window
+Authorised by: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+Was:
+> <p><b>Reads:</b> the run log, the listings with the rule that listed each evening, the forward returns, the research store, which the stale-and-failed region draws sections from and this list did not name until 6.0.</p>
+> (section 15.10 held no row for how each report did or the section trials, and section 17 no row named Report rates)
+Now:
+> <p><b>Reads:</b> ... this list did not name until 6.0. How each report did reads the theme store beside the research store, for the versions of the industry cycle a theme pass wrote under a report's run.</p>
+> <tr><td>How each report did</td><td>one row per report over the seven nights with its stock and day and what it cost; a cell per section saying whether it passed first time or on retry or was left out with why or was not warranted, with what its own calls cost and none of a trial's; the two cases' cell marked where a draft of the pass carried a figure on both sides, with how many of the newest twenty reports' two cases did; each section's share passed first time and its share left out over the newest twenty reports that warranted it (see: ...)</td></tr>
+> <tr><td>Section trials</td><td>one row per section a trial asked for with its report and each model's outcome and rounds and cost; the two models' drafts side by side folded beneath; drawn only while a trial has written a row (see: ...)</td></tr>
+> <tr><td>Report rates</td><td>each section's share passed first time and share left out read over the newest 20 reports up to the night that warranted it, and the two cases' figures on both sides over the newest 20 that drafted them, each stated with the count read where fewer exist (see: ...)</td>...</tr>
+Why: the research template of 2026-09-29, item 5 and item 6: the operator could not see which sections keep failing, and the count of the two cases' figures on both sides is read on this region.
+
+### 2026-09-30 - RUNBOOK.md - reading how each report did
+Authorised by: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+Was:
+> (no paragraph on reading how each report did)
+Now:
+> **Reading how each report did.** The run page's detail folds a section, How each report did, drawing each report of the seven nights with a cell for each section ... and beneath those each section a trial asked for, the pass's model and the trial's side by side with both drafts (see: ...).
+Why: the region is where the operator reads a section's rates and the trial's drafts before changing a section's word in the map.
+
+### 2026-09-30 - .claude/rules/checks.md - read-surface reaches how each report did and the section trials
+Authorised by: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+Was:
+> ... every fact they name one the night's facts file lists and none named twice |
+Now:
+> ... none named twice; and the Run page draws how each report did, read through the read API's own queries over a constructed store and back off the page: ... and the worker's own stage words asserted equal to those the read surface states |
+Why: the check holds what the correction drawing how each report did builds.
