@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-36rng9pzb4uq6e50px3e29",
+  "object": "chat.completion",
+  "created": 1790740944,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The Communications Solutions Group reported revenue of $1,345 million for the quarter ended July 31, 2026, driven by growth in commercial communications and aerospace, defense, and government [D1]. Total segment revenue reached $1,846 million representing a 36.54 percent increase from the prior year due to strong performance in both reportable segments [D1]. Operating income for the Communications Solutions Group increased to $458 million from $246 million last year as gross margin expanded to 70.97 percent [D1].",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 12025,
+    "completion_tokens": 123,
+    "total_tokens": 12148,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

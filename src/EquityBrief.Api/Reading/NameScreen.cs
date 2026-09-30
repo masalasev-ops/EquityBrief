@@ -1124,6 +1124,7 @@ public static class NameScreen
         }
         var newest = Pass(pass);
         var notWritten = NotWritten(pass, accepted, leftOut);
+        var says = reading is null ? null : WhatTheNumbersSay(reading, readQuarters ?? []);
 
         var drawn = bars
             .Select(bar => new ChartBar(bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume))
@@ -1204,7 +1205,7 @@ public static class NameScreen
             bars.Count > 0 ? bars[^1].Close : 0m,
             EventBook(ladder),
             Arithmetic(ladder),
-            reading is null ? Numbers(filings) : marks.NumbersSay(WhatTheNumbersSay(reading, readQuarters ?? []), Numbers(filings)),
+            says is null ? Numbers(filings) : marks.NumbersSay(says, Numbers(filings)),
             cells,
             TwelveMonths(bars),
             listing?.ListedBy == ListRules.Filter ? [] : FiredReasons(listing),
@@ -1234,7 +1235,8 @@ public static class NameScreen
             Passed(listing, gates),
             watched,
             earlier,
-            gates is not null && missed is not null ? (gates.SessionDate, missed) : null);
+            gates is not null && missed is not null ? (gates.SessionDate, missed) : null,
+            says);
     }
 
     // "What the numbers say" for a night's readings: the heading carrying the state, the quarter read from,
@@ -1784,6 +1786,10 @@ public static class NameScreen
     // `read-surface` asserts the two agree.
     public const string RejectedTwice = "rejected twice";
 
+    // What a fallback carries after that word where the retry repeated what its first draft
+    // was refused for, stated here for the same reason and asserted against the worker's.
+    public const string RepeatedOnRetry = "the retry repeating what the first draft was refused for";
+
     // The four rules whose finding records the draft's own sentence as the offending text.
     // Every other rule records something the checker extracted, a figure, a date, a window
     // or a citation marker, which is the most useful thing on the line.
@@ -1800,9 +1806,15 @@ public static class NameScreen
     // The row keeps the whole reason and the run page draws it whole, so nothing is lost:
     // this is what the page a name is read on shows, and not what is kept.
     // see: A refused draft's own words are kept on the row and drawn on the evidence page, and never on the name page
+    //
+    // A second draft that repeated what the first was refused for carries that between the
+    // word and the rules. Each form is matched whole, since the word alone can stand in a
+    // refused sentence and a match there would draw that sentence.
+    // see: A retry names each thing the check refused, and a second draft repeating one is left out
     public static string Refused(string reason)
     {
-        var mark = RejectedTwice + ": ";
+        var repeated = RejectedTwice + ", " + RepeatedOnRetry + ": ";
+        var mark = reason.Contains(repeated, StringComparison.Ordinal) ? repeated : RejectedTwice + ": ";
         var at = reason.LastIndexOf(mark, StringComparison.Ordinal);
 
         if (at < 0)
@@ -1810,10 +1822,11 @@ public static class NameScreen
             return reason;
         }
 
+        var start = at + mark.Length;
         var order = new List<string>();
         var texts = new Dictionary<string, List<string>>(StringComparer.Ordinal);
 
-        foreach (var part in reason[(at + mark.Length)..].Split("; "))
+        foreach (var part in reason[start..].Split("; "))
         {
             var cut = part.IndexOf(": ", StringComparison.Ordinal);
             var rule = cut < 0 ? part : part[..cut];
@@ -1830,7 +1843,7 @@ public static class NameScreen
             }
         }
 
-        return reason[..(at + mark.Length)] + string.Join(
+        return reason[..start] + string.Join(
             "; ",
             order.Select(rule => texts[rule].Count == 0 ? rule : rule + ": " + string.Join(", ", texts[rule])));
     }

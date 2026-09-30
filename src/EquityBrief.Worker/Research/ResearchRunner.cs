@@ -150,7 +150,7 @@ public sealed class ResearchRunner(
     ";
 
     const string NewestVersions = @"
-        SELECT r.section, r.version, r.as_of, r.status, r.reject_reason, r.prose
+        SELECT r.section, r.version, r.as_of, r.status, r.reject_reason, r.prose, r.source_ids
         FROM research_section r
         WHERE r.ticker = $ticker
           AND r.version = (SELECT MAX(s.version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section);
@@ -705,12 +705,23 @@ public sealed class ResearchRunner(
 
             var newest = (await NewestAsync(connection, ticker, cancellation)).GetValueOrDefault(section);
             var version = (newest?.Version ?? 0) + 1;
-            var retry = refusedIn?.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } refused ? refused.Reason : null;
 
             // Dated as the prose writer dates it, so the key this lane writes in the day from the
             // night before is drawn beside that night's figures and not the next night's.
             // see: The key under each figure is dated by the night whose figures it explains, written for every name each night, and drawn only beside that night's figures
             var dated = ProseWriter.DatedOn(section, asOf, night);
+
+            // The retry names each thing the first draft was refused for, read again over the facts file and
+            // the source list it was checked against, the documents this pass handed the section. A draft
+            // refused on the same day by an earlier pass is the first draft too, since the checker reads
+            // this one as its retry.
+            // see: A retry names each thing the check refused, and a second draft repeating one is left out
+            var refused = refusedIn?.GetValueOrDefault(section) is { Status: ClaimChecker.Rejected } inThisPass
+                ? inThisPass
+                : newest is { Status: ClaimChecker.Rejected } earlier && earlier.AsOf == dated ? earlier : null;
+            var retry = refused is null
+                ? null
+                : RetryBrief.For(section, refused.Prose, facts, Resolved(refused.SourceIds, given), night, refused.Reason);
 
             // Nothing admitted: inserted empty, citing what was handed, so the checker
             // leaves it out saying no admissible source was found and no call is paid for.
@@ -937,7 +948,25 @@ public sealed class ResearchRunner(
         await insert.ExecuteNonQueryAsync(cancellation);
     }
 
-    sealed record Newest(int Version, DateOnly AsOf, string Status, string? Reason, string Prose);
+    sealed record Newest(int Version, DateOnly AsOf, string Status, string? Reason, string Prose, string SourceIds = "[]");
+
+    // A stored source list as the documents a pass handed, in the list's order, with none where an id is
+    // not among them, as the checker reads an id the store does not hold.
+    internal static IReadOnlyList<StoredDocument?> Resolved(string sourceIds, IReadOnlyList<StoredDocument> handed)
+    {
+        IReadOnlyList<string> ids;
+
+        try
+        {
+            ids = JsonSerializer.Deserialize<string[]>(sourceIds) ?? [];
+        }
+        catch (JsonException)
+        {
+            ids = [];
+        }
+
+        return [.. ids.Select(id => handed.FirstOrDefault(document => string.Equals(document.Id, id, StringComparison.Ordinal)))];
+    }
 
     static async Task<IReadOnlyDictionary<string, Newest>> NewestAsync(SqliteConnection connection, string ticker, CancellationToken cancellation)
     {
@@ -957,7 +986,8 @@ public sealed class ResearchRunner(
                 DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.GetString(3),
                 reader.IsDBNull(4) ? null : reader.GetString(4),
-                reader.GetString(5));
+                reader.GetString(5),
+                reader.GetString(6));
         }
 
         return newest;

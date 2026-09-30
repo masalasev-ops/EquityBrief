@@ -3696,11 +3696,78 @@ public sealed class MarkRenderer : IComponent
         return drawn.ToString();
     }
 
+    // The section a reader reads first, and the one a model's draft is most often left out of.
+    public const string TheShortVersion = "The short version";
+
+    // Why a short version written by code stands where the model's would, each read from the record the
+    // page already reads the section's state from: the checker left the model's draft out, the pass named
+    // it not written, or no research has been written for the name, which implies no model at all.
+    public const string ShortVersionRefused = "refused";
+    public const string ShortVersionNotWritten = "not written";
+    public const string ShortVersionNoResearch = "no research";
+
+    public static string ShortVersionHeading(string reason) => reason switch
+    {
+        ShortVersionRefused => "Written by code: the model's short version was refused by the claim check, so this summary states only what the night computed.",
+        ShortVersionNoResearch => "Written by code: no research has been written for this name, so this summary states only what the night computed.",
+        _ => "Written by code: the model's short version was not written, so this summary states only what the night computed.",
+    };
+
+    // The short version where no accepted one stands, written by code from computed parts alone: why the
+    // name is or is not on the list, the state its reported quarters give it with the heading its numbers
+    // open on, and the entry, stop and target of the trade the swing filter's trade gate read. No model is
+    // asked and nothing is stored, so it follows the night the page draws. The list is the one the page's
+    // night drew, dated where the page is for an earlier night and called tonight's where it is not, as the
+    // page's reasons are, since the newest bar can be a night the list has not yet been drawn for.
+    // see: The short version is written last from the sections that passed, and one left out is replaced by a summary code writes
+    public string ShortVersionByCode(
+        string ticker,
+        string reason,
+        DateOnly? earlierNight,
+        FilterWhy? passed,
+        (DateOnly Evening, EquityBrief.Core.Filter.MissedGate Gate)? missed,
+        IReadOnlyList<FiredReason> fired,
+        NumbersSayView? says,
+        GatesView? gates)
+    {
+        var list = earlierNight is { } on ? "the list on " + on.ToString("yyyy-MM-dd", Invariant) : "tonight's list";
+
+        var why = passed is { } through
+            ? FormattableString.Invariant($"On the list on {through.Evening:yyyy-MM-dd}: the swing filter passed it on all five gates{(gates?.Family is { Length: > 0 } family ? ", a " + family + " setup" : string.Empty)}.")
+            : missed is { } near
+                ? FormattableString.Invariant($"Close to a buy point on {near.Evening:yyyy-MM-dd}: one gate short, the {near.Gate.Gate} gate, {near.Gate.Words}. It is not a pick.")
+                : fired.Count > 0
+                    ? FormattableString.Invariant($"On {list} for {fired.Count} reason(s): {string.Join(", ", fired.Select(one => one.Name))}.")
+                    : FormattableString.Invariant($"Not on {list}.");
+
+        var business = says is null
+            ? "No reading of its reported quarters is stored for this night."
+            : says.Heading.TrimEnd('.') + ".";
+
+        var (entry, stop, target) = gates?.Input == FilterSettings.ClearWord
+            ? (gates.SwingEntry, gates.ClearStop, gates.ClearTarget)
+            : (gates?.SwingEntry, gates?.SwingStop, gates?.SwingTarget);
+
+        var plan = gates is not null && entry is { } buy && stop is { } exit && target is { } sell
+            ? Formatted($"{Capitalised(PlanWords(gates.Input == FilterSettings.ClearWord ? FilterSettings.ClearWord : FilterSettings.SwingWord))}{(gates.Input is FilterSettings.ClearWord or FilterSettings.SwingWord ? ", the plan the trade gate read" : string.Empty)}: in at {Price(buy)}, stop {Price(exit)}, target {Price(sell)}.")
+            : "No plan with an entry, a stop and a target is stored for this night.";
+
+        var drawn = new StringBuilder();
+
+        drawn.Append(Invariant, $"<section class=\"code-summary\" data-ticker=\"{Escaped(ticker)}\" data-section=\"{Escaped(TheShortVersion)}\" data-reason=\"{Escaped(reason)}\" data-state=\"{Escaped(says?.State ?? "none")}\">");
+        drawn.Append(Invariant, $"<h3>{Escaped(TheShortVersion)}</h3>");
+        drawn.Append(Invariant, $"<p class=\"code-heading\">{Escaped(ShortVersionHeading(reason))}</p>");
+        drawn.Append("<ul class=\"code-parts\">");
+        drawn.Append("<li data-summary-part=\"why\">").Append(Escaped(why)).Append("</li>");
+        drawn.Append("<li data-summary-part=\"business\">").Append(Escaped(business)).Append("</li>");
+        drawn.Append(Invariant, $"<li data-summary-part=\"plan\" data-entry=\"{(entry is { } e ? e.ToString(Invariant) : "none")}\" data-stop=\"{(stop is { } s ? s.ToString(Invariant) : "none")}\" data-target=\"{(target is { } t ? t.ToString(Invariant) : "none")}\">").Append(Escaped(plan)).Append("</li>");
+        drawn.Append("</ul></section>");
+
+        return drawn.ToString();
+    }
+
     // The section holding the case for a name and the case against it.
     public const string TheTwoCases = "The two cases";
-
-    const string CaseFor = "The bull case";
-    const string CaseAgainst = "The bear case";
 
     // The two cases a claim to a row, under the case each belongs to. A row is a sentence as the
     // claim checker reads it, which is the unit the checker accepted and ends on the marker of the
@@ -3722,10 +3789,9 @@ public sealed class MarkRenderer : IComponent
         }
 
         var rows = Claims(paragraphs);
-        var against = Array.FindIndex(rows, row => row.StartsWith(CaseAgainst, StringComparison.Ordinal));
 
-        return rows[0].StartsWith(CaseFor, StringComparison.Ordinal) && against > 0
-            ? [("The case for", rows[..against]), ("The case against", rows[against..])]
+        return EquityBrief.Core.Research.ClaimRules.CaseSides(rows) is { } sides
+            ? [("The case for", sides.For), ("The case against", sides.Against)]
             : [(null, rows)];
     }
 

@@ -141,6 +141,7 @@ public partial class ReadSurface
     {
         // The page states the second refusal in the checker's own word.
         Assert.Equal(ClaimChecker.RejectedTwice, NameScreen.RejectedTwice);
+        Assert.Equal(ClaimChecker.RepeatedOnRetry, NameScreen.RepeatedOnRetry);
 
         var admitted = new StoredDocument(
             "d1", "https://a.test/a", "a release", new DateOnly(2026, 9, 1),

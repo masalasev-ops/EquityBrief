@@ -9193,3 +9193,63 @@ Was:
 Now:
 > ... `live` rows included (see: A ladder rule's version is measured beside that rule's live window, and both count against a bound of eighteen).
 Why: the decision it cited is superseded, and a live citation to a superseded decision is refused.
+
+### 2026-09-30 - ARCHITECTURE.html - a short version left out is replaced by one code writes
+Authorised by: The short version is written last from the sections that passed, and one left out is replaced by a summary code writes
+Was:
+> ... the industry cycle where its industry's theme has been written, and each written region only where that region has been written. This table ...
+> <tr><td>The short version</td><td>Three or four paragraphs stating what the documents and the sections already written show to be true and what the market is arguing about, proposing no trade and no plan, which the plan's own region draws</td><td>Model, from the facts file and the research record</td><td>paid, on demand</td><td>with the research record</td></tr>
+> <tr><td>The short version</td><td>the narrative verdict, with the date it was written beneath it</td></tr>
+Now:
+> ... and each written region only where that region has been written, save the short version, which code writes where no accepted one stands. This table ...
+> ... which the plan's own region draws; where no accepted one stands, a summary code writes from why the name is or is not on the list, its business state and the entry, stop and target of the swing trade the trade gate read, headed by why it stands there (see: The short version is written last from the sections that passed, and one left out is replaced by a summary code writes)</td><td>Model, from the facts file and the research record; code, where no accepted one stands</td><td>the model's paid, on demand; the code's free</td><td>the model's with the research record; the code's nightly</td></tr>
+> <tr><td>The short version</td><td>the narrative verdict, with the date it was written beneath it; where no accepted one stands, a summary code writes from the night's computed parts alone and headed by why it stands there (see: ...)</td></tr>
+Why: the section read first was the one most often missing, and the rule tying its figures to the passed sections was withdrawn before it was built.
+
+### 2026-09-30 - ARCHITECTURE.html - the two cases are asked to argue each fact on one side, and a draft with no sides is refused
+Authorised by: The two cases are asked to argue a fact on one side only, and a draft doing otherwise is counted rather than refused
+Was:
+> ... each case ending in what it needs to see at the next report (see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws)</td><td>every figure is a rounding of one in the facts file; every sentence cites a stored, admitted document</td></tr>
+Now:
+> ... (see: A written section is drawn a claim to a row, and the two cases and the risks are asked for in the parts the page draws); each point a reason and not a restated figure, a change stated with its size from the listed figures at both ends or in words against its base, and each fact arguing one side only (see: ...)</td><td>...; a draft not opening on the bull case, or holding no sentence opening on the bear case, is refused</td></tr>
+Why: the research template of 2026-09-29, with the refusal of a figure on both sides withdrawn before it was built, since it would have refused 5 of 8 accepted drafts.
+
+### 2026-09-30 - ARCHITECTURE.html - a retry is told each thing refused, and section 12.2 says what a retry is told
+Authorised by: A retry names each thing the check refused, and a second draft repeating one is left out
+Was:
+> <tr><td>Claim rejection</td><td>a number absent from the facts file, or a claim naming no stored source document, is rejected; one retry, then the section is omitted (see: Every number in written prose must exist in the facts file)</td>...
+> (section 12.2 closed on "... each section carrying its own date and the model that wrote it.")
+Now:
+> ... is rejected; one retry, told each refused figure, date or sentence with what to do about it, then the section is omitted, and said to have repeated where the retry carried one again (see: ...) (see: A retry names each thing the check refused, and a second draft repeating one is left out)</td>...
+> <p><b>What a retry is told, and what stands where a section is left out.</b> ...</p>
+Why: a retry told only the reason wrote new figures in place of the one it was refused for, and the architecture's research section states each instruction and its reason.
+
+### 2026-09-30 - BUILD_PLAN.md - 12.6 carries the research template's first correction and its count of figures on both sides
+Authorised by: The two cases are asked to argue a fact on one side only, and a draft doing otherwise is counted rather than refused
+Was:
+> ... and narrows the decisions the old selection and order rest on to the evenings the reasons listed, since each still describes code that draws them.
+> (no row named The two cases' figures on both sides counted over twenty reports)
+Now:
+> ... since each still describes code that draws them. From the operator's research template of 2026-09-29, ruled with its plan on 2026-09-30, the research every report is written by is corrected at this checkpoint: ... (owes: The two cases' figures on both sides counted over twenty reports).
+> | **The two cases' figures on both sides counted over twenty reports** | 12.6 | operating | 20 research passes written after the two cases were asked to argue each fact on one side, read on the run page's report region, which 12.6 builds. ... |
+Why: the refusal the template asked for is carried as a count read at a trigger, and returns only on that count.
+
+### 2026-09-30 - .claude/rules/checks.md - claim-admissibility and read-surface reach the retry, the two cases' sides and the short version by code
+Authorised by: A retry names each thing the check refused, and a second draft repeating one is left out
+Was:
+> ... its second draft left out and named on the name page by its rule and never by its sentence |
+> ... and a stage that failed whose record carries a reason is drawn in that reason's words, worked by hand over constructed profiles, passes and rows |
+Now:
+> ... never by its sentence; and a retry is told each thing its first draft was refused for, ... and a two cases draft whose case for and case against cannot be told apart refused naming which is missing |
+> ... worked by hand over constructed profiles, passes and rows; and a name with no accepted short version draws one written by code from computed parts under a heading naming why, ... and a name with an accepted one draws the model's alone |
+Why: the two checks hold what the first correction of the research template builds.
+
+### 2026-09-30 - RUNBOOK.md - what a pass over the fixture costs, read again from the recordings the retry's new wording asked for
+Authorised by: A retry names each thing the check refused, and a second draft repeating one is left out
+Was:
+> **What a pass costs.** Over the fixture's KEYS a pass wrote all eight sections it could write, three on the local model and five through the spend cap for $0.0343, a sum that includes the two cases and the risks each asked again after the checker refused a figure in the first draft, since every draft is billed, and is at the off-peak rate, ... the same calls cost twice as much. The name page states ...
+> ... Over the fixture's KEYS a pass with every section paid cost $0.0394, ...
+Now:
+> **What a pass costs.** Over the fixture's KEYS a pass wrote seven of the eight sections it could write, two on the local model and five through the spend cap for $0.0296, a sum that includes the risks asked again after the checker refused a figure in the first draft, since every draft is billed, and is at the off-peak rate, ... the same calls cost twice as much. The local model's segment commentary, told each figure its first draft was refused for, wrote one more the facts file does not hold and was left out. The name page states ...
+> ... Over the fixture's KEYS a pass with every section paid cost $0.0388, ...
+Why: every recording of a changed prompt was made again, and the pass they answer wrote the two cases at the first draft and left the local model's segment commentary out.

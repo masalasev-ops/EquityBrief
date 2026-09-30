@@ -119,7 +119,7 @@ public sealed class ProseWriter(
     ";
 
     const string NewestVersion = @"
-        SELECT version, as_of, status, reject_reason
+        SELECT version, as_of, status, reject_reason, prose, source_ids
         FROM research_section
         WHERE ticker = $ticker AND section = $section
         ORDER BY version DESC
@@ -254,13 +254,16 @@ public sealed class ProseWriter(
             // admissible source was found rather than the writer deciding that.
             var admitted = handed.Where(document => document.Admitted).ToArray();
 
+            // The retry names each thing the first draft was refused for, read again over the facts file
+            // and the source list it was checked against, the documents this pass handed the section.
+            // see: A retry names each thing the check refused, and a second draft repeating one is left out
             var request = SectionPrompt.Request(
                 settings.Model,
                 ticker,
                 section,
                 facts,
                 Prompted(admitted),
-                retry ? newest!.Reason : null,
+                retry ? RetryBrief.For(section, newest!.Prose, facts, ResearchRunner.Resolved(newest.SourceIds, handed), night, newest.Reason) : null,
                 night: night);
 
             if (ClaimRules.IsResearched(section) && admitted.Length == 0)
@@ -434,7 +437,7 @@ public sealed class ProseWriter(
     static PromptDocument[] Prompted(IEnumerable<StoredDocument> admitted) =>
         [.. admitted.Select(document => new PromptDocument(document.Id, document.Title, document.PublishedOn, document.Body!))];
 
-    sealed record Newest(int Version, DateOnly AsOf, string Status, string? Reason);
+    sealed record Newest(int Version, DateOnly AsOf, string Status, string? Reason, string Prose, string SourceIds);
 
     static async Task<Newest?> NewestAsync(SqliteConnection connection, string ticker, string section, CancellationToken cancellation)
     {
@@ -451,7 +454,9 @@ public sealed class ProseWriter(
                 reader.GetInt32(0),
                 DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.GetString(2),
-                reader.IsDBNull(3) ? null : reader.GetString(3))
+                reader.IsDBNull(3) ? null : reader.GetString(3),
+                reader.GetString(4),
+                reader.GetString(5))
             : null;
     }
 
