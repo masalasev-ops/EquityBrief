@@ -33517,3 +33517,92 @@ Carried:    at the freeze, track 6: the swing filter walks the live list's own t
             column on its own plan's horizon; a trade's end is read from the night's bars before the filler writes;
             `OpenTrades.cs` joins the three pin lists under the freeze's one remedy; and the code-written summary
             names a still open stock.
+
+### 12.5 ruling - the sweep's run of 2026-09-29 recorded: from 1797e76, replaying the pullbacks-alone rule with its stop moved out of a band before the correction carrying them merged, its branch pushed for review and not merging, and its report standing until the rerun's   2026-09-30
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      item 4 of the operator's brief of 2026-09-30, the 12.2 ruling above, word for word: "The sweep's code
+            ran from a branch that was never pushed, and nothing records its run. Push the branch and open its pull
+            request for review, not merging. Add a PROGRESS entry recording the run of 2026-09-29 17:39 to 17:58
+            UTC: its figures, the commit it ran on, and that it predates #282, so it replayed the old stop rule."
+            Started as track 2 on the operator's standing go of 2026-09-30 ("keep going through all the stages,
+            tracks whatever").
+Done:       `phase-12-5-sweep` is pushed at 1797e76, the commit the run's build was made from, and pull request
+            300 is open as a draft for review and not merging, saying its entry's placeholders were never filled
+            because the gates never ran over that commit and that the rerun's pull request supersedes it.
+Measured:   the run, read off `data/sweep/state.json`, `data/sweep/sweep.log` and `data/sweep/report.html` on
+            2026-09-30, the files as the run left them:
+            - It ran from 17:39:26Z to 17:58:08Z on 2026-09-29, started on the operator's word of that afternoon
+              before the 12.2 correction of 2026-09-29 had merged, from a Release build of 1797e76 on
+              `phase-12-5-sweep`, over the operator's store opened read-only, history through 2026-09-28.
+            - 826 names over 2,196 sessions, 1,945 of them scored after a year of warm-up, from 2019-01-02. The
+              read took 10 s and the series 2 s; 253,373 candidates were held in 6 min 4 s over 21 chunks; stage 1
+              read 46,656 designs at 19,683 coarse settings each, 918,330,048 variations, over 117 chunks in
+              10 min 55 s; stage 2 read 5 designs at 2,016,000 fine settings each in 23 s. No pause and no failure;
+              the timing checks projected 0.26 hours for the whole run.
+            - Stage 1 ranked the live rule's own design 633rd of 46,656, at 11,946 viable settings, 60.69%. The
+              five carried were, in rank order, SixMonths, Classifier, Average, high of 50, AbovePreviousHigh,
+              Clear, hold 63, earnings 15 at 15,689 viable settings, 79.71%, median 0.210; the same with the
+              classifier holding two nights; SixMonths, Classifier, AnchoredBand, high of 50, TopQuarterOfRange,
+              Clear, hold 63, earnings 10 at 15,393, 78.20%, 0.194; the same with AbovePreviousHigh at 15,323,
+              77.85%, 0.199; and that with earnings 5 at 15,104, 76.74%, 0.182. Designs whose stage 1 figures were
+              the same to the last digit, the trend rule's versions reading an uptrend alike, took one place each.
+            - The proposal, the centre of a plateau of 1,654,185 settings on the first design, whose neighbours'
+              median result was 0.336: the market at least 40% of the index above its 200-day average, the
+              classifier's uptrend, the place among the members' 6-month returns at least 0.5, a pullback of 1.5 to
+              5 typical moves below the highest high of the last 50 sessions, volume while it came down under 1.5
+              times its fifty-day average, the close within half a typical move of its 20 or 50-day average with
+              the band at least 4 strong, the trigger first fired within the last 2 sessions, section 10's plan at a
+              reward to risk of at least 2.5 with the stop 0.5 to 4 typical moves below the entry, held up to 63
+              sessions with the stop never moved, and left off with an earnings date within 15 sessions. Over the
+              history: 2,969 trades scored of 2,996 listed, won 34.8% against a break-even of 22.4% and no skill at
+              28.7%, an average result of 0.347 times the risk, beating its break-even in 8 of 8 years and both in
+              6, trades in 30 of 30 blocks, a stock listed on 61% of nights. By year, trades, won and average
+              result: 2019 342, 39.2%, 0.480; 2020 387, 43.9%, 1.016; 2021 475, 35.4%, 0.331; 2022 196, 28.1%,
+              -0.067; 2023 371, 36.7%, 0.418; 2024 472, 33.7%, 0.361; 2025 370, 31.9%, 0.215; 2026 356, 26.1%,
+              -0.212.
+            - The live rule over the same history, its own settings among the coarse values: 4,583 trades scored
+              of 4,675 listed, won 39.8% against a break-even of 31.1% and no skill at 35.2%, an average result of
+              0.197, beating its break-even in 8 of 8 years and both in 6, trades in 30 of 30 blocks, a stock
+              listed on 69% of nights. By year: 2019 559, 44.2%, 0.264; 2020 464, 48.9%, 0.491; 2021 706, 36.4%,
+              0.044; 2022 236, 31.8%, -0.088; 2023 544, 39.5%, 0.131; 2024 855, 42.2%, 0.398; 2025 646, 40.2%,
+              0.256; 2026 573, 31.8%, -0.103.
+            - 0 of the 18 one-change variants passed the four tests: every one failed the test of difference, a
+              move one step tighter picking some of the starting point's stocks and no others by the way the test is
+              drawn, the two loosening moves that differed most reaching 22% and 29% against the 25% asked, and the
+              reward to risk floor at 2 the one to clear it while failing the open-in-history test.
+            - The missing departures: of 1,106,883 index-nights, 1,070 had no bar served, 0.10%; 3 names the index
+              held have no bars at all and 37 miss some sessions; the count sees only the departures the index feed
+              still lists. Read as it stands today rather than as it stood: the fundamental readings left out, the
+              bars as the provider's adjusted prices with the pulled years scaled to the store's own, the earnings
+              dates and the membership spans as filed now, a suspect series read as none, the trend rule's versions
+              replayed by today's code, the calendar as the days at least half the names spanning each hold, and a
+              trigger's first firing read on the name's own series whether or not it was a member. A design stage 2
+              carried reads the average itself as support and stops one typical move below it, which is a stop not
+              at a band and the operator's decision.
+            - Any support band and an anchored one read alike on 253,324 of the 253,373 candidates, a band of
+              averages alone rarely holding the close, which is why the two came out equal to the last digit in
+              stage 1 while the code applies the choice; the rerun states the listings that differ.
+            - The series stage's 1 second: it computes, once a name over the whole history, the averages, Wilder's
+              ATR, the swings each masked by the session that confirmed it, the classifier's label a bar, the
+              returns and the depth and dry-up, then the cross-sections, about 1.8 million bars on 16 cores. It
+              builds no bands: the report's label says bands, but the bands are built a candidate session at a time
+              in the 6-minute candidates stage over a window ending on that session, by `SessionReplay.BandsOver`
+              and not the night's `LevelBuilder`.
+            - The premise that the run predates the 12.2 correction of 2026-09-29 holds for the merge and not for
+              the code. The correction merged at 01:03Z on 2026-09-30, seven hours after the run started, but the
+              run's build carried that correction's own commits from before their rebase, 050c0ad and fc78f6c.
+              Against `main` at c2a60bc, the merge that carried it, the stop, gate, ladder, level, swing and
+              indicator sources at 1797e76 are identical, the one differing file being the sweep's own
+              `SessionReplay.cs` at 14 lines. So the run replayed pullbacks alone with a stop moved out of a band,
+              the rule live from the remedy of 2026-09-30, and not the stop rule before it.
+Ruled:      the operator, on 2026-09-30, in the 12.5 ruling above: the branch pushed and its pull request opened
+            for review and not merging, done above; this record; and the rerun on `main` with the corrections that
+            ruling states, nothing registered or frozen, which is track 2's next step and the 12.5 correction
+            after this entry.
+Changed:    this entry alone.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 300T1 of 300T1 tests ran
+            with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
+            `data-ci` and never `data`, over the tree carrying this entry, 300SHA1, in a worktree beside the
+            repository; `tools/verify-phase.ps1` not run, this entry changing no code.
+Carried:    the rerun, built as a 12.5 correction on a branch from `main` carrying the sweep's two commits, and
+            pull request 300 closed without merging once the rerun's merges.
