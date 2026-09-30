@@ -32170,7 +32170,7 @@ Changed:    `SectionPrompt`, `DocumentKinds`, `ReviewBrief` and `TrialCalls` in 
 Decisions:  new: "The research prompt repeats each section's ask after the documents, names its reader and marks each
             document by kind" and "A review asks a section's model to check its own draft against the section's rules,
             behind a setting that ships off".
-Tests:      123T, from 1582:
+Tests:      1587, from 1582:
             `EveryRequestSaysItsAskAgainAfterEverythingItIsHandedAndBeforeAnyRetrysBrief`,
             `EveryRequestNamesItsReaderAndWhatToDoWithAFigureNoFactHolds`,
             `EveryDocumentIsListedWithItsKindReadFromItsAddress`,
@@ -32179,7 +32179,7 @@ Tests:      123T, from 1582:
             refinements, the reader and the alternative read by one test. The first four read every request the
             fixture's pass asks through feeds that answer a request no recording holds with nothing, so a changed
             prompt is still asked and read. The trial's region test reads its sides as a list.
-Claims:     123C, from 736: section 17's Section review, named in phase 12's pair; the section trials row's three
+Claims:     737, from 736: section 17's Section review, named in phase 12's pair; the section trials row's three
             parts were reworded to take the review, their keys moved and their count did not.
 Pins:       none moves; no source this correction edits is in the three pin lists.
 Mutated:    the rule, stated before the run: each refinement and the review's one rule reversed alone, filtered to the
@@ -32193,15 +32193,22 @@ Mutated:    the rule, stated before the run: each refinement and the review's on
             G5 the examples taken out of the two asks: red in the examples test, and in the review test for that
                reason.
             G6 the review not handed the pass's draft: red in the review test alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       123HELD
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            Results: one run each in a detached worktree at 058c882, this entry's commit, filtered to the five tests
+            the correction adds, each edit made there and reverted, and the tree read clean after. G1 turned the ask
+            test and the review test red and the other three green. G2 turned the reader test and the review test
+            red. G3 turned the reader test and the review test red. G4 turned the kind test and the review test
+            red. G5 turned the examples test and the review test red. G6 turned the review test red alone.
+Held:       red in every test predicted and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1587 of 1587 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` 123VP
-            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 737 claims, 737 PASS, 0 FAIL, 748 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1587 of 1587 tests.
+            Both gates ran over the tree carrying this entry, 058c882, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
-Operator:   nothing to run. The review ships off; to run it on three reports, set
+Operator:   nothing to run; the read surface on 5152 is started again from `main` after the merge, so the run page's
+            price of a pass leaves a review's calls out. The review ships off; to run it on three reports, set
             `EquityBrief:Models:Research:Review:Use` to `deepseek`.
 Carried:    each section's first-time pass rate and left-out rate over the ten reports after this merge, set beside the
             ten before it, reported to the operator; the section trial's reports read to the operator at its third
