@@ -119,7 +119,7 @@ public sealed class ProseWriter(
     ";
 
     const string NewestVersion = @"
-        SELECT version, as_of, status, reject_reason, prose, source_ids
+        SELECT version, as_of, status, reject_reason, prose, source_ids, parts
         FROM research_section
         WHERE ticker = $ticker AND section = $section
         ORDER BY version DESC
@@ -127,8 +127,8 @@ public sealed class ProseWriter(
     ";
 
     const string Insert = @"
-        INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason)
-        VALUES ($ticker, $section, $version, $as_of, $model, 'pending', $prose, $source_ids, NULL);
+        INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason, parts)
+        VALUES ($ticker, $section, $version, $as_of, $model, 'pending', $prose, $source_ids, NULL, $parts);
     ";
 
     const string AppendRun = @"
@@ -263,7 +263,7 @@ public sealed class ProseWriter(
                 section,
                 facts,
                 Prompted(admitted),
-                retry ? RetryBrief.For(section, newest!.Prose, facts, ResearchRunner.Resolved(newest.SourceIds, handed), night, newest.Reason) : null,
+                retry ? RetryBrief.For(section, newest!.Prose, facts, ResearchRunner.Resolved(newest.SourceIds, handed), night, newest.Reason, newest.Parts) : null,
                 night: night);
 
             if (ClaimRules.IsResearched(section) && admitted.Length == 0)
@@ -368,6 +368,10 @@ public sealed class ProseWriter(
                 }
             }
 
+            // The risks come back as fields, stored beside the prose code composes from them.
+            // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
+            var (stored, parts) = RiskFields.IsRisks(section) && prose.Length > 0 ? RiskFields.FromAnswer(prose) : (prose, null);
+
             await using var insert = connection.CreateCommand();
 
             insert.CommandText = Insert;
@@ -376,8 +380,9 @@ public sealed class ProseWriter(
             insert.Parameters.AddWithValue("$version", version);
             insert.Parameters.AddWithValue("$as_of", DatedOn(section, asOf, night ?? asOf).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
             insert.Parameters.AddWithValue("$model", modelName);
-            insert.Parameters.AddWithValue("$prose", prose);
+            insert.Parameters.AddWithValue("$prose", stored);
             insert.Parameters.AddWithValue("$source_ids", JsonSerializer.Serialize(ids));
+            insert.Parameters.AddWithValue("$parts", (object?)parts ?? DBNull.Value);
 
             await insert.ExecuteNonQueryAsync(cancellation);
 
@@ -437,7 +442,7 @@ public sealed class ProseWriter(
     static PromptDocument[] Prompted(IEnumerable<StoredDocument> admitted) =>
         [.. admitted.Select(document => new PromptDocument(document.Id, document.Title, document.PublishedOn, document.Body!))];
 
-    sealed record Newest(int Version, DateOnly AsOf, string Status, string? Reason, string Prose, string SourceIds);
+    sealed record Newest(int Version, DateOnly AsOf, string Status, string? Reason, string Prose, string SourceIds, string? Parts);
 
     static async Task<Newest?> NewestAsync(SqliteConnection connection, string ticker, string section, CancellationToken cancellation)
     {
@@ -456,7 +461,8 @@ public sealed class ProseWriter(
                 reader.GetString(2),
                 reader.IsDBNull(3) ? null : reader.GetString(3),
                 reader.GetString(4),
-                reader.GetString(5))
+                reader.GetString(5),
+                reader.IsDBNull(6) ? null : reader.GetString(6))
             : null;
     }
 

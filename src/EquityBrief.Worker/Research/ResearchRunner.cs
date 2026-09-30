@@ -150,7 +150,7 @@ public sealed class ResearchRunner(
     ";
 
     const string NewestVersions = @"
-        SELECT r.section, r.version, r.as_of, r.status, r.reject_reason, r.prose, r.source_ids
+        SELECT r.section, r.version, r.as_of, r.status, r.reject_reason, r.prose, r.source_ids, r.parts
         FROM research_section r
         WHERE r.ticker = $ticker
           AND r.version = (SELECT MAX(s.version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section);
@@ -198,8 +198,8 @@ public sealed class ResearchRunner(
     ";
 
     const string InsertSection = @"
-        INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason)
-        VALUES ($ticker, $section, $version, $as_of, $model, 'pending', $prose, $source_ids, NULL);
+        INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason, parts)
+        VALUES ($ticker, $section, $version, $as_of, $model, 'pending', $prose, $source_ids, NULL, $parts);
     ";
 
     const string DocumentsHeld = @"
@@ -721,7 +721,7 @@ public sealed class ResearchRunner(
                 : newest is { Status: ClaimChecker.Rejected } earlier && earlier.AsOf == dated ? earlier : null;
             var retry = refused is null
                 ? null
-                : RetryBrief.For(section, refused.Prose, facts, Resolved(refused.SourceIds, given), night, refused.Reason);
+                : RetryBrief.For(section, refused.Prose, facts, Resolved(refused.SourceIds, given), night, refused.Reason, refused.Parts);
 
             // Nothing admitted: inserted empty, citing what was handed, so the checker
             // leaves it out saying no admissible source was found and no call is paid for.
@@ -934,6 +934,10 @@ public sealed class ResearchRunner(
         IReadOnlyList<string> sources,
         CancellationToken cancellation)
     {
+        // The risks come back as fields, stored beside the prose code composes from them.
+        // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
+        var (stored, parts) = RiskFields.IsRisks(section) && prose.Length > 0 ? RiskFields.FromAnswer(prose) : (prose, null);
+
         await using var insert = connection.CreateCommand();
 
         insert.CommandText = InsertSection;
@@ -942,13 +946,14 @@ public sealed class ResearchRunner(
         insert.Parameters.AddWithValue("$version", version);
         insert.Parameters.AddWithValue("$as_of", asOf.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         insert.Parameters.AddWithValue("$model", model);
-        insert.Parameters.AddWithValue("$prose", prose);
+        insert.Parameters.AddWithValue("$prose", stored);
         insert.Parameters.AddWithValue("$source_ids", JsonSerializer.Serialize(sources));
+        insert.Parameters.AddWithValue("$parts", (object?)parts ?? DBNull.Value);
 
         await insert.ExecuteNonQueryAsync(cancellation);
     }
 
-    sealed record Newest(int Version, DateOnly AsOf, string Status, string? Reason, string Prose, string SourceIds = "[]");
+    sealed record Newest(int Version, DateOnly AsOf, string Status, string? Reason, string Prose, string SourceIds = "[]", string? Parts = null);
 
     // A stored source list as the documents a pass handed, in the list's order, with none where an id is
     // not among them, as the checker reads an id the store does not hold.
@@ -987,7 +992,8 @@ public sealed class ResearchRunner(
                 reader.GetString(3),
                 reader.IsDBNull(4) ? null : reader.GetString(4),
                 reader.GetString(5),
-                reader.GetString(6));
+                reader.GetString(6),
+                reader.IsDBNull(7) ? null : reader.GetString(7));
         }
 
         return newest;

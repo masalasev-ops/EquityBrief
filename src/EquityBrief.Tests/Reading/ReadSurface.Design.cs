@@ -455,7 +455,7 @@ public partial class ReadSurface
 
         foreach (var section in written)
         {
-            store.Execute($"INSERT INTO research_section VALUES ('KEYS', '{section}', 90, '{night}', 'a writer', 'accepted', 'A sentence.', '[]', NULL);");
+            store.Execute($"INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES ('KEYS', '{section}', 90, '{night}', 'a writer', 'accepted', 'A sentence.', '[]', NULL);");
         }
 
         ThemeDocument(store);

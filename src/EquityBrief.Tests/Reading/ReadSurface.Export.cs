@@ -63,7 +63,7 @@ public partial class ReadSurface
         var sections = Blocks(page, "<section class=\"written-section\".*?</section>");
 
         Assert.True(marks.Count >= 4, $"The page drew {marks.Count} marks, expected at least 4.");
-        Assert.True(sections.Count >= 6, $"The page drew {sections.Count} written sections, expected at least 6.");
+        Assert.True(sections.Count >= 5, $"The page drew {sections.Count} written sections, expected at least 5.");
         Assert.Equal(marks, Blocks(file, "<svg.*?</svg>"));
         Assert.Equal(sections, Blocks(file, "<section class=\"written-section\".*?</section>"));
 

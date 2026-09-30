@@ -28,9 +28,10 @@ public static class RetryBrief
         IReadOnlyList<Fact> facts,
         IReadOnlyList<StoredDocument?> sources,
         DateOnly? night,
-        string? storedReason)
+        string? storedReason,
+        string? parts = null)
     {
-        var findings = ClaimRules.Check(section, refusedProse, facts, sources, night).Findings;
+        var findings = ClaimRules.Check(section, refusedProse, facts, sources, night, parts).Findings;
 
         return findings.Count > 0
             ? For(findings)
@@ -47,9 +48,11 @@ public static class RetryBrief
     // The thing refused as a writer finds it again: a sentence the rule refused whole by its own words, and
     // anything the rule took out of a sentence with the sentence it sits in.
     static string What(ClaimFinding finding) =>
-        string.Equals(finding.Offending, finding.Sentence, StringComparison.Ordinal)
-            ? "the sentence \"" + finding.Sentence + "\""
-            : "\"" + finding.Offending + "\" in the sentence \"" + finding.Sentence + "\"";
+        finding.Sentence.Length == 0
+            ? finding.Offending
+            : string.Equals(finding.Offending, finding.Sentence, StringComparison.Ordinal)
+                ? "the sentence \"" + finding.Sentence + "\""
+                : "\"" + finding.Offending + "\" in the sentence \"" + finding.Sentence + "\"";
 
     public static string Do(string rule) => rule switch
     {
@@ -69,6 +72,15 @@ public static class RetryBrief
         ClaimRules.ClaimOfCandour => "Write the sentence without calling any statement candid or frank.",
         ClaimRules.EmDashed => "Write the sentence without an em dash.",
         ClaimRules.TwoCasesWithoutSides => "Write the bull case as a paragraph opening \"" + ClaimRules.CaseFor + "\" and the bear case as a paragraph opening \"" + ClaimRules.CaseAgainst + "\".",
+        RiskFields.NotFields => "Answer with the JSON object the section asks for and nothing else.",
+        RiskFields.FactNotListed => "Name a fact exactly as it is listed under Facts, or confirm the risk by an event of one kind.",
+        RiskFields.DirectionNotNamed => "Write the direction as \"" + RiskFields.RisesAbove + "\" or \"" + RiskFields.FallsBelow + "\".",
+        RiskFields.FactWithoutLevel => "Give the fact a direction and a level listed under Facts.",
+        RiskFields.LevelNotHeld => "Write the level as a figure listed under Facts, copied or rounded.",
+        RiskFields.KindNotListed => "Give the event one kind of " + string.Join(", ", RiskFields.Kinds) + ".",
+        RiskFields.EventWithLevel => "Give an event no direction and no level.",
+        RiskFields.SharedFact => "Confirm each risk by a fact no other risk names, or join the risks that share it.",
+        RiskFields.SharedKind => "Give each event risk a kind no other event risk has, or join the risks that share it.",
         _ => "Write it so that it is not.",
     };
 }

@@ -67,6 +67,20 @@ public static class SectionPrompt
     public static string System(IReadOnlyList<PromptDocument> documents) =>
         documents.Count > 0 ? Instructions + " " + Citing : Instructions;
 
+    // The risks are answered as fields, so their call opens on the answer's form in place of plain prose and
+    // names each document by its number in the field beside the words, where code puts the marker.
+    // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
+    public const string AsFields =
+        "You write one section of an equity research report as the JSON object the section asks for, with no markdown, no code fence and no preamble.";
+
+    public const string CitingFields =
+        "Name the listed document each field rests on by its number, 1 for the first document listed, 2 for the second, and so on, and write no marker inside a field.";
+
+    public static string System(IReadOnlyList<PromptDocument> documents, string section) =>
+        RiskFields.IsRisks(section)
+            ? AsFields + Instructions[Instructions.IndexOf(" Every figure", StringComparison.Ordinal)..] + (documents.Count > 0 ? " " + CitingFields : string.Empty)
+            : System(documents);
+
     // What each section asks for beyond the instructions, by figure 12.2's names.
     public static readonly IReadOnlyDictionary<string, string> Asks = new Dictionary<string, string>(StringComparer.Ordinal)
     {
@@ -125,11 +139,23 @@ public static class SectionPrompt
             + "Make each point specific to this company and its latest documents, and leave out any sentence that could be said of any company. "
             + "Make each point a reason, not a figure restated. Describe a change with its size, so a small change reads as small, using the listed figures at both ends or words against its base, "
             + "and never a difference you work out yourself. Let each fact argue one side only: a figure used in the bull case does not appear in the bear case, closing sentences included.",
+        // The risks are asked for as fields, which code composes into the paragraphs the page draws, so that
+        // what confirms each is a listed fact or an event of one kind and code can tell two risks apart. A
+        // confirmation is what would be seen if the risk came true, and three risks confirmed by one miss of
+        // guidance are one risk.
+        // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
         ["The risks, each with what would confirm it"] =
-            "Name each risk to the company that the documents support, each in a paragraph of its own. Begin each with its ordinal and the word risk, as \"The first risk is\", "
-            + "and follow it with one sentence that begins \"That risk would be confirmed by\" and names an observable event that would tell the risk apart from ordinary movement, "
-            + "stated against the company's guidance or its trend: never a bare threshold such as a figure above 0, and never a figure the next quarter crosses by construction, "
-            + "such as growth falling after a quarter that held an extra week.",
+            "Name each risk to the company that the documents support, and answer with one JSON object and nothing else, shaped as "
+            + "{\"risks\":[{\"risk\":\"...\",\"riskDocument\":1,\"confirm\":{\"fact\":\"...\"},\"direction\":\"rises above\",\"level\":\"...\",\"why\":\"...\",\"whyDocument\":1}]}. "
+            + "Write risk as words completing \"The first risk is\", such as \"that supply stays short of demand\", and riskDocument as the number of the listed document that states it. "
+            + "Let confirm name what would be seen if the risk came true: a listed fact wherever one could show it, its name copied exactly as it is listed under Facts, "
+            + "with direction \"rises above\" or \"falls below\" and level a figure listed under Facts, copied or rounded. "
+            + "Only where no listed fact could show it, such as a lawsuit, a regulator's decision or a competitor's launch, write confirm as {\"event\":\"...\",\"kind\":\"...\"} "
+            + "with the event in words and kind one of legal, regulatory, competitive, acquisition, management, supply or other, and give it no direction and no level. "
+            + "A valuation risk is confirmed by the multiple falling, not by it staying high, and three risks confirmed by the same miss of guidance cannot be told apart, "
+            + "so no two risks name the same fact and no two event risks share a kind. Never use a level the next quarter crosses by construction. "
+            + "Write why as words completing \"because\", saying why that movement means the risk is coming true, and whyDocument as the number of the listed document that says so. "
+            + "List a real risk even where no figure can show it.",
         // What is true and what is argued about, and never a plan: the plan is computed by code
         // and drawn in its own region. The one section that sums the others up is the one a
         // writer opens paragraphs in with a short signpost citing nothing, so it is told that a
@@ -291,7 +317,7 @@ public static class SectionPrompt
         string? refusedBecause = null,
         IReadOnlyList<(string Section, string Prose)>? written = null,
         DateOnly? night = null) =>
-        new(Lane, section, model, [.. documents.Select(document => document.Id)], System(documents), Prompt(ticker, section, facts, documents, refusedBecause, written, night));
+        new(Lane, section, model, [.. documents.Select(document => document.Id)], System(documents, section), Prompt(ticker, section, facts, documents, refusedBecause, written, night));
 
     // A theme's industry cycle, asked in the paid lane, which figure 12.2 puts it in.
     public static ModelRequest ThemeRequest(string model, string industry, IReadOnlyList<PromptDocument> documents, string? refusedBecause = null) =>

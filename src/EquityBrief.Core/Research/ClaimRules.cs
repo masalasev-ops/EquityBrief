@@ -211,13 +211,15 @@ public static class ClaimRules
 
     // One section against its facts file and the stored rows its source list
     // resolves to, in the list's order, with a null where an id resolves to no
-    // stored row.
+    // stored row. The risks are checked with the fields their prose was composed
+    // from, which a risks draft stored without is refused for.
     public static ClaimVerdict Check(
         string section,
         string prose,
         IReadOnlyList<Fact> facts,
         IReadOnlyList<StoredDocument?> sources,
-        DateOnly? night = null)
+        DateOnly? night = null,
+        string? parts = null)
     {
         var researched = IsResearched(section);
 
@@ -240,6 +242,17 @@ public static class ClaimRules
         if (string.Equals(section, TwoCasesSection, StringComparison.Ordinal) && Rows(prose) is var rows && SidesMissing(rows) is { } missing)
         {
             findings.Add(new ClaimFinding(rows[0], missing, TwoCasesWithoutSides));
+        }
+
+        // The risks' fields, and the fact names and levels in their prose read past by the number rule, since
+        // a fact's name may carry digits and a level is held by a rule of its own.
+        // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
+        var risks = RiskFields.IsRisks(section);
+        IReadOnlyList<string> fieldNames = risks ? RiskFields.NamedByFields(parts) : [];
+
+        if (risks)
+        {
+            findings.AddRange(RiskFields.Check(parts, facts));
         }
 
         foreach (var sentence in Sentences(prose))
@@ -282,7 +295,9 @@ public static class ClaimRules
                 }
             }
 
-            foreach (var figure in Figures(WithoutHeldPeriods(sentence.Text, facts)))
+            var scanned = fieldNames.Aggregate(sentence.Text, (text, name) => text.Replace(name, " ", StringComparison.OrdinalIgnoreCase));
+
+            foreach (var figure in Figures(WithoutHeldPeriods(scanned, facts)))
             {
                 var reason = figure.Kind switch
                 {

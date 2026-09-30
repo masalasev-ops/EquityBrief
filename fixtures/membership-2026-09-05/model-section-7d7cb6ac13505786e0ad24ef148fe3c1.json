@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-bugsdop6avgzwfovl21rmo",
+  "object": "chat.completion",
+  "created": 1790744781,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\"risks\":[{\"risk\":\"that supply stays short of demand\",\"riskDocument\":3,\"confirm\":{\"fact\":\"latest quarter revenue growth on a year earlier = 0.365385\"},\"direction\":\"rises above\",\"level\":\"0.37\",\"why\":\"because management stated the supply environment is less flexible today and supply will be a governor of the ability to convert demand into revenue for the next several quarters\",\"whyDocument\":3},{\"risk\":\"that profitability falls below expectations due to recurring tariff impacts\",\"riskDocument\":4,\"confirm\":{\"fact\":\"latest quarter net income growth on a year earlier = 1.078534\"},\"direction\":\"falls below\",\"level\":\"1.08\",\"why\":\"because management cautioned that one-time tariff impacts in fiscal 2026 will not repeat, creating a high comparison bar for future profitability\",\"whyDocument\":4}]}",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18872,
+    "completion_tokens": 182,
+    "total_tokens": 19054,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

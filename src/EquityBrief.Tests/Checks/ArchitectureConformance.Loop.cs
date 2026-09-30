@@ -1167,6 +1167,13 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.FailureTable, "A paid job's profile names a key the secrets file does not hold, the run page's stages that failed name the pass in the line's own words"),
     ];
 
+    // 12.6's corrections on the research template of 2026-09-29: section 17's seven kinds an event risk is given,
+    // which the correction returning the risks as fields adds.
+    static readonly string[] ResearchTemplateClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "Risk kinds"),
+    ];
+
     // Phase 12's rows, each written by the checkpoint that draws or asserts it, so none reads as out
     // of scope: 12.1's swing reader and its two stores, its night step, the readings drawn on
     // tonight's header, the universe table, the name page and the run page, section 17's four
@@ -1336,6 +1343,7 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.NightNoticeClaims,
         .. Reading.ReadSurface.CloseToABuyPointClaims,
         .. ModelProfileClaims,
+        .. ResearchTemplateClaims,
     ];
 
     // Rows taken out of the document after phase 12's prediction, which counted each: the name page's
@@ -1401,7 +1409,8 @@ public partial class ArchitectureConformance
     // own list, and its trades, freshness, research and checklist, which the next 12.3 correction built, its
     // eighteen named in theirs, and close to a buy point, which the 12.7 correction built on the operator's
     // specification of 2026-09-29, its twelve named in theirs, and the model profiles a 12.6 correction built on
-    // the operator's brief of 2026-09-28, its seven claims named in their own list.
+    // the operator's brief of 2026-09-28, its seven claims named in their own list, and the research template's
+    // rows the 12.6 corrections of 2026-09-30 add, named in theirs.
     static readonly string[] PhaseTwelveBeyondThePrediction =
     [
         CheckReach.Key("15.10 Run", "Market reading, the index's median volume against its fifty-day average"),
@@ -1449,6 +1458,7 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.NightNoticeClaims,
         .. Reading.ReadSurface.CloseToABuyPointClaims,
         .. ModelProfileClaims,
+        .. ResearchTemplateClaims,
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1481,9 +1491,10 @@ public partial class ArchitectureConformance
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum. 725 from the
-        // 12.6 correction that brings the model profiles, its seven claims named in their own list, and 723 from
-        // the 12.2 correction that takes the breakout's two thresholds out with the family.
-        Assert.Equal((550, 723), (predicted, actual));
+        // 12.6 correction that brings the model profiles, its seven claims named in their own list, 723 from
+        // the 12.2 correction that takes the breakout's two thresholds out with the family, and 724 from the 12.6
+        // correction that returns the risks as fields, with section 17's seven kinds an event risk is given.
+        Assert.Equal((550, 724), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

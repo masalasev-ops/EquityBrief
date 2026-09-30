@@ -56,10 +56,13 @@ public partial class FixtureExpectations
         var theme = expected.GetProperty("theme");
 
         // A section the model answered with nothing stored no draft, so only the sections that did
-        // are read against their recordings.
+        // are read against their recordings. The risks are stored as the prose composed from the fields
+        // their recording holds.
+        static string Stored(string section, string text) => RiskFields.IsRisks(section) ? RiskFields.FromAnswer(text).Prose : text;
+
         var answered = local.Asked
-            .Select(request => (request.Section, Text: OpenAiCompatibleModelFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedLocalModelFeed.FileFor(request))), request.Section).Text))
-            .Concat(own.Where(request => drafts.Contains(request.Section)).Select(request => (request.Section, Text: OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section).Text)))
+            .Select(request => (request.Section, Text: Stored(request.Section, OpenAiCompatibleModelFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedLocalModelFeed.FileFor(request))), request.Section).Text)))
+            .Concat(own.Where(request => drafts.Contains(request.Section)).Select(request => (request.Section, Text: Stored(request.Section, OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section).Text))))
             .ToLookup(answer => answer.Section, answer => answer.Text);
 
         foreach (var section in drafts)
@@ -252,7 +255,7 @@ public partial class FixtureExpectations
         // filing the store holds for the name is dated after 2026-08-01, so a section
         // accepted on that day has gone stale, and one accepted on the pass's own day has not.
         store.Execute(
-            "INSERT INTO research_section VALUES " +
+            "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES " +
             "('KEYS', 'What the company sells', 1, '2026-09-08', 'a writer', 'accepted', 'prose', '[]', NULL), " +
             "('KEYS', 'The segment commentary', 1, '2026-09-01', 'a writer', 'pending', 'prose', '[]', NULL), " +
             "('KEYS', 'The key under each figure', 1, '2026-09-08', 'a writer', 'fallback', 'prose', '[]', 'left out'), " +
@@ -772,7 +775,7 @@ public partial class FixtureExpectations
         // The paid lane's sections are written while the local model is not answering, and
         // the local lane's are left absent with their reason, which the page reads. The short
         // version is in the local lane here, so every paid call is one the default pass made,
-        // the risks written again after the checker refused a figure.
+        // each section written once.
         using var fresh = await FixtureReplay.ReplayedForResearchAsync();
 
         var paid = new RecordedResearchModelFeed(Folder(), Providers.ResearchModelFeedTests.Pinned());
@@ -784,7 +787,7 @@ public partial class FixtureExpectations
             [.. ProseWriter.DefaultLane, "The short version"],
             outcome.NotWritten.Where(line => line.Reason.StartsWith(ProseWriter.Unavailable, StringComparison.Ordinal)).Select(line => line.Section).ToArray());
         Assert.Equal(
-            [ClaimRules.CauseSection, "The dated calendar items", "The two cases", "The risks, each with what would confirm it", "The risks, each with what would confirm it"],
+            [ClaimRules.CauseSection, "The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
             outcome.Written.Select(section => section.Section).ToArray());
         Assert.All(outcome.Written, section => Assert.Equal(paid.Identity, section.Model));
         Assert.Equal("0", Query(fresh, $"SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS' AND model = '{LocalModelSettings.DefaultModel}';").Single());
@@ -797,7 +800,7 @@ public partial class FixtureExpectations
 
         // The short version already written today, so the pass writes the sections it
         // summarises and not a summary of a set no recording was made over.
-        store.Execute("INSERT INTO research_section VALUES ('KEYS', 'The short version', 1, '2026-09-08', 'a writer', 'accepted', 'prose', '[]', NULL);");
+        store.Execute("INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES ('KEYS', 'The short version', 1, '2026-09-08', 'a writer', 'accepted', 'prose', '[]', NULL);");
 
         // A context too small for the two sections handed the release and large enough for
         // the key, the one the prose expectation works by hand: the two are refused before any

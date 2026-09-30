@@ -115,6 +115,8 @@ public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchMode
         }
     }
 
+    public const string ResponseFormatField = "response_format";
+
     // The request as it is sent: the configured model, the two messages, the answer's
     // budget and no stream, with the provider's own options merged in beside them. The
     // options cannot replace those four, which the settings refuse at startup.
@@ -129,6 +131,13 @@ public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchMode
             ["max_tokens"] = settings.AnswerTokens,
             ["stream"] = false,
         };
+
+        // The risks are asked for as a JSON object, which the format's own mode holds an answer to.
+        // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
+        if (EquityBrief.Core.Research.RiskFields.IsRisks(wanted.Section))
+        {
+            body[ResponseFormatField] = new JsonObject { ["type"] = "json_object" };
+        }
 
         if (settings.Options is { } options)
         {

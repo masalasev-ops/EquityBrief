@@ -182,31 +182,35 @@ public class SchemaColumns
 
         using var store = new TemporaryStore().Migrated();
 
-        // Nine and ten, stated exactly. The theme table is the research table's
-        // columns with its subject renamed and one more, and asserting both
-        // counts is what says the file wrote the difference out rather than
-        // leaving a reader to apply it.
+        // Ten and ten, stated exactly. The theme table is the research table's
+        // first nine columns with its subject renamed and one more, the industries,
+        // where the research table's tenth is the fields the risks are answered as,
+        // and asserting both counts is what says the file wrote the difference out
+        // rather than leaving a reader to apply it.
         var research = StoreSchema.Declared(schema, "research_section");
         var theme = StoreSchema.Declared(schema, "theme_section");
 
-        Assert.Equal(9, research.Count);
+        Assert.Equal(10, research.Count);
         Assert.Equal(10, theme.Count);
 
         Assert.Equal(research, StoreSchema.Built(store, "research_section"));
         Assert.Equal(theme, StoreSchema.Built(store, "theme_section"));
 
         Assert.Equal(
-            research.Skip(1).Select(column => column.Name),
+            research.Skip(1).Take(8).Select(column => column.Name),
             theme.Skip(1).Take(8).Select(column => column.Name));
+
+        Assert.Equal("parts", research[^1].Name);
 
         Assert.Equal("theme", theme[0].Name);
         Assert.Equal("industries", theme[^1].Name);
 
         // One column admits null in each, the reason, which a pending and an
-        // accepted section have none of. A section with no admissible source is a
-        // row with empty prose rather than a null one, because the row is what
-        // records that it was left out.
-        Assert.Equal(["reject_reason"], AdmitsNull(store, "research_section"));
+        // accepted section have none of, and a name's sections one more, the fields
+        // the risks are answered as, which every other section has none of. A section
+        // with no admissible source is a row with empty prose rather than a null one,
+        // because the row is what records that it was left out.
+        Assert.Equal(["reject_reason", "parts"], AdmitsNull(store, "research_section"));
         Assert.Equal(["reject_reason"], AdmitsNull(store, "theme_section"));
 
         // The four statuses are accepted and a fifth is refused by the store, in
@@ -216,12 +220,12 @@ public class SchemaColumns
         for (var version = 1; version <= statuses.Length; version++)
         {
             store.Execute(
-                "INSERT INTO research_section VALUES ('AAPL', 'The two cases', " +
+                "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES ('AAPL', 'The two cases', " +
                 $"{version}, '2026-09-08', 'a model', '{statuses[version - 1]}', '', '[]', NULL);");
         }
 
         var refused = Assert.Throws<SqliteException>(() => store.Execute(
-            "INSERT INTO research_section VALUES ('AAPL', 'The two cases', 9, '2026-09-08', 'a model', 'omitted', '', '[]', NULL);"));
+            "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES ('AAPL', 'The two cases', 9, '2026-09-08', 'a model', 'omitted', '', '[]', NULL);"));
 
         // 19 is SQLITE_CONSTRAINT and 275 its CHECK extension, read as codes
         // rather than as a message for the reason the membership refusals are.

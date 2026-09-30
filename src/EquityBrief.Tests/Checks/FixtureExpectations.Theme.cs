@@ -833,7 +833,7 @@ public partial class FixtureExpectations
         using var stale = await FixtureReplay.ReplayedForResearchAsync();
 
         stale.Execute(Theme);
-        stale.Execute("INSERT INTO research_section VALUES ('KEYS', 'What the company sells', 1, '2026-07-01', 'a writer', 'accepted', 'prose', '[]', NULL);");
+        stale.Execute("INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) VALUES ('KEYS', 'What the company sells', 1, '2026-07-01', 'a writer', 'accepted', 'prose', '[]', NULL);");
 
         var asked = new NoResults();
 
