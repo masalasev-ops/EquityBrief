@@ -32444,11 +32444,11 @@ Decisions:  new: "The drafts compared beside a report and the research template'
             written to files by a command, and drawn on no page", and "The run page draws how each report's sections
             came out and each section's rates over the newest twenty reports, and no trial's drafts", which
             supersedes the one it is named for.
-Tests:      123T, from 1589: `TheRatesBeforeAndAfterTheAddendumAreWrittenOnceTheTenthReportAfterItHasBeenWritten`,
+Tests:      1593, from 1589: `TheRatesBeforeAndAfterTheAddendumAreWrittenOnceTheTenthReportAfterItHasBeenWritten`,
             `TheTwoCasesFiguresOnBothSidesAreWrittenAtTheTwentiethReportSinceTheAskChanged`,
             `EachReportsComparedDraftsAreWrittenToAFileOfItsOwnAndDrawnOnNoPage` and
             `TwoReportsOfOneStockOnOneDayAreTwoFiles`; the trials region's test now reads the region as composed.
-Claims:     123C, from 737: the section trials row's three parts go with the row, and the comparison files'
+Claims:     736, from 737: the section trials row's three parts go with the row, and the comparison files'
             catalogue and matrix rows come, named in phase 12's pair.
 Pins:       none moves; no source this correction edits is in the three pin lists.
 Mutated:    the rule, stated before the run: each property this correction adds reversed alone, filtered to the four
@@ -32458,13 +32458,19 @@ Mutated:    the rule, stated before the run: each property this correction adds 
             M2 the rates file written with nine reports after the merge: red in the rates test alone.
             M3 a report at the merge's own second counted as before it: red in the rates test alone.
             M4 the both-sides count taking reports from before the ask changed: red in the both-sides test alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       123HELD
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            Results: one run each in a detached worktree at 01e1d32, this entry's commit, filtered to the four tests,
+            each edit made there and reverted, and the tree read clean after. M1 turned the drafts file test red
+            alone. M2 turned the rates test red alone. M3 turned the rates test red alone. M4 turned the both-sides
+            test red, and the drafts file test as well, whose line for the unfilled window reads ECL's report of
+            2026-09-10 as one drafting the two cases since the ask changed.
+Held:       red in every test predicted, and in one more for M4, the drafts file test, for the reason above.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1593 of 1593 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` 123VP
-            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 736 claims, 736 PASS, 0 FAIL, 747 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1593 of 1593 tests.
+            Both gates ran over the tree carrying this entry, 01e1d32, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Operator:   nothing to run. After a report the review ran beside, the command writes that report's file:
             `dotnet run --project src/EquityBrief.Api -- comparisons` from the repository root. The read surface on
