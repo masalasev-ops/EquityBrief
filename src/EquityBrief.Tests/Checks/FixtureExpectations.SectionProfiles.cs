@@ -12,11 +12,54 @@ namespace EquityBrief.Tests.Checks;
 // for asked of that model while the rest stay on the job's, a section or a profile the settings do not hold refused
 // by name, a Claude profile's thinking sent off or at an effort beside the answer's format, and a trial asking a
 // second profile for named sections after a pass, writing no section row, recording both models, stopping at the
-// reports it names and its calls left out of a report's count.
+// reports it names and its calls left out of a report's count; and no research setting as shipped naming a Claude
+// profile.
 // see: Research names a profile per section as well as per job, and a Claude profile states its thinking
-// see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
+// see: A trial asks a second profile for named sections beside a report, and ships naming none
+// see: Report generation asks DeepSeek alone, and no research setting names a Claude profile
 public partial class FixtureExpectations
 {
+    // Every profile word the research job's settings name as shipped: the job's own, one for each section, the
+    // trial's and the review's, where a blank word names none.
+    static IReadOnlyList<(string Setting, string Profile)> ResearchProfileWords(IConfiguration shipped)
+    {
+        var words = new List<(string, string)> { (ModelProfiles.Use(ModelProfiles.ResearchJob), shipped[ModelProfiles.Use(ModelProfiles.ResearchJob)] ?? string.Empty) };
+
+        words.AddRange(ClaimRules.Sections.Select(section => (SectionKey(section), shipped[SectionKey(section)] ?? string.Empty)));
+
+        foreach (var field in new[] { ResearchLane.TrialField, ResearchLane.ReviewField })
+        {
+            var key = ModelProfiles.JobField(ModelProfiles.ResearchJob, field) + ":" + ModelProfiles.UseField;
+
+            words.Add((key, shipped[key] ?? string.Empty));
+        }
+
+        return words;
+    }
+
+    [Fact]
+    public void NoResearchSettingAsShippedNamesAClaudeProfile()
+    {
+        var shipped = new ConfigurationBuilder().AddJsonFile(ResearchFeeds.ShippedConfiguration).Build();
+        var words = ResearchProfileWords(shipped);
+
+        // Stated in advance: the job's word, nine sections' and the review's name DeepSeek, eleven, and the trial's
+        // names none.
+        Assert.Equal(12, words.Count);
+        Assert.Equal(11, words.Count(word => word.Profile == "deepseek"));
+        Assert.Equal([ModelProfiles.JobField(ModelProfiles.ResearchJob, ResearchLane.TrialField) + ":" + ModelProfiles.UseField], words.Where(word => word.Profile.Length == 0).Select(word => word.Setting));
+
+        // No word names a profile answered on Claude's wire format, read off the profile's own format rather than its
+        // name, so a Claude profile renamed is found too; and the file still holds the Claude profiles a later ruling
+        // may name.
+        Assert.All(
+            words.Where(word => word.Profile.Length > 0),
+            word => Assert.NotEqual(ResearchModelSettings.AnthropicFormat, shipped[ModelProfiles.Field(word.Profile, ModelProfiles.FormatField)]));
+        Assert.Contains(
+            shipped.GetSection(ModelProfiles.ProfilesSection).GetChildren(),
+            profile => profile[ModelProfiles.FormatField] == ResearchModelSettings.AnthropicFormat);
+    }
+
     static IConfiguration ShippedWith(params (string Key, string Value)[] values) =>
         new ConfigurationBuilder()
             .AddJsonFile(ResearchFeeds.ShippedConfiguration)

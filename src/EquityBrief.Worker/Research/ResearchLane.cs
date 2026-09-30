@@ -66,11 +66,11 @@ public static class ResearchLane
 
     // The trial the research job's configuration names, or none where it names no profile: a second profile asked
     // for named sections after a pass, over a stated number of reports from a stated day.
-    // see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
+    // see: A trial asks a second profile for named sections beside a report, and ships naming none
     public const string TrialField = "Trial";
 
-    // The review, named the same way and shipped naming no profile, so it runs only once the operator names one.
-    // see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
+    // The review, named the same way: the section's own model asked to check its draft, over the reports it names.
+    // see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports
     public const string ReviewField = "Review";
 
     public static ResearchTrial? Trial(IConfiguration configuration) => Named(configuration, TrialField);

@@ -17,7 +17,7 @@ namespace EquityBrief.Tests.Reading;
 // read API's own queries over a constructed store and back off the rendered page, and a trial's two sides drawn
 // with their drafts side by side.
 // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
-// see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
+// see: A trial asks a second profile for named sections beside a report, and ships naming none
 public partial class ReadSurface
 {
     // The claims the 12.6 correction drawing how each report did adds, which this check reaches and the phase's

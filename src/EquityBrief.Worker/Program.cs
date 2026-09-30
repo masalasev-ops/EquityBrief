@@ -496,7 +496,7 @@ static async Task<int> ResearchPass(string[] args)
         models).RunAsync(ticker, runId, new ResearchPassRequest(regenerate, args.Contains("--paid-for-local")));
 
     // The trial, after a pass that wrote one of its sections through the paid lane at the first draft.
-    // see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
+    // see: A trial asks a second profile for named sections beside a report, and ships naming none
     if (trial is not null && outcome.Written.Any(written => trial.Sections.Contains(written.Section, StringComparer.Ordinal) && !written.Retry))
     {
         foreach (var tried in await new SectionTrial(CapFor(trial.Profile), trial, clock, database).RunAsync(ticker, runId))
@@ -506,7 +506,7 @@ static async Task<int> ResearchPass(string[] args)
     }
 
     // The review, after the trial and on the same condition, where the settings name a profile for it.
-    // see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
+    // see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports
     if (review is not null && outcome.Written.Any(written => review.Sections.Contains(written.Section, StringComparer.Ordinal) && !written.Retry))
     {
         foreach (var reviewed in await new SectionTrial(CapFor(review.Profile), review, clock, database, review: true).RunAsync(ticker, runId))
