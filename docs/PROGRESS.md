@@ -32240,19 +32240,23 @@ Measured:   the test run alone fifty times in a loop on this machine, one `dotne
             does by construction.
 Changed:    `src/EquityBrief.Tests/Checks/NightlyRun.Tries.cs` alone.
 Decisions:  none.
-Tests:      123T, from 1587: none added or removed.
-Claims:     123C, from 737: none moves.
+Tests:      1587, from 1587: none added or removed.
+Claims:     737, from 737: none moves.
 Pins:       none moves; no source in the three pin lists is touched, the change being in the test project.
 Mutated:    the rule, stated before the run: the property the test guards, each try stopping on a deadline of its own,
             broken by the night's cancellation source made with no deadline, filtered to the test.
             Predicted: red, the night running to its close and exiting 0 where the test asserts 1.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       123HELD
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            Results: one run in a detached worktree at c5a5f0f, this entry's commit, both of the night's sources
+            made with no deadline and reverted, and the tree read clean after: the test turned red, expected 1
+            and actual 0.
+Held:       red as predicted.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1587 of 1587 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` 123VP
-            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 737 claims, 737 PASS, 0 FAIL, 748 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1587 of 1587 tests.
+            Both gates ran over the tree carrying this entry, c5a5f0f, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Operator:   nothing to run.
 Carried:    nothing.
