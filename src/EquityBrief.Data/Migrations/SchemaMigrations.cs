@@ -671,6 +671,7 @@ public static class SchemaMigrations
         new Migration(48, "create reported_quarter, quarter_ask and fundamental_reading", CreateReportedQuarters),
         new Migration(49, "add peer_reading.peers", AddPeerPicks),
         new Migration(50, "add research_section.parts", AddRiskParts),
+        new Migration(51, "create pulled_surprise", CreatePulledSurprise),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -1126,6 +1127,25 @@ public static class SchemaMigrations
     // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
     const string AddRiskParts = @"
         ALTER TABLE research_section ADD COLUMN parts TEXT;
+    ";
+
+    // The surprises pulled beside the pulled prints, on the operator's ruling of 2026-09-30: for each print the
+    // earnings calendar answers over the span, the report date and its timing, the earnings figures as filed,
+    // kept as text since nothing computes with them, and the provider's surprise in per cent, a statistic, each
+    // row carrying the pull that wrote it and removed whole with it. Read by no night, as the two tables beside
+    // it are; the sweep's fifth condition reads it by hand.
+    // see: The surprises pulled before the store's year sit beside the pulled prints and are read by no night
+    const string CreatePulledSurprise = @"
+        CREATE TABLE pulled_surprise (
+            ticker            TEXT NOT NULL,
+            event_date        TEXT NOT NULL,
+            timing            TEXT NOT NULL,
+            eps_actual        TEXT,
+            eps_estimate      TEXT,
+            surprise_percent  REAL,
+            pull              TEXT NOT NULL,
+            PRIMARY KEY (ticker, event_date)
+        ) STRICT;
     ";
 
     // A member's reported quarters, one row per fetch per quarter, the asks that fetched them, and the

@@ -40,7 +40,7 @@ internal static class ComponentVocabulary
         ("Membership", [DataStore.Membership]),
         ("Bars", [DataStore.Bar]),
         ("Calendar", [DataStore.Calendar]),
-        ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings]),
+        ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise]),
         ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading]),
         ("Listings", [DataStore.Listing, DataStore.ListRule]),
         ("Forward returns", [DataStore.ForwardReturn]),
@@ -95,7 +95,7 @@ internal static class ComponentVocabulary
     // splitting them produces fragments that resolve to nothing.
     static readonly Dictionary<string, DataStore[]> WholeCells = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["every store but the pulled history"] = [.. Columns.SelectMany(column => column.Stores).Except([DataStore.PulledBar, DataStore.PulledEarnings])],
+        ["every store but the pulled history"] = [.. Columns.SelectMany(column => column.Stores).Except([DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise])],
         ["none"] = [],
         ["read API"] = [],
         ["a file the user chooses"] = [],
@@ -169,6 +169,7 @@ internal static class ComponentVocabulary
         ["calendar"] = DataStore.Calendar,
         ["pulled bars"] = DataStore.PulledBar,
         ["pulled earnings"] = DataStore.PulledEarnings,
+        ["pulled surprises"] = DataStore.PulledSurprise,
         ["candidate register"] = DataStore.CandidateRegister,
         ["rule versions"] = DataStore.RuleVersion,
         ["version scores"] = DataStore.VersionScore,

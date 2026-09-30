@@ -37,6 +37,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
 | `pulled_bar` | HistoryPull | none | HistoryPull |
 | `pulled_earnings` | HistoryPull | none | HistoryPull |
+| `pulled_surprise` | HistoryPull | none | HistoryPull |
 | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
 | `swing` | SwingFinder | SwingFinder | SwingFinder |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
@@ -218,6 +219,23 @@ Grain: one row per ticker per earnings report date a pull reached.
 Primary key: `ticker`, `event_date`.
 
 The earnings prints of the names a pull asked for, over the same span, from the earnings calendar asked once a calendar month and read for the index's own listing as `calendar` is. Kept apart from `calendar` for the reason `pulled_bar` is kept apart from `bar`, and removed with it by the same pull.
+
+### pulled_surprise
+Grain: one row per ticker per earnings report date a surprise pull reached.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `event_date` | TEXT | the report date the provider files |
+| `timing` | TEXT | `before`, `after`, or `unstated`, as `calendar` holds it |
+| `eps_actual` | TEXT | the earnings per share reported, as the provider sent it, and null where the print has not happened; text because nothing computes with it |
+| `eps_estimate` | TEXT | the estimate the provider carries, as sent, and null where it carries none |
+| `surprise_percent` | REAL | the provider's surprise in per cent, a statistic; null where the print carries no estimate, no actual or no surprise, since a surprise against nothing is not one |
+| `pull` | TEXT | the run id of the pull that wrote the row |
+
+Primary key: `ticker`, `event_date`.
+
+**The surprises of the names a surprise pull asked for over its span, read by no night** (see: The surprises pulled before the store's year sit beside the pulled prints and are read by no night). The operator's `history-pull --surprises` asks the earnings calendar once a calendar month of the span, as the bars' pull asks it, and stores each print of a name the index held over the span with the figures as filed and the provider's surprise, which is the one figure the sweep's fifth condition reads. Kept apart from `calendar` and from `pulled_earnings` because it carries figures those do not and is removed whole with its pull, and a second pull inserts only the prints no earlier pull holds. The sweep reads it by hand where a pull stored any print carrying a surprise, and the calendar's own year otherwise.
 
 ### indicator
 Grain: one row per ticker, session and indicator name.

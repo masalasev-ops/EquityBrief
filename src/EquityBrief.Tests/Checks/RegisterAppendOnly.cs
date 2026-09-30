@@ -565,13 +565,21 @@ public class RegisterAppendOnly
                     .Count(line => line.TrimStart().StartsWith(CandidateEvaluator.VersionDeclaration, StringComparison.Ordinal)));
         }
 
-        // Every shipped file that computes a reading, hands one to an evaluation or runs one is among the sources.
-        var onThePath = Repository.SourceFiles()
+        // Every shipped file that computes a reading, hands one to an evaluation or runs one is among the sources,
+        // but the sweep's: it computes the indicators of the history it replays in memory, by hand and never
+        // from a night, and hands them to no evaluation and to no store, its component declaring that it writes
+        // nothing. The one file left out is named, and shown to be one the reader finds.
+        const string Sweep = "src/EquityBrief.Worker/Sweep/SweepColumns.cs";
+
+        var found = Repository.SourceFiles()
             .Where(file => !file.Contains(Path.DirectorySeparatorChar + "EquityBrief.Tests" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
             .Where(file => EvaluationCall.IsMatch(SourceStatements.WithoutComments(File.ReadAllText(file))))
             .Select(file => Path.GetRelativePath(Repository.Root, file).Replace(Path.DirectorySeparatorChar, '/'))
             .ToArray();
+        var onThePath = found.Where(path => path != Sweep).ToArray();
 
+        Assert.Contains(Sweep, found);
+        Assert.DoesNotContain(EquityBrief.Worker.Sweep.SweepHistory.Access.Stores, touch => touch.Touch != EquityBrief.Core.Components.Touch.Read);
         Assert.True(onThePath.Length >= 3, $"Found {onThePath.Length} file(s) on the evaluation path, expected at least 3.");
         Assert.All(onThePath, path => Assert.Contains(path, CandidateEvaluator.EvaluationSources));
 

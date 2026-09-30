@@ -313,7 +313,7 @@ public class HistoryPullTests
         Assert.Equal(["AAA|2026-07-30|history-pull-b", "BBB|2026-08-05|history-pull-b"], Rows(store, "SELECT ticker, event_date, pull FROM pulled_earnings ORDER BY ticker, event_date;"));
         Assert.Equal(barsBefore, Rows(store, "SELECT * FROM bar ORDER BY ticker, session_date;"));
         Assert.Equal(
-            ["history-purge|ok|0|0|{\"pull\":\"history-pull-a\",\"bars\":30,\"earnings\":1}"],
+            ["history-purge|ok|0|0|{\"pull\":\"history-pull-a\",\"bars\":30,\"earnings\":1,\"surprises\":0}"],
             Rows(store, "SELECT stage, outcome, rows_written, network_requests, detail FROM run_log WHERE run_id = 'history-purge-a';"));
 
         // A pull no row carries any longer is refused, and the refusal writes nothing.
@@ -485,14 +485,15 @@ public class HistoryPullTests
         }
     }
 
-    // What no night reads, no shipped source but the pull names: the history pull and the migration that
-    // creates its two tables are the only files outside the suite that name either table or its store,
+    // What no night reads, no shipped source but the pull and the one measurement that reads it names: the
+    // history pull, the migration that creates its two tables and the sweep's history, which reads them by
+    // hand and never from a night, are the only files outside the suite that name either table or its store,
     // so no stage, score, record or page can read them without this failing first.
     // see: The bar store holds one year for every night's work, and the history pulled beside it is read by measurements alone
     [Fact]
     public void NoShippedSourceButThePullAndItsMigrationNamesThePulledTables()
     {
-        var naming = new System.Text.RegularExpressions.Regex(@"pulled_(bar|earnings)\b|Store\.Pulled(Bar|Earnings)\b");
+        var naming = new System.Text.RegularExpressions.Regex(@"pulled_(bar|earnings|surprise)\b|Store\.Pulled(Bar|Earnings|Surprise)\b");
 
         var files = Repository.SourceFiles()
             .Where(file => !file.Contains(Path.DirectorySeparatorChar + "EquityBrief.Tests" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
@@ -506,13 +507,64 @@ public class HistoryPullTests
             .Order(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs"], found);
+        Assert.Equal(["src/EquityBrief.Data/Migrations/SchemaMigrations.cs", "src/EquityBrief.Worker/Bars/HistoryPull.cs", "src/EquityBrief.Worker/Sweep/SweepHistory.cs"], found);
 
         // The reader is shown to find what it looks for: a query, a declaration of either store, and not a
         // word that only begins the same way.
         Assert.Matches(naming, "SELECT close FROM pulled_bar WHERE ticker = $ticker;");
         Assert.Matches(naming, "new StoreTouch(Store.PulledEarnings, Touch.Read)");
+        Assert.Matches(naming, "SELECT surprise_percent FROM pulled_surprise;");
         Assert.DoesNotMatch(naming, "var pulled_barrier = 1; Store.PulledBarrier");
+    }
+
+    // The surprise pull: the calendar asked once a calendar month of the span, each print of a held name stored
+    // with the figures as filed and the provider's surprise where the answer carries an estimate and an actual,
+    // marked by its pull, removed whole with it, and refused for a date on or after tonight.
+    // see: The surprises pulled before the store's year sit beside the pulled prints and are read by no night
+    [Fact]
+    public async Task ASurprisePullStoresEachHeldNamesPrintsWithTheSurpriseAsFiledAndAPurgeRemovesThemWithThePull()
+    {
+        using var store = Seeded();
+
+        var prints = new ConstructedPrints(
+        [
+            new("AAA", new DateOnly(2026, 7, 30), EventTiming.After, new DateOnly(2026, 6, 30), "1.20", "1.32", "10"),
+            new("AAA", new DateOnly(2026, 8, 20), EventTiming.Unstated, null, "0.50", "0.45", "-10"),
+            // A print with an estimate and no actual has not happened, and one with neither carries no surprise.
+            new("BBB", new DateOnly(2026, 8, 5), EventTiming.Before, null, "2.00", null, null),
+            new("CCC", new DateOnly(2026, 8, 25), EventTiming.After, null, null, null, null),
+            new("ZZZ", new DateOnly(2026, 7, 15), EventTiming.Before, null, "1", "2", "100"),
+        ]);
+        var pull = new HistoryPull(new ConstructedBars(new Dictionary<string, IReadOnlyList<DateOnly>>()), prints, Clock(), store.DatabaseFile);
+        var outcome = await pull.PullSurprisesAsync(Index, From, "history-pull-surprises");
+
+        Assert.Equal(["2026-07-01 2026-07-31", "2026-08-01 2026-08-31", "2026-09-01 2026-09-04"], prints.Windows);
+        Assert.Equal((3, 3, 4, 2, 4, 3), (outcome.Names, outcome.Months, outcome.Prints, outcome.WithASurprise, outcome.Written, outcome.Requests));
+        Assert.Equal(
+            ["AAA|2026-07-30|after|1.32|1.20|10|history-pull-surprises", "AAA|2026-08-20|unstated|0.45|0.50|-10|history-pull-surprises", "BBB|2026-08-05|before|null|2.00|null|history-pull-surprises", "CCC|2026-08-25|after|null|null|null|history-pull-surprises"],
+            Rows(store, "SELECT ticker, event_date, timing, eps_actual, eps_estimate, surprise_percent, pull FROM pulled_surprise ORDER BY ticker, event_date;"));
+        Assert.Equal(["history-pull-surprises|ok|4|3"], Rows(store, "SELECT stage, outcome, rows_written, network_requests FROM run_log WHERE run_id = 'history-pull-surprises';"));
+
+        // A second pull adds only the prints no earlier pull holds.
+        var again = await pull.PullSurprisesAsync(Index, From, "history-pull-surprises-again");
+
+        Assert.Equal(0, again.Written);
+        Assert.Equal(["history-pull-surprises"], Rows(store, "SELECT DISTINCT pull FROM pulled_surprise;"));
+
+        // The provider's surprise is read as the statistic it is, and none without an estimate and an actual.
+        Assert.Equal(10, HistoryPull.SurprisePercent(new CalendarEvent("AAA", new DateOnly(2026, 7, 30), EventTiming.After, null, "1.20", "1.32", "10")));
+        Assert.Null(HistoryPull.SurprisePercent(new CalendarEvent("AAA", new DateOnly(2026, 7, 30), EventTiming.After, null, null, "1.32", "10")));
+        Assert.Null(HistoryPull.SurprisePercent(new CalendarEvent("AAA", new DateOnly(2026, 7, 30), EventTiming.After, null, "1.20", "1.32", null)));
+
+        // A purge removes the pull's surprises with its bars and prints, and says how many.
+        var purged = await HistoryPull.PurgeAsync(Clock(), store.DatabaseFile, "history-pull-surprises", "history-purge-surprises");
+
+        Assert.Equal((0, 0, 4), (purged.Bars, purged.Earnings, purged.Surprises));
+        Assert.Empty(Rows(store, "SELECT * FROM pulled_surprise;"));
+
+        // A date on or after tonight is refused before any request: the two pulls' six requests stand.
+        await Assert.ThrowsAsync<ArgumentException>(() => pull.PullSurprisesAsync(Index, Tonight, "history-pull-refused"));
+        Assert.Equal(6, prints.Requests);
     }
 
     // A historical feed answering from constructed sessions, refusing the names it is told to, and

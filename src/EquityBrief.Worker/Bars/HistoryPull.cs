@@ -34,12 +34,16 @@ public sealed class HistoryPull(
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.PulledBar, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.PulledEarnings, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.PulledSurprise, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.HistoricalPrice, Feed.EarningsCalendar]);
 
     public const string Stage = "history-pull";
     public const string PurgeStage = "history-purge";
+
+    // The surprise pull's own stage on the run log, since it asks the calendar alone and stores one table.
+    public const string SurpriseStage = "history-pull-surprises";
 
     // The run ids a pull and a purge are written under, which the run page reads as runs by hand.
     public const string RunPrefix = "history-pull-";
@@ -71,15 +75,26 @@ public sealed class HistoryPull(
         ON CONFLICT (ticker, event_date) DO NOTHING;
     ";
 
+    // The surprises, one row a print the calendar answers over the span: the figures as filed, kept as text,
+    // and the provider's surprise as a statistic, null where the answer carries none.
+    const string InsertSurprise = @"
+        INSERT INTO pulled_surprise (ticker, event_date, timing, eps_actual, eps_estimate, surprise_percent, pull)
+        VALUES ($ticker, $event_date, $timing, $eps_actual, $eps_estimate, $surprise_percent, $pull)
+        ON CONFLICT (ticker, event_date) DO NOTHING;
+    ";
+
     const string BarCount = "SELECT COUNT(*) FROM pulled_bar;";
     const string EarningsCount = "SELECT COUNT(*) FROM pulled_earnings;";
+    const string SurpriseCount = "SELECT COUNT(*) FROM pulled_surprise;";
 
     const string BarsOfPull = "SELECT COUNT(*) FROM pulled_bar WHERE pull = $pull;";
     const string EarningsOfPull = "SELECT COUNT(*) FROM pulled_earnings WHERE pull = $pull;";
+    const string SurprisesOfPull = "SELECT COUNT(*) FROM pulled_surprise WHERE pull = $pull;";
 
     // The removal, which takes a pull's rows whole and nothing else.
     const string DeleteBarsOfPull = "DELETE FROM pulled_bar WHERE pull = $pull;";
     const string DeleteEarningsOfPull = "DELETE FROM pulled_earnings WHERE pull = $pull;";
+    const string DeleteSurprisesOfPull = "DELETE FROM pulled_surprise WHERE pull = $pull;";
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -92,8 +107,9 @@ public sealed class HistoryPull(
 
     public static string RunIdAt(string prefix, DateTimeOffset at) => FormattableString.Invariant($"{prefix}{at:yyyyMMddTHHmmss.fffffffZ}");
 
-    // The verb a person runs: `history-pull --from <yyyy-MM-dd>`, or `history-pull --purge <pull>`. The
-    // feeds are asked for only by a pull, so removing one needs no key and reaches no provider.
+    // The verb a person runs: `history-pull --from <yyyy-MM-dd>`, the same with `--surprises` for the earnings
+    // surprises alone, or `history-pull --purge <pull>`. The feeds are asked for only by a pull, so removing one
+    // needs no key and reaches no provider.
     public static async Task<int> RunAsync(
         string[] args,
         Func<NightFeeds> feeds,
@@ -108,7 +124,7 @@ public sealed class HistoryPull(
             {
                 var purged = await PurgeAsync(clock, databaseFile, pull, RunIdAt(PurgePrefix, clock.UtcNow));
 
-                output.WriteLine(FormattableString.Invariant($"removed the pull {purged.Pull}: {purged.Bars} bar(s) and {purged.Earnings} earnings print(s)"));
+                output.WriteLine(FormattableString.Invariant($"removed the pull {purged.Pull}: {purged.Bars} bar(s), {purged.Earnings} earnings print(s) and {purged.Surprises} surprise(s)"));
 
                 return 0;
             }
@@ -145,8 +161,19 @@ public sealed class HistoryPull(
 
         try
         {
-            var outcome = await new HistoryPull(resolved.Historical, resolved.Calendar, clock, databaseFile)
-                .PullAsync(VerbArguments.Value(args, "--index") ?? "GSPC", from, runId, error.WriteLine);
+            var puller = new HistoryPull(resolved.Historical, resolved.Calendar, clock, databaseFile);
+
+            if (VerbArguments.Has(args, "--surprises"))
+            {
+                var surprises = await puller.PullSurprisesAsync(VerbArguments.Value(args, "--index") ?? "GSPC", from, runId, error.WriteLine);
+
+                output.WriteLine("pull " + runId);
+                output.WriteLine(Detail(surprises));
+
+                return 0;
+            }
+
+            var outcome = await puller.PullAsync(VerbArguments.Value(args, "--index") ?? "GSPC", from, runId, error.WriteLine);
 
             output.WriteLine("pull " + runId);
             output.WriteLine(Detail(outcome));
@@ -339,7 +366,126 @@ public sealed class HistoryPull(
         return outcome;
     }
 
-    // Removes one pull's rows from both tables and says so on the run log. A pull no row carries is
+    // Pulls the earnings surprises of every name the index held from a date to tonight: the calendar asked once
+    // a calendar month of the span, as the bars' pull asks it, and each print of a held name stored with the
+    // figures as filed and the provider's surprise where the answer carries one. A date on or after tonight's
+    // session is refused before any request, and a print an earlier pull holds keeps that pull's row.
+    // see: The surprises pulled before the store's year sit beside the pulled prints and are read by no night
+    public async Task<HistorySurpriseOutcome> PullSurprisesAsync(
+        string indexCode,
+        DateOnly from,
+        string runId,
+        Action<string>? progress = null,
+        CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        var through = clock.SessionDateAt(startedAt);
+
+        if (from >= through)
+        {
+            throw new ArgumentException(
+                FormattableString.Invariant($"A pull reaches from a date before tonight's session, {through:yyyy-MM-dd}, and {from:yyyy-MM-dd} is not before it."),
+                nameof(from));
+        }
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var names = await NamesAsync(connection, indexCode, from, through, cancellation);
+        var held = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var requestsBefore = earnings.Requests;
+        var prints = new Dictionary<(string Ticker, DateOnly Date), CalendarEvent>();
+        var monthsUnanswered = new List<string>();
+        var months = MonthsOf(from, through);
+        var asked = 0;
+
+        foreach (var (first, last) in months)
+        {
+            try
+            {
+                foreach (var print in await earnings.EventsAsync(first, last, cancellation))
+                {
+                    if (held.Contains(print.Ticker))
+                    {
+                        prints.TryAdd((print.Ticker, print.EventDate), print);
+                    }
+                }
+            }
+            catch (ProviderRefusal refusal)
+            {
+                monthsUnanswered.Add(FormattableString.Invariant($"{first:yyyy-MM}: {refusal.Message}"));
+            }
+
+            if (++asked % 12 == 0)
+            {
+                progress?.Invoke(FormattableString.Invariant($"{asked} of {months.Count} month(s) asked"));
+            }
+        }
+
+        var before = await CountAsync(connection, SurpriseCount, null, cancellation);
+        var withASurprise = 0;
+
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var print in prints.Values.OrderBy(print => print.Ticker, StringComparer.Ordinal).ThenBy(print => print.EventDate))
+        {
+            var percent = SurprisePercent(print);
+
+            withASurprise += percent is null ? 0 : 1;
+
+            await using var insert = connection.CreateCommand();
+            insert.CommandText = InsertSurprise;
+            insert.Parameters.AddWithValue("$ticker", print.Ticker);
+            insert.Parameters.AddWithValue("$event_date", Text(print.EventDate));
+            insert.Parameters.AddWithValue("$timing", EquityBrief.Worker.Calendar.CalendarFetcher.Filed(print.Timing));
+            insert.Parameters.AddWithValue("$eps_actual", (object?)print.Actual ?? DBNull.Value);
+            insert.Parameters.AddWithValue("$eps_estimate", (object?)print.Estimate ?? DBNull.Value);
+            insert.Parameters.AddWithValue("$surprise_percent", (object?)percent ?? DBNull.Value);
+            insert.Parameters.AddWithValue("$pull", runId);
+
+            await insert.ExecuteNonQueryAsync(cancellation);
+        }
+
+        var written = await CountAsync(connection, SurpriseCount, null, cancellation) - before;
+        var requests = earnings.Requests - requestsBefore;
+        var outcome = new HistorySurpriseOutcome(from, through, names.Count, months.Count, monthsUnanswered, prints.Count, withASurprise, written, requests);
+
+        await AppendAsync(
+            connection,
+            runId,
+            SurpriseStage,
+            startedAt,
+            clock.UtcNow,
+            monthsUnanswered.Count == 0 ? "ok" : Partial,
+            written,
+            requests,
+            JsonSerializer.Serialize(new
+            {
+                from = Text(from),
+                through = Text(through),
+                names = names.Count,
+                months = months.Count,
+                prints = prints.Count,
+                withASurprise,
+                surprises = written,
+                monthsUnanswered,
+            }),
+            cancellation);
+
+        await transaction.CommitAsync(cancellation);
+
+        return outcome;
+    }
+
+    // The provider's surprise in per cent, a statistic, read from the text the feed kept; none where the print
+    // carries no estimate, no actual or no surprise, since a surprise against nothing is not one.
+    public static double? SurprisePercent(CalendarEvent print) =>
+        print.Estimate is { Length: > 0 } && print.Actual is { Length: > 0 } && print.Surprise is { Length: > 0 } surprise
+        && double.TryParse(surprise, NumberStyles.Float, CultureInfo.InvariantCulture, out var percent)
+            ? percent
+            : null;
+
+    // Removes one pull's rows from the three tables and says so on the run log. A pull no row carries is
     // refused and nothing is written, so a mistyped id cannot record a removal that removed nothing.
     public static async Task<HistoryPurgeOutcome> PurgeAsync(
         IClock clock,
@@ -355,15 +501,16 @@ public sealed class HistoryPull(
 
         var barsHeld = await CountAsync(connection, BarsOfPull, pull, cancellation);
         var earningsHeld = await CountAsync(connection, EarningsOfPull, pull, cancellation);
+        var surprisesHeld = await CountAsync(connection, SurprisesOfPull, pull, cancellation);
 
-        if (barsHeld == 0 && earningsHeld == 0)
+        if (barsHeld == 0 && earningsHeld == 0 && surprisesHeld == 0)
         {
             throw new ArgumentException($"No pulled row carries the pull '{pull}', so there is nothing to remove.", nameof(pull));
         }
 
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
-        foreach (var removal in new[] { DeleteBarsOfPull, DeleteEarningsOfPull })
+        foreach (var removal in new[] { DeleteBarsOfPull, DeleteEarningsOfPull, DeleteSurprisesOfPull })
         {
             await using var delete = connection.CreateCommand();
             delete.CommandText = removal;
@@ -381,12 +528,12 @@ public sealed class HistoryPull(
             "ok",
             0,
             0,
-            JsonSerializer.Serialize(new { pull, bars = barsHeld, earnings = earningsHeld }),
+            JsonSerializer.Serialize(new { pull, bars = barsHeld, earnings = earningsHeld, surprises = surprisesHeld }),
             cancellation);
 
         await transaction.CommitAsync(cancellation);
 
-        return new HistoryPurgeOutcome(pull, barsHeld, earningsHeld);
+        return new HistoryPurgeOutcome(pull, barsHeld, earningsHeld, surprisesHeld);
     }
 
     // The windows the earnings calendar is asked for: each calendar month the span touches, cut to
@@ -466,6 +613,10 @@ public sealed class HistoryPull(
     public static string Detail(HistoryPullOutcome outcome) =>
         FormattableString.Invariant($"pulled {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Stored} of {outcome.Names} name(s) answered, {outcome.BarsWritten} bar(s) and {outcome.EarningsWritten} earnings print(s) stored, {outcome.Holes.Select(gap => gap.Ticker).Distinct(StringComparer.Ordinal).Count()} name(s) with a missing session, {outcome.Strays.Count} day(s) held by fewer than half the names spanning them, {outcome.Months} calendar month(s) asked, {outcome.Requests} request(s)")
         + string.Concat(outcome.Unanswered.Select(line => Environment.NewLine + "  unanswered: " + line))
+        + string.Concat(outcome.MonthsUnanswered.Select(line => Environment.NewLine + "  month unanswered: " + line));
+
+    public static string Detail(HistorySurpriseOutcome outcome) =>
+        FormattableString.Invariant($"pulled surprises {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Prints} print(s) of {outcome.Names} name(s) answered over {outcome.Months} calendar month(s), {outcome.WithASurprise} carrying a surprise, {outcome.Written} stored, {outcome.Requests} request(s)")
         + string.Concat(outcome.MonthsUnanswered.Select(line => Environment.NewLine + "  month unanswered: " + line));
 
     static async Task<IReadOnlyList<string>> NamesAsync(SqliteConnection connection, string indexCode, DateOnly from, DateOnly through, CancellationToken cancellation)
@@ -551,5 +702,18 @@ public sealed record HistoryPullOutcome(
 // A day fewer than half the names whose series span it hold: the names holding it, and how many span it.
 public sealed record Stray(DateOnly Day, IReadOnlyList<string> Holders, int Spanning);
 
+// What one surprise pull did: the span, the names held over it, the months asked and unanswered, the prints
+// answered for held names and how many carried a surprise, the rows stored and the requests made.
+public sealed record HistorySurpriseOutcome(
+    DateOnly From,
+    DateOnly Through,
+    int Names,
+    int Months,
+    IReadOnlyList<string> MonthsUnanswered,
+    int Prints,
+    int WithASurprise,
+    int Written,
+    int Requests);
+
 // What one purge removed.
-public sealed record HistoryPurgeOutcome(string Pull, int Bars, int Earnings);
+public sealed record HistoryPurgeOutcome(string Pull, int Bars, int Earnings, int Surprises = 0);

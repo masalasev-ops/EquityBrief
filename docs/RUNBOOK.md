@@ -434,13 +434,31 @@ dotnet run --project src/EquityBrief.Worker -- history-pull --from 2018-01-01 --
 
 It asks every name the index held on any session from that date to tonight, the members that have left since among them, for its daily bars over the whole span, one request a name, and the earnings calendar once for each calendar month of the span, and stores what comes back in `pulled_bar` and `pulled_earnings`, every row carrying the pull's run id, which begins `history-pull-` and is printed first. A pull from 2018 asks about seven hundred names and about a hundred months, so it costs about eight hundred weighted calls. A name the provider does not answer, and a session one name misses where at least half the names spanning it hold it, are each named on its run log row and printed, and a day fewer than half hold is counted apart as no one's missing session and named on the row. Run it when no night is running.
 
+The earnings surprises the sweep's earnings beat condition reads are pulled apart, over the same span, by the same verb (see: The surprises pulled before the store's year sit beside the pulled prints and are read by no night):
+
+```
+dotnet run --project src/EquityBrief.Worker -- history-pull --surprises --from 2018-01-01 --live
+```
+
+It asks the earnings calendar once a calendar month of the span, about a hundred requests at a weight of one from 2018, and stores each print of a name the index held over the span in `pulled_surprise` with the figures as filed and the provider's surprise where the print carries one, every row carrying the pull's run id. Run it before a sweep whose report should read the surprises back to 2018; a sweep run without it reads the calendar's own year and says so.
+
 Remove a pull whole by its run id:
 
 ```
 dotnet run --project src/EquityBrief.Worker -- history-pull --purge <the pull's run id>
 ```
 
-A purge removes every row that pull wrote from both tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull` and `history-purge`, and the run page draws both as run by hand.
+A purge removes every row that pull wrote from the three tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull`, `history-pull-surprises` and `history-purge`, and the run page draws each as run by hand.
+
+### Sweeping the swing filter over the stored history
+
+The sweep replays the swing filter over the history the store and the pulled tables hold, across its designs, its settings and seven conditions, and writes a report proposing a starting point and the variants that run beside it. It registers nothing (see: A starting point is proposed from the deepest setting of a plateau on the edge and never its best variation, and nothing is registered before the operator approves it):
+
+```
+dotnet run --project src/EquityBrief.Worker -c Release -- sweep
+```
+
+It reads the live store directly over a read-only connection, one short read a name, and writes nothing to it: its saved chunks, its state and its report are files in a run folder of its own, named by the instant it started, under the folder `sweep` beside the store, or the folder the setting `EquityBrief:Sweep:Folder` names; the first run's files stay untouched at that folder's root (see: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night). It prints its run's name first. It runs for days: the candidates and their benchmarks, then the point-in-time check, which rebuilds a sample of name-sessions with the night's own components over scratch stores under the machine's temporary folder and stops the run before stage 1 on any difference, then stage 1, the conditions' two steps and stage 2, each timed on its first chunk with the projection written to the log and the state file before it runs on, and stage 2 sampling each design for up to 4 hours. It looks after itself: on a weekday it pauses before 23:00 UTC for the night and goes on once the night has let its lock go, it waits whenever a drain holds its lock, a chunk that fails twice stops it with the report saying which and why, and started again with `--run <name>` it goes on from the first chunk it lacks, under the build that started it alone; a finished run is never written again, so a sweep over newer sessions is a new run. Its progress is the file `sweep.log` in the run's folder, and the newest report is served at `http://localhost:5152/sweep` with the earlier runs linked above it, each at `/sweep/<run>`. Start it from a Release build outside the main checkout with `EquityBrief__DataRoot` at the main checkout's `data`, so a rebuild of the checkout never stops it and the night it pauses for is the one the scheduler runs.
 
 ### Registering a candidate and versioning a ladder rule
 

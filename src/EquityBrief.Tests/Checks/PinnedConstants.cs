@@ -96,6 +96,14 @@ public class PinnedConstants
         const string CalibrationRow = "The calibrated bar";
         const string PowerRow = "Power stated at a look";
         const string CandidatesRow = "The three candidates' numbers";
+        const string SweepGridRow = "Sweep grid";
+        const string SweepStart = "Sweep starting point";
+        const string SweepVariantsRow = "Sweep variants";
+        const string SweepRun = "Sweep run";
+        const string SweepEdgeRow = "Sweep edge";
+        const string SweepConditionsRow = "Sweep conditions";
+        const string SweepPointInTimeRow = "Sweep point in time";
+        const string SweepSearchRow = "Sweep search";
 
         return
         [
@@ -264,6 +272,84 @@ public class PinnedConstants
             new("Weighted calls a quarters ask", "10", ProviderWeights.Fundamentals, "ProviderWeights.Fundamentals"),
             new("Weighted calls a quarters ask", "1", ProviderWeights.HistoricalPerTicker, "ProviderWeights.HistoricalPerTicker"),
             new("Weighted calls a quarters ask", "10", ProviderWeights.Fundamentals, "ProviderWeights.Fundamentals, what an ask storing nothing costs"),
+            // The sweep's rows, each figure in the order its row states it, the rows in the table's order.
+            new(SweepGridRow,"46,656", Core.Sweep.SweepAxes.Designs(selectionOnly: false).Count, "the designs SweepAxes holds"),
+            new(SweepGridRow,"54,432", Core.Sweep.SweepAxes.AllCombinations, "SweepAxes.AllCombinations"),
+            new(SweepGridRow,"7,776", Core.Sweep.SweepAxes.AllCombinations - Core.Sweep.SweepAxes.Designs(selectionOnly: false).Count, "the combinations SweepAxes leaves out"),
+            new(SweepGridRow,"19,683", Core.Sweep.SweepGrid.Coarse.Variations, "SweepGrid.Coarse.Variations"),
+            new(SweepGridRow,"300", Core.Sweep.SweepMeasures.TradeFloor, "SweepMeasures.TradeFloor"),
+            new(SweepGridRow,"6", Core.Sweep.SweepMeasures.YearsBeating, "SweepMeasures.YearsBeating"),
+            new(SweepGridRow,"8", Core.Sweep.SweepFigures.Years, "SweepFigures.Years"),
+            new(SweepGridRow,"100", Worker.Sweep.SweepStages.ViableForARank, "SweepStages.ViableForARank"),
+            new(SweepGridRow,"5", Worker.Sweep.SweepSearch.Carried, "SweepSearch.Carried"),
+            new(SweepGridRow,"2,016,000", Core.Sweep.SweepGrid.Fine.Variations, "SweepGrid.Fine.Variations"),
+            new(SweepStart, "0.05", (decimal)Worker.Sweep.SweepSearch.PlateauMargin, "SweepSearch.PlateauMargin"),
+            new(SweepStart, "0.05", (decimal)Worker.Sweep.SweepSearch.PlateauMargin, "SweepSearch.PlateauMargin, across the designs"),
+            new(SweepStart, "6", Core.Sweep.SweepMeasures.YearsBeating, "SweepMeasures.YearsBeating"),
+            new(SweepStart, "8", Core.Sweep.SweepFigures.Years, "SweepFigures.Years"),
+            new(SweepStart, "300", Core.Sweep.SweepMeasures.TradeFloor, "SweepMeasures.TradeFloor"),
+            new(SweepStart, "22", Core.Sweep.SweepMeasures.BlockFloor, "SweepMeasures.BlockFloor"),
+            new(SweepStart, "30", Core.Sweep.SweepFigures.WholeBlocks, "SweepFigures.WholeBlocks"),
+            new(SweepStart, "60", (decimal)Core.Sweep.SweepMeasures.ListingShare * 100, "SweepMeasures.ListingShare as a percentage"),
+            new(SweepStart, "3", Core.Sweep.SweepMeasures.RecentYears, "SweepMeasures.RecentYears"),
+            new(SweepStart, "0.03", (decimal)Worker.Sweep.SweepSearch.OtherMargins[0], "SweepSearch.OtherMargins, the first"),
+            new(SweepStart, "0.08", (decimal)Worker.Sweep.SweepSearch.OtherMargins[1], "SweepSearch.OtherMargins, the second"),
+            new(SweepStart, "3", (decimal)Worker.Sweep.SweepReport.MissingThreshold * 100, "SweepReport.MissingThreshold as a percentage"),
+            new(SweepVariantsRow, "23", Worker.Sweep.SweepPlateau.StructuralNeighbours(Core.Sweep.SweepDesign.Live).Count, "SweepPlateau.StructuralNeighbours of the live design"),
+            new(SweepVariantsRow, "5", Worker.Sweep.SweepPlateau.YearsEitherMayWin, "SweepPlateau.YearsEitherMayWin"),
+            new(SweepVariantsRow, "8", Core.Sweep.SweepFigures.Years, "SweepFigures.Years"),
+            new(SweepVariantsRow, "25", (decimal)Worker.Sweep.SweepPlateau.OutsideFloor * 100, "SweepPlateau.OutsideFloor as a percentage"),
+            new(SweepVariantsRow, "30", Worker.Sweep.SweepPlateau.TradesAYear, "SweepPlateau.TradesAYear"),
+            new(SweepVariantsRow, "6", Worker.Sweep.SweepPlateau.MostVariants, "SweepPlateau.MostVariants"),
+            new(SweepVariantsRow, "3", Worker.Sweep.SweepPlateau.StrongestReported, "SweepPlateau.StrongestReported"),
+            new(SweepVariantsRow, "3", Worker.Sweep.SweepPlateau.StrongestReported, "SweepPlateau.StrongestReported, the ones that follow"),
+            new(SweepRun, "20", Worker.Sweep.SweepRunner.FirstSessions, "SweepRunner.FirstSessions"),
+            new(SweepRun, "100", Worker.Sweep.SweepRunner.SessionsPerChunk, "SweepRunner.SessionsPerChunk"),
+            new(SweepRun, "50", Worker.Sweep.SweepRunner.DesignsPerChunk, "SweepRunner.DesignsPerChunk"),
+            new(SweepRun, "50", Worker.Sweep.SweepRunner.CrossingsPerChunk, "SweepRunner.CrossingsPerChunk"),
+            new(SweepRun, "23", Worker.Sweep.SweepRunner.PauseFrom.Hours, "SweepRunner.PauseFrom's hour"),
+            new(SweepRun, "00", Worker.Sweep.SweepRunner.PauseFrom.Minutes, "SweepRunner.PauseFrom's minute"),
+            new(SweepRun, "2", Worker.Sweep.SweepRunner.ClearPolls, "SweepRunner.ClearPolls"),
+            new(SweepRun, "60", (decimal)Worker.Sweep.SweepRunner.Poll.TotalSeconds, "SweepRunner.Poll in seconds"),
+            new(SweepRun, "7", (decimal)(Worker.Sweep.SweepRunner.GiveUpWaitingAt + (TimeSpan.FromHours(24) - Worker.Sweep.SweepRunner.PauseFrom)).TotalHours, "SweepRunner's wait for a night that never came, in hours from the window's opening"),
+            new(SweepRun, "5", (decimal)Worker.Sweep.SweepRunner.Longest.TotalDays, "SweepRunner.Longest in days"),
+            new(SweepRun, "5", (decimal)Worker.Sweep.SweepRunner.Longest.TotalDays, "SweepRunner.Longest in days, the sample's bound"),
+            new(SweepEdgeRow, "8", Core.Sweep.SweepAxes.Exits, "SweepAxes.Exits"),
+            new(SweepEdgeRow, "63", Core.Returns.ForwardReturnSeries.SetupSessionCap, "ForwardReturnSeries.SetupSessionCap"),
+            new(SweepConditionsRow, "7", Core.Sweep.SweepConditions.Count, "SweepConditions.Count"),
+            new(SweepConditionsRow, "31", Core.Sweep.SweepConditions.Settings.Count, "SweepConditions.Settings"),
+            new(SweepConditionsRow, "252", Core.Sweep.SweepConditions.HighSessions, "SweepConditions.HighSessions"),
+            new(SweepConditionsRow, "126", SwingReadings.ReturnLongSessions, "SwingReadings.ReturnLongSessions"),
+            new(SweepConditionsRow, "50", Core.Sweep.SweepConditions.VolumeSessions, "SweepConditions.VolumeSessions"),
+            new(SweepConditionsRow, "10", Worker.Sweep.SweepSearch.DesignsTried, "SweepSearch.DesignsTried"),
+            new(SweepConditionsRow, "6", Worker.Sweep.SweepSearch.YearsUpToKeep, "SweepSearch.YearsUpToKeep"),
+            new(SweepConditionsRow, "8", Core.Sweep.SweepFigures.Years, "SweepFigures.Years"),
+            new(SweepConditionsRow, "2", Worker.Sweep.SweepSearch.RecentYearsUpToKeep, "SweepSearch.RecentYearsUpToKeep"),
+            new(SweepConditionsRow, "3", Core.Sweep.SweepMeasures.RecentYears, "SweepMeasures.RecentYears"),
+            new(SweepConditionsRow, "300", Core.Sweep.SweepMeasures.TradeFloor, "SweepMeasures.TradeFloor"),
+            new(SweepConditionsRow, "6", Worker.Sweep.SweepSearch.DesignsKeeping, "SweepSearch.DesignsKeeping"),
+            new(SweepConditionsRow, "10", Worker.Sweep.SweepSearch.DesignsTried, "SweepSearch.DesignsTried, the ones a setting is kept on"),
+            new(SweepConditionsRow, "10", Worker.Sweep.SweepSearch.DesignsTried, "SweepSearch.DesignsTried, crossed in step (c)"),
+            new(SweepConditionsRow, "19", Worker.Sweep.SweepSearch.SelectionNeighbours(Core.Sweep.SweepDesign.Live.Selection).Count, "SweepSearch.SelectionNeighbours of the live selection"),
+            new(SweepConditionsRow, "5", Worker.Sweep.SweepSearch.Carried, "SweepSearch.Carried"),
+            new(SweepPointInTimeRow, "25", Worker.Sweep.SweepPointInTime.SamplesAYear, "SweepPointInTime.SamplesAYear"),
+            new(SweepPointInTimeRow, "13", Worker.Sweep.SweepPointInTime.CandidateSamplesAYear, "SweepPointInTime.CandidateSamplesAYear"),
+            new(SweepPointInTimeRow, "12", Worker.Sweep.SweepPointInTime.SamplesAYear - Worker.Sweep.SweepPointInTime.CandidateSamplesAYear, "SweepPointInTime's member-sessions a year"),
+            new(SweepPointInTimeRow, "200", Worker.Sweep.SweepPointInTime.YearOfBars, "SweepPointInTime.YearOfBars"),
+            new(SweepPointInTimeRow, "200", Worker.Sweep.SweepPointInTime.SamplesAYear * Core.Sweep.SweepFigures.Years, "SweepPointInTime's samples over the eight years"),
+            new(SweepPointInTimeRow, "8", Core.Sweep.SweepFigures.Years, "SweepFigures.Years"),
+            new(SweepSearchRow, "5", Worker.Sweep.SweepSearch.Carried, "SweepSearch.Carried"),
+            new(SweepSearchRow, "10,000", Worker.Sweep.SweepSearch.TimedPoints, "SweepSearch.TimedPoints"),
+            new(SweepSearchRow, "4", (decimal)Worker.Sweep.SweepSearch.SampleBudget.TotalHours, "SweepSearch.SampleBudget in hours"),
+            new(SweepSearchRow, "10,000,000", Worker.Sweep.SweepSearch.MostSampled, "SweepSearch.MostSampled"),
+            new(SweepSearchRow, "0.05", (decimal)Worker.Sweep.SweepSearch.PlateauMargin, "SweepSearch.PlateauMargin"),
+            new(SweepSearchRow, "100", Worker.Sweep.SweepSearch.Leaders, "SweepSearch.Leaders"),
+            new(SweepSearchRow, "6", Worker.Sweep.SweepSearch.MostDepth, "SweepSearch.MostDepth"),
+            new(SweepSearchRow, "2", Core.Sweep.SweepSpace.Beyond, "SweepSpace.Beyond"),
+            new(SweepSearchRow, "14", Core.Sweep.SweepGrid.Extended.Freshness[^1], "SweepGrid.Extended's longest freshness"),
+            new(SweepSearchRow, "19", Core.Sweep.SweepSpace.For([1, 2, 3, 4, 5, 6, 7]).Count, "the dials of a space holding every condition"),
+            new(SweepSearchRow, "3", Worker.Sweep.SweepSearch.SliceReach, "SweepSearch.SliceReach"),
+            new(SweepSearchRow, "5", (decimal)Worker.Sweep.SweepRunner.Longest.TotalDays, "SweepRunner.Longest in days"),
         ];
     }
 
