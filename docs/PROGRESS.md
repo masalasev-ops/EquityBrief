@@ -32213,3 +32213,46 @@ Operator:   nothing to run; the read surface on 5152 is started again from `main
 Carried:    each section's first-time pass rate and left-out rate over the ten reports after this merge, set beside the
             ten before it, reported to the operator; the section trial's reports read to the operator at its third
             report; the two cases' figures on both sides reported at the twentieth report after the ask changed.
+
+### 12.3 - correction: the test of a try past its deadline gives the night a deadline of zero, which applies as the night's cancellation source is made, where a deadline of one tick was applied by a timer a try could outrun on a loaded runner   2026-09-30
+Corrects:   `ATryPastItsDeadlineIsTriedAgainUnderADeadlineOfItsOwn`, the test the 12.3 correction trying a night again
+            from the step that stopped added, which failed twice on the hosted runners on 2026-09-30 over trees that
+            changed nothing it runs.
+Asked:      the operator, on 2026-09-30, word for word:
+            > Yes, fix the unreliable deadline test as its own small correction:
+            > ATryPastItsDeadlineIsTriedAgainUnderADeadlineOfItsOwn, changed to a deadline of
+            > zero so it applies at once. Test file only, no pin moves. Run the test fifty
+            > times in a loop on this machine before and after, and state both counts in the
+            > entry.
+Found:      the test hands the night a deadline of one tick and asserts that each of four tries stops on it. The night
+            makes its cancellation source with that deadline, and a source given any deadline but zero cancels from a
+            timer, so on a runner busy with the rest of the suite the timer can run after a try has passed every
+            cancellable step and closed the night, which then exits 0 where the test asserts 1. It failed so on
+            `main`'s run for 1a42b2d at 04:57 UTC on the macOS runner, and on PR 291's at 11:31 UTC on the Linux
+            runner, whose job passed when run again. A source given a deadline of zero is cancelled as it is made, so
+            no timer is left to race.
+Repaired:   the test gives the night a deadline of zero, and its comment says why. The night's code is unchanged: its
+            deadline is an hour, which a timer applies as intended.
+Measured:   the test run alone fifty times in a loop on this machine, one `dotnet test` each: before the change 50
+            passed and 0 failed; after it 50 passed and 0 failed. Run alone the race did not show on this machine,
+            where nothing else loads the thread pool; it showed only on the hosted runners under the whole suite, so
+            the loop shows the change keeps the test green and not that it removes the race, which the zero deadline
+            does by construction.
+Changed:    `src/EquityBrief.Tests/Checks/NightlyRun.Tries.cs` alone.
+Decisions:  none.
+Tests:      123T, from 1587: none added or removed.
+Claims:     123C, from 737: none moves.
+Pins:       none moves; no source in the three pin lists is touched, the change being in the test project.
+Mutated:    the rule, stated before the run: the property the test guards, each try stopping on a deadline of its own,
+            broken by the night's cancellation source made with no deadline, filtered to the test.
+            Predicted: red, the night running to its close and exiting 0 where the test asserts 1.
+            Results: FILLED IN AFTER THE SWEEP.
+Held:       123HELD
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` 123VP
+            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Operator:   nothing to run.
+Carried:    nothing.
