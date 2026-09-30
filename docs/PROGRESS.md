@@ -32334,7 +32334,7 @@ Ruled:      - The addendum's pull request stands as built where it differs from 
             removal by the one after it.
 Changed:    this entry alone.
 Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry and the correction entry after it,
-            123SHA, whose figures that entry records.
+            f97f6c5, whose figures that entry records.
 Carried:    the comparison command and the section trials region's removal, as the next correction at 12.6.
 
 ### 12.6 - correction: report generation asks DeepSeek alone, the trial ships naming no profile and the review names DeepSeek, the reader and the figure instruction are tested apart, and a document's kind is owed to the news labeller, where the trial shipped naming Claude, the review shipped off and one test read both instructions   2026-09-30
@@ -32371,11 +32371,11 @@ Decisions:  new: "Report generation asks DeepSeek alone, and no research setting
             asks a second profile for named sections beside a report, and ships naming none" and "A review asks a
             section's model to check its own draft against the section's rules, beside a stated number of
             reports"; the last two supersede the two they are named for above.
-Tests:      123T, from 1587: `EveryRequestNamesItsReader` and `EveryRequestSaysWhatToDoWithAFigureNoFactHolds` in
+Tests:      1589, from 1587: `EveryRequestNamesItsReader` and `EveryRequestSaysWhatToDoWithAFigureNoFactHolds` in
             place of the one test that read both, and `NoResearchSettingAsShippedNamesAClaudeProfile`, which
             states in advance twelve words, eleven naming `deepseek` and the trial's naming none; the review's test
             renamed for reading the review as shipped.
-Claims:     123C, from 737: the rows moved were edited, and none was added or removed.
+Claims:     737, from 737: the rows moved were edited, and none was added or removed.
 Pins:       none moves; no source this correction edits is in the three pin lists.
 Mutated:    the rule, stated before the run: each property this correction adds reversed alone, filtered to the tests
             it adds and changes.
@@ -32387,13 +32387,20 @@ Mutated:    the rule, stated before the run: each property this correction adds 
                recording a changed prompt no longer matches.
             H4 the figure instruction taken out: red in the figure test and not in the reader test, and in the
                review test for that reason.
-            Results: FILLED IN AFTER THE SWEEP.
-Held:       123HELD
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            Results: one run each in a detached worktree at f97f6c5, this entry's tree, filtered to the four tests,
+            each edit made there and reverted, and the tree read clean after. H1 turned the guard test red alone.
+            H2 turned the review test red, and the guard test as well, which states in advance the eleven words
+            naming DeepSeek and the trial's alone naming none, so a review naming none reads as ten and two. H3
+            turned the reader test and the review test red and left the figure test green. H4 turned the figure
+            test and the review test red and left the reader test green.
+Held:       red in every test predicted, and in one more for H2, the guard test, for the reason above.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1589 of 1589 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` 123VP
-            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 737 claims, 737 PASS, 0 FAIL, 748 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1589 of 1589 tests.
+            Both gates ran over the tree carrying this entry, f97f6c5, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Operator:   nothing to run. The drain and the night build from `main`, so tonight's report pass reads the settings
             this merges: the review on DeepSeek and no trial.
