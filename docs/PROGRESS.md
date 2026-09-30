@@ -31538,9 +31538,9 @@ Found:      measured read-only over the operator's store on 2026-09-30:
               and sets depth by `output_config.effort`; correction E captures Sonnet 5.5's own answer to one.
 Changed:    this entry alone.
 Tests:      none added here.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1552 of 1552 tests ran
             with none failed, migrations 0 to 49 with none pending, schema version 49, exit 0, against
-            `data-ci` and never `data`, over the tree carrying this entry, 123SHA, in a worktree beside the
+            `data-ci` and never `data`, over the tree carrying this entry, cd1cc76, in a worktree beside the
             repository; `tools/verify-phase.ps1` not run, this entry changing no code.
 Carried:    corrections B to F at 12.6 in that order, C merged only on the operator's go; the count of two cases
             drafts carrying a figure on both sides over the twenty reports after B, reported to the operator beside
