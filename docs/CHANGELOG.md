@@ -9496,3 +9496,67 @@ Now:
 > **What a pass costs.** Over the fixture's KEYS a pass wrote seven of the eight sections it could write, three on the local model and four through the spend cap for $0.0337, a sum that includes the cause of each large move asked twice and answered twice with reasoning and no text, and the short version asked again after the checker refused its first draft, since every draft and every empty answer is billed, ... The local model's segment commentary, told the one figure its first draft was refused for, wrote a second draft without it and passed, and the short version, told the two dates its first draft named that the facts file does not hold, wrote a second draft without them and passed. ...
 > ... Over the fixture's KEYS a pass with every section paid cost $0.0387, ...
 Why: every recording is keyed on the whole request, so the refined prompt made each one again, and the paragraph states what the new recordings read.
+
+### 2026-09-30 - RUNBOOK.md - report generation on DeepSeek alone, the trial naming no profile and the review naming DeepSeek
+Authorised by: Report generation asks DeepSeek alone, and no research setting names a Claude profile
+Was:
+> | the profile a trial asks beside a report | `EquityBrief:Models:Research:Trial:Use` | `claude-sonnet-no-thinking` |
+> | the profile a review asks to check a section's own draft, none being off | `EquityBrief:Models:Research:Review:Use` | none |
+> **Switching a job's model is changing its one word.** Set `EquityBrief:Models:Research:Use` to `deepseek`, `claude-haiku` or `claude-sonnet`, and the next pass the drain starts is written by that profile's model; a pass already running finishes on the model it started with. ...
+> ... It stops by itself once it has run over `Reports` reports since `From` for its profile. As shipped it asks Claude Sonnet 5.5 with thinking off for the short version and the two cases over three reports, at most four calls a report (see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it). ...
+> **A review asks a section's model to check its own draft, and ships off.** ... It is drawn in the run page's section trials, named as the model reviewing its draft, beside the pass's own drafts and the trial's. To turn it on, set its `Use` to `deepseek`, the model that writes those sections as shipped; at most four calls a report (see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off).
+Now:
+> | the profile a trial asks beside a report, none being off | `EquityBrief:Models:Research:Trial:Use` | none |
+> | the profile a review asks to check a section's own draft, none being off | `EquityBrief:Models:Research:Review:Use` | `deepseek` |
+> **Switching a job's model is changing its one word.** Set `EquityBrief:Models:Research:Use` to a profile, ... Report generation asks DeepSeek alone, on the operator's ruling of 2026-09-30, so no research setting names `claude-haiku`, `claude-sonnet` or `claude-sonnet-no-thinking` and the suite refuses a shipped file that does, until a decision replaces that one (see: Report generation asks DeepSeek alone, and no research setting names a Claude profile).
+> ... It ships naming no profile, so no report is tried: it first shipped asking Claude Sonnet 5.5 for the short version and the two cases, and the operator ruled before any report was tried that report generation asks DeepSeek alone (see: A trial asks a second profile for named sections beside a report, and ships naming none). ...
+> **A review asks a section's model to check its own draft, over the next three reports.** ... It ships naming `deepseek`, the model that writes those sections, on the operator's word of 2026-09-30, so the three reports from that day that write either section are reviewed and it then stops, at most four DeepSeek calls a report; to end it early, blank its `Use` (see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports).
+Why: the operator ruled that report generation asks DeepSeek alone and turned the review on, and the runbook states each setting as the shipped file holds it.
+
+### 2026-09-30 - ARCHITECTURE.html - report generation on DeepSeek alone, the trial naming no profile and the review naming DeepSeek
+Authorised by: Report generation asks DeepSeek alone, and no research setting names a Claude profile
+Was:
+> ... A trial asks a second profile for named sections after a report over a stated number of reports, and records its drafts beside the report on the run log and never in it. The report footer always says which model wrote what, ... (see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it) ...
+> ... and stops by itself once it has run over the reports it names (see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it). A review is the same component ... and it ships naming no profile (see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off)
+> ... A review, which ships off, can ask the model that wrote the two cases or the risks to check its own draft ... (see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off)
+> <tr><td>Section trials</td><td>... (see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it) (see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off)</td></tr>
+> <tr><td>Section trial</td><td>... (see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it)</td><td>... at most four Claude calls a report as shipped, ... The count is configuration, shipped as three, and a trial past it asks nothing</td>...
+> <tr><td>Section review</td><td>... it ships naming no profile, ... (see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off)</td>...
+Now:
+> ... records its drafts beside the report on the run log and never in it; it ships naming none. Report generation asks DeepSeek alone, on the operator's ruling of 2026-09-30, so no research setting names a Claude profile. ... (see: A trial asks a second profile for named sections beside a report, and ships naming none) (see: Report generation asks DeepSeek alone, and no research setting names a Claude profile) ...
+> ... and stops by itself once it has run over the reports it names; a trial ships naming no profile (see: A trial asks a second profile for named sections beside a report, and ships naming none). A review ... and it ships naming DeepSeek (see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports)
+> ... A review, which ships naming DeepSeek over three reports, asks the model that wrote the two cases or the risks to check its own draft ... (see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports)
+> <tr><td>Section trials</td><td>... (see: A trial asks a second profile for named sections beside a report, and ships naming none) (see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports)</td></tr>
+> <tr><td>Section trial</td><td>... (see: A trial asks a second profile for named sections beside a report, and ships naming none)</td><td>... at most four calls a report, ... The count is configuration, shipped as three, and a trial past it, or naming no profile as it ships, asks nothing</td>...
+> <tr><td>Section review</td><td>... it ships naming DeepSeek, ... (see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports)</td>...
+Why: the operator ruled that report generation asks DeepSeek alone and turned the review on, and the two decisions naming what the trial and the review shipped naming were superseded.
+
+### 2026-09-30 - SCHEMA.md - the trial's and the review's rows cite their superseding decisions
+Authorised by: Report generation asks DeepSeek alone, and no research setting names a Claude profile
+Was:
+> ... which is what stops it (see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it).
+> ... A review counts its own reports by its own stage, apart from a trial's (see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off).
+Now:
+> ... which is what stops it (see: A trial asks a second profile for named sections beside a report, and ships naming none).
+> ... A review counts its own reports by its own stage, apart from a trial's (see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports).
+Why: a citation in a spec resolves to a decision that stands.
+
+### 2026-09-30 - BUILD_PLAN.md - 12.6's trial ships naming none, its reports' obligation discharged, the review on and the labeller's kind owed
+Authorised by: Report generation asks DeepSeek alone, and no research setting names a Claude profile
+Was:
+> ... and a trial asks a second profile for named sections beside a stated number of reports, which the run page's section trials region draws beside the pass's own drafts (owes: The section trial's reports read to the operator). ... and a review of a section's own draft, off as shipped, is drawn beside the trial's.
+> | **The section trial's reports read to the operator** | 12.6 | operating | 3 reports the section trial ran beside, which is the count it stops at as shipped, read on the run page's section trials region, which 12.6 builds. ... (see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it) |
+> (no row for a document's kind read from the news labeller's label)
+Now:
+> ... which the run page's section trials region draws beside the pass's own drafts; on the operator's ruling of 2026-09-30 that report generation asks DeepSeek alone, the trial ships naming no profile, so the three reports it was to read to the operator are never written (owes: The section trial's reports read to the operator). ... and a review of a section's own draft, shipped naming DeepSeek over three reports, is drawn beside the trial's. A document's kind is read from its address until the news labeller lands, and from the labeller's label where it has labelled the article once it does (owes: A document's kind read from the news labeller's label).
+> | **The section trial's reports read to the operator** | 12.6 | 12.6, discharged | discharged before its trigger by the operator's ruling of 2026-09-30 that report generation asks DeepSeek alone: ... |
+> | **A document's kind read from the news labeller's label** | 12.6 | operating | 1 article the news labeller has labelled, read on the name page's dates and sources, which 12.6 builds. ... |
+Why: the operator ruled report generation onto DeepSeek alone, turned the review on, and asked that the labeller's kind be owed and tied to the labeller's pull request.
+
+### 2026-09-30 - .claude/rules/checks.md - fixture-expectations reaches the review as shipped on and no Claude profile in a research setting
+Authorised by: Report generation asks DeepSeek alone, and no research setting names a Claude profile
+Was:
+> ... and a review is off as shipped and, named, is asked over the fixture's pass with the pass's own draft handed back, writes no section row, stands its calls under the review's round and is drawn beside the pass's drafts as the model reviewing its draft |
+Now:
+> ... and a review ships naming DeepSeek over three reports from 2026-09-30 and is asked over the fixture's pass ... left out of the pass's price, and is drawn beside the pass's drafts as the model reviewing its draft; and no research setting as shipped, the job's word, the nine sections' words, the trial's and the review's, names a profile answered on Claude's wire format, eleven naming DeepSeek and the trial's none |
+Why: the check holds what the correction putting report generation on DeepSeek alone builds.

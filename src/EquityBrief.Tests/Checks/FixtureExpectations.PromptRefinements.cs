@@ -16,10 +16,10 @@ namespace EquityBrief.Tests.Checks;
 // fixture-expectations, the research prompt's refinements: over every request the fixture's pass asks, the ask said
 // again after everything handed in, the reader named, the alternative to a figure no fact holds, each document marked
 // by its kind, and a weak and a strong point given for the two cases and the risks with no digit in either; and the
-// review, off as shipped, asking the section's model to check its own draft when a profile is named for it, written
+// review, shipped naming DeepSeek over three reports, asking the section's model to check its own draft, written
 // beside the report and drawn beside the trial.
 // see: The research prompt repeats each section's ask after the documents, names its reader and marks each document by kind
-// see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
+// see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports
 public partial class FixtureExpectations
 {
     // Every request the fixture's pass asks, the paid lane's and the local model's. A request no recording answers is
@@ -123,21 +123,32 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task EveryRequestNamesItsReaderAndWhatToDoWithAFigureNoFactHolds()
+    public async Task EveryRequestNamesItsReader()
     {
         const string Reader = "The reader is deciding whether to hold a swing trade in this stock over the next weeks to few months, so choose what could move the stock before and at its next report and leave out what would not.";
-        const string Alternative = "Where a document gives a figure that is not listed under Facts, say what it shows without the number, such as that orders rose sharply or that most of the growth came from a single segment, and never write it as a figure or spell the number out; describe a change no listed figure sizes the same way, against its base.";
 
         var asked = await FixturePromptsAsync();
 
         Assert.All(asked, request => Assert.Contains(Reader, request.System, StringComparison.Ordinal));
-        Assert.All(asked, request => Assert.Contains(Alternative, request.System, StringComparison.Ordinal));
 
-        // The risks' own system, which opens on the answer's form, carries both.
-        Assert.Contains(asked, request => RiskFields.IsRisks(request.Section) && request.System.StartsWith(SectionPrompt.AsFields, StringComparison.Ordinal));
+        // The risks' own system, which opens on the answer's form, carries it.
+        Assert.Contains(asked, request => RiskFields.IsRisks(request.Section) && request.System.StartsWith(SectionPrompt.AsFields, StringComparison.Ordinal) && request.System.Contains(Reader, StringComparison.Ordinal));
 
         // And the reader is told to describe, never to prescribe.
         Assert.All(asked, request => Assert.Contains("never prescribe", request.System, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task EveryRequestSaysWhatToDoWithAFigureNoFactHolds()
+    {
+        const string Alternative = "Where a document gives a figure that is not listed under Facts, say what it shows without the number, such as that orders rose sharply or that most of the growth came from a single segment, and never write it as a figure or spell the number out; describe a change no listed figure sizes the same way, against its base.";
+
+        var asked = await FixturePromptsAsync();
+
+        Assert.All(asked, request => Assert.Contains(Alternative, request.System, StringComparison.Ordinal));
+
+        // The risks' own system, which opens on the answer's form, carries it.
+        Assert.Contains(asked, request => RiskFields.IsRisks(request.Section) && request.System.StartsWith(SectionPrompt.AsFields, StringComparison.Ordinal) && request.System.Contains(Alternative, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -189,26 +200,20 @@ public partial class FixtureExpectations
             && (request.Prompt.Contains(SectionPrompt.Examples.TwoCases, StringComparison.Ordinal) || request.Prompt.Contains(SectionPrompt.Examples.Risks, StringComparison.Ordinal)));
     }
 
-    static IConfiguration ReviewOn() =>
+    static IConfiguration Shipped() =>
         new ConfigurationBuilder()
             .AddJsonFile(ResearchFeeds.ShippedConfiguration)
-            .AddInMemoryCollection(
-            [
-                new KeyValuePair<string, string?>(ModelProfiles.KeyPath("Research"), ResearchFeeds.NotAKey),
-                new KeyValuePair<string, string?>(ModelProfiles.JobField(ModelProfiles.ResearchJob, ResearchLane.ReviewField) + ":" + ModelProfiles.UseField, "deepseek"),
-                new KeyValuePair<string, string?>(ModelProfiles.JobField(ModelProfiles.ResearchJob, ResearchLane.ReviewField) + ":From", "2026-09-08"),
-            ])
+            .AddInMemoryCollection([new KeyValuePair<string, string?>(ModelProfiles.KeyPath("Research"), ResearchFeeds.NotAKey)])
             .Build();
 
     [Fact]
-    public async Task AReviewIsOffAsShippedAndWhenNamedChecksItsOwnDraftBesideTheReportAndIsDrawnBesideTheTrial()
+    public async Task AReviewShipsOnDeepSeekForThreeReportsChecksItsOwnDraftBesideTheReportAndIsDrawnBesideTheTrial()
     {
-        // As shipped the review names no profile, so no pass asks for one.
-        Assert.Null(ResearchLane.Review(new ConfigurationBuilder().AddJsonFile(ResearchFeeds.ShippedConfiguration).Build()));
+        // As shipped the review names DeepSeek, the model that writes both sections, over three reports from the day the
+        // operator turned it on.
+        var review = ResearchLane.Review(Shipped())!;
 
-        var review = ResearchLane.Review(ReviewOn())!;
-
-        Assert.Equal(("deepseek", 3), (review.Profile.Profile, review.Reports));
+        Assert.Equal(("deepseek", 3, new DateOnly(2026, 9, 30)), (review.Profile.Profile, review.Reports, review.From));
         Assert.Equal([ClaimRules.TwoCasesSection, RiskFields.Section], review.Sections);
 
         using var store = await FixtureReplay.ResearchedAsync();

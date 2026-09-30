@@ -24,12 +24,12 @@ public sealed record TrialOutcome(string Section, string Outcome, int Rounds, de
 // and each section's rounds, verdicts and prices written to the run log under the pass's run, a row a section. No
 // research section row is written, so the page draws the pass's report whatever the trial wrote, and the trial stops
 // by itself once it has run over the reports it names.
-// see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
+// see: A trial asks a second profile for named sections beside a report, and ships naming none
 //
 // A review is the same pass over the same request with the pass's own first draft handed back and the checks each of
 // its sentences is read against, asked of the profile the review names, which may be the one that wrote the draft. It
 // is recorded under a stage and a round of its own, counts its own reports and is drawn beside the trial's.
-// see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
+// see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports
 public sealed class SectionTrial(SpendCap cap, ResearchTrial trial, IClock clock, string databaseFile, bool review = false) : IComponent
 {
     public static ComponentAccess Access => new(

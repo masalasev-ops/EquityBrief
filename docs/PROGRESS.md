@@ -32260,3 +32260,150 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             operator's store under `data/` was not touched by either.
 Operator:   nothing to run.
 Carried:    nothing.
+
+### 12.6 ruling - the addendum's pull request reviewed, report generation on DeepSeek alone, and the comparisons written as files by a command rather than drawn on a page   2026-09-30
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-09-30, after the addendum's pull request merged and where it differs from the
+            addendum was listed, word for word:
+            > PR G's differences reviewed: keep them, and do the three offered.
+            >
+            > - Keep the item 3 wording ("say what it shows without the number ... never write
+            >   it as a figure or spell the number out") and the separate risks example. Record
+            >   both in the addendum's entry as the operator's approval.
+            > - Turn the review on now (EquityBrief:Models:Research:Review:Use = deepseek), so
+            >   it runs on the same three reports as the Claude trial and the run page shows
+            >   DeepSeek, DeepSeek reviewed and Claude side by side for each. It stops by
+            >   itself after three, as built.
+            > - Split the reader and figure-instruction test into two, each broken on its own
+            >   and seen red.
+            > - Add the obligation: when the news labeller's pull request lands, a document's
+            >   kind is read from the labeller's label where one exists, falling back to its
+            >   web address, with a test. Tie it to that pull request in BUILD_PLAN.
+            then, word for word:
+            > maybe generate the comparison reports in the SampleReports folder instead of showing on any live page
+            and, asked three questions, answered them, word for word:
+            > How should the comparison files get into sampleReports? = A command I run (Recommended): A worker
+            > verb reads the store read-only after each trial report and writes
+            > sampleReports/<ticker>_comparison_<day>.html. Nothing is added to the night or the drain, and
+            > nothing on a live page.
+            > Should the run page's section trials region (built in F, extended in G) be removed, so the drafts
+            > show on no live page? = Remove the region (Recommended): The run page keeps 'How each report did'
+            > and the rates; the side-by-side drafts live only in the sampleReports files.
+            > Which comparisons go in the files? = Drafts side by side, G's before/after rates, Both-sides count:
+            > Per report: each trial and review section as DeepSeek, DeepSeek reviewed and Claude, with verdict,
+            > rounds and cost. / Each section's first-time and left-out rates over the ten reports before G and
+            > the ten after, as one file when the tenth report lands. / The two cases' figure-on-both-sides count
+            > at the 20th report after B, beside the 5 of 8 baseline.
+            and then, word for word, across four messages:
+            > HOw many reports are you generating with claude ?
+            > Can you optimize the claude calls. I woke up to a balance of only 86cents. I dont want a repeat of that
+            > optimize for report generation i mean
+            > this is wayy to costly with claude. Actually you can stop making claude calls for report generation.
+            > Just use deepseek for them
+Measured:   read-only on the operator's store and the session's recording logs, before the last message. Report
+            generation had asked Claude for one report, MDT's of 2026-09-29, 12 calls for $0.7564: 286,932 input
+            tokens, none read from the provider's cache, at $2.00 a million, $0.5739, and 18,253 output tokens at
+            $10.00, $0.1825. The DeepSeek report on MDT written the same day cost $0.0490. The Claude spend of
+            2026-09-30 was the fixture's re-recordings for the research template's corrections, about $1.51: B's
+            3 calls for $0.2634, C's 2 for $0.1662, and the addendum's 9 for $0.6275 and 7 for $0.4541. The one
+            Claude call report generation still made was the section trial, shipped naming
+            claude-sonnet-no-thinking over three reports from 2026-09-30, none of which had been written.
+Ruled:      - The addendum's pull request stands as built where it differs from the addendum, on the operator's
+              approval recorded here, since the addendum's own entry above is appended to and never edited: the
+              third refinement's wording, that what a figure only a document gives shows is said without the
+              number, never written as a figure or spelled out, in place of the addendum's "stated in words";
+              and the risks' own weak and strong example beside the two cases', in place of one example for both.
+            - Report generation asks DeepSeek alone. No research setting names a Claude profile: the trial ships
+              naming none, and the review names DeepSeek. The Claude profiles and the Claude wire format stay in
+              the settings and the code for a later ruling. The section trial's reports owed to the operator are
+              discharged, since no trial report will be written. The review runs over the next three reports
+              that write the two cases or the risks, the same reports the Claude trial would have run beside,
+              with no Claude side beside it.
+            - The reader and the figure instruction are tested apart, each broken alone and seen red.
+            - A document's kind is owed to the news labeller: once its pull request lands, the kind is read from
+              the labeller's label where the labeller has labelled the article and from the address where it has
+              not, with a test, tied to that pull request in BUILD_PLAN.
+            - The comparisons are written as files to the gitignored `sampleReports/` folder by a worker command
+              the operator's session runs, reading the store read-only, and drawn on no page: each report a trial
+              or a review ran beside, its sections side by side; each section's first-time and left-out rates
+              over the ten reports before the addendum's merge and the ten after, once the tenth has been
+              written; and the two cases' figures on both sides over the twenty reports after the ask changed,
+              beside the 5 of 8 measured before it. The run page's section trials region is removed; its report
+              region and each section's rates stay.
+            The first four are built by the correction after this entry; the comparison command and the region's
+            removal by the one after it.
+Changed:    this entry alone.
+Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry and the correction entry after it,
+            f97f6c5, whose figures that entry records.
+Carried:    the comparison command and the section trials region's removal, as the next correction at 12.6.
+
+### 12.6 - correction: report generation asks DeepSeek alone, the trial ships naming no profile and the review names DeepSeek, the reader and the figure instruction are tested apart, and a document's kind is owed to the news labeller, where the trial shipped naming Claude, the review shipped off and one test read both instructions   2026-09-30
+Corrects:   the shipped research settings and the tests over the refined prompt, on the operator's ruling in the entry
+            above.
+Repaired:   - The settings. `EquityBrief:Models:Research:Trial:Use` is blank, so no report is tried, and
+              `EquityBrief:Models:Research:Review:Use` is `deepseek`, so the three reports from 2026-09-30 that
+              write the two cases or the risks are reviewed and the review then stops. Every other research word
+              already named `deepseek`.
+            - The decisions. "A trial asks a second profile for named sections after a report and records its
+              drafts beside the report, never in it" and "A review asks a section's model to check its own draft
+              against the section's rules, behind a setting that ships off" each stated the profile it shipped
+              naming, and each is superseded by one naming the profile it ships naming now, moved to Previously
+              decided with its reasoning; every citation in code and in the specs names the new one.
+            - A guard. The suite reads every research word the shipped settings name, the job's, each section's,
+              the trial's and the review's, and refuses one whose profile is answered on Claude's wire format,
+              read off the profile's format rather than its name, so a Claude profile renamed is found too.
+            - The tests. The reader and the figure instruction each have a test of their own over every request
+              the fixture's pass asks; the review's test reads the review as shipped.
+            - The obligation. A document's kind read from the news labeller's label is an operating row created at
+              12.6, cited by 12.6's text, read on the name page's dates and sources and discharged by the
+              labeller's pull request. The section trial's reports owed to the operator is discharged.
+Changed:    `src/EquityBrief.Worker/appsettings.json`; the citations in `ReadApi`, `TrialCalls`, `ReviewBrief`,
+            `MarkRenderer`, the research verb, `ResearchLane` and `SectionTrial`; `FixtureExpectations`' prompt
+            refinements and section profiles and `ReadSurface`'s reports tests, and the operating rows the
+            obligation check states for phase 12; DECISIONS' three entries and two superseded; section 12's key
+            paragraph, the catalogue's section trial row, the prompt paragraph, section 15.10's section trials row
+            and section 17's section trial and section review rows in `ARCHITECTURE.html`; RUNBOOK's trial and
+            review rows and paragraphs and the paragraph on switching a job's model; SCHEMA's trial and review
+            paragraphs; 12.6's text and two rows of the carried obligations in `BUILD_PLAN.md`; the
+            fixture-expectations row of `.claude/rules/checks.md`; the reader's guide's paragraph on which
+            sections keep failing; and the prior text of each spec edit in `CHANGELOG.md`.
+Decisions:  new: "Report generation asks DeepSeek alone, and no research setting names a Claude profile", "A trial
+            asks a second profile for named sections beside a report, and ships naming none" and "A review asks a
+            section's model to check its own draft against the section's rules, beside a stated number of
+            reports"; the last two supersede the two they are named for above.
+Tests:      1589, from 1587: `EveryRequestNamesItsReader` and `EveryRequestSaysWhatToDoWithAFigureNoFactHolds` in
+            place of the one test that read both, and `NoResearchSettingAsShippedNamesAClaudeProfile`, which
+            states in advance twelve words, eleven naming `deepseek` and the trial's naming none; the review's test
+            renamed for reading the review as shipped.
+Claims:     737, from 737: the rows moved were edited, and none was added or removed.
+Pins:       none moves; no source this correction edits is in the three pin lists.
+Mutated:    the rule, stated before the run: each property this correction adds reversed alone, filtered to the tests
+            it adds and changes.
+            Predicted:
+            H1 the trial shipped naming claude-sonnet-no-thinking again: red in the guard test alone.
+            H2 the review shipped naming no profile: red in the review test alone.
+            H3 the reader's sentence taken out of the instructions: red in the reader test and not in the figure
+               test, and in the review test, which replays the fixture's recorded pass and so misses every
+               recording a changed prompt no longer matches.
+            H4 the figure instruction taken out: red in the figure test and not in the reader test, and in the
+               review test for that reason.
+            Results: one run each in a detached worktree at f97f6c5, this entry's tree, filtered to the four tests,
+            each edit made there and reverted, and the tree read clean after. H1 turned the guard test red alone.
+            H2 turned the review test red, and the guard test as well, which states in advance the eleven words
+            naming DeepSeek and the trial's alone naming none, so a review naming none reads as ten and two. H3
+            turned the reader test and the review test red and left the figure test green. H4 turned the figure
+            test and the review test red and left the reader test green.
+Held:       red in every test predicted, and in one more for H2, the guard test, for the reason above.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1589 of 1589 tests ran
+            with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 737 claims, 737 PASS, 0 FAIL, 748 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1589 of 1589 tests.
+            Both gates ran over the tree carrying this entry, f97f6c5, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Operator:   nothing to run. The drain and the night build from `main`, so tonight's report pass reads the settings
+            this merges: the review on DeepSeek and no trial.
+Carried:    the comparison command and the section trials region's removal, as the next correction at 12.6; the two
+            cases' figures on both sides and each section's rates before and after the addendum, reported through
+            that command's files.

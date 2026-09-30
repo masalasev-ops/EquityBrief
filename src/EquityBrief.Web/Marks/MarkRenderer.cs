@@ -444,7 +444,7 @@ public sealed record TrialSide(string Model, string Outcome, int Rounds, decimal
 
 // One section a trial or a review asked for beside a report: the pass's own side, and the trial's and the review's
 // where each asked for it, in that order.
-// see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
+// see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports
 public sealed record TrialRow(string RunId, string Ticker, DateOnly Day, string Section, TrialSide Pass, IReadOnlyList<TrialSide> Asked)
 {
     public TrialSide? Trial => Asked.FirstOrDefault(side => side.Side == TrialSide.OfTrial);
@@ -6912,7 +6912,7 @@ public sealed class MarkRenderer : IComponent
     // pass's model and the trial's, each with how it came out, its rounds and what they cost, and the two models'
     // drafts side by side folded beneath it, in two columns on a wide screen and one on a narrow one. Nothing is
     // drawn while no trial has written a row.
-    // see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
+    // see: A trial asks a second profile for named sections beside a report, and ships naming none
     public string TrialsRegion(IReadOnlyList<TrialRow> trials, string nameRoute)
     {
         if (trials.Count == 0)

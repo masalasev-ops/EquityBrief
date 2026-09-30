@@ -3,7 +3,7 @@ namespace EquityBrief.Core.Research;
 // What a review is told after the section's own ask: the draft the pass wrote from the same facts and documents, and
 // the checks each of its sentences is read against, and to answer with the whole section revised in the form the
 // section asks for. The revision is read by the claim checker's own rules as any draft is.
-// see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
+// see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports
 public static class ReviewBrief
 {
     public const string Checks =

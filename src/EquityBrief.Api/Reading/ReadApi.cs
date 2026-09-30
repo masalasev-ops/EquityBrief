@@ -672,8 +672,8 @@ public sealed class ReadApi : IComponent
     ";
 
     // A trial's calls and a review's are left out, being spend beside a report rather than on it.
-    // see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
-    // see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
+    // see: A trial asks a second profile for named sections beside a report, and ships naming none
+    // see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports
     const string PaidCallSpends = @"
         SELECT run_id, spend
         FROM run_log
