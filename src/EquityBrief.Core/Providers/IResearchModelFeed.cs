@@ -428,7 +428,7 @@ public sealed record ResearchModelSettings
     public static IReadOnlyList<string> OwnedFields(string format) =>
         string.Equals(format, AnthropicFormat, StringComparison.Ordinal)
             ? ["model", "messages", "system", "max_tokens", "stream", AnthropicMessagesFeed.OutputConfigField]
-            : ["model", "messages", "max_tokens", "stream", OpenAiCompatibleResearchFeed.ResponseFormatField];
+            : ["model", "messages", "max_tokens", "stream", OpenAiCompatibleResearchFeed.StreamOptionsField, OpenAiCompatibleResearchFeed.ResponseFormatField];
 
     public ResearchModelSettings(
         string job,

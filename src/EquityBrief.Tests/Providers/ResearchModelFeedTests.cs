@@ -255,11 +255,13 @@ public class ResearchModelFeedTests
         using var plain = JsonDocument.Parse(OpenAiCompatibleResearchFeed.Body(Recorded(Pinned()), Pinned()));
         using var asked = JsonDocument.Parse(OpenAiCompatibleResearchFeed.Body(Recorded(Pinned(ThinkingOff)), Pinned(ThinkingOff)));
 
-        // With no options, the four fields the feed owns and nothing else.
-        Assert.Equal(["model", "messages", "max_tokens", "stream"], plain.RootElement.EnumerateObject().Select(field => field.Name).ToArray());
+        // With no options, the five fields the feed owns and nothing else, the answer asked for
+        // streamed with its counts at the end.
+        Assert.Equal(["model", "messages", "max_tokens", "stream", "stream_options"], plain.RootElement.EnumerateObject().Select(field => field.Name).ToArray());
         Assert.Equal(Pinned().Model, plain.RootElement.GetProperty("model").GetString());
         Assert.Equal(Pinned().AnswerTokens, plain.RootElement.GetProperty("max_tokens").GetInt32());
-        Assert.False(plain.RootElement.GetProperty("stream").GetBoolean());
+        Assert.True(plain.RootElement.GetProperty("stream").GetBoolean());
+        Assert.True(plain.RootElement.GetProperty("stream_options").GetProperty("include_usage").GetBoolean());
         Assert.Equal(["system", "user"], plain.RootElement.GetProperty("messages").EnumerateArray().Select(message => message.GetProperty("role").GetString()!).ToArray());
 
         // With options, the provider's own fields beside those four, exactly as written.
@@ -378,6 +380,104 @@ public class ResearchModelFeedTests
             "The research model refused The two cases with status 402: Insufficient Balance",
             OpenAiCompatibleResearchFeed.Refused("The two cases", 402, """{"error":{"message":"Insufficient Balance","type":"unknown_error"}}"""));
         Assert.Equal("The research model refused The two cases with status 500.", OpenAiCompatibleResearchFeed.Refused("The two cases", 500, "<html></html>"));
+    }
+
+    // ---- the streamed answer ----
+
+    // The capture's own answer as the provider streams one: a comment and a blank line holding
+    // the connection while the request waits, the reasoning and then the answer in pieces, the
+    // finish reason on the last piece, the counts on an event of their own with no choice, and
+    // the event saying it is done, which a stream cut short never reaches.
+    static string StreamOf(string capture, bool done = true)
+    {
+        var whole = JsonNode.Parse(capture)!;
+        var message = whole["choices"]![0]!["message"]!;
+        var finish = whole["choices"]![0]!["finish_reason"]!.GetValue<string>();
+
+        string Event(JsonArray choices, JsonNode? usage = null) =>
+            "data: " + new JsonObject
+            {
+                ["id"] = whole["id"]?.DeepClone(),
+                ["object"] = "chat.completion.chunk",
+                ["created"] = whole["created"]!.DeepClone(),
+                ["model"] = whole["model"]!.DeepClone(),
+                ["choices"] = choices,
+                ["usage"] = usage,
+            }.ToJsonString() + "\n\n";
+
+        string Piece(string field, string text, string? finishing = null) =>
+            Event(new JsonArray(new JsonObject
+            {
+                ["index"] = 0,
+                ["delta"] = new JsonObject { [field] = text },
+                ["finish_reason"] = finishing,
+            }));
+
+        static string[] Split(string text) => text.Chunk(7).Select(piece => new string(piece)).ToArray();
+
+        var events = new StringBuilder(": keep-alive\n\n");
+        var answer = Split(message["content"]!.GetValue<string>());
+
+        foreach (var piece in Split(message["reasoning_content"]!.GetValue<string>()))
+        {
+            events.Append(Piece("reasoning_content", piece));
+        }
+
+        for (var at = 0; at < answer.Length; at++)
+        {
+            events.Append(Piece("content", answer[at], at == answer.Length - 1 ? finish : null));
+        }
+
+        events.Append(Event(new JsonArray(), whole["usage"]!.DeepClone()));
+
+        return done ? events.Append("data: [DONE]\n\n").ToString() : events.ToString();
+    }
+
+    [Fact]
+    public async Task AStreamedAnswerIsReadAsTheAnswerTheProviderSendsWhole()
+    {
+        // An answer asked for whole carries nothing until the model has finished reasoning, and
+        // every one that took longer than a minute was cut on the way, so the answer is asked for
+        // streamed and read into the response the parser reads. The whole response is still read
+        // whole, which the key test above reads.
+        var settings = Pinned();
+        var capture = Captured("research-probe-thinking.json");
+        var reasoning = JsonNode.Parse(capture)!["choices"]![0]!["message"]!["reasoning_content"]!.GetValue<string>();
+
+        using var client = new HttpClient(new Seeing(StreamOf(capture), mediaType: OpenAiCompatibleResearchFeed.StreamMediaType))
+        {
+            BaseAddress = new Uri(settings.BaseAddress),
+        };
+
+        var streamed = await new OpenAiCompatibleResearchFeed(client, settings).CompleteAsync(Recorded(settings));
+
+        Assert.Equal(OpenAiCompatibleResearchFeed.Parse(capture, "The two cases"), streamed);
+        Assert.True(streamed.ReasoningTokens > 0);
+        Assert.DoesNotContain(reasoning, streamed.Text, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AStreamCutShortIsNoAnswer()
+    {
+        var settings = Pinned();
+        var capture = Captured("research-probe-thinking.json");
+
+        async Task<string> Failure(HttpMessageHandler handler)
+        {
+            using var client = new HttpClient(handler) { BaseAddress = new Uri(settings.BaseAddress) };
+
+            return (await Assert.ThrowsAsync<ResearchModelUnavailable>(() => new OpenAiCompatibleResearchFeed(client, settings).CompleteAsync(Recorded(settings)))).Message;
+        }
+
+        // Ended before the provider said it was done.
+        Assert.Equal(
+            "The research model's answer for The two cases ended before the provider said it was done, so what arrived is an answer cut short and it is not stored.",
+            await Failure(new Seeing(StreamOf(capture, done: false), mediaType: OpenAiCompatibleResearchFeed.StreamMediaType)));
+
+        // Closed partway through, as the three answers lost were closed.
+        Assert.Equal(
+            "The research model could not be reached for The two cases: " + Cut.Closed,
+            await Failure(new Breaking(StreamOf(capture)[..400])));
     }
 
     // ---- the settings ----
@@ -573,7 +673,7 @@ public class ResearchModelFeedTests
             field => typeof(HttpClient).IsAssignableFrom(field.FieldType) || typeof(HttpMessageHandler).IsAssignableFrom(field.FieldType));
     }
 
-    sealed class Seeing(string body, HttpStatusCode status = HttpStatusCode.OK) : HttpMessageHandler
+    sealed class Seeing(string body, HttpStatusCode status = HttpStatusCode.OK, string mediaType = "application/json") : HttpMessageHandler
     {
         public string Address { get; private set; } = string.Empty;
 
@@ -584,7 +684,7 @@ public class ResearchModelFeedTests
             Address = request.RequestUri!.ToString();
             Scheme = request.Headers.Authorization?.Scheme ?? string.Empty;
 
-            return Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") });
+            return Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, mediaType) });
         }
     }
 
@@ -592,5 +692,32 @@ public class ResearchModelFeedTests
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
             throw new HttpRequestException("No connection could be made because the target machine actively refused it.");
+    }
+
+    // A streamed answer whose connection closes after the text it is handed.
+    sealed class Breaking(string before) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            var content = new StreamContent(new Cut(Encoding.UTF8.GetBytes(before)));
+
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(OpenAiCompatibleResearchFeed.StreamMediaType);
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+        }
+    }
+
+    sealed class Cut(byte[] before) : MemoryStream(before)
+    {
+        public const string Closed = "Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host.";
+
+        public override int Read(byte[] buffer, int offset, int count) =>
+            Position < Length ? base.Read(buffer, offset, count) : throw new IOException(Closed);
+
+        public override int Read(Span<byte> buffer) =>
+            Position < Length ? base.Read(buffer) : throw new IOException(Closed);
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
+            Position < Length ? base.ReadAsync(buffer, cancellationToken) : throw new IOException(Closed);
     }
 }

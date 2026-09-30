@@ -66,17 +66,27 @@ public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchMode
                 try
                 {
                     using var content = new StringContent(Body(wanted, settings), Encoding.UTF8, "application/json");
-                    using var response = await client.PostAsync(Path, content, token).ConfigureAwait(false);
+                    using var message = new HttpRequestMessage(HttpMethod.Post, Path) { Content = content };
+                    using var response = await client.SendAsync(message, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);
 
-                    var text = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new ProviderRefusal(
+                            Refused(wanted.Section, (int)response.StatusCode, await response.Content.ReadAsStringAsync(token).ConfigureAwait(false)),
+                            transient: false);
+                    }
 
-                    return response.IsSuccessStatusCode
-                        ? text
-                        : throw new ProviderRefusal(Refused(wanted.Section, (int)response.StatusCode, text), transient: false);
+                    return string.Equals(response.Content.Headers.ContentType?.MediaType, StreamMediaType, StringComparison.OrdinalIgnoreCase)
+                        ? await Streamed(await response.Content.ReadAsStreamAsync(token).ConfigureAwait(false), wanted.Section, token).ConfigureAwait(false)
+                        : await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
                 }
                 catch (HttpRequestException unreachable)
                 {
                     throw new ResearchModelUnavailable($"The research model could not be reached for {wanted.Section}: {unreachable.Message}");
+                }
+                catch (IOException broken)
+                {
+                    throw new ResearchModelUnavailable($"The research model could not be reached for {wanted.Section}: {broken.Message}");
                 }
                 catch (OperationCanceledException) when (token.IsCancellationRequested && !cancellation.IsCancellationRequested)
                 {
@@ -117,9 +127,17 @@ public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchMode
 
     public const string ResponseFormatField = "response_format";
 
+    public const string StreamOptionsField = "stream_options";
+
     // The request as it is sent: the configured model, the two messages, the answer's
-    // budget and no stream, with the provider's own options merged in beside them. The
-    // options cannot replace those four, which the settings refuse at startup.
+    // budget and the answer streamed with its counts at the end, with the provider's own
+    // options merged in beside them. The options cannot replace those five, which the
+    // settings refuse at startup.
+    //
+    // Streamed because an answer asked for whole arrives only once the model has finished
+    // reasoning, and nothing flows until then: a connection carrying nothing for a minute
+    // is cut on the way, so every answer that took longer was lost.
+    // see: A paid model on the OpenAI format is asked to stream its answer, because a connection silent for a minute is cut
     public static string Body(ModelRequest wanted, ResearchModelSettings settings)
     {
         var body = new JsonObject
@@ -129,7 +147,8 @@ public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchMode
                 new JsonObject { ["role"] = "system", ["content"] = wanted.System },
                 new JsonObject { ["role"] = "user", ["content"] = wanted.Prompt }),
             ["max_tokens"] = settings.AnswerTokens,
-            ["stream"] = false,
+            ["stream"] = true,
+            [StreamOptionsField] = new JsonObject { ["include_usage"] = true },
         };
 
         // The risks are asked for as a JSON object, which the format's own mode holds an answer to.
@@ -148,6 +167,83 @@ public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchMode
         }
 
         return body.ToJsonString();
+    }
+
+    // The media type a streamed answer arrives as. A provider answering the request whole
+    // instead is read whole.
+    public const string StreamMediaType = "text/event-stream";
+
+    const string DataField = "data:";
+    const string StreamEnd = "[DONE]";
+
+    // A streamed answer read into the response the provider sends whole, so one parser reads
+    // both: the answer's pieces joined in order, the finish reason, and the counts the last
+    // event carries. Reasoning streamed beside the answer is never stored, so it is not kept.
+    // Blank lines and comments, which a provider sends to hold the connection while a request
+    // waits, carry nothing. A stream that ends before the event saying it is done is an
+    // answer cut short and is not read as one.
+    public static async Task<string> Streamed(Stream stream, string section, CancellationToken cancellation)
+    {
+        using var reader = new StreamReader(stream, Encoding.UTF8);
+
+        var answer = new StringBuilder();
+        JsonNode? model = null;
+        JsonNode? created = null;
+        JsonNode? finish = null;
+        JsonNode? usage = null;
+
+        while (await reader.ReadLineAsync(cancellation).ConfigureAwait(false) is { } line)
+        {
+            if (!line.StartsWith(DataField, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var data = line[DataField.Length..].Trim();
+
+            if (string.Equals(data, StreamEnd, StringComparison.Ordinal))
+            {
+                return new JsonObject
+                {
+                    ["model"] = model,
+                    ["created"] = created,
+                    ["choices"] = new JsonArray(new JsonObject
+                    {
+                        ["index"] = 0,
+                        ["message"] = new JsonObject { ["role"] = "assistant", ["content"] = answer.ToString() },
+                        ["finish_reason"] = finish,
+                    }),
+                    ["usage"] = usage,
+                }.ToJsonString();
+            }
+
+            var chunk = JsonNode.Parse(data)!.AsObject();
+
+            model ??= chunk["model"]?.DeepClone();
+            created ??= chunk["created"]?.DeepClone();
+
+            if (chunk["usage"] is JsonObject counts)
+            {
+                usage = counts.DeepClone();
+            }
+
+            if (chunk["choices"] is JsonArray { Count: > 0 } choices && choices[0] is JsonObject choice)
+            {
+                if (choice["delta"]?["content"] is JsonValue piece && piece.GetValueKind() == JsonValueKind.String)
+                {
+                    answer.Append(piece.GetValue<string>());
+                }
+
+                if (choice["finish_reason"] is JsonValue reason && reason.GetValueKind() == JsonValueKind.String)
+                {
+                    finish = reason.DeepClone();
+                }
+            }
+        }
+
+        throw new ResearchModelUnavailable(
+            $"The research model's answer for {section} ended before the provider said it was done, so what arrived is an " +
+            "answer cut short and it is not stored.");
     }
 
     // A response read as the captures show it arrives.

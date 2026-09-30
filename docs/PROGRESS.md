@@ -32478,3 +32478,69 @@ Operator:   nothing to run. After a report the review ran beside, the command wr
 Carried:    each section's rates before and after the addendum, written at the tenth report after its merge, and the
             two cases' figures on both sides, written at the twentieth report since their ask changed, each read to
             the operator from the file.
+
+### 6.7 - correction: a paid model on the OpenAI format is asked to stream its answer, where an answer asked for whole carried nothing until the model had reasoned and every one taking longer than a minute was cut on the way   2026-09-30
+Corrects:   the feed 6.7 built for the OpenAI chat completions format, which asked for each answer whole
+            (`"stream": false`) from 6.7 on.
+Asked:      the operator, on 2026-09-30, after BDX's report lost two sections to "could not be reached", word for word:
+            > ok then try again. Maybe analyze why its failing and  if its because youre making too many calls
+            > throttle it
+Found:      read-only on the operator's store. Of the 135 paid calls the run log holds, three failed with "Error while
+            copying content to a stream", the connection closed while the answer was being read: GM's two cases on
+            2026-09-25 after 60 seconds, and BDX's risks and its two cases' retry on 2026-09-30 after 61 seconds each.
+            None of the 132 that answered took longer than 58 seconds, and the longest were the answers failing ones
+            resemble: BDX's review of its two cases at 58, NVDA's risks and BDX's short version at 55. The calls of a
+            pass run one after another and the drain takes one pass at a time, BDX's calls each starting as the one
+            before ended, so the rate of asking is not the cause and slowing it would change nothing. The feed's own
+            timeout is 600 seconds and says so in its own words when it passes, and none did. An answer asked for
+            whole arrives with its headers at once and then nothing until the model has finished reasoning, so a long
+            answer is a connection carrying nothing for as long as the model thinks, and something on the way closes
+            one idle for a minute.
+Repaired:   the feed asks for the answer streamed with its counts at the end (`"stream": true`,
+            `"stream_options": {"include_usage": true}`), reads the response as it arrives, and joins the answer's
+            pieces, the finish reason and the counts into the response the provider sends whole, which the parser
+            reads unchanged. Reasoning streams beside the answer and is not kept, as it never was. A provider
+            answering whole is read whole. A stream ending before the provider says it is done is refused as an answer
+            cut short, and a connection closed partway is "could not be reached", as it was. `stream_options` joins
+            the fields the feed owns, so a profile's options cannot set it. Nothing a recording is keyed on changes,
+            the key being the lane, section, model, documents and the two messages, so no recording is made again.
+            Claude's own messages interface is asked whole as before: none of its calls has run past a minute and
+            research asks DeepSeek alone.
+Changed:    `src/EquityBrief.Core/Providers/OpenAiCompatibleResearchFeed.cs`, `IResearchModelFeed.cs` (the owned
+            fields), `src/EquityBrief.Tests/Providers/ResearchModelFeedTests.cs`; `docs/DECISIONS.md`, and a paragraph
+            added to `docs/ARCHITECTURE.html` section 6.1 with no line of it removed.
+Decisions:  new, **A paid model on the OpenAI format is asked to stream its answer, because a connection silent for a
+            minute is cut**, under Feeds and the wire. None superseded.
+Tests:      1595, from 1593: two added, a streamed answer read as the same answer the capture holds whole, with a
+            comment and a blank line before it and the reasoning in pieces beside it, and a stream cut short, ended
+            before the provider said it was done and closed partway, each refused in its own words. The request test
+            now reads the five fields the feed owns, the stream asked for and its counts.
+Claims:     736, from 736: none moves.
+Pins:       none moves; neither feed source is in the three pin lists.
+Mutated:    the rule, stated before the run: each property this correction adds broken alone, filtered to
+            `ResearchModelFeedTests`.
+            S1, the answer asked for whole again (`"stream": false`, no `stream_options`). Predicted: red, the request
+            test.
+            S2, a stream read to its end without the event saying it is done taken as the whole answer. Predicted:
+            red, the cut-short test's first assertion.
+            S3, a connection closed partway not caught as unreachable. Predicted: red, the cut-short test's second
+            assertion, the closed connection's own error escaping.
+            S4, the counts read only from an event carrying a choice, so the event carrying them alone is passed
+            over. Predicted: red, the streamed answer test, the answer refused as carrying no usage.
+            Results: one run each in a detached worktree at 8e70d11, this entry's commit, each reverted before the
+            next and the tree read clean after the last. S1 turned the request test red and no other. S2 turned the
+            cut-short test red at its first assertion, no exception thrown where an answer cut short was expected.
+            S3 turned it red at its second, the closed connection's `IOException` escaping in place of the
+            unreachable line. S4 turned the streamed answer test red, the answer refused as carrying no usage.
+Held:       all four red as predicted, each in the test and at the assertion named and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1595 of 1595 tests ran
+            with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 736 claims, 736 PASS, 0 FAIL, 747 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1595 of 1595 tests.
+            Both gates ran over the tree carrying this entry, 8e70d11, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Operator:   nothing to run. The worker in the main checkout is built again after the merge, so the next press drains
+            with the streamed answer, and BDX is asked for again then.
+Carried:    nothing.
