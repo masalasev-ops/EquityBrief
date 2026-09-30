@@ -157,9 +157,9 @@ public sealed class ResearchRunner(
     ";
 
     // The industry the index last named for the member, which is the theme its cycle is
-    // read under.
+    // read under, and its sector, whose sites the theme's search adds to the list's.
     const string IndustryFor = @"
-        SELECT industry FROM membership
+        SELECT industry, sector FROM membership
         WHERE ticker = $ticker AND industry IS NOT NULL
         ORDER BY observed_at DESC
         LIMIT 1;
@@ -263,7 +263,7 @@ public sealed class ResearchRunner(
         }
 
         var newest = await NewestAsync(connection, ticker, cancellation);
-        var industry = await IndustryAsync(connection, ticker, cancellation);
+        var (industry, sector) = await IndustryAsync(connection, ticker, cancellation);
 
         var notWritten = new List<UnwrittenSection>();
         var warranted = new List<string>();
@@ -327,7 +327,7 @@ public sealed class ResearchRunner(
         if (themeWanted)
         {
             var probesBefore = cap.Probes;
-            var themed = await themes.RunAsync(industry!, runId, cancellation);
+            var themed = await themes.RunAsync(industry!, runId, cancellation, sector);
 
             themeProbes = cap.Probes - probesBefore;
 
@@ -999,14 +999,16 @@ public sealed class ResearchRunner(
         return newest;
     }
 
-    static async Task<string?> IndustryAsync(SqliteConnection connection, string ticker, CancellationToken cancellation)
+    static async Task<(string? Industry, string? Sector)> IndustryAsync(SqliteConnection connection, string ticker, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
         command.CommandText = IndustryFor;
         command.Parameters.AddWithValue("$ticker", ticker);
 
-        return await command.ExecuteScalarAsync(cancellation) as string;
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        return await reader.ReadAsync(cancellation) ? (reader.GetString(0), reader.IsDBNull(1) ? null : reader.GetString(1)) : (null, null);
     }
 
     static async Task<Newest?> NewestThemeAsync(SqliteConnection connection, string theme, CancellationToken cancellation)

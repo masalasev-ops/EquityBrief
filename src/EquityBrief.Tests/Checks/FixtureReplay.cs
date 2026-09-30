@@ -339,7 +339,8 @@ public class FixtureReplay
         IClock clock,
         SpendCap cap,
         ClaimChecker checker,
-        ISearchFeed? search = null) =>
+        ISearchFeed? search = null,
+        IReadOnlyDictionary<string, IReadOnlyList<string>>? sectors = null) =>
         new(
             cap,
             checker,
@@ -347,7 +348,11 @@ public class FixtureReplay
             SourceLists.Read(Path.Combine(Repository.Root, SourceLists.FileName)).Industry,
             Providers.ResearchModelFeedTests.Pinned().Pricing,
             clock,
-            store.DatabaseFile);
+            store.DatabaseFile,
+            sectors ?? SourceLists.Read(Path.Combine(Repository.Root, SourceLists.FileName)).Sectors);
+
+    // The industry the fixture's membership names for its researched name, whose theme a pass refreshes.
+    internal const string KeysIndustry = "Scientific & Technical Instruments";
 
     // The names the replay's prose pass is for: those holding a facts file on the
     // replayed night, less the name the prose fixture writes its own sections for.

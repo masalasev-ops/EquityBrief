@@ -767,7 +767,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task ACycleWhoseTwoAnswersHeldOnlyThinkingIsLeftOutSayingWhatTheSecondHeld()
+    public async Task ACycleWhoseTwoAnswersHeldOnlyThinkingIsDeclinedAndEachCallSaysWhatItHeld()
     {
         using var store = new TemporaryStore().Migrated();
         using var folder = new TemporaryDirectory();
@@ -779,14 +779,17 @@ public partial class FixtureExpectations
 
         var outcome = await FixtureReplay.Themer(store, ResearchClock, cap, new ClaimChecker(ResearchClock, store.DatabaseFile), new RecordedSearchFeed(folder.Path)).RunAsync(FixtureReplay.RecordedTheme, "theme-thinking-twice");
 
-        // Asked once more and not again, nothing stored, and the line saying so names what the second held.
+        // Asked once more and not again, nothing stored, and the line saying the model declined with what the
+        // searches found; each call's own row says what its answer held.
         Assert.Equal(2, model.Requests);
         Assert.Empty(Query(store, "SELECT version FROM theme_section;"));
 
         var line = Assert.Single(outcome.NotWritten, one => one.Section == ClaimRules.CycleSection).Reason;
 
-        Assert.StartsWith(ProseWriter.NoUsableAnswer + ": ", line, StringComparison.Ordinal);
-        Assert.Contains("it held 1 thinking block", line, StringComparison.Ordinal);
+        Assert.Equal($"{ThemeResearchRunner.Declined}: the searches found 1 page(s) about {FixtureReplay.RecordedTheme}, from semiconductors.org, and the model wrote nothing from them", line);
+        Assert.All(
+            Query(store, $"SELECT detail FROM run_log WHERE stage LIKE 'research call: {ClaimRules.CycleSection}%';"),
+            detail => Assert.Contains("it held 1 thinking block", detail, StringComparison.Ordinal));
     }
 
     // ---- which theme a name's pass reads, and when it refreshes it ----

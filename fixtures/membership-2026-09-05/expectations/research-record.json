@@ -28,7 +28,7 @@
     ]
   },
   "notWritten": {
-    "The industry cycle": "the theme could not be refreshed: the model's answer came back empty or cut short twice: The research model returned no answer for The industry cycle: the finish reason was stop after 1595 completion token(s), 1594 of them reasoning. A section stored from this would be empty."
+    "The industry cycle": "the theme could not be refreshed: declined for lack of industry sources: the searches found 2 page(s) about Scientific & Technical Instruments, from statista.com and bls.gov, and the model wrote nothing from them; the source list carries no site of its own for the Technology sector"
   },
   "documents": {
     "fetched": 9,

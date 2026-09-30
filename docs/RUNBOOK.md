@@ -265,6 +265,16 @@ dotnet run --project src/EquityBrief.Worker -- research --ticker KEYS
 
 **What the control does.** It sends the press with a header of the page's own, and the read surface refuses a request without one, so another site's page open in a browser on this machine cannot ask for a pass (see: A pass is started only by a request carrying the name page's own header). The surface refuses a name the index does not hold, then writes a request, starts the worker's drain from a copy of the worker's build and returns at once. The drain runs the pass at the off-peak rate, and the page shows what it wrote as it lands and when it is opened again (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours).
 
+### Measuring a sector's sites
+
+A name's page says where its industry's cycle was declined for lack of industry sources, with the pages the searches found and the sector the source list carries no site of its own for (see: An industry cycle the model declined is named as declined for lack of industry sources). Sites proposed for that sector are measured before any joins the list, from the repository root:
+
+```
+dotnet run --project src/EquityBrief.Worker -- measure-sources --sector "Healthcare" --sites cms.gov,fda.gov --industries "Medical Devices,Healthcare Plans"
+```
+
+It searches each site for each industry as a theme pass does, one search a site and an industry over the quarter to the day, judges each page by admissibility and the density rule, and says which sites join: a site joins where, for at least one of the industries, it returned at least one page admissibility admitted and the density rule reads as about that industry. It writes nothing to the store; the report is `artifacts/measure-sources-<sector>-<date>.json`, one search per site and industry against the search tool's free allowance. A site that joins is added under its sector in `source-lists.json`'s `industry.sectors`, with the measured result in `sectorsNote` and the file's review date moved to the day, and a site that does not stays out with its result noted (see: A theme search adds its sector's sites, and a site joins the list only where a measurement found industry material on it).
+
 ### Draining the queue
 
 A press asks for a report and starts the drain, which writes it. The drain is also run by hand, which is how a request is taken where no press started one, as one left outstanding because the drain could not be started:

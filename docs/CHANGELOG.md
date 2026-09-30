@@ -9296,3 +9296,36 @@ Now:
 > **What a pass costs.** Over the fixture's KEYS a pass wrote six of the eight sections it could write, two on the local model and four through the spend cap for $0.0330, a sum that includes the short version asked again after the checker refused its first draft, ... and the short version, told the one window its first draft named that the facts file holds no figure for, wrote a second draft carrying figures from the articles and was left out. ...
 > ... Over the fixture's KEYS a pass with every section paid cost $0.0389, ...
 Why: the risks' recordings were made again as fields, the short version's with them since it is handed the risks, and the pass they answer accepted the risks at the first draft and left the short version out.
+
+### 2026-09-30 - ARCHITECTURE.html - a declined cycle is named with what the searches found, and a theme search adds its sector's sites
+Authorised by: An industry cycle the model declined is named as declined for lack of industry sources
+Was:
+> ... and reads the run log for whether a pass for the theme already ran that day</td></tr>
+> <tr><td>Source lists</td><td>a company-news list and an industry list, each under the search tool's domain limit, each carrying a review date; a search may only return ...
+> ... and a theme pass makes one such search for every site on the list; its call is handed ...
+> (section 17 held no row named Sector sites)
+> <td>every section but the cycle, and one line saying the theme could not be refreshed</td>
+Now:
+> ... and reads the run log for whether a pass for the theme already ran that day. It searches the industry list's sites and those the list carries for the member's sector (see: ...), keeps each page it handed its call on its run log row with its site and how densely it names the industry, and names a cycle the model declined as declined for lack of industry sources, with what the searches found and the sector the list carries no site of its own for (see: ...)</td></tr>
+> ... each carrying a review date, the industry list with sites of its own for a sector, each admitted by a measurement (see: ...); a search may only return ...
+> ... one such search for every site on the list and every site the list carries for the member's sector; its call is handed ...
+> <tr><td>Sector sites</td><td>a proposed site joins its sector's sites where, for at least one declined industry of the sector, it returned at least 1 page admissibility admitted and the density rule reads as about that industry, ... (see: ...)</td>...</tr>
+> <td>every section but the cycle, and one line saying the theme could not be refreshed, which where the model declined the cycle says it declined for lack of industry sources with the pages the searches found and the sector the list carries no site of its own for</td>
+Why: the research template of 2026-09-29, item 4, and the operator's fourth answer: six of the nine industries researched were declined for lack of pages about them, and the page said the answer was empty.
+
+### 2026-09-30 - RUNBOOK.md - measuring a sector's proposed sites
+Authorised by: A theme search adds its sector's sites, and a site joins the list only where a measurement found industry material on it
+Was:
+> (no section on measuring a sector's sites)
+Now:
+> ### Measuring a sector's sites
+> A name's page says where its industry's cycle was declined for lack of industry sources, ... dotnet run --project src/EquityBrief.Worker -- measure-sources --sector "Healthcare" --sites cms.gov,fda.gov --industries "Medical Devices,Healthcare Plans" ... and a site that does not stays out with its result noted (see: ...).
+Why: the rule a site joins by is run by the worker's own verb, and the operator runs it for the next declined sector.
+
+### 2026-09-30 - .claude/rules/checks.md - fixture-expectations reaches the declined cycle and the sector sites
+Authorised by: An industry cycle the model declined is named as declined for lack of industry sources
+Was:
+> ... and the pass's own row carrying the line with no call and no spend, under which the drain settles the request refused |
+Now:
+> ... under which the drain settles the request refused; and the fixture's industry cycle, which the model answered with nothing twice, is named as declined for lack of industry sources ... and a proposed site joins its sector only with an admitted page about a declined industry at the density rule, over constructed results in and out |
+Why: the check holds what the correction naming a declined cycle builds.
