@@ -32573,11 +32573,11 @@ Changed:    `src/EquityBrief.Worker/Research/ResearchRunner.cs`,
             to `docs/RUNBOOK.md` with no line of it removed.
 Decisions:  new, **A pass the model could not be reached for on a section of the report is not the day's report**,
             beside the regenerate's own. None superseded: the day's report is still held to once a name a day.
-Tests:      123T, from 1595: one added, over the fixture's KEYS pass. A review's and a trial's unreachable calls leave
+Tests:      1596, from 1595: one added, over the fixture's KEYS pass. A review's and a trial's unreachable calls leave
             it the day's report; a second-round call of the report's own that could not be reached makes it not the
             day's; and the regenerate itself then passes the day's gate and stops at a model that does not answer
             its probe, having asked for nothing.
-Claims:     123C, from 736.
+Claims:     736, from 736: none moves.
 Pins:       none moves; the runner is in none of the three pin lists.
 Mutated:    the rule, stated before the run: each property this correction adds broken alone, filtered to
             `FixtureExpectations.APassTheModelCouldNotBeReachedForOnASectionIsNotTheDaysReport` and the regenerate test
@@ -32587,13 +32587,20 @@ Mutated:    the rule, stated before the run: each property this correction adds 
             R2, the review round's exclusion removed. Predicted: red, the new test, at its first assertion, the pass
             with only a review's call cut read as not the day's.
             R3, the trial round's exclusion removed. Predicted: red, the new test, at its first assertion, as R2.
-            Results: 123HELD
-Held:       123HELD
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 123T of 123T tests ran
+            Results: one run each in a detached worktree at cefdc52, this entry's commit, filtered to the six tests
+            whose names carry `Regenerate` or the new test's, each reverted before the next and the tree read clean
+            after the last. R1 turned the new test red at the assertion that the cut pass is not the day's report,
+            the check reading it as the day's. R2 and R3 each turned it red at its first assertion, the pass whose
+            only cut call was a review's or a trial's read as not the day's. The five other tests stayed green under
+            all three.
+Held:       all three red as predicted, in the new test alone and at the assertion named.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1596 of 1596 tests ran
             with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
             `data-ci` and never `data`.
-            123VP
-            Both gates ran over the tree carrying this entry, 123SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 736 claims, 736 PASS, 0 FAIL, 747 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1596 of 1596 tests.
+            Both gates ran over the tree carrying this entry, cefdc52, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Operator:   nothing to run. After the merge the main checkout's worker is built again and BDX, MO and IT are each
             pressed with Regenerate. For those three the read surface on 5152 was started with
