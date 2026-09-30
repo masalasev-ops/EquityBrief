@@ -1812,9 +1812,9 @@ public sealed class SinglePageApp : IComponent
             region: "operational"));
         region.Append(Folded);
 
-        // How each report's sections came out, and each section a trial asked for beside a report, drawn only
-        // while a trial has written a row.
-        // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+        // How each report's sections came out. The drafts a trial or a review wrote beside a report are written to
+        // files by a command and drawn on no page.
+        // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports, and no trial's drafts
         if (reports is { } read)
         {
             region.Append(Fold("reports", "How each report did, section by section, and each section's rates"));
@@ -1825,18 +1825,6 @@ public sealed class SinglePageApp : IComponent
                 lede: "Each section of each report the paid model wrote over the last seven nights: passed the claim check first time or on its retry, left out, or standing from an earlier day, with what its calls cost.",
                 stamp: Cards.Night(night),
                 region: "reports"));
-
-            if (read.Trials.Count > 0)
-            {
-                region.Append(Cards.Computed(
-                    "Section trials",
-                    marks.TrialsRegion(read.Trials, NameRoute),
-                    title: "Section trials",
-                    lede: "A second model asked for a section beside a report, never written into it: each side's result, rounds and cost, with the two drafts side by side.",
-                    stamp: Cards.Night(night),
-                    region: "trials"));
-            }
-
             region.Append(Folded);
         }
 

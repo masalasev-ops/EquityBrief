@@ -32407,3 +32407,74 @@ Operator:   nothing to run. The drain and the night build from `main`, so tonigh
 Carried:    the comparison command and the section trials region's removal, as the next correction at 12.6; the two
             cases' figures on both sides and each section's rates before and after the addendum, reported through
             that command's files.
+
+### 12.6 - correction: the drafts compared beside a report, each section's rates before and after the addendum and the two cases' figures on both sides are written to files by a command and drawn on no page, where the run page drew a trial's drafts and the counts the operator asked for had no surface of their own   2026-09-30
+Corrects:   the run page's section trials region and the counts the addendum and the research template owe the
+            operator, on the operator's ruling in the ruling entry of this day above.
+Repaired:   - The command. The read surface started as `dotnet run --project src/EquityBrief.Api -- comparisons`
+              reads every report the store holds through the read API, writes into the checkout's
+              `sampleReports` folder and exits without listening, writing nothing to the store. It runs from the
+              read surface rather than the worker, as the question put to the operator had it, because the read
+              API's queries, the report region's reading and the marks the drafts are composed with are the read
+              surface's and the worker may not reach them.
+            - The files. `<TICKER>_comparison_<day>.html` for each report a trial or a review asked beside, every
+              section with every model's drafts side by side, composed by the marks the run page drew them with,
+              the stylesheet inline, every disclosure open and no link into the application, a second report of
+              one stock on one day ending `_2`; `section_rates_before_and_after_the_addendum.html`, each section's
+              share passed first time and share left out over the ten reports whose passes started before
+              2026-09-30 11:40:11 UTC, when pull request 291 merged, and the ten that started after, written once
+              the tenth after has been written; and `two_cases_both_sides.html`, of the reports whose passes started
+              after 2026-09-30 04:54:22 UTC, when pull request 286 merged, the first twenty that drafted the two
+              cases and how many carried a figure on both sides beside the 5 of 8 measured before, written at the
+              twentieth. A report is placed by the instant its run is named for, and one at the merge's own second
+              counts as after it. For a window not yet full the command says how far it has come and writes no file.
+            - The page. The run page's section trials region is gone and section 15.10 no longer names it; the
+              report region and each section's rates stay.
+            - The read surface's rates and both-sides count are read by one function each over whatever reports
+              they are handed, so the page and the command count the same way.
+Changed:    `ComparisonCommand` and `RunScreen` in the read surface and its start; `ComparisonFiles` and the run
+            page's detail in the web project, and the comparison view beside the report region's; the read surface's
+            tests of the region and of the command; the harness's scope, reach, parts, vocabulary, stated counts and
+            the phase 12 claims; DECISIONS' two entries and one superseded; the catalogue's box, row and matrix row,
+            the prompt paragraph and section 15.10's rows in `ARCHITECTURE.html`; RUNBOOK's review paragraph, the
+            paragraph on reading how each report did and the command's own; 12.6's text in `BUILD_PLAN.md`; the
+            read-surface row of `.claude/rules/checks.md`; the reader's guide's paragraph on which sections keep
+            failing; and the prior text of each spec edit in `CHANGELOG.md`.
+Decisions:  new: "The drafts compared beside a report and the research template's before and after counts are
+            written to files by a command, and drawn on no page", and "The run page draws how each report's sections
+            came out and each section's rates over the newest twenty reports, and no trial's drafts", which
+            supersedes the one it is named for.
+Tests:      1593, from 1589: `TheRatesBeforeAndAfterTheAddendumAreWrittenOnceTheTenthReportAfterItHasBeenWritten`,
+            `TheTwoCasesFiguresOnBothSidesAreWrittenAtTheTwentiethReportSinceTheAskChanged`,
+            `EachReportsComparedDraftsAreWrittenToAFileOfItsOwnAndDrawnOnNoPage` and
+            `TwoReportsOfOneStockOnOneDayAreTwoFiles`; the trials region's test now reads the region as composed.
+Claims:     736, from 737: the section trials row's three parts go with the row, and the comparison files'
+            catalogue and matrix rows come, named in phase 12's pair.
+Pins:       none moves; no source this correction edits is in the three pin lists.
+Mutated:    the rule, stated before the run: each property this correction adds reversed alone, filtered to the four
+            tests it adds.
+            Predicted:
+            M1 the run page drawing the section trials card again: red in the drafts file test alone.
+            M2 the rates file written with nine reports after the merge: red in the rates test alone.
+            M3 a report at the merge's own second counted as before it: red in the rates test alone.
+            M4 the both-sides count taking reports from before the ask changed: red in the both-sides test alone.
+            Results: one run each in a detached worktree at 01e1d32, this entry's commit, filtered to the four tests,
+            each edit made there and reverted, and the tree read clean after. M1 turned the drafts file test red
+            alone. M2 turned the rates test red alone. M3 turned the rates test red alone. M4 turned the both-sides
+            test red, and the drafts file test as well, whose line for the unfilled window reads ECL's report of
+            2026-09-10 as one drafting the two cases since the ask changed.
+Held:       red in every test predicted, and in one more for M4, the drafts file test, for the reason above.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1593 of 1593 tests ran
+            with none failed, migrations 0 to 50 with none pending, schema version 50, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 736 claims, 736 PASS, 0 FAIL, 747 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT, 41 of 41 roster checks carried and all 41 run,
+            1593 of 1593 tests.
+            Both gates ran over the tree carrying this entry, 01e1d32, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Operator:   nothing to run. After a report the review ran beside, the command writes that report's file:
+            `dotnet run --project src/EquityBrief.Api -- comparisons` from the repository root. The read surface on
+            5152 is started again from `main` after the merge, so the run page draws no section trials region.
+Carried:    each section's rates before and after the addendum, written at the tenth report after its merge, and the
+            two cases' figures on both sides, written at the twentieth report since their ask changed, each read to
+            the operator from the file.

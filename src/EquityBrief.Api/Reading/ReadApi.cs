@@ -638,9 +638,9 @@ public sealed class ReadApi : IComponent
     public const string TrialStage = "section trial";
     public const string ReviewStage = "section review";
 
-    // Every row of every research pass the run page reads its reports from: the pass's own row, the theme pass's,
-    // each paid call and each section a trial asked for.
-    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports
+    // Every row of every research pass the run page and the comparison command read reports from: the pass's own
+    // row, the theme pass's, each paid call and each section a trial or a review asked for.
+    // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports, and no trial's drafts
     const string ReportRows = @"
         SELECT run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail
         FROM run_log

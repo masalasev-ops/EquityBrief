@@ -72,6 +72,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Candidate registrar"),
             CheckReach.Key(Scope.MatrixTable, "Candidate registrar"),
 
+            // 12.6, the comparison files.
+            CheckReach.Key(Scope.CatalogueTable, "Comparison files"),
+            CheckReach.Key(Scope.MatrixTable, "Comparison files"),
+
             // 6.11, the report exporter, and the harness's own matrix row.
             CheckReach.Key(Scope.CatalogueTable, "Report exporter"),
             CheckReach.Key(Scope.MatrixTable, "Report exporter"),
@@ -556,11 +560,12 @@ public partial class ComponentAccess
 
         Assert.Empty(faults);
 
-        // The five that write no store, stated in advance: the page, the renderer, the
+        // The six that write no store, stated in advance: the page, the renderer, the
         // trend classifier, which hands its label to the ladder builder, from 6.11 the
-        // report exporter, whose file is kept wherever the person exporting chooses, and
-        // from 12.2 the filter counts, which print the shape counts and open the store read-only.
-        Assert.Equal(["FilterCounts", "MarkRenderer", "ReportExporter", "SinglePageApp", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
+        // report exporter, whose file is kept wherever the person exporting chooses,
+        // from 12.2 the filter counts, which print the shape counts and open the store read-only,
+        // and from 12.6 the comparison files, written to a folder the repository ignores.
+        Assert.Equal(["ComparisonFiles", "FilterCounts", "MarkRenderer", "ReportExporter", "SinglePageApp", "TrendClassifier"], silent.Order(StringComparer.Ordinal));
 
         // And the row's own words, read off the document, are the words this holds.
         Assert.Equal(

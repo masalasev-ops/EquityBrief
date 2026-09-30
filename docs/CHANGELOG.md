@@ -9560,3 +9560,51 @@ Was:
 Now:
 > ... and a review ships naming DeepSeek over three reports from 2026-09-30 and is asked over the fixture's pass ... left out of the pass's price, and is drawn beside the pass's drafts as the model reviewing its draft; and no research setting as shipped, the job's word, the nine sections' words, the trial's and the review's, names a profile answered on Claude's wire format, eleven naming DeepSeek and the trial's none |
 Why: the check holds what the correction putting report generation on DeepSeek alone builds.
+
+### 2026-09-30 - ARCHITECTURE.html - the comparisons written to files by a command, and the run page's section trials row removed
+Authorised by: The drafts compared beside a report and the research template's before and after counts are written to files by a command, and drawn on no page
+Was:
+> (no box, catalogue row or matrix row for comparison files)
+> <p><b>Key.</b> The single page app and the report exporter have empty rows because they touch no store directly; ...
+> ... beside the report and never in it. (see: The research prompt repeats ...) (see: A review asks ...)</p>
+> <tr><td>How each report did</td><td>... (see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports)</td></tr>
+> <tr><td>Section trials</td><td>one row per section a trial or a review asked for with its report and each model's outcome and rounds and cost; the drafts side by side folded beneath; drawn only while a trial or a review has written a row (see: A trial asks a second profile for named sections beside a report, and ships naming none) (see: A review asks a section's model to check its own draft against the section's rules, beside a stated number of reports)</td></tr>
+> <tr><td>Report rates</td><td>... (see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports)</td>...
+Now:
+> <div class="box serve"><b>Comparison files</b>writes the drafts compared beside a report and the research template's before and after counts as files, drawn on no page</div>
+> <tr><td><b>Comparison files</b></td><td><span class="layer L-serve">serve</span></td><td>when the operator starts the read surface with the verb <code>comparisons</code></td><td>read API</td><td>files in the checkout's <code>sampleReports</code> folder</td><td>for each report a trial or a review asked beside, its sections with every model's drafts side by side; ... (see: The drafts compared beside a report and the research template's before and after counts are written to files by a command, and drawn on no page)</td></tr>
+> <tr><td>Comparison files</td> and nineteen empty cells</tr>
+> <p><b>Key.</b> The single page app, the report exporter and the comparison files have empty rows because they touch no store directly; ...
+> ... beside the report and never in it. The drafts a trial or a review writes, each section's rates over the ten reports each side of the addendum's merge and the two cases' figures on both sides over the twenty reports since their ask changed are written to files by a command, and no page draws them. (see: ...) (see: The drafts compared beside a report and the research template's before and after counts are written to files by a command, and drawn on no page)</p>
+> <tr><td>How each report did</td><td>... (see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports, and no trial's drafts)</td></tr>
+> (no Section trials row)
+> <tr><td>Report rates</td><td>... (see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports, and no trial's drafts)</td>...
+Why: the operator asked that the comparisons be written to files by a command and drawn on no live page, and that the run page's section trials region be removed.
+
+### 2026-09-30 - RUNBOOK.md - the comparison command, and the drafts off the run page
+Authorised by: The drafts compared beside a report and the research template's before and after counts are written to files by a command, and drawn on no page
+Was:
+> ... It is drawn in the run page's section trials, named as the model reviewing its draft, beside the pass's own drafts and the trial's. ...
+> ... Beneath are how many of the newest twenty reports' two cases carried a figure on both sides and each section's share passed first time and left out over the newest twenty reports that warranted it, and beneath those each section a trial asked for, the pass's model and the trial's side by side with both drafts (see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports).
+> (no paragraph on writing the comparisons)
+Now:
+> ... Its drafts are written to the report's comparison file, named as the model reviewing its draft, beside the pass's own drafts and the trial's. ...
+> ... Beneath are how many of the newest twenty reports' two cases carried a figure on both sides and each section's share passed first time and left out over the newest twenty reports that warranted it. The drafts a trial or a review wrote are drawn on no page (see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports, and no trial's drafts).
+> **Writing the comparisons to files.** From the repository root ... `dotnet run --project src/EquityBrief.Api -- comparisons` ... writes into the checkout's `sampleReports` folder ... For each count whose window is not yet full it prints how far it has come ... (see: The drafts compared beside a report and the research template's before and after counts are written to files by a command, and drawn on no page).
+Why: the command is the operator's to run, and the runbook says how and what it writes.
+
+### 2026-09-30 - BUILD_PLAN.md - 12.6's trial and review drafts written to files by a command
+Authorised by: The drafts compared beside a report and the research template's before and after counts are written to files by a command, and drawn on no page
+Was:
+> ... which the run page's section trials region draws beside the pass's own drafts; ... and a review of a section's own draft, shipped naming DeepSeek over three reports, is drawn beside the trial's. ...
+Now:
+> ... whose drafts a command writes to a file beside the pass's own; ... and a review of a section's own draft, shipped naming DeepSeek over three reports, is written beside the trial's. The same command writes each section's rates over the ten reports each side of the addendum's merge and the two cases' figures on both sides over the twenty reports since their ask changed, and no page draws any of them. ...
+Why: the checkpoint's text is what the corrections at it are read against.
+
+### 2026-09-30 - .claude/rules/checks.md - read-surface reaches the comparison command
+Authorised by: The drafts compared beside a report and the research template's before and after counts are written to files by a command, and drawn on no page
+Was:
+> ... and a trial's section drawn with both models' outcomes, rounds, costs and drafts side by side under a fold, the columns stacked on a narrow screen, drawn only while a trial has written a row, and the worker's own stage words asserted equal to those the read surface states |
+Now:
+> ... and a trial's section composed with both models' outcomes, rounds, costs and drafts side by side under a fold, the columns stacked on a narrow screen, composed only while a trial has written a row, and the worker's own stage words asserted equal to those the read surface states; and the comparison command writes a report's drafts to a file of its own ... and leaves the store's bytes as they were, while the run page draws no trial's drafts though a trial wrote its row |
+Why: the check holds what the correction writing the comparisons to files builds.

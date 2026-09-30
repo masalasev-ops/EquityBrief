@@ -1391,7 +1391,8 @@ public partial class ArchitectureConformance
         // builds the night's tries: tonight's row stating the night's state.
         // 113 at the 12.7 correction that draws close to a buy point beneath tonight's list.
         // 115 at the 12.6 correction that draws how each report did and the section trials on the Run page.
-        Assert.Equal(115, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 114 at the 12.6 correction that writes the comparisons to files: the section trials row goes.
+        Assert.Equal(114, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1481,8 +1482,9 @@ public partial class ArchitectureConformance
         // 372 at the 12.6 correction that brings the model profiles: the checklist's items for a profile near its
         // retirement date and a report costing more than section 17 names.
         // 379 at the 12.6 correction that draws how each report did and the section trials: the seven parts their
-        // two rows state.
-        Assert.Equal(379, inDocument.Length);
+        // two rows state. 376 at the 12.6 correction that writes the comparisons to files: the section trials row's
+        // three parts go with it.
+        Assert.Equal(376, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1564,8 +1566,9 @@ public partial class ArchitectureConformance
         // the model profiles: the checklist's two items for a profile near its retirement date and a report
         // costing more than section 17 names, and section 18's row about a key the secrets file does not hold as
         // its two halves. 355 at 12.6's correction that draws how each report did and the section trials: the
-        // seven parts their two rows state.
-        Assert.Equal(355, checkedElements);
+        // seven parts their two rows state. 352 at the 12.6 correction that writes the comparisons to files: the
+        // section trials row's three parts go with it.
+        Assert.Equal(352, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the
