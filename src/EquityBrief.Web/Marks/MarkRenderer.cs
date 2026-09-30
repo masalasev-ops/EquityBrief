@@ -433,12 +433,24 @@ public sealed record ReportRow(string RunId, string Ticker, DateOnly Day, decima
 // first time and were left out.
 public sealed record SectionRate(string Section, int Reports, int FirstTime, int LeftOut);
 
-// One side of a section a trial asked for: the model, how it came out, its rounds and what they cost, and each
-// round's draft.
-public sealed record TrialSide(string Model, string Outcome, int Rounds, decimal Cost, IReadOnlyList<string> Drafts);
+// One side of a section a trial or a review asked for: the model, how it came out, its rounds and what they cost,
+// each round's draft, and which side it is.
+public sealed record TrialSide(string Model, string Outcome, int Rounds, decimal Cost, IReadOnlyList<string> Drafts, string Side = TrialSide.OfTrial)
+{
+    public const string OfPass = "pass";
+    public const string OfTrial = "trial";
+    public const string OfReview = "review";
+}
 
-// One section a trial asked for beside a report, the pass's own side and the trial's.
-public sealed record TrialRow(string RunId, string Ticker, DateOnly Day, string Section, TrialSide Pass, TrialSide Trial);
+// One section a trial or a review asked for beside a report: the pass's own side, and the trial's and the review's
+// where each asked for it, in that order.
+// see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
+public sealed record TrialRow(string RunId, string Ticker, DateOnly Day, string Section, TrialSide Pass, IReadOnlyList<TrialSide> Asked)
+{
+    public TrialSide? Trial => Asked.FirstOrDefault(side => side.Side == TrialSide.OfTrial);
+
+    public TrialSide? Review => Asked.FirstOrDefault(side => side.Side == TrialSide.OfReview);
+}
 
 // The reports of the seven nights up to a night, each section's rates over the newest reports that warranted it,
 // how many of the newest reports' two cases drafts carried a figure on both sides out of how many were drafted,
@@ -6910,17 +6922,17 @@ public sealed class MarkRenderer : IComponent
 
         var region = new StringBuilder();
 
-        region.Append(Invariant, $"<div class=\"trials\" data-trials=\"{trials.Count}\"><p class=\"list-count\" data-shown=\"{trials.Count}\">Showing all {trials.Count} section{(trials.Count == 1 ? string.Empty : "s")} a trial asked for</p><ol class=\"trial-list\">");
+        region.Append(Invariant, $"<div class=\"trials\" data-trials=\"{trials.Count}\"><p class=\"list-count\" data-shown=\"{trials.Count}\">Showing all {trials.Count} section{(trials.Count == 1 ? string.Empty : "s")} a trial or a review asked for</p><ol class=\"trial-list\">");
 
         foreach (var (trial, place) in trials.Select((trial, at) => (trial, at + 1)))
         {
-            region.Append(Invariant, $"<li class=\"trial\" data-run=\"{Escaped(trial.RunId)}\" data-section=\"{Escaped(trial.Section)}\"><p class=\"trial-head\">{place}. <a href=\"{Escaped(nameRoute + trial.Ticker)}\">{Escaped(trial.Ticker)}</a>, {trial.Day:yyyy-MM-dd}, {Escaped(trial.Section)}</p>");
+            TrialSide[] sides = [trial.Pass with { Side = TrialSide.OfPass }, .. trial.Asked];
+
+            region.Append(Invariant, $"<li class=\"trial\" data-run=\"{Escaped(trial.RunId)}\" data-section=\"{Escaped(trial.Section)}\" data-sides=\"{sides.Length}\"><p class=\"trial-head\">{place}. <a href=\"{Escaped(nameRoute + trial.Ticker)}\">{Escaped(trial.Ticker)}</a>, {trial.Day:yyyy-MM-dd}, {Escaped(trial.Section)}</p>");
             region.Append("<div class=\"trial-sides\">");
-            region.Append(TrialSideLine("pass", trial.Pass));
-            region.Append(TrialSideLine("trial", trial.Trial));
-            region.Append("</div><details class=\"trial-drafts\"><summary>The two drafts side by side</summary><div class=\"trial-pair\">");
-            region.Append(TrialDrafts("pass", trial.Pass));
-            region.Append(TrialDrafts("trial", trial.Trial));
+            region.Append(string.Concat(sides.Select(TrialSideLine)));
+            region.Append(Invariant, $"</div><details class=\"trial-drafts\"><summary>The {sides.Length} drafts side by side</summary><div class=\"trial-pair\">");
+            region.Append(string.Concat(sides.Select(TrialDrafts)));
             region.Append("</div></details></li>");
         }
 
@@ -6928,14 +6940,16 @@ public sealed class MarkRenderer : IComponent
 
         return region.ToString();
 
-        static string TrialSideLine(string side, TrialSide drawn) =>
-            Formatted($"<p class=\"trial-side\" data-side=\"{side}\" data-model=\"{Escaped(drawn.Model)}\" data-outcome=\"{Escaped(drawn.Outcome)}\" data-rounds=\"{drawn.Rounds}\" data-cost=\"{drawn.Cost}\"><b>{Escaped(drawn.Model)}</b>: {Escaped(drawn.Outcome)}, {drawn.Rounds} round{(drawn.Rounds == 1 ? string.Empty : "s")}, {ReportCost(drawn.Cost)}</p>");
+        static string Named(TrialSide drawn) => drawn.Side == TrialSide.OfReview ? drawn.Model + ", reviewing its draft" : drawn.Model;
 
-        static string TrialDrafts(string side, TrialSide drawn)
+        static string TrialSideLine(TrialSide drawn) =>
+            Formatted($"<p class=\"trial-side\" data-side=\"{drawn.Side}\" data-model=\"{Escaped(drawn.Model)}\" data-outcome=\"{Escaped(drawn.Outcome)}\" data-rounds=\"{drawn.Rounds}\" data-cost=\"{drawn.Cost}\"><b>{Escaped(Named(drawn))}</b>: {Escaped(drawn.Outcome)}, {drawn.Rounds} round{(drawn.Rounds == 1 ? string.Empty : "s")}, {ReportCost(drawn.Cost)}</p>");
+
+        static string TrialDrafts(TrialSide drawn)
         {
             var column = new StringBuilder();
 
-            column.Append(Invariant, $"<div class=\"trial-column\" data-side=\"{side}\"><h4>{Escaped(drawn.Model)}</h4>");
+            column.Append(Invariant, $"<div class=\"trial-column\" data-side=\"{drawn.Side}\"><h4>{Escaped(Named(drawn))}</h4>");
 
             foreach (var (draft, round) in drawn.Drafts.Select((draft, at) => (draft, at + 1)))
             {

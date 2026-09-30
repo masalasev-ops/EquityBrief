@@ -75,6 +75,15 @@ public partial class ReadSurface
     {
         using var store = await FixtureExpectations.WithWrittenRelease();
 
+        // Both recorded drafts of the cause were refused for a figure the release states,
+        // so a cause naming the move they name is accepted here under the newest draft's
+        // date and model, citing what it cited.
+        Insert(
+            store,
+            "INSERT INTO research_section (ticker, section, version, as_of, model, status, prose, source_ids, reject_reason) " +
+            "SELECT ticker, section, version + 1, as_of, model, 'accepted', 'The session ended on 2026-08-24 fell after the results release [D1].', source_ids, NULL " +
+            $"FROM research_section WHERE ticker = 'KEYS' AND section = '{ClaimRules.CauseSection}' ORDER BY version DESC LIMIT 1;");
+
         var region = await NamePageWithResearch(store, "KEYS");
 
         // The accepted cause section, read by a query of the test's own.
@@ -271,9 +280,10 @@ public partial class ReadSurface
             "AND version = (SELECT MAX(version) FROM research_section s WHERE s.ticker = r.ticker AND s.section = r.section AND s.status = 'accepted') " +
             "ORDER BY section;");
 
-        // Four written over the two passes, stated in advance: three on the first
-        // draft and the key under each figure on its retry.
-        Assert.Equal(4, written.Count);
+        // Three written over the two passes, stated in advance: what the company sells and
+        // the key under each figure on the first draft and the segment commentary on its
+        // retry, with the cause of each large move left out after two refusals.
+        Assert.Equal(3, written.Count);
 
         foreach (var row in written)
         {

@@ -403,12 +403,14 @@ static async Task<int> ResearchPass(string[] args)
     // see: Research names a profile per section as well as per job, and a Claude profile states its thinking
     IReadOnlyDictionary<string, ResearchModelSettings> sectionSettings;
     ResearchTrial? trial;
+    ResearchTrial? review;
 
     try
     {
         research = ResearchLane.Settings(configuration);
         sectionSettings = ResearchLane.Sections(configuration, research);
         trial = ResearchLane.Trial(configuration);
+        review = ResearchLane.Review(configuration);
     }
     catch (InvalidOperationException refusal)
     {
@@ -500,6 +502,16 @@ static async Task<int> ResearchPass(string[] args)
         foreach (var tried in await new SectionTrial(CapFor(trial.Profile), trial, clock, database).RunAsync(ticker, runId))
         {
             Console.WriteLine(FormattableString.Invariant($"research: trial of {tried.Section} on {trial.Profile.Profile}, {tried.Outcome} over {tried.Rounds} round(s) for ${tried.Cost}"));
+        }
+    }
+
+    // The review, after the trial and on the same condition, where the settings name a profile for it.
+    // see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
+    if (review is not null && outcome.Written.Any(written => review.Sections.Contains(written.Section, StringComparer.Ordinal) && !written.Retry))
+    {
+        foreach (var reviewed in await new SectionTrial(CapFor(review.Profile), review, clock, database, review: true).RunAsync(ticker, runId))
+        {
+            Console.WriteLine(FormattableString.Invariant($"research: review of {reviewed.Section} on {review.Profile.Profile}, {reviewed.Outcome} over {reviewed.Rounds} round(s) for ${reviewed.Cost}"));
         }
     }
 

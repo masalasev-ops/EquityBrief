@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-8uqx6r4e3bjpr48wndadkl",
+  "object": "chat.completion",
+  "created": 1790764294,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "The stock closed at 333.42 within an uptrend where the session high reached 333.82 and the session low was 325.75, trading above both the 50-day average of 325.75 and the 20-day average of 328.90 while remaining well above the 200-day average of 290.92. Technical indicators suggest volatility with a 14-day average true range of 10.64 and relative strength index at 54.21, positioning the price near immediate resistance at 366.41 but supported by a level at 332.78. The company demonstrated strong earnings performance with the latest quarter showing an actual result of 2.82 against an estimate of 2.16, resulting in a surprise of 30.56 per cent and a subsequent move of -6.32 per cent on the report date of 2026-08-19. Valuation metrics highlight robust profitability with an operating margin of 25.0 per cent compared to 17.3 per cent a year earlier, alongside sales growth of 36.5 per cent on a year earlier and 11.1 per cent for the same quarter a year before.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 2043,
+    "completion_tokens": 287,
+    "total_tokens": 2330,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

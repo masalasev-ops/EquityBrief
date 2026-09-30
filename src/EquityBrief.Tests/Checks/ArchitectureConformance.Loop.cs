@@ -1170,8 +1170,9 @@ public partial class ArchitectureConformance
     // 12.6's corrections on the research template of 2026-09-29: section 17's seven kinds an event risk is given,
     // which the correction returning the risks as fields adds, the page a sector's site returns to join the
     // list, which the correction naming a declined cycle adds, the reports a trial runs over with the trial's
-    // catalogue and matrix rows, which the correction giving each section a profile adds, and the run page's two
-    // regions on how each report did with section 17's window, which the correction drawing them adds.
+    // catalogue and matrix rows, which the correction giving each section a profile adds, the run page's two regions
+    // on how each report did with section 17's window, which the correction drawing them adds, and the reports a
+    // review runs over, which the correction refining the research prompt adds.
     static readonly string[] ResearchTemplateClaims =
     [
         CheckReach.Key(Scope.LimitsTable, "Risk kinds"),
@@ -1180,6 +1181,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.CatalogueTable, "Section trial"),
         CheckReach.Key(Scope.MatrixTable, "Section trial"),
         .. Reading.ReadSurface.ReportClaims,
+        CheckReach.Key(Scope.LimitsTable, "Section review"),
     ];
 
     // Phase 12's rows, each written by the checkpoint that draws or asserts it, so none reads as out
@@ -1505,8 +1507,9 @@ public partial class ArchitectureConformance
         // from the 12.6 correction naming a declined cycle, with section 17's page a sector's site joins by, and
         // 728 from the 12.6 correction giving each section a profile, with section 17's reports a trial runs over
         // and the trial's rows in the catalogue and the matrix, and 736 from the 12.6 correction drawing how each
-        // report did, with its two regions' seven parts and section 17's window.
-        Assert.Equal((550, 736), (predicted, actual));
+        // report did, with its two regions' seven parts and section 17's window, and 737 from the 12.6 correction
+        // refining the research prompt, with section 17's reports a review runs over.
+        Assert.Equal((550, 737), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

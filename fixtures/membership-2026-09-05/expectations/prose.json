@@ -59,7 +59,7 @@
         ],
         "modelCalls": 4,
         "verdicts": {
-          "The cause of each large move": "accepted",
+          "The cause of each large move": "rejected",
           "What the company sells": "accepted",
           "The segment commentary": "rejected",
           "The key under each figure": "accepted"
@@ -67,18 +67,20 @@
       },
       {
         "written": [
+          "The cause of each large move",
           "The segment commentary"
         ],
         "retried": [
+          "The cause of each large move",
           "The segment commentary"
         ],
         "skipped": {
-          "The cause of each large move": "it was already written today",
           "What the company sells": "it was already written today",
           "The key under each figure": "it was already written for the newest facts file"
         },
-        "modelCalls": 1,
+        "modelCalls": 2,
         "verdicts": {
+          "The cause of each large move": "fallback",
           "The segment commentary": "accepted"
         }
       }
@@ -86,7 +88,7 @@
     "causeNames": [
       "2026-08-24"
     ],
-    "causeNamesNote": "the sessions the accepted cause section names as a move's end, which is the one move the release falls inside and no other"
+    "causeNamesNote": "the sessions each draft of the cause section names as a move's end, which is the one move the release falls inside and no other. Both drafts of the recordings made on 2026-09-30 were refused for a figure the release states and the facts file does not hold, so the cause is left out, and what either draft names is read all the same, because which move a draft ties the release to is the pairing's work and not the checker's"
   },
   "keyFactsAsRead": {
     "note": "each worked by hand from the rule the decision that the key under each figure is handed its facts as a reader reads them states, over KEYS's stored values where the fixture carries them and a few chosen to reach each branch: an indicator named with its window as days before it, money and counts of a million or more in millions, billions or trillions with the word to at most two places, a growth or a margin as a percentage to one place, any other figure past two places to two, rounding half away from zero, and a reading the claim checker would not match to the stored value handed as stored. The last is a growth of 12.5, twelve and a half times, whose percentage the checker reads only of a fraction below ten.",
@@ -115,9 +117,9 @@
     "asked": [
       "The key under each figure"
     ],
-    "why": "a call fits where its estimated prompt and the answer's budget of 1,024 tokens sit inside the context. The three sections handed the release carry its text whole, 22,996 characters, 1,281 of them digits and 73 outside ASCII in 219 bytes, which the rule counts as a token each, and 21,642 others at 2.75 characters a token, 7,870 tokens, so 9,370 in all, which with the answer's budget does not fit in 9,250 before a word of the rest of the prompt is counted. The key under each figure carries the facts file alone, as a reader reads it, 17,196 characters in all with the instructions of 2026-09-29, 1,521 of them digits and none outside ASCII, which the rule counts as a token each, and 15,675 others at 2.75 characters a token, 5,700 tokens, so 7,221 in all, which fits with the answer's budget in 9,250. The context was 8,000 until 11.9 widened the facts file, which took the key past what 8,000 holds.",
+    "why": "a call fits where its estimated prompt and the answer's budget of 1,024 tokens sit inside the context. The three sections handed the release carry its text whole, 22,996 characters, 1,281 of them digits and 73 outside ASCII in 219 bytes, which the rule counts as a token each, and 21,642 others at 2.75 characters a token, 7,870 tokens, so 9,370 in all, which with the answer's budget does not fit in 9,250 before a word of the rest of the prompt is counted. The key under each figure carries the facts file alone, as a reader reads it, 18,057 characters in all with the instructions of 2026-09-30, which name the reader, say what to do with a figure no fact holds and say the ask again after the facts, 1,521 of them digits and none outside ASCII, which the rule counts as a token each, and 16,536 others at 2.75 characters a token, 6,013.1 rounded up to 6,014 tokens, so 7,535 in all, which fits with the answer's budget, 8,559, in 9,250. The context was 8,000 until 11.9 widened the facts file, which took the key past what 8,000 holds.",
     "releaseTokens": 9370,
-    "askedTokens": 7221
+    "askedTokens": 7535
   },
   "unavailable": {
     "modelCalls": 1,

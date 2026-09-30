@@ -69,9 +69,17 @@ public static class ResearchLane
     // see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
     public const string TrialField = "Trial";
 
-    public static ResearchTrial? Trial(IConfiguration configuration)
+    // The review, named the same way and shipped naming no profile, so it runs only once the operator names one.
+    // see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
+    public const string ReviewField = "Review";
+
+    public static ResearchTrial? Trial(IConfiguration configuration) => Named(configuration, TrialField);
+
+    public static ResearchTrial? Review(IConfiguration configuration) => Named(configuration, ReviewField);
+
+    static ResearchTrial? Named(IConfiguration configuration, string field)
     {
-        var key = ModelProfiles.JobField(ModelProfiles.ResearchJob, TrialField);
+        var key = ModelProfiles.JobField(ModelProfiles.ResearchJob, field);
         var use = configuration[key + ":" + ModelProfiles.UseField];
 
         if (string.IsNullOrWhiteSpace(use))

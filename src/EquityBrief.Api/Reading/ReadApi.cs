@@ -636,6 +636,7 @@ public sealed class ReadApi : IComponent
     // `read-surface` asserts they agree.
     public const string ThemeStage = "theme research";
     public const string TrialStage = "section trial";
+    public const string ReviewStage = "section review";
 
     // Every row of every research pass the run page reads its reports from: the pass's own row, the theme pass's,
     // each paid call and each section a trial asked for.
@@ -646,7 +647,8 @@ public sealed class ReadApi : IComponent
         WHERE substr(run_id, 1, length($pass)) = $pass
           AND (stage IN ($research, $theme)
             OR substr(stage, 1, length($call)) = $call
-            OR substr(stage, 1, length($trial)) = $trial)
+            OR substr(stage, 1, length($trial)) = $trial
+            OR substr(stage, 1, length($review)) = $review)
         ORDER BY rowid;
     ";
 
@@ -669,12 +671,13 @@ public sealed class ReadApi : IComponent
         WHERE l.stage = $theme AND substr(l.run_id, 1, length($pass)) = $pass AND json_valid(l.detail);
     ";
 
-    // A trial's calls are left out, being spend beside a report rather than on it.
+    // A trial's calls and a review's are left out, being spend beside a report rather than on it.
     // see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it
+    // see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
     const string PaidCallSpends = @"
         SELECT run_id, spend
         FROM run_log
-        WHERE substr(stage, 1, length($prefix)) = $prefix AND spend != $nothing AND instr(stage, $trial) = 0;
+        WHERE substr(stage, 1, length($prefix)) = $prefix AND spend != $nothing AND instr(stage, $trial) = 0 AND instr(stage, $review) = 0;
     ";
 
     // The newest accepted version of each of a name's sections.
@@ -3380,6 +3383,7 @@ public sealed class ReadApi : IComponent
         command.Parameters.AddWithValue("$prefix", PaidCallStage + ":");
         command.Parameters.AddWithValue("$nothing", NothingSpent);
         command.Parameters.AddWithValue("$trial", ", " + EquityBrief.Core.Research.TrialCalls.Round);
+        command.Parameters.AddWithValue("$review", ", " + EquityBrief.Core.Research.TrialCalls.ReviewRound);
 
         var spends = new List<(string, decimal)>();
 
@@ -3403,6 +3407,7 @@ public sealed class ReadApi : IComponent
         ReportParameters(command);
         command.Parameters.AddWithValue("$call", PaidCallStage + ":");
         command.Parameters.AddWithValue("$trial", TrialStage + ":");
+        command.Parameters.AddWithValue("$review", ReviewStage + ":");
 
         var rows = new List<RunStageRow>();
 

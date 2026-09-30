@@ -46,7 +46,7 @@ public class FixtureReplay
     const string Index = "GSPC";
 
     static readonly DateTimeOffset Backfilled = new(2026, 9, 5, 21, 10, 0, TimeSpan.Zero);
-    static readonly DateTimeOffset Night = new(2026, 9, 8, 21, 10, 0, TimeSpan.Zero);
+    internal static readonly DateTimeOffset Night = new(2026, 9, 8, 21, 10, 0, TimeSpan.Zero);
 
     static string Folder() => Path.Combine(Repository.Root, "fixtures", Fixture);
 
@@ -60,7 +60,7 @@ public class FixtureReplay
     // Every stage that exists, in the order the night runs them. A stage added
     // to the night and not here is a stage this check does not replay, which
     // the count below is what catches.
-    internal static async Task<TemporaryStore> ReplayedAsync(RecordedLocalModelFeed? model = null)
+    internal static async Task<TemporaryStore> ReplayedAsync(ILocalModelFeed? model = null)
     {
         var store = new TemporaryStore().Migrated();
         var backfill = FixedClock.At(Backfilled, SessionZones.UnitedStates);
@@ -290,9 +290,9 @@ public class FixtureReplay
     // The store a research pass over the fixture starts from: the replay, and the night's
     // facts assembled again and its changes read again once the opens' fundamentals are
     // stored, which is what the research verb does after a fetch.
-    internal static async Task<TemporaryStore> ReplayedForResearchAsync()
+    internal static async Task<TemporaryStore> ReplayedForResearchAsync(ILocalModelFeed? model = null)
     {
-        var store = await ReplayedAsync();
+        var store = await ReplayedAsync(model);
         var night = FixedClock.At(Night, SessionZones.UnitedStates);
 
         await new FactsAssembler(night, store.DatabaseFile).RunAsync("replay-facts-after-fundamentals");

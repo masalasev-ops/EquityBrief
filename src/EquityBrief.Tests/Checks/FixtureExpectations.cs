@@ -139,6 +139,7 @@ public partial class FixtureExpectations
             // reports a trial runs over, which the trial's test reads.
             CheckReach.Key(Scope.LimitsTable, "Sector sites"),
             CheckReach.Key(Scope.LimitsTable, "Section trial"),
+            CheckReach.Key(Scope.LimitsTable, "Section review"),
             CheckReach.Key(Scope.FixtureTable, "reported quarters"),
 
             // 11.5, the floor a name's industry has to reach before it is the name's group.

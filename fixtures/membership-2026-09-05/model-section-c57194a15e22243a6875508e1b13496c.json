@@ -1,0 +1,29 @@
+{
+  "id": "chatcmpl-bojs1ev87zvb9ruetz6uvh",
+  "object": "chat.completion",
+  "created": 1790764346,
+  "model": "qwen/qwen3.5-9b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Microsoft Corporation trades at a close of 493.95 within an uptrend where the session high reached 495.19 and the session low was 490.15, supported by a 20-day average of 494.78 and a 50-day average of 446.00 while the 200-day average sits at 429.39. The stock shows strong relative strength with a 14-day relative strength index of 56.17 against immediate support edges between 492.12 and 501.92 and resistance levels from 507.98 to 517.78. Recent technical indicators include a MACD of 13.99 with a signal line at 17.07 and a histogram of -3.08, suggesting potential volatility ahead of the next dated event which is not on file. The company belongs to the Technology sector where the largest move measured from 2026-07-27 reached 25.33 per cent during five sessions ending on 2026-08-03.",
+        "reasoning_content": "",
+        "tool_calls": []
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 1879,
+    "completion_tokens": 255,
+    "total_tokens": 2134,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "stats": {},
+  "system_fingerprint": "qwen/qwen3.5-9b"
+}

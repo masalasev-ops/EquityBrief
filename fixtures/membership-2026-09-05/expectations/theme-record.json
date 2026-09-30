@@ -6,7 +6,7 @@
     "theme_section",
     "source_document"
   ],
-  "frozen": "the prose the recorded model wrote, the checker's verdict on it, which accepted the first draft, and what the call cost, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived.",
+  "frozen": "the prose the recorded model wrote, the checker's verdict on it, which accepted the first draft, and what the call cost, which are readings of recordings rather than figures a rule produces. Every other value in this file is derived. The call was recorded again on 2026-09-30 under the refined prompt, whose draft the checker accepted first as before, and what it cost moved with it.",
   "theme": "Semiconductors",
   "night": "2026-09-08",
   "window": {
@@ -54,7 +54,7 @@
     "searches": 12,
     "paid": 1
   },
-  "spend": "0.002280684",
+  "spend": "0.002139468",
   "passes": {
     "note": "the first member's pass finds the theme missing, refreshes it and is left with the accepted version as of the night, so its sentence says the cycle was refreshed; the second member's pass finds that version accepted today, refreshes nothing, and its sentence says nothing of the cycle. Neither writes anything of its own.",
     "outcome": "no facts file",

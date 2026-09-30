@@ -786,8 +786,9 @@ public partial class FixtureExpectations
         Assert.Equal(
             [.. ProseWriter.DefaultLane, "The short version"],
             outcome.NotWritten.Where(line => line.Reason.StartsWith(ProseWriter.Unavailable, StringComparison.Ordinal)).Select(line => line.Section).ToArray());
+        // The cause of each large move, which the recorded model answered with nothing twice, is not among them.
         Assert.Equal(
-            [ClaimRules.CauseSection, "The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
+            ["The dated calendar items", "The two cases", "The risks, each with what would confirm it"],
             outcome.Written.Select(section => section.Section).ToArray());
         Assert.All(outcome.Written, section => Assert.Equal(paid.Identity, section.Model));
         Assert.Equal("0", Query(fresh, $"SELECT COUNT(*) FROM research_section WHERE ticker = 'KEYS' AND model = '{LocalModelSettings.DefaultModel}';").Single());
@@ -1172,11 +1173,11 @@ public partial class FixtureExpectations
 
         var billed = settings.Pricing.Price(OpenAiCompatibleResearchFeed.Parse(File.ReadAllText(Path.Combine(Folder(), RecordedResearchModelFeed.FileFor(request))), request.Section));
 
-        // Worked by hand off the recording: 246 uncached prompt tokens at 0.15 and 58 completion
+        // Worked by hand off the recording: 354 uncached prompt tokens at 0.15 and 47 completion
         // tokens at 0.60, in dollars a million tokens, off-peak.
         Assert.False(call.Answered);
         Assert.Equal(billed, call.Price);
-        Assert.Equal(0.0000717m, billed);
+        Assert.Equal(0.0000813m, billed);
         Assert.Equal([$"research call: The two cases|refused|1|1|{billed.ToString(CultureInfo.InvariantCulture)}"], CallRows(store, "pass-billed-unusable"));
 
         // And the ledger the next call is judged by holds it.

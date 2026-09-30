@@ -180,23 +180,23 @@ public class ResearchModelFeedTests
         var answer = RecordedAnswer(settings);
 
         // Recorded on a weekday outside both peak windows.
-        Assert.Equal(DayOfWeek.Tuesday, answer.Created.UtcDateTime.DayOfWeek);
+        Assert.Equal(DayOfWeek.Wednesday, answer.Created.UtcDateTime.DayOfWeek);
         Assert.False(settings.Pricing.IsPeak(answer.Created));
 
         var byHand = (answer.CacheHitTokens * 0.003m + answer.CacheMissTokens * 0.15m + answer.CompletionTokens * 0.60m) / 1_000_000m;
 
         Assert.Equal(byHand, settings.Pricing.Price(answer));
-        Assert.Equal(0.0000717m, byHand);
+        Assert.Equal(0.0000813m, byHand);
 
         // The same counts stamped inside a peak window cost twice as much.
         Assert.Equal(byHand * 2m, settings.Pricing.Price(answer with { Created = DateTimeOffset.Parse("2026-09-14T01:30:00Z", CultureInfo.InvariantCulture) }));
 
         // The captured call arrived with nothing cached, so the cached rate is held over the
-        // same answer with part of its prompt served from the cache: 200 of 246 cached is 200
-        // at 0.003 and 46 at 0.15, beside the same 58 of output.
-        var cached = answer with { CacheHitTokens = 200, CacheMissTokens = 46 };
+        // same answer with part of its prompt served from the cache: 200 of 354 cached is 200
+        // at 0.003 and 154 at 0.15, beside the same 47 of output.
+        var cached = answer with { CacheHitTokens = 200, CacheMissTokens = 154 };
 
-        Assert.Equal(0.0000423m, settings.Pricing.Price(cached));
+        Assert.Equal(0.0000519m, settings.Pricing.Price(cached));
 
         // A provider with no peak pricing names no windows, and no instant is priced up.
         var flat = new ResearchPricing(0.003m, 0.15m, 0.60m, [], [], 2m);
@@ -495,12 +495,15 @@ public class ResearchModelFeedTests
         Assert.Equal(ClaimRules.Sections.Order(StringComparer.Ordinal), shipped.GetSection(sections).GetChildren().Select(child => child.Key).Order(StringComparer.Ordinal));
         Assert.All(shipped.GetSection(sections).GetChildren(), child => Assert.Equal(child.Value, Stated(sections + ":<section>")));
 
-        // The trial's settings, a key to a row.
-        foreach (var field in new[] { ModelProfiles.UseField, ModelProfiles.SectionsField, "Reports", "From" })
+        // The trial's settings and the review's, a key to a row.
+        foreach (var named in new[] { ResearchLane.TrialField, ResearchLane.ReviewField })
         {
-            var key = ModelProfiles.JobField(ModelProfiles.ResearchJob, ResearchLane.TrialField) + ":" + field;
+            foreach (var field in new[] { ModelProfiles.UseField, ModelProfiles.SectionsField, "Reports", "From" })
+            {
+                var key = ModelProfiles.JobField(ModelProfiles.ResearchJob, named) + ":" + field;
 
-            Assert.Equal(Holds(key), Stated(key));
+                Assert.Equal(Holds(key), Stated(key));
+            }
         }
 
         Assert.Equal(SpendCaps.DefaultDay, decimal.Parse(Stated(SpendCaps.DayKey), CultureInfo.InvariantCulture));
@@ -551,9 +554,13 @@ public class ResearchModelFeedTests
         var settings = Pinned();
         var feed = new RecordedResearchModelFeed(Folder(), settings);
 
-        // Each recording answers the request asked the way it was recorded.
-        Assert.Equal("KEYS closed at 333.42.", (await feed.CompleteAsync(Recorded(settings))).Text);
-        Assert.Equal("The close was 333.42.", (await new RecordedResearchModelFeed(Folder(), Pinned(ThinkingOff)).CompleteAsync(Recorded(Pinned(ThinkingOff)))).Text);
+        // Each recording answers the request asked the way it was recorded: the two answer in the same words, and
+        // the one asked with thinking off reasoned for none of its tokens where the other reasoned for most.
+        var thought = await feed.CompleteAsync(Recorded(settings));
+        var unthought = await new RecordedResearchModelFeed(Folder(), Pinned(ThinkingOff)).CompleteAsync(Recorded(Pinned(ThinkingOff)));
+
+        Assert.Equal(("KEYS closed at 333.42.", 37), (thought.Text, thought.ReasoningTokens));
+        Assert.Equal(("KEYS closed at 333.42.", 0), (unthought.Text, unthought.ReasoningTokens));
 
         var unrecorded = Recorded(settings) with { Prompt = "a prompt nobody recorded" };
         var refused = await Assert.ThrowsAsync<InvalidOperationException>(() => feed.CompleteAsync(unrecorded));

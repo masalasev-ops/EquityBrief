@@ -329,13 +329,19 @@ public partial class FixtureExpectations
                     moved.Checked.Select(section => $"{section.Section}|{section.Status}").Order(StringComparer.Ordinal).ToArray());
             }
 
-            // The accepted cause names the one move the release falls inside and no other.
-            var cause = Query(store, $"SELECT prose FROM research_section WHERE ticker = 'KEYS' AND section = '{ClaimRules.CauseSection}' AND status = 'accepted';").Single();
-            var dates = ClaimRules.Figures(cause).Where(figure => figure.Kind == FigureKind.Date && figure.Date is not null).Select(figure => figure.Date!.Value).ToHashSet();
+            // Each draft of the cause names the one move the release falls inside and no other.
+            var drafts = Query(store, $"SELECT prose FROM research_section WHERE ticker = 'KEYS' AND section = '{ClaimRules.CauseSection}' ORDER BY version;");
 
-            Assert.Equal(
-                Listed(release.GetProperty("causeNames")),
-                MoveWindows.In(facts).Where(move => dates.Contains(move.To)).Select(move => Iso(move.To)).ToArray());
+            Assert.NotEmpty(drafts);
+
+            foreach (var cause in drafts)
+            {
+                var dates = ClaimRules.Figures(cause).Where(figure => figure.Kind == FigureKind.Date && figure.Date is not null).Select(figure => figure.Date!.Value).ToHashSet();
+
+                Assert.Equal(
+                    Listed(release.GetProperty("causeNames")),
+                    MoveWindows.In(facts).Where(move => dates.Contains(move.To)).Select(move => Iso(move.To)).ToArray());
+            }
         }
     }
 
@@ -685,10 +691,10 @@ public partial class FixtureExpectations
 
         var recorded = Directory.GetFiles(Folder(), RecordedLocalModelFeed.FilePrefix + "*.json").Select(Path.GetFileName).Order(StringComparer.Ordinal).ToArray();
 
-        // Two from the replay, MSFT's key under each figure and NFLX's; four from the release's
+        // Two from the replay, MSFT's key under each figure and NFLX's; five from the release's
         // passes, what the company sells, the segment commentary and the cause, and the segment
-        // commentary again after the checker refused its first draft, the key being the research
-        // pass's own request; four from the research pass with the configured lanes, the segment
+        // commentary and the cause again after the checker refused their first drafts, the key
+        // being the research pass's own request; four from the research pass with the configured lanes, the segment
         // commentary among them asked again after the checker refused its first draft; nine from
         // the comparison with every section in the local lane, the cause, the dated calendar
         // items, the two cases, the risks and the short version, and each of the last four asked
@@ -706,7 +712,7 @@ public partial class FixtureExpectations
         // listing AAPL, KEYS's key over the group of one the rebalance's joiner reads but with
         // the quarters the fixture's night stored for it, which the joiner does not yet hold,
         // MSFT's and NFLX's there being requests the rebalance asked.
-        Assert.Equal(35, recorded.Length);
+        Assert.Equal(36, recorded.Length);
         Assert.Equal(recorded, asked.Select(RecordedLocalModelFeed.FileFor).Distinct().Order(StringComparer.Ordinal).ToArray());
 
         foreach (var request in asked)

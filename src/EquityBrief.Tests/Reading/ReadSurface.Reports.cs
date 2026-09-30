@@ -28,9 +28,9 @@ public partial class ReadSurface
         CheckReach.Key("15.10 Run", "How each report did, a cell per section saying whether it passed first time or on retry or was left out with why or was not warranted, with what its own calls cost and none of a trial's"),
         CheckReach.Key("15.10 Run", "How each report did, the two cases' cell marked where a draft of the pass carried a figure on both sides, with how many of the newest twenty reports' two cases did"),
         CheckReach.Key("15.10 Run", "How each report did, each section's share passed first time and its share left out over the newest twenty reports that warranted it"),
-        CheckReach.Key("15.10 Run", "Section trials, one row per section a trial asked for with its report and each model's outcome and rounds and cost"),
-        CheckReach.Key("15.10 Run", "Section trials, the two models' drafts side by side folded beneath"),
-        CheckReach.Key("15.10 Run", "Section trials, drawn only while a trial has written a row"),
+        CheckReach.Key("15.10 Run", "Section trials, one row per section a trial or a review asked for with its report and each model's outcome and rounds and cost"),
+        CheckReach.Key("15.10 Run", "Section trials, the drafts side by side folded beneath"),
+        CheckReach.Key("15.10 Run", "Section trials, drawn only while a trial or a review has written a row"),
         CheckReach.Key(Scope.LimitsTable, "Report rates"),
     ];
 
@@ -294,18 +294,22 @@ public partial class ReadSurface
         Assert.Equal(("ECL", ClaimRules.TwoCasesSection), (trial.Ticker, trial.Section));
         Assert.Equal(("deepseek-flash", ReportsView.OnRetry, 2, 0.0050m), (trial.Pass.Model, trial.Pass.Outcome, trial.Pass.Rounds, trial.Pass.Cost));
         Assert.Equal([BothSidesDraft, CleanDraft], trial.Pass.Drafts);
-        Assert.Equal(("claude-sonnet-5-5 thinking off", "first time", 1, 0.0500m), (trial.Trial.Model, trial.Trial.Outcome, trial.Trial.Rounds, trial.Trial.Cost));
-        Assert.Equal([TrialDraft], trial.Trial.Drafts);
+        var asked = Assert.Single(trial.Asked);
 
-        // Drawn as two columns folded beneath the row, one on a narrow screen, each round's paragraphs whole.
+        Assert.Equal(("claude-sonnet-5-5 thinking off", "first time", 1, 0.0500m, TrialSide.OfTrial), (asked.Model, asked.Outcome, asked.Rounds, asked.Cost, asked.Side));
+        Assert.Equal([TrialDraft], asked.Drafts);
+        Assert.Null(trial.Review);
+
+        // Drawn as a column a side folded beneath the row, one beneath another on a narrow screen, each round's
+        // paragraphs whole.
         var drawn = WebUtility.HtmlDecode(new MarkRenderer().TrialsRegion(view.Trials, SinglePageApp.NameRoute));
 
-        Assert.Contains("<details class=\"trial-drafts\"><summary>The two drafts side by side</summary><div class=\"trial-pair\">", drawn, StringComparison.Ordinal);
+        Assert.Contains("<details class=\"trial-drafts\"><summary>The 2 drafts side by side</summary><div class=\"trial-pair\">", drawn, StringComparison.Ordinal);
         Assert.Contains("<div class=\"trial-column\" data-side=\"pass\"><h4>deepseek-flash</h4><div class=\"trial-draft\" data-round=\"1\"><p class=\"trial-round\">Round 1</p><p>The bull case is that margins reached 18.5% [D1].</p><p>The bear case is that margins of 18.5% may not hold [D1].</p></div><div class=\"trial-draft\" data-round=\"2\">", drawn, StringComparison.Ordinal);
         Assert.Contains("<div class=\"trial-column\" data-side=\"trial\"><h4>claude-sonnet-5-5 thinking off</h4><div class=\"trial-draft\" data-round=\"1\"><p class=\"trial-round\">Round 1</p><p>The bull case is that demand is broad [D1].</p>", drawn, StringComparison.Ordinal);
         Assert.Contains("data-side=\"trial\" data-model=\"claude-sonnet-5-5 thinking off\" data-outcome=\"first time\" data-rounds=\"1\" data-cost=\"0.0500\"", drawn, StringComparison.Ordinal);
-        Assert.Contains(".trial-sides,.trial-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}", Stylesheet.Css, StringComparison.Ordinal);
-        Assert.Contains("@media (max-width:640px){ .trial-sides,.trial-pair{grid-template-columns:1fr} }", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains(".trial-sides,.trial-pair{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:16px}", Stylesheet.Css, StringComparison.Ordinal);
+        Assert.Contains("@media (max-width:640px){ .trial-sides,.trial-pair{grid-auto-flow:row;grid-auto-columns:auto} }", Stylesheet.Css, StringComparison.Ordinal);
 
         // On the page while a trial has written a row, and not at all where none has.
         using (var host = new PassHost(store.Root) { Clock = FixedClock.At(DateTimeOffset.Parse("2026-09-11T12:00:00Z", CultureInfo.InvariantCulture), SessionZones.UnitedStates) })

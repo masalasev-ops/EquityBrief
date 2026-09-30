@@ -9435,3 +9435,64 @@ Was:
 Now:
 > ... none named twice; and the Run page draws how each report did, read through the read API's own queries over a constructed store and back off the page: ... and the worker's own stage words asserted equal to those the read surface states |
 Why: the check holds what the correction drawing how each report did builds.
+
+### 2026-09-30 - ARCHITECTURE.html - every section's prompt refined, a review of a section's own draft behind a setting that ships off, drawn beside the trial
+Authorised by: The research prompt repeats each section's ask after the documents, names its reader and marks each document by kind
+Was:
+> (section 12's key held no paragraph on how every section is asked)
+> ... and stops by itself once it has run over the reports it names (see: A trial asks a second profile for named sections after a report and records its drafts beside the report, never in it)</td></tr>
+> <tr><td>Section trials</td><td>one row per section a trial asked for with its report and each model's outcome and rounds and cost; the two models' drafts side by side folded beneath; drawn only while a trial has written a row (see: ...)</td></tr>
+> (section 17 held no row named Section review)
+Now:
+> <p>Every section is asked the same way. Its ask is said again after the documents and the sections already written, under "Now write the section:", with a retry's brief after it. ... and they say that what a figure only a document gives shows is said without the number. An answer holding nothing but citation markers is no answer. ... A review, which ships off, can ask the model that wrote the two cases or the risks to check its own draft against the section's rules and revise it, beside the report and never in it. (see: ...) (see: ...)</p>
+> ... reports it names (see: ...). A review is the same component asked with the pass's own first draft handed back and the checks each sentence is read against, under a stage and a round of its own, and it ships naming no profile (see: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off)</td></tr>
+> <tr><td>Section trials</td><td>one row per section a trial or a review asked for with its report and each model's outcome and rounds and cost; the drafts side by side folded beneath; drawn only while a trial or a review has written a row (see: ...) (see: ...)</td></tr>
+> <tr><td>Section review</td><td>a review asks its profile for the sections it names beside 3 reports counted from the day it names, and then stops by itself; it ships naming no profile, and like a trial writes no research section and its calls are left out of a report's count and cost (see: ...)</td>...</tr>
+Why: the addendum to the research template of 2026-09-30, its five refinements and its review pass.
+
+### 2026-09-30 - RUNBOOK.md - the review's settings and what it does
+Authorised by: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
+Was:
+> | the day a trial counts its reports from, as `yyyy-MM-dd` | `EquityBrief:Models:Research:Trial:From` | `2026-09-30` |
+> (no rows for the review's settings and no paragraph on it)
+Now:
+> | the profile a review asks to check a section's own draft, none being off | `EquityBrief:Models:Research:Review:Use` | none |
+> | the sections a review asks it for, one entry per section | `EquityBrief:Models:Research:Review:Sections` | `The two cases, The risks, each with what would confirm it` |
+> | the reports a review runs over before it stops | `EquityBrief:Models:Research:Review:Reports` | `3` |
+> | the day a review counts its reports from, as `yyyy-MM-dd` | `EquityBrief:Models:Research:Review:From` | `2026-09-30` |
+> **A review asks a section's model to check its own draft, and ships off.** ... To turn it on, set its `Use` to `deepseek`, the model that writes those sections as shipped; at most four calls a report (see: ...).
+Why: the review ships off and is the operator's to turn on, and the suite holds each row to the shipped file.
+
+### 2026-09-30 - SCHEMA.md - a review's rows on the run log
+Authorised by: A review asks a section's model to check its own draft against the section's rules, behind a setting that ships off
+Was:
+> (no paragraph on a review's rows)
+Now:
+> **A review's rows are a trial's under words of their own.** From the 12.6 correction refining the research prompt, a review's calls are written as `research call: The two cases, review` ... A review counts its own reports by its own stage, apart from a trial's (see: ...).
+Why: a review writes rows the run log did not hold, which the caps count and the run page leaves out of a report's.
+
+### 2026-09-30 - .claude/rules/checks.md - fixture-expectations reaches the refined prompt and the review
+Authorised by: The research prompt repeats each section's ask after the documents, names its reader and marks each document by kind
+Was:
+> ... and asks nothing past the reports it names |
+Now:
+> ... and asks nothing past the reports it names; and every request the fixture's pass asks, the paid lane's and the local model's, says its ask again word for word ... and a review is off as shipped and, named, is asked over the fixture's pass with the pass's own draft handed back, writes no section row, stands its calls under the review's round and is drawn beside the pass's drafts as the model reviewing its draft |
+Why: the check holds what the correction refining the research prompt builds.
+
+### 2026-09-30 - BUILD_PLAN.md - 12.6's text names the refined prompt and the review
+Authorised by: The research prompt repeats each section's ask after the documents, names its reader and marks each document by kind
+Was:
+> ... which the run page's section trials region draws beside the pass's own drafts (owes: The section trial's reports read to the operator).
+Now:
+> ... (owes: The section trial's reports read to the operator). From the addendum of 2026-09-30, every section's prompt says its ask again after the documents, names its reader, says what to do with a figure no fact holds, marks each document by kind and, for the two cases and the risks, gives a weak point and a strong one; and a review of a section's own draft, off as shipped, is drawn beside the trial's.
+Why: the checkpoint's text is what the corrections at it are read against.
+
+### 2026-09-30 - RUNBOOK.md - what a pass costs, over the recordings made under the refined prompt
+Authorised by: The research prompt repeats each section's ask after the documents, names its reader and marks each document by kind
+Was:
+> **What a pass costs.** Over the fixture's KEYS a pass wrote six of the eight sections it could write, two on the local model and four through the spend cap for $0.0330, a sum that includes the short version asked again after the checker refused its first draft, since every draft is billed, ... The local model's segment commentary, told each figure its first draft was refused for, wrote one more the facts file does not hold and was left out, and the short version, told the one window its first draft named that the facts file holds no figure for, wrote a second draft carrying figures from the articles and was left out. ...
+> ... Over the fixture's KEYS a pass with every section paid cost $0.0389, ...
+Now:
+> **What a pass costs.** Over the fixture's KEYS a pass wrote seven of the eight sections it could write, three on the local model and four through the spend cap for $0.0337, a sum that includes the cause of each large move asked twice and answered twice with reasoning and no text, and the short version asked again after the checker refused its first draft, since every draft and every empty answer is billed, ... The local model's segment commentary, told the one figure its first draft was refused for, wrote a second draft without it and passed, and the short version, told the two dates its first draft named that the facts file does not hold, wrote a second draft without them and passed. ...
+> ... Over the fixture's KEYS a pass with every section paid cost $0.0387, ...
+Why: every recording is keyed on the whole request, so the refined prompt made each one again, and the paragraph states what the new recordings read.

@@ -706,7 +706,7 @@ public sealed class ResearchRunner(
             // see: A cause of a move rests only on a document published inside that move
             if (string.Equals(section, ClaimRules.CauseSection, StringComparison.Ordinal)
                 && admitted.Length > 0
-                && SectionPrompt.MovesWithDocuments(facts, [.. admitted.Select(document => new PromptDocument(document.Id, document.Title, document.PublishedOn, document.Body!))]).Count == 0)
+                && SectionPrompt.MovesWithDocuments(facts, [.. admitted.Select(document => PromptDocument.From(document))]).Count == 0)
             {
                 notWritten.Add(new UnwrittenSection(section, ProseWriter.NoDocumentInsideAMove));
 
@@ -748,7 +748,7 @@ public sealed class ResearchRunner(
                 ticker,
                 section,
                 facts,
-                [.. admitted.Select(document => new PromptDocument(document.Id, document.Title, document.PublishedOn, document.Body!))],
+                [.. admitted.Select(document => PromptDocument.From(document))],
                 retry,
                 summarised,
                 night);
