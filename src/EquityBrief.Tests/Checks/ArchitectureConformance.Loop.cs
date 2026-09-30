@@ -1186,6 +1186,8 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Section review"),
         CheckReach.Key(Scope.CatalogueTable, "Comparison files"),
         CheckReach.Key(Scope.MatrixTable, "Comparison files"),
+    ];
+
     // 12.5's correction on the operator's rulings of 2026-09-29: the sweep history as a component with its
     // catalogue and matrix rows, section 17's four sweep rows and section 18's row about a chunk that fails twice.
     // Declared before the lists that take them in.
