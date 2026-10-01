@@ -38,7 +38,7 @@ public partial class ReadSurface
     // The lister run again over a night whose bar is stored already, replacing the list it drew.
     static Task RedrawTheFamilies(TemporaryStore store) =>
         new FamilyLister(FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile)
-            .RunAsync("families-redrawn");
+            .RunAsync("families-redrawn-" + Guid.NewGuid().ToString("n"));
 
     [Fact]
     public async Task TheBreakoutsCardDrawsItsTrailingTradeAndAStockTwoFamiliesPassIsDrawnOnceWithTheOthersLabel()

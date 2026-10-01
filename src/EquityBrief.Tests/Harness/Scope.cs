@@ -1905,6 +1905,44 @@ internal static class Scope
             "the members of a sector a member short of the floor are stored as not passed, each saying how many members with a return the sector holds against the floor",
             ByExpectations),
 
+        // 13.5, the pages around the setup families, each read off the rendered page over a constructed night.
+        [CheckReach.Key("15.7 Tonight", "The market line, whether the market check left the lists open with the breadth and its floor")] = new Scoped(
+            Verdict.Pass, "the line's words and both figures read off the page on an open night and on a night the check closed, against the stored market reading and the floor the gates stored", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The market line, the buy points the page lists and how many setups list one")] = new Scoped(
+            Verdict.Pass, "the count of buy points read off the line against the listed rows the store holds, with how many of the page's setups list one", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The market line, the stocks close to a buy point")] = new Scoped(
+            Verdict.Pass, "the count on the line equal to the rows of the shared list beneath, worked by hand over the constructed night", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The market line, the trades still open linking to Past picks")] = new Scoped(
+            Verdict.Pass, "the one earlier trade still open counted, the trades listed on the night itself and a trade finished before it left out, and the link to Past picks' open trades read off the line", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, one row a stock and setup with the setup's label")] = new Scoped(
+            Verdict.Pass, "the rows read off the page in the page's order of setups with each one's label, against the members each setup stored as a single gate short, in both directions", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, the one gate it missed in the gate's words")] = new Scoped(
+            Verdict.Pass, "the gate named on each row and its stored reason read off the row's cell", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, the count shown of the count there are")] = new Scoped(
+            Verdict.Pass, "the line above the rows stating the rows shown of the rows there are read off the page", ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The setup the page lists the name under, the setup that lists it with its place and the other setups it qualified under")] = new Scoped(
+            Verdict.Pass, "the sentence read whole off a name the pullback lists that also qualified as a breakout and off a name the breakout lists, each with its place, and a name no setup passed drawing none", ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The setup the page lists the name under, a sentence for a setup that passed it and holds it back")] = new Scoped(
+            Verdict.Pass, "the sentence naming the setup and the night the open trade was listed on read whole off the page of a name held back", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, one row a setup in the page's order")] = new Scoped(
+            Verdict.Pass, "the rows read off the run page against the page's own order of setups", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, live with the day its rule was registered or provisional")] = new Scoped(
+            Verdict.Pass, "the registered setup's row read with the day its candidate was registered and the unregistered setup's row read as provisional", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, the variants scored beside it")] = new Scoped(
+            Verdict.Pass, "the variants standing of those registered read off the registered setup's row, and none on the provisional one's", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, what it lists on the night and the trades listed under it so far")] = new Scoped(
+            Verdict.Pass, "each row's listed count and its trades, open and finished, worked by hand over the constructed store and read off the row", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, its record against what it waits for or the words saying it starts at the freeze")] = new Scoped(
+            Verdict.Pass, "the registered setup's decided trades against the minimums read off its row, and the ruling's words on the provisional setup's", ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "The setup filter, one chip a setup with its trades and the counts following the setup chosen")] = new Scoped(
+            Verdict.Pass, "the chips and their counts read off the page, the filter keeping exactly the setup's trades against the store's listed rows, and the status chips keeping the setup chosen", ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "The setup a trade was listed under, a label on its row")] = new Scoped(
+            Verdict.Pass, "the label read off a pullback's row and off a breakout's", ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "A trailing trade, drawn with no target and its result in multiples of its risk")] = new Scoped(
+            Verdict.Pass, "a trailing trade sold at its stop read off its row with no target, the word saying so on its line, and its result worked by hand from what it made over what it risked", ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "A provisional setup's trades, marked and counted in no share")] = new Scoped(
+            Verdict.Pass, "the provisional mark on each of the unregistered setup's rows, the line counting them, and none on the registered setup's filtered page", ByReadSurface),
+
         // 12.6's correction drawing the news: the name page's region, read off the rendered page over a constructed store.
         [CheckReach.Key("15.7 Tonight", "The list, the positive and negative stories of the thirty days before the night as the name page's bar counts them")] = new Scoped(
             Verdict.Pass,
@@ -3874,6 +3912,26 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "A family's card, a note counting the stocks past its five")] = "13.1",
         [CheckReach.Key("15.7 Tonight", "A family's card, a line saying why where it lists none")] = "13.1",
         [CheckReach.Key("15.7 Tonight", "A family's card, a key saying how to read it")] = "13.1",
+
+        // 13.5, the pages around the setup families.
+        [CheckReach.Key("15.7 Tonight", "The market line, whether the market check left the lists open with the breadth and its floor")] = "13.5",
+        [CheckReach.Key("15.7 Tonight", "The market line, the buy points the page lists and how many setups list one")] = "13.5",
+        [CheckReach.Key("15.7 Tonight", "The market line, the stocks close to a buy point")] = "13.5",
+        [CheckReach.Key("15.7 Tonight", "The market line, the trades still open linking to Past picks")] = "13.5",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, one row a stock and setup with the setup's label")] = "13.5",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, the one gate it missed in the gate's words")] = "13.5",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, the count shown of the count there are")] = "13.5",
+        [CheckReach.Key("15.9 Name", "The setup the page lists the name under, the setup that lists it with its place and the other setups it qualified under")] = "13.5",
+        [CheckReach.Key("15.9 Name", "The setup the page lists the name under, a sentence for a setup that passed it and holds it back")] = "13.5",
+        [CheckReach.Key("15.10 Run", "The setup families, one row a setup in the page's order")] = "13.5",
+        [CheckReach.Key("15.10 Run", "The setup families, live with the day its rule was registered or provisional")] = "13.5",
+        [CheckReach.Key("15.10 Run", "The setup families, the variants scored beside it")] = "13.5",
+        [CheckReach.Key("15.10 Run", "The setup families, what it lists on the night and the trades listed under it so far")] = "13.5",
+        [CheckReach.Key("15.10 Run", "The setup families, its record against what it waits for or the words saying it starts at the freeze")] = "13.5",
+        [CheckReach.Key("15.17 Past picks", "The setup filter, one chip a setup with its trades and the counts following the setup chosen")] = "13.5",
+        [CheckReach.Key("15.17 Past picks", "The setup a trade was listed under, a label on its row")] = "13.5",
+        [CheckReach.Key("15.17 Past picks", "A trailing trade, drawn with no target and its result in multiples of its risk")] = "13.5",
+        [CheckReach.Key("15.17 Past picks", "A provisional setup's trades, marked and counted in no share")] = "13.5",
         [CheckReach.Key("15.7 Tonight", "Still open, one row per stock that passed every gate on the night with nothing excluding it but an open trade while a trade the live list recommended for it on an earlier night is still open on this one")] = "12.2",
         [CheckReach.Key("15.7 Tonight", "Still open, the night that trade was listed on")] = "12.2",
         [CheckReach.Key("15.7 Tonight", "Still open, the trade line")] = "12.2",
@@ -4169,6 +4227,49 @@ internal static class Scope
             "a note counting the stocks past its five",
             "a line saying why where it lists none",
             "a key saying how to read it",
+        ],
+        // 13.5. The pages around the setup families, each row as the parts it enumerates and states.
+        [CheckReach.Key("15.7 Tonight", "The market line")] =
+        [
+            "whether the market check left the lists open with the breadth and its floor",
+            "the buy points the page lists and how many setups list one",
+            "the stocks close to a buy point",
+            "the trades still open linking to Past picks",
+        ],
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups")] =
+        [
+            "one row a stock and setup with the setup's label",
+            "the one gate it missed in the gate's words",
+            "the count shown of the count there are",
+        ],
+        [CheckReach.Key("15.9 Name", "The setup the page lists the name under")] =
+        [
+            "the setup that lists it with its place and the other setups it qualified under",
+            "a sentence for a setup that passed it and holds it back",
+        ],
+        [CheckReach.Key("15.10 Run", "The setup families")] =
+        [
+            "one row a setup in the page's order",
+            "live with the day its rule was registered or provisional",
+            "the variants scored beside it",
+            "what it lists on the night and the trades listed under it so far",
+            "its record against what it waits for or the words saying it starts at the freeze",
+        ],
+        [CheckReach.Key("15.17 Past picks", "The setup filter")] =
+        [
+            "one chip a setup with its trades and the counts following the setup chosen",
+        ],
+        [CheckReach.Key("15.17 Past picks", "The setup a trade was listed under")] =
+        [
+            "a label on its row",
+        ],
+        [CheckReach.Key("15.17 Past picks", "A trailing trade")] =
+        [
+            "drawn with no target and its result in multiples of its risk",
+        ],
+        [CheckReach.Key("15.17 Past picks", "A provisional setup's trades")] =
+        [
+            "marked and counted in no share",
         ],
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done")] =
         [

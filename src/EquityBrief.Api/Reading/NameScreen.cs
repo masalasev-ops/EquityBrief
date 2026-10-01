@@ -1108,7 +1108,9 @@ public static class NameScreen
         // plan the night's live rule read where the row itself stores no input.
         string? versionPlan = null,
         // What was written about the company in the thirty days before the night, with its labels.
-        NewsView? news = null)
+        NewsView? news = null,
+        // The name's rows on the page's list for the night, on a night the setup families drew it.
+        IReadOnlyList<FamilyPickRow>? familyPicks = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1242,7 +1244,8 @@ public static class NameScreen
             earlier,
             gates is not null && missed is not null ? (gates.SessionDate, missed) : null,
             says,
-            news);
+            news,
+            TonightScreen.ListedUnder(ticker, familyPicks ?? []));
     }
 
     // "What the numbers say" for a night's readings: the heading carrying the state, the quarter read from,

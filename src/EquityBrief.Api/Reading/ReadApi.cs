@@ -449,7 +449,9 @@ public sealed record PickRow(
     // that night, which a night the families did not draw holds none of.
     // see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
     string Family = EquityBrief.Core.Families.SetupFamilies.Pullback,
-    IReadOnlyList<string>? Also = null);
+    IReadOnlyList<string>? Also = null,
+    // What the plan put at risk from its fill, as the filler stored it beside the outcome.
+    double? PlannedRisk = null);
 
 // One stock under one family on a night the families drew the page's list, as the store holds it: whether
 // the page lists it, its place down the page and the other families it qualified under, or why it is held
@@ -1213,7 +1215,9 @@ public sealed class ReadApi : IComponent
     // is not a trade the list recommended whatever plan its row carries; and a night the reasons listed
     // holds no filter row to read. The plan is chosen as the near misses choose it. On a night the families
     // drew the page's list, the pullback's trades are the stocks the page listed under it, in the page's
-    // order, each with the other families it qualified under.
+    // order, each with the other families it qualified under, and every other family's trades are the
+    // stocks the page listed under it, each on the trade its family's stored answer holds and the outcome
+    // scored under its family's horizon.
     // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
@@ -1234,7 +1238,11 @@ public sealed class ReadApi : IComponent
                s.state,
                $pullback,
                (SELECT fp.also FROM family_pick fp
-                WHERE fp.session_date = g.session_date AND fp.ticker = g.ticker AND fp.family = $pullback AND fp.state = $listed)
+                WHERE fp.session_date = g.session_date AND fp.ticker = g.ticker AND fp.family = $pullback AND fp.state = $listed),
+               f.planned_risk,
+               IFNULL(" + EquityBrief.Core.Families.FamilyList.PlaceOn("g.ticker", "g.session_date") + @", 0),
+               " + EquityBrief.Core.Quarters.FundamentalState.PlaceIn("s.state") + @",
+               g.rank
         FROM gate_result g
         JOIN list_rule r ON r.session_date = g.session_date AND r.rule = $filter
         LEFT JOIN filter_version v ON v.version = g.version
@@ -1247,9 +1255,36 @@ public sealed class ReadApi : IComponent
                    THEN EXISTS (SELECT 1 FROM family_pick fp
                                 WHERE fp.session_date = g.session_date AND fp.ticker = g.ticker AND fp.family = $pullback AND fp.state = $listed)
                    ELSE g.passed = 1 END
-        ORDER BY g.session_date DESC,
-                 IFNULL(" + EquityBrief.Core.Families.FamilyList.PlaceOn("g.ticker", "g.session_date") + @", 0),
-                 " + EquityBrief.Core.Quarters.FundamentalState.PlaceIn("s.state") + @", g.rank, g.ticker;
+        UNION ALL
+        SELECT p.ticker, p.session_date,
+               " + EquityBrief.Core.Families.SetupFamilies.HorizonIn("p.family", "pv.settings") + @",
+               pr.entry, pr.stop, pr.target,
+               pf.horizon IS NOT NULL, pf.outcome, pf.resolved_on, pf.return_pct, pf.break_even,
+               (SELECT m.name FROM membership m WHERE m.ticker = p.ticker
+                ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1),
+               (SELECT b.close FROM bar b WHERE b.ticker = p.ticker AND b.session_date = p.session_date),
+               (SELECT b.session_date FROM bar b WHERE b.ticker = p.ticker AND b.session_date <= $on
+                ORDER BY b.session_date DESC LIMIT 1),
+               (SELECT b.close FROM bar b WHERE b.ticker = p.ticker AND b.session_date <= $on
+                ORDER BY b.session_date DESC LIMIT 1),
+               ps.state,
+               p.family,
+               p.also,
+               pf.planned_risk,
+               IFNULL(p.place, 0),
+               0,
+               0
+        FROM family_pick p
+        JOIN family_result pr ON pr.session_date = p.session_date AND pr.ticker = p.ticker AND pr.family = p.family
+        LEFT JOIN gate_result pg ON pg.ticker = p.ticker AND pg.session_date = p.session_date
+        LEFT JOIN filter_version pv ON pv.version = pg.version
+        LEFT JOIN forward_return pf
+            ON pf.ticker = p.ticker AND pf.session_date = p.session_date
+            AND pf.horizon = " + EquityBrief.Core.Families.SetupFamilies.HorizonIn("p.family", "pv.settings") + @"
+        LEFT JOIN fundamental_reading ps ON ps.ticker = p.ticker AND ps.session_date = p.session_date
+        WHERE p.state = $listed AND p.family <> $pullback
+          AND p.session_date <= $on AND ($ticker IS NULL OR p.ticker = $ticker)
+        ORDER BY 2 DESC, 20, 21, 22, 1;
     ";
 
     // Every member's readings on one night.
@@ -2858,7 +2893,8 @@ public sealed class ReadApi : IComponent
                 Price(14),
                 reader.IsDBNull(15) ? null : reader.GetString(15),
                 reader.GetString(16),
-                reader.IsDBNull(17) ? [] : System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(17)) ?? []));
+                reader.IsDBNull(17) ? [] : System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(17)) ?? [],
+                reader.IsDBNull(18) ? null : reader.GetDouble(18)));
         }
 
         return rows;

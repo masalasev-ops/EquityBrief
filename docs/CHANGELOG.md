@@ -10005,3 +10005,10 @@ Was:
 Now:
 > The note adds "a sector leader's sector rank, negated so the first sector sorts first, its own return then deciding among the leaders of one sector", and the paragraph adds that a sector leader's row holds the pullback's plan as the swing filter's row stored it and is scored on that `gate_result` row, so no outcome row is written for it here.
 Why: a leader's trade is the pullback's, and one trade is scored once.
+### 2026-10-01 - ARCHITECTURE.html - the pages around the setup families
+Authorised by: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+Was:
+> Section 15.7's table held "A family's card" and no row for a market line or for one list of stocks close to a buy point across the setups. Section 15.9's table ended at "Walk", section 15.10's at "Harness" and section 15.17's at "Every trade", none naming a setup.
+Now:
+> Section 15.7 gains "The market line", whether the market check left the lists open with the breadth and its floor, the buy points and how many setups list one, the stocks close to a buy point and the trades still open linking to Past picks, and "Close to a buy point across the setups", one row a stock and setup with the setup's label, the one gate it missed and the count shown of the count there are. Section 15.9 gains "The setup the page lists the name under". Section 15.10 gains "The setup families", one row a setup with its standing, its variants, what it lists and its trades, and its record. Section 15.17 gains "The setup filter", "The setup a trade was listed under", "A trailing trade" and "A provisional setup's trades".
+Why: with four families on the page, the pages around it say which setup a stock, a trade and a count belong to, and a provisional setup's trades stay out of every share until its freeze.

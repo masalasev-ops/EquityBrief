@@ -641,7 +641,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<PickCell>? earlier = null,
         (DateOnly Evening, EquityBrief.Core.Filter.MissedGate Gate)? missed = null,
         NumbersSayView? says = null,
-        NewsView? news = null)
+        NewsView? news = null,
+        ListedUnderView? listedUnder = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1076,6 +1077,15 @@ public sealed class SinglePageApp : IComponent
         // The contents, written from the cards that were drawn and standing above them, which
         // is why the cards were held apart until now.
         region.Append(marks.Contents(ticker, onThePage));
+
+        // Under which setup the page listed the name on the night, or why a setup that passed it does not
+        // list it, on a night the setup families drew the page's list.
+        // see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
+        if (listedUnder is not null)
+        {
+            region.Append(marks.ListedUnder(listedUnder));
+        }
+
         region.Append(body);
 
         // The walk, which section 15.9 puts last: previous and next on tonight's
@@ -1478,7 +1488,9 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<DateOnly>? held = null,
         IReadOnlyList<ListingCell>? close = null,
         IReadOnlyList<StillOpenCell>? stillOpen = null,
-        IReadOnlyList<FamilyCardView>? families = null)
+        IReadOnlyList<FamilyCardView>? families = null,
+        MarketLineView? line = null,
+        IReadOnlyList<CloseToBuyCell>? closeAcross = null)
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -1518,6 +1530,14 @@ public sealed class SinglePageApp : IComponent
         // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
         if (families is not null)
         {
+            // The line the page opens its setups on: whether the market check left the lists open, and the
+            // night's counts across every setup.
+            // see: The market check closes every family's list together
+            if (line is not null)
+            {
+                region.Append(marks.MarketLine(line));
+            }
+
             foreach (var card in families)
             {
                 region.Append(Cards.Computed(
@@ -1577,7 +1597,23 @@ public sealed class SinglePageApp : IComponent
         // short, drawing the places the list leaves of the twenty, nearest to qualifying first. It recommends
         // nothing, which its key says.
         // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
-        if (byFilter && close is not null)
+        // On a night the families drew the page's list it is one list across every setup, a row a stock and
+        // setup with the setup's label and the one gate it missed, the setups in the page's order.
+        // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+        if (families is not null && closeAcross is not null)
+        {
+            region.Append(Cards.Computed(
+                "Close to a buy point",
+                marks.CloseAcross(closeAcross, TonightDrawn) + Cards.Key(
+                    "How to read this list.",
+                    "Each row is a stock that passed every gate of one setup but one tonight, with nothing excluding it. It is not a buy point and recommends nothing: it is what to watch for tomorrow.",
+                    "A stock a single gate short under two setups has a row for each. The setups are drawn in the page's order."),
+                title: "Close to a buy point",
+                lede: "One list across every setup: each row passed every gate of its setup but one.",
+                stamp: Cards.Night(night),
+                region: "close"));
+        }
+        else if (byFilter && close is not null)
         {
             region.Append(Cards.Computed(
                 "Close to a buy point",
@@ -1717,7 +1753,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<VersionLine>? background = null,
         CompareView? compare = null,
         IReadOnlyList<CheckpointRow>? checkpoints = null,
-        ReportsView? reports = null)
+        ReportsView? reports = null,
+        IReadOnlyList<FamilyRunRow>? setupFamilies = null)
     {
         var region = new StringBuilder();
 
@@ -1988,6 +2025,23 @@ public sealed class SinglePageApp : IComponent
             region.Append(Folded);
         }
 
+        // The setup families the page is drawn from: each one's standing, what it lists on the night, the
+        // trades the page has listed under it and its record.
+        // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+        if (setupFamilies is { Count: > 0 })
+        {
+            region.Append(Cards.Computed(
+                "Setup families",
+                marks.FamilyRun(setupFamilies) + Cards.Key(
+                    "How to read it.",
+                    "Each row is one setup the page is drawn from. A live setup's rule is registered and its record counts from that day; a provisional one runs on settings taken from published evidence until its sweep proposes the values its freeze registers.",
+                    "A provisional setup's trades are listed and followed like any other and are in no share and no checkpoint until its freeze."),
+                title: "The setups the page is drawn from",
+                lede: "One row a setup, in the page's order: where its rule stands, what it lists tonight and how its trades stand.",
+                stamp: Cards.Night(night),
+                region: "families"));
+        }
+
         if (orders is { } comparison)
         {
             region.Append(Fold("orders", "The order tonight's list is drawn in, against the one it replaced"));
@@ -2142,7 +2196,9 @@ public sealed class SinglePageApp : IComponent
     // carries. Only the live list's trades appear, each on the plan its night's rule traded, and the
     // share that reached its target waits for the minimum the run page's records wait for.
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
-    public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status)
+    // The counts and the rows are those of the setup the hash names, where it names one, and of every setup
+    // where it names none; the setups are the ones the page has listed a trade under, each with its trades.
+    public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null)
     {
         var region = new StringBuilder();
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
@@ -2180,20 +2236,27 @@ public sealed class SinglePageApp : IComponent
 
         var body = new StringBuilder();
 
-        body.Append(marks.PicksFilters(summary, status));
+        body.Append(marks.PicksFilters(summary, status, setup, setups));
         // The rows shown of the rows there are: the trades, and the listings that repeated a trade still open,
         // drawn with their mark and counted as no trade.
         // see: A repeat listing made before the rule reached the filter is marked and counted once
         body.Append(summary.Repeats == 0
             ? Invariant($"<p class=\"list-count\" data-shown=\"{shown.Count}\" data-trades=\"{summary.Listed}\">Showing {shown.Count} of {summary.Listed} trade{(summary.Listed == 1 ? string.Empty : "s")}</p>")
             : Invariant($"<p class=\"list-count\" data-shown=\"{shown.Count}\" data-trades=\"{summary.Listed}\" data-repeats=\"{summary.Repeats}\">Showing {shown.Count} of {summary.Listed + summary.Repeats} rows: {summary.Listed} trade{(summary.Listed == 1 ? string.Empty : "s")} and {summary.Repeats} listed again while an earlier trade was open</p>"));
+        // The trades a setup on provisional settings listed are followed like any other and are in no share.
+        // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+        if (summary.Provisional > 0)
+        {
+            body.Append(Invariant($"<p class=\"provisional-count\" data-provisional=\"{summary.Provisional}\">{summary.Provisional} of them {(summary.Provisional == 1 ? "was" : "were")} listed by a setup not yet frozen: followed like any other, and in no share and no average until its freeze.</p>"));
+        }
+
         body.Append(shown.Count == 0
             ? "<p class=\"degraded\" data-shown=\"none\">No trade stands in this status yet.</p>"
             : marks.PicksTable(shown, named: true));
         body.Append(Cards.Key(
             "How to read the trade line.",
-            "The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished, and a price past either end sits at that end.",
-            "Only the live list's trades appear here. The alternatives being tested in the background stay hidden until one of them is promoted."));
+            "The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished, and a price past either end sits at that end. A setup that trails its stop names no target, so its row draws no line and its result is what it made in multiples of what it risked.",
+            "Only the live list's trades appear here, each under the setup that listed it. The alternatives being tested in the background stay hidden until one of them is promoted."));
 
         region.Append(Cards.Computed(
             "Past picks",

@@ -35316,3 +35316,66 @@ Held:       F134HELD.
 Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
             `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
             with the figures 13.5's entry states.
+
+### 13.5 - the pages: tonight's market line and one list of stocks close to a buy point across every setup, Past picks with a setup filter and label and a trailing trade drawn in multiples of its risk, a name's page saying which setup lists it, and the run page's row a setup   2026-10-01
+
+Built:      - Tonight, on a night the families drew its list. A market line above the cards: whether the
+              market check left the lists open, with the breadth and its floor, the buy points the page
+              lists and how many setups list one, the stocks close to a buy point, and the trades still
+              open, linking to Past picks. A trade listed on the night itself is a buy point and not yet
+              an open trade. And one list of stocks close to a buy point across every setup, in place
+              of the swing filter's own: a row a stock and setup with the setup's label and the one
+              gate it missed in that gate's words, the pullback's rows first in the order the filter's
+              list has always drawn them, then each other setup's in the page's order.
+            - Past picks. Its rows are every trade the page listed, under every setup: a pullback's from
+              the filter's row as before, and another setup's from its own stored answer, with the
+              outcome scored under that setup's horizon. A chip a setup filters them, the counts follow
+              the setup chosen and the status chips keep it; each row carries its setup's label; a
+              trailing trade is drawn with no target and its result in multiples of its risk; and a
+              trade a setup on provisional settings listed is marked, counted as listed, and left out
+              of the share and the average, with a line saying how many there are.
+            - A name's page says, beneath its contents, which setup lists it on the night with its place
+              and the other setups it qualified under, or why a setup that passed it does not list it.
+            - The run page draws a row a setup: live since the day its rule was registered or
+              provisional, its variants, what it lists on the night, the trades listed under it so far,
+              open and finished, and its record against the minimums it waits for or the ruling's words.
+              The page's own count of trades is the live rule's, the pullback's.
+            - Documents: section 15.7's two rows, 15.9's row, 15.10's row and 15.17's four rows, as the
+              eighteen parts they state. Prior text in CHANGELOG.
+Not built:  the mockup's line naming the index against its averages: the night holds no index series,
+            so the line draws breadth and whether the lists are open. No setup is registered here, so
+            every setup but the pullback draws as provisional until its freeze, 13.9.
+Tests:      three added, each read off the rendered page over a constructed night the lister drew, in
+            both directions. The market line's figures against the store on an open night and a closed
+            one, with the shared list's rows, labels and gates. Past picks' chips and counts, the filter
+            keeping exactly a setup's trades, the labels, a trailing trade sold at its stop 6 per cent
+            up on 6 at risk drawn as +1.00 with no target, and the provisional line. A name listed
+            under one setup that qualified under another, one held back by its open trade, one listed
+            by the breakout and one no setup passed; and the run page's rows for a registered setup
+            and a provisional one. Changed: Past picks' heading test names the setup column, and its
+            key's sentence says each trade is under the setup that listed it.
+Claims:     18 added, the parts the eight rows state. Phase 13 added 66 in all, 25, 11, 7, 5 and 18,
+            and the pair after it is 855 and 855 PASS, predicted at 853 within 840 to 870.
+Figures:    1,697 tests: 1,669 before the phase, and 5, 7, 4, 6 with the store ruling's check, 3 and 3
+            added by 13.1 to 13.5.
+Pins:       none moves. The three lists were read off the code's own declarations and the tree touches
+            none of them.
+Remedy:     none of its own. After the merge, `tools/migrate.ps1` for migrations 53 and 54, then the
+            read surface is started again.
+Unpredicted: a provisional setup's trades are kept out of Past picks' share and average, which the plan
+            did not state and the ruling requires: its record starts at its freeze. The pullback's
+            trades count there whatever the register holds, as they always have. Past picks keeps one
+            status for a trade sold at its stop, trailing or not, where the plan spoke of none.
+Mutated:    the rule, stated before the run: each rule this checkpoint adds, reversed alone, filtered to the
+            tests that read it, in a detached worktree at the pull request's tree and reverted.
+            Predicted:
+            E1 the line counting the night's own listings as open trades: red in the market line's test.
+            E2 the shared list drawing a member two gates short: red in the market line's test.
+            E3 the setup filter keeping every trade: red in Past picks' test.
+            E4 a provisional setup's trades counted in the share: red in Past picks' test, the line gone.
+            E5 a trailing trade's result left blank: red in Past picks' test.
+            E6 the run page's rows drawn for every setup as live: red in the name and run page's test.
+            Results: F135MUT.
+Held:       F135HELD.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green over the tree carrying every
+            entry from 13.0's to this one, F13SHA: F13FIG.

@@ -164,8 +164,9 @@ public partial class FixtureExpectations
         // A leader's trade is the pullback's plan on the filter's row, so its outcome is that row's: the
         // filler scores no row of its own for it, and the next night reads A2's trade as open from the
         // filter row's outcome under the plan clear of the noise.
-        await new ForwardReturnFiller(clock, store.DatabaseFile).RunAsync("returns-leaders");
+        var filled = await new ForwardReturnFiller(clock, store.DatabaseFile).RunAsync("returns-leaders");
 
+        Assert.Equal(0, filled.FamilyTradesExamined);
         Assert.Equal(["0"], FamilyRows(store, "SELECT COUNT(*) FROM forward_return WHERE horizon NOT IN ('clear', 'clear-20', 'swing', 'swing-20', '5', '21', 'setup');"));
         Assert.Equal(["clear"], FamilyRows(store, "SELECT horizon FROM forward_return WHERE ticker = 'A2' AND horizon = '" + ForwardReturnSeries.Clear + "';"));
     }

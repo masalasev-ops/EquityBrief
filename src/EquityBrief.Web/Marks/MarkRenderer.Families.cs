@@ -37,8 +37,159 @@ public sealed record FamilyCardView(
     IReadOnlyList<string> Notes,
     string? Empty);
 
+// The line tonight's page opens on, on a night the families drew its list: whether the market check left
+// the lists open, the breadth it read against its floor, the buy points the page lists and how many of the
+// setups list one, the stocks a single gate short of one, and the trades still open.
+// see: The market check closes every family's list together
+public sealed record MarketLineView(bool Open, double? Breadth, double? Floor, int BuyPoints, int SetupsListing, int Setups, int Close, int OpenTrades);
+
+// One stock a single gate short of a buy point under one setup, as the shared list draws it: the setup's
+// word and label, the gate it missed, and that gate's own words.
+public sealed record CloseToBuyCell(string Ticker, string? Company, string Family, string Setup, string Gate, string Words);
+
+// What a name's page says of the page's list on its night: the night, the setup that lists the name with its
+// place and the other setups it qualified under, or none where no setup lists it, and a sentence for each
+// setup that passed it and holds it back.
+public sealed record ListedUnderView(DateOnly Night, string? Family, string? Heading, int? Place, IReadOnlyList<string> Also, IReadOnlyList<string> HeldBack);
+
+// One setup family on the run page: the day its rule went live or none while it is provisional, the variants
+// scored beside it, what it lists on the night, the trades the page has listed under it with how many are
+// open and finished, and its record in words.
+public sealed record FamilyRunRow(string Family, string Heading, DateOnly? LiveSince, int Variants, int ListedTonight, int Trades, int Open, int Finished, string Record);
+
 public sealed partial class MarkRenderer
 {
+    // The run page's setups, one row a family in the page's order.
+    public string FamilyRun(IReadOnlyList<FamilyRunRow> rows)
+    {
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table family-run\" data-rows=\"{rows.Count}\"><thead><tr>");
+
+        foreach (var (heading, says) in new[]
+        {
+            ("Setup", "The setup family, in the page's order."),
+            ("Rule", "Live since the day its rule was registered, or provisional while no freeze has registered it."),
+            ("Variants", "The variants of its rule scored in the background beside it."),
+            ("Listed tonight", "The stocks the page lists under it on this night."),
+            ("Trades so far", "Every trade the page has listed under it, with how many are still open and how many finished."),
+            ("Record", "Where its record stands against what it waits for. A provisional setup's record starts at its freeze."),
+        })
+        {
+            body.Append(TippedHeading(heading, says, heading is "Variants" or "Listed tonight" ? "r" : null));
+        }
+
+        body.Append("</tr></thead><tbody>");
+
+        foreach (var row in rows)
+        {
+            body.Append(Invariant, $"<tr data-family=\"{Escaped(row.Family)}\" data-state=\"{(row.LiveSince is null ? "provisional" : "live")}\" data-live-since=\"{(row.LiveSince is { } since ? DayOf(since) : "none")}\" data-variants=\"{row.Variants}\" data-listed=\"{row.ListedTonight}\" data-trades=\"{row.Trades}\" data-open=\"{row.Open}\" data-finished=\"{row.Finished}\">");
+            body.Append(Invariant, $"<td class=\"setup\">{Escaped(row.Heading)}</td>");
+            body.Append(row.LiveSince is { } live
+                ? Formatted($"<td>live since {DayOf(live)}</td>")
+                : "<td><span class=\"provisional\">provisional</span></td>");
+            body.Append(Invariant, $"<td class=\"r num\">{row.Variants}</td><td class=\"r num\">{row.ListedTonight}</td>");
+            body.Append(Invariant, $"<td>{Count(row.Trades, "trade")}, {row.Open} open and {row.Finished} finished</td>");
+            body.Append(Invariant, $"<td class=\"family-record\">{Escaped(row.Record)}</td></tr>");
+        }
+
+        body.Append("</tbody></table></div>");
+
+        return body.ToString();
+    }
+
+    // A name's line on the page's list for its night.
+    public string ListedUnder(ListedUnderView view)
+    {
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<p class=\"listed-under\" data-night=\"{DayOf(view.Night)}\" data-family=\"{Escaped(view.Family ?? "none")}\" data-place=\"{(view.Place is { } at ? at.ToString(Invariant) : "none")}\" data-also=\"{Escaped(string.Join(",", view.Also))}\">");
+
+        if (view.Family is not null)
+        {
+            body.Append(Invariant, $"On the page's list for {DayOf(view.Night)} under <b>{Escaped(view.Heading ?? view.Family)}</b>, at place {view.Place}");
+            body.Append(view.Also.Count > 0
+                ? Formatted($"; it also qualified as {Escaped(string.Join(" and ", view.Also.Select(Article)))}.")
+                : ".");
+        }
+
+        foreach (var held in view.HeldBack)
+        {
+            body.Append(Invariant, $"{(view.Family is not null || held != view.HeldBack[0] ? " " : string.Empty)}{Escaped(held)}");
+        }
+
+        body.Append("</p>");
+
+        return body.ToString();
+    }
+
+    // The market line: the check's answer in words with both figures, then the night's counts, the open
+    // trades linking to Past picks.
+    public string MarketLine(MarketLineView line)
+    {
+        var check = line.Breadth is { } breadth && line.Floor is { } floor
+            ? Formatted($"{breadth * 100:0.0}% of the members closed above their 200-day average, {(line.Open ? "at or above" : "below")} its floor of {floor * 100:0.#}%")
+            : "the night's breadth is not available";
+
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<p class=\"market-line\" data-open=\"{Flag(line.Open)}\" data-breadth=\"{(line.Breadth is { } held ? held.ToString("R", Invariant) : "none")}\" data-floor=\"{(line.Floor is { } bar ? bar.ToString("R", Invariant) : "none")}\" ");
+        body.Append(Invariant, $"data-buy-points=\"{line.BuyPoints}\" data-setups-listing=\"{line.SetupsListing}\" data-setups=\"{line.Setups}\" data-close=\"{line.Close}\" data-open-trades=\"{line.OpenTrades}\">");
+        body.Append(Invariant, $"<b class=\"market-{(line.Open ? "open" : "closed")}\">{(line.Open ? "The lists are open" : "The lists are closed")}</b>: {Escaped(check)}. ");
+        body.Append(Invariant, $"<span class=\"market-counts\">{Count(line.BuyPoints, "buy point")} tonight across {line.SetupsListing} of {Count(line.Setups, "setup")} · {line.Close} close to a buy point · ");
+        body.Append(Invariant, $"<a href=\"#/picks?status={PickStatus.Open}\">{Count(line.OpenTrades, "open trade")}</a></span></p>");
+
+        return body.ToString();
+    }
+
+    // What each column of the shared list of stocks close to a buy point holds.
+    public static IReadOnlyList<(string Heading, string Says)> CloseAcrossHeadings { get; } =
+    [
+        ("#", "The row's place in this list, the setups in the page's order."),
+        ("Stock", "The ticker opens the stock's page, with the company beneath."),
+        ("Setup", "The setup the stock is a single gate short of."),
+        ("The gate it missed", "The one gate of that setup the stock did not pass tonight, in the gate's own words."),
+    ];
+
+    // The shared list of stocks close to a buy point: one row a stock and setup, each passing every gate of
+    // that setup but one with nothing excluding it, the first of them drawn and the count of all stated.
+    public string CloseAcross(IReadOnlyList<CloseToBuyCell> rows, int drawn)
+    {
+        var body = new StringBuilder();
+        var shown = rows.Take(drawn).ToArray();
+
+        body.Append(Invariant, $"<p class=\"list-count\" data-shown=\"{shown.Length}\" data-close=\"{rows.Count}\">Showing {shown.Length} of {rows.Count} close to a buy point</p>");
+
+        if (shown.Length == 0)
+        {
+            body.Append("<p class=\"degraded\" data-close=\"none\">No stock is a single gate short of a buy point under any setup tonight.</p>");
+
+            return body.ToString();
+        }
+
+        body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table close-across\" data-rows=\"{shown.Length}\"><thead><tr>");
+
+        foreach (var (heading, says) in CloseAcrossHeadings)
+        {
+            body.Append(TippedHeading(heading, says, heading == "#" ? "place" : null));
+        }
+
+        body.Append("</tr></thead><tbody>");
+
+        foreach (var (row, at) in shown.Select((row, at) => (row, at)))
+        {
+            body.Append(Invariant, $"<tr data-ticker=\"{Escaped(row.Ticker)}\" data-family=\"{Escaped(row.Family)}\" data-gate=\"{Escaped(row.Gate)}\">");
+            body.Append(Invariant, $"<td class=\"place\">{at + 1}</td>");
+            body.Append(Invariant, $"<td class=\"c-nm\"><a class=\"name-link\" href=\"#/name/{Uri.EscapeDataString(row.Ticker)}\">{Escaped(row.Ticker)}</a>{(row.Company is { Length: > 0 } company ? Formatted($"<span class=\"co\">{Escaped(company)}</span>") : string.Empty)}</td>");
+            body.Append(Invariant, $"<td class=\"setup\" data-setup=\"{Escaped(row.Family)}\">{Escaped(row.Setup)}</td>");
+            body.Append(Invariant, $"<td class=\"missed-gate\"><b>{Escaped(row.Gate)}</b>: {Escaped(row.Words)}</td></tr>");
+        }
+
+        body.Append("</tbody></table></div>");
+
+        return body.ToString();
+    }
+
     // What each column of a family's card holds, in the order the columns are drawn.
     public static IReadOnlyList<(string Heading, string Says)> FamilyHeadings { get; } =
     [

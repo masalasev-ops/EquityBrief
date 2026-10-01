@@ -118,9 +118,10 @@ public partial class ReadSurface
         (string Heading, string Classes, string Shown, string Says)[] after =
         [
             ("Business that night", "tipped", "Business that night", "The state the company's reported quarters gave it on the evening it was listed, or not read that night where none was stored yet."),
+            ("Setup", "tipped", "Setup", "The setup the page listed the trade under. A trade listed before the page drew setups was the pullback's."),
             ("Buy", "r tipped", "Buy", "The price the plan buys at."),
-            ("Stop", "r tipped", "Stop", "The price the plan sells at to cut the loss."),
-            ("Target", "r tipped", "Target", "The price the plan takes its gain at."),
+            ("Stop", "r tipped", "Stop", "The price the plan sells at to cut the loss, or the first level of a stop that trails the price."),
+            ("Target", "r tipped", "Target", "The price the plan takes its gain at. A setup that trails its stop names none."),
             ("Trade", "tipped", "Trade", "The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
             ("Status", "tipped", "Status", "What became of the trade: open, reached target, stopped out, or ran out of time where its holding limit passed before either."),
             ("Sessions held", "r tipped", "Sessions held", "Trading sessions from the night listed to the session it finished on, or to the night drawn while it is still open."),

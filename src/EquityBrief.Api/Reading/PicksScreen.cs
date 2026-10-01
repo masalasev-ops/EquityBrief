@@ -1,4 +1,5 @@
 using EquityBrief.Core.Bars;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Returns;
@@ -23,20 +24,43 @@ public static class PicksScreen
     // order that night's list was drawn in, improving businesses first where it stored its readings and the
     // filter's own order where it stored none.
     // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
-    public static IReadOnlyList<PickCell> Cells(IReadOnlyList<PickRow> rows, DateOnly asOf)
+    // A trade a setup on provisional settings listed is marked so, by the setups handed in as provisional.
+    // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    public static IReadOnlyList<PickCell> Cells(IReadOnlyList<PickRow> rows, DateOnly asOf, IReadOnlySet<string>? provisional = null)
     {
         // Each listing walked against the trades before it: a listing made while the stock's kept trade was
         // still open repeats that trade, and is drawn marked and counted in no total.
         // see: A repeat listing made before the rule reached the filter is marked and counted once
         var walked = OpenTrades.Walk(rows.Select(Listing));
 
-        return [.. rows.Select(row => Cell(row, asOf) with { RepeatOf = walked[(row.Ticker, row.Night)] })];
+        return [.. rows.Select(row => Cell(row, asOf) with { RepeatOf = walked[(row.Ticker, row.Night)], Provisional = provisional?.Contains(row.Family) ?? false })];
     }
 
     // A trade as the open trade rule reads it: the stock, the night, and what became of the plan its night
     // traded on its capped horizon, with whether an outcome row is stored at all.
     public static OpenTradeListing Listing(PickRow row) =>
-        new(row.Ticker, row.Night, row.OutcomeStored, row.Outcome, row.ResolvedOn, ForwardReturnSeries.CapOf(row.Plan));
+        new(row.Ticker, row.Night, row.OutcomeStored, row.Outcome, row.ResolvedOn, CapOf(row));
+
+    // The sessions a trade is given: its family's own cap where the family is scored on a horizon of its
+    // own, and the cap of the plan its night traded where the trade is the pullback's.
+    static int CapOf(PickRow row) =>
+        SetupFamilies.Named(row.Family) is { OnThePullbacksPlan: false } family ? family.CapSessions : ForwardReturnSeries.CapOf(row.Plan);
+
+    // The trades one setup family's filter keeps. A setup the page does not draw keeps every trade, as all does.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    public static IReadOnlyList<PickCell> OfSetup(IReadOnlyList<PickCell> cells, string? setup) =>
+        setup is { } asked && SetupFamilies.Named(asked) is not null
+            ? [.. cells.Where(cell => cell.Family == asked)]
+            : cells;
+
+    // The setups the page has listed a trade under, in the page's order, each with its trades, a listing
+    // that repeated a trade still open counted in none.
+    public static IReadOnlyList<(string Family, string Label, int Trades)> Setups(IReadOnlyList<PickCell> cells) =>
+    [
+        .. SetupFamilies.InPageOrder
+            .Select(family => (family.Name, family.Label, cells.Count(cell => cell.Family == family.Name && cell.RepeatOf is null)))
+            .Where(setup => setup.Item3 > 0),
+    ];
 
     // A name's trades listed before the night its page draws, which is what "On the list before" states:
     // the night's own listing is the page's subject rather than one before it.
@@ -62,11 +86,15 @@ public static class PicksScreen
         // see: A repeat listing made before the rule reached the filter is marked and counted once
         var counted = cells.Where(cell => cell.RepeatOf is null).ToArray();
         var finished = counted.Where(cell => cell.Status is PickStatus.Target or PickStatus.Stopped or PickStatus.Time).ToArray();
-        var decided = finished.Where(cell => ForwardReturnSeries.IsScored(Outcome(cell.Status), cell.BreakEven)).ToArray();
+
+        // A trade a setup on provisional settings listed is in neither the share nor the average: its
+        // setup's record starts at its freeze.
+        // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+        var decided = finished.Where(cell => !cell.Provisional && ForwardReturnSeries.IsScored(Outcome(cell.Status), cell.BreakEven)).ToArray();
         var nights = decided.Select(cell => cell.Night).Distinct().Count();
         var met = decided.Length >= ReasonVerdict.MinimumResolved && nights >= ReasonVerdict.MinimumSessions;
 
-        var results = finished.Where(cell => cell.Result is not null).Select(cell => cell.Result!.Value).ToArray();
+        var results = finished.Where(cell => !cell.Provisional && cell.Result is not null).Select(cell => cell.Result!.Value).ToArray();
 
         return new PicksSummary(
             counted.Length,
@@ -83,7 +111,8 @@ public static class PicksScreen
             met ? 100.0 * decided.Count(cell => cell.Status == PickStatus.Target) / decided.Length : null,
             met ? decided.Average(cell => cell.BreakEven!.Value) : null,
             met && results.Length > 0 ? results.Average() : null,
-            cells.Count - counted.Length);
+            cells.Count - counted.Length,
+            counted.Count(cell => cell.Provisional));
     }
 
     // The stored outcome a status stands for, which the run page's own test of a scored setup reads.
@@ -107,9 +136,13 @@ public static class PicksScreen
                 {
                     ForwardReturnSeries.Win => PickStatus.Target,
                     ForwardReturnSeries.Loss => PickStatus.Stopped,
+                    // A trade sold at a close under its trailing stop left at its stop, at a gain or a loss.
+                    TrailingExit.Trailed => PickStatus.Stopped,
                     ForwardReturnSeries.Unresolved => PickStatus.Time,
                     _ => PickStatus.Missing,
                 };
+
+        var family = SetupFamilies.Named(row.Family);
 
         var finished = status is PickStatus.Target or PickStatus.Stopped or PickStatus.Time;
 
@@ -141,6 +174,9 @@ public static class PicksScreen
             status == PickStatus.Open ? row.NowOn : null,
             status == PickStatus.Open ? row.NowClose : null,
             row.BreakEven,
-            row.State);
+            row.State,
+            Family: row.Family,
+            Setup: family?.Label ?? row.Family,
+            Trailing: family?.Trails ?? false);
     }
 }

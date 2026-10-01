@@ -383,6 +383,143 @@ public static partial class TonightScreen
             : "No stock passed this setup tonight: " + Funnel(results) + ".";
     }
 
+    // The shared list of stocks close to a buy point on a night the families drew: the pullback's, the rows
+    // the swing filter's results give in their own order, each with the gate it missed in that gate's words,
+    // then every other family's in the page's order, each member its family stored as missing exactly one
+    // gate with nothing excluding it, by ticker, with that gate's stored reason.
+    // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
+    public static IReadOnlyList<CloseToBuyCell> CloseAcross(
+        IReadOnlyList<string> onThePage,
+        IReadOnlyList<ListingCell>? near,
+        IReadOnlyList<FamilyResultRow> results,
+        IReadOnlyDictionary<string, UniverseCell> cellByTicker)
+    {
+        var rows = new List<CloseToBuyCell>();
+
+        foreach (var family in onThePage.Select(SetupFamilies.Named).OfType<SetupFamily>())
+        {
+            if (family.Name == SetupFamilies.Pullback)
+            {
+                rows.AddRange((near ?? [])
+                    .Where(row => row.Missed is not null)
+                    .Select(row => new CloseToBuyCell(row.Ticker, row.Distance?.Name, family.Name, family.Label, row.Missed!.Gate, row.Missed.Words)));
+
+                continue;
+            }
+
+            rows.AddRange(results
+                .Where(result => result.Family == family.Name && !result.Passed && result.Missed == 1 && result.Exclusions.Count == 0)
+                .OrderBy(result => result.Ticker, StringComparer.Ordinal)
+                .Select(result =>
+                {
+                    var missed = FamilyRule.GatesOf(result.Gates).First(gate => !gate.Passed);
+
+                    return new CloseToBuyCell(
+                        result.Ticker,
+                        cellByTicker.TryGetValue(result.Ticker, out var cell) ? cell.Name : null,
+                        family.Name,
+                        family.Label,
+                        missed.Name,
+                        missed.Reason);
+                }));
+        }
+
+        return rows;
+    }
+
+    // The setups whose trades are in no share as of a night: every one but the pullback that no standing
+    // registration makes live. The pullback's trades are the live list's, counted from the swing filter's
+    // first night whatever the register holds, as Past picks has always counted them.
+    // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    public static IReadOnlySet<string> ProvisionalSetups(IReadOnlyList<CandidateRow> register, DateOnly night) =>
+        SetupFamilies.InPageOrder
+            .Where(family => family.Name != SetupFamilies.Pullback && Standing(family, register, night).LiveSince is null)
+            .Select(family => family.Name)
+            .ToHashSet(StringComparer.Ordinal);
+
+    // The run page's setups: each family the page draws with its rule's standing, the variants scored
+    // beside it, what it lists on the night, the trades the page has listed under it and how they stand,
+    // and its record, which for a family no freeze has registered is the words saying it starts at the freeze.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    public static IReadOnlyList<FamilyRunRow> FamilyRun(
+        DateOnly night,
+        IReadOnlyList<FamilyPickRow> picksTonight,
+        IReadOnlyList<PickCell> trades,
+        IReadOnlyList<CandidateRow> register)
+    {
+        return
+        [
+            .. SetupFamilies.InPageOrder.Select(family =>
+            {
+                var (liveSince, variants) = Standing(family, register, night);
+                var own = trades.Where(trade => trade.Family == family.Name && trade.RepeatOf is null).ToArray();
+                var summary = PicksScreen.Summary(own);
+
+                return new FamilyRunRow(
+                    family.Name,
+                    family.Heading,
+                    liveSince,
+                    variants,
+                    picksTonight.Count(pick => pick.Family == family.Name && pick.State == FamilyList.Listed),
+                    own.Length,
+                    summary.Open,
+                    summary.Finished,
+                    liveSince is null
+                        ? SetupFamilies.Provisional
+                        : FormattableString.Invariant($"{summary.Decided} decided of the {summary.MinimumDecided} its record waits for, on {summary.DecidedNights} of {summary.MinimumNights} nights"));
+            }),
+        ];
+    }
+
+    // What a name's page says of the page's list on its night, from the name's own rows on it: the setup that
+    // lists it, its place and the labels of the other setups it qualified under, and a sentence for a setup
+    // that passed it while a trade for it is still open or past that setup's five. Nothing where the
+    // families drew no row for the name.
+    // see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
+    public static ListedUnderView? ListedUnder(string ticker, IReadOnlyList<FamilyPickRow> picks)
+    {
+        var own = picks.Where(pick => pick.Ticker == ticker).ToArray();
+
+        if (own.Length == 0)
+        {
+            return null;
+        }
+
+        var listed = own.FirstOrDefault(pick => pick.State == FamilyList.Listed);
+        var held = new List<string>();
+
+        foreach (var pick in own.Where(pick => pick.State is FamilyList.OpenTrade or FamilyList.PastFive).OrderBy(pick => SetupFamilies.PlaceOf(pick.Family)))
+        {
+            var heading = SetupFamilies.Named(pick.Family)?.Heading ?? pick.Family;
+
+            held.Add(pick.State == FamilyList.OpenTrade
+                ? $"{heading} passed it on {pick.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} and does not list it: its trade from {(pick.HeldNight is { } from ? from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "an earlier night")} is still open."
+                : FormattableString.Invariant($"{heading} passed it on {pick.SessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)} and does not list it: it is past that setup's {SetupFamilies.ListedANight} for the night."));
+        }
+
+        return new ListedUnderView(
+            own[0].SessionDate,
+            listed?.Family,
+            listed is null ? null : SetupFamilies.Named(listed.Family)?.Heading ?? listed.Family,
+            listed?.Place,
+            listed is null ? [] : [.. listed.Also.Select(name => SetupFamilies.Named(name)?.Label ?? name)],
+            held);
+    }
+
+    // The line the page opens its setups on: the market check's answer with its figures, the buy points the
+    // cards list and how many setups list one, the stocks close to one, and the trades still open on the night.
+    // see: The market check closes every family's list together
+    public static MarketLineView Line(ListRuleView rule, IReadOnlyList<FamilyCardView> cards, int close, int openTrades) =>
+        new(
+            rule.MarketOpen,
+            rule.Breadth,
+            rule.Floor,
+            cards.Sum(card => card.Picks.Count),
+            cards.Count(card => card.Picks.Count > 0),
+            cards.Count,
+            close,
+            openTrades);
+
     // How far the members got down a family's gates, each count the members passing that gate and every
     // gate before it, the market check left out since it is one answer for every member.
     public static string Funnel(IReadOnlyList<FamilyResultRow> results)
