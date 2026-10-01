@@ -18,7 +18,7 @@ public partial class ReadSurface
 {
     static readonly string NearestBands = TheSwingFamily.Variant(TheSwingFamily.NearestBandsName, "1");
 
-    static readonly string[] TheSix =
+    static readonly string[] TheFamilySeven =
     [
         SwingFamily.LiveCandidate("1"),
         NearestBands,
@@ -26,6 +26,7 @@ public partial class ReadSurface
         TheSwingFamily.Variant(TheSwingFamily.MarketOffName, "1"),
         TheSwingFamily.Variant(TheSwingFamily.StrengthName, "1"),
         TheSwingFamily.Variant(TheSwingFamily.ArrivalName, "1"),
+        TheSwingFamily.Variant(TheSwingFamily.DeterioratingName, "1"),
     ];
 
     // One gate row under filter version 1 with the family's shadow on it: the candidates named fired and
@@ -35,7 +36,7 @@ public partial class ReadSurface
     {
         var shadow = JsonSerializer.Serialize(new
         {
-            candidates = TheSix.Select(candidate => new
+            candidates = TheFamilySeven.Select(candidate => new
             {
                 candidate,
                 fired = fired.Contains(candidate),
@@ -94,16 +95,16 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/run/2026-09-16"));
         var edge = Assert.Single(Blocks(page, "<section class=\"edge-clock\".*?</section>"));
 
-        Assert.Contains("data-candidates=\"6\"", edge, StringComparison.Ordinal);
+        Assert.Contains("data-candidates=\"7\"", edge, StringComparison.Ordinal);
         Assert.Contains("Each candidate's first look is read at 8 non-empty blocks, no earlier than 566 sessions after its first night, and it can retire the candidate or leave it and cannot promote it; a promotion can come no earlier than the look at 12 blocks, 818 sessions after its first night.", edge, StringComparison.Ordinal);
 
-        // The live filter first, then the five in the order registered, each defined against version 1 with
+        // The live filter first, then the six in the order registered, each defined against version 1 with
         // the live filter unmoved, two sessions run, no block closed and every figure withheld.
         var rows = Blocks(edge, "<tr data-candidate=.*?</tr>");
 
-        Assert.Equal(TheSix, rows.Select(row => System.Text.RegularExpressions.Regex.Match(row, "data-candidate=\"([^\"]+)\"").Groups[1].Value));
+        Assert.Equal(TheFamilySeven, rows.Select(row => System.Text.RegularExpressions.Regex.Match(row, "data-candidate=\"([^\"]+)\"").Groups[1].Value));
 
-        foreach (var (row, resolved) in rows.Zip(new[] { 2, 2, 0, 0, 0, 0 }))
+        foreach (var (row, resolved) in rows.Zip(new[] { 2, 2, 0, 0, 0, 0, 0 }))
         {
             Assert.Contains($"data-defined=\"1\" data-moved=\"\" data-sessions=\"2\" data-blocks=\"0\" data-floor=\"8\" data-resolved=\"{resolved}\" data-withheld=\"true\"", row, StringComparison.Ordinal);
             Assert.Contains("<td>2 since its first night, 2026-09-14</td>", row, StringComparison.Ordinal);

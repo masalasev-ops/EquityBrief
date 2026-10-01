@@ -1739,11 +1739,20 @@ public static class RunScreen
         static string Strength(double floor) => Math.Abs(floor - (2.0 / 3)) < 0.001 ? "the top third" : Math.Abs(floor - 0.5) < 0.001 ? "the top half" : floor.ToString("0.00", CultureInfo.InvariantCulture);
 
         var said = new List<string>();
-        var named = new HashSet<string>(StringComparer.Ordinal) { "marketGate", "strengthFloor", "depthLow", "depthHigh", "arrivalSessions", "trade", "rewardToRiskFloor" };
+        var named = new HashSet<string>(StringComparer.Ordinal) { "marketGate", "strengthFloor", "depthLow", "depthHigh", "arrivalSessions", "trade", "rewardToRiskFloor", "skipDeteriorating" };
 
         if (Moved("marketGate"))
         {
             said.Add(Of(version, "marketGate") == 0 ? "lists on every night, the market gate off" : "reads the market gate, which the live list does not");
+        }
+
+        // The seventh candidate, which leaves off a business whose reported quarters read deteriorating.
+        // see: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+        if (Moved("skipDeteriorating"))
+        {
+            said.Add(Of(version, "skipDeteriorating") == 1
+                ? "leaves off a business whose reported quarters read deteriorating, which the live list keeps"
+                : "keeps a business whose reported quarters read deteriorating, which the live list leaves off");
         }
 
         if (Moved("strengthFloor"))

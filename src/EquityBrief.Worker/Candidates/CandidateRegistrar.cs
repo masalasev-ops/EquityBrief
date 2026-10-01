@@ -281,7 +281,7 @@ public sealed class CandidateRegistrar : IComponent
         if (open is not { } held)
         {
             return await RefuseAsync(
-                "no filter version is open, so the live filter's candidate has no settings to state, and none of the nine was written. " +
+                FormattableString.Invariant($"no filter version is open, so the live filter's candidate has no settings to state, and none of the {TheSwingFamily.RowsAtOnce} rows was written. ") +
                 "Open the first version with the shape command, then register the family.");
         }
 
@@ -292,7 +292,7 @@ public sealed class CandidateRegistrar : IComponent
         {
             if (RetirementRefusal(taken, retire, TheSwingFamily.Evidence, startedAt, ShortlistSeries.Reasons) is { } refusal)
             {
-                return await RefuseAsync($"'{retire}' was refused, so none of the nine was written: {refusal}");
+                return await RefuseAsync(FormattableString.Invariant($"'{retire}' was refused, so none of the {TheSwingFamily.RowsAtOnce} rows was written: {refusal}"));
             }
 
             var standing = taken.Last(row => row.Event == CandidateFamily.Registered && string.Equals(row.Candidate, retire, StringComparison.Ordinal));
@@ -306,7 +306,7 @@ public sealed class CandidateRegistrar : IComponent
         {
             if ((Unstated(one.Rule, one.Test) ?? Refusal(taken, one.Candidate, one.Evaluator, one.Parameters, startedAt)) is { } refusal)
             {
-                return await RefuseAsync($"'{one.Candidate}' was refused, so none of the nine was written: {refusal}");
+                return await RefuseAsync(FormattableString.Invariant($"'{one.Candidate}' was refused, so none of the {TheSwingFamily.RowsAtOnce} rows was written: {refusal}"));
             }
 
             taken.Add(new RegisterRow(

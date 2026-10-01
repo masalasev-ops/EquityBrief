@@ -246,7 +246,7 @@ public class PinnedConstants
             new("Swing trade plan", "2", (decimal)SwingGates.ClearTargetMoves, "SwingGates.ClearTargetMoves"),
             new("The swing family", "1", (decimal)TheSwingFamily.VariantDepthLow, "TheSwingFamily.VariantDepthLow"),
             new("The swing family", "3", (decimal)TheSwingFamily.VariantDepthHigh, "TheSwingFamily.VariantDepthHigh"),
-            new("The swing family", "6", TheSwingFamily.For("1", FilterSettings.Proposed).Count, "the registrations TheSwingFamily writes"),
+            new("The swing family", "7", TheSwingFamily.For("1", FilterSettings.Proposed).Count, "the registrations TheSwingFamily writes"),
             new("The swing family", "0.05", (decimal)ReasonVerdict.Significance, "ReasonVerdict.Significance"),
             new("Swing plan outcome", "63", ForwardReturnSeries.CapOf(ForwardReturnSeries.Swing), "ForwardReturnSeries.CapOf(ForwardReturnSeries.Swing)"),
             new("Twenty-session outcome", "20", ForwardReturnSeries.CapOf(ForwardReturnSeries.SwingTwenty), "ForwardReturnSeries.CapOf(ForwardReturnSeries.SwingTwenty)"),

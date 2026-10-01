@@ -9808,3 +9808,36 @@ Now:
 > A paragraph, "Each night is built from a clean copy of the committed code, never from the main checkout's working tree", naming the refusal and its file, the export into `data/nights/<commit>/`, the Release build run with the data root and the secrets file named from the checkout, the build reused and removed after a week unused, the `build` stage, `night.build` for `--resume`, the resume press and the drain, and `--check`.
 > A row in the morning table: tonight's notice and the run page saying the night was refused before its first step, its cause and what to do.
 Why: the same ruling, stated where the operator runs the night and reads the morning.
+### 2026-10-01 - ARCHITECTURE.html - the swing family is seven, the seventh leaving off a deteriorating business
+Authorised by: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+Was:
+> Section 3, Swing family: "The live filter and five variants, each a whole rule with one setting on its other side, judged together as one family of six."
+> Section 13.6's Holm paragraph: "... once the swing family's six (section 13.8) registered ..."
+> Section 13.8: "... the live filter at the open filter version's settings and five variants, each the same whole rule with one thing moved and named for the version it was defined against, six candidates judged by the same sign-flip test over blocks and looks ... Phase 10's three are retired by the command that registers the six, at the same instant ..."
+> Section 17, The swing family: "the live filter and five variants, ...: the plan at the nearest bands, a pullback 1 to 3 typical moves deep, the market gate off, strength in the top third and arrival on the night alone, 6 candidates, each starting at 0.05 over the distinct trials (see: ...)"
+> The swing filter's catalogue row and its matrix row read no fundamental reading.
+Now:
+> Section 3, Swing family: "The live filter and six variants, each a whole rule with one thing moved, the sixth leaving off a member whose reported quarters read deteriorating, judged together as one family of seven."
+> Section 13.6's Holm paragraph: "... once the swing family's seven (section 13.8) registered ..."
+> Section 13.8: "... the live filter at the open filter version's settings and six variants, each the same whole rule with one thing moved and named for the version it was defined against, the sixth leaving off a member whose reported quarters read deteriorating, a state no gate reads, seven candidates judged by the same sign-flip test over blocks and looks ... Phase 10's three are retired by the command that registers the seven, at the same instant ..."
+> Section 17, The swing family: "the live filter and six variants, ...: the plan at the nearest bands, a pullback 1 to 3 typical moves deep, the market gate off, strength in the top third, arrival on the night alone and a deteriorating business left off, 7 candidates, each starting at 0.05 over the distinct trials (see: ...) (see: The seventh swing family candidate ...)"
+> The swing filter's catalogue row names the fundamental readings' state among what it reads, handed to the family's shadow, and its matrix row reads the fundamentals column.
+Why: the operator's fundamentals item of 2026-09-27, item 9 and part 2 of its ruling, built as track 5 of the queue of 2026-09-30, the code held for the freeze's remedy.
+### 2026-10-01 - RUNBOOK.md - the family registers seven
+Authorised by: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+Was:
+> The shape command's acceptance paragraph: "... retires every standing swing family candidate and registers the six the code writes for the new version at the same instant ..."
+> The family's registration paragraph: "From the night after, the six are evaluated in the swing filter's own stage over every member's gate inputs, and the run page's shadow region counts six registered and a divisor of 6."
+Now:
+> "... retires every standing swing family candidate and registers the seven the code writes for the new version at the same instant ..."
+> "From the night after, the seven are evaluated in the swing filter's own stage over every member's gate inputs, the seventh reading the state the night's fundamental readings stored for each member and leaving off a deteriorating one, and the run page's shadow region counts seven registered and a divisor of 7."
+Why: the same build, stated where the operator registers and reads the family.
+### 2026-10-01 - .claude/rules/checks.md - fixture-expectations and read-surface reach the seventh
+Authorised by: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+Was:
+> `fixture-expectations`: "... each of the swing family's six fires on its own side of every setting it moves and not a step past it, ... and the family's command writes six registrations and three retirements at one instant, ..."
+> `read-surface`: "... with the swing family registered the run page's shadow region reads six registered and a divisor of 6; ..."
+Now:
+> `fixture-expectations`: "... each of the swing family's seven fires on its own side of every setting it moves and not a step past it, the seventh leaving off a member whose reported quarters read deteriorating and firing on every other state and none while the live filter fires on a deteriorating one, the filter handing each member's stored state to the shadow, ... and the family's command writes seven registrations and three retirements at one instant, ..."
+> `read-surface`: "... reads seven registered and a divisor of 7; ..."
+Why: the checks reach what the build asserts.
