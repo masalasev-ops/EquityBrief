@@ -34581,7 +34581,7 @@ Queue:      restated, since the list lives in the newest queue ruling. Done: tra
 Stored:     the brief, the go and the rulings, the review and the approved plan, word for word, in the main
             checkout's `prompts/` as `2026-10-01-12.5-ideas-on-the-base-*.md`.
 Verified:   with the correction below, in one pull request: `tools/ci.ps1` green end to end and
-            `tools/verify-phase.ps1` green over the tree carrying both entries, T4ASHA, with the figures the
+            `tools/verify-phase.ps1` green over the tree carrying both entries, 1a2723c, with the figures the
             correction's entry states.
 
 ### 12.5 - correction: the stepped plan's result is counted on the risk its plan stated with a fill nearer its stop than the stop setting's floor no trade, a trade that runs out of sessions is counted at its last close as its benchmark counts it, and every record is stated again without its five largest results by size   2026-10-01
@@ -34672,7 +34672,7 @@ Stands:     the run `20261001T024757Z` and its report, since a finished run is n
             at the close on section 10's plan held 63 sessions, and Past picks divides a finished trade's return
             by the listing's own buy to its stop and counts a trade ended by time, so neither carried the first
             fault and the pages carried neither.
-Tests:      T4ATESTS, from 1664: five added, each by hand over constructed closes: a stepped plan filled a hair
+Tests:      1669, from 1664: five added, each by hand over constructed closes: a stepped plan filled a hair
             over its stop is no trade at a stop floor of half a move and one filled at the floor is; a stepped
             plan filled inside its zone counts its return over the risk its plan stated, a fill and a stop on
             one session among them; a trade that runs out of sessions is counted at its last close as the
@@ -34695,15 +34695,24 @@ Mutated:    the rule, stated before the run: each rule this correction adds, rev
             C4 a trade that ran out of sessions left without a result, the fill read from the scorer alone: red
                in the run-out test and in the test of a plan bought at the close, whose ten quiet sessions end
                unresolved, and in no other.
-            Results: T4AMUT.
-Held:       T4AHELD.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, T4ATESTS of T4ATESTS tests ran
+            Results: all four ran in a detached worktree at 1a2723c, this entry's commit, each filtered to the
+            five tests this correction adds, the edit made there and reverted, and the tree read clean after
+            each. C1 turned three red: the hair's win read 149 times its risk where 3.1335 is stated, the risk
+            inside the zone read 5.94 per cent where 5 is, and the run-out test's stepped trade read 0.3333
+            where 0.3960 is. C2 turned the hair's test red, the fill a twentieth of a move over the stop read
+            as a trade. C3 turned the largest results test red, the three left averaging -3.0833 where -0.25
+            is stated. C4 turned two red: the trade run out of sessions read no result where half a risk is
+            stated, and the ten quiet sessions of the plan bought at the close read none where 0.1667 is.
+Held:       C2, C3 and C4 red in the tests predicted and in no other of the five. C1 red in the two
+            predicted and in a third, the run-out test, which scores a stepped plan filled inside its zone and
+            so reads the same risk: not predicted, and named here.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1669 of 1669 tests ran
             with none failed, migrations 0 to 52 with none pending, schema version 52, exit 0, against
             `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 44 tables, 789 claims, 789 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, T4APLACE placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, T4ATESTS of T4ATESTS tests.
-            Both gates ran over the tree carrying this entry, T4ASHA, in a worktree beside the repository, and the
+            0 unexamined, 800 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1669 of 1669 tests.
+            Both gates ran over the tree carrying this entry, 1a2723c, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    the search itself is not run again here. The ruling's plan tests ideas on the live rule's own design
             at its 63-session hold, which both faults touch least; whether to run the twelve-hour search again
