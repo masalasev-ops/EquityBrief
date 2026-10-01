@@ -194,8 +194,9 @@ public static class SweepColumns
             decimal? longAverage = double.IsNaN(sma200[bar]) ? null : Statistic.ToPrice(sma200[bar]);
 
             // The classifier reads the last two swings of each kind, which are the last confirmed, since a swing
-            // is confirmed three sessions after its own, among the swings the night's year of bars holds.
-            var oldest = bars[windowStart[bar]].Session;
+            // is confirmed three sessions after its own, among the swings the night's year of bars holds from its
+            // fourth session on, the swing finder judging no session among the first three it is given.
+            var oldest = bars[Math.Min(bar, windowStart[bar] + SwingSeries.Lookback)].Session;
             var recent = swings.AsSpan(Math.Max(0, confirmed[bar] - 24), Math.Min(24, confirmed[bar])).ToArray().Where(swing => swing.SessionDate >= oldest).TakeLast(12).ToArray();
 
             label[bar] = TrendSeries.For(close, shortAverage, longAverage, recent).State;

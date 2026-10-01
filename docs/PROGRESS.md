@@ -33887,3 +33887,53 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    the migration and the surprise pull on the main checkout, the run started from a Release build outside
             it, the entry pointing at its report, and the freeze on the operator's word; the draft pull request of the
             first run's branch, closed once this merges.
+
+### 12.5 - correction: the sweep's swings on a session are the ones the night's year holds from its fourth session on, where it held every swing of the whole history made inside that year, which the rerun's point-in-time check found on 110 of 212 sampled sessions and stopped the run of 2026-09-30 on before its first stage   2026-10-01
+Corrects:   the 12.5 correction of 2026-09-30 that reruns the sweep, in the swings its series reads, on the operator's
+            word of 2026-10-01 that the sweep runs tonight.
+Asked:      the operator, on 2026-09-30: point in time proved before anything is ranked, any difference stopping the
+            run; and on 2026-10-01, the run going tonight without waiting.
+Repaired:   `SweepCandidates.SwingsHeld` and the classifier's recent swings in `SweepColumns` keep a swing only from
+            the fourth session of the night's year on. The swing finder judges no session among the first three of
+            the series it is given, and on a night that series is the year of bars the store keeps, so a swing the
+            whole history's finder sees in the year's first three sessions is one the night never held. The bands,
+            the ladder's lows and the label read the swings through the same rule.
+Found:      the run `20260930T231714Z`, started 2026-09-30 at 23:17Z from the merged main at a983629 and paused
+            for the night until 00:29Z, read 826 names in 19.5 s, computed the series in 11.3 s and 292,271
+            candidates with their benchmarks in 506.8 s over 21 chunks, then rebuilt 212 name-sessions, 12 of them
+            the live list's, in 12.8 s and found 110 differences, every one in the swings and none in the
+            averages, the ATR, the RSI, the fifty-day volume, the bands or the label: in each the sweep held one
+            or two swings made in the year's first three sessions that the night's finder cannot judge. The
+            bands matched because the level replay reads only the swings inside its sixty-session window, and the
+            label because it reads the last two of each kind. The run stopped before stage 1 and wrote its page
+            listing every difference, which is what the check is for; its folder stays as it is, and the run
+            after this correction is a new one. The fixture's own test could not find this: its history is the
+            one year the store holds, so the whole series and the night's year are the same series.
+Guarded:    one test, new, in `fixture-expectations`: over eight hundred constructed sessions, on each bar past the
+            first year the sweep's swings are exactly the swing finder's over the year's bars confirmed by the bar,
+            and differ from the whole history's where the year's first three sessions hold a swing.
+Written:    section 17's point-in-time row in `ARCHITECTURE.html`, and its prior text in `CHANGELOG.md`.
+Expected:   derived: no expectation file moves; the fixture's two nights read the same under both rules.
+Tests:      1641, from 1640: one added.
+Claims:     763, unchanged.
+Pins:       none moves.
+Mutated:    the rule, stated before the run: the mechanism this correction rests on, reversed alone, filtered to
+            the tests named, in a detached worktree at this entry's commit and reverted.
+            Predicted:
+            S23 the fourth-session rule dropped, the year's first session read as the first a swing may sit on:
+                red in the swings test alone; the point-in-time test over the fixture stays green under it, for the
+                reason given under Found.
+            Results: one run in a detached worktree at eb5a85c, this entry's commit, filtered to the two tests, the
+            edit made there and reverted, and the tree read clean after. S23 turned the swings test red and left
+            the point-in-time test green.
+Held:       red in the test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1641 of 1641 tests ran
+            with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 763 claims, 763 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 774 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1641 of 1641 tests.
+            Both gates ran over the tree carrying this entry, eb5a85c, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    the new run, started from a Release build of the merged main outside the main checkout, and the entry
+            pointing at its report.
