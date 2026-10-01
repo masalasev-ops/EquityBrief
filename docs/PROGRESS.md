@@ -34718,3 +34718,149 @@ Carried:    the search itself is not run again here. The ruling's plan tests ide
             at its 63-session hold, which both faults touch least; whether to run the twelve-hour search again
             under the corrected counting is the operator's to rule, since its first stage ranked every design
             on edges the second fault understated at the shorter holds.
+
+### 13.0 ruling - setup families are built and shown first on provisional settings and each is swept and frozen after, phase 13 opening beside phase 12's sign-off, with the twelve-hour rerun and two more ideas shelved until it is finished   2026-10-01
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-10-01, after pull request 311 merged and the work was paused at their word,
+            in one message of three parts. The first part, word for word:
+
+            This is Phase 13: setup families, and it starts now. The family framework is
+            built with the pullback as its first family on today's rule. The pullback's
+            freeze lands inside the framework when the ideas run reports, as one change,
+            and holds nothing up. The ideas run's pull requests finish as planned. Phase
+            12's sign-off runs in a fresh session over what is merged today, beside this
+            work, and the preview command follows it. Phase 13's pull requests are
+            numbered 13.n under their own heading.
+
+            The second part, the ruling, word for word:
+
+            Ruling: setup families, built and shown first, each swept and frozen after.
+            The Tonight mockup at https://claude.ai/artifact/FmBbKWihZC7seHGHdwkdrB is the
+            reference; its figures are placeholders.
+
+            === Why ===
+            The operator wants to see each family's picks every night now, not after days
+            of searching. A family's rule needs a sweep to be frozen, not to exist. So each
+            family goes live with provisional settings from the published evidence, marked
+            as not yet frozen, and its sweep runs in the background to propose the starting
+            point that replaces them at its freeze. The pullback's ideas run and freeze
+            continue unchanged. The twelve-hour rerun waits until the families are on
+            screen.
+
+            === The families ===
+            Each family is a rule of its own with its own picks, variants, record and
+            checkpoints, sharing the night's machinery, the market check, the plan and the
+            scoring. Provisional settings, to be replaced by each family's sweep:
+              1. Pullbacks: today's live rule, as it stands.
+              2. Breakouts: a close above the 252-session high on volume at least 1.5 times
+                 the 50-session average, after daily ranges tightened over the prior 20
+                 sessions; trailing stop 2 typical moves below the highest close since the
+                 buy, never lowered, no fixed target, 63 sessions at most.
+              3. Earnings drift: the last report beat its estimate and the reaction session
+                 closed up at least one typical move on volume at least 1.5 times average;
+                 bought within 5 sessions of the reaction; stop below the reaction session's
+                 low; target from the next band or 2.5 times the risk, whichever is nearer;
+                 60 sessions at most. The night reads the day's surprises from the earnings
+                 calendar it already fetches; state what that adds.
+              4. Sector leaders: sectors ranked by median 126-session return, the top 3 of
+                 11; inside them, stocks in the top quarter of their sector by the same
+                 return; entry, stop and target as the pullback's.
+            State for each the published evidence it rests on and every provisional setting
+            in one table.
+
+            === Shared rules ===
+              - One stock, one trade, across all families: a stock with an open trade from
+                any family is listed by none. A stock qualifying under two families on one
+                night is listed once, under the first in the page's order, carrying both
+                labels, and counted once.
+              - The market check closes every family's list together.
+              - Each family lists at most 5 a night, by its own order. Reports: the night
+                writes at most 6 reports across all families, by the page's order, and the
+                rest are written on the report press; state the night's time with 6.
+              - Before a family's freeze its picks are shown marked "provisional: not yet
+                frozen; its record starts at the freeze", scored and recorded like any
+                other, and nothing before the freeze counts toward a checkpoint.
+
+            === The pages ===
+            Tonight as the mockup: a market line, one card per family with its rule in a
+            sentence, its live-since or provisional state, its variant count and its picks,
+            a "why tonight" in that family's words, a shared "Close to a buy point" with a
+            setup label a row, a one-line note where a stock qualified again while its trade
+            is open, and the open-trade count linking to Past picks. An empty family shows
+            its card with why nothing qualified. Past picks gains a setup filter and label.
+            The run page shows each family's clocks and checkpoints.
+
+            === The sweeps, after the families are on screen ===
+            Each new family gets a sweep over the eight years with the machinery already
+            built, in the order breakouts, earnings drift, sector leaders, each a few hours.
+            Its report proposes a starting point and variants for the operator's go; the
+            freeze replaces the provisional settings and registers the variants. A family
+            whose sweep finds nothing steady is set aside with its figures, and its card
+            says so.
+
+            === Order and records ===
+            Pull requests in order: the ruling; the family framework with one stock one
+            trade across families; breakouts; earnings drift; sector leaders; the pages;
+            then the sweeps. Every pin move and remedy is stated per pull request, issued
+            through the remedy script, and nothing is frozen without the operator's go.
+            ARCHITECTURE gains a families section stated for any day; DECISIONS the family
+            rules; every claim into the harness. Report after the ruling with the plan,
+            sizes and night time before building.
+
+            The third part, the operator's own line beneath both, word for word:
+
+            Shelve the twelve hour run and adding two ideas for implementation after finishing this. Do not forget about it.
+Recorded:   this entry is the first of the pull requests the ruling orders, and it holds the ruling whole. No
+            family, framework, page or sweep exists, tonight's list is chosen exactly as it was, and nothing
+            is frozen or registered.
+Shelved:    two things put to the operator after pull request 311 and answered by the third part, both to be
+            built once phase 13 is finished and neither dropped. The first is the twelve-hour search run again
+            under the counting the correction above repaired, which the ruling also holds until the families
+            are on screen. The second is two more ideas for the ideas' run, today's rule held at most 10
+            sessions and held at most 20, which would make thirteen tries where the approved plan has eleven.
+            The ideas' run finishes as planned, with eleven. Both are put to the operator again when phase 13's
+            last pull request merges.
+Sign-off:   phase 12's sign-off is owed on phase 12 as a whole and stays owed. The operator rules that it runs
+            in a fresh session over what is merged on 2026-10-01, beside phase 13's work and not ahead of its
+            plan, because each family's picks are wanted on screen every night now and not after the wait.
+            No checkpoint of phase 13 discharges it, and the session that builds phase 13 does not sign
+            phase 12 off. The order of the two is the only thing this moves.
+Reference:  the Tonight mockup the ruling names was read on 2026-10-01. It draws, in order: a line stating the
+            night; a market line with breadth, the index against its averages, whether the lists are open,
+            the buy points across the setups, the count close to a buy point and the open trades linking to
+            Past picks; one card for each setup, in the order pullbacks, breakouts, earnings drift, sector
+            leaders, each with its rule in a sentence, the date its rule went live, its picks and its variant
+            count, and a row a pick with its business state, buy, stop, target, the stop to target bar, the
+            reward to risk, why tonight and the news of thirty days; a note under a card where a stock
+            qualified again with its trade still open, and where a stock qualified under two setups and is
+            shown once with both labels; and one card, "Close to a buy point", with a setup label a row,
+            the one gate missed and how far. Every figure on it is a placeholder, as the ruling says.
+Next:       the plan, each pull request's size and the night's time with six reports are reported to the
+            operator before the framework is built, as the ruling's last sentence asks, with the published
+            evidence each family rests on and every provisional setting in one table. The ideas' run's next
+            pull request, the index and the VIX pulled, is approved already and touches nothing a family
+            touches, so it is built while the plan is with the operator. Where the run itself and its figures
+            sit among phase 13's pull requests is put to the operator with the plan, the ruling ordering
+            phase 13's own pull requests and saying of the ideas' run that it finishes as planned and holds
+            nothing up.
+Queue:      restated, since the list lives in the newest queue ruling. Done: track 1, one open trade per
+            stock, the trade table and the remedy script; track 2, the sweep pushed, recorded, rebuilt and
+            run three times; track 3, the night built from a clean copy; track 7, the news labeller and its
+            screens; and the first of track 4's four pull requests, the counting corrected. In progress:
+            phase 13, setup families, its pull requests in the ruling's order: this ruling; the family
+            framework with one stock one trade across families and the pullback as its first family; breakouts;
+            earnings drift; sector leaders; the pages; then the sweeps, breakouts first. Finishing as planned:
+            track 4's other three pull requests, the index and the VIX pulled, the ideas' run and its figures
+            recorded. Folded into phase 13: track 6, the pullback's freeze, which lands inside the framework
+            as one change when the ideas' run has reported and the operator says go, with track 5, the
+            fundamentals candidate held as a draft pull request, merged at it. Beside this work, in a fresh
+            session: track 8, phase 12's sign-off, and after it track 9, the preview command. Shelved until
+            phase 13 is finished: the twelve-hour rerun and the two more ideas.
+Stored:     the three parts, word for word, in the main checkout's `prompts/` as
+            `2026-10-01-13.0-setup-families-ruling.md`.
+Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry, 141cffe, in a worktree beside
+            the repository: all six steps, 0 warnings, 0 errors, 1669 of 1669 tests ran with none
+            failed, migrations 0 to 52 with none pending, schema version 52, exit 0, against `data-ci` and
+            never `data`. The entry carries documents alone, so the phase report was not run again, and no
+            test and no claim is added.
