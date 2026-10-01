@@ -34192,8 +34192,8 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             The hosted macOS and Linux runners then failed the held-folder test over a60cf93: a POSIX machine
             removes a read-only file with its folder, so the folder was gone and the test's cleanup found
             nothing to reset. The test was made to read the platform, asserting the folder left on Windows and
-            gone elsewhere, in T3BSHA2, over which both gates ran again on this machine: `tools/ci.ps1` green
-            end to end, T3BTESTS2 of T3BTESTS2 tests ran with none failed, exit 0; `tools/verify-phase.ps1`
-            green at 766 claims, 766 PASS, 0 FAIL, T3BPLACE2 placements and verdicts reconciled, T3BTESTS2 of
-            T3BTESTS2 tests.
+            gone elsewhere, in 4a903f1, over which both gates ran again on this machine: `tools/ci.ps1` green
+            end to end, 1652 of 1652 tests ran with none failed, exit 0; `tools/verify-phase.ps1`
+            green at 766 claims, 766 PASS, 0 FAIL, 777 placements and verdicts reconciled, 1652 of
+            1652 tests.
 Carried:    nothing new.
