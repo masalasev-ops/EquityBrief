@@ -34864,3 +34864,79 @@ Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry, 1
             failed, migrations 0 to 52 with none pending, schema version 52, exit 0, against `data-ci` and
             never `data`. The entry carries documents alone, so the phase report was not run again, and no
             test and no claim is added.
+
+### 13.0 planning - setup families planned as a framework, three families and the pages built on one branch, a sweep a family and the freezes after them, each of the ten things reading the store found taken on the operator's go   2026-10-01
+
+Not a checkpoint entry. It plans phase 13 and builds none of it: no family, lister, card or sweep exists by this
+            entry, tonight's list is chosen exactly as it was, and nothing is frozen or registered.
+Asked:      the operator's ruling of 2026-10-01, the entry above, whose last sentence asks for "the plan, sizes
+            and night time before building". The plan was put to them the same day with ten things reading
+            the code and the store had found, each with a recommendation, and three messages came back while
+            it was being written and after, word for word:
+
+            dont  do full Ci if all youve done is made a plan
+
+            ok start building the thing asap and dont do small PRs to remote. Build the whole thing and then create on big PR on remote
+
+            main has been updated with latest
+
+            The last followed the operator's own merge of the ruling's pull request, 312, at 18:29Z.
+Read:       the ruling against the code at c844843 and the operator's store at user_version 52, opened
+            read-only, with a planning estimate by independent arithmetic over the pulled history, 688 names
+            and 1,950 nights from 2019-01-02 to 2026-09-30, the market check open on 1,416 of them at the open
+            version's floor of 45%. What came back, each as `BUILD_PLAN.md`'s phase 13 section states it:
+            - the store keeps 252 sessions a name, so the breakout reads the 251 before tonight;
+            - "ranges tightened" names no number: no wider than the 20 sessions before lists on 53% of open
+              nights, 1.6 a night, and 0.85 of them on 31%;
+            - sector leaders as written have no buy point, 33 qualifying every night; with the pullback's
+              setup, trigger and trade gates they list 0, 0, 1, 1, 3, 5, 2 and 2 over the 8 stored gate
+              nights, all but 2 of the 14 stocks the pullback does not list;
+            - a breakout names no target, so its record is its average result in multiples of its risk;
+            - the pages sixth would show nothing until then, so each family's card lands with its family;
+            - the night holds no index series, so the market line draws breadth and whether the lists are open;
+            - a family's checkpoint record counts its own rule's trades, the page's one trade a stock being
+              the lister's;
+            - the correction for luck is a family's own, at most eight rules a family, binding at the freezes;
+            - the earnings calendar's one request already carries each print's estimate, actual and surprise,
+              so the drift adds no request; a print before the open carried its actual on the night of
+              2026-09-30 and one after the close did not, its reaction falling on the next session;
+            - of 16,241 beats in the pulled prints 4,702 had a reaction up a typical move on 1.5 times
+              volume, and inside its five-session window the drift qualifies 8.4 a night, more than five on
+              37% of open nights.
+            The night with six reports, measured over the ten first reports the store held: a report took
+            199 to 504 seconds, 302 at the median, at about five cents, so six in a row end between 01:15Z and
+            01:35Z where one ended about 00:50Z, at about thirty cents a night; the list itself is on screen
+            at about 23:42Z either way.
+Go:         "ok start building the thing asap" is taken as the go on the plan with its ten recommendations as
+            the readings built to; each is cheap to move at the pull request's review, and the sweeps settle
+            the numbers. "Build the whole thing and then create one big PR" is taken for the checkpoints 13.0
+            to 13.5: one branch, a commit and an entry a checkpoint, and both gates run once over the tree
+            carrying every entry, which `BUILD_PLAN.md` states. The first message is taken as it reads: a pull
+            request that only records a plan or a ruling gets no full run of the checkpoint gate. The merge
+            rule and the check that reads each entry for the gate's words still ask for one, and whether they
+            change is put to the operator with this pull request; nothing is changed for it here.
+Wrote:      `BUILD_PLAN.md`'s phase 13 section, with the checkpoints 13.0 to 13.10 and a done condition each;
+            the decisions the phase rests on that describe no running code: that it opens beside phase 12's
+            sign-off, which stays owed on phase 12 as a whole and is discharged by nothing here, and the four
+            the framework is built to, the page drawn from setup families, one trade a stock across them, a
+            family provisional until its freeze, and one market check for every family; two earlier decisions,
+            that tonight's list is the swing filter's and that a stock holds one open trade on each rule's
+            list, narrowed in place by a sentence each, since each still describes code that runs; and
+            section 20's row for phase 13. Prior text in CHANGELOG.
+Corrects:   one sentence of the entry above. It said the index and the VIX pull would be built while the plan
+            was with the operator. The go came first, the pull was not started, and it follows the families
+            with the ideas' run and its figures, as the queue below restates.
+Queue:      restated, since the list lives in the newest queue ruling. Done: tracks 1, 2, 3 and 7, and the
+            first of track 4's four pull requests. In progress: phase 13, its checkpoints 13.0 to 13.5 as
+            one pull request, then a sweep a family, breakouts first, and the freezes. After the families are
+            on screen: track 4's other three pull requests, the index and the VIX pulled, the ideas' run and
+            its figures recorded, and with them track 6, the pullback's freeze, inside the framework on the
+            operator's go, with track 5's draft pull request merged at it. Beside this work, in a fresh
+            session: track 8, phase 12's sign-off, and after it track 9, the preview command. Shelved until
+            phase 13 is finished: the twelve-hour rerun and the two more ideas.
+Stored:     the plan as it was put to the operator, in the main checkout's `prompts/` as
+            `2026-10-01-13.0-setup-families-plan.md`.
+Claims:     none added: section 20's row is read by the check that counts the phases and is no claim.
+Verified:   with the checkpoints after it, in one pull request: `tools/ci.ps1` green end to end and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from this one to 13.5's,
+            F13SHA, with the figures 13.5's entry states.

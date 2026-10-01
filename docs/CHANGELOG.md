@@ -9896,3 +9896,17 @@ Was:
 Now:
 > "... nothing sits at that folder's root, a run's report lives in its folder as the full account, the figures a freeze cites are recorded in `PROGRESS.md` by a pull request of documents, and the runs before it are the operator's to remove ..."
 Why: the same ruling, stated where the operator runs the sweep from.
+### 2026-10-01 - BUILD_PLAN.md - phase 13 is written, setup families built and shown first and each swept and frozen after
+Authorised by: Setup families are built as phase 13 beside phase 12's sign-off, which runs in a fresh session over what merged on 2026-10-01
+Was:
+> The plan ended at phase 12's report, 12.9, and held no phase 13.
+Now:
+> A section "Phase 13: setup families, built and shown first and each swept and frozen after": its visible output at 13.1, that it opens before phase 12's sign-off on the operator's ruling of 2026-10-01, what it is for, the ten things reading main and the store found with the reading each takes, where the code lives against the three pin lists, that 13.0 to 13.5 reach main as one pull request gated once, the two things that are the operator's, the claims it predicts, and the checkpoints 13.0 to 13.10 with a done condition each.
+Why: the operator ruled phase 13 on 2026-10-01 and asked for the plan before anything was built; the pass that plans a phase writes its section.
+### 2026-10-01 - ARCHITECTURE.html - section 20 gains phase 13's row
+Authorised by: Setup families are built as phase 13 beside phase 12's sign-off, which runs in a fresh session over what merged on 2026-10-01
+Was:
+> Section 20's table ended at "12. Tonight's list as a swing filter, and the two clocks that calibrate it".
+Now:
+> A row "13. Setup families, built and shown first and each swept and frozen after", with what gets built, the pullback's card as what is visible first, the expectations added and the build plan's checkpoints 13.0 to 13.10.
+Why: section 20 carries one row for every phase the plan holds, and the check reading it counts the phases off the plan.
