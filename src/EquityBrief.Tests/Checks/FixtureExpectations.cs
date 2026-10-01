@@ -177,6 +177,9 @@ public partial class FixtureExpectations
 
             // 13.1, the family framework: section 17's five a family.
             CheckReach.Key(Scope.LimitsTable, "Names a family lists"),
+
+            // 13.2, breakouts: section 17's rows for the family's settings and section 18's two rows.
+            .. BreakoutClaims,
             CheckReach.Key(Scope.FixtureTable, "reported quarters"),
 
             // 11.5, the floor a name's industry has to reach before it is the name's group.

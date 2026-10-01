@@ -53,6 +53,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `shape_proposal` | ShapeProposer | ShapeCommand | none |
 | `listing` | ShortlistBuilder | ShortlistBuilder | none |
 | `list_rule` | NightClose | NightClose | none |
+| `family_result` | FamilyEvaluator | none | FamilyEvaluator |
 | `family_night` | FamilyLister | none | FamilyLister |
 | `family_pick` | FamilyLister | none | FamilyLister |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
@@ -538,6 +539,30 @@ Primary key: `session_date`.
 
 **The night close writes it and is its only writer, from the swing filter's step** (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it). Once the swing filter has stored its rows for the night's session, the night records that session as listed by the filter, before any later step can stop the night, and only where the filter stored rows for it. A night run again over a session records it again, and the session is then listed by the rule of the night that drew it last. An evening holding no row was listed by any of the six reasons firing, which is every evening before the switch, so every surface reading a listing reads this table beside it and names the rule. Nothing deletes a row.
 
+### family_result
+Grain: one row per session, member and setup family but the pullback.
+
+| Column | Type | Notes |
+|---|---|---|
+| `session_date` | TEXT | the session the member was evaluated for, the newest any name holds on the night |
+| `ticker` | TEXT | |
+| `family` | TEXT | the family, by the word it is stored under |
+| `passed` | INTEGER | 1 where every gate passed and no exclusion applies, 0 otherwise |
+| `missed` | INTEGER | how many of the family's gates the member did not pass, which a name close to a buy point is counted by |
+| `place` | INTEGER | the place among the names the family passed that night, in the family's own order, null for every other |
+| `entry` | TEXT | the price the trade is bought at, the night's close, null where the member holds no bar for the night |
+| `stop` | TEXT | the trade's stop as the night placed it, the first level of a stop that trails; null where none could be placed |
+| `target` | TEXT | the trade's target, null for a family that trails its stop and names none |
+| `order_by` | REAL | the figure the family's order reads, largest first: a breakout's volume against its average |
+| `exclusions` | TEXT | JSON: the exclusions the member's series carries, a gap or a suspect series as the swing filter stored them, empty where none does |
+| `gates` | TEXT | JSON: the family's gates in order, each with whether it passed, its reason and the values that decided it, the first of them the market gate the swing filter stored that night |
+
+Primary key: `session_date`, `ticker`, `family`.
+
+**The family evaluator writes it in the swing filter's step and is its own deleter** (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: Every computed table's writer is its own deleter). After the swing filter has stored its rows, it evaluates every member the filter evaluated under each family but the pullback, whose answers are the filter's own `gate_result` rows, and stores every answer, the ones that did not pass included, since a card that lists nothing says how far the members got and a name one gate short is drawn as close to a buy point. The market gate on each row is the one answer the filter stored for the night, so no family passes a member on a night it closed (see: The market check closes every family's list together). A night run again replaces its own rows whole. A row that passed is a trade its family's record counts and is kept; a row that did not is deleted once its session is older than the oldest bar the store holds, since nothing reads a near miss whose bars are gone.
+
+**A passed row's trade is scored on `forward_return` under its family's horizon,** from the night's close: a breakout's under `breakout`, sold on its trailing stop (see: A breakout is a close above the year's high on heavy volume after its ranges narrowed, sold on a trailing stop with no target). The prices here keep the scale the series had on the night, as a setup's plan does.
+
 ### family_night
 Grain: one row per session the setup families drew the page's list for.
 
@@ -566,7 +591,7 @@ Grain: one row per session, stock and family that passed it.
 
 Primary key: `session_date`, `ticker`, `family`.
 
-**The family lister writes the page's list here and is its own deleter** (see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order). After the swing filter has stored its rows it reads the names each family passed, in that family's own order, and every trade a list made on an earlier night with what became of it, and draws the list by one rule: the families in the page's order; a stock whose trade is still open is listed by none and its row names the family and the night that listed that trade; a stock already listed tonight is not listed again; and a family lists at most five, a name past its five still listed by a later family it qualified under. So a stock holds at most one `listed` row a session, and that row's `also` carries the labels the page draws beside it. The pullback family's names are the ones `gate_result` holds as passed, improving businesses first and then the filter's own order, and its trade is the plan its night's trade gate read; nothing here restates a plan. A trade's outcome is the `forward_return` row of its stock and session under its family's horizon. A night run again replaces its own rows whole and touches no other night's.
+**The family lister writes the page's list here and is its own deleter** (see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order). After the swing filter has stored its rows it reads the names each family passed, in that family's own order, and every trade a list made on an earlier night with what became of it, and draws the list by one rule: the families in the page's order; a stock whose trade is still open is listed by none and its row names the family and the night that listed that trade; a stock already listed tonight is not listed again; and a family lists at most five, a name past its five still listed by a later family it qualified under. So a stock holds at most one `listed` row a session, and that row's `also` carries the labels the page draws beside it. The pullback family's names are the ones `gate_result` holds as passed, improving businesses first and then the filter's own order, and its trade is the plan its night's trade gate read; another family's names are the ones `family_result` holds as passed, in the places its evaluator stored, and its trade is that row's; nothing here restates a plan. A trade's outcome is the `forward_return` row of its stock and session under its family's horizon. A night run again replaces its own rows whole and touches no other night's.
 
 ### forward_return
 Grain: one row per listing per horizon, and one per swing filter row carrying a plan per swing horizon.
@@ -575,15 +600,15 @@ Grain: one row per listing per horizon, and one per swing filter row carrying a 
 |---|---|---|
 | `ticker` | TEXT | |
 | `session_date` | TEXT | the listing's date, which a swing filter row shares |
-| `horizon` | TEXT | `5`, `21` or `setup` for a listing; `swing` or `swing-20` for a swing filter row's plan at the nearest bands and `clear` or `clear-20` for its section 10 plan, each over the setup's cap and over twenty sessions as context (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads) |
-| `outcome` | TEXT | `win`, `loss`, `unresolved`, `never entered`, or null while immature. `never entered` is the setup horizon's alone: the price never closed at or below the entry zone's top edge, so there was no purchase to score (see: A setup is scored from its entry, and a target reached before the entry is never a win) |
+| `horizon` | TEXT | `5`, `21` or `setup` for a listing; `swing` or `swing-20` for a swing filter row's plan at the nearest bands and `clear` or `clear-20` for its section 10 plan, each over the setup's cap and over twenty sessions as context (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads); `breakout` for a trade the breakout family passed, over its own cap (see: A breakout is a close above the year's high on heavy volume after its ranges narrowed, sold on a trailing stop with no target) |
+| `outcome` | TEXT | `win`, `loss`, `unresolved`, `never entered`, `trailed`, or null while immature. `trailed` is a trailing trade's alone, sold at a close under its stop, and such a trade ended by its cap is `unresolved`; it is never `win` or `loss`, having no target. `never entered` is the setup horizon's alone: the price never closed at or below the entry zone's top edge, so there was no purchase to score (see: A setup is scored from its entry, and a target reached before the entry is never a win) |
 | `resolved_on` | TEXT | date: the session a horizon matured or a setup resolved on, the cap's own session for a setup timed out, and null while immature |
 | `return_pct` | REAL | for the two session horizons, the move from the listing's close; for the `setup` horizon, the move from the close the setup was entered at, and null where nothing was entered or the entry and the stop fell on one session (see: A setup is scored from its entry, and a target reached before the entry is never a win) |
 | `base_rate` | REAL | the universe figure for this horizon, over every name-night in the window rather than over the listed ones, and null for the `setup` horizon |
 | `break_even` | REAL | the share of the time this plan had to be right to come out even, as a percentage, computed from the close the setup was entered at, its stop and its first traded target. The `setup` horizon's alone, and null on the two session horizons, which ask what the market did rather than what a plan demanded (see: A stored break-even is measured from the close the setup was entered at, as a percentage beside the figures it is compared with) |
 | `null_win` | REAL | the share of the time a plan with no edge would have reached this one's target before its stop, simulated from the fill it was scored from under the name's trailing volatility with the session cap and the round trip the calibration carries. The `setup` horizon's alone, on a resolved row alone, and null on a row decided before the column existed (see: A setup's null win probability is calibrated from its own plan, and its planned break-even is shown beside it) |
 | `null_win_at_sensitivity` | REAL | the same bar at the round trip shown as a sensitivity beside the one the calibration carries (see: The calibrated null carries a round trip of ten basis points, and thirty is shown as a sensitivity) |
-| `planned_risk` | REAL | what the plan put at risk from the fill, as a percentage of it, which is what a realized loss is stated in multiples of |
+| `planned_risk` | REAL | what the plan put at risk from the fill, as a percentage of it, which is what a realized loss is stated in multiples of, and what a trailing trade's result is divided by to be read in multiples of its risk |
 | `on_earnings` | INTEGER | 1 where the session the setup resolved on was one the name reported on, 0 where it was not, and null where nothing resolved. Stored rather than asked for when a record is read, because the calendar holds a year and a candidate's record is read over four |
 
 Primary key: `ticker`, `session_date`, `horizon`.

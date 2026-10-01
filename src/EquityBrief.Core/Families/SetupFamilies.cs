@@ -3,8 +3,9 @@ using EquityBrief.Core.Returns;
 namespace EquityBrief.Core.Families;
 
 // One setup family as every surface names it: the word the store keeps, the card's heading and the line
-// above it, its rule in one sentence, and the horizon its trades are scored under with that horizon's cap.
-public sealed record SetupFamily(string Name, string Label, string Heading, string Eyebrow, string Rule, string Horizon, int CapSessions);
+// above it, its rule in one sentence, the horizon its trades are scored under with that horizon's cap, and
+// whether its trade is sold on a trailing stop with no target.
+public sealed record SetupFamily(string Name, string Label, string Heading, string Eyebrow, string Rule, string Horizon, int CapSessions, bool Trails = false);
 
 // The setup families tonight's page is drawn from, in the page's order, and the numbers they share.
 //
@@ -34,9 +35,25 @@ public static class SetupFamilies
         ForwardReturnSeries.Clear,
         ForwardReturnSeries.SetupSessionCap);
 
+    // The breakout, on provisional settings until its freeze.
+    // see: A breakout is a close above the year's high on heavy volume after its ranges narrowed, sold on a trailing stop with no target
+    public static SetupFamily Breakouts { get; } = new(
+        BreakoutRule.Name,
+        "Breakout",
+        "Breakouts to a new high",
+        "Breakout from a base",
+        "A stock closes above its highest price of the past year on heavy volume, after its daily ranges narrowed. Stop two typical moves below, raised as the price climbs and never lowered; no target.",
+        BreakoutRule.Horizon,
+        BreakoutRule.CapSessions,
+        Trails: true);
+
     // The page's order, which is the order a stock qualifying under two families is listed in and the
     // order the night's reports are asked for in.
-    public static IReadOnlyList<SetupFamily> InPageOrder { get; } = [Pullbacks];
+    public static IReadOnlyList<SetupFamily> InPageOrder { get; } = [Pullbacks, Breakouts];
+
+    // The families whose answers the family evaluator stores, every one but the pullback, whose answers
+    // are the swing filter's own rows.
+    public static IReadOnlyList<SetupFamily> Evaluated { get; } = [.. InPageOrder.Where(family => family.Name != Pullback)];
 
     public static SetupFamily? Named(string name) =>
         InPageOrder.FirstOrDefault(family => string.Equals(family.Name, name, StringComparison.Ordinal));

@@ -44,6 +44,7 @@ public enum Store
     ShapeProposal,
     Listing,
     ListRule,
+    FamilyResult,
     FamilyNight,
     FamilyPick,
     ForwardReturn,

@@ -21,10 +21,21 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.TwoFamilyClaims,
     ];
 
+    // 13.2, breakouts: the family evaluator's catalogue and matrix rows, its store, section 17's rows for
+    // the breakout's settings and section 18's two rows.
+    internal static readonly string[] BreakoutFamilyClaims =
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Family evaluator"),
+        CheckReach.Key(Scope.MatrixTable, "Family evaluator"),
+        CheckReach.Key(Scope.StoresTable, "Family results"),
+        .. FixtureExpectations.BreakoutClaims,
+    ];
+
     // Every row phase 13 has added, in the order its checkpoints add them.
     internal static readonly string[] PhaseThirteenRows =
     [
         .. FamilyFrameworkClaims,
+        .. BreakoutFamilyClaims,
     ];
 
     // The rows of phase 13 the record does not yet reach: each is placed at the checkpoint that draws it

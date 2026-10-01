@@ -464,6 +464,24 @@ public sealed record FamilyPickRow(
     string? HeldFamily,
     DateOnly? HeldNight);
 
+// One member's answer under one setup family but the pullback on a night, as the family evaluator stored
+// it: whether it passed, the gates it missed, its place among the names the family passed, the trade it is
+// bought on, and its gates with their reasons and values.
+// see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+public sealed record FamilyResultRow(
+    DateOnly SessionDate,
+    string Ticker,
+    string Family,
+    bool Passed,
+    int Missed,
+    int? Place,
+    decimal? Entry,
+    decimal? Stop,
+    decimal? Target,
+    double? OrderBy,
+    IReadOnlyList<string> Exclusions,
+    string Gates);
+
 // One member's readings of its reported quarters on a night, as the fundamental reader stored them.
 // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
 public sealed record FundamentalReadingRow(
@@ -603,6 +621,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.ListRule, Touch.Read),
+            new StoreTouch(Store.FamilyResult, Touch.Read),
             new StoreTouch(Store.FamilyNight, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
@@ -2896,6 +2915,50 @@ public sealed class ReadApi : IComponent
                 System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(5)) ?? [],
                 reader.IsDBNull(6) ? null : reader.GetString(6),
                 reader.IsDBNull(7) ? null : DateOnly.ParseExact(reader.GetString(7), "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+        }
+
+        return rows;
+    }
+
+    const string FamilyResultsOn = @"
+        SELECT session_date, ticker, family, passed, missed, place, entry, stop, target, order_by, exclusions, gates
+        FROM family_result
+        WHERE session_date = $on
+        ORDER BY family, place IS NULL, place, ticker;
+    ";
+
+    // Every member's answer under each setup family but the pullback on one night, a family at a time and
+    // the names it passed first in its own order. A night the family evaluator did not run for holds none.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    public async Task<IReadOnlyList<FamilyResultRow>> FamilyResultsAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FamilyResultsOn;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<FamilyResultRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        decimal? Price(int at) => reader.IsDBNull(at) ? null : Money.FromStorage(reader.GetString(at));
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new FamilyResultRow(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetInt64(3) == 1,
+                reader.GetInt32(4),
+                reader.IsDBNull(5) ? null : reader.GetInt32(5),
+                Price(6),
+                Price(7),
+                Price(8),
+                reader.IsDBNull(9) ? null : reader.GetDouble(9),
+                System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(10)) ?? [],
+                reader.GetString(11)));
         }
 
         return rows;

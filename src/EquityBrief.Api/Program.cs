@@ -995,7 +995,8 @@ app.MapGet("/screens/tonight/{night?}", async (
                     rows,
                     gates,
                     await read.RegisteredCandidatesAsync(),
-                    TonightScreen.RuleView(rule, gates, market))),
+                    TonightScreen.RuleView(rule, gates, market),
+                    await read.FamilyResultsAsync(dated))),
         "text/html; charset=utf-8");
 });
 

@@ -31,6 +31,9 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Family nights"),
             CheckReach.Key(Scope.StoresTable, "Family picks"),
 
+            // 13.2, the family evaluator's store.
+            CheckReach.Key(Scope.StoresTable, "Family results"),
+
             // 6.1, the fundamentals store: migration 19's columns and types against
             // SCHEMA's own declaration of them.
             CheckReach.Key(Scope.StoresTable, "Fundamentals"),

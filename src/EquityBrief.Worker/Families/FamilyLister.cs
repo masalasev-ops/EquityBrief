@@ -41,6 +41,7 @@ public sealed class FamilyLister : IComponent
             new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.ListRule, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
+            new StoreTouch(Store.FamilyResult, Touch.Read),
             new StoreTouch(Store.FamilyNight, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.FamilyPick, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
@@ -64,6 +65,13 @@ public sealed class FamilyLister : IComponent
         LEFT JOIN fundamental_reading f ON f.ticker = g.ticker AND f.session_date = g.session_date
         WHERE g.session_date = $night AND g.passed = 1 AND g.version <> '" + ReplayedResults.Version + @"'
         ORDER BY " + FundamentalState.PlaceIn("f.state") + @", g.rank, g.ticker;
+    ";
+
+    // The names another family passed on the night, in the order its evaluator stored.
+    const string PassedOn = @"
+        SELECT ticker FROM family_result
+        WHERE session_date = $night AND family = $family AND passed = 1
+        ORDER BY place, ticker;
     ";
 
     // Every trade a list made before the night with what became of it on its own horizon: each listed
@@ -226,10 +234,9 @@ public sealed class FamilyLister : IComponent
     {
         await using var command = connection.CreateCommand();
 
-        command.CommandText = family.Name == SetupFamilies.Pullback
-            ? PullbacksOn
-            : throw new InvalidOperationException($"The {family.Name} family is on the page and the lister reads no store for it.");
+        command.CommandText = family.Name == SetupFamilies.Pullback ? PullbacksOn : PassedOn;
         command.Parameters.AddWithValue("$night", Stamp(night));
+        command.Parameters.AddWithValue("$family", family.Name);
 
         var tickers = new List<string>();
 

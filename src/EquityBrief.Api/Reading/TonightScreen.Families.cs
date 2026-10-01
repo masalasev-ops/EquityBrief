@@ -42,7 +42,9 @@ public static partial class TonightScreen
                 {
                     var cell = drawn(byTicker[pick.Ticker]);
 
-                    if (gateByTicker.TryGetValue(pick.Ticker, out var gate))
+                    // The swing filter's answer is the trade of a stock the pullback lists, and of no other
+                    // family's pick, whose trade its own card states.
+                    if (pick.Family == SetupFamilies.Pullback && gateByTicker.TryGetValue(pick.Ticker, out var gate))
                     {
                         var filter = FilterRowOf(gate);
 
@@ -72,10 +74,12 @@ public static partial class TonightScreen
         IReadOnlyList<ListingCell> rows,
         IReadOnlyList<GateResultRow> gates,
         IReadOnlyList<CandidateRow> register,
-        ListRuleView rule)
+        ListRuleView rule,
+        IReadOnlyList<FamilyResultRow>? results = null)
     {
         var rowByTicker = rows.ToDictionary(row => row.Ticker, StringComparer.Ordinal);
         var gateByTicker = gates.ToDictionary(gate => gate.Ticker, StringComparer.Ordinal);
+        var resultBy = (results ?? []).ToDictionary(result => (result.Family, result.Ticker));
         var listedUnder = picks
             .Where(pick => pick.State == FamilyList.Listed)
             .ToDictionary(pick => pick.Ticker, pick => pick.Family, StringComparer.Ordinal);
@@ -92,7 +96,7 @@ public static partial class TonightScreen
             var listed = own
                 .Where(pick => pick.State == FamilyList.Listed && rowByTicker.ContainsKey(pick.Ticker))
                 .OrderBy(pick => pick.Place ?? int.MaxValue)
-                .Select(pick => PickOf(family, pick, rowByTicker[pick.Ticker], gateByTicker.GetValueOrDefault(pick.Ticker)))
+                .Select(pick => PickOf(family, pick, rowByTicker[pick.Ticker], gateByTicker.GetValueOrDefault(pick.Ticker), resultBy.GetValueOrDefault((family.Name, pick.Ticker))))
                 .ToArray();
 
             var (liveSince, variants) = Standing(family, register, night);
@@ -109,7 +113,7 @@ public static partial class TonightScreen
                 variants,
                 listed,
                 Notes(family, own, listedUnder),
-                listed.Length > 0 ? null : Empty(family, own, rule)));
+                listed.Length > 0 ? null : Empty(family, own, rule, [.. (results ?? []).Where(result => result.Family == family.Name)])));
         }
 
         return cards;
@@ -117,9 +121,29 @@ public static partial class TonightScreen
 
     // A pick as its family's card draws it. A pullback's trade is the plan its night's trade gate read, off
     // its stored gate result, and its words are the figures its setup and trigger gates stored.
-    static FamilyPickCell PickOf(SetupFamily family, FamilyPickRow pick, ListingCell row, GateResultRow? gate)
+    // Another family's is the trade its evaluator stored that night, a trailing family's with no target, and
+    // its words are the figures its own gates stored.
+    static FamilyPickCell PickOf(SetupFamily family, FamilyPickRow pick, ListingCell row, GateResultRow? gate, FamilyResultRow? result)
     {
         var also = pick.Also.Select(name => SetupFamilies.Named(name)?.Label ?? name).ToArray();
+
+        if (family.Name != SetupFamilies.Pullback && result is not null)
+        {
+            return new FamilyPickCell(
+                row,
+                pick.Place ?? 0,
+                result.Entry,
+                result.Stop,
+                result.Target,
+                family.Trails,
+                Stored(result.Gates, FamilyRule.Trade, RewardToRiskValue) is { } stated && decimal.TryParse(stated, NumberStyles.Float, CultureInfo.InvariantCulture, out var ratio) ? ratio : null,
+                family.Name switch
+                {
+                    BreakoutRule.Name => BreakoutWhy(result),
+                    _ => "its setup's gates all passed tonight",
+                },
+                also);
+        }
 
         if (family.Name != SetupFamilies.Pullback || gate is null || row.Filter is not { } filter)
         {
@@ -178,6 +202,38 @@ public static partial class TonightScreen
 
     static string Price(string stored) =>
         decimal.TryParse(stored, NumberStyles.Float, CultureInfo.InvariantCulture, out var price) ? Figures.Price(price) : stored;
+
+    // The trade gate's value naming the plan's reward to risk, where its family's plan has a target.
+    public const string RewardToRiskValue = "reward to risk";
+
+    // One value a stored gate holds, and none where the gate or the value is not there.
+    static string? Stored(string gates, string gate, string key) =>
+        FamilyRule.GatesOf(gates).FirstOrDefault(one => one.Name == gate)?.Values.GetValueOrDefault(key);
+
+    static double? StoredFigure(string gates, string gate, string key) =>
+        double.TryParse(Stored(gates, gate, key), NumberStyles.Float, CultureInfo.InvariantCulture, out var figure) ? figure : null;
+
+    // Why the breakout lists a stock tonight, in the figures its gates stored: the high it closed above,
+    // its volume against its average, and how its daily ranges ran before.
+    public static string BreakoutWhy(FamilyResultRow result)
+    {
+        var close = Stored(result.Gates, BreakoutRule.NewHigh, "close");
+        var high = Stored(result.Gates, BreakoutRule.NewHigh, "high");
+        var multiple = StoredFigure(result.Gates, BreakoutRule.Volume, "multiple");
+        var ratio = StoredFigure(result.Gates, BreakoutRule.Tightened, "ratio");
+
+        var closed = close is { Length: > 0 } and not "none" && high is { Length: > 0 } and not "none"
+            ? FormattableString.Invariant($"Closed at {Price(close)}, above its high of {Price(high)} over the {BreakoutRule.HighSessions} sessions before")
+            : "Closed above its high of the year before";
+        var volume = multiple is { } times
+            ? FormattableString.Invariant($", on volume {times:0.00} times its average")
+            : string.Empty;
+        var ranges = ratio is { } narrowed
+            ? FormattableString.Invariant($", after its daily ranges ran at {narrowed:0.00} of the {BreakoutRule.RangeSessions} sessions before them")
+            : string.Empty;
+
+        return closed + volume + ranges + ".";
+    }
 
     // The day a family's rule went live and the variants scored beside it, read off the register as it
     // stood at the night's end: the pullback's live candidate and the other candidates its evaluator runs.
@@ -245,7 +301,7 @@ public static partial class TonightScreen
     // Why a family lists nothing on a night it lists none: the market check closed every list, no stock
     // passed its gates, or every stock it passed is held back, which its notes say.
     // see: The market check closes every family's list together
-    static string Empty(SetupFamily family, IReadOnlyList<FamilyPickRow> own, ListRuleView rule)
+    static string Empty(SetupFamily family, IReadOnlyList<FamilyPickRow> own, ListRuleView rule, IReadOnlyList<FamilyResultRow> results)
     {
         if (own.Count > 0)
         {
@@ -259,8 +315,35 @@ public static partial class TonightScreen
                 : "The market check closed every list tonight: the night's breadth is not available.";
         }
 
-        return family.Name == SetupFamilies.Pullback && rule.Reached.Count == 4
-            ? FormattableString.Invariant($"No stock passed this setup tonight: {rule.Reached[0]} passed the trend and strength gate, {rule.Reached[1]} the setup, {rule.Reached[2]} the trigger and {rule.Reached[3]} the trade, and none of those past the exclusions.")
-            : "No stock passed this setup tonight.";
+        if (family.Name == SetupFamilies.Pullback)
+        {
+            return rule.Reached.Count == 4
+                ? FormattableString.Invariant($"No stock passed this setup tonight: {rule.Reached[0]} passed the trend and strength gate, {rule.Reached[1]} the setup, {rule.Reached[2]} the trigger and {rule.Reached[3]} the trade, and none of those past the exclusions.")
+                : "No stock passed this setup tonight.";
+        }
+
+        return results.Count == 0
+            ? "No answer of this setup is stored for the night."
+            : "No stock passed this setup tonight: " + Funnel(results) + ".";
+    }
+
+    // How far the members got down a family's gates, each count the members passing that gate and every
+    // gate before it, the market check left out since it is one answer for every member.
+    public static string Funnel(IReadOnlyList<FamilyResultRow> results)
+    {
+        var gates = results.Select(result => FamilyRule.GatesOf(result.Gates)).ToArray();
+        var names = gates[0].Select(gate => gate.Name).Where(name => name != FamilyRule.Market).ToArray();
+        var reached = names
+            .Select((name, at) => gates.Count(member => member.Where(gate => gate.Name != FamilyRule.Market).Take(at + 1).All(gate => gate.Passed)))
+            .ToArray();
+
+        var steps = names
+            .Select((name, at) => at == 0
+                ? FormattableString.Invariant($"{reached[at]} passed the {name} gate")
+                : FormattableString.Invariant($"{reached[at]} of those the {name} gate"))
+            .ToArray();
+
+        return FormattableString.Invariant($"of {results.Count} members, ")
+            + (steps.Length > 1 ? string.Join(", ", steps[..^1]) + " and " + steps[^1] : string.Concat(steps));
     }
 }

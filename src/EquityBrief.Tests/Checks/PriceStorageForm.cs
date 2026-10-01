@@ -198,6 +198,11 @@ public class PriceStorageForm
         // outcomes until the stepped plan's risk had to be read from its plan and not from its fill, and a
         // rule with two branches is stated once where a test can hold it.
         // see: The stepped plan's result is counted on the risk its plan stated, and a fill nearer its stop than the stop setting's floor is no trade
+        //
+        // `TrailingExit.RiskPct`: a trailing trade's buy and its stop in, what the plan put at risk as a per
+        // cent of the buy out, through `Statistic.FromRatio`. It is what a trade with no target is read in
+        // multiples of, stated once where the filler and a test both hold it.
+        // see: A breakout is a close above the year's high on heavy volume after its ranges narrowed, sold on a trailing stop with no target
         Assert.Equal(
             [
                 "Distances.cs: InTypicalDays",
@@ -210,6 +215,7 @@ public class PriceStorageForm
                 "Statistic.cs: ToPrice",
                 "SweepCandidates.cs: RiskPercent",
                 "SwingGates.cs: Moves",
+                "TrailingExit.cs: RiskPct",
                 "UniverseScreen.cs: Distance",
             ],
             crossings);

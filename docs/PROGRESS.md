@@ -35027,3 +35027,95 @@ Held:       F131HELD.
 Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
             `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
             with the figures 13.5's entry states.
+
+### 13.2 - breakouts: the second setup family, a close above the year's high on heavy volume after its ranges narrowed, evaluated for every member every night and stored, bought at the close on a stop that trails the highest close and no target, scored in multiples of its risk, and drawn as a card of its own   2026-10-01
+
+Built:      - `BreakoutRule`, the family's rule as a pure function of a member's sessions, its stored
+              average volume and typical move and the night's market gate: five gates in order, the
+              market, the new high, the volume, the ranges and the trade, each answered with its reason
+              and the values that decided it whether or not an earlier one failed, so a name one gate
+              short can be counted. The names passing are ordered by volume against its average.
+            - `TrailingExit`, a trade sold on a trailing stop and no target, read on closes: the stop
+              follows the highest close since the buy at the plan's own distance and is never lowered,
+              a close under it sells, stored as `trailed`, and the cap ends a trade still open, stored
+              as `unresolved`, each with what it made. It has no win, no loss and no break-even.
+            - `FamilyEvaluator`, a component of its own running as a stage, `family-rules`, of the swing
+              filter's step, between the filter and the lister. It evaluates every member the filter
+              evaluated, hands every family the market gate the filter stored, carries over the filter's
+              exclusions for a gap and a suspect series and none of its others, and stores every answer.
+              A night run again replaces its own rows; a row that did not pass is dropped once its session
+              is older than the oldest stored bar, and a row that passed is kept.
+            - Migration 54: `family_result`, one row a session, member and family but the pullback.
+            - The lister reads another family's names from that table in the places its evaluator stored.
+              The forward return filler scores each passed row from its night's close under its family's
+              horizon, `breakout`, with the plan scaled by the listing session's adjustment as a setup's
+              is, and stores what the plan put at risk beside what the trade made.
+            - Tonight's page: the breakout's card, second on the page, marked provisional, each pick with
+              its buy and its stop, the word trailing where a target would be, no fixed target on the bar
+              between them, the word open for its reward to risk, and why it is listed in the figures its
+              gates stored. A stock the pullback and the breakout both pass is drawn once, on the
+              pullback's card with the breakout's label, and named in a note under the breakout's card.
+              A card listing none says how far the members got down its gates.
+            - Documents: section 7's row for the family evaluator and the matrix's, the lister's and the
+              filler's reads, section 11.4, which states what a family is and what the families share
+              before the breakout's rule, section 14's step, section 16's row, section 17's six rows for
+              the breakout's settings, each marked provisional, section 18's two rows, a source row for
+              the trailing stop study, `SCHEMA.md`'s table and ownership with the horizon and the outcome
+              word a trailing trade adds, and the decision the family rests on, the decision that the
+              swing filter reads pullbacks alone narrowed in place to say so. Prior text in CHANGELOG.
+Not built:  no breakout is registered and none counts toward a checkpoint: the family runs on provisional
+            settings until its sweep, 13.6, and its freeze, 13.9. Past picks and the run page do not yet
+            draw a breakout's trade, which 13.5 builds. The swing filter's code is untouched.
+Tests:      seven added, each by hand over constructed input. Each gate on both sides of its threshold
+            and at it: a close a cent above the year's high, at it and a cent beneath; 1,499, 1,500 and
+            1,501 shares against an average of 1,000; ranges equal to the ones before and a hundredth
+            wider; a member one session short of the year and one a session short of the ranges' two
+            windows, each reading not available with its count; a night with no typical move; a closed
+            market; a gapped series; and the order. The trailing stop over constructed closes: raised to
+            97 and 101, held at 101 under a close of 102, a close at 101 not selling and 100.99 selling,
+            0.99 per cent up on 4 at risk, 0.2475 of its risk; a first close under the plan's own stop;
+            the cap; a trade a session short of its cap; and a stop at the buy refused. The evaluator
+            over a constructed store of six members: every answer stored with its place, the filter's
+            earnings exclusion not carried and its gap carried, its own night replaced, an old row that
+            passed kept and one that did not dropped, then the lister over the two families with a
+            stock both pass. A closed market passing none, and a night the filter stored nothing for
+            evaluating none. The filler over five constructed trades: one sold under its trail, the
+            same trade on a series a split has since restated, one not yet matured, one ended by its
+            cap and one the night could not buy. The card read back off the rendered page against the
+            store in both directions, with the label and the note. And a card listing none.
+            Changed: the framework's tests read two families on the page, the pullback's card as the
+            first of two and the lister's row naming both; and the filler's row in the test of a decided
+            outcome ends with the count of the other families' trades.
+Claims:     11 added: the family evaluator's catalogue and matrix rows, its store, section 17's six rows
+            and section 18's two. The three the framework placed here are due with them: the label, the
+            note under the later card, and section 18's row about a stock two families pass.
+Pins:       none moves. The three lists were read off the code's own declarations and the tree touches
+            none of them: the rule, the exit and the evaluator are files of their own, and the filler,
+            which this checkpoint edits, is in no list.
+Remedy:     migration 54, applied with migration 53 by `tools/migrate.ps1` straight after the merge.
+Unpredicted: the plan counted about 10 claims and the settings are six rows, so 11. Section 11.4 opens
+            here with the paragraph on what a family is, which the framework stated across sections 14
+            to 18 and nowhere as a whole. The store keeps every member's answer, so a row that did not
+            pass needed a retention the plan did not state: it goes with the bars it was read from. The
+            filler's run row gained a clause, and the decision that the filter reads pullbacks alone
+            is narrowed and not superseded, since a pinned source cites it.
+Mutated:    the rule, stated before the run: each rule this checkpoint adds, reversed alone, filtered to the
+            tests that read it, in a detached worktree at the pull request's tree and reverted.
+            Predicted:
+            B1 a close at the year's high passing the new high gate: red in the gates' test.
+            B2 a volume at the multiple not passing: red in the gates' test and the evaluator's.
+            B3 the ranges read over tonight's session and the 19 before: red in the gates' test.
+            B4 the trailing stop following the close down: red in the trailing stop's test and the filler's.
+            B5 a close at the stop selling: red in the trailing stop's test.
+            B6 the evaluator carrying the filter's earnings exclusion: red in the evaluator's test.
+            B7 the evaluator reading the market as open whatever the filter stored: red in the closed
+               market's test.
+            B8 the filler leaving a trailing trade's stop on the listing night's scale: red in the
+               filler's test.
+            B9 the lister reading another family's names by ticker and not by place: red in the
+               evaluator's test, where the lister draws the two families.
+            Results: F132MUT.
+Held:       F132HELD.
+Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
+            with the figures 13.5's entry states.

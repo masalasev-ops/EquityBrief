@@ -35,14 +35,15 @@ internal static class ComponentVocabulary
     // fetches after a report with the asks that fetched them, and pulled history
     // is the pulled bars beside the pulled earnings, which one pull writes and one
     // purge removes together. The fundamental readings are a computed table, one
-    // row a member a night, as the swing readings are.
+    // row a member a night, as the swing readings are, and so are the family
+    // results, one row a member a night under each setup family but the pullback.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
         ("Bars", [DataStore.Bar]),
         ("Calendar", [DataStore.Calendar]),
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise]),
-        ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading]),
+        ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult]),
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick]),
         ("Forward returns", [DataStore.ForwardReturn]),
         ("Facts", [DataStore.Facts]),
@@ -149,6 +150,7 @@ internal static class ComponentVocabulary
         ["series state"] = DataStore.SeriesState,
         ["listings"] = DataStore.Listing,
         ["list rules"] = DataStore.ListRule,
+        ["family results"] = DataStore.FamilyResult,
         ["family nights"] = DataStore.FamilyNight,
         ["family picks"] = DataStore.FamilyPick,
         ["indicators"] = DataStore.Indicator,
