@@ -81,6 +81,9 @@ public sealed class SpendCap(
 
     public int Probes => model.Probes;
 
+    // The most a call could cost, which a job holding a limit of its own judges before it asks.
+    public decimal Ceiling(ModelRequest request) => model.Ceiling(request);
+
     public async Task<PaidCall> AskAsync(ModelRequest request, string runId, string? round = null, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;

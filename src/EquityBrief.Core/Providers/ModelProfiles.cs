@@ -29,15 +29,21 @@ public static class ModelProfiles
     public const string Section = "EquityBrief:Models";
     public const string ProfilesSection = Section + ":Profiles";
 
-    // The paid jobs, each under a section of its own.
+    // The paid jobs, each under a section of its own: research, and the news labeller.
     public const string ResearchJob = "Research";
+    public const string NewsJob = "News";
 
-    public static readonly string[] Jobs = [ResearchJob];
+    public static readonly string[] Jobs = [ResearchJob, NewsJob];
 
     // A job's fields.
     public const string UseField = "Use";
     public const string TimeoutField = "TimeoutSeconds";
     public const string AnswerTokensField = "AnswerTokens";
+
+    // The news job's own limits: the most it spends in a UTC month, in dollars, and how long one run may take.
+    // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+    public const string MonthLimitField = "MonthLimit";
+    public const string TimeLimitField = "TimeLimitMinutes";
 
     // A profile's fields.
     public const string FormatField = "Format";

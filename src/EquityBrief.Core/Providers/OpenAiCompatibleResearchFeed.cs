@@ -151,9 +151,11 @@ public sealed class OpenAiCompatibleResearchFeed(HttpClient client, ResearchMode
             [StreamOptionsField] = new JsonObject { ["include_usage"] = true },
         };
 
-        // The risks are asked for as a JSON object, which the format's own mode holds an answer to.
+        // The risks and a news label are asked for as a JSON object, which the format's own mode holds an answer to;
+        // the label's schema is told in the instruction's words, since this mode takes none.
         // see: Each risk is returned as fields and confirmed by a listed fact or an event of one kind, and no two risks share either
-        if (EquityBrief.Core.Research.RiskFields.IsRisks(wanted.Section))
+        // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
+        if (EquityBrief.Core.Research.RiskFields.IsRisks(wanted.Section) || EquityBrief.Core.News.NewsInstruction.IsLabel(wanted.Section))
         {
             body[ResponseFormatField] = new JsonObject { ["type"] = "json_object" };
         }

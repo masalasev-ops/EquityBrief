@@ -672,6 +672,7 @@ public static class SchemaMigrations
         new Migration(49, "add peer_reading.peers", AddPeerPicks),
         new Migration(50, "add research_section.parts", AddRiskParts),
         new Migration(51, "create pulled_surprise", CreatePulledSurprise),
+        new Migration(52, "create news_article and news_label", CreateNewsArticlesAndLabels),
     ];
 
     // One completed block of one version's record, frozen when the block completed.
@@ -1145,6 +1146,44 @@ public static class SchemaMigrations
             surprise_percent  REAL,
             pull              TEXT NOT NULL,
             PRIMARY KEY (ticker, event_date)
+        ) STRICT;
+    ";
+
+    // The articles the night's one news query brings back, one row per member per article with its text cut
+    // and its admissibility judged as it is stored, kept for thirty-one days; and the labels a paid model gave
+    // them, one row per article per profile per instruction version, never overwritten, an answer that could
+    // not be read kept as unreadable with its cause so it is not paid for again.
+    // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+    // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
+    const string CreateNewsArticlesAndLabels = @"
+        CREATE TABLE news_article (
+            ticker          TEXT NOT NULL,
+            article_id      TEXT NOT NULL,
+            link            TEXT NOT NULL,
+            title           TEXT NOT NULL,
+            source          TEXT NOT NULL,
+            published_at    TEXT NOT NULL,
+            text            TEXT NOT NULL,
+            length          INTEGER NOT NULL,
+            admissibility   TEXT NOT NULL,
+            session_date    TEXT NOT NULL,
+            PRIMARY KEY (ticker, article_id)
+        ) STRICT;
+
+        CREATE TABLE news_label (
+            ticker               TEXT NOT NULL,
+            article_id           TEXT NOT NULL,
+            profile              TEXT NOT NULL,
+            instruction_version  INTEGER NOT NULL,
+            model                TEXT NOT NULL,
+            outcome              TEXT NOT NULL,
+            cause                TEXT,
+            kind                 TEXT,
+            direction            TEXT,
+            reason               TEXT,
+            labelled_at          TEXT NOT NULL,
+            run_id               TEXT NOT NULL,
+            PRIMARY KEY (ticker, article_id, profile, instruction_version)
         ) STRICT;
     ";
 

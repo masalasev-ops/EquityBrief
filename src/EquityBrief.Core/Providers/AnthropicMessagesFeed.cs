@@ -173,7 +173,9 @@ public sealed class AnthropicMessagesFeed(HttpClient client, ResearchModelSettin
                 ["format"] = new JsonObject
                 {
                     ["type"] = "json_schema",
-                    ["schema"] = EquityBrief.Core.Research.RiskFields.IsRisks(wanted.Section) ? RisksSchema() : SentencesSchema(),
+                    ["schema"] = EquityBrief.Core.News.NewsInstruction.IsLabel(wanted.Section) ? EquityBrief.Core.News.NewsInstruction.Schema()
+                        : EquityBrief.Core.Research.RiskFields.IsRisks(wanted.Section) ? RisksSchema()
+                        : SentencesSchema(),
                 },
             };
         }

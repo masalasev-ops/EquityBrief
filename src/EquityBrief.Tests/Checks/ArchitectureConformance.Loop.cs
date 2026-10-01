@@ -1188,6 +1188,31 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.MatrixTable, "Comparison files"),
     ];
 
+    // 12.6's correction, the news labeller on the ruling of 2026-09-29: its catalogue and matrix rows, its two
+    // stores, section 14's step, section 17's five rows and section 18's eight. Declared before the lists that take
+    // them in.
+    internal static readonly string[] NewsLabellerClaims =
+    [
+        CheckReach.Key(Scope.CatalogueTable, "News labeller"),
+        CheckReach.Key(Scope.MatrixTable, "News labeller"),
+        CheckReach.Key(Scope.StoresTable, "News articles"),
+        CheckReach.Key(Scope.StoresTable, "News labels"),
+        CheckReach.Key(NightlyRunSteps.Heading, "Start the news labeller as the drain is started, a process of its own that labels the stored admitted articles of the names on tonight's list, newest first and at most twenty a name over the thirty days before the night, through the news job's paid model one article at a time, with every call and every dollar on the labeller's own run and never the night's, bounded by its own time and month limits, and starting none on a night run again for an earlier session (see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own)."),
+        CheckReach.Key(Scope.LimitsTable, "News labelling window"),
+        CheckReach.Key(Scope.LimitsTable, "News labeller time limit"),
+        CheckReach.Key(Scope.LimitsTable, "News labeller month limit"),
+        CheckReach.Key(Scope.LimitsTable, "Unreadable answers for a digit"),
+        CheckReach.Key(Scope.LimitsTable, "News article retention"),
+        CheckReach.Key(Scope.FailureTable, "The news job's model does not answer"),
+        CheckReach.Key(Scope.FailureTable, "An answer the labeller cannot read"),
+        CheckReach.Key(Scope.FailureTable, "The labeller's month limit reached"),
+        CheckReach.Key(Scope.FailureTable, "The day or month cap pauses a label"),
+        CheckReach.Key(Scope.FailureTable, "The labeller's time limit passes"),
+        CheckReach.Key(Scope.FailureTable, "A peak window of the news profile opens while the labeller runs"),
+        CheckReach.Key(Scope.FailureTable, "An article refused by admissibility"),
+        CheckReach.Key(Scope.FailureTable, "The labeller fails"),
+    ];
+
     // 12.3's build of the night from a clean copy of the committed code, on the ruling of 2026-09-29: the refusal
     // on tonight's notice, the commit on the Run page, and section 18's row about a checkout refused. Declared
     // before the lists that take them in.
@@ -1393,6 +1418,7 @@ public partial class ArchitectureConformance
         .. ResearchTemplateClaims,
         .. SweepClaims,
         .. NightBuildClaims,
+        .. NewsLabellerClaims,
     ];
 
     // Rows taken out of the document after phase 12's prediction, which counted each: the name page's
@@ -1512,6 +1538,7 @@ public partial class ArchitectureConformance
         .. ResearchTemplateClaims,
         .. SweepClaims,
         .. NightBuildClaims,
+        .. NewsLabellerClaims,
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1560,8 +1587,10 @@ public partial class ArchitectureConformance
         // point-in-time check's catalogue and matrix rows, section 17's edge, conditions, point in time and
         // search rows, and section 18's two, and 766 from the 12.3 build of the night from a clean copy of the
         // committed code, its three: the refusal on tonight's notice, the commit on the Run page and section 18's
-        // row about a checkout refused.
-        Assert.Equal((550, 766), (predicted, actual));
+        // row about a checkout refused, and 784 from the 12.6 correction that brings the news labeller, its
+        // eighteen: its catalogue and matrix rows, its two stores, section 14's step, section 17's five rows and
+        // section 18's eight.
+        Assert.Equal((550, 784), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

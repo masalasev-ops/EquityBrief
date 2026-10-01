@@ -34197,3 +34197,98 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             green at 766 claims, 766 PASS, 0 FAIL, 777 placements and verdicts reconciled, 1652 of
             1652 tests.
 Carried:    nothing new.
+
+### 12.6 - correction: the news pulse counter keeps every article naming a member with its admissibility judged, and a news labeller the night starts after the close as a process of its own asks the news job's paid model for a kind, a direction and a one-sentence reason holding no digit for each listed name's articles, a label never overwritten and an answer unreadable twice kept with its cause   2026-10-01
+
+Builds:     the news labeller of the 12.6 ruling of 2026-09-29, its third pull request of four, as track 7 of the
+            queue the 12.2 ruling of 2026-09-30 sets, started on the operator's word of 2026-10-01 ("proceed with
+            those while I go to bed") while the sweep's third run went on under its own build. The screens are the
+            fourth pull request and are not here.
+Asked:      the ruling's own words: the counter keeps every article naming a member from the one query it already
+            makes, its text cut at 8,000 characters, for 31 days, each judged for admissibility as it is stored,
+            and a `news-fill --days 30` verb fills the window at once; the labeller a process of its own started
+            after the close as the drain is, section 14's step, its calls and its spend on its own run and never
+            the night's, a fifth carve-out; tonight's list in the order drawn, each name's stored admitted articles
+            of the 30 days before the night, at most 20, newest first, not yet labelled by the active profile under
+            the instruction's version, one call an article through the spend cap, structured output on a Claude
+            profile and JSON mode on the other; a kind from the brief's nine, a direction for the company and a
+            reason of one sentence holding no digit; an answer failing a check asked once more and stored
+            unreadable with its cause on the second failure, counted by cause (correction 2); a label never
+            overwritten, a switch writing rows of its own; every paid call against the day and month caps, a label
+            judged against the labeller's own month limit of 5 dollars before it is made and its own time limit of
+            20 minutes, both to settle from its first twenty nights; and a night run again for an earlier session
+            starting none.
+Built:      - The stores. Migration 52 creates `news_article`, one row per member per article keyed on the ticker
+              and a hash of the link, carrying the title, the source, the published instant, the text cut at the
+              instruction's length, the length as delivered, the admissibility verdict and the session first
+              stored; and `news_label`, keyed on the ticker, the article, the profile and the instruction's
+              version, carrying the model as the provider answered, the outcome, the cause of an unreadable
+              answer, the kind, the direction, the reason, the instant and the run. SCHEMA declares both and their
+              writers.
+            - The counter. `NewsPulseCounter` keeps every article naming a member from the night's one query as
+              it counts, judged through the same admissibility test a research pass applies, and drops the rows
+              past 31 days with their labels; `FillAsync` and the `news-fill` verb store the last days' articles
+              at once, one dated query a day, on the operator's word.
+            - The instruction. `NewsInstruction`, version 1: the nine kinds, the three directions, the system text
+              asking for one sentence with no figure, date or number, the prompt carrying the company, the ticker,
+              the title and the text, the JSON schema a Claude profile is handed, and the reading of an answer by
+              seven causes in order: not JSON, a kind outside the set, a direction outside the set, a digit in the
+              reason, not one sentence, cut off at the budget, refused by the provider.
+            - The labeller. `NewsLabeller` and the `label-news` verb: the profile resolved and the provider's
+              model list asked before anything, a missing key or a model that does not answer refusing the run on
+              a row of its own; tonight's list in its order with improving businesses first where the night stored
+              its readings; each name's admitted articles of the window newest first and at most twenty, less
+              those labelled or unreadable under the profile and version; before each call the time limit, a peak
+              window of the profile and the month limit by the call's ceiling, and the day and month caps inside
+              the cap; one more ask for an answer it cannot read, then an unreadable row with the second answer's
+              cause; a label inserted and never updated; one run log row of its own naming the profile, the
+              model, the names and how many were reached, the labels, the unreadable by cause, the refused by
+              admissibility, the labelled before, the cost and the month's, and the stop. The spend cap states a
+              call's ceiling for the limit to judge.
+            - The night. Section 14's step after the night's own request: the night starts the labeller through
+              the launcher that starts the drain, as a process of its own on the night's build, and records a row
+              with no model call; a night run again for an earlier session starts none and says so.
+            - The documents. The catalogue, matrix and stores rows; section 14's step; section 17's five rows and
+              the model calls row amended; section 18's eight rows; the three decisions; CLAUDE.md's fifth
+              carve-out and the merge rule; the runbook's step, settings, verbs and morning row; SCHEMA; prior
+              text in CHANGELOG.
+Measured:   nothing paid: no live call was made. The labeller's cost, its durations and the share of answers
+            refused for a digit are read from its first twenty nights on the Run page's line, which the fourth
+            pull request draws; the first night it runs on is the first after this merges.
+Tests:      T7TESTS, from 1652: T7ADDED added: the instruction's reading by hand, the labeller over a constructed
+            store (its order, the retry, the cause, the switch, the three stops, the cap, a model gone), the
+            night's step, the counter's articles, and no deciding source naming the labels.
+Claims:     784, from 766: eighteen added, the labeller's catalogue and matrix rows, the two stores, section 14's
+            step, section 17's five and section 18's eight.
+Pins:       none moves: no pinned source is touched, which the diff was read against the three pin lists for.
+Remedy:     none: migration 52 is applied by `tools/migrate.ps1` or the first night after the merge, as every
+            migration is, and the surface shows the schema notice until it is.
+Mutated:    the rule, stated before the run: the one assertion guarding each rule the brief or a correction
+            states in its own words, reversed alone, filtered to the test that reads it, in a detached worktree at
+            this entry's commit and reverted.
+            Predicted:
+            L1 an article labelled under the profile asked for again, the select's exclusion matching no row: red
+               in the order test alone, the second run sending three where it sends none.
+            L2 an answer that cannot be read not asked once more: red in the order test alone, the second
+               article unreadable where it is labelled and four calls where five.
+            L3 the month limit judged after the call, the ceiling left out: red in the stops test alone, the limit
+               the first call would pass sending one where it sends none.
+            L4 an unreadable answer stored with a fixed cause: red in the order test alone.
+            L5 a refused article sent, the admissibility condition dropped: red in the order test alone, the
+               refused article among the requests.
+            Results: T7MUT.
+Held:       T7HELD.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, T7TESTS of T7TESTS tests ran
+            with none failed, migrations 0 to 52 with none pending, schema version 52, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 784 claims, 784 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, T7PLACE placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, T7TESTS of T7TESTS tests.
+            Both gates ran over the tree carrying this entry, T7SHA, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either; run 3 of the sweep went on under its own
+            build throughout.
+Carried:    the screens, the fourth pull request: the name page's News region, Tonight's counts, the Run page's
+            labeller line with the unreadable answers by cause, and HOW_IT_WORKS' sentence, rehearsed on the
+            preview before its pull request; the captures of a label of each fixture article on the Haiku and
+            Sonnet profiles, which the plan authorised and which wait on the operator's word, since each costs a
+            live call; the time and month limits and the digit share, settled from the first twenty nights.

@@ -13,6 +13,7 @@ using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Facts;
 using EquityBrief.Worker.Fundamentals;
 using EquityBrief.Worker.Filter;
+using EquityBrief.Worker.News;
 using EquityBrief.Worker.Nights;
 using EquityBrief.Worker.Research;
 using EquityBrief.Worker.Rules;
@@ -39,13 +40,15 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "quarters" => await QuartersRun(args),
     "measure-sources" => await MeasureSources(args),
     "sweep" => await SweepRun(args),
+    "label-news" => await LabelNews(args),
+    "news-fill" => await NewsFill(args),
     _ => NoVerb(),
 };
 
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 14 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 16 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -77,7 +80,11 @@ static int NoVerb()
         "industry as a theme pass does and says which would join the sector's sites, writing a report and nothing to the store. '--live' " +
         "'sweep' replays the swing filter over the stored history across its designs and settings, reading the store and " +
         "writing nothing to it, and writes its report in a run folder of its own beside it, '--run <name>' going on with a " +
-        "run started before from its last saved chunk. '--live' " +
+        "run started before from its last saved chunk, " +
+        "'label-news' labels the stored articles of the names on the newest night's list through the news job's paid model, " +
+        "as the night starts it after the close, with '--session <yyyy-MM-dd>' naming the night, and " +
+        "'news-fill --days <n>' stores the articles of the last n days from the news feed's dated query, one a day, " +
+        "for the names the index holds. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -835,6 +842,153 @@ static string? RunId(string? session) =>
 static string? Argument(string[] args, string name) => VerbArguments.Value(args, name);
 
 static IConfiguration Configuration() => WorkerConfiguration.Build();
+
+// The news labeller, run by the night as a process of its own and by hand: the stored articles of the names on
+// the newest night's list, labelled by the news job's profile through the spend cap, every call and every dollar
+// on this run's own rows. A refusal at the settings or a model that does not answer stops it before any call,
+// written as its own row where the store is there to hold it.
+// see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+static async Task<int> LabelNews(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    IClock clock = SystemClock.ForUnitedStatesSessions();
+    var runId = NewsLabeller.RunIdFor(clock.UtcNow);
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"label-news: no store at '{store.DatabaseFile}', so there is no list to label the news of.");
+
+        return 1;
+    }
+
+    ResearchModelSettings news;
+    NewsLimits limits;
+    SpendCaps caps;
+
+    try
+    {
+        news = NewsLane.Settings(configuration);
+        limits = NewsLane.Limits(configuration);
+        caps = ResearchLane.Caps(configuration);
+    }
+    catch (InvalidOperationException refusal)
+    {
+        Console.Error.WriteLine("label-news: " + refusal.Message);
+        await NewsLabeller.RefusedAsync(store.DatabaseFile, runId, clock.UtcNow, refusal.Message);
+
+        return 1;
+    }
+
+    DateOnly session;
+
+    if (Argument(args, "--session") is { } named)
+    {
+        if (!DateOnly.TryParseExact(named, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out session))
+        {
+            Console.Error.WriteLine($"label-news: '--session {named}' is not a date in yyyy-MM-dd.");
+
+            return 1;
+        }
+    }
+    else
+    {
+        session = NightSession.NewestStored(store.DatabaseFile) ?? clock.SessionDateAt(clock.UtcNow);
+    }
+
+    var cap = new SpendCap(OpenAiCompatibleResearchFeed.Live(news), caps, clock, store.DatabaseFile);
+
+    // Asked whether the model answers, which bills nothing: one that is not there stops the run here with its
+    // line, and never another profile in its place.
+    if (await cap.UnreachableAsync() is { } unreachable)
+    {
+        var line = $"the news job's model, {news.Profile}, did not answer: {unreachable}";
+
+        Console.Error.WriteLine("label-news: " + line);
+        await NewsLabeller.RefusedAsync(store.DatabaseFile, runId, clock.UtcNow, line);
+
+        return 1;
+    }
+
+    var outcome = await new NewsLabeller(cap, news, limits, clock, store.DatabaseFile).RunAsync(session, runId);
+
+    Console.WriteLine(
+        FormattableString.Invariant($"label-news: {runId} over the night of {session:yyyy-MM-dd} on {news.Profile}: {outcome.NamesReached} of {outcome.Names} name(s) reached, ") +
+        FormattableString.Invariant($"{outcome.Labelled} labelled, {outcome.UnreadableCount} unreadable, {outcome.RefusedByAdmissibility} refused by admissibility, ") +
+        FormattableString.Invariant($"{outcome.AlreadyLabelled} labelled before, {outcome.Cost} this run and {outcome.MonthCost} this month, stopped by {outcome.Stop}"));
+
+    return 0;
+}
+
+// The articles of the last days stored at once, one dated query a day, for the names the index holds, run by hand on
+// the operator's word so the labeller's window is full from its first night rather than filling over a month.
+// see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
+static async Task<int> NewsFill(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    IClock clock = SystemClock.ForUnitedStatesSessions();
+    var index = Argument(args, "--index") ?? "GSPC";
+
+    if (!int.TryParse(Argument(args, "--days") ?? string.Empty, NumberStyles.None, CultureInfo.InvariantCulture, out var days) || days < 1)
+    {
+        Console.Error.WriteLine("news-fill: '--days <n>' names how many days back to store, a whole number above zero.");
+
+        return 1;
+    }
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"news-fill: no store at '{store.DatabaseFile}'.");
+
+        return 1;
+    }
+
+    var wantsLive = args.Contains("--live");
+    var wantsFixture = Argument(args, "--fixture") is not null;
+
+    if (wantsLive && wantsFixture)
+    {
+        Console.Error.WriteLine("news-fill: '--live' and '--fixture' were both given. A fill runs against one source.");
+
+        return 1;
+    }
+
+    NightFeeds feeds;
+
+    try
+    {
+        feeds = NightFeeds.Resolve(
+            wantsLive ? NightFeeds.LiveSource : wantsFixture ? NightFeeds.FixtureSource : configuration[NightFeeds.SourceKey],
+            Argument(args, "--fixture") ?? configuration[NightFeeds.FixtureKey],
+            configuration[EodhdBulkPriceFeed.BaseAddressKey],
+            configuration[ProviderCredentials.ApiKeyName]);
+    }
+    catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
+    {
+        Console.Error.WriteLine("news-fill: " + refusal.Message);
+
+        return 1;
+    }
+
+    var runId = FormattableString.Invariant($"news-fill-{clock.UtcNow:yyyyMMddTHHmmssZ}");
+    var counter = new NewsPulseCounter(feeds.News, clock, store.DatabaseFile);
+    var today = clock.SessionDateAt(clock.UtcNow);
+    var stored = 0;
+
+    for (var back = days; back >= 1; back--)
+    {
+        var day = today.AddDays(-back);
+        var outcome = await counter.FillAsync(index, day, runId);
+
+        stored += outcome.ArticlesStored;
+        Console.WriteLine(FormattableString.Invariant($"news-fill: {day:yyyy-MM-dd}, {outcome.Articles} article(s) over {outcome.Requests} page(s), {outcome.ArticlesStored} stored"));
+    }
+
+    Console.WriteLine(FormattableString.Invariant($"news-fill: {runId}, {stored} article(s) stored over {days} day(s), {feeds.Requests} request(s)"));
+
+    return 0;
+}
 
 // The swing filter's shape counts, printed for the operator to rule the starting settings from. It
 // opens the configured store read-only and writes nothing, and progress goes to the error stream so

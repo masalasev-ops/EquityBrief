@@ -554,6 +554,24 @@ public static class Nightly
 
                 return said;
             }),
+            // Section 14's last step, after the report. The night starts the news labeller as it starts the
+            // drain: one process of its own, whose calls and spend sit on the labeller's own run and never
+            // the night's, the fifth carve-out of the nightly rule. It is handed no token from the night's
+            // deadline. A night run again for an earlier session starts none, since its list is not tonight's,
+            // and a night handed nothing to start one with says so and starts none, which is how the suite's
+            // nights make no model call.
+            // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+            new("label-news", async () =>
+            {
+                var started = clock.UtcNow;
+                var said = !askForTheFirstName
+                    ? "no labeller was started, since this night was run again for an earlier session"
+                    : launcher?.StartTheLabeller().Line ?? "No labeller was started, since this night was handed nothing to start one with.";
+
+                await NewsLabeller.RecordTheNightAsync(store.DatabaseFile, runId, started, clock.UtcNow, said);
+
+                return said;
+            }),
         ];
 
         output.WriteLine($"nightly: {runId}, store {store.DatabaseFile}");

@@ -24,6 +24,11 @@ public interface IDrainLauncher
     // see: A night left unfinished is run to its end from the step it stopped at by a press or a command, and one night runs at a time under a lock file
     DrainStart StartTheRestOfTheNight() =>
         new(false, "The rest of the night was not started, because this surface holds no way to start the worker.");
+
+    // The news labeller, which the night starts after the close as a process of its own.
+    // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+    DrainStart StartTheLabeller() =>
+        new(false, "The labeller was not started, because this surface holds no way to start the worker.");
 }
 
 // The worker's drain, started as a process of its own from a copy of the worker's build
@@ -59,6 +64,9 @@ public sealed class WorkerDrainLauncher(
 
     // The verb and its flag that run the rest of the newest night.
     public static readonly IReadOnlyList<string> RestOfTheNight = ["nightly", "--resume"];
+
+    // The verb that labels tonight's news.
+    public static readonly IReadOnlyList<string> LabelTheNews = ["label-news"];
 
     // The folder under the data root the copies are made in.
     public const string CopiesFolder = "drains";
@@ -96,6 +104,9 @@ public sealed class WorkerDrainLauncher(
 
     public DrainStart StartTheRestOfTheNight() =>
         Launch(RestOfTheNight, "The rest of the night has started from the first step its tries have not finished.", "the rest of the night waits for tools/nightly --resume run by hand");
+
+    public DrainStart StartTheLabeller() =>
+        Launch(LabelTheNews, "The labeller has started on tonight's list as a process of its own.", "tonight's news waits for the label-news verb run by hand");
 
     // The build a drain or the rest of the night is started from: the newest night's own build where the
     // night's script left one holding the worker, so the drain and the rest of a night run the build the

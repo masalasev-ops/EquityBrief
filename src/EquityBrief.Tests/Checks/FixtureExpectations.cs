@@ -156,6 +156,21 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.LimitsTable, "Sector sites"),
             CheckReach.Key(Scope.LimitsTable, "Section trial"),
             CheckReach.Key(Scope.LimitsTable, "Section review"),
+
+            // 12.6's correction, the news labeller: section 17's five rows and section 18's eight.
+            CheckReach.Key(Scope.LimitsTable, "News labelling window"),
+            CheckReach.Key(Scope.LimitsTable, "News labeller time limit"),
+            CheckReach.Key(Scope.LimitsTable, "News labeller month limit"),
+            CheckReach.Key(Scope.LimitsTable, "Unreadable answers for a digit"),
+            CheckReach.Key(Scope.LimitsTable, "News article retention"),
+            CheckReach.Key(Scope.FailureTable, "The news job's model does not answer"),
+            CheckReach.Key(Scope.FailureTable, "An answer the labeller cannot read"),
+            CheckReach.Key(Scope.FailureTable, "The labeller's month limit reached"),
+            CheckReach.Key(Scope.FailureTable, "The day or month cap pauses a label"),
+            CheckReach.Key(Scope.FailureTable, "The labeller's time limit passes"),
+            CheckReach.Key(Scope.FailureTable, "A peak window of the news profile opens while the labeller runs"),
+            CheckReach.Key(Scope.FailureTable, "An article refused by admissibility"),
+            CheckReach.Key(Scope.FailureTable, "The labeller fails"),
             CheckReach.Key(Scope.FixtureTable, "reported quarters"),
 
             // 11.5, the floor a name's industry has to reach before it is the name's group.

@@ -7,7 +7,7 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.News;
 
-public sealed record NewsPulseOutcome(int Articles, int NamesCounted, int RowsWritten, int Requests, int RowsDropped);
+public sealed record NewsPulseOutcome(int Articles, int NamesCounted, int RowsWritten, int Requests, int RowsDropped, int ArticlesStored = 0, int ArticlesDropped = 0);
 
 // The news pulse counter. Counts today's articles per name from one dated query,
 // so the staleness judge can work without spending anything.
@@ -29,14 +29,58 @@ public sealed class NewsPulseCounter : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.NewsPulse, Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.NewsArticle, Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.News]);
 
     public const string Stage = "news-pulse";
 
+    // The stage a fill's rows carry, one a day.
+    public const string FillStage = "news-fill";
+
     // One year retained, which is enough to hold a ninety-day baseline.
     public const int RetentionDays = 365;
+
+    // How long an article is kept for the labeller and the pages, a day past the thirty the labeller reads.
+    // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
+    public const int ArticleRetentionDays = 31;
+
+    // Every article naming a member, kept from the same query with its text cut and its admissibility
+    // judged as it is stored, once per member per article; a second night that brings the same article
+    // back leaves the row as it was.
+    const string InsertArticle = @"
+        INSERT INTO news_article (ticker, article_id, link, title, source, published_at, text, length, admissibility, session_date)
+        VALUES ($ticker, $article_id, $link, $title, $source, $published_at, $text, $length, $admissibility, $session_date)
+        ON CONFLICT (ticker, article_id) DO NOTHING;
+    ";
+
+    const string DropArticlesOlderThan = @"
+        DELETE FROM news_article WHERE session_date < $oldest;
+    ";
+
+    // An article's id: the first sixteen hex characters of a hash of its link, which is what tells one
+    // article from another across the two feeds that carry it.
+    public static string ArticleId(string link) =>
+        Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(link.Trim())))[..16];
+
+    // The article judged as a document a claim could rest on, over the window the night reads: the session
+    // and the day before it, since a provider stamps a publish instant in its own zone.
+    // see: A stored source is not automatically an admissible one
+    public static string Admissibility(NewsArticle article, DateOnly session) =>
+        EquityBrief.Core.Research.Admissibility.Judge(
+            new EquityBrief.Core.Research.FetchedDocument(
+                EquityBrief.Core.Research.DocumentChannel.NewsFeed,
+                article.Url,
+                article.Title,
+                DateOnly.FromDateTime(article.Published.UtcDateTime),
+                article.Text),
+            session.AddDays(-1),
+            session);
+
+    // The text as it is stored and sent: cut at the instruction's length.
+    public static string Cut(string text) =>
+        text.Length <= EquityBrief.Core.News.NewsInstruction.TextCharacters ? text : text[..EquityBrief.Core.News.NewsInstruction.TextCharacters];
 
     // Members on the session counted: joined by it, where the join date is
     // known, and not left by it.
@@ -106,6 +150,7 @@ public sealed class NewsPulseCounter : IComponent
         var members = await MembersAsync(connection, indexCode, sessionDate, cancellation);
         var written = 0;
         var counted = 0;
+        var stored = 0;
 
         // One transaction around the whole loop rather than one per row.
         //
@@ -138,17 +183,109 @@ public sealed class NewsPulseCounter : IComponent
             {
                 counted++;
             }
+
+            // The member's articles themselves, for the labeller and the pages, each judged as it is stored.
+            foreach (var article in found ?? [])
+            {
+                await using var keep = connection.CreateCommand();
+
+                keep.Transaction = (SqliteTransaction)transaction;
+                keep.CommandText = InsertArticle;
+                keep.Parameters.AddWithValue("$ticker", ticker);
+                keep.Parameters.AddWithValue("$article_id", ArticleId(article.Url));
+                keep.Parameters.AddWithValue("$link", article.Url);
+                keep.Parameters.AddWithValue("$title", article.Title);
+                keep.Parameters.AddWithValue("$source", article.Channel);
+                keep.Parameters.AddWithValue("$published_at", article.Published.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+                keep.Parameters.AddWithValue("$text", Cut(article.Text));
+                keep.Parameters.AddWithValue("$length", article.Text.Length);
+                keep.Parameters.AddWithValue("$admissibility", Admissibility(article, sessionDate));
+                keep.Parameters.AddWithValue("$session_date", sessionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+                stored += await keep.ExecuteNonQueryAsync(cancellation);
+            }
         }
 
         await transaction.CommitAsync(cancellation);
 
         var dropped = await DroppedAsync(connection, sessionDate.AddDays(-RetentionDays), cancellation);
+        var droppedArticles = await DroppedArticlesAsync(connection, sessionDate.AddDays(-ArticleRetentionDays), cancellation);
 
         await RecordAsync(
             connection, runId, startedAt, articles.Count, members.Count, written,
-            feed.Requests - before, counted, dropped, cancellation);
+            feed.Requests - before, counted, dropped, stored, droppedArticles, cancellation);
 
-        return new NewsPulseOutcome(articles.Count, counted, written, feed.Requests - before, dropped);
+        return new NewsPulseOutcome(articles.Count, counted, written, feed.Requests - before, dropped, stored, droppedArticles);
+    }
+
+    // The articles of one day stored for the members, as the night stores them, with no pulse row and no drop:
+    // the fill run by hand over the days before the labeller's first night. Its row on the run log is its own.
+    // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
+    public async Task<NewsPulseOutcome> FillAsync(string indexCode, DateOnly day, string runId, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        var before = feed.Requests;
+        var articles = await feed.ArticlesAsync(day, day, cancellation);
+        var byName = NewsAttribution.ByName(articles);
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var members = await MembersAsync(connection, indexCode, day, cancellation);
+        var stored = 0;
+
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var ticker in members)
+        {
+            foreach (var article in byName.TryGetValue(ticker, out var found) ? found : [])
+            {
+                await using var keep = connection.CreateCommand();
+
+                keep.Transaction = (SqliteTransaction)transaction;
+                keep.CommandText = InsertArticle;
+                keep.Parameters.AddWithValue("$ticker", ticker);
+                keep.Parameters.AddWithValue("$article_id", ArticleId(article.Url));
+                keep.Parameters.AddWithValue("$link", article.Url);
+                keep.Parameters.AddWithValue("$title", article.Title);
+                keep.Parameters.AddWithValue("$source", article.Channel);
+                keep.Parameters.AddWithValue("$published_at", article.Published.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+                keep.Parameters.AddWithValue("$text", Cut(article.Text));
+                keep.Parameters.AddWithValue("$length", article.Text.Length);
+                keep.Parameters.AddWithValue("$admissibility", Admissibility(article, day));
+                keep.Parameters.AddWithValue("$session_date", day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+                stored += await keep.ExecuteNonQueryAsync(cancellation);
+            }
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = AppendRun;
+        command.Parameters.AddWithValue("$run_id", runId);
+        command.Parameters.AddWithValue("$stage", FillStage + " " + day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$outcome", "ok");
+        command.Parameters.AddWithValue("$rows_written", stored);
+        command.Parameters.AddWithValue("$network_requests", feed.Requests - before);
+        command.Parameters.AddWithValue("$detail", $"{articles.Count} article(s) over {feed.Requests - before} page(s), {members.Count} member(s), {stored} article(s) stored");
+
+        await command.ExecuteNonQueryAsync(cancellation);
+
+        return new NewsPulseOutcome(articles.Count, 0, 0, feed.Requests - before, 0, stored, 0);
+    }
+
+    static async Task<int> DroppedArticlesAsync(SqliteConnection connection, DateOnly oldest, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = DropArticlesOlderThan;
+        command.Parameters.AddWithValue("$oldest", oldest.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteNonQueryAsync(cancellation);
     }
 
     static async Task<IReadOnlyList<string>> MembersAsync(
@@ -195,6 +332,8 @@ public sealed class NewsPulseCounter : IComponent
         int requests,
         int counted,
         int dropped,
+        int stored,
+        int droppedArticles,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -212,7 +351,8 @@ public sealed class NewsPulseCounter : IComponent
         command.Parameters.AddWithValue("$network_requests", requests);
         command.Parameters.AddWithValue(
             "$detail",
-            $"{articles} article(s) over {requests} page(s), {members} member(s), {counted} with news, {dropped} dropped");
+            $"{articles} article(s) over {requests} page(s), {members} member(s), {counted} with news, {dropped} dropped, " +
+            $"{stored} article(s) stored for members and {droppedArticles} dropped past {ArticleRetentionDays} days");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }
