@@ -21,10 +21,13 @@ public sealed record FamilyEvaluatorOutcome(DateOnly? Night, int RowsWritten, IR
 // It runs in the swing filter's step, after the filter has stored its rows and before the family lister
 // draws the page's list. The market check it hands every family is the one the filter stored, so one
 // answer closes every family's list, and a series the filter excluded for a gap or as suspect is excluded
-// here. It replaces its own rows for the night where the night is run again, and drops a row that did not
-// pass once its session is older than the bars the store keeps. It makes no request and calls no model.
+// here. The earnings drift reads each name's newest print as the move annotator stored it and the night's
+// bands, so nothing is asked of a provider. It replaces its own rows for the night where the night is run
+// again, and drops a row that did not pass once its session is older than the bars the store keeps. It
+// makes no request and calls no model.
 // see: The nightly run is arithmetic only
 // see: The market check closes every family's list together
+// see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
 // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
 public sealed class FamilyEvaluator : IComponent
 {
@@ -34,6 +37,8 @@ public sealed class FamilyEvaluator : IComponent
         [
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
+            new StoreTouch(Store.Level, Touch.Read),
+            new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FamilyResult, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
@@ -60,11 +65,25 @@ public sealed class FamilyEvaluator : IComponent
         ORDER BY ticker, session_date;
     ";
 
-    const string IndicatorsOn = @"
-        SELECT ticker, name, value
+    // The typical move and the average volume stored for the night and for the sessions before it a family
+    // reads a reaction in.
+    const string IndicatorsFrom = @"
+        SELECT ticker, session_date, name, value
         FROM indicator
-        WHERE session_date = $night AND name IN ($typical, $volume) AND value IS NOT NULL;
+        WHERE session_date >= $from AND session_date <= $night AND name IN ($typical, $volume) AND value IS NOT NULL;
     ";
+
+    // Every print whose reaction session is the night's or an earlier one, a name at a time and oldest
+    // first, so the last a name holds is its newest.
+    const string PrintsTo = @"
+        SELECT ticker, report_date, reaction_session, actual IS NOT NULL, surprise_pct
+        FROM earnings_reaction
+        WHERE reaction_session <= $night
+        ORDER BY ticker, reaction_session;
+    ";
+
+    // The low edge of every band the night stored.
+    const string BandsOn = "SELECT ticker, low_edge FROM level WHERE as_of = $night;";
 
     // A night run again replaces its own rows whole, and a row that did not pass goes once its session is
     // older than every bar the store keeps: nothing reads a near miss whose bars are gone, and a row that
@@ -128,18 +147,44 @@ public sealed class FamilyEvaluator : IComponent
         }
 
         var bars = await BarsAsync(connection, session, cancellation);
-        var indicators = await IndicatorsAsync(connection, session, cancellation);
+
+        // The indicators are read from the oldest session a reaction inside the drift's window can follow.
+        var from = bars.Values
+            .Select(held => held[Math.Max(0, held.Count - 1 - DriftRule.WindowSessions)].Session)
+            .DefaultIfEmpty(session)
+            .Min();
+        var indicators = await IndicatorsAsync(connection, from, session, cancellation);
+        var prints = await PrintsAsync(connection, session, cancellation);
+        var bands = await BandsAsync(connection, session, cancellation);
 
         var results = new List<FamilyResult>();
 
         foreach (var member in members)
         {
+            var held = bars.GetValueOrDefault(member.Ticker) ?? [];
+            var typical = Indicator(indicators, member.Ticker, session, IndicatorSeries.Atr14);
+
             results.Add(BreakoutRule.Evaluate(new BreakoutInputs(
                 member.Ticker,
                 market,
-                bars.GetValueOrDefault(member.Ticker) ?? [],
-                Indicator(indicators, member.Ticker, IndicatorSeries.VolAvg50),
-                Indicator(indicators, member.Ticker, IndicatorSeries.Atr14),
+                held,
+                Indicator(indicators, member.Ticker, session, IndicatorSeries.VolAvg50),
+                typical,
+                member.Exclusions)));
+
+            // The reaction's own session among the member's bars, which the two readings beside it are stored for.
+            var print = prints.GetValueOrDefault(member.Ticker);
+            var at = print is null ? -1 : held.Select((bar, index) => (bar, index)).Where(pair => pair.bar.Session == print.ReactionSession).Select(pair => pair.index).DefaultIfEmpty(-1).First();
+
+            results.Add(DriftRule.Evaluate(new DriftInputs(
+                member.Ticker,
+                market,
+                held,
+                print,
+                at >= 1 ? Indicator(indicators, member.Ticker, held[at - 1].Session, IndicatorSeries.Atr14) : null,
+                at >= 0 ? Indicator(indicators, member.Ticker, held[at].Session, IndicatorSeries.VolAvg50) : null,
+                typical,
+                bands.GetValueOrDefault(member.Ticker) ?? [],
                 member.Exclusions)));
         }
 
@@ -269,29 +314,80 @@ public sealed class FamilyEvaluator : IComponent
             .ToDictionary(entry => entry.Key, entry => (IReadOnlyList<FamilyBar>)entry.Value, StringComparer.Ordinal);
     }
 
-    static async Task<IReadOnlyDictionary<(string, string), double>> IndicatorsAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
+    static async Task<IReadOnlyDictionary<(string, DateOnly, string), double>> IndicatorsAsync(SqliteConnection connection, DateOnly from, DateOnly night, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
-        command.CommandText = IndicatorsOn;
+        command.CommandText = IndicatorsFrom;
+        command.Parameters.AddWithValue("$from", Stamp(from));
         command.Parameters.AddWithValue("$night", Stamp(night));
         command.Parameters.AddWithValue("$typical", IndicatorSeries.Atr14);
         command.Parameters.AddWithValue("$volume", IndicatorSeries.VolAvg50);
 
-        var values = new Dictionary<(string, string), double>();
+        var values = new Dictionary<(string, DateOnly, string), double>();
 
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         while (await reader.ReadAsync(cancellation))
         {
-            values[(reader.GetString(0), reader.GetString(1))] = reader.GetDouble(2);
+            values[(reader.GetString(0), Date(reader.GetString(1)), reader.GetString(2))] = reader.GetDouble(3);
         }
 
         return values;
     }
 
-    static double? Indicator(IReadOnlyDictionary<(string, string), double> indicators, string ticker, string name) =>
-        indicators.TryGetValue((ticker, name), out var value) ? value : null;
+    static double? Indicator(IReadOnlyDictionary<(string, DateOnly, string), double> indicators, string ticker, DateOnly session, string name) =>
+        indicators.TryGetValue((ticker, session, name), out var value) ? value : null;
+
+    // Each name's newest print whose reaction session is the night's or an earlier one.
+    static async Task<IReadOnlyDictionary<string, DriftPrint>> PrintsAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PrintsTo;
+        command.Parameters.AddWithValue("$night", Stamp(night));
+
+        var prints = new Dictionary<string, DriftPrint>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            prints[reader.GetString(0)] = new DriftPrint(
+                Date(reader.GetString(1)),
+                Date(reader.GetString(2)),
+                reader.GetInt64(3) == 1,
+                reader.IsDBNull(4) ? null : reader.GetDouble(4));
+        }
+
+        return prints;
+    }
+
+    static async Task<IReadOnlyDictionary<string, IReadOnlyList<decimal>>> BandsAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = BandsOn;
+        command.Parameters.AddWithValue("$night", Stamp(night));
+
+        var bands = new Dictionary<string, List<decimal>>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            var ticker = reader.GetString(0);
+
+            if (!bands.TryGetValue(ticker, out var held))
+            {
+                bands[ticker] = held = [];
+            }
+
+            held.Add(Money.FromStorage(reader.GetString(1)));
+        }
+
+        return bands.ToDictionary(entry => entry.Key, entry => (IReadOnlyList<decimal>)entry.Value, StringComparer.Ordinal);
+    }
 
     static async Task<DateOnly?> NewestAsync(SqliteConnection connection, CancellationToken cancellation)
     {

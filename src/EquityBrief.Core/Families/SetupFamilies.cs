@@ -47,9 +47,20 @@ public static class SetupFamilies
         BreakoutRule.CapSessions,
         Trails: true);
 
+    // The earnings drift, on provisional settings until its freeze.
+    // see: The earnings drift buys a beat with a strong reaction within five sessions, stopped under the reaction session's low
+    public static SetupFamily EarningsDrift { get; } = new(
+        DriftRule.Name,
+        "Earnings drift",
+        "Earnings drift",
+        "After a strong report",
+        "A company beats its estimate and the stock closes sharply higher on heavy volume. Bought within five sessions while it holds above that day's low. Stop at that day's low, target at the next band above or 2.5 times the risk, whichever is nearer.",
+        DriftRule.Horizon,
+        DriftRule.CapSessions);
+
     // The page's order, which is the order a stock qualifying under two families is listed in and the
     // order the night's reports are asked for in.
-    public static IReadOnlyList<SetupFamily> InPageOrder { get; } = [Pullbacks, Breakouts];
+    public static IReadOnlyList<SetupFamily> InPageOrder { get; } = [Pullbacks, Breakouts, EarningsDrift];
 
     // The families whose answers the family evaluator stores, every one but the pullback, whose answers
     // are the swing filter's own rows.

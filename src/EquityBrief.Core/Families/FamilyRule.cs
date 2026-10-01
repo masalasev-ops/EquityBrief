@@ -35,6 +35,9 @@ public static class FamilyRule
 
     public const string Trade = SwingGates.Trade;
 
+    // The trade gate's value naming the plan's reward to risk, where the family's plan has a target.
+    public const string RewardToRiskValue = "reward to risk";
+
     // The market gate where the night's swing filter stored none, which closes every family's list.
     public static Gate NoMarketCheck { get; } = new(Market, false, "the swing filter stored no market check for the night", Values());
 

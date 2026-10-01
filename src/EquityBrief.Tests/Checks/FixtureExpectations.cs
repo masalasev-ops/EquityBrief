@@ -180,6 +180,9 @@ public partial class FixtureExpectations
 
             // 13.2, breakouts: section 17's rows for the family's settings and section 18's two rows.
             .. BreakoutClaims,
+
+            // 13.3, the earnings drift: section 17's rows for its settings and section 18's two rows.
+            .. DriftClaims,
             CheckReach.Key(Scope.FixtureTable, "reported quarters"),
 
             // 11.5, the floor a name's industry has to reach before it is the name's group.

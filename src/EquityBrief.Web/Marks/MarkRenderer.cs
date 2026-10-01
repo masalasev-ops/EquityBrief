@@ -5450,7 +5450,7 @@ public sealed partial class MarkRenderer : IComponent
     // calendar's year behind, each with its report date, its timing, the session it moved on, the
     // estimate, the actual, the provider's surprise and that session's move, drawn as stored. A print
     // with no filed estimate says so and draws no surprise, so it is never read as having met one.
-    // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+    // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
     // see: A screen reads and renders, and computes nothing
     public string ReactionsTable(string ticker, IReadOnlyList<ReactionCell> prints)
     {

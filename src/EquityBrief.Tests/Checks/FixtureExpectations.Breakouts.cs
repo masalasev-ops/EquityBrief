@@ -282,14 +282,18 @@ public partial class FixtureExpectations
                 "XG|0|0|null|102|99|null|3|[\"gap\"]",
             ],
             FamilyRows(store, BreakoutRows));
-        Assert.Equal((new DateOnly(2026, 10, 2), 6), (outcome.Night!.Value, outcome.RowsWritten));
-        Assert.Equal([new FamilyEvaluation("breakout", 6, 3, 2)], outcome.Families);
-        Assert.Equal(
-            ["family-rules|ok|6|0|0|for 2026-10-02: the breakout family passed 3 of 6 members, 2 one gate short"],
-            FamilyRows(store, "SELECT stage, outcome, rows_written, model_calls, network_requests, detail FROM run_log WHERE run_id = 'rules-first';"));
+        Assert.Equal(new DateOnly(2026, 10, 2), outcome.Night!.Value);
+        Assert.Equal(new FamilyEvaluation("breakout", 6, 3, 2), outcome.Families.Single(family => family.Family == BreakoutRule.Name));
+
+        // The stage's row: one row a member under each family the evaluator stores, no call and no request,
+        // and the breakout's count in its words.
+        var row = FamilyRows(store, "SELECT stage, outcome, rows_written, model_calls, network_requests, detail FROM run_log WHERE run_id = 'rules-first';").Single();
+
+        Assert.StartsWith(FormattableString.Invariant($"family-rules|ok|{6 * SetupFamilies.Evaluated.Count}|0|0|for 2026-10-02: the breakout family passed 3 of 6 members, 2 one gate short"), row, StringComparison.Ordinal);
+        Assert.Equal(6 * SetupFamilies.Evaluated.Count, outcome.RowsWritten);
 
         // The stored gates are the rule's own, in order, with the market gate the filter stored.
-        var stored = FamilyRule.GatesOf(FamilyRows(store, "SELECT gates FROM family_result WHERE ticker = 'NH' AND session_date = '" + BreakoutNight + "';").Single());
+        var stored = FamilyRule.GatesOf(FamilyRows(store, "SELECT gates FROM family_result WHERE ticker = 'NH' AND family = 'breakout' AND session_date = '" + BreakoutNight + "';").Single());
 
         Assert.Equal(BreakoutRule.Order, stored.Select(gate => gate.Name));
         Assert.Equal([true, false, true, true, true], stored.Select(gate => gate.Passed));
@@ -302,7 +306,7 @@ public partial class FixtureExpectations
         // Run again, the night replaces its own rows: six still.
         await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync("rules-again");
 
-        Assert.Equal(["6"], FamilyRows(store, "SELECT COUNT(*) FROM family_result WHERE session_date = '" + BreakoutNight + "';"));
+        Assert.Equal(["6"], FamilyRows(store, "SELECT COUNT(*) FROM family_result WHERE family = 'breakout' AND session_date = '" + BreakoutNight + "';"));
 
         // The page's list over the two families. The pullback passed BA, at rank 1, and PB, at rank 2, a
         // member the breakout does not pass. BA is listed once, first under the pullback with the breakout's
@@ -323,12 +327,12 @@ public partial class FixtureExpectations
                 "breakout|BA|under another|null|[]",
             ],
             FamilyRows(store, "SELECT family, ticker, state, place, also FROM family_pick WHERE session_date = '" + BreakoutNight + "' ORDER BY place IS NULL, place, ticker;"));
-        Assert.Equal(["2026-10-02|[\"pullback\",\"breakout\"]"], FamilyRows(store, "SELECT session_date, families FROM family_night;"));
-        Assert.Equal([("pullback", 2, 2), ("breakout", 3, 2)], listed.Families);
+        Assert.StartsWith("2026-10-02|[\"pullback\",\"breakout\"", FamilyRows(store, "SELECT session_date, families FROM family_night;").Single(), StringComparison.Ordinal);
+        Assert.Equal([("pullback", 2, 2), ("breakout", 3, 2)], listed.Families.Take(2));
         Assert.Equal((4, 0, 1, 0), (listed.Listed, listed.OpenTrade, listed.UnderAnother, listed.PastFive));
 
         // PB holds no bar on the night, so the breakout reads it as not available and stores its answer.
-        Assert.Equal(["PB|0|not available: 0 sessions are stored, and a close is read against the 251 before it"], FamilyRows(store, "SELECT ticker, passed, json_extract(gates, '$.gates[1].reason') FROM family_result WHERE ticker = 'PB';"));
+        Assert.Equal(["PB|0|not available: 0 sessions are stored, and a close is read against the 251 before it"], FamilyRows(store, "SELECT ticker, passed, json_extract(gates, '$.gates[1].reason') FROM family_result WHERE ticker = 'PB' AND family = 'breakout';"));
     }
 
     [Fact]
@@ -342,16 +346,16 @@ public partial class FixtureExpectations
         {
             var outcome = await new FamilyEvaluator(clock, closed.DatabaseFile).RunAsync("rules-closed");
 
-            Assert.Equal([new FamilyEvaluation("breakout", 6, 0, 3)], outcome.Families);
+            Assert.Equal(new FamilyEvaluation("breakout", 6, 0, 3), outcome.Families.Single(family => family.Family == BreakoutRule.Name));
             Assert.Equal(["0"], FamilyRows(closed, "SELECT COUNT(*) FROM family_result WHERE passed = 1;"));
             Assert.Equal(
                 ["BA|1|" + ClosedMarket.Reason, "BB|1|" + ClosedMarket.Reason, "BC|1|" + ClosedMarket.Reason],
-                FamilyRows(closed, "SELECT ticker, missed, json_extract(gates, '$.gates[0].reason') FROM family_result WHERE ticker IN ('BA', 'BB', 'BC') ORDER BY ticker;"));
+                FamilyRows(closed, "SELECT ticker, missed, json_extract(gates, '$.gates[0].reason') FROM family_result WHERE family = 'breakout' AND ticker IN ('BA', 'BB', 'BC') ORDER BY ticker;"));
 
             var listed = await new FamilyLister(clock, closed.DatabaseFile).RunAsync("families-closed");
 
             Assert.Equal(0, listed.Listed);
-            Assert.Equal([("pullback", 0, 0), ("breakout", 0, 0)], listed.Families);
+            Assert.Equal(SetupFamilies.InPageOrder.Select(family => (family.Name, 0, 0)), listed.Families);
         }
 
         // A night the swing filter stored no result for: no family is evaluated, no row is written, and the

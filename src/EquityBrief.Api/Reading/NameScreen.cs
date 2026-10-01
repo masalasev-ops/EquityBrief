@@ -1347,7 +1347,7 @@ public static class NameScreen
         readOn is { } night && !membersThen.Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)) ? night : null;
 
     // A name's earnings reaction record as the page draws it, each print as the annotator stored it.
-    // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+    // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
     public static IReadOnlyList<ReactionCell> Reactions(IReadOnlyList<ReactionRow> rows) =>
         [.. rows.Select(row => new ReactionCell(row.ReportDate, row.Timing, row.Session, row.Estimate, row.Actual, row.SurprisePct, row.MovePct))];
 

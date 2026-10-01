@@ -136,10 +136,11 @@ public static partial class TonightScreen
                 result.Stop,
                 result.Target,
                 family.Trails,
-                Stored(result.Gates, FamilyRule.Trade, RewardToRiskValue) is { } stated && decimal.TryParse(stated, NumberStyles.Float, CultureInfo.InvariantCulture, out var ratio) ? ratio : null,
+                Stored(result.Gates, FamilyRule.Trade, FamilyRule.RewardToRiskValue) is { } stated && decimal.TryParse(stated, NumberStyles.Float, CultureInfo.InvariantCulture, out var ratio) ? ratio : null,
                 family.Name switch
                 {
                     BreakoutRule.Name => BreakoutWhy(result),
+                    DriftRule.Name => DriftWhy(result),
                     _ => "its setup's gates all passed tonight",
                 },
                 also);
@@ -203,9 +204,6 @@ public static partial class TonightScreen
     static string Price(string stored) =>
         decimal.TryParse(stored, NumberStyles.Float, CultureInfo.InvariantCulture, out var price) ? Figures.Price(price) : stored;
 
-    // The trade gate's value naming the plan's reward to risk, where its family's plan has a target.
-    public const string RewardToRiskValue = "reward to risk";
-
     // One value a stored gate holds, and none where the gate or the value is not there.
     static string? Stored(string gates, string gate, string key) =>
         FamilyRule.GatesOf(gates).FirstOrDefault(one => one.Name == gate)?.Values.GetValueOrDefault(key);
@@ -233,6 +231,42 @@ public static partial class TonightScreen
             : string.Empty;
 
         return closed + volume + ranges + ".";
+    }
+
+    // Why the earnings drift lists a stock tonight, in the figures its gates stored: the print and how far
+    // it beat its estimate, how the reaction session closed and on what volume, and the low the close holds
+    // above.
+    public static string DriftWhy(FamilyResultRow result)
+    {
+        var report = Stored(result.Gates, DriftRule.Print, "report");
+        var back = StoredFigure(result.Gates, DriftRule.Print, "back");
+        var surprise = StoredFigure(result.Gates, DriftRule.Beat, "surprise");
+        var moves = StoredFigure(result.Gates, DriftRule.Reaction, "moves");
+        var multiple = StoredFigure(result.Gates, DriftRule.Volume, "multiple");
+        var low = Stored(result.Gates, DriftRule.Held, "low");
+
+        var beat = surprise is { } by
+            ? FormattableString.Invariant($"Beat its estimate by {by:0.0}%")
+            : "Beat its estimate";
+        var reported = report is { Length: > 0 } ? $" in its report of {report}" : string.Empty;
+        var reacted = moves is { } up
+            ? FormattableString.Invariant($", and closed up {up:0.0} typical moves on the reaction")
+            : string.Empty;
+        var volume = multiple is { } times
+            ? FormattableString.Invariant($" on volume {times:0.00} times its average")
+            : string.Empty;
+        var since = back switch
+        {
+            null => string.Empty,
+            0 => ", which was tonight",
+            1 => ", one session ago",
+            var sessions => FormattableString.Invariant($", {sessions:0} sessions ago"),
+        };
+        var held = low is { Length: > 0 } and not "none"
+            ? FormattableString.Invariant($". It holds above that session's low of {Price(low)}")
+            : string.Empty;
+
+        return beat + reported + reacted + volume + since + held + ".";
     }
 
     // The day a family's rule went live and the variants scored beside it, read off the register as it

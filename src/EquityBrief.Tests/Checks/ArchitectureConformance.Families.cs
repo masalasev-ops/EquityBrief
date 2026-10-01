@@ -31,11 +31,13 @@ public partial class ArchitectureConformance
         .. FixtureExpectations.BreakoutClaims,
     ];
 
-    // Every row phase 13 has added, in the order its checkpoints add them.
+    // Every row phase 13 has added, in the order its checkpoints add them: the framework's, the breakout's,
+    // and the earnings drift's settings and failure rows.
     internal static readonly string[] PhaseThirteenRows =
     [
         .. FamilyFrameworkClaims,
         .. BreakoutFamilyClaims,
+        .. FixtureExpectations.DriftClaims,
     ];
 
     // The rows of phase 13 the record does not yet reach: each is placed at the checkpoint that draws it

@@ -35119,3 +35119,81 @@ Held:       F132HELD.
 Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
             `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
             with the figures 13.5's entry states.
+
+### 13.3 - the earnings drift: the third setup family, a report that beat its estimate with a reaction up a typical move on heavy volume, bought within five sessions while it holds above the reaction's low, read from the reactions the night already stores, and drawn as a card of its own   2026-10-01
+
+Built:      - `DriftRule`, the family's rule as a pure function of a member's sessions, its newest stored
+              print, the typical move and the average volume stored beside the reaction, tonight's
+              typical move and bands, and the night's market gate: seven gates in order, the market, the
+              print inside the window, the beat, the reaction, the volume, the hold and the trade. Where
+              no print is inside the window every later gate says so, so a name past its window is not
+              counted as one gate short of a buy. The names passing are ordered by the surprise.
+            - The trade: bought at the close, stopped at the reaction session's low, and aimed at the
+              nearer of the lowest band 2 typical moves or more above the close and 2.5 times the risk;
+              the multiple where no band is far enough or the night stores no typical move.
+            - `FamilyEvaluator` reads each name's newest print whose reaction session is the night's or
+              an earlier one, the night's bands, and the indicators of the sessions a reaction inside the
+              window can sit on, and stores the drift's answer for every member beside the breakout's.
+              It asks the provider for nothing: the calendar's one request already carries each print's
+              estimate, actual and surprise, and the move annotator already stores its reaction session.
+            - The forward return filler scores a drift's trade under `drift` as it scores a setup, to its
+              target, its stop or its cap of 60 sessions, with its break-even and what it put at risk.
+            - Tonight's page: the earnings drift's card, third on the page, marked provisional, each pick
+              with its buy, stop and target, where the buy sits between them, its reward to risk as its
+              trade gate stored it, and why it is listed: the beat, the reaction and its volume, how many
+              sessions ago, and the low it holds above.
+            - Documents: the family evaluator's reads in section 7, section 11.4's paragraph, section
+              17's five rows for the drift's settings, each marked provisional, section 18's two rows,
+              two source rows, `SCHEMA.md`'s readers of the reaction record and the `drift` horizon, the
+              decision the family rests on, and the decision that a print's reaction reaches no reason,
+              gate or plan moved to Previously decided, replaced by one naming the earnings drift as the
+              one rule that reads it, with every citation repointed: three in ARCHITECTURE, one in
+              SCHEMA, one in BUILD_PLAN's 11.7 and eight in code. Prior text in CHANGELOG.
+Not built:  no drift is registered and none counts toward a checkpoint until its sweep, 13.7, and its
+            freeze. The six reasons, the swing filter's gates, the ladder, the rule versions and every
+            candidate evaluator still read no reaction, which the test that asserted it still asserts.
+            The move annotator is untouched.
+Tests:      four added, each by hand over constructed input. Each gate on both sides of its threshold
+            and at it: a reaction 3 up against a typical move of 3.01, 3 and 2.99; 1,499, 1,500 and 1,501
+            shares against 1,000; a surprise of a hundredth of a per cent, of zero and a miss; a close a
+            cent above the reaction's low and one at it; a print with no actual; no print; and a reaction
+            session the bars do not reach. The window at the reaction night itself, at its fifth session
+            and one past it. The target with a band at exactly 2 typical moves above and nearer than the
+            multiple, 108 against 112.75 at a reward to risk of 1.1429; with that band a cent short; with
+            a band at the multiple; with none; and with no typical move. The evaluator over a constructed
+            store of six members with stored reactions, a print after the close read on the next session
+            among them, then the lister. The filler over four constructed trades: a win, a loss, one
+            ended by its sixtieth session with a later close unread, and one a session short. And the
+            card read back off the rendered page against the store, its two trades and its words.
+            Changed: the framework's and the breakout's tests read the page's families from the page's
+            own order and name three; the breakout's evaluator test reads the breakout's rows alone.
+Claims:     7 added: section 17's five rows and section 18's two.
+Pins:       none moves. The three lists were read off the code's own declarations and the tree touches
+            none of them: the rule is a file of its own, and the eight sources whose comments were
+            repointed, the move annotator and the reaction record among them, are in no list.
+Remedy:     none of its own. Migration 54's table holds its rows.
+Unpredicted: the decision superseded is replaced by one about the record and not by the family's own, so
+            a citation saying how a reaction is read still resolves to an entry that says it; the plan's
+            sentence said "superseded by it" and is reworded. BUILD_PLAN's 11.7 cited the old decision
+            and is repointed, an earlier phase's text edited for the citation alone. Three source rows
+            were not in section 23 and two are added here; Bernard and Thomas is known from a secondary
+            account and the row says so.
+Mutated:    the rule, stated before the run: each rule this checkpoint adds, reversed alone, filtered to the
+            tests that read it, in a detached worktree at the pull request's tree and reverted.
+            Predicted:
+            C1 the window one session wider: red in the gates' test, at the session past it.
+            C2 a surprise of zero passing the beat: red in the gates' test.
+            C3 the reaction read against tonight's typical move and not the session before's: red in
+               the gates' test, where the two differ.
+            C4 the hold reading a close at the low as above it: red in the gates' test.
+            C5 the target taking the farther of the band and the multiple: red in the gates' test and
+               the evaluator's.
+            C6 a band nearer than the stated distance taken as the target: red in the gates' test.
+            C7 the evaluator reading a name's oldest print and not its newest: red in the evaluator's
+               test, where DA holds an older print, a miss eight sessions back, beside the one it passes on.
+            C8 the filler scoring a drift over 63 sessions: red in the filler's test, C1 not yet ended.
+            Results: F133MUT.
+Held:       F133HELD.
+Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
+            with the figures 13.5's entry states.

@@ -17,7 +17,7 @@ public partial class ComponentAccess
     {
         // The three components that fire a reason, gate a tranche or draw a plan, and replay the plan
         // under a rule's versions, each declaring no touch of the record.
-        // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+        // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
         Assert.All(
             new[] { ShortlistBuilder.Access, LadderBuilder.Access, RuleVersionScorer.Access },
             access => Assert.Equal(Touch.None, access.On(DataStore.EarningsReaction)));

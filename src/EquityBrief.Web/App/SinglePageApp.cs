@@ -971,7 +971,7 @@ public sealed class SinglePageApp : IComponent
 
         // The earnings reaction record, beside the earnings setups the plan closes on: what each
         // print over the calendar's year behind did on the session it moved.
-        // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+        // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
         if (reactions is not null)
         {
             Card("reactions", "Earnings reactions", Cards.Computed(

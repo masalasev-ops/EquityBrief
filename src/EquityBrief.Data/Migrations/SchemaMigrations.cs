@@ -869,7 +869,7 @@ public static class SchemaMigrations
     // deleted by it where a print falls out of either. The estimate and the actual are kept as the
     // provider sent them, as text, and are null where it filed none; the surprise is the provider's
     // and is null beside no estimate; the move is the reaction session's, from the close before it.
-    // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+    // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
     const string CreateEarningsReaction = @"
         CREATE TABLE earnings_reaction (
             ticker           TEXT NOT NULL,

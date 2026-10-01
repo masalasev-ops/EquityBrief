@@ -307,7 +307,7 @@ public sealed class MoveAnnotator : IComponent
             // The name's earnings reaction record, each print's session the one the earnings rule
             // takes for it and its move off the same bars, and a print the bars do not reach left
             // out and counted.
-            // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+            // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
             var onFile = EarningsReactions.Of(prints.TryGetValue(ticker, out var filed) ? filed : [], held);
 
             foreach (var reaction in onFile.Reactions)

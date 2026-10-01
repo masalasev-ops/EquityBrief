@@ -1810,7 +1810,7 @@ internal static class Scope
         // breakout's settings and section 18's two rows.
         [CheckReach.Key(CatalogueTable, "Family evaluator")] = new Scoped(
             Verdict.Pass,
-            "the class declares the bars, indicators and gate results it reads and the family results it reads, inserts and deletes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the bars, indicators, levels, earnings reactions and gate results it reads and the family results it reads, inserts and deletes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Family evaluator")] = new Scoped(
             Verdict.Pass,
@@ -1851,6 +1851,36 @@ internal static class Scope
         [CheckReach.Key(FailureTable, "A breakout with no typical move to place its stop by")] = new Scoped(
             Verdict.Pass,
             "a member passing every other gate on a night storing no typical move is not passed and stores no stop, and a stored trade whose night's raw close sits under its stop is counted as not scorable and given no outcome row",
+            ByExpectations),
+
+        // 13.3, the earnings drift: section 17's rows for its settings and section 18's two rows.
+        [CheckReach.Key(LimitsTable, "Drift window")] = new Scoped(
+            Verdict.Pass,
+            "over constructed prints worked by hand, a reaction on the night itself and one at the window's last session pass, one a session past it does not and every later gate then reads no print, and over a constructed store a print reported after the close is read on the next session",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Drift reaction")] = new Scoped(
+            Verdict.Pass,
+            "the reaction's rise against the typical move of the session before is worked by hand at the floor and either side of it, and a surprise a hundredth above zero passes while one of zero and a miss do not",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Drift volume multiple")] = new Scoped(
+            Verdict.Pass,
+            "over constructed volumes against a stored average, the reaction's volume at the multiple passes, a share under it does not and a share over it does",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Drift target")] = new Scoped(
+            Verdict.Pass,
+            "the stop at the reaction's low and the target worked by hand: a band at the stated distance and nearer than the multiple of the risk is the target, one a cent short of the distance is not, a band at the multiple is no nearer, and with no band or no typical move the target is the multiple, each with the reward to risk the gate stored",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Drift session cap")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store the filler ends a trade at neither its target nor its stop on its last session as unresolved with what it made, leaves a later close past it unread, and leaves a trade a session short of it not yet matured",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A print whose actual the calendar does not carry yet")] = new Scoped(
+            Verdict.Pass,
+            "a print stored with no actual reads no surprise, its member is stored as not passed with the beat as the gate it missed and the reason naming the print, by hand and over a constructed store",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A reaction session the stored bars do not reach")] = new Scoped(
+            Verdict.Pass,
+            "a print whose reaction session is not among the member's sessions, and one with no close before it, read not available with the session named, and a member with no stored print passes nothing",
             ByExpectations),
 
         // 12.6's correction drawing the news: the name page's region, read off the rendered page over a constructed store.
@@ -4631,6 +4661,8 @@ internal static class Scope
         // 13.2, breakouts.
         ["A member holding too few sessions for a breakout to be read"] = "13.2",
         ["A breakout with no typical move to place its stop by"] = "13.2",
+        // 13.3, the earnings drift. Its row about a reaction session the bars do not reach derives from the plan.
+        ["A print whose actual the calendar does not carry yet"] = "13.3",
         // The sweep, a 12.5 correction, and its rerun.
         ["A chunk of the sweep fails twice"] = "12.5",
         ["The point-in-time check finds a difference"] = "12.5",
@@ -4721,6 +4753,12 @@ internal static class Scope
         ["Breakout range ceiling"] = "13.2",
         ["Breakout stop"] = "13.2",
         ["Breakout session cap"] = "13.2",
+        // The earnings drift's settings, 13.3.
+        ["Drift window"] = "13.3",
+        ["Drift reaction"] = "13.3",
+        ["Drift volume multiple"] = "13.3",
+        ["Drift target"] = "13.3",
+        ["Drift session cap"] = "13.3",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",

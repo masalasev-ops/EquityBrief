@@ -152,11 +152,13 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}"));
         var card = FamilyCardOf(page, SetupFamilies.Pullback);
 
-        // The card: the first of the two on the page, five picks, its rule live since the day its candidate was
+        // The card: the first of the page's families, five picks, its rule live since the day its candidate was
         // registered, two variants standing beside it. Its heading and its rule in a sentence are the family's.
-        Assert.StartsWith("<section class=\"family-card\" data-family=\"pullback\" data-place=\"1\" data-of=\"2\" data-picks=\"5\" data-state=\"live\" data-live-since=\"2026-09-25\" data-variants=\"2\">", card, StringComparison.Ordinal);
+        var families = SetupFamilies.InPageOrder.Count;
+
+        Assert.StartsWith(FormattableString.Invariant($"<section class=\"family-card\" data-family=\"pullback\" data-place=\"1\" data-of=\"{families}\" data-picks=\"5\" data-state=\"live\" data-live-since=\"2026-09-25\" data-variants=\"2\">"), card, StringComparison.Ordinal);
         Assert.Contains("<p class=\"family-state\">Live rule since <b>2026-09-25</b> · 5 picks tonight · 2 variants scoring in the background</p>", card, StringComparison.Ordinal);
-        Assert.Contains("<div class=\"lbl\">Setup 1 of 2 · Pullback in an uptrend</div><h2>Pullbacks to support</h2>", page, StringComparison.Ordinal);
+        Assert.Contains(FormattableString.Invariant($"<div class=\"lbl\">Setup 1 of {families} · Pullback in an uptrend</div><h2>Pullbacks to support</h2>"), page, StringComparison.Ordinal);
         Assert.Contains($"<p class=\"lede\">{SetupFamilies.Pullbacks.Rule}</p>", page, StringComparison.Ordinal);
         Assert.Equal(SetupFamilies.InPageOrder.Count, Regex.Matches(page, "data-card=\"family\"").Count);
 
