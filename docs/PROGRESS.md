@@ -34859,8 +34859,8 @@ Queue:      restated, since the list lives in the newest queue ruling. Done: tra
             phase 13 is finished: the twelve-hour rerun and the two more ideas.
 Stored:     the three parts, word for word, in the main checkout's `prompts/` as
             `2026-10-01-13.0-setup-families-ruling.md`.
-Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry, P13RSHA, in a worktree beside
-            the repository: all six steps, 0 warnings, 0 errors, P13RTESTS of P13RTESTS tests ran with none
+Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry, 141cffe, in a worktree beside
+            the repository: all six steps, 0 warnings, 0 errors, 1669 of 1669 tests ran with none
             failed, migrations 0 to 52 with none pending, schema version 52, exit 0, against `data-ci` and
             never `data`. The entry carries documents alone, so the phase report was not run again, and no
             test and no claim is added.
