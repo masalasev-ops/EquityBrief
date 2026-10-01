@@ -34170,15 +34170,23 @@ Mutated:    the rule, stated before the run: each repair reversed alone, filtere
             Predicted:
             R1 the helper trying once whatever the failure: red in the retry test alone.
             R2 the folder's removal failing its test on access denied as before: red in the folder test alone.
-            Results: T3BMUT.
-Held:       T3BHELD.
+            Results: R1 and R2 ran in a detached worktree at eef4814, each filtered to its test, the edit made there
+            and reverted, and the tree read clean after each: each turned its predicted test red, and no other
+            test was run. eef4814 holds the tree this entry's commit, 5a4d5a5, holds, the two commits that
+            built it squashed into one before the gates, for the reason the Verified line gives.
+Held:       red in the test predicted and in no other, for both.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1652 of 1652 tests ran
             with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
             `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 44 tables, 766 claims, 766 PASS, 0 FAIL, 0 out of scope,
             0 unexamined, 777 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
             41 of 41 roster checks carried and all 41 run, 1652 of 1652 tests.
-            Both gates ran over the tree carrying this entry, T3BSHA, in a worktree beside the repository, and the
+            Both gates ran over the tree carrying this entry, 5a4d5a5, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either; run 3 of the sweep went on under its own
             build throughout.
+            The gates first ran over eef4814, the second of two commits of which the first carried this entry
+            under an earlier heading, and `tools/ci.ps1` failed there in the suite on the record's heading
+            guard, which reads every heading the history ever held and found the earlier one gone; the two
+            commits were squashed into one, 5a4d5a5, holding the same tree and the one heading, and both gates
+            ran green over it, which is the run recorded above.
 Carried:    nothing new.
