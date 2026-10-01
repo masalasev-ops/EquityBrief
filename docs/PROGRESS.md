@@ -33960,7 +33960,7 @@ Guarded:    one test, new, in `fixture-expectations`: three picks of one name on
             counted as listing, and the sessions a tally reaches read as one past the last.
 Written:    nothing in the specs: section 17 states the walk and not the tally's size.
 Expected:   derived: no expectation file moves.
-Tests:      304T1, from 1641: one added.
+Tests:      1642, from 1641: one added.
 Claims:     763, unchanged.
 Pins:       none moves.
 Mutated:    the rule, stated before the run: the mechanism this correction rests on, reversed alone, filtered to
@@ -33969,15 +33969,20 @@ Mutated:    the rule, stated before the run: the mechanism this correction rests
             S24 the sessions a tally reaches read as the picks' count rather than one past the last session:
                 red in the new test alone, the whole-run test over the fixture staying green since its sessions
                 are its picks' count or fewer.
-            Results: 304M1
-Held:       304H1
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 304T1 of 304T1 tests ran
+            Results: one run in a detached worktree at e760374, this entry's commit, filtered to the two tests, the
+            edit made there and reverted, and the tree read clean after. S24 turned the new test red and the
+            whole-run test red as well, where the prediction had it green: the fixture's picks a design are
+            fewer than its sessions too, so a tally sized to their count fell short there. The miss is in the
+            prediction, which read the fixture's sessions as scored and did not count its picks; the mutant was
+            caught on both sides.
+Held:       red in the test predicted and in one more, whose reason is given, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1642 of 1642 tests ran
             with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
             `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 44 tables, 763 claims, 763 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 304P1 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 304T1 of 304T1 tests.
-            Both gates ran over the tree carrying this entry, 304SHA1, in a worktree beside the repository, and the
+            0 unexamined, 774 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1642 of 1642 tests.
+            Both gates ran over the tree carrying this entry, e760374, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    the new run, started from a Release build of the merged main outside the main checkout, and the entry
             pointing at its report.
