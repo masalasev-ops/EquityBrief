@@ -34189,4 +34189,11 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             guard, which reads every heading the history ever held and found the earlier one gone; the two
             commits were squashed into one, 5a4d5a5, holding the same tree and the one heading, and both gates
             ran green over it, which is the run recorded above.
+            The hosted macOS and Linux runners then failed the held-folder test over a60cf93: a POSIX machine
+            removes a read-only file with its folder, so the folder was gone and the test's cleanup found
+            nothing to reset. The test was made to read the platform, asserting the folder left on Windows and
+            gone elsewhere, in T3BSHA2, over which both gates ran again on this machine: `tools/ci.ps1` green
+            end to end, T3BTESTS2 of T3BTESTS2 tests ran with none failed, exit 0; `tools/verify-phase.ps1`
+            green at 766 claims, 766 PASS, 0 FAIL, T3BPLACE2 placements and verdicts reconciled, T3BTESTS2 of
+            T3BTESTS2 tests.
 Carried:    nothing new.

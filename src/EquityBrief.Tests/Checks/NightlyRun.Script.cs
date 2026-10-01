@@ -296,7 +296,8 @@ public partial class NightlyRun
     public void ATemporaryFolderHoldingAFileTheMachineRefusesToRemoveIsLeftRatherThanFailingTheTest()
     {
         // A file the removal is refused on, as a process a test killed holds its own image for a moment,
-        // which Windows refuses with access denied rather than with a file in use.
+        // which Windows refuses with access denied rather than with a file in use. A POSIX machine removes a
+        // read-only file with its folder, so there the removal is the first try succeeding and nothing is left.
         var folder = new TemporaryDirectory();
         var held = Path.Combine(folder.Path, "held.dll");
 
@@ -306,11 +307,20 @@ public partial class NightlyRun
         try
         {
             folder.Dispose();
+
+            Assert.Equal(OperatingSystem.IsWindows(), Directory.Exists(folder.Path));
         }
         finally
         {
-            File.SetAttributes(held, FileAttributes.Normal);
-            Directory.Delete(folder.Path, recursive: true);
+            if (File.Exists(held))
+            {
+                File.SetAttributes(held, FileAttributes.Normal);
+            }
+
+            if (Directory.Exists(folder.Path))
+            {
+                Directory.Delete(folder.Path, recursive: true);
+            }
         }
 
         // And one nothing holds is removed on the first try.
