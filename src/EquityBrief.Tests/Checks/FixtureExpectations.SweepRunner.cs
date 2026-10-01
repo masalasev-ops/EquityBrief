@@ -169,7 +169,7 @@ public partial class FixtureExpectations
     public async Task EachRunHasAFolderOfItsOwnAndAFinishedRunOrOneFromAnotherBuildIsNeverWrittenAgain()
     {
         // A run's folder is named by the instant it started, newest first among the runs, and the newest report
-        // is the newest run's that holds one, or the root's where no run does.
+        // is the newest run's that holds one, and none where no run does: a file at the root is no run's.
         var root = Path.Combine(Path.GetTempPath(), "equitybrief-tests", Guid.NewGuid().ToString("n"), EquityBrief.Core.Sweep.SweepFolder.Name);
 
         Directory.CreateDirectory(root);
@@ -180,13 +180,16 @@ public partial class FixtureExpectations
         Assert.Empty(EquityBrief.Core.Sweep.SweepFolder.Runs(root));
         Assert.Null(EquityBrief.Core.Sweep.SweepFolder.NewestReport(root));
 
-        File.WriteAllText(Path.Combine(root, EquityBrief.Core.Sweep.SweepFolder.ReportFile), "the first run");
+        File.WriteAllText(Path.Combine(root, EquityBrief.Core.Sweep.SweepFolder.ReportFile), "a file at the root");
         Directory.CreateDirectory(Path.Combine(root, "20261001T120000Z"));
         Directory.CreateDirectory(Path.Combine(root, "20261002T120000Z"));
         Directory.CreateDirectory(Path.Combine(root, EquityBrief.Core.Sweep.SweepFolder.CandidatesFolder));
-        File.WriteAllText(Path.Combine(root, "20261001T120000Z", EquityBrief.Core.Sweep.SweepFolder.ReportFile), "the second run");
 
         Assert.Equal(["20261002T120000Z", "20261001T120000Z"], EquityBrief.Core.Sweep.SweepFolder.Runs(root));
+        Assert.Null(EquityBrief.Core.Sweep.SweepFolder.NewestReport(root));
+
+        File.WriteAllText(Path.Combine(root, "20261001T120000Z", EquityBrief.Core.Sweep.SweepFolder.ReportFile), "the second run");
+
         Assert.Equal(Path.Combine(root, "20261001T120000Z", EquityBrief.Core.Sweep.SweepFolder.ReportFile), EquityBrief.Core.Sweep.SweepFolder.NewestReport(root));
 
         // A finished run is never written again, and a run started by another build is not gone on with; each

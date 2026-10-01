@@ -3,9 +3,8 @@ using System.Globalization;
 namespace EquityBrief.Core.Sweep;
 
 // Where the sweep keeps its saved chunks and its report: a folder the settings name, or one beside the store,
-// and inside it one folder a run, named by the instant the run started. The first run's files stay untouched
-// at the root. The worker writes there and the read surface serves the reports from there, so both resolve it
-// here.
+// and inside it one folder a run, named by the instant the run started, with nothing at the root. The worker
+// writes there and the read surface serves the reports from there, so both resolve it here.
 public static class SweepFolder
 {
     public const string Key = "EquityBrief:Sweep:Folder";
@@ -36,7 +35,8 @@ public static class SweepFolder
             ? [.. Directory.GetDirectories(folder).Select(Path.GetFileName).Where(name => name is not null && IsRunName(name)).Select(name => name!).OrderDescending(StringComparer.Ordinal)]
             : [];
 
-    // The report served on the route: the newest run's where one holds a report, and the root's otherwise.
+    // The report served on the route: the newest run's where one holds a report, and none otherwise, since a
+    // file at the root is no run's.
     public static string? NewestReport(string folder)
     {
         foreach (var run in Runs(folder))
@@ -49,8 +49,6 @@ public static class SweepFolder
             }
         }
 
-        var root = Path.Combine(folder, ReportFile);
-
-        return File.Exists(root) ? root : null;
+        return null;
     }
 }
