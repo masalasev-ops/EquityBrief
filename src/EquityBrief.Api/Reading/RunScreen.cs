@@ -1138,7 +1138,7 @@ public static class RunScreen
     // owes: The spend cap set from the passes the ledger has priced
     // owes: The event setups' triggers calibrated from resolved setups
     // owes: The trend confirmation's nights settled from flip-backs
-    public static IReadOnlyList<TriggerLine> Triggers(TriggerReads reads, PricedCalls priced) =>
+    public static IReadOnlyList<TriggerLine> Triggers(TriggerReads reads, PricedCalls priced, TriggerLine? labeller = null) =>
     [
         new(
             "spend cap",
@@ -1157,6 +1157,7 @@ public static class RunScreen
             reads.ConfirmationVersion is { } version
                 ? $"night(s) of trend labels scored under '{version}' since its window opened, against the sixty its nights are settled from"
                 : "night(s) of trend labels: no version holding a new label for more than one night is open, so nothing counts toward the sixty"),
+        .. labeller is null ? Array.Empty<TriggerLine>() : new[] { labeller },
     ];
 
     // The paid calls the log carries a recorded cost for, counted, their passes counted

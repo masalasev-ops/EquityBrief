@@ -862,24 +862,6 @@ static async Task<int> LabelNews(string[] args)
         return 1;
     }
 
-    ResearchModelSettings news;
-    NewsLimits limits;
-    SpendCaps caps;
-
-    try
-    {
-        news = NewsLane.Settings(configuration);
-        limits = NewsLane.Limits(configuration);
-        caps = ResearchLane.Caps(configuration);
-    }
-    catch (InvalidOperationException refusal)
-    {
-        Console.Error.WriteLine("label-news: " + refusal.Message);
-        await NewsLabeller.RefusedAsync(store.DatabaseFile, runId, clock.UtcNow, refusal.Message);
-
-        return 1;
-    }
-
     DateOnly session;
 
     if (Argument(args, "--session") is { } named)
@@ -896,6 +878,24 @@ static async Task<int> LabelNews(string[] args)
         session = NightSession.NewestStored(store.DatabaseFile) ?? clock.SessionDateAt(clock.UtcNow);
     }
 
+    ResearchModelSettings news;
+    NewsLimits limits;
+    SpendCaps caps;
+
+    try
+    {
+        news = NewsLane.Settings(configuration);
+        limits = NewsLane.Limits(configuration);
+        caps = ResearchLane.Caps(configuration);
+    }
+    catch (InvalidOperationException refusal)
+    {
+        Console.Error.WriteLine("label-news: " + refusal.Message);
+        await NewsLabeller.RefusedAsync(store.DatabaseFile, runId, clock.UtcNow, refusal.Message, session);
+
+        return 1;
+    }
+
     var cap = new SpendCap(OpenAiCompatibleResearchFeed.Live(news), caps, clock, store.DatabaseFile);
 
     // Asked whether the model answers, which bills nothing: one that is not there stops the run here with its
@@ -905,7 +905,7 @@ static async Task<int> LabelNews(string[] args)
         var line = $"the news job's model, {news.Profile}, did not answer: {unreachable}";
 
         Console.Error.WriteLine("label-news: " + line);
-        await NewsLabeller.RefusedAsync(store.DatabaseFile, runId, clock.UtcNow, line);
+        await NewsLabeller.RefusedAsync(store.DatabaseFile, runId, clock.UtcNow, line, session);
 
         return 1;
     }

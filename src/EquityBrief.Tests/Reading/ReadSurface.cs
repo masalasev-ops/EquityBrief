@@ -63,6 +63,9 @@ public partial class ReadSurface
             // 12.3's build of the night from a clean copy: the refusal on tonight's notice and the commit on the Run page.
             .. NightBuildClaims,
 
+            // 12.6's correction drawing the news: the name page's region, tonight's counts and the Run page's labeller line and count.
+            .. NewsSurfaceClaims,
+
             // 12.7's correction, close to a buy point beneath tonight's list.
             .. CloseToABuyPointClaims,
 

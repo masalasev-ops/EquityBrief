@@ -1,3 +1,4 @@
+using EquityBrief.Core.News;
 using EquityBrief.Api.Passes;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Levels;
@@ -368,6 +369,25 @@ public sealed record ShapeProposalRow(
 
 public sealed record TriggerReads(int? ConfirmationNights, string? ConfirmationVersion);
 
+// A stored article of a name with the newest label written for it under any profile, or none.
+public sealed record NewsArticleRow(
+    string ArticleId,
+    string Title,
+    string Source,
+    string PublishedAt,
+    string Link,
+    string Admissibility,
+    string? Outcome,
+    string? Cause,
+    string? Kind,
+    string? Direction,
+    string? Reason,
+    string? Model,
+    string? Profile);
+
+// One of the news labeller's own rows: its run, its outcome, when it ran and the detail naming the night.
+public sealed record LabellerRunRow(string RunId, string Outcome, string StartedAt, string EndedAt, string Detail);
+
 // One member's swing filter result on a night as the filter stored it: each gate's pass, the family
 // and the trigger, the trade read three ways, the exclusions, the rank among the names passing, and
 // the gates' reasons and values as stored. The plan clear of the noise enters at the same close as the
@@ -572,6 +592,8 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.NewsPulse, Touch.Read),
+            new StoreTouch(Store.NewsArticle, Touch.Read),
+            new StoreTouch(Store.NewsLabel, Touch.Read),
             new StoreTouch(Store.ResearchSection, Touch.Read),
             new StoreTouch(Store.ThemeSection, Touch.Read),
             new StoreTouch(Store.SourceDocument, Touch.Read),
@@ -2282,6 +2304,127 @@ public sealed class ReadApi : IComponent
     }
 
     // A name's earnings reaction record, oldest print first, as of the night the page shows.
+    // A name's stored articles of the thirty days before a night, newest first, each with the newest label
+    // written for it under any profile, which is the one the page draws.
+    // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
+    const string NewsForName = @"
+        SELECT a.article_id, a.title, a.source, a.published_at, a.link, a.admissibility,
+               l.outcome, l.cause, l.kind, l.direction, l.reason, l.model, l.profile
+        FROM news_article a
+        LEFT JOIN news_label l ON l.rowid = (
+            SELECT n.rowid FROM news_label n
+            WHERE n.ticker = a.ticker AND n.article_id = a.article_id
+            ORDER BY n.labelled_at DESC, n.rowid DESC LIMIT 1)
+        WHERE a.ticker = $ticker AND a.published_at >= $from AND a.published_at < $to
+        ORDER BY a.published_at DESC, a.article_id;
+    ";
+
+    // Every name's positive and negative stories of the thirty days before a night, counted as the name page's
+    // bar counts them: the newest label of each article, labelled, opinion pieces left out.
+    const string NewsCountsOn = @"
+        SELECT a.ticker,
+               SUM(CASE WHEN l.direction = 'positive' THEN 1 ELSE 0 END),
+               SUM(CASE WHEN l.direction = 'negative' THEN 1 ELSE 0 END)
+        FROM news_article a
+        JOIN news_label l ON l.rowid = (
+            SELECT n.rowid FROM news_label n
+            WHERE n.ticker = a.ticker AND n.article_id = a.article_id
+            ORDER BY n.labelled_at DESC, n.rowid DESC LIMIT 1)
+        WHERE a.published_at >= $from AND a.published_at < $to AND l.outcome = $labelled AND l.kind <> $opinion
+        GROUP BY a.ticker;
+    ";
+
+    // The news labeller's own row of each of its runs, newest first; the night each labelled is in its detail.
+    const string LabellerRunRows = @"
+        SELECT run_id, outcome, started_at, ended_at, detail FROM run_log
+        WHERE stage = $stage AND run_id LIKE $prefix
+        ORDER BY rowid DESC;
+    ";
+
+    public async Task<IReadOnlyList<NewsArticleRow>> NewsAsync(string ticker, DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewsForName;
+        command.Parameters.AddWithValue("$ticker", ticker);
+        command.Parameters.AddWithValue("$from", NewsLabelling.WindowFrom(night));
+        command.Parameters.AddWithValue("$to", NewsLabelling.WindowTo(night));
+
+        var rows = new List<NewsArticleRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new NewsArticleRow(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.GetString(4),
+                reader.GetString(5),
+                reader.IsDBNull(6) ? null : reader.GetString(6),
+                reader.IsDBNull(7) ? null : reader.GetString(7),
+                reader.IsDBNull(8) ? null : reader.GetString(8),
+                reader.IsDBNull(9) ? null : reader.GetString(9),
+                reader.IsDBNull(10) ? null : reader.GetString(10),
+                reader.IsDBNull(11) ? null : reader.GetString(11),
+                reader.IsDBNull(12) ? null : reader.GetString(12)));
+        }
+
+        return rows;
+    }
+
+    public async Task<IReadOnlyDictionary<string, (int Positive, int Negative)>> NewsCountsAsync(DateOnly night)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewsCountsOn;
+        command.Parameters.AddWithValue("$from", NewsLabelling.WindowFrom(night));
+        command.Parameters.AddWithValue("$to", NewsLabelling.WindowTo(night));
+        command.Parameters.AddWithValue("$labelled", NewsLabelling.Labelled);
+        command.Parameters.AddWithValue("$opinion", NewsInstruction.Opinion);
+
+        var counts = new Dictionary<string, (int, int)>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            counts[reader.GetString(0)] = (reader.GetInt32(1), reader.GetInt32(2));
+        }
+
+        return counts;
+    }
+
+    public async Task<IReadOnlyList<LabellerRunRow>> LabellerRunsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = LabellerRunRows;
+        command.Parameters.AddWithValue("$stage", NewsLabelling.Stage);
+        command.Parameters.AddWithValue("$prefix", NewsLabelling.RunPrefix + "%");
+
+        var rows = new List<LabellerRunRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new LabellerRunRow(
+                reader.GetString(0),
+                reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                reader.IsDBNull(4) ? string.Empty : reader.GetString(4)));
+        }
+
+        return rows;
+    }
+
     public async Task<IReadOnlyList<ReactionRow>> ReactionsAsync(string ticker, DateOnly? asOf = null)
     {
         await using var connection = Open();

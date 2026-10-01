@@ -116,9 +116,18 @@ public static class TonightScreen
         IReadOnlyList<SuspectSeriesRow>? suspects = null,
         IReadOnlyList<ResearchedRow>? researched = null,
         IReadOnlyList<GateResultRow>? gates = null,
-        IReadOnlyList<FundamentalReadingRow>? readings = null)
+        IReadOnlyList<FundamentalReadingRow>? readings = null,
+        // Each name's positive and negative stories of the thirty days before, as the name page's bar counts
+        // them, for the names the labeller has labelled; a name absent from it carries no count.
+        // see: The news labels alone name the model that wrote them
+        IReadOnlyDictionary<string, (int Positive, int Negative)>? news = null)
     {
         var (drawn, statePlace) = Drawer(night, cellByTicker, closesToTheNight, suspects, researched, readings);
+
+        ListingCell WithNews(ListingCell cell) =>
+            news is not null && news.TryGetValue(cell.Ticker, out var counts)
+                ? cell with { NewsPositive = counts.Positive, NewsNegative = counts.Negative }
+                : cell;
 
         if (gates is not null)
         {
@@ -135,17 +144,17 @@ public static class TonightScreen
                     {
                         var filter = FilterRowOf(gate);
 
-                        return drawn(byTicker[gate.Ticker]) with
+                        return WithNews(drawn(byTicker[gate.Ticker]) with
                         {
                             Filter = filter,
                             RewardToRisk = decimal.TryParse(filter.RewardToRisk, NumberStyles.Float, CultureInfo.InvariantCulture, out var ratio) ? ratio : null,
                             NoRewardToRisk = null,
-                        };
+                        });
                     }),
             ];
         }
 
-        return Ordered(listings.Where(listing => listing.FiredCount > 0).Select(drawn), Order.FiredThenRewardToRisk);
+        return Ordered(listings.Where(listing => listing.FiredCount > 0).Select(listing => WithNews(drawn(listing))), Order.FiredThenRewardToRisk);
     }
 
     // How a row of either list is drawn from a night's listing row, and where a member's state places it.

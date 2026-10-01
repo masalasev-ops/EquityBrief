@@ -1393,7 +1393,8 @@ public partial class ArchitectureConformance
         // 115 at the 12.6 correction that draws how each report did and the section trials on the Run page.
         // 114 at the 12.6 correction that writes the comparisons to files: the section trials row goes.
         // 115 at the 12.2 correction that reads one open trade per stock on the pages: Still open on tonight's.
-        Assert.Equal(115, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 116 at the 12.6 correction that draws the news on the pages: the name page's News row.
+        Assert.Equal(116, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1487,8 +1488,9 @@ public partial class ArchitectureConformance
         // three parts go with it. 387 at the 12.2 correction reading one open trade per stock on the pages:
         // tonight's Still open row as its nine parts and Past picks' two parts. 389 at the 12.3 build of the
         // night from a clean copy of the committed code: the refusal on tonight's notice and the commit on the
-        // Run page.
-        Assert.Equal(389, inDocument.Length);
+        // Run page. 393 at the 12.6 correction drawing the news on the pages: the name page's News row, tonight's
+        // list's counts, the Run page's labeller line and its count of the labeller's nights.
+        Assert.Equal(393, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1574,7 +1576,8 @@ public partial class ArchitectureConformance
         // section trials row's three parts go with it. 363 at the 12.2 correction reading one open trade per
         // stock on the pages: Still open's nine parts and Past picks' two. 365 at the 12.3 build of the night
         // from a clean copy of the committed code: the refusal on tonight's notice and the commit on the Run page.
-        Assert.Equal(365, checkedElements);
+        // 368 at the 12.6 correction drawing the news on the pages: the three parts above.
+        Assert.Equal(368, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

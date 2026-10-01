@@ -1742,6 +1742,23 @@ internal static class Scope
         [CheckReach.Key(FailureTable, "Both lists on tonight's page empty on a night the swing filter listed")] = new Scoped(
             Verdict.Pass, "the second list's line drawn where its rows are empty, beside the list's own line on a night no name passed", ByReadSurface),
 
+        // 12.6's correction drawing the news: the name page's region, read off the rendered page over a constructed store.
+        [CheckReach.Key("15.7 Tonight", "The list, the positive and negative stories of the thirty days before the night as the name page's bar counts them")] = new Scoped(
+            Verdict.Pass,
+            "each row of the first list carries the positive and negative stories of the window as the test's own arithmetic over the store counts them, the newest label of each article with opinion pieces and articles before the window left out, a name with no label saying so, and the second list's rows carrying none",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "Research and spend, the news labeller's line with what the night's labelling cost and the month's against its limit and the articles labelled and the unreadable answers by cause and what stopped it")] = new Scoped(
+            Verdict.Pass,
+            "the night's line is read off the labeller's own row for that night with its cost, the month's and the limit, the labels, the unreadable by cause, the refused, the names reached and the stop, and a night with no row says so",
+            ByReadSurface),
+        [CheckReach.Key("15.10 Run", "What else is waiting on a count, the nights the news labeller ran against twenty with its measured duration and its month's spend and the share of answers refused for a digit")] = new Scoped(
+            Verdict.Pass,
+            "the labeller's nights are counted off its own rows against twenty, with the median run in minutes, the month's spend the newest row states and the answers refused for a digit of every answer read, and a store with no run counts none",
+            ByReadSurface),
+        [CheckReach.Key("15.9 Name", "News")] = new Scoped(
+            Verdict.Pass,
+            "the region is drawn after the nights the list picked the name, its bar and tabs counting as the test's own arithmetic over the store gives them, the article labelled twice reading its newer label, an opinion piece under its tab alone and in no count, a refused and an unreadable row saying so, the model named once, a name holding no label for the night saying why by each cause the store is given, and a name with nothing stored saying so",
+            ByReadSurface),
         [CheckReach.Key("15.9 Name", "On the list before")] = new Scoped(
             Verdict.Pass,
             "a name the live list picked before the page's night draws the region after the plan and its earnings reactions, its line counting the picks and each group as the test's own arithmetic over the store gives them and a row per earlier listing as it stood on the page's night, and a name never picked before draws none",
@@ -3676,6 +3693,11 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Still open, a line where there is none")] = "12.2",
         [CheckReach.Key("15.7 Tonight", "Still open, a key saying it is not a new trade")] = "12.2",
         [CheckReach.Key("15.9 Name", "On the list before")] = "12.2",
+        // 12.6's correction drawing the news on the name page.
+        [CheckReach.Key("15.9 Name", "News")] = "12.6",
+        [CheckReach.Key("15.7 Tonight", "The list, the positive and negative stories of the thirty days before the night as the name page's bar counts them")] = "12.6",
+        [CheckReach.Key("15.10 Run", "Research and spend, the news labeller's line with what the night's labelling cost and the month's against its limit and the articles labelled and the unreadable answers by cause and what stopped it")] = "12.6",
+        [CheckReach.Key("15.10 Run", "What else is waiting on a count, the nights the news labeller ran against twenty with its measured duration and its month's spend and the share of answers refused for a digit")] = "12.6",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, the trades listed with the nights they were listed on")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many are still open and how many finished")] = "12.2",
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done, how many reached the target and how many were stopped out or ran out of time")] = "12.2",
@@ -3913,7 +3935,7 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Night header")] =
             ["names in the index", "names the swing filter listed", "names that fired", "the night's breadth with the share above the 50-day average beside it as context", "reports carrying fresh prose against reused", "spend", "run duration", "the harness verdict"],
         [CheckReach.Key("15.7 Tonight", "The list")] =
-            ["one row per name on the list", "ordered by the state its reported quarters give it and within a state by the swing filter's reward to risk then strength then band strength", "the state-first order from the first night whose readings are stored and a night before it in the filter's own order", "at most twenty drawn", "each numbered by its place in that order", "a line above them stating how many are drawn of how many are listed", "a line naming the rule that listed the evening", "name", "close", "day change", "trend state in a word", "the state its reported quarters give it beside the trend", "what the numbers say while the state is under the pointer or holds focus", "the distance row mark", "the reward to risk or the plan's reason for none", "the gates with the values that decided them", "the reasons as context", "beside the name a line saying so where its prices may not reflect a dividend or split", "each column heading saying what its column holds while the pointer is over it"],
+            ["one row per name on the list", "ordered by the state its reported quarters give it and within a state by the swing filter's reward to risk then strength then band strength", "the state-first order from the first night whose readings are stored and a night before it in the filter's own order", "at most twenty drawn", "each numbered by its place in that order", "a line above them stating how many are drawn of how many are listed", "a line naming the rule that listed the evening", "name", "close", "day change", "trend state in a word", "the state its reported quarters give it beside the trend", "what the numbers say while the state is under the pointer or holds focus", "the distance row mark", "the reward to risk or the plan's reason for none", "the gates with the values that decided them", "the reasons as context", "beside the name a line saying so where its prices may not reflect a dividend or split", "each column heading saying what its column holds while the pointer is over it", "the positive and negative stories of the thirty days before the night as the name page's bar counts them"],
         // 5.8's watch list page, each row's parts as the row states them.
         [CheckReach.Key("15.16 Watch list", "Add a name")] =
             ["a box offering the names of the index", "which adds one while the list holds fewer than twenty and otherwise gives way to a line saying the limit is reached", "the same press beside a name on its own page", "a refusal with the line saying why for a name not of the index tonight or already watched or a twenty-first"],
@@ -4015,7 +4037,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "The shape clock")] =
             ["the ordinary nights under the open filter version against the sixty the calibration waits on", "every event night with what made it one", "each gate's median count through it against its band", "the list's median size against its band", "drawn as not yet measured until the trigger", "said at the top of the page once the trigger is crossed", "each reason's share of the index as context"],
         [CheckReach.Key("15.10 Run", "What else is waiting on a count")] =
-            ["the nights run for the session the clock fell on against five", "the research passes carrying a recorded cost against twenty", "the nights the version step replayed both kinds against five", "the resolved event-book setups against 250", "the nights of trend labels under the third trend version against sixty"],
+            ["the nights run for the session the clock fell on against five", "the research passes carrying a recorded cost against twenty", "the nights the version step replayed both kinds against five", "the resolved event-book setups against 250", "the nights of trend labels under the third trend version against sixty", "the nights the news labeller ran against twenty with its measured duration and its month's spend and the share of answers refused for a digit"],
         // 12.4. The run page's shape proposal, read as the parts its row enumerates.
         // 12.7. The edge half and the near misses, read as the parts their rows enumerate.
         [CheckReach.Key("15.10 Run", "The edge clock")] =
@@ -4057,7 +4079,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "At a checkpoint")] =
             ["one row per version on a scale from nought to a hundred", "before its first look a locked dashed outline with its trades and blocks so far", "from its first look the share of its trades that reached the target with the break-even they needed and what no skill scored from the same starts and how far luck alone could move it", "the verdict in words"],
         [CheckReach.Key("15.10 Run", "Research and spend")] =
-            ["the month's spend against the month cap", "the reports the paid model wrote on each of the last seven nights", "the reports and the overnight drafts written over those nights"],
+            ["the month's spend against the month cap", "the reports the paid model wrote on each of the last seven nights", "the reports and the overnight drafts written over those nights", "the news labeller's line with what the night's labelling cost and the month's against its limit and the articles labelled and the unreadable answers by cause and what stopped it"],
         [CheckReach.Key("15.10 Run", "How each report did")] =
             ["one row per report over the seven nights with its stock and day and what it cost", "a cell per section saying whether it passed first time or on retry or was left out with why or was not warranted, with what its own calls cost and none of a trial's", "the two cases' cell marked where a draft of the pass carried a figure on both sides, with how many of the newest twenty reports' two cases did", "each section's share passed first time and its share left out over the newest twenty reports that warranted it"],
         [CheckReach.Key("15.10 Run", "Anything to worry about")] =

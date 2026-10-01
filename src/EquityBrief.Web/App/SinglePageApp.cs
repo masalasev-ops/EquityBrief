@@ -296,12 +296,12 @@ public sealed class SinglePageApp : IComponent
         }
         addEventListener('hashchange', show);
         // A name's year in the peers table or the universe table, what a column holds in its heading,
-        // what the night measured a reason on tonight's list over, and what a member's numbers say
-        // beside its state, each shown by the stylesheet while its cell is under the pointer or holds
+        // what the night measured a reason on tonight's list over, what a member's numbers say
+        // beside its state and why a story was labelled as it was, each shown by the stylesheet while its cell is under the pointer or holds
         // the focus, placed beside the cell: beneath it where the window has room and above it where
         // it does not.
         function placePop(event) {
-          const cell = event.target.closest ? event.target.closest('.peers-table td.peer, .universe-table td.c-nm, th.tipped, .list-table .reason, .business') : null;
+          const cell = event.target.closest ? event.target.closest('.peers-table td.peer, .universe-table td.c-nm, th.tipped, .list-table .reason, .business, .news-why') : null;
           const pop = cell ? cell.querySelector('.peer-pop, .head-tip, .why, .says') : null;
           if (!pop) { return; }
           const box = cell.getBoundingClientRect();
@@ -640,7 +640,8 @@ public sealed class SinglePageApp : IComponent
         bool? watched = null,
         IReadOnlyList<PickCell>? earlier = null,
         (DateOnly Evening, EquityBrief.Core.Filter.MissedGate Gate)? missed = null,
-        NumbersSayView? says = null)
+        NumbersSayView? says = null,
+        NewsView? news = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1001,6 +1002,24 @@ public sealed class SinglePageApp : IComponent
                 stamp: Cards.Night(session),
                 id: "on-the-list-before",
                 region: "on-the-list-before"));
+        }
+
+        // What was written about the company in the thirty days before the night, each article with the
+        // label the labeller wrote for it, after the nights the list picked the name and before the written
+        // sections; drawn for every member the page is handed stories for.
+        // see: The news labels alone name the model that wrote them
+        if (news is { } stories)
+        {
+            Card("news", "News", Cards.Computed(
+                "News",
+                marks.NewsRegion(stories) + Cards.Key(
+                    "How to read it.",
+                    Invariant($"Each row is an article naming {Escaped(ticker)} from the thirty days before this night, newest first, with the kind of story and the way it cuts for the company as the news labeller read it, and its one-sentence reason while the row is under the pointer or holds focus. The bar counts positive against negative over the window; an opinion piece sits in the opinion tab alone and counts in neither. A row the labeller could not read, or an article admissibility refused, says so."),
+                    "The labels are context for a reader and decide nothing: no gate, reason, plan or candidate reads them."),
+                title: Invariant($"What was written about {Escaped(company)} in the thirty days before"),
+                stamp: Cards.Night(session),
+                id: "news",
+                region: "news"));
         }
 
         // What the company sells and the segment commentary, after the plan and before the
@@ -1540,7 +1559,7 @@ public sealed class SinglePageApp : IComponent
                 marks.TonightList(close, TonightDrawn - Math.Min(rows.Count, TonightDrawn), rule: rule, oneGateShort: true) + Cards.Key(
                     "How to read this list.",
                     CloseKeyText,
-                    "Each row reads as a row of the list above does, with the one gate it missed in place of the gates it passed. The distance is how far short it is as a share of the bar it needed."),
+                    "Each row reads as a row of the list above does, with the one gate it missed in place of the gates it passed. The distance is how far short it is as a share of the bar it needed. The news labeller reads the list above alone, so a row here carries no news counts."),
                 title: "Close to a buy point",
                 lede: "Each passed every gate of the swing filter but one, and nothing excluded it; nearest to qualifying first, then in the list's own order.",
                 stamp: Cards.Night(night),

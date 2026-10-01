@@ -1213,6 +1213,14 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.FailureTable, "The labeller fails"),
     ];
 
+    // 12.6's correction drawing the news on the pages: the name page's News row, and the parts tonight's list,
+    // the Run page's research and spend and its count of what waits gain. Declared before the lists that take
+    // them in.
+    internal static readonly string[] NewsScreenClaims =
+    [
+        .. Reading.ReadSurface.NewsSurfaceClaims,
+    ];
+
     // 12.3's build of the night from a clean copy of the committed code, on the ruling of 2026-09-29: the refusal
     // on tonight's notice, the commit on the Run page, and section 18's row about a checkout refused. Declared
     // before the lists that take them in.
@@ -1419,6 +1427,7 @@ public partial class ArchitectureConformance
         .. SweepClaims,
         .. NightBuildClaims,
         .. NewsLabellerClaims,
+        .. NewsScreenClaims,
     ];
 
     // Rows taken out of the document after phase 12's prediction, which counted each: the name page's
@@ -1539,6 +1548,7 @@ public partial class ArchitectureConformance
         .. SweepClaims,
         .. NightBuildClaims,
         .. NewsLabellerClaims,
+        .. NewsScreenClaims,
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1589,8 +1599,10 @@ public partial class ArchitectureConformance
         // committed code, its three: the refusal on tonight's notice, the commit on the Run page and section 18's
         // row about a checkout refused, and 784 from the 12.6 correction that brings the news labeller, its
         // eighteen: its catalogue and matrix rows, its two stores, section 14's step, section 17's five rows and
-        // section 18's eight.
-        Assert.Equal((550, 784), (predicted, actual));
+        // section 18's eight, and 788 from the 12.6 correction drawing the news on the pages, its four: the name
+        // page's News row and the parts tonight's list, the Run page's research and spend and its count of what
+        // waits gain.
+        Assert.Equal((550, 788), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

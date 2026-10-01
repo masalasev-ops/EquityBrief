@@ -217,10 +217,11 @@ public partial class ReadSurface
         var lines = Regex.Matches(region, "<li data-trigger=\"([^\"]+)\" data-count=\"(\\d+)\" data-of=\"(\\d+)\">(.*?)</li>")
             .ToDictionary(match => match.Groups[1].Value, match => (Count: match.Groups[2].Value, Of: match.Groups[3].Value, Text: match.Groups[4].Value), StringComparer.Ordinal);
 
-        Assert.Equal(["spend cap", "event setups", "trend confirmation"], lines.Keys);
+        Assert.Equal(["spend cap", "event setups", "trend confirmation", "news labeller"], lines.Keys);
         Assert.Equal(("2", "20"), (lines["spend cap"].Count, lines["spend cap"].Of));
         Assert.Equal(("0", "250"), (lines["event setups"].Count, lines["event setups"].Of));
         Assert.Equal(("3", "60"), (lines["trend confirmation"].Count, lines["trend confirmation"].Of));
+        Assert.Equal(("0", "20"), (lines["news labeller"].Count, lines["news labeller"].Of));
         Assert.Contains("no stage scores an event-book setup yet, so nothing counts toward it", lines["event setups"].Text, StringComparison.Ordinal);
         Assert.Contains("scored under 'the new label holds two nights' since its window opened", lines["trend confirmation"].Text, StringComparison.Ordinal);
     }

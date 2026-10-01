@@ -1106,7 +1106,9 @@ public static class NameScreen
         EquityBrief.Core.Filter.MissedGate? missed = null,
         // The plan the filter version the name's gate row was stored under reads, by its word, which names the
         // plan the night's live rule read where the row itself stores no input.
-        string? versionPlan = null)
+        string? versionPlan = null,
+        // What was written about the company in the thirty days before the night, with its labels.
+        NewsView? news = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1239,7 +1241,8 @@ public static class NameScreen
             watched,
             earlier,
             gates is not null && missed is not null ? (gates.SessionDate, missed) : null,
-            says);
+            says,
+            news);
     }
 
     // "What the numbers say" for a night's readings: the heading carrying the state, the quarter read from,
