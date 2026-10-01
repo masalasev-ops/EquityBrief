@@ -103,7 +103,7 @@ public static class SweepSearch
     public static DialSetting CoarseCentre(IReadOnlyList<SweepPick> picks, SweepDesign design, int nights)
     {
         var coarse = SweepGrid.Coarse;
-        var tally = SweepStages.Tally.OneExit(design.ExitIndex, nights);
+        var tally = SweepStages.Tally.OneExit(design.ExitIndex, SweepStages.SessionsOf(picks));
         var summaries = new SweepSummary[coarse.Variations];
 
         for (var index = 0; index < coarse.Variations; index++)
@@ -337,6 +337,7 @@ public static class SweepSearch
 public sealed class SweepDesignSearch
 {
     readonly int nights;
+    readonly int sessions;
     readonly int exit;
     readonly Func<int[], SweepStages.Tally, SweepSummary> compute;
     readonly Func<int[], SweepMeasures> measure;
@@ -360,22 +361,25 @@ public sealed class SweepDesignSearch
         : this(
             design,
             nights,
+            SweepStages.SessionsOf(picks),
             space,
             (point, over) => SweepStages.Summary(picks, space.Setting(point), space.Conditions(point), nights, over),
             point => SweepStages.Measures(picks, design, space.Setting(point), space.Conditions(point), nights))
     {
     }
 
-    // The same search over any reading of a point, which is how a test hands it a landscape worked by hand.
-    public SweepDesignSearch(SweepDesign design, int nights, SweepSpace space, Func<int[], SweepStages.Tally, SweepSummary> compute, Func<int[], SweepMeasures> measure)
+    // The same search over any reading of a point, which is how a test hands it a landscape worked by hand; the
+    // sessions are what a tally's night bits reach, the history's own count.
+    public SweepDesignSearch(SweepDesign design, int nights, int sessions, SweepSpace space, Func<int[], SweepStages.Tally, SweepSummary> compute, Func<int[], SweepMeasures> measure)
     {
         Design = design;
         this.nights = nights;
+        this.sessions = sessions;
         Space = space;
         this.compute = compute;
         this.measure = measure;
         exit = design.ExitIndex;
-        tally = SweepStages.Tally.OneExit(exit, nights);
+        tally = SweepStages.Tally.OneExit(exit, sessions);
     }
 
     // One point's summary, computed once and kept.
@@ -421,7 +425,7 @@ public sealed class SweepDesignSearch
     {
         var results = new SweepSummary[points.Count];
 
-        Parallel.For(0, points.Count, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, () => SweepStages.Tally.OneExit(exit, nights), (at, _, local) =>
+        Parallel.For(0, points.Count, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, () => SweepStages.Tally.OneExit(exit, sessions), (at, _, local) =>
         {
             results[at] = Compute(points[at], local);
 
@@ -497,7 +501,7 @@ public sealed class SweepDesignSearch
     {
         var results = new SweepSummary[points.Count];
 
-        Parallel.For(0, points.Count, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, () => SweepStages.Tally.OneExit(exit, nights), (at, _, local) =>
+        Parallel.For(0, points.Count, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, () => SweepStages.Tally.OneExit(exit, sessions), (at, _, local) =>
         {
             results[at] = Compute(points[at], local);
 

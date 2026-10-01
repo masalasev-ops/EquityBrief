@@ -20,7 +20,7 @@ public partial class FixtureExpectations
     static SweepMeasures SweepMeasuresAt(double edge) => YearMeasures(SweepForty, [.. Enumerable.Repeat<double?>(edge, 8)]);
 
     static SweepDesignSearch SweepLandscape(SweepSpace space, Func<int[], double> edge, SweepDesign? design = null) =>
-        new(design ?? SweepDesign.Live, 300, space, (point, _) => SweepAt(edge(point)), point => SweepMeasuresAt(edge(point)));
+        new(design ?? SweepDesign.Live, 300, 300, space, (point, _) => SweepAt(edge(point)), point => SweepMeasuresAt(edge(point)));
 
     static readonly SweepMeasures SweepLive = SweepMeasuresAt(0.2);
 

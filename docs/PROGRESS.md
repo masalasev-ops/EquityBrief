@@ -33937,3 +33937,47 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             operator's store under `data/` was not touched by either.
 Carried:    the new run, started from a Release build of the merged main outside the main checkout, and the entry
             pointing at its report.
+
+### 12.5 - correction: a walk's night bits reach every session of the history and not the scored nights alone, where a tally sized to the scored nights had no bit for a session past them and stage 1's first chunk failed twice on the run of 2026-10-01 after a clean point-in-time check   2026-10-01
+Corrects:   the 12.5 correction of 2026-09-30 that reruns the sweep, in the tally its walks fill, on the operator's
+            word of 2026-10-01 that the sweep runs tonight.
+Asked:      the operator, on 2026-10-01: the run going tonight without waiting.
+Repaired:   `SweepStages.Tally` is sized by the sessions the picks reach, one past the last session any pick sits
+            on, read by `SweepStages.SessionsOf` where a tally is made: the rank, the full record, the coarse
+            centre and the search's own and per-thread tallies. A pick's session is its place in the whole
+            calendar, and the scored nights begin a year into it, so a tally sized to the scored nights had bits
+            for the first 1,947 sessions of 2,196 and none for the rest. The listing share still divides by the
+            scored nights.
+Found:      the run `20261001T014305Z`, started at 01:43Z from the merged main at ba16a95, read 826 names in
+            11.5 s, computed the series in 3.4 s and 292,271 candidates with their benchmarks in 452.3 s, and
+            rebuilt 212 name-sessions in 11.9 s with no difference, the swings correction holding; stage 1's
+            first chunk then failed twice at once on an index outside the bounds of an array and the run stopped
+            there, as a chunk failing twice stops it. The fixture's whole-run test could not find this: its history
+            is one year, every session of it scored, so its tallies reached every session. The constructed
+            candidates' tests sit on three hundred sessions, all scored, for the same reason.
+Guarded:    one test, new, in `fixture-expectations`: three picks of one name on sessions 1,500, 1,501 and 1,600
+            against 50 scored nights, the first keeping the second off, every reading running and two nights
+            counted as listing, and the sessions a tally reaches read as one past the last.
+Written:    nothing in the specs: section 17 states the walk and not the tally's size.
+Expected:   derived: no expectation file moves.
+Tests:      304T1, from 1641: one added.
+Claims:     763, unchanged.
+Pins:       none moves.
+Mutated:    the rule, stated before the run: the mechanism this correction rests on, reversed alone, filtered to
+            the tests named, in a detached worktree at this entry's commit and reverted.
+            Predicted:
+            S24 the sessions a tally reaches read as the picks' count rather than one past the last session:
+                red in the new test alone, the whole-run test over the fixture staying green since its sessions
+                are its picks' count or fewer.
+            Results: 304M1
+Held:       304H1
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 304T1 of 304T1 tests ran
+            with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 763 claims, 763 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 304P1 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 304T1 of 304T1 tests.
+            Both gates ran over the tree carrying this entry, 304SHA1, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    the new run, started from a Release build of the merged main outside the main checkout, and the entry
+            pointing at its report.

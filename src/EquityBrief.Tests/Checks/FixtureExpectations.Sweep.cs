@@ -610,6 +610,39 @@ public partial class FixtureExpectations
             SweepWalk.OverSetupMovingTheStop(After(104.99m, 99, 99), 95m, 112m, null, 100m, 3));
     }
 
+    [Fact]
+    public void AWalkReachesEverySessionOfTheHistoryAndNotOnlyTheScoredNights()
+    {
+        // A pick's session is its place in the whole calendar, and the scored nights begin a year into it: over
+        // the operator's history the calendar holds 2,196 sessions and 1,947 are scored, and a tally sized to the
+        // scored nights has no bit for a session past them. Three picks of one name on sessions 1,500, 1,501 and
+        // 1,600 against 50 scored nights: the first keeps the second off, every reading runs, and two nights are
+        // counted as listing.
+        var corner = SweepCorner.Of(SweepGrid.Extended, 0.9, 1.5, 0.9, 0, 2.0, 1.5, 0.6, 5)!.Value;
+        var random = new Random(1);
+        var picks = new List<SweepPick>();
+
+        foreach (var session in new[] { 1_500, 1_501, 1_600 })
+        {
+            var plan = SweepOutcomes(random, 2.0, 1.5, everyExitWins: true);
+
+            Array.Fill(plan.Ends, (short)5);
+            picks.Add(new SweepPick(picks.Count, 1, session, corner, plan, 7, 30, default));
+        }
+
+        Assert.Equal(1_601, SweepStages.SessionsOf(picks));
+
+        var setting = SweepGrid.Extended.Carry(SweepGrid.Fine, DialSetting.LiveOnFine);
+        var measures = SweepStages.Measures(picks, SweepDesign.Live, setting, ConditionSetting.Off, 50);
+        var summary = SweepStages.Summary(picks, setting, ConditionSetting.Off, 50, SweepStages.Tally.OneExit(SweepDesign.Live.ExitIndex, SweepStages.SessionsOf(picks)));
+        var ranks = SweepStages.Rank(picks, SweepDesign.Live.Selection, ConditionSetting.Off, 50);
+
+        Assert.Equal((2, 2, 1), (measures.Listed, measures.NightsListing, measures.Blocked));
+        Assert.Equal(2.0 / 50, summary.Listing, 6);
+        Assert.Equal(SweepAxes.Exits, ranks.Count);
+        Assert.Equal(1, SweepStages.SessionsOf([]));
+    }
+
     // Two sets of figures compared field by field, the arrays by their elements.
     sealed class SweepMeasuresComparer : IEqualityComparer<SweepMeasures?>
     {
