@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.News;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Quarters;
@@ -52,6 +53,8 @@ public sealed class NewsLabeller : IComponent
         [
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
+            new StoreTouch(Store.FamilyNight, Touch.Read),
+            new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.NewsArticle, Touch.Read),
@@ -81,17 +84,20 @@ public sealed class NewsLabeller : IComponent
     public static string RunIdFor(DateTimeOffset startedAt) =>
         RunPrefix + startedAt.UtcDateTime.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
 
-    // Tonight's list in the order it is drawn: the members whose live result passed, improving businesses
-    // first where the night stored its readings and the filter's own order within a state, with each
-    // member's name. A replayed result is none of the night's.
+    // Tonight's list in the order it is drawn, with each member's name: the stocks the page lists, in the
+    // page's order, on a night the families drew it; and on a night before them the members whose live
+    // result passed, improving businesses first where the night stored its readings and the filter's own
+    // order within a state. A replayed result is none of the night's.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
     // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
     static readonly string ListedOnNight = @"
         SELECT g.ticker, COALESCE((SELECT m.name FROM membership m WHERE m.ticker = g.ticker AND m.name IS NOT NULL ORDER BY m.joined DESC LIMIT 1), g.ticker)
         FROM gate_result g
         JOIN listing l ON l.ticker = g.ticker AND l.session_date = g.session_date
         LEFT JOIN fundamental_reading f ON f.ticker = g.ticker AND f.session_date = g.session_date
-        WHERE g.session_date = $session AND g.passed = 1 AND g.version <> '" + EquityBrief.Core.Filter.ReplayedResults.Version + @"'
-        ORDER BY " + FundamentalState.PlaceIn("f.state") + @", g.rank, g.ticker;
+        WHERE g.session_date = $session AND g.version <> '" + EquityBrief.Core.Filter.ReplayedResults.Version + @"'
+          AND " + FamilyList.OnTheList("g.ticker", "g.session_date", "g.passed = 1") + @"
+        ORDER BY IFNULL(" + FamilyList.PlaceOn("g.ticker", "g.session_date") + ", 0), " + FundamentalState.PlaceIn("f.state") + @", g.rank, g.ticker;
     ";
 
     // A member's admitted articles of the window not yet labelled under the active profile and version,

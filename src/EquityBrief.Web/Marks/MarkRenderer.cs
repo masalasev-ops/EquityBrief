@@ -188,7 +188,17 @@ public sealed record PickCell(
     // Where the listing repeated a trade still open, the night that trade was listed on, and null where
     // the listing is itself the kept trade. A repeat is drawn with its mark and counted in no total.
     // see: A repeat listing made before the rule reached the filter is marked and counted once
-    DateOnly? RepeatOf = null);
+    DateOnly? RepeatOf = null,
+    // The setup family the page listed the trade under, by the word the store keeps and the label a row
+    // draws, and whether the family trails its stop and names no target.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    string Family = EquityBrief.Core.Families.SetupFamilies.Pullback,
+    string Setup = "Pullback",
+    bool Trailing = false,
+    // Whether the setup that listed the trade runs on provisional settings, no freeze having registered it:
+    // the trade is drawn and counted as listed, and is in no share and no average until the freeze.
+    // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    bool Provisional = false);
 
 // One stock the swing filter passed on a night while a trade the live list recommended for it on an
 // earlier night is still open, with that trade as Past picks draws it as of the night.
@@ -241,7 +251,11 @@ public sealed record PicksSummary(
     double? AverageResult,
     // The listings that repeated a trade still open, drawn with their mark and in none of the counts above.
     // see: A repeat listing made before the rule reached the filter is marked and counted once
-    int Repeats = 0)
+    int Repeats = 0,
+    // The trades among those listed that a setup on provisional settings listed: counted as listed, open
+    // or finished, and in neither the share nor the average.
+    // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    int Provisional = 0)
 {
     public int Finished => Target + Stopped + Time;
 
@@ -1150,7 +1164,7 @@ public sealed record ContentsEntry(int At, string Title, string Id);
 // It touches no store and computes no figure, which is what its blank
 // matrix cells claim. Geometry is not a figure: nothing here is reported to a
 // reader as a number, and every price drawn arrives already computed.
-public sealed class MarkRenderer : IComponent
+public sealed partial class MarkRenderer : IComponent
 {
     // The empty declaration, which is a claim and not an omission. Section
     // 15.4 puts the marks on the server, and the seam between rendering and
@@ -5450,7 +5464,7 @@ public sealed class MarkRenderer : IComponent
     // calendar's year behind, each with its report date, its timing, the session it moved on, the
     // estimate, the actual, the provider's surprise and that session's move, drawn as stored. A print
     // with no filed estimate says so and draws no surprise, so it is never read as having met one.
-    // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+    // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
     // see: A screen reads and renders, and computes nothing
     public string ReactionsTable(string ticker, IReadOnlyList<ReactionCell> prints)
     {
@@ -5762,9 +5776,10 @@ public sealed class MarkRenderer : IComponent
             : "The evening the live list recommended the trade. It is taken as bought at that evening's close, and the date opens this stock's page as it stood that night."),
         .. named ? new[] { ("Stock", "The stock, which opens its page as it stood on the night listed.") } : Array.Empty<(string, string)>(),
         ("Business that night", "The state the company's reported quarters gave it on the evening it was listed, or not read that night where none was stored yet."),
+        ("Setup", "The setup the page listed the trade under. A trade listed before the page drew setups was the pullback's."),
         ("Buy", "The price the plan buys at."),
-        ("Stop", "The price the plan sells at to cut the loss."),
-        ("Target", "The price the plan takes its gain at."),
+        ("Stop", "The price the plan sells at to cut the loss, or the first level of a stop that trails the price."),
+        ("Target", "The price the plan takes its gain at. A setup that trails its stop names none."),
         ("Trade", "The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them. The dot is where the price is now, hollow while the trade is open and filled where it finished."),
         ("Status", "What became of the trade: open, reached target, stopped out, or ran out of time where its holding limit passed before either."),
         ("Sessions held", "Trading sessions from the night listed to the session it finished on, or to the night drawn while it is still open."),
@@ -6265,7 +6280,7 @@ public sealed class MarkRenderer : IComponent
             var missing = pick.Stop is null
                 ? "no stop stored"
                 : pick.Target is null
-                    ? "no target stored"
+                    ? pick.Trailing ? "trailing stop, no target" : "no target stored"
                     : pick.Buy is null ? "no buy stored" : "the stop, buy and target are not in order";
 
             mark.Append(" data-dot=\"none\">");
@@ -6409,9 +6424,15 @@ public sealed class MarkRenderer : IComponent
                 ? Formatted($"<td class=\"state-then\" data-state=\"{Escaped(state)}\">{Escaped(state)}</td>")
                 : $"<td class=\"state-then\" data-state=\"none\"><span class=\"degraded\">{NotReadThatNight}</span></td>");
 
+            // The setup the page listed the trade under.
+            // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+            table.Append(Invariant, $"<td class=\"setup\" data-setup=\"{Escaped(row.Family)}\" data-provisional=\"{Flag(row.Provisional)}\">{Escaped(row.Setup)}{(row.Provisional ? " <span class=\"provisional\">provisional</span>" : string.Empty)}</td>");
+
             foreach (var (name, price) in new[] { ("buy", row.Buy), ("stop", row.Stop), ("target", row.Target) })
             {
-                table.Append(Invariant, $"<td class=\"r num\" data-{name}=\"{StoredPrice(price)}\">{(price is { } held ? Price(held) : "<span class=\"degraded\">none</span>")}</td>");
+                var none = name == "target" && row.Trailing ? "trailing" : "<span class=\"degraded\">none</span>";
+
+                table.Append(Invariant, $"<td class=\"r num\" data-{name}=\"{StoredPrice(price)}\">{(price is { } held ? Price(held) : none)}</td>");
             }
 
             table.Append(Invariant, $"<td>{TradeLine(row)}</td>");
@@ -6513,18 +6534,36 @@ public sealed class MarkRenderer : IComponent
         return counts.ToString();
     }
 
-    // The Past picks screen's filters, one chip a status with the trades it holds, and all. None by setup.
-    public string PicksFilters(PicksSummary summary, string? status)
+    // The Past picks screen's filters: one chip a setup with the trades the page listed under it, where the
+    // page has drawn more than one, then one chip a status with the trades it holds under the setup
+    // chosen, and all. A status chip keeps the setup chosen, and a setup chip starts from every status.
+    public string PicksFilters(PicksSummary summary, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null)
     {
         var filters = new StringBuilder();
         var lit = status is { } asked && PickStatus.Filters.Contains(asked, StringComparer.Ordinal) ? asked : null;
+        var chosen = setup is { } named && (setups ?? []).Any(one => one.Family == named) ? named : null;
+
+        if (setups is { Count: > 1 })
+        {
+            filters.Append("<nav class=\"universe-filters picks-filters picks-setups\" aria-label=\"Filter the trades by setup\"><span class=\"chips-label\">Setup</span>");
+            filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"all\" aria-pressed=\"{Flag(chosen is null)}\" href=\"#/picks\">All setups<span class=\"n\">{setups.Sum(one => one.Trades)}</span></a>");
+
+            foreach (var (family, label, trades) in setups)
+            {
+                filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"setup\" data-value=\"{Escaped(family)}\" aria-pressed=\"{Flag(family == chosen)}\" href=\"#/picks?setup={Uri.EscapeDataString(family)}\">{Escaped(label)}<span class=\"n\">{trades}</span></a>");
+            }
+
+            filters.Append("</nav>");
+        }
+
+        var kept = chosen is null ? string.Empty : "setup=" + Uri.EscapeDataString(chosen);
 
         filters.Append("<nav class=\"universe-filters picks-filters\" aria-label=\"Filter the trades\"><span class=\"chips-label\">Status</span>");
-        filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"status\" data-value=\"all\" aria-pressed=\"{Flag(lit is null)}\" href=\"#/picks\">All<span class=\"n\">{summary.Listed}</span></a>");
+        filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"status\" data-value=\"all\" aria-pressed=\"{Flag(lit is null)}\" href=\"#/picks{(kept.Length > 0 ? "?" + kept : string.Empty)}\">All<span class=\"n\">{summary.Listed}</span></a>");
 
         foreach (var each in PickStatus.Filters)
         {
-            filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"status\" data-value=\"{each}\" aria-pressed=\"{Flag(each == lit)}\" href=\"#/picks?status={each}\">{PickStatus.Chip(each)}<span class=\"n\">{summary.Of(each)}</span></a>");
+            filters.Append(Invariant, $"<a class=\"chip\" data-filter=\"status\" data-value=\"{each}\" aria-pressed=\"{Flag(each == lit)}\" href=\"#/picks?{(kept.Length > 0 ? kept + "&" : string.Empty)}status={each}\">{PickStatus.Chip(each)}<span class=\"n\">{summary.Of(each)}</span></a>");
         }
 
         filters.Append("</nav>");

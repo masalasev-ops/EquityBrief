@@ -158,6 +158,10 @@ public partial class FixtureExpectations
         var clock = FixedClock.At(QueueNight, SessionZones.UnitedStates);
         var local = new RecordedLocalModelFeed(Folder());
 
+        // The page's list is drawn again over the rows as changed, as the night's own step draws it: the
+        // pullback family lists the two the filter now passes, in its order.
+        await new EquityBrief.Worker.Families.FamilyLister(clock, store.DatabaseFile).RunAsync("reordered-list");
+
         var reordered = await new OvernightQueue(
             new StalenessJudge(clock, store.DatabaseFile),
             sections => new ProseWriter(local, new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
@@ -229,6 +233,9 @@ public partial class FixtureExpectations
 
         var clock = FixedClock.At(QueueNight, SessionZones.UnitedStates);
         var local = new RecordedLocalModelFeed(Folder());
+
+        // The page's list drawn again over the rows as changed: NFLX alone is listed.
+        await new EquityBrief.Worker.Families.FamilyLister(clock, store.DatabaseFile).RunAsync("close-list");
 
         var queued = await new OvernightQueue(
             new StalenessJudge(clock, store.DatabaseFile),

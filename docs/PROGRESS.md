@@ -34864,3 +34864,565 @@ Verified:   `tools/ci.ps1` green end to end over the tree carrying this entry, 1
             failed, migrations 0 to 52 with none pending, schema version 52, exit 0, against `data-ci` and
             never `data`. The entry carries documents alone, so the phase report was not run again, and no
             test and no claim is added.
+
+### 13.0 planning - setup families planned as a framework, three families and the pages built on one branch, a sweep a family and the freezes after them, each of the ten things reading the store found taken on the operator's go   2026-10-01
+
+Not a checkpoint entry. It plans phase 13 and builds none of it: no family, lister, card or sweep exists by this
+            entry, tonight's list is chosen exactly as it was, and nothing is frozen or registered.
+Asked:      the operator's ruling of 2026-10-01, the entry above, whose last sentence asks for "the plan, sizes
+            and night time before building". The plan was put to them the same day with ten things reading
+            the code and the store had found, each with a recommendation, and three messages came back while
+            it was being written and after, word for word:
+
+            dont  do full Ci if all youve done is made a plan
+
+            ok start building the thing asap and dont do small PRs to remote. Build the whole thing and then create on big PR on remote
+
+            main has been updated with latest
+
+            The last followed the operator's own merge of the ruling's pull request, 312, at 18:29Z.
+Read:       the ruling against the code at c844843 and the operator's store at user_version 52, opened
+            read-only, with a planning estimate by independent arithmetic over the pulled history, 688 names
+            and 1,950 nights from 2019-01-02 to 2026-09-30, the market check open on 1,416 of them at the open
+            version's floor of 45%. What came back, each as `BUILD_PLAN.md`'s phase 13 section states it:
+            - the store keeps 252 sessions a name, so the breakout reads the 251 before tonight;
+            - "ranges tightened" names no number: no wider than the 20 sessions before lists on 53% of open
+              nights, 1.6 a night, and 0.85 of them on 31%;
+            - sector leaders as written have no buy point, 33 qualifying every night; with the pullback's
+              setup, trigger and trade gates they list 0, 0, 1, 1, 3, 5, 2 and 2 over the 8 stored gate
+              nights, all but 2 of the 14 stocks the pullback does not list;
+            - a breakout names no target, so its record is its average result in multiples of its risk;
+            - the pages sixth would show nothing until then, so each family's card lands with its family;
+            - the night holds no index series, so the market line draws breadth and whether the lists are open;
+            - a family's checkpoint record counts its own rule's trades, the page's one trade a stock being
+              the lister's;
+            - the correction for luck is a family's own, at most eight rules a family, binding at the freezes;
+            - the earnings calendar's one request already carries each print's estimate, actual and surprise,
+              so the drift adds no request; a print before the open carried its actual on the night of
+              2026-09-30 and one after the close did not, its reaction falling on the next session;
+            - of 16,241 beats in the pulled prints 4,702 had a reaction up a typical move on 1.5 times
+              volume, and inside its five-session window the drift qualifies 8.4 a night, more than five on
+              37% of open nights.
+            The night with six reports, measured over the ten first reports the store held: a report took
+            199 to 504 seconds, 302 at the median, at about five cents, so six in a row end between 01:15Z and
+            01:35Z where one ended about 00:50Z, at about thirty cents a night; the list itself is on screen
+            at about 23:42Z either way.
+Go:         "ok start building the thing asap" is taken as the go on the plan with its ten recommendations as
+            the readings built to; each is cheap to move at the pull request's review, and the sweeps settle
+            the numbers. "Build the whole thing and then create one big PR" is taken for the checkpoints 13.0
+            to 13.5: one branch, a commit and an entry a checkpoint, and both gates run once over the tree
+            carrying every entry, which `BUILD_PLAN.md` states. The first message is taken as it reads: a pull
+            request that only records a plan or a ruling gets no full run of the checkpoint gate. The merge
+            rule and the check that reads each entry for the gate's words still ask for one, and whether they
+            change is put to the operator with this pull request; nothing is changed for it here.
+Wrote:      `BUILD_PLAN.md`'s phase 13 section, with the checkpoints 13.0 to 13.10 and a done condition each;
+            the decisions the phase rests on that describe no running code: that it opens beside phase 12's
+            sign-off, which stays owed on phase 12 as a whole and is discharged by nothing here, and the four
+            the framework is built to, the page drawn from setup families, one trade a stock across them, a
+            family provisional until its freeze, and one market check for every family; two earlier decisions,
+            that tonight's list is the swing filter's and that a stock holds one open trade on each rule's
+            list, narrowed in place by a sentence each, since each still describes code that runs; and
+            section 20's row for phase 13. Prior text in CHANGELOG.
+Corrects:   one sentence of the entry above. It said the index and the VIX pull would be built while the plan
+            was with the operator. The go came first, the pull was not started, and it follows the families
+            with the ideas' run and its figures, as the queue below restates.
+Queue:      restated, since the list lives in the newest queue ruling. Done: tracks 1, 2, 3 and 7, and the
+            first of track 4's four pull requests. In progress: phase 13, its checkpoints 13.0 to 13.5 as
+            one pull request, then a sweep a family, breakouts first, and the freezes. After the families are
+            on screen: track 4's other three pull requests, the index and the VIX pulled, the ideas' run and
+            its figures recorded, and with them track 6, the pullback's freeze, inside the framework on the
+            operator's go, with track 5's draft pull request merged at it. Beside this work, in a fresh
+            session: track 8, phase 12's sign-off, and after it track 9, the preview command. Shelved until
+            phase 13 is finished: the twelve-hour rerun and the two more ideas.
+Stored:     the plan as it was put to the operator, in the main checkout's `prompts/` as
+            `2026-10-01-13.0-setup-families-plan.md`.
+Claims:     none added: section 20's row is read by the check that counts the phases and is no claim.
+Verified:   with the checkpoints after it, in one pull request: `tools/ci.ps1` green end to end and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from this one to 13.5's,
+            9dfe60d, with the figures 13.5's entry states.
+
+### 13.1 - the family framework: the page's list drawn each night from what each setup family passed, five a family, a stock once and none while its trade is open, the pullback as the first family, the night asking for six reports, and tonight's page drawing a card a family   2026-10-01
+
+Built:      - `FamilyList.Draw`, the one rule that draws the page's list: the families in the page's order
+              and each family's names in its own; a stock whose trade is still open is listed by none; a
+              stock already listed tonight is not listed again and labels the row that lists it; a family
+              lists at most 5, `SetupFamilies.ListedANight`, and a name past its five may be listed by a
+              later family it qualified under. A pure function of what it is handed.
+            - `FamilyLister`, a component of its own running as a second stage, `families`, of the swing
+              filter's step, so no step is renumbered. It reads the names the swing filter passed, improving
+              businesses first, as the pullback family's, and every trade a list made on an earlier night
+              with what became of it on its own horizon, the nights the filter listed before the families
+              among them, and stores the list in `family_pick`, recording the session in `family_night`
+              whether or not any stock is listed. A night run again replaces its own rows, and a night the
+              filter stored no result for draws nothing and says so.
+            - Migration 53: `family_night`, one row a session the families drew with the families on the
+              page that night, and `family_pick`, one row a session, stock and family that passed it,
+              listed with its place and labels or held back with why.
+            - Every reader of tonight's list reads the stored list on a night the families drew and the
+              list as it was on a night before them, by one statement of it, `FamilyList.OnTheList`: the
+              overnight queue, the news labeller, the night's count, the facts retention, the read
+              surface's three listing reads and Past picks' rows. No earlier evening is redrawn.
+            - The night asks for a report on the first 6 names its page draws, `SetupFamilies.ReportsANight`,
+              where it asked for the first alone; each row it writes says the name's place.
+            - Tonight's page, on a night the families drew: a card a family in place of the one list and of
+              Still open, with the family's rule in a sentence, the day its live candidate was registered
+              or the ruling's words where none stands, its picks and the variants standing beside it, a row
+              a pick with its business state, its buy, stop and target, where the buy sits between them,
+              its reward to risk, why it is listed tonight in the figures its gates stored, and its news
+              counts, the notes on what it passed and the page holds back, and why it lists none where it
+              lists none. A night before the families is drawn as it was.
+            - Documents: section 7's row and the matrix's for the lister, the reads of the five readers,
+              section 14's two steps and its note, section 15.7's card and 15.15's sentence, section 16's
+              two rows, section 17's six reports and five a family, section 18's three rows, `SCHEMA.md`'s
+              two tables and ownership, and the decision asking for six reports, which supersedes the one
+              asking for the first name alone, moved to Previously decided with every citation of it
+              repointed, the first hard rule's among them. The four decisions the framework is built to
+              were written by the planning pass above. Prior text in CHANGELOG.
+Not built:  the swing filter's own code is untouched, so the pullback's rule, its gates and its registered
+            versions are exactly as they were. The one trade a stock across families is the lister's and
+            is on the page's list; a registered rule's own record still walks its own open trades.
+Tests:      five added, each by hand over constructed input. `FamilyList.Draw` over three constructed
+            families: five a family, a stock two pass listed once with the other's label, a stock past an
+            earlier family's five listed by a later one, a stock holding an open trade listed by none, and a
+            family passing exactly five listing all five. The lister over a constructed store: the
+            pullback's own order, a stock whose earlier trade is undecided and one whose outcome row is
+            missing held back, one stopped out the session before freed, its own night replaced, the page's
+            own earlier trades read on the next night with a stop's night still holding the stock, and
+            nothing drawn on a night the filter stored no result. A night read as listed by the page, by the
+            filter and by the reasons, off the read surface's own rows, with Past picks' rows following.
+            The card read back off the rendered page against the store in both directions. And a family no
+            registration stands for marked provisional, with a card listing none saying why on a closed
+            market and on a night no stock passed.
+            Changed: the night's request tests now ask down the page, the first six of a constructed seven
+            among them; two queue tests and one of the quarters' draw the list again after changing the
+            fixture night's gate rows, as the night's own step does; and the fixture's `night-request`
+            expectation states the row the night now writes on a night the page lists none.
+Claims:     25 added: the lister's catalogue and matrix rows, its two stores, section 17's five a family,
+            section 18's three rows, and the card as the seventeen parts its row states. Three of them are
+            placed at 13.2, which puts a second family on the page: the label, the note under the later
+            card, and section 18's row about a stock two families pass.
+Pins:       none moves. The three lists were read off the code's own declarations, the twelve the ladder
+            rules' code version pins, the sources every candidate evaluator's version pins and the sixteen
+            the swing filter's pins, and the tree touches none of them.
+Remedy:     migration 53, which the night's own first step applies; applied by hand with `tools/migrate.ps1`
+            straight after the merge, before the read surface is started again, since its pages read the
+            two tables.
+Unpredicted: the plan counted about 20 claims here and the card alone is seventeen parts, so 25. A second
+            store, `family_night`: the list's own rows cannot say that the families drew a night on which
+            no family passed a stock, and a card that lists nothing has to be drawn on such a night.
+Mutated:    the rule, stated before the run: each rule this checkpoint adds, reversed alone, filtered to the
+            tests that read it, in a detached worktree at the pull request's tree and reverted.
+            Predicted:
+            A1 the open trade never holding a stock back in `FamilyList.Draw`: red in the list's test, h
+               listed, and in the lister's and the card's tests.
+            A2 a family listing six: red in the list's test, the lister's and the card's.
+            A3 a stock listed again under a later family: red in the list's test alone.
+            A4 the night asking for seven: red in the six names test alone.
+            A5 a night the families drew read as listed by the swing filter's passing names: red in the
+               test of a night read by the rule that drew it, and in no other of the five.
+            A6 the lister keeping its night's earlier rows where it is run again: red in the lister's test.
+            A7 the card's standing read as provisional whatever the register holds: red in the card's test.
+            Results: all seven ran in a detached worktree at 9dfe60d, each filtered to the six tests of this
+            checkpoint, the five it added and the six names test, and reverted. All seven red, none
+            survived. A1 red in the list's, the lister's and the card's tests as predicted, and in the
+            test of a night read by the rule that drew it, which was not: Past picks' rows there count on
+            the stock held back. A2 red in those four and in the provisional card's test, whose card
+            lists a sixth pick. A3 red in the list's test alone. A4 red in the six names test alone.
+            A5 red in the test of a night read by the rule that drew it and in the lister's, which the
+            prediction said it would not be: with the families' record unread the lister takes the
+            night the families drew for one the filter listed, and holds back a stock past five as if
+            it held a trade. A6 red in the lister's test alone. A7 red in the card's test alone.
+Held:       A3, A4, A6 and A7 red in the test predicted and in no other of the six. A1 and A2 red in
+            the tests predicted and in one and two more. A5 red in the test predicted and in the
+            lister's, against the prediction.
+Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, 9dfe60d,
+            with the figures 13.5's entry states.
+
+### 13.2 - breakouts: the second setup family, a close above the year's high on heavy volume after its ranges narrowed, evaluated for every member every night and stored, bought at the close on a stop that trails the highest close and no target, scored in multiples of its risk, and drawn as a card of its own   2026-10-01
+
+Built:      - `BreakoutRule`, the family's rule as a pure function of a member's sessions, its stored
+              average volume and typical move and the night's market gate: five gates in order, the
+              market, the new high, the volume, the ranges and the trade, each answered with its reason
+              and the values that decided it whether or not an earlier one failed, so a name one gate
+              short can be counted. The names passing are ordered by volume against its average.
+            - `TrailingExit`, a trade sold on a trailing stop and no target, read on closes: the stop
+              follows the highest close since the buy at the plan's own distance and is never lowered,
+              a close under it sells, stored as `trailed`, and the cap ends a trade still open, stored
+              as `unresolved`, each with what it made. It has no win, no loss and no break-even.
+            - `FamilyEvaluator`, a component of its own running as a stage, `family-rules`, of the swing
+              filter's step, between the filter and the lister. It evaluates every member the filter
+              evaluated, hands every family the market gate the filter stored, carries over the filter's
+              exclusions for a gap and a suspect series and none of its others, and stores every answer.
+              A night run again replaces its own rows; a row that did not pass is dropped once its session
+              is older than the oldest stored bar, and a row that passed is kept.
+            - Migration 54: `family_result`, one row a session, member and family but the pullback.
+            - The lister reads another family's names from that table in the places its evaluator stored.
+              The forward return filler scores each passed row from its night's close under its family's
+              horizon, `breakout`, with the plan scaled by the listing session's adjustment as a setup's
+              is, and stores what the plan put at risk beside what the trade made.
+            - Tonight's page: the breakout's card, second on the page, marked provisional, each pick with
+              its buy and its stop, the word trailing where a target would be, no fixed target on the bar
+              between them, the word open for its reward to risk, and why it is listed in the figures its
+              gates stored. A stock the pullback and the breakout both pass is drawn once, on the
+              pullback's card with the breakout's label, and named in a note under the breakout's card.
+              A card listing none says how far the members got down its gates.
+            - Documents: section 7's row for the family evaluator and the matrix's, the lister's and the
+              filler's reads, section 11.4, which states what a family is and what the families share
+              before the breakout's rule, section 14's step, section 16's row, section 17's six rows for
+              the breakout's settings, each marked provisional, section 18's two rows, a source row for
+              the trailing stop study, `SCHEMA.md`'s table and ownership with the horizon and the outcome
+              word a trailing trade adds, and the decision the family rests on, the decision that the
+              swing filter reads pullbacks alone narrowed in place to say so. Prior text in CHANGELOG.
+Not built:  no breakout is registered and none counts toward a checkpoint: the family runs on provisional
+            settings until its sweep, 13.6, and its freeze, 13.9. Past picks and the run page do not yet
+            draw a breakout's trade, which 13.5 builds. The swing filter's code is untouched.
+Tests:      seven added, each by hand over constructed input. Each gate on both sides of its threshold
+            and at it: a close a cent above the year's high, at it and a cent beneath; 1,499, 1,500 and
+            1,501 shares against an average of 1,000; ranges equal to the ones before and a hundredth
+            wider; a member one session short of the year and one a session short of the ranges' two
+            windows, each reading not available with its count; a night with no typical move; a closed
+            market; a gapped series; and the order. The trailing stop over constructed closes: raised to
+            97 and 101, held at 101 under a close of 102, a close at 101 not selling and 100.99 selling,
+            0.99 per cent up on 4 at risk, 0.2475 of its risk; a first close under the plan's own stop;
+            the cap; a trade a session short of its cap; and a stop at the buy refused. The evaluator
+            over a constructed store of six members: every answer stored with its place, the filter's
+            earnings exclusion not carried and its gap carried, its own night replaced, an old row that
+            passed kept and one that did not dropped, then the lister over the two families with a
+            stock both pass. A closed market passing none, and a night the filter stored nothing for
+            evaluating none. The filler over five constructed trades: one sold under its trail, the
+            same trade on a series a split has since restated, one not yet matured, one ended by its
+            cap and one the night could not buy. The card read back off the rendered page against the
+            store in both directions, with the label and the note. And a card listing none.
+            Changed: the framework's tests read two families on the page, the pullback's card as the
+            first of two and the lister's row naming both; and the filler's row in the test of a decided
+            outcome ends with the count of the other families' trades.
+Claims:     11 added: the family evaluator's catalogue and matrix rows, its store, section 17's six rows
+            and section 18's two. The three the framework placed here are due with them: the label, the
+            note under the later card, and section 18's row about a stock two families pass.
+Pins:       none moves. The three lists were read off the code's own declarations and the tree touches
+            none of them: the rule, the exit and the evaluator are files of their own, and the filler,
+            which this checkpoint edits, is in no list.
+Remedy:     migration 54, applied with migration 53 by `tools/migrate.ps1` straight after the merge.
+Unpredicted: the plan counted about 10 claims and the settings are six rows, so 11. Section 11.4 opens
+            here with the paragraph on what a family is, which the framework stated across sections 14
+            to 18 and nowhere as a whole. The store keeps every member's answer, so a row that did not
+            pass needed a retention the plan did not state: it goes with the bars it was read from. The
+            filler's run row gained a clause, and the decision that the filter reads pullbacks alone
+            is narrowed and not superseded, since a pinned source cites it.
+Mutated:    the rule, stated before the run: each rule this checkpoint adds, reversed alone, filtered to the
+            tests that read it, in a detached worktree at the pull request's tree and reverted.
+            Predicted:
+            B1 a close at the year's high passing the new high gate: red in the gates' test.
+            B2 a volume at the multiple not passing: red in the gates' test and the evaluator's.
+            B3 the ranges read over tonight's session and the 19 before: red in the gates' test.
+            B4 the trailing stop following the close down: red in the trailing stop's test and the filler's.
+            B5 a close at the stop selling: red in the trailing stop's test.
+            B6 the evaluator carrying the filter's earnings exclusion: red in the evaluator's test.
+            B7 the evaluator reading the market as open whatever the filter stored: red in the closed
+               market's test.
+            B8 the filler leaving a trailing trade's stop on the listing night's scale: red in the
+               filler's test.
+            B9 the lister reading another family's names by ticker and not by place: red in the
+               evaluator's test, where the lister draws the two families.
+            Results: all nine ran in a detached worktree at 9dfe60d, each filtered to the seven tests this
+            checkpoint added, and reverted. All nine red, none survived. B1 and B3 red in the gates'
+            test alone. B2 red in the gates' test and the evaluator's as predicted, and in the closed
+            market's, where the three members a gate short become two gates short. B4 red in the
+            trailing stop's test and the filler's. B5 red in the trailing stop's test alone. B6 red in
+            the evaluator's test as predicted and in the closed market's, whose counts move with it.
+            B7 red in the closed market's test as predicted and in the evaluator's, which reads the
+            stored market gate's own words. B8 red in the filler's test alone. B9 red in the
+            evaluator's test alone.
+Held:       B1, B3, B4, B5, B8 and B9 red in the tests predicted and in no other of the seven. B2, B6
+            and B7 red in the tests predicted and in one more each.
+Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, 9dfe60d,
+            with the figures 13.5's entry states.
+
+### 13.3 - the earnings drift: the third setup family, a report that beat its estimate with a reaction up a typical move on heavy volume, bought within five sessions while it holds above the reaction's low, read from the reactions the night already stores, and drawn as a card of its own   2026-10-01
+
+Built:      - `DriftRule`, the family's rule as a pure function of a member's sessions, its newest stored
+              print, the typical move and the average volume stored beside the reaction, tonight's
+              typical move and bands, and the night's market gate: seven gates in order, the market, the
+              print inside the window, the beat, the reaction, the volume, the hold and the trade. Where
+              no print is inside the window every later gate says so, so a name past its window is not
+              counted as one gate short of a buy. The names passing are ordered by the surprise.
+            - The trade: bought at the close, stopped at the reaction session's low, and aimed at the
+              nearer of the lowest band 2 typical moves or more above the close and 2.5 times the risk;
+              the multiple where no band is far enough or the night stores no typical move.
+            - `FamilyEvaluator` reads each name's newest print whose reaction session is the night's or
+              an earlier one, the night's bands, and the indicators of the sessions a reaction inside the
+              window can sit on, and stores the drift's answer for every member beside the breakout's.
+              It asks the provider for nothing: the calendar's one request already carries each print's
+              estimate, actual and surprise, and the move annotator already stores its reaction session.
+            - The forward return filler scores a drift's trade under `drift` as it scores a setup, to its
+              target, its stop or its cap of 60 sessions, with its break-even and what it put at risk.
+            - Tonight's page: the earnings drift's card, third on the page, marked provisional, each pick
+              with its buy, stop and target, where the buy sits between them, its reward to risk as its
+              trade gate stored it, and why it is listed: the beat, the reaction and its volume, how many
+              sessions ago, and the low it holds above.
+            - Documents: the family evaluator's reads in section 7, section 11.4's paragraph, section
+              17's five rows for the drift's settings, each marked provisional, section 18's two rows,
+              two source rows, `SCHEMA.md`'s readers of the reaction record and the `drift` horizon, the
+              decision the family rests on, and the decision that a print's reaction reaches no reason,
+              gate or plan moved to Previously decided, replaced by one naming the earnings drift as the
+              one rule that reads it, with every citation repointed: three in ARCHITECTURE, one in
+              SCHEMA, one in BUILD_PLAN's 11.7 and eight in code. Prior text in CHANGELOG.
+Not built:  no drift is registered and none counts toward a checkpoint until its sweep, 13.7, and its
+            freeze. The six reasons, the swing filter's gates, the ladder, the rule versions and every
+            candidate evaluator still read no reaction, which the test that asserted it still asserts.
+            The move annotator is untouched.
+Tests:      four added, each by hand over constructed input. Each gate on both sides of its threshold
+            and at it: a reaction 3 up against a typical move of 3.01, 3 and 2.99; 1,499, 1,500 and 1,501
+            shares against 1,000; a surprise of a hundredth of a per cent, of zero and a miss; a close a
+            cent above the reaction's low and one at it; a print with no actual; no print; and a reaction
+            session the bars do not reach. The window at the reaction night itself, at its fifth session
+            and one past it. The target with a band at exactly 2 typical moves above and nearer than the
+            multiple, 108 against 112.75 at a reward to risk of 1.1429; with that band a cent short; with
+            a band at the multiple; with none; and with no typical move. The evaluator over a constructed
+            store of six members with stored reactions, a print after the close read on the next session
+            among them, then the lister. The filler over four constructed trades: a win, a loss, one
+            ended by its sixtieth session with a later close unread, and one a session short. And the
+            card read back off the rendered page against the store, its two trades and its words.
+            Changed: the framework's and the breakout's tests read the page's families from the page's
+            own order and name three; the breakout's evaluator test reads the breakout's rows alone.
+Claims:     7 added: section 17's five rows and section 18's two.
+Pins:       none moves. The three lists were read off the code's own declarations and the tree touches
+            none of them: the rule is a file of its own, and the eight sources whose comments were
+            repointed, the move annotator and the reaction record among them, are in no list.
+Remedy:     none of its own. Migration 54's table holds its rows.
+Unpredicted: the decision superseded is replaced by one about the record and not by the family's own, so
+            a citation saying how a reaction is read still resolves to an entry that says it; the plan's
+            sentence said "superseded by it" and is reworded. BUILD_PLAN's 11.7 cited the old decision
+            and is repointed, an earlier phase's text edited for the citation alone. Three source rows
+            were not in section 23 and two are added here; Bernard and Thomas is known from a secondary
+            account and the row says so.
+Mutated:    the rule, stated before the run: each rule this checkpoint adds, reversed alone, filtered to the
+            tests that read it, in a detached worktree at the pull request's tree and reverted.
+            Predicted:
+            C1 the window one session wider: red in the gates' test, at the session past it.
+            C2 a surprise of zero passing the beat: red in the gates' test.
+            C3 the reaction read against tonight's typical move and not the session before's: red in
+               the gates' test, where the two differ.
+            C4 the hold reading a close at the low as above it: red in the gates' test.
+            C5 the target taking the farther of the band and the multiple: red in the gates' test and
+               the evaluator's.
+            C6 a band nearer than the stated distance taken as the target: red in the gates' test.
+            C7 the evaluator reading a name's oldest print and not its newest: red in the evaluator's
+               test, where DA holds an older print, a miss eight sessions back, beside the one it passes on.
+            C8 the filler scoring a drift over 63 sessions: red in the filler's test, C1 not yet ended.
+            Results: all eight ran in a detached worktree at 9dfe60d, each filtered to the four tests this
+            checkpoint added, and reverted. All eight red, none survived. C1 red in the gates' test as
+            predicted and in the evaluator's, where the member one session past the window passes.
+            C2, C3, C4 and C6 red in the gates' test alone. C5 red in the gates' test and the
+            evaluator's. C7 red in the evaluator's test alone. C8 red in the filler's test alone.
+Held:       C2 to C8 red in the tests predicted and in no other of the four. C1 red in the test
+            predicted and in the evaluator's.
+Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, 9dfe60d,
+            with the figures 13.5's entry states.
+
+### 13.3 ruling - the operator's store is never deleted: a hard rule, the decision behind it, and a check holding every site that removes a file to a stated list   2026-10-01
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-10-01, while 13.3 was being committed, word for word:
+
+            Can you make sure to have an entry which ensures that the db is never deleted. My other
+            project deleted its db
+
+Read as:    three things, since a rule a session has to remember is the kind that failed there. A hard rule
+            in `CLAUDE.md`, "The operator's store is never deleted". The decision behind it, "The
+            operator's store is never deleted, and every site that removes a file is stated where a check
+            holds it". And a check on the roster, `store-never-deleted`, so the rule is held by the suite
+            and not by a habit.
+Found:      reading the tree for it, at bf5b99d. No code and no script deletes the store. Shipped source
+            holds 23 sites that remove a file or a folder, move one or write one over what was there:
+            the night's lock file; the drain launcher's build copies; two report files written into a
+            folder the operator names; the sweep's own run folder, 13 of them; and the scratch stores
+            the sweep's point-in-time check builds and removes under the machine's temporary folder,
+            the one place shipped code deletes a store file. The scripts hold 8 removals: `tools/ci.*`
+            dropping `data-ci`, the store it created, which was the data root itself until 5.7; the
+            phase report's own artifacts; and the night's script removing its refusal note and build
+            copies under the data root's folder of nights. Two migrations drop a table,
+            `research_request` and `membership`, each after copying its rows to a rebuilt table and
+            renaming it back. The suite deletes 8 things, each inside a temporary directory it made.
+Built:      `StoreNeverDeleted`, six tests. Every such site in the shipped source is one of a stated
+            list, each with what it acts on, and none is handed the store's path; nothing destroys a
+            store through its connection. The sweep's scratch root is read off its one caller as a
+            folder under the temporary folder, so that delete cannot be pointed at the data root with
+            the suite still green. Every removal in a script is one of a stated list and none reaches
+            the data root or the store's file, the night's two lines naming its folder of copies read
+            off the script. Every table a migration drops is one of the two stated rebuilds, its rows
+            copied before the drop and the table renamed back after. The suite's own deletions are a
+            stated list, and the two helpers every test store and folder is made by are rooted in the
+            temporary folder. And each reader is shown to find a removal of the store, over constructed
+            source and a constructed script. The roster's row and the map from it to the class.
+Not built:  nothing in shipped code changed: the rule was already kept, and what is added is what stops
+            it being broken without a line saying so. No backup of the store is made by anything here.
+            A person or a tool outside this repository removing the file is beyond any check in it, and
+            a copy of the store on another disk is the answer to that; it is put to the operator.
+Tests:      six added, 1,685 to 1,691.
+Claims:     none: the rule is `CLAUDE.md`'s and the roster's, and no row of `ARCHITECTURE.html` moved.
+Pins:       none moves. No shipped source was edited.
+Mutated:    the rule, stated before the run: each reader made blind in turn, in a detached worktree and
+            reverted. Predicted:
+            S1 a `File.Delete` of the store's path added to a shipped source: red in the test of the
+               shipped sites, twice, as a site not stated and as one naming the store.
+            S2 `rm -rf "$data"` added to the night's script: red in the scripts' test, twice.
+            S3 the sweep's scratch root moved under the data root: red in the scratch root's test.
+            S4 a migration dropping a table with no rebuild: red in the migrations' test.
+            Results: all four ran in a detached worktree at 9dfe60d, each filtered to the check's six
+            tests, and reverted. All four red, each in the one test predicted and in no other: S1 in
+            the test of the shipped sites, S2 in the scripts' test, S3 in the scratch root's test and
+            S4 in the migrations' test.
+Stored:     the operator's words in `prompts/2026-10-01-13.3-store-never-deleted-ruling.md`.
+Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, 9dfe60d,
+            with the figures 13.5's entry states.
+
+### 13.4 - sector leaders: the fourth setup family, a stock in the top quarter of one of the three strongest sectors at a pullback's buy point, on the pullback's plan as the swing filter stored it, drawn as a card of its own   2026-10-01
+
+Built:      - `LeaderRule`. `Standings` ranks the sectors by the median of their members' returns over
+              the long span, highest first and the sector's name where two tie, leaves a sector holding
+              fewer than 5 members with a return unranked, and places each member inside its sector by
+              return, the ticker deciding a tie. `Evaluate` answers six gates: the market, the sector
+              among the top 3, the member in its sector's top quarter, and the swing filter's setup,
+              trigger and trade gates as stored that night. The filter's trend and strength gate is not
+              among them. The names passing are ordered by the sector's rank and then the return.
+            - The trade is the pullback's plan as the filter's row stored it under the open version's
+              trade input. `FamilyEvaluator` reads each member's sector, its return and those three
+              gates with that plan, carries every exclusion the filter stored for the plan but its own
+              open trade, and stores the leader's answer beside the other families'.
+            - A family on the pullback's plan is scored on the filter's row: the filler writes no row
+              of its own for a leader, and the lister reads a leader's earlier trade under the horizon
+              of the plan its night's filter version read.
+            - Tonight's page: the sector leaders' card, fourth on the page, marked provisional, each
+              pick with the pullback's buy, stop and target and why it is listed, its sector's rank and
+              its own place in it. A stock the pullback passes too is drawn once, under the pullback,
+              with the leader's label.
+            - Documents: the family evaluator's reads in section 7 and its matrix row, section 11.4's
+              paragraph, section 17's three rows, each marked provisional, section 18's two rows, a
+              source row, `SCHEMA.md`'s note on a leader's order and where its trade is scored, and the
+              decision the family rests on. Prior text in CHANGELOG.
+            - A test store's temporary directory is removed when the store is disposed. It was left
+              behind on every disposal: the pool was cleared under one of the three strings a store is
+              opened with, the other two held the file, and the removal was refused and swallowed.
+              184,766 such directories, 213 GB, stood under the machine's temporary folder on
+              2026-10-01 and were removed at the operator's word.
+Not built:  no leader is registered and none counts toward a checkpoint until its sweep, 13.8, and its
+            freeze. The swing filter's code is untouched.
+Tests:      three added, each by hand over constructed input. Five constructed sectors: the ranking with
+            a tie on the median and a sector a member short of the floor; the top quarter of a sector
+            of eight and of five at its boundary, with a tie on it; a member with no sector and one with
+            no return; a leader whose stored setup, trigger or trade gate did not pass; an exclusion; a
+            closed market; and the order. The evaluator over a constructed store, three leaders passed
+            in order on the filter's stored plan, one of them a stock the pullback passes, then the
+            lister listing that one under the pullback with the leader's label, and the filler writing
+            no outcome row of a leader's own. And the card read back off the rendered page.
+            Changed: the framework's test names four families on the page.
+Claims:     5 added: section 17's three rows and section 18's two.
+Pins:       none moves. The three lists were read off the code's own declarations and the tree touches
+            none of them: the rule is a file of its own and reads the filter's stored rows.
+Remedy:     none of its own.
+Unpredicted: the plan said the leaders reuse the plan clear of the noise; they take the plan the open
+            version's trade gate read, which is that plan today and stays the pullback's if a version
+            reads the other. The leak of temporary directories, found while clearing the temporary
+            folder at the operator's word, is repaired here and not in a correction of its own, since
+            it produced no wrong result.
+Mutated:    the rule, stated before the run: each rule this checkpoint adds, reversed alone, filtered to the
+            tests that read it, in a detached worktree at the pull request's tree and reverted.
+            Predicted:
+            D1 the sectors ranked on the mean and not the median: red in the ranking's test.
+            D2 the top four sectors taken: red in the ranking's test, G1 passing.
+            D3 the quarter rounded down: red in the ranking's test, a sector of five taking one.
+            D4 a sector under the floor ranked: red in the ranking's test.
+            D5 the filter's trend gate read as a leader's gate: red in the evaluator's test, A2 and B1.
+            D6 the filler scoring a leader's own row: red in the evaluator's test, a second outcome row.
+            Results: all six ran in a detached worktree at 9dfe60d, each filtered to the three tests this
+            checkpoint added, and reverted. All six red, none survived. D1 and D3 red in the ranking's
+            test alone. D2 and D4 red in the ranking's test as predicted and in the evaluator's, where
+            a fourth sector's member and an unranked sector's then pass. D5 and D6 red in the
+            evaluator's test alone. D6 was read against the test before the run and would have survived
+            it: the filler would score the leader's row under the same horizon as the filter's and
+            write the same row, so nothing the test read would move. The test was given the filler's
+            own count of the trades it scored from the other families' rows, which is none, before
+            the run, and D6 is red on that.
+Held:       D1, D3, D5 and D6 red in the test predicted and in no other of the three. D2 and D4 red in
+            the test predicted and in the evaluator's.
+Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, 9dfe60d,
+            with the figures 13.5's entry states.
+
+### 13.5 - the pages: tonight's market line and one list of stocks close to a buy point across every setup, Past picks with a setup filter and label and a trailing trade drawn in multiples of its risk, a name's page saying which setup lists it, and the run page's row a setup   2026-10-01
+
+Built:      - Tonight, on a night the families drew its list. A market line above the cards: whether the
+              market check left the lists open, with the breadth and its floor, the buy points the page
+              lists and how many setups list one, the stocks close to a buy point, and the trades still
+              open, linking to Past picks. A trade listed on the night itself is a buy point and not yet
+              an open trade. And one list of stocks close to a buy point across every setup, in place
+              of the swing filter's own: a row a stock and setup with the setup's label and the one
+              gate it missed in that gate's words, the pullback's rows first in the order the filter's
+              list has always drawn them, then each other setup's in the page's order.
+            - Past picks. Its rows are every trade the page listed, under every setup: a pullback's from
+              the filter's row as before, and another setup's from its own stored answer, with the
+              outcome scored under that setup's horizon. A chip a setup filters them, the counts follow
+              the setup chosen and the status chips keep it; each row carries its setup's label; a
+              trailing trade is drawn with no target and its result in multiples of its risk; and a
+              trade a setup on provisional settings listed is marked, counted as listed, and left out
+              of the share and the average, with a line saying how many there are.
+            - A name's page says, beneath its contents, which setup lists it on the night with its place
+              and the other setups it qualified under, or why a setup that passed it does not list it.
+            - The run page draws a row a setup: live since the day its rule was registered or
+              provisional, its variants, what it lists on the night, the trades listed under it so far,
+              open and finished, and its record against the minimums it waits for or the ruling's words.
+              The page's own count of trades is the live rule's, the pullback's.
+            - Documents: section 15.7's two rows, 15.9's row, 15.10's row and 15.17's four rows, as the
+              eighteen parts they state. Prior text in CHANGELOG.
+Not built:  the mockup's line naming the index against its averages: the night holds no index series,
+            so the line draws breadth and whether the lists are open. No setup is registered here, so
+            every setup but the pullback draws as provisional until its freeze, 13.9.
+Tests:      three added, each read off the rendered page over a constructed night the lister drew, in
+            both directions. The market line's figures against the store on an open night and a closed
+            one, with the shared list's rows, labels and gates. Past picks' chips and counts, the filter
+            keeping exactly a setup's trades, the labels, a trailing trade sold at its stop 6 per cent
+            up on 6 at risk drawn as +1.00 with no target, and the provisional line. A name listed
+            under one setup that qualified under another, one held back by its open trade, one listed
+            by the breakout and one no setup passed; and the run page's rows for a registered setup
+            and a provisional one. Changed: Past picks' heading test names the setup column, and its
+            key's sentence says each trade is under the setup that listed it.
+Claims:     18 added, the parts the eight rows state. Phase 13 added 66 in all, 25, 11, 7, 5 and 18,
+            and the pair after it is 855 and 855 PASS, predicted at 853 within 840 to 870.
+Figures:    1,697 tests: 1,669 before the phase, and 5, 7, 4, 6 with the store ruling's check, 3 and 3
+            added by 13.1 to 13.5.
+Pins:       none moves. The three lists were read off the code's own declarations and the tree touches
+            none of them.
+Remedy:     none of its own. After the merge, `tools/migrate.ps1` for migrations 53 and 54, then the
+            read surface is started again.
+Unpredicted: a provisional setup's trades are kept out of Past picks' share and average, which the plan
+            did not state and the ruling requires: its record starts at its freeze. The pullback's
+            trades count there whatever the register holds, as they always have. Past picks keeps one
+            status for a trade sold at its stop, trailing or not, where the plan spoke of none.
+Mutated:    the rule, stated before the run: each rule this checkpoint adds, reversed alone, filtered to the
+            tests that read it, in a detached worktree at the pull request's tree and reverted.
+            Predicted:
+            E1 the line counting the night's own listings as open trades: red in the market line's test.
+            E2 the shared list drawing a member two gates short: red in the market line's test.
+            E3 the setup filter keeping every trade: red in Past picks' test.
+            E4 a provisional setup's trades counted in the share: red in Past picks' test, the line gone.
+            E5 a trailing trade's result left blank: red in Past picks' test.
+            E6 the run page's rows drawn for every setup as live: red in the name and run page's test.
+            Results: all six ran in a detached worktree at 9dfe60d, each filtered to the three tests this
+            checkpoint added, and reverted. All six red, each in the one test predicted and in no
+            other. Two were read against the tests before the run and would have survived, so the
+            tests were strengthened first: E2, since the constructed night held no member two gates
+            short of a breakout, which it now holds; and E4, since no trade of a provisional setup
+            had reached a target, which the test now works by hand over two constructed trades.
+Held:       red in the test predicted and in no other, for each of the six.
+Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green over the tree carrying every
+            entry from 13.0's to this one, 9dfe60d: `tools/ci.ps1` all six steps, 0 warnings, 0 errors,
+            1697 of 1697 tests ran with none failed, migrations 0 to 54 with none pending, schema
+            version 54, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green at
+            44 tables, 855 claims, 855 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 866 placements and
+            verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the roster and 42
+            carried, 42 passed. The pair predicted, 853 within 840 to 870, is 855 and 855.

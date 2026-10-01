@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Returns;
 using EquityBrief.Core.Time;
@@ -9,7 +10,7 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Returns;
 
-public sealed record ForwardReturnOutcome(int ListingsExamined, int RowsWritten, int Matured, int Immature, int Kept, int PlansExamined = 0, int PlansNotScorable = 0, int ClearPlansExamined = 0, int ClearPlansNotScorable = 0);
+public sealed record ForwardReturnOutcome(int ListingsExamined, int RowsWritten, int Matured, int Immature, int Kept, int PlansExamined = 0, int PlansNotScorable = 0, int ClearPlansExamined = 0, int ClearPlansNotScorable = 0, int FamilyTradesExamined = 0, int FamilyTradesNotScorable = 0);
 
 // The forward return filler. Fills the five and twenty-one session outcomes of
 // past listings as those sessions mature, and computes the universe base rate
@@ -29,6 +30,7 @@ public sealed class ForwardReturnFiller : IComponent
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
+            new StoreTouch(Store.FamilyResult, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -67,6 +69,21 @@ public sealed class ForwardReturnFiller : IComponent
             ON f.ticker = g.ticker AND f.session_date = g.session_date AND f.horizon IN ('clear', 'clear-20')
         WHERE g.clear_stop IS NOT NULL AND g.clear_target IS NOT NULL AND g.version <> '" + EquityBrief.Core.Filter.ReplayedResults.Version + @"'
         ORDER BY g.session_date, g.ticker;
+    ";
+
+    // Every trade a setup family passed that is scored from its own row, with its family's horizon already
+    // written for it. The pullback's trades are the swing filter's rows above, and so are the trades of a
+    // family bought on the pullback's plan, whose outcome is that row's.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    static readonly string EveryFamilyTrade = @"
+        SELECT r.ticker, r.session_date, r.family, r.stop, r.target, f.horizon, f.outcome
+        FROM family_result r
+        LEFT JOIN forward_return f
+            ON f.ticker = r.ticker AND f.session_date = r.session_date
+            AND f.horizon = " + SetupFamilies.HorizonIn("r.family", "NULL") + @"
+        WHERE r.passed = 1 AND r.stop IS NOT NULL
+          AND r.family IN (" + string.Join(", ", SetupFamilies.ScoredOnTheirOwnRows.Select(family => $"'{family.Name}'")) + @")
+        ORDER BY r.session_date, r.ticker, r.family;
     ";
 
     // The sessions after a listing's own, in order, which is what a horizon is
@@ -348,6 +365,77 @@ public sealed class ForwardReturnFiller : IComponent
             return (planned.Count, refused);
         }
 
+        // The other setup families' trades, each scored from the night's close under its family's own
+        // horizon and cap: a family that trails its stop is sold at the first close under the trail or at
+        // its last session, and one with a target is scored the setup's way. What a trailing trade put at
+        // risk is stored beside its result, which is what the result is read in multiples of.
+        // see: A breakout is a close above the year's high on heavy volume after its ranges narrowed, sold on a trailing stop with no target
+        var familyTrades = await FamilyTradesAsync(connection, transaction, cancellation);
+        var familyNotScorable = 0;
+
+        foreach (var trade in familyTrades)
+        {
+            if (trade.Stored && Decided(trade.Outcome))
+            {
+                kept++;
+
+                continue;
+            }
+
+            var origin = await CloseOnAsync(connection, trade.Ticker, trade.SessionDate, cancellation);
+
+            if (SetupFamilies.Named(trade.Family) is not { } family
+                || trade.Target is { } aimed && trade.Stop >= aimed
+                || origin is { RawClose: { } raw } && (raw <= trade.Stop || trade.Target is { } above && raw > above))
+            {
+                familyNotScorable++;
+
+                continue;
+            }
+
+            var after = origin is null ? [] : await SessionsAfterAsync(connection, trade.Ticker, trade.SessionDate, cancellation);
+            var rawClose = origin is null ? null : RawClose(trade.Ticker, trade.SessionDate, origin, trade.Stop, trade.Stop);
+
+            ForwardReturn outcome;
+            Calibration calibrated;
+
+            if (origin is not { } bar || rawClose is not { } listedAt)
+            {
+                outcome = new ForwardReturn(family.Horizon, null, null, null);
+                calibrated = Calibration.None;
+            }
+            else if (family.Trails)
+            {
+                // The plan keeps the scale the series had on the listing night, as a setup's does.
+                var floor = trade.Stop * (bar.Close / listedAt);
+
+                outcome = TrailingExit.Over(after, bar.Close, floor, family.Horizon, family.CapSessions);
+                calibrated = outcome.Outcome is null
+                    ? Calibration.None
+                    : new Calibration(null, null, TrailingExit.RiskPct(bar.Close, floor), OnEarnings(await PrintsAsync(connection, trade.Ticker, cancellation), after, outcome.ResolvedOn));
+            }
+            else
+            {
+                outcome = ForwardReturnSeries.OverSetup(after, trade.Stop, trade.Target, null, bar.Close, listedAt, family.Horizon, family.CapSessions);
+                calibrated = await CalibratedAsync(connection, trade.Ticker, trade.SessionDate, outcome, origin, trade.Stop, trade.Target, after, cancellation);
+            }
+
+            if (!trade.Stored || outcome.Outcome is not null)
+            {
+                await WriteAsync(connection, transaction, trade.Ticker, trade.SessionDate, outcome, calibrated, cancellation);
+                written++;
+            }
+
+            if (outcome.Outcome is null)
+            {
+                immature++;
+            }
+            else
+            {
+                matured++;
+            }
+        }
+
         // The base rate per horizon, over every name-night rather than over the
         // rows where a reason fired. The setup horizon has none, because there
         // is no universe-wide notion of target before stop for a name with no
@@ -373,9 +461,37 @@ public sealed class ForwardReturnFiller : IComponent
 
         await transaction.CommitAsync(cancellation);
 
-        await RecordAsync(connection, runId, startedAt, listings.Count, written, matured, immature, kept, plans, notScorable, clearPlans, clearNotScorable, cancellation);
+        await RecordAsync(connection, runId, startedAt, listings.Count, written, matured, immature, kept, plans, notScorable, clearPlans, clearNotScorable, familyTrades.Count, familyNotScorable, cancellation);
 
-        return new ForwardReturnOutcome(listings.Count, written, matured, immature, kept, plans, notScorable, clearPlans, clearNotScorable);
+        return new ForwardReturnOutcome(listings.Count, written, matured, immature, kept, plans, notScorable, clearPlans, clearNotScorable, familyTrades.Count, familyNotScorable);
+    }
+
+    sealed record FamilyTrade(string Ticker, string SessionDate, string Family, decimal Stop, decimal? Target, bool Stored, string? Outcome);
+
+    static async Task<IReadOnlyList<FamilyTrade>> FamilyTradesAsync(SqliteConnection connection, System.Data.Common.DbTransaction transaction, CancellationToken cancellation)
+    {
+        var trades = new List<FamilyTrade>();
+
+        await using var command = connection.CreateCommand();
+
+        command.Transaction = (SqliteTransaction)transaction;
+        command.CommandText = EveryFamilyTrade;
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            trades.Add(new FamilyTrade(
+                reader.GetString(0),
+                reader.GetString(1),
+                reader.GetString(2),
+                Money.FromStorage(reader.GetString(3)),
+                reader.IsDBNull(4) ? null : Money.FromStorage(reader.GetString(4)),
+                !reader.IsDBNull(5),
+                reader.IsDBNull(6) ? null : reader.GetString(6)));
+        }
+
+        return trades;
     }
 
     static bool Decided(string? outcome) => outcome is not null;
@@ -709,6 +825,8 @@ public sealed class ForwardReturnFiller : IComponent
         int notScorable,
         int clearPlans,
         int clearNotScorable,
+        int familyTrades,
+        int familyNotScorable,
         CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
@@ -729,7 +847,8 @@ public sealed class ForwardReturnFiller : IComponent
             $"{listings} listing(s), {written} row(s) written, {kept} kept as decided, " +
             $"{matured} newly matured, {immature} not yet matured; " +
             $"{plans} swing plan(s) read, {notScorable} not scorable from the night's close; " +
-            $"{clearPlans} plan(s) clear of the noise read, {clearNotScorable} not scorable from the night's close");
+            $"{clearPlans} plan(s) clear of the noise read, {clearNotScorable} not scorable from the night's close; " +
+            $"{familyTrades} trade(s) of the other setup families read, {familyNotScorable} not scorable from the night's close");
 
         await command.ExecuteNonQueryAsync(cancellation);
     }

@@ -1108,7 +1108,9 @@ public static class NameScreen
         // plan the night's live rule read where the row itself stores no input.
         string? versionPlan = null,
         // What was written about the company in the thirty days before the night, with its labels.
-        NewsView? news = null)
+        NewsView? news = null,
+        // The name's rows on the page's list for the night, on a night the setup families drew it.
+        IReadOnlyList<FamilyPickRow>? familyPicks = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1242,7 +1244,8 @@ public static class NameScreen
             earlier,
             gates is not null && missed is not null ? (gates.SessionDate, missed) : null,
             says,
-            news);
+            news,
+            TonightScreen.ListedUnder(ticker, familyPicks ?? []));
     }
 
     // "What the numbers say" for a night's readings: the heading carrying the state, the quarter read from,
@@ -1347,7 +1350,7 @@ public static class NameScreen
         readOn is { } night && !membersThen.Any(row => string.Equals(row.Ticker, ticker, StringComparison.Ordinal)) ? night : null;
 
     // A name's earnings reaction record as the page draws it, each print as the annotator stored it.
-    // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+    // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
     public static IReadOnlyList<ReactionCell> Reactions(IReadOnlyList<ReactionRow> rows) =>
         [.. rows.Select(row => new ReactionCell(row.ReportDate, row.Timing, row.Session, row.Estimate, row.Actual, row.SurprisePct, row.MovePct))];
 

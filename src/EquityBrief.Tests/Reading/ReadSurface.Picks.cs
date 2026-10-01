@@ -293,7 +293,7 @@ public partial class ReadSurface
         // Both keys, each closing on what to take from it.
         Assert.Contains("<b>How to read it.</b> A trade is listed on the night the live list drew it", page, StringComparison.Ordinal);
         Assert.Contains("<b>How to read the trade line.</b> The line runs from the stop on the left, in green, to the target on the right, in orange, with the buy marked between them.", page, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"take\"><b>What to take from it.</b> Only the live list's trades appear here. The alternatives being tested in the background stay hidden until one of them is promoted.</p>", page, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"take\"><b>What to take from it.</b> Only the live list's trades appear here, each under the setup that listed it. The alternatives being tested in the background stay hidden until one of them is promoted.</p>", page, StringComparison.Ordinal);
         Assert.Contains($"<span class=\"stamp computed\">Computed for {PicksNewest}</span>", page, StringComparison.Ordinal);
 
         // A status in the hash lights its chip and draws its trades alone, and the line counts them.

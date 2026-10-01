@@ -20,7 +20,7 @@ namespace EquityBrief.Api.Reading;
 // section 15.7 states the page does.
 // see: A screen reads and renders, and computes nothing
 // see: The page shows twenty and states the true count
-public static class TonightScreen
+public static partial class TonightScreen
 {
     // The three orders tonight's list is measured in. The first is the one the list is drawn in;
     // the second is the order it replaced, which the other two are measured against; the third

@@ -201,7 +201,7 @@ public sealed class FactsAssembler : IComponent
 
     // Every print's reaction the annotator stored for the name, newest first, which a section
     // on the earnings may quote.
-    // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+    // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
     const string ReactionsFor = @"
         SELECT report_date, timing, reaction_session, estimate, actual, surprise_pct, move_pct
         FROM earnings_reaction

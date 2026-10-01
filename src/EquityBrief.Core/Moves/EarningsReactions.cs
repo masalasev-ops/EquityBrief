@@ -30,7 +30,7 @@ public sealed record ReactionRecord(IReadOnlyList<Reaction> Reactions, int Unrea
 // that rule handles it and nothing the rule versions pin is edited to share the reading. A print
 // whose session the bars do not reach, or whose session has no close before it among them, is left
 // out and counted rather than read off a session the store does not hold.
-// see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+// see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
 public static class EarningsReactions
 {
     public static ReactionRecord Of(IReadOnlyList<ReactionPrint> prints, IReadOnlyList<LadderBar> bars)

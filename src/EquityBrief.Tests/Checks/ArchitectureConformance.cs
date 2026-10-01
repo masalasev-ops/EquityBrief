@@ -1394,7 +1394,11 @@ public partial class ArchitectureConformance
         // 114 at the 12.6 correction that writes the comparisons to files: the section trials row goes.
         // 115 at the 12.2 correction that reads one open trade per stock on the pages: Still open on tonight's.
         // 116 at the 12.6 correction that draws the news on the pages: the name page's News row.
-        Assert.Equal(116, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 117 at 13.1, the family framework: a family's card on tonight's page.
+        // 125 at 13.5, the pages around the setup families: tonight's market line and its shared list of
+        // stocks close to a buy point, the name page's setup, the run page's setup families, and Past picks'
+        // setup filter, setup label, trailing trade and provisional trades.
+        Assert.Equal(125, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1489,8 +1493,10 @@ public partial class ArchitectureConformance
         // tonight's Still open row as its nine parts and Past picks' two parts. 389 at the 12.3 build of the
         // night from a clean copy of the committed code: the refusal on tonight's notice and the commit on the
         // Run page. 393 at the 12.6 correction drawing the news on the pages: the name page's News row, tonight's
-        // list's counts, the Run page's labeller line and its count of the labeller's nights.
-        Assert.Equal(393, inDocument.Length);
+        // list's counts, the Run page's labeller line and its count of the labeller's nights. 410 at 13.1, the
+        // family framework: a family's card on tonight's page as the seventeen parts its row states. 428 at 13.5,
+        // the pages around the setup families: the eighteen parts their eight rows state.
+        Assert.Equal(428, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1577,7 +1583,9 @@ public partial class ArchitectureConformance
         // stock on the pages: Still open's nine parts and Past picks' two. 365 at the 12.3 build of the night
         // from a clean copy of the committed code: the refusal on tonight's notice and the commit on the Run page.
         // 368 at the 12.6 correction drawing the news on the pages: the three parts above.
-        Assert.Equal(368, checkedElements);
+        // 385 at 13.1, the family framework: the seventeen parts a family's card states.
+        // 403 at 13.5, the pages around the setup families: the eighteen parts their eight rows state.
+        Assert.Equal(403, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

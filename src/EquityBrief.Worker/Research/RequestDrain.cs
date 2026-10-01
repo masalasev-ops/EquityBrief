@@ -1,9 +1,11 @@
 using System.Globalization;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
+using EquityBrief.Worker.Families;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Research;
@@ -82,14 +84,14 @@ public static class RequestDrain
 
     // ---- the night's own request ----
     //
-    // After the night has run, it asks for a report on the first name drawn on its list, marked as
-    // asked by the night, and starts the drain as a press does. The night writes this one row and
-    // starts one process; the pass is the drain's own run, with its calls on its own rows.
-    // see: The night asks for a report on the first name of its list
+    // After the night has run, it asks for a report on the first names drawn on its page, each marked
+    // as asked by the night, and starts the drain as a press does. The night writes a row a name and
+    // starts one process; each pass is the drain's own run, with its calls on its own rows.
+    // see: The night asks for a report on the first six names its page draws
 
-    // How many names the night asks for, counted from the top of its list: the first alone, on the
-    // operator's ruling of 2026-09-23, "just the top 1st name for now".
-    public const int NightAsksFor = 1;
+    // How many names the night asks for, counted down its page: six across every family, on the
+    // operator's ruling of 2026-10-01, where the ruling of 2026-09-23 asked for the first alone.
+    public const int NightAsksFor = SetupFamilies.ReportsANight;
 
     // What a request the night wrote is marked as asked from, beside the two screens a press
     // comes from.
@@ -173,10 +175,17 @@ public static class RequestDrain
 
         await connection.OpenAsync(cancellation);
 
-        var passed = new List<string>();
+        // The page's list where the families drew one for the night, in the order the page draws it, and
+        // the names the swing filter passed where they drew none.
+        var passed = (await FamilyPicks.ListedAsync(connection, night, cancellation))?.ToList();
+        var drawnByFamilies = passed is not null;
 
-        await using (var reading = connection.CreateCommand())
+        if (passed is null)
         {
+            passed = [];
+
+            await using var reading = connection.CreateCommand();
+
             reading.CommandText = PassedOnTheNight;
             reading.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
 
@@ -192,14 +201,18 @@ public static class RequestDrain
 
         if (first.Length == 0)
         {
-            return new NightAsk([], FormattableString.Invariant($"no name passed the swing filter on {night:yyyy-MM-dd}, so no report was asked for"));
+            return new NightAsk([], drawnByFamilies
+                ? FormattableString.Invariant($"no stock is on the page's list for {night:yyyy-MM-dd}, so no report was asked for")
+                : FormattableString.Invariant($"no name passed the swing filter on {night:yyyy-MM-dd}, so no report was asked for"));
         }
 
         var asked = new List<string>();
         var said = new List<string>();
 
-        foreach (var ticker in first)
+        foreach (var (ticker, at) in first.Select((ticker, at) => (ticker, at)))
         {
+            var placed = at == 0 ? "first" : FormattableString.Invariant($"number {at + 1}");
+
             await using var waiting = connection.CreateCommand();
 
             waiting.CommandText = Waiting;
@@ -207,7 +220,7 @@ public static class RequestDrain
 
             if (await waiting.ExecuteScalarAsync(cancellation) is string state)
             {
-                said.Add($"{ticker} is first on the list and has a request {state} already, so none was added");
+                said.Add($"{ticker} is {placed} on the list and has a request {state} already, so none was added");
 
                 continue;
             }
@@ -222,7 +235,7 @@ public static class RequestDrain
             await asking.ExecuteNonQueryAsync(cancellation);
 
             asked.Add(ticker);
-            said.Add($"{ticker} is first on the list, and a report on it was asked for");
+            said.Add($"{ticker} is {placed} on the list, and a report on it was asked for");
         }
 
         return new NightAsk(asked, string.Join("; ", said));

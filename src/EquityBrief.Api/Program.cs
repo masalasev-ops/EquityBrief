@@ -293,6 +293,19 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
             readings: await read.FundamentalReadingsAsync(evening))
         : [];
 
+    // On a night the families drew the page's list, the neighbours are the stocks the page lists, in its order.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    if (night is { } drawn && await read.FamilyNightAsync(drawn) is not null)
+    {
+        ordered = TonightScreen.ListedByFamilies(
+            drawn,
+            await read.FamilyPicksAsync(drawn),
+            listings,
+            UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+            await read.ClosesToTheNightAsync(drawn),
+            readings: await read.FundamentalReadingsAsync(drawn));
+    }
+
     var at = ordered.Select((row, position) => (row.Ticker, position))
         .Where(pair => pair.Ticker == ticker)
         .Select(pair => (int?)pair.position)
@@ -396,7 +409,9 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         // for the night, which say why a name holds no label.
         news: night is { } storied
             ? NewsScreen.Build(ticker, storied, await read.NewsAsync(ticker, storied), gate is not null && gate.SessionDate == storied && gate.Passed, NewsScreen.RunFor(await read.LabellerRunsAsync(), storied))
-            : null);
+            : null,
+        // The name's rows on the page's list for the night, where the setup families drew it.
+        familyPicks: night is { } drawnOn ? await read.FamilyPicksAsync(drawnOn) : null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -857,6 +872,27 @@ app.MapGet("/screens/tonight/{night?}", async (
 
     listed = TonightScreen.MarkedAsRepeats(dated, listed, picks);
 
+    // On a night the families drew the page's list, the rows are the stocks the page lists, in its order,
+    // and the list is drawn as a card a family.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    var onThePage = gates is null ? null : await read.FamilyNightAsync(dated);
+    IReadOnlyList<FamilyPickRow> familyPicks = onThePage is null ? [] : await read.FamilyPicksAsync(dated);
+
+    if (onThePage is not null)
+    {
+        listed = TonightScreen.ListedByFamilies(
+            dated,
+            familyPicks,
+            listings,
+            cells,
+            closes,
+            suspects,
+            researched,
+            gates,
+            readings,
+            await read.NewsCountsAsync(dated));
+    }
+
     // The members one gate short, on a night the swing filter listed, each measured against the settings of
     // the version its result was stored under, and a missed trigger against the firings its own results show.
     // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
@@ -929,6 +965,24 @@ app.MapGet("/screens/tonight/{night?}", async (
         await read.ListingsAsync(),
         RunScreen.Resolved(await read.ForwardReturnsAsync()));
 
+    // On a night the families drew: each family's card, the shared list of stocks a single gate short under
+    // any setup, and the line the page opens them on.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    var ruleView = TonightScreen.RuleView(rule, gates, market);
+    var familyResults = onThePage is null ? [] : await read.FamilyResultsAsync(dated);
+    var cards = onThePage is null || gates is null
+        ? null
+        : TonightScreen.Families(dated, onThePage, familyPicks, rows, gates, await read.RegisteredCandidatesAsync(), ruleView, familyResults);
+    var closeAcross = cards is null ? null : TonightScreen.CloseAcross(onThePage!, nearRows, familyResults, cells);
+    var line = cards is null
+        ? null
+        : TonightScreen.Line(
+            ruleView,
+            cards,
+            closeAcross!.Count,
+            // A trade listed on the night itself is one of its buy points; the open trades are the earlier ones.
+            PicksScreen.Cells(picks, dated).Count(trade => trade.Night < dated && trade.Status == EquityBrief.Web.Marks.PickStatus.Open && trade.RepeatOf is null));
+
     return Results.Content(
         notice + page.TonightRegion(
             marks,
@@ -947,11 +1001,14 @@ app.MapGet("/screens/tonight/{night?}", async (
             TonightScreen.Prose(dated, await read.WrittenOnOrBeforeAsync(dated)),
             TonightScreen.WrittenBeforeTheCorrection(listings),
             RunScreen.Market(market),
-            TonightScreen.RuleView(rule, gates, market),
+            ruleView,
             TonightScreen.Listed(listings),
             held: held,
             close: nearRows,
-            stillOpen: gates is null ? null : TonightScreen.StillOpen(dated, gates, picks)),
+            stillOpen: gates is null ? null : TonightScreen.StillOpen(dated, gates, picks),
+            families: cards,
+            line: line,
+            closeAcross: closeAcross),
         "text/html; charset=utf-8");
 });
 
@@ -1122,11 +1179,20 @@ app.MapGet("/screens/find", async (ReadApi read, SinglePageApp page) =>
 app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRenderer marks, SinglePageApp page) =>
 {
     var night = await read.NewestNightAsync();
-    var cells = night is { } asOf ? PicksScreen.Cells(await read.PicksAsync(asOf), asOf) : [];
+    var cells = night is { } asOf
+        ? PicksScreen.Cells(await read.PicksAsync(asOf), asOf, TonightScreen.ProvisionalSetups(await read.RegisteredCandidatesAsync(), asOf))
+        : [];
     var status = request.Query["status"].FirstOrDefault();
 
+    // The setup the hash names keeps that family's trades, and the counts follow it. The chips are the
+    // setups the page has listed a trade under, in the page's order.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    var setup = request.Query["setup"].FirstOrDefault();
+    var under = PicksScreen.OfSetup(cells, setup);
+    var setups = PicksScreen.Setups(cells);
+
     return Results.Content(
-        page.PicksRegion(marks, night, PicksScreen.Summary(cells), PicksScreen.Filtered(cells, status), status),
+        page.PicksRegion(marks, night, PicksScreen.Summary(under), PicksScreen.Filtered(under, status), status, setup, setups),
         "text/html; charset=utf-8");
 });
 
@@ -1362,7 +1428,8 @@ app.MapGet("/screens/run/{night?}", async (
             held: held,
             how: how,
             picture: picture,
-            trades: PicksScreen.Summary(PicksScreen.Cells(await read.PicksAsync(dated), dated)),
+            // The live rule's own trades: the pullback's, whatever the other setups listed.
+            trades: PicksScreen.Summary(PicksScreen.OfSetup(PicksScreen.Cells(await read.PicksAsync(dated), dated), EquityBrief.Core.Families.SetupFamilies.Pullback)),
             fresh: RunScreen.Freshness(everyListing, dated, first),
             research: new ResearchPicture(
                 TonightScreen.Spend(dated, await SpentOn(read, dated), caps),
@@ -1378,7 +1445,15 @@ app.MapGet("/screens/run/{night?}", async (
             background: versions,
             compare: compare,
             checkpoints: RunScreen.Checkpoints(edge),
-            reports: reports),
+            reports: reports,
+            // The setups the page is drawn from, on a night the families drew its list.
+            setupFamilies: await read.FamilyNightAsync(dated) is null
+                ? null
+                : TonightScreen.FamilyRun(
+                    dated,
+                    await read.FamilyPicksAsync(dated),
+                    PicksScreen.Cells(await read.PicksAsync(dated), dated),
+                    await read.RegisteredCandidatesAsync())),
         "text/html; charset=utf-8");
 });
 

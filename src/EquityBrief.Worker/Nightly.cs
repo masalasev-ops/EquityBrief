@@ -10,6 +10,7 @@ using EquityBrief.Worker.Calendar;
 using EquityBrief.Worker.Candidates;
 using EquityBrief.Worker.Indicators;
 using EquityBrief.Worker.Facts;
+using EquityBrief.Worker.Families;
 using EquityBrief.Worker.Ladders;
 using EquityBrief.Worker.Moves;
 using EquityBrief.Worker.Levels;
@@ -41,9 +42,10 @@ namespace EquityBrief.Worker;
 public static class Nightly
 {
     // `Stages` are the run log stages the step writes, where they are not the
-    // step's own name. Only the facts step differs, since it runs the assembler
-    // and the detector and each writes its own row; a stop inside it is recorded
-    // under the first of the two the run does not hold yet.
+    // step's own name. The facts step differs, since it runs the assembler
+    // and the detector and each writes its own row, and so does the swing filter's,
+    // which runs the filter and then the family lister; a stop inside either is
+    // recorded under the first of the two the run does not hold yet.
     public sealed record Step(string Name, Func<Task<string>> Run, IReadOnlyList<string>? Stages = null);
 
     // Two figures the whole nightly path rests on, carried out of the run so
@@ -377,9 +379,12 @@ public static class Nightly
             }),
             // Section 14's step 15. The swing filter, after the listings, because the trade
             // gate reads the ladder's first tranche as tonight's listing kept it. It changes
-            // nothing the listings wrote and makes no request. The names it passes are
-            // tonight's list, and the rule is recorded for its session once its rows are stored.
+            // nothing the listings wrote and makes no request. The names it passes are the
+            // pullback family's, the rule is recorded for its session once its rows are stored, the
+            // family evaluator then stores every other family's answers under the filter's market
+            // check, and the family lister draws the page's list from what each family passed.
             // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
+            // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
             new("swing-filter", async () =>
             {
                 // The swing family standing when the night started, evaluated in the filter's shadow.
@@ -387,11 +392,15 @@ public static class Nightly
                 var outcome = await new SwingFilter(clock, store.DatabaseFile)
                     .RunAsync(indexCode, runId, family, night.Token);
                 var recorded = await NightClose.RecordRuleAsync(store.DatabaseFile, night.Token);
+                var evaluated = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync(runId, night.Token);
+                var listed = await new FamilyLister(clock, store.DatabaseFile).RunAsync(runId, night.Token);
 
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
                     $"{outcome.Excluded} excluded, version {outcome.Version}" +
-                    (recorded ? ", listed by the swing filter" : ", no session stored for the list's rule");
-            }),
+                    (recorded ? ", listed by the swing filter" : ", no session stored for the list's rule") +
+                    $"; {evaluated.Families.Sum(family => family.Passed)} passed by the other setup families" +
+                    $"; {listed.Listed} on the page's list";
+            }, [SwingFilter.Stage, FamilyEvaluator.Stage, FamilyLister.Stage]),
             // Section 14's step 16. The shape proposer, after the swing filter, since it counts the
             // gate results the filter has just stored. It writes a proposal once the open version's
             // ordinary nights reach the trigger, and never a version: an acceptance is the operator's.
@@ -523,13 +532,13 @@ public static class Nightly
             }, [OvernightQueue.Stage]),
             // Section 14's step 24, after the overnight queue, which writes the first name's key
             // before any other name's, so a pass started earlier would meet the queue on that
-            // name. The night asks for a report on the first name drawn on its list and starts
-            // the drain as a press does: it writes one row and starts one process, and the pass
-            // is the drain's own run, its calls and requests on its own rows, at the off-peak
+            // name. The night asks for a report on the first six names its page draws and starts
+            // the drain as a press does: it writes a row a name and starts one process, and each
+            // pass is the drain's own run, its calls and requests on its own rows, at the off-peak
             // rate. It is handed no token from the night's deadline, which bounds the arithmetic
             // and may have passed while the queue ran. A night run again for an earlier session
             // asks for nothing, since its list is not tonight's.
-            // see: The night asks for a report on the first name of its list
+            // see: The night asks for a report on the first six names its page draws
             new("report", async () =>
             {
                 var started = clock.UtcNow;

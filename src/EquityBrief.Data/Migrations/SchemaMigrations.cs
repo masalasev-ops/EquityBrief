@@ -673,7 +673,61 @@ public static class SchemaMigrations
         new Migration(50, "add research_section.parts", AddRiskParts),
         new Migration(51, "create pulled_surprise", CreatePulledSurprise),
         new Migration(52, "create news_article and news_label", CreateNewsArticlesAndLabels),
+        new Migration(53, "create family_night and family_pick", CreateFamilyPick),
+        new Migration(54, "create family_result", CreateFamilyResult),
     ];
+
+    // One member's answer under one setup family on one night, for every family but the pullback, whose
+    // answers are the swing filter's own rows. `gates` is the family's gates in order with their reasons
+    // and values, the form `gate_result` keeps its own in. The trade's prices are `TEXT`; `order_by`, the
+    // figure the family's order reads, is a statistic and `REAL`. `place` is the row's place among the
+    // names the family passed, in its own order. A row that passed is one of the family's trades and is
+    // kept; one that did not is dropped once its session is older than the bars the store keeps.
+    // see: Every computed table's writer is its own deleter
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    const string CreateFamilyResult = @"
+        CREATE TABLE family_result (
+            session_date TEXT    NOT NULL,
+            ticker       TEXT    NOT NULL,
+            family       TEXT    NOT NULL,
+            passed       INTEGER NOT NULL,
+            missed       INTEGER NOT NULL,
+            place        INTEGER,
+            entry        TEXT,
+            stop         TEXT,
+            target       TEXT,
+            order_by     REAL,
+            exclusions   TEXT    NOT NULL,
+            gates        TEXT    NOT NULL,
+            PRIMARY KEY (session_date, ticker, family)
+        ) STRICT;
+    ";
+
+    // The page's list on a night, drawn from the setup families. `family_night` holds one row a session the
+    // families drew, with the families on the page that night in the page's order, so a session they drew
+    // and listed nothing on is told from one drawn before them. `family_pick` holds one row a stock under
+    // each family that passed it, listed with its place down the page and the other families it qualified
+    // under, or held back with why, a trade still open naming the family and the night that listed it.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    // see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
+    const string CreateFamilyPick = @"
+        CREATE TABLE family_night (
+            session_date TEXT NOT NULL PRIMARY KEY,
+            families     TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TABLE family_pick (
+            session_date TEXT NOT NULL,
+            ticker       TEXT NOT NULL,
+            family       TEXT NOT NULL,
+            state        TEXT NOT NULL CHECK (state IN ('listed', 'under another', 'open trade', 'past five')),
+            place        INTEGER,
+            also         TEXT NOT NULL,
+            held_family  TEXT,
+            held_night   TEXT,
+            PRIMARY KEY (session_date, ticker, family)
+        ) STRICT;
+    ";
 
     // One completed block of one version's record, frozen when the block completed.
     //
@@ -815,7 +869,7 @@ public static class SchemaMigrations
     // deleted by it where a print falls out of either. The estimate and the actual are kept as the
     // provider sent them, as text, and are null where it filed none; the surprise is the provider's
     // and is null beside no estimate; the move is the reaction session's, from the close before it.
-    // see: Each print's reaction is read from the nightly calendar and the stored bars, and reaches no reason, gate or plan
+    // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
     const string CreateEarningsReaction = @"
         CREATE TABLE earnings_reaction (
             ticker           TEXT NOT NULL,
@@ -834,7 +888,7 @@ public static class SchemaMigrations
     // comes from. A rebuild rather than an alter, because SQLite cannot change a check a table
     // was created with: every row is copied across whole, and the index refusing a second
     // outstanding request for a name is built again over them.
-    // see: The night asks for a report on the first name of its list
+    // see: The night asks for a report on the first six names its page draws
     const string RequestAskedByTheNight = @"
         CREATE TABLE research_request_rebuilt (
             ticker       TEXT NOT NULL,

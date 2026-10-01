@@ -444,7 +444,45 @@ public sealed record PickRow(
     // The state the member's reported quarters gave it on its listing night, and none on a night that
     // stored no readings.
     // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
-    string? State = null);
+    string? State = null,
+    // The setup family the page listed the trade under, and the other families the stock qualified under
+    // that night, which a night the families did not draw holds none of.
+    // see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
+    string Family = EquityBrief.Core.Families.SetupFamilies.Pullback,
+    IReadOnlyList<string>? Also = null,
+    // What the plan put at risk from its fill, as the filler stored it beside the outcome.
+    double? PlannedRisk = null);
+
+// One stock under one family on a night the families drew the page's list, as the store holds it: whether
+// the page lists it, its place down the page and the other families it qualified under, or why it is held
+// back, a trade still open naming the family and the night that listed it.
+public sealed record FamilyPickRow(
+    DateOnly SessionDate,
+    string Ticker,
+    string Family,
+    string State,
+    int? Place,
+    IReadOnlyList<string> Also,
+    string? HeldFamily,
+    DateOnly? HeldNight);
+
+// One member's answer under one setup family but the pullback on a night, as the family evaluator stored
+// it: whether it passed, the gates it missed, its place among the names the family passed, the trade it is
+// bought on, and its gates with their reasons and values.
+// see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+public sealed record FamilyResultRow(
+    DateOnly SessionDate,
+    string Ticker,
+    string Family,
+    bool Passed,
+    int Missed,
+    int? Place,
+    decimal? Entry,
+    decimal? Stop,
+    decimal? Target,
+    double? OrderBy,
+    IReadOnlyList<string> Exclusions,
+    string Gates);
 
 // One member's readings of its reported quarters on a night, as the fundamental reader stored them.
 // see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone
@@ -585,6 +623,9 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
             new StoreTouch(Store.ListRule, Touch.Read),
+            new StoreTouch(Store.FamilyResult, Touch.Read),
+            new StoreTouch(Store.FamilyNight, Touch.Read),
+            new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
             new StoreTouch(Store.Fundamentals, Touch.Read),
@@ -1084,12 +1125,19 @@ public sealed class ReadApi : IComponent
         + string.Concat(RunScreen.RunsByHand.Select((_, at) => FormattableString.Invariant($" AND run_id NOT GLOB $by_hand_{at}")))
         + " ORDER BY rowid DESC LIMIT 1;";
 
+    // Whether a listing's name was on its night's list, by the rule that drew that night's list: listed
+    // by a family where the families drew it, passed by the swing filter on a night it listed before
+    // them, and fired by a reason before that.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    static readonly string WasListed = EquityBrief.Core.Families.FamilyList.OnTheList(
+        "l.ticker", "l.session_date", "CASE WHEN r.rule = 'filter' THEN IFNULL(g.passed, 0) ELSE l.fired_count > 0 END");
+
     // Every listing for one night, fired and quiet alike, because the page's own
     // header states the true fired count over the whole index and the twenty
     // drawn rows cannot tell you it.
-    const string ListingsForNight = @"
+    static readonly string ListingsForNight = @"
         SELECT l.ticker, l.session_date, l.reasons, l.fired_count, l.plan_at_listing, l.band_strength,
-               CASE WHEN r.rule = 'filter' THEN IFNULL(g.passed, 0) ELSE l.fired_count > 0 END,
+               " + WasListed + @",
                IFNULL(r.rule, 'reasons')
         FROM listing l
         LEFT JOIN list_rule r ON r.session_date = l.session_date
@@ -1107,9 +1155,9 @@ public sealed class ReadApi : IComponent
     // It is a scan of the table, and it is one scan an evening on a page nobody
     // reloads: the reasons are JSON on the row, so a count per reason cannot be
     // asked of the store.
-    const string EveryListing = @"
+    static readonly string EveryListing = @"
         SELECT l.ticker, l.session_date, l.reasons, l.fired_count, l.plan_at_listing, l.band_strength,
-               CASE WHEN r.rule = 'filter' THEN IFNULL(g.passed, 0) ELSE l.fired_count > 0 END,
+               " + WasListed + @",
                IFNULL(r.rule, 'reasons')
         FROM listing l
         LEFT JOIN list_rule r ON r.session_date = l.session_date
@@ -1119,9 +1167,9 @@ public sealed class ReadApi : IComponent
 
     // A name's own listing history, which is what the universe screen's two
     // right-hand columns count and what the listing strip draws.
-    const string ListingsForName = @"
+    static readonly string ListingsForName = @"
         SELECT l.ticker, l.session_date, l.reasons, l.fired_count, l.plan_at_listing, l.band_strength,
-               CASE WHEN r.rule = 'filter' THEN IFNULL(g.passed, 0) ELSE l.fired_count > 0 END,
+               " + WasListed + @",
                IFNULL(r.rule, 'reasons')
         FROM listing l
         LEFT JOIN list_rule r ON r.session_date = l.session_date
@@ -1165,9 +1213,14 @@ public sealed class ReadApi : IComponent
     // it listed, on the plan that night's trade gate read, with the forward return it was scored under,
     // newest first in the list's own order. The names passing and no other, so a member failing one gate
     // is not a trade the list recommended whatever plan its row carries; and a night the reasons listed
-    // holds no filter row to read. The plan is chosen as the near misses choose it.
+    // holds no filter row to read. The plan is chosen as the near misses choose it. On a night the families
+    // drew the page's list, the pullback's trades are the stocks the page listed under it, in the page's
+    // order, each with the other families it qualified under, and every other family's trades are the
+    // stocks the page listed under it, each on the trade its family's stored answer holds and the outcome
+    // scored under its family's horizon.
     // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
     static readonly string Picks = @"
         SELECT g.ticker, g.session_date,
                CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN $clear ELSE $swing END,
@@ -1182,7 +1235,14 @@ public sealed class ReadApi : IComponent
                 ORDER BY b.session_date DESC LIMIT 1),
                (SELECT b.close FROM bar b WHERE b.ticker = g.ticker AND b.session_date <= $on
                 ORDER BY b.session_date DESC LIMIT 1),
-               s.state
+               s.state,
+               $pullback,
+               (SELECT fp.also FROM family_pick fp
+                WHERE fp.session_date = g.session_date AND fp.ticker = g.ticker AND fp.family = $pullback AND fp.state = $listed),
+               f.planned_risk,
+               IFNULL(" + EquityBrief.Core.Families.FamilyList.PlaceOn("g.ticker", "g.session_date") + @", 0),
+               " + EquityBrief.Core.Quarters.FundamentalState.PlaceIn("s.state") + @",
+               g.rank
         FROM gate_result g
         JOIN list_rule r ON r.session_date = g.session_date AND r.rule = $filter
         LEFT JOIN filter_version v ON v.version = g.version
@@ -1190,8 +1250,41 @@ public sealed class ReadApi : IComponent
             ON f.ticker = g.ticker AND f.session_date = g.session_date
             AND f.horizon = CASE json_extract(v.settings, '$.trade') WHEN $clearPlan THEN $clear ELSE $swing END
         LEFT JOIN fundamental_reading s ON s.ticker = g.ticker AND s.session_date = g.session_date
-        WHERE g.passed = 1 AND g.session_date <= $on AND ($ticker IS NULL OR g.ticker = $ticker)
-        ORDER BY g.session_date DESC, " + EquityBrief.Core.Quarters.FundamentalState.PlaceIn("s.state") + @", g.rank, g.ticker;
+        WHERE g.session_date <= $on AND ($ticker IS NULL OR g.ticker = $ticker)
+          AND CASE WHEN " + EquityBrief.Core.Families.FamilyList.HasPicks("g.session_date") + @"
+                   THEN EXISTS (SELECT 1 FROM family_pick fp
+                                WHERE fp.session_date = g.session_date AND fp.ticker = g.ticker AND fp.family = $pullback AND fp.state = $listed)
+                   ELSE g.passed = 1 END
+        UNION ALL
+        SELECT p.ticker, p.session_date,
+               " + EquityBrief.Core.Families.SetupFamilies.HorizonIn("p.family", "pv.settings") + @",
+               pr.entry, pr.stop, pr.target,
+               pf.horizon IS NOT NULL, pf.outcome, pf.resolved_on, pf.return_pct, pf.break_even,
+               (SELECT m.name FROM membership m WHERE m.ticker = p.ticker
+                ORDER BY m.observed_at DESC, m.rowid DESC LIMIT 1),
+               (SELECT b.close FROM bar b WHERE b.ticker = p.ticker AND b.session_date = p.session_date),
+               (SELECT b.session_date FROM bar b WHERE b.ticker = p.ticker AND b.session_date <= $on
+                ORDER BY b.session_date DESC LIMIT 1),
+               (SELECT b.close FROM bar b WHERE b.ticker = p.ticker AND b.session_date <= $on
+                ORDER BY b.session_date DESC LIMIT 1),
+               ps.state,
+               p.family,
+               p.also,
+               pf.planned_risk,
+               IFNULL(p.place, 0),
+               0,
+               0
+        FROM family_pick p
+        JOIN family_result pr ON pr.session_date = p.session_date AND pr.ticker = p.ticker AND pr.family = p.family
+        LEFT JOIN gate_result pg ON pg.ticker = p.ticker AND pg.session_date = p.session_date
+        LEFT JOIN filter_version pv ON pv.version = pg.version
+        LEFT JOIN forward_return pf
+            ON pf.ticker = p.ticker AND pf.session_date = p.session_date
+            AND pf.horizon = " + EquityBrief.Core.Families.SetupFamilies.HorizonIn("p.family", "pv.settings") + @"
+        LEFT JOIN fundamental_reading ps ON ps.ticker = p.ticker AND ps.session_date = p.session_date
+        WHERE p.state = $listed AND p.family <> $pullback
+          AND p.session_date <= $on AND ($ticker IS NULL OR p.ticker = $ticker)
+        ORDER BY 2 DESC, 20, 21, 22, 1;
     ";
 
     // Every member's readings on one night.
@@ -2769,6 +2862,8 @@ public sealed class ReadApi : IComponent
         command.Parameters.AddWithValue("$clearPlan", EquityBrief.Core.Filter.FilterSettings.ClearWord);
         command.Parameters.AddWithValue("$clear", EquityBrief.Core.Returns.ForwardReturnSeries.Clear);
         command.Parameters.AddWithValue("$swing", EquityBrief.Core.Returns.ForwardReturnSeries.Swing);
+        command.Parameters.AddWithValue("$pullback", EquityBrief.Core.Families.SetupFamilies.Pullback);
+        command.Parameters.AddWithValue("$listed", EquityBrief.Core.Families.FamilyList.Listed);
 
         var rows = new List<PickRow>();
 
@@ -2796,7 +2891,110 @@ public sealed class ReadApi : IComponent
                 Price(12),
                 Day(13),
                 Price(14),
-                reader.IsDBNull(15) ? null : reader.GetString(15)));
+                reader.IsDBNull(15) ? null : reader.GetString(15),
+                reader.GetString(16),
+                reader.IsDBNull(17) ? [] : System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(17)) ?? [],
+                reader.IsDBNull(18) ? null : reader.GetDouble(18)));
+        }
+
+        return rows;
+    }
+
+    const string FamilyNightOn = "SELECT families FROM family_night WHERE session_date = $on;";
+
+    // The families on the page on a night they drew its list, in the page's order, and nothing on a night
+    // they did not draw, which is every night before them.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    public async Task<IReadOnlyList<string>?> FamilyNightAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FamilyNightOn;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        return await command.ExecuteScalarAsync() is string families
+            ? System.Text.Json.JsonSerializer.Deserialize<string[]>(families) ?? []
+            : null;
+    }
+
+    const string FamilyPicksOn = @"
+        SELECT session_date, ticker, family, state, place, also, held_family, held_night
+        FROM family_pick
+        WHERE session_date = $on
+        ORDER BY place IS NULL, place, family, ticker;
+    ";
+
+    // The page's list on a night the families drew it: every stock a family passed, listed or held back,
+    // the listed ones first in the page's order. A night the families did not draw holds none.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    public async Task<IReadOnlyList<FamilyPickRow>> FamilyPicksAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FamilyPicksOn;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<FamilyPickRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new FamilyPickRow(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetString(3),
+                reader.IsDBNull(4) ? null : reader.GetInt32(4),
+                System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(5)) ?? [],
+                reader.IsDBNull(6) ? null : reader.GetString(6),
+                reader.IsDBNull(7) ? null : DateOnly.ParseExact(reader.GetString(7), "yyyy-MM-dd", CultureInfo.InvariantCulture)));
+        }
+
+        return rows;
+    }
+
+    const string FamilyResultsOn = @"
+        SELECT session_date, ticker, family, passed, missed, place, entry, stop, target, order_by, exclusions, gates
+        FROM family_result
+        WHERE session_date = $on
+        ORDER BY family, place IS NULL, place, ticker;
+    ";
+
+    // Every member's answer under each setup family but the pullback on one night, a family at a time and
+    // the names it passed first in its own order. A night the family evaluator did not run for holds none.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    public async Task<IReadOnlyList<FamilyResultRow>> FamilyResultsAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FamilyResultsOn;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<FamilyResultRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        decimal? Price(int at) => reader.IsDBNull(at) ? null : Money.FromStorage(reader.GetString(at));
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new FamilyResultRow(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(1),
+                reader.GetString(2),
+                reader.GetInt64(3) == 1,
+                reader.GetInt32(4),
+                reader.IsDBNull(5) ? null : reader.GetInt32(5),
+                Price(6),
+                Price(7),
+                Price(8),
+                reader.IsDBNull(9) ? null : reader.GetDouble(9),
+                System.Text.Json.JsonSerializer.Deserialize<string[]>(reader.GetString(10)) ?? [],
+                reader.GetString(11)));
         }
 
         return rows;

@@ -665,7 +665,7 @@ internal static class Scope
             Verdict.Pass,
             "each gate reading an absent value fails with the reason it is absent and none passes on an absence, over constructed members and the fixture's member the night read nothing for",
             ByExpectations),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are the pullback family's, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it); then evaluate every member under each other setup family, on the market check the filter stored, storing every answer with the values that decided it (see: The market check closes every family's list together); then draw the page's list from what each setup family passed, the families in the page's order and each family's names in its own, at most five a family, a stock once and none whose trade from any family is still open, and record the session as one the families drew (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order).")] = new Scoped(
             Verdict.Pass,
             "the night runs the step after the listings and before the facts, writes a row for every member, and records its session as listed by the swing filter",
             ByNight),
@@ -1742,6 +1742,207 @@ internal static class Scope
         [CheckReach.Key(FailureTable, "Both lists on tonight's page empty on a night the swing filter listed")] = new Scoped(
             Verdict.Pass, "the second list's line drawn where its rows are empty, beside the list's own line on a night no name passed", ByReadSurface),
 
+        // 13.1, the family framework: the lister's catalogue and matrix rows, its two stores, section 17's five a
+        // family, section 18's three rows, and the card tonight's page draws a family, read as the parts its
+        // row enumerates. The two parts and the row that need a second family on the page are due with it.
+        [CheckReach.Key(CatalogueTable, "Family lister")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the bars, gate results, filter versions, fundamental readings, list rules and forward returns it reads and the family nights and family picks it reads, inserts and deletes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Family lister")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Family nights")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Family picks")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Names a family lists")] = new Scoped(
+            Verdict.Pass,
+            "over three constructed families worked by hand, a family lists its first five that hold no open trade and are on no earlier card, a family passing exactly five lists all five, the sixth is held back and may be listed by a later family, and over a constructed night the lister stores the first of those the family passed and names the ones past them; the count is read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key("15.7 Tonight", "A family's card, one card a family in the page's order")] = new Scoped(
+            Verdict.Pass, "over a constructed night the lister drew, the card read off the page with its place of how many, in place of the one list and of Still open, and an earlier night drawn as it was listed", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, the family's rule in a sentence")] = new Scoped(
+            Verdict.Pass, "the card's heading and its rule's sentence read off the page against the family's own words", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, the day its rule went live or the words saying it is provisional")] = new Scoped(
+            Verdict.Pass, "the day the family's live candidate was registered read off the card over a constructed register, and the ruling's words where no registration stands", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, how many it lists tonight with how many variants are scored beside it")] = new Scoped(
+            Verdict.Pass, "five picks and the two variants standing of three registered, one retired, read off the card's line", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, its place down the page")] = new Scoped(
+            Verdict.Pass, "each row's place read off the card against the stored list's places, in both directions", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, the stock with a label for each other family it qualified under")] = new Scoped(
+            Verdict.Pass, "a stock two families passed drawn once on the earlier card with the other's label, read off the page", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, the state its reported quarters give it")] = new Scoped(
+            Verdict.Pass, "the state the night read drawn in the row's cell, and a row whose business was not read saying so", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, the buy and the stop and the target")] = new Scoped(
+            Verdict.Pass, "the three prices of the plan the night's trade gate read, read off the row against the stored gate row", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, where the buy sits between the stop and the target")] = new Scoped(
+            Verdict.Pass, "the mark's place worked by hand, 4 of the 14 from the stop to the target, read off the row", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, the reward to risk")] = new Scoped(
+            Verdict.Pass, "the figure the trade gate stored read off each row to the hundredth", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, why it is listed tonight in the figures its family stored")] = new Scoped(
+            Verdict.Pass, "the sentence read whole off the row against the depth, the band's edges, the dry-up and the trigger's session its gates stored, and a row whose gates stored none saying only what they stored", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, the positive and negative stories of the thirty days before")] = new Scoped(
+            Verdict.Pass, "two positive and one negative labelled stories read off the row's cell, and a row holding no label saying so", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, a note for each stock it passed that a trade still open holds back")] = new Scoped(
+            Verdict.Pass, "the note naming the stock and the night its open trade was listed on read off the card, with no row drawn for it", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, a note for each stock the page lists under an earlier family")] = new Scoped(
+            Verdict.Pass, "the note under the later family's card naming the card that draws the stock, read off the page", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, a note counting the stocks past its five")] = new Scoped(
+            Verdict.Pass, "the note counting the two past the five and naming them read off the card", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, a line saying why where it lists none")] = new Scoped(
+            Verdict.Pass, "a night the market check closed drawing the line with the breadth and its floor, and a night no stock passed the line with how many reached each gate, each read whole off the card", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "A family's card, a key saying how to read it")] = new Scoped(
+            Verdict.Pass, "the key's sentence the code holds read off the page", ByReadSurface),
+        [CheckReach.Key(FailureTable, "A stock a family passes while a trade for it is still open")] = new Scoped(
+            Verdict.Pass, "over a constructed night the stock stored as held back with the family and the night that listed its open trade, the card's note saying so and no row drawn for it; a stop's night still holding the stock and a name past five holding none", ByReadSurface),
+        [CheckReach.Key(FailureTable, "A stock two families pass on one night")] = new Scoped(
+            Verdict.Pass, "a stock two families passed stored as listed under the earlier and under another for the later, drawn once with the other's label and named in the later card's note", ByReadSurface),
+        [CheckReach.Key(FailureTable, "A night the families list no stock")] = new Scoped(
+            Verdict.Pass, "the session recorded as one the families drew with no listed row, the night asking for no report, and the card drawn with why it lists none", ByReadSurface),
+
+        // 13.2, breakouts: the family evaluator's catalogue and matrix rows, its store, section 17's rows for the
+        // breakout's settings and section 18's two rows.
+        [CheckReach.Key(CatalogueTable, "Family evaluator")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, bars, indicators, levels, earnings reactions, swing readings, filter versions and gate results it reads and the family results it reads, inserts and deletes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Family evaluator")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Family results")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Breakout high window")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed year worked by hand, a close a cent above the highest high of the sessions before passes, one at that high and one a cent beneath do not, and a member one session short reads not available with the count it holds",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Breakout volume multiple")] = new Scoped(
+            Verdict.Pass,
+            "over constructed volumes against a stored average, the volume at the multiple passes, one share under it does not and one over it does, and the names passing are ordered by the multiple, largest first, with the ticker where two tie",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Breakout range window")] = new Scoped(
+            Verdict.Pass,
+            "over constructed sessions the mean daily range of each window is worked by hand as a share of the close, and a member holding a session too few for both windows reads not available with the count it holds",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Breakout range ceiling")] = new Scoped(
+            Verdict.Pass,
+            "the newer window's ranges equal to the older's pass at the ceiling, and ranges a hundredth wider do not, each with the ratio the gate stored",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Breakout stop")] = new Scoped(
+            Verdict.Pass,
+            "the stop placed by hand beneath the close from a stored typical move, and over constructed closes the stop raised with a new high close, held where a later close is lower, a close at it not selling and a close under it selling, with the result in multiples of the risk",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Breakout session cap")] = new Scoped(
+            Verdict.Pass,
+            "a constructed trade never under its stop ends at its last session as unresolved with what it made, one a session short of its last is not yet matured, and over a constructed store the filler writes the same",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A member holding too few sessions for a breakout to be read")] = new Scoped(
+            Verdict.Pass,
+            "a member one session short of the year stored as not passed, one gate short, with the reason naming the count it holds, and a member holding no bar for the night stored the same way",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A breakout with no typical move to place its stop by")] = new Scoped(
+            Verdict.Pass,
+            "a member passing every other gate on a night storing no typical move is not passed and stores no stop, and a stored trade whose night's raw close sits under its stop is counted as not scorable and given no outcome row",
+            ByExpectations),
+
+        // 13.3, the earnings drift: section 17's rows for its settings and section 18's two rows.
+        [CheckReach.Key(LimitsTable, "Drift window")] = new Scoped(
+            Verdict.Pass,
+            "over constructed prints worked by hand, a reaction on the night itself and one at the window's last session pass, one a session past it does not and every later gate then reads no print, and over a constructed store a print reported after the close is read on the next session",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Drift reaction")] = new Scoped(
+            Verdict.Pass,
+            "the reaction's rise against the typical move of the session before is worked by hand at the floor and either side of it, and a surprise a hundredth above zero passes while one of zero and a miss do not",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Drift volume multiple")] = new Scoped(
+            Verdict.Pass,
+            "over constructed volumes against a stored average, the reaction's volume at the multiple passes, a share under it does not and a share over it does",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Drift target")] = new Scoped(
+            Verdict.Pass,
+            "the stop at the reaction's low and the target worked by hand: a band at the stated distance and nearer than the multiple of the risk is the target, one a cent short of the distance is not, a band at the multiple is no nearer, and with no band or no typical move the target is the multiple, each with the reward to risk the gate stored",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Drift session cap")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store the filler ends a trade at neither its target nor its stop on its last session as unresolved with what it made, leaves a later close past it unread, and leaves a trade a session short of it not yet matured",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A print whose actual the calendar does not carry yet")] = new Scoped(
+            Verdict.Pass,
+            "a print stored with no actual reads no surprise, its member is stored as not passed with the beat as the gate it missed and the reason naming the print, by hand and over a constructed store",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A reaction session the stored bars do not reach")] = new Scoped(
+            Verdict.Pass,
+            "a print whose reaction session is not among the member's sessions, and one with no close before it, read not available with the session named, and a member with no stored print passes nothing",
+            ByExpectations),
+
+        // 13.4, the sector leaders: section 17's rows for its settings and section 18's two rows.
+        [CheckReach.Key(LimitsTable, "Leader sectors")] = new Scoped(
+            Verdict.Pass,
+            "over constructed sectors worked by hand, each ranked on its members' median return with a tie broken by the sector's name, the first in the third sector a leader and the first in the fourth not, and the names passing ordered by the sector's rank and then the return",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Leader share")] = new Scoped(
+            Verdict.Pass,
+            "the top quarter worked at its boundary over a sector of eight and a sector of five, the member just inside it passing and the next not, with a tie on the boundary decided by the ticker",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Sector ranking floor")] = new Scoped(
+            Verdict.Pass,
+            "a constructed sector a member short of the floor is given no rank whatever its median, the sectors ranked are counted without it, and its members pass nothing",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A member the membership names no sector for")] = new Scoped(
+            Verdict.Pass,
+            "a member with no sector stands in no sector's median, its sector gate does not pass and says so, by hand and over a constructed store",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A sector too small to rank")] = new Scoped(
+            Verdict.Pass,
+            "the members of a sector a member short of the floor are stored as not passed, each saying how many members with a return the sector holds against the floor",
+            ByExpectations),
+
+        // 13.5, the pages around the setup families, each read off the rendered page over a constructed night.
+        [CheckReach.Key("15.7 Tonight", "The market line, whether the market check left the lists open with the breadth and its floor")] = new Scoped(
+            Verdict.Pass, "the line's words and both figures read off the page on an open night and on a night the check closed, against the stored market reading and the floor the gates stored", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The market line, the buy points the page lists and how many setups list one")] = new Scoped(
+            Verdict.Pass, "the count of buy points read off the line against the listed rows the store holds, with how many of the page's setups list one", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The market line, the stocks close to a buy point")] = new Scoped(
+            Verdict.Pass, "the count on the line equal to the rows of the shared list beneath, worked by hand over the constructed night", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The market line, the trades still open linking to Past picks")] = new Scoped(
+            Verdict.Pass, "the one earlier trade still open counted, the trades listed on the night itself and a trade finished before it left out, and the link to Past picks' open trades read off the line", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, one row a stock and setup with the setup's label")] = new Scoped(
+            Verdict.Pass, "the rows read off the page in the page's order of setups with each one's label, against the members each setup stored as a single gate short, in both directions", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, the one gate it missed in the gate's words")] = new Scoped(
+            Verdict.Pass, "the gate named on each row and its stored reason read off the row's cell", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, the count shown of the count there are")] = new Scoped(
+            Verdict.Pass, "the line above the rows stating the rows shown of the rows there are read off the page", ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The setup the page lists the name under, the setup that lists it with its place and the other setups it qualified under")] = new Scoped(
+            Verdict.Pass, "the sentence read whole off a name the pullback lists that also qualified as a breakout and off a name the breakout lists, each with its place, and a name no setup passed drawing none", ByReadSurface),
+        [CheckReach.Key("15.9 Name", "The setup the page lists the name under, a sentence for a setup that passed it and holds it back")] = new Scoped(
+            Verdict.Pass, "the sentence naming the setup and the night the open trade was listed on read whole off the page of a name held back", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, one row a setup in the page's order")] = new Scoped(
+            Verdict.Pass, "the rows read off the run page against the page's own order of setups", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, live with the day its rule was registered or provisional")] = new Scoped(
+            Verdict.Pass, "the registered setup's row read with the day its candidate was registered and the unregistered setup's row read as provisional", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, the variants scored beside it")] = new Scoped(
+            Verdict.Pass, "the variants standing of those registered read off the registered setup's row, and none on the provisional one's", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, what it lists on the night and the trades listed under it so far")] = new Scoped(
+            Verdict.Pass, "each row's listed count and its trades, open and finished, worked by hand over the constructed store and read off the row", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, its record against what it waits for or the words saying it starts at the freeze")] = new Scoped(
+            Verdict.Pass, "the registered setup's decided trades against the minimums read off its row, and the ruling's words on the provisional setup's", ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "The setup filter, one chip a setup with its trades and the counts following the setup chosen")] = new Scoped(
+            Verdict.Pass, "the chips and their counts read off the page, the filter keeping exactly the setup's trades against the store's listed rows, and the status chips keeping the setup chosen", ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "The setup a trade was listed under, a label on its row")] = new Scoped(
+            Verdict.Pass, "the label read off a pullback's row and off a breakout's", ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "A trailing trade, drawn with no target and its result in multiples of its risk")] = new Scoped(
+            Verdict.Pass, "a trailing trade sold at its stop read off its row with no target, the word saying so on its line, and its result worked by hand from what it made over what it risked", ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "A provisional setup's trades, marked and counted in no share")] = new Scoped(
+            Verdict.Pass, "the provisional mark on each of the unregistered setup's rows, the line counting them, and none on the registered setup's filtered page", ByReadSurface),
+
         // 12.6's correction drawing the news: the name page's region, read off the rendered page over a constructed store.
         [CheckReach.Key("15.7 Tonight", "The list, the positive and negative stories of the thirty days before the night as the name page's bar counts them")] = new Scoped(
             Verdict.Pass,
@@ -2277,9 +2478,9 @@ internal static class Scope
             "the night runs the queue after the close has recorded the arithmetic's counts and before its own request, on its own output and on the run log's own order, and states the queue's local model calls apart from the arithmetic's none; over a copy of the fixture's night whose readings are stored the queue takes the names the filter passed improving first, the ones reading no state next in the filter's order and deteriorating last, whatever their ranks; and over another copy it takes the list's name first, then the two one gate short nearer first against their tickers' order, then the member missing two",
             ByNight),
         // 11.4, the night's own request, after the queue.
-        [CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, improving businesses first where the night stored its readings, one request marked as asked by the night unless that name has one outstanding or being written and none on a night no name passed, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first six names the page draws, in the page's order across every family, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws).")] = new Scoped(
             Verdict.Pass,
-            "over the fixture's night, on which no member passes the swing filter, the night asks for no report, starts no drain, runs after the queue with no model call and no request, and its row says why; over a constructed night it asks for the first name the filter passed in its order and no other, worked out by the test's own arithmetic off the gate rows rather than the stored rank, marked as asked by the night; where that night stored its readings it asks for the improving business the filter ranked below a deteriorating one, and on the same night holding no reading for the filter's first; a name with a request waiting gets none and the row says so, and a night run again for an earlier session asks for none",
+            "over the fixture's night, on which no family passes a stock, the night asks for no report, starts no drain, runs after the queue with no model call and no request, and its row says why; over a constructed night the families drew, seven listed across two cards with one held back and one past five, it asks for the first six places in the page's order and no other, each marked as asked by the night; over a night before the families it asks down the swing filter's order, worked out by the test's own arithmetic off the gate rows rather than the stored rank, the improving business first where that night stored its readings; a name with a request waiting gets none, the next is asked for and the row says so, and a night run again for an earlier session asks for none",
             ByNight),
         [CheckReach.Key(LimitsTable, "Reports the night asks for")] = new Scoped(
             Verdict.Pass,
@@ -3404,6 +3605,11 @@ internal static class Scope
         // 12.6's correction, the news labeller's two stores; the labeller itself derives from the plan.
         ["News articles"] = "12.6",
         ["News labels"] = "12.6",
+        // 13.1's two, the sessions the families drew and the page's list they drew.
+        ["Family nights"] = "13.1",
+        ["Family picks"] = "13.1",
+        // 13.2's, every member's answer under each family but the pullback.
+        ["Family results"] = "13.2",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -3687,6 +3893,45 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "Close to a buy point, the trade its plan states")] = "12.7",
         [CheckReach.Key("15.7 Tonight", "Close to a buy point, one line above the rows stated once saying they would qualify if the market turned")] = "12.7",
         [CheckReach.Key("15.7 Tonight", "Close to a buy point, a key saying it recommends nothing")] = "12.7",
+
+        // 13.1, a family's card. The label and the note a second family brings are drawn once breakouts land.
+        [CheckReach.Key("15.7 Tonight", "A family's card, one card a family in the page's order")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, the family's rule in a sentence")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, the day its rule went live or the words saying it is provisional")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, how many it lists tonight with how many variants are scored beside it")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, its place down the page")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, the stock with a label for each other family it qualified under")] = "13.2",
+        [CheckReach.Key("15.7 Tonight", "A family's card, the state its reported quarters give it")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, the buy and the stop and the target")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, where the buy sits between the stop and the target")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, the reward to risk")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, why it is listed tonight in the figures its family stored")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, the positive and negative stories of the thirty days before")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, a note for each stock it passed that a trade still open holds back")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, a note for each stock the page lists under an earlier family")] = "13.2",
+        [CheckReach.Key("15.7 Tonight", "A family's card, a note counting the stocks past its five")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, a line saying why where it lists none")] = "13.1",
+        [CheckReach.Key("15.7 Tonight", "A family's card, a key saying how to read it")] = "13.1",
+
+        // 13.5, the pages around the setup families.
+        [CheckReach.Key("15.7 Tonight", "The market line, whether the market check left the lists open with the breadth and its floor")] = "13.5",
+        [CheckReach.Key("15.7 Tonight", "The market line, the buy points the page lists and how many setups list one")] = "13.5",
+        [CheckReach.Key("15.7 Tonight", "The market line, the stocks close to a buy point")] = "13.5",
+        [CheckReach.Key("15.7 Tonight", "The market line, the trades still open linking to Past picks")] = "13.5",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, one row a stock and setup with the setup's label")] = "13.5",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, the one gate it missed in the gate's words")] = "13.5",
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups, the count shown of the count there are")] = "13.5",
+        [CheckReach.Key("15.9 Name", "The setup the page lists the name under, the setup that lists it with its place and the other setups it qualified under")] = "13.5",
+        [CheckReach.Key("15.9 Name", "The setup the page lists the name under, a sentence for a setup that passed it and holds it back")] = "13.5",
+        [CheckReach.Key("15.10 Run", "The setup families, one row a setup in the page's order")] = "13.5",
+        [CheckReach.Key("15.10 Run", "The setup families, live with the day its rule was registered or provisional")] = "13.5",
+        [CheckReach.Key("15.10 Run", "The setup families, the variants scored beside it")] = "13.5",
+        [CheckReach.Key("15.10 Run", "The setup families, what it lists on the night and the trades listed under it so far")] = "13.5",
+        [CheckReach.Key("15.10 Run", "The setup families, its record against what it waits for or the words saying it starts at the freeze")] = "13.5",
+        [CheckReach.Key("15.17 Past picks", "The setup filter, one chip a setup with its trades and the counts following the setup chosen")] = "13.5",
+        [CheckReach.Key("15.17 Past picks", "The setup a trade was listed under, a label on its row")] = "13.5",
+        [CheckReach.Key("15.17 Past picks", "A trailing trade, drawn with no target and its result in multiples of its risk")] = "13.5",
+        [CheckReach.Key("15.17 Past picks", "A provisional setup's trades, marked and counted in no share")] = "13.5",
         [CheckReach.Key("15.7 Tonight", "Still open, one row per stock that passed every gate on the night with nothing excluding it but an open trade while a trade the live list recommended for it on an earlier night is still open on this one")] = "12.2",
         [CheckReach.Key("15.7 Tonight", "Still open, the night that trade was listed on")] = "12.2",
         [CheckReach.Key("15.7 Tonight", "Still open, the trade line")] = "12.2",
@@ -3961,6 +4206,70 @@ internal static class Scope
             "once the rule reaches the filter the stock is excluded there and drawn here alone",
             "a line where there is none",
             "a key saying it is not a new trade",
+        ],
+        // 13.1. A family's card on tonight's page, as the parts its row enumerates and states.
+        [CheckReach.Key("15.7 Tonight", "A family's card")] =
+        [
+            "one card a family in the page's order",
+            "the family's rule in a sentence",
+            "the day its rule went live or the words saying it is provisional",
+            "how many it lists tonight with how many variants are scored beside it",
+            "its place down the page",
+            "the stock with a label for each other family it qualified under",
+            "the state its reported quarters give it",
+            "the buy and the stop and the target",
+            "where the buy sits between the stop and the target",
+            "the reward to risk",
+            "why it is listed tonight in the figures its family stored",
+            "the positive and negative stories of the thirty days before",
+            "a note for each stock it passed that a trade still open holds back",
+            "a note for each stock the page lists under an earlier family",
+            "a note counting the stocks past its five",
+            "a line saying why where it lists none",
+            "a key saying how to read it",
+        ],
+        // 13.5. The pages around the setup families, each row as the parts it enumerates and states.
+        [CheckReach.Key("15.7 Tonight", "The market line")] =
+        [
+            "whether the market check left the lists open with the breadth and its floor",
+            "the buy points the page lists and how many setups list one",
+            "the stocks close to a buy point",
+            "the trades still open linking to Past picks",
+        ],
+        [CheckReach.Key("15.7 Tonight", "Close to a buy point across the setups")] =
+        [
+            "one row a stock and setup with the setup's label",
+            "the one gate it missed in the gate's words",
+            "the count shown of the count there are",
+        ],
+        [CheckReach.Key("15.9 Name", "The setup the page lists the name under")] =
+        [
+            "the setup that lists it with its place and the other setups it qualified under",
+            "a sentence for a setup that passed it and holds it back",
+        ],
+        [CheckReach.Key("15.10 Run", "The setup families")] =
+        [
+            "one row a setup in the page's order",
+            "live with the day its rule was registered or provisional",
+            "the variants scored beside it",
+            "what it lists on the night and the trades listed under it so far",
+            "its record against what it waits for or the words saying it starts at the freeze",
+        ],
+        [CheckReach.Key("15.17 Past picks", "The setup filter")] =
+        [
+            "one chip a setup with its trades and the counts following the setup chosen",
+        ],
+        [CheckReach.Key("15.17 Past picks", "The setup a trade was listed under")] =
+        [
+            "a label on its row",
+        ],
+        [CheckReach.Key("15.17 Past picks", "A trailing trade")] =
+        [
+            "drawn with no target and its result in multiples of its risk",
+        ],
+        [CheckReach.Key("15.17 Past picks", "A provisional setup's trades")] =
+        [
+            "marked and counted in no share",
         ],
         [CheckReach.Key("15.17 Past picks", "How the list's picks have done")] =
         [
@@ -4468,6 +4777,15 @@ internal static class Scope
         ["A peak window of the news profile opens while the labeller runs"] = "12.6",
         ["An article refused by admissibility"] = "12.6",
         ["The labeller fails"] = "12.6",
+        // 13.1, the family framework. The row about two families is read on the page once a second family is on it.
+        ["A stock a family passes while a trade for it is still open"] = "13.1",
+        ["A stock two families pass on one night"] = "13.2",
+        ["A night the families list no stock"] = "13.1",
+        // 13.2, breakouts.
+        ["A member holding too few sessions for a breakout to be read"] = "13.2",
+        ["A breakout with no typical move to place its stop by"] = "13.2",
+        // 13.3, the earnings drift. Its row about a reaction session the bars do not reach derives from the plan.
+        ["A print whose actual the calendar does not carry yet"] = "13.3",
         // The sweep, a 12.5 correction, and its rerun.
         ["A chunk of the sweep fails twice"] = "12.5",
         ["The point-in-time check finds a difference"] = "12.5",
@@ -4549,6 +4867,25 @@ internal static class Scope
         ["News labeller month limit"] = "12.6",
         ["Unreadable answers for a digit"] = "12.6",
         ["News article retention"] = "12.6",
+        // The family framework, 13.1.
+        ["Names a family lists"] = "13.1",
+        // The breakout's settings, 13.2.
+        ["Breakout high window"] = "13.2",
+        ["Breakout volume multiple"] = "13.2",
+        ["Breakout range window"] = "13.2",
+        ["Breakout range ceiling"] = "13.2",
+        ["Breakout stop"] = "13.2",
+        ["Breakout session cap"] = "13.2",
+        // The earnings drift's settings, 13.3.
+        ["Drift window"] = "13.3",
+        ["Drift reaction"] = "13.3",
+        ["Drift volume multiple"] = "13.3",
+        ["Drift target"] = "13.3",
+        ["Drift session cap"] = "13.3",
+        // The sector leaders' settings, 13.4.
+        ["Leader sectors"] = "13.4",
+        ["Leader share"] = "13.4",
+        ["Sector ranking floor"] = "13.4",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",
@@ -4602,7 +4939,7 @@ internal static class Scope
         ["Count the ordinary nights stored under the open filter version"] = "12.4",
         ["Evaluate the list reasons"] = "5.4",
         ["Run the overnight queue"] = "6.10",
-        ["Ask for a report on the first name"] = "11.4",
+        ["Ask for a report on the first six names"] = "11.4",
         // 12.6's correction, the news labeller the night starts after its request.
         ["Start the news labeller"] = "12.6",
         ["Write the facts file"] = "5.3",

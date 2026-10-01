@@ -97,6 +97,15 @@ public partial class NightlyRun
             StoreRows(store, "SELECT ticker, state FROM fundamental_reading WHERE session_date = '2026-09-08' ORDER BY ticker;"));
 
         var clock = FixedClock.At(Night, SessionZones.UnitedStates);
+
+        // The page's list is drawn again over the rows as changed, as the night's own step draws it, and
+        // it lists the four under the pullback family in that order, which the queue then follows.
+        await new EquityBrief.Worker.Families.FamilyLister(clock, store.DatabaseFile).RunAsync("state-first-list");
+
+        Assert.Equal(
+            [["MSFT", "1"], ["NFLX", "2"], ["AAPL", "3"], ["KEYS", "4"]],
+            StoreRows(store, "SELECT ticker, place FROM family_pick WHERE session_date = '2026-09-08' AND state = 'listed' ORDER BY place;"));
+
         var queue = await new OvernightQueue(
             new StalenessJudge(clock, store.DatabaseFile),
             sections => new ProseWriter(new FixtureExpectations.NothingAnsweringLocal(), new LocalModelSettings(null, null, null, null, null), sections, clock, store.DatabaseFile),
@@ -115,10 +124,10 @@ public partial class NightlyRun
     public async Task TheNightAsksForTheFirstImprovingBusinessWhereItStoredItsReadingsAndTheFiltersFirstOnANightItStoredNone()
     {
         // The replay's night with MSFT's trade passing first and AAPL's second, as the filter's order gives
-        // them. Where the night stored AAPL improving and MSFT deteriorating the night asks for AAPL, the
-        // first its list draws; the same night holding no reading, as a night before the readings existed
-        // holds none, asks for MSFT, the filter's first.
-        foreach (var (stored, first) in new[] { (true, "AAPL"), (false, "MSFT") })
+        // them. Where the night stored AAPL improving and MSFT deteriorating the night asks for AAPL first,
+        // the first its list draws, and MSFT after it; the same night holding no reading, as a night before
+        // the readings existed holds none, asks for MSFT first, the filter's first, and AAPL after it.
+        foreach (var (stored, first, second) in new[] { (true, "AAPL", "MSFT"), (false, "MSFT", "AAPL") })
         {
             using var store = await FixtureReplay.ReplayedAsync();
 
@@ -140,8 +149,8 @@ public partial class NightlyRun
                 DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 FixedClock.At(new DateTimeOffset(2026, 9, 8, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates));
 
-            Assert.Equal([first], ask.Asked);
-            Assert.Equal($"{first} is first on the list, and a report on it was asked for", ask.Line);
+            Assert.Equal([first, second], ask.Asked);
+            Assert.Equal($"{first} is first on the list, and a report on it was asked for; {second} is number 2 on the list, and a report on it was asked for", ask.Line);
         }
     }
 }

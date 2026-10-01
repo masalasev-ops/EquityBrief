@@ -69,6 +69,13 @@ public partial class ReadSurface
             // 12.7's correction, close to a buy point beneath tonight's list.
             .. CloseToABuyPointClaims,
 
+            // 13.1, a family's card on tonight's page, and the parts a second family brings.
+            .. FamilyCardClaims,
+            .. TwoFamilyClaims,
+
+            // 13.5, the pages around the setup families.
+            .. FamilyPagesClaims,
+
             // 12.6's correction, the model profiles: the checklist's two items and section 17's rows they read,
             // and the half of section 18's row about a key the secrets file does not hold that the run page draws.
             .. ProfileSurfaceClaims,

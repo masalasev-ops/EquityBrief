@@ -174,6 +174,18 @@ public partial class FixtureExpectations
             CheckReach.Key(Scope.FailureTable, "A peak window of the news profile opens while the labeller runs"),
             CheckReach.Key(Scope.FailureTable, "An article refused by admissibility"),
             CheckReach.Key(Scope.FailureTable, "The labeller fails"),
+
+            // 13.1, the family framework: section 17's five a family.
+            CheckReach.Key(Scope.LimitsTable, "Names a family lists"),
+
+            // 13.2, breakouts: section 17's rows for the family's settings and section 18's two rows.
+            .. BreakoutClaims,
+
+            // 13.3, the earnings drift: section 17's rows for its settings and section 18's two rows.
+            .. DriftClaims,
+
+            // 13.4, the sector leaders: section 17's rows for its settings and section 18's two rows.
+            .. LeaderClaims,
             CheckReach.Key(Scope.FixtureTable, "reported quarters"),
 
             // 11.5, the floor a name's industry has to reach before it is the name's group.

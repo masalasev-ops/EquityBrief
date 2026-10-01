@@ -110,6 +110,14 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "News labeller"),
             CheckReach.Key(Scope.MatrixTable, "News labeller"),
 
+            // 13.1, the family lister.
+            CheckReach.Key(Scope.CatalogueTable, "Family lister"),
+            CheckReach.Key(Scope.MatrixTable, "Family lister"),
+
+            // 13.2, the family evaluator.
+            CheckReach.Key(Scope.CatalogueTable, "Family evaluator"),
+            CheckReach.Key(Scope.MatrixTable, "Family evaluator"),
+
             // 5.4, tonight's list.
             CheckReach.Key(Scope.CatalogueTable, "Shortlist builder"),
             CheckReach.Key(Scope.MatrixTable, "Shortlist builder"),

@@ -796,7 +796,7 @@ static async Task<int> NightlyRun(string[] args)
     // The night's own request starts the worker's drain as a press does, from a copy of the build
     // this night runs from, in the checkout it runs in. A night run again for a session the
     // operator named asks for no report, since its list is not tonight's.
-    // see: The night asks for a report on the first name of its list
+    // see: The night asks for a report on the first six names its page draws
     var launcher = new WorkerDrainLauncher(
         Directory.GetCurrentDirectory(),
         AppContext.BaseDirectory,
