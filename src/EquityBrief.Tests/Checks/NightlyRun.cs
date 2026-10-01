@@ -37,6 +37,9 @@ public partial class NightlyRun
         "nightly-run",
         ["docs/ARCHITECTURE.html", "fixtures/membership-2026-09-05"],
         [
+            // 12.3's build of the night from a clean copy of the committed code: the checkout the script refuses.
+            CheckReach.Key(Scope.FailureTable, "The night's checkout is off main or holds a commit the remote's main lacks"),
+
             // 8.6, the rule version scorer's step, and the limits row its
             // stopping behaviour is the whole of: a window measuring a rule
             // that moved is closed by stopping the night rather than by a note.
@@ -136,7 +139,8 @@ public partial class NightlyRun
         IBulkPriceFeed? bulk = null,
         TimeSpan? deadline = null,
         IClock? clock = null,
-        IDrainLauncher? launcher = null)
+        IDrainLauncher? launcher = null,
+        Nightly.Build? build = null)
     {
         var output = new StringWriter();
         var error = new StringWriter();
@@ -151,7 +155,8 @@ public partial class NightlyRun
             runId,
             bulk,
             deadline,
-            launcher: launcher);
+            launcher: launcher,
+            build: build);
 
         return (code, output.ToString(), error.ToString());
     }

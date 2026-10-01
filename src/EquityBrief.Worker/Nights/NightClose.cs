@@ -176,7 +176,9 @@ public sealed class NightClose : IComponent
 
     // The outcomes a night that did not finish writes. A closed vocabulary
     // beside `ok`, for the reason `ok` is one: the run page decides what to draw
-    // in its stale-and-failed region by reading this column.
+    // in its stale-and-failed region by reading this column. `ok` is named here
+    // for the one row the night writes under it by this path, the build it ran.
+    public const string Ok = "ok";
     public const string Failed = "failed";
     public const string Stopped = "stopped";
 

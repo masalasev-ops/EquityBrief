@@ -796,6 +796,13 @@ static async Task<int> NightlyRun(string[] args)
         store.DataRoot,
         SystemClock.ForUnitedStatesSessions());
 
+    // The commit the script built this run from, which the night records; a run started from a build of the
+    // caller's own names none.
+    // see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+    var build = Argument(args, NightBuild.BuiltFromArgument) is { Length: > 0 } commit
+        ? new Nightly.Build(commit, Argument(args, NightBuild.BuildNoteArgument) ?? $"built from {commit}")
+        : null;
+
     // A night the scheduler starts tries again from a step that stopped; a run of the rest of one tries once.
     // see: A night that stops before its close is tried again from the step that stopped, three more times fifteen minutes apart, each try under a deadline of its own
     return await Nightly.RunAsync(
@@ -804,7 +811,8 @@ static async Task<int> NightlyRun(string[] args)
         askForTheFirstName: named is null,
         tries: rest is null ? Nightly.TryPlan.Standard : Nightly.TryPlan.Once,
         tryNumber: rest?.NextTry ?? 1,
-        resume: rest is not null);
+        resume: rest is not null,
+        build: build);
 }
 
 // A night refused before its first step, on stderr and on the run log.
@@ -826,13 +834,7 @@ static string? RunId(string? session) =>
 
 static string? Argument(string[] args, string name) => VerbArguments.Value(args, name);
 
-static IConfiguration Configuration() =>
-    new ConfigurationBuilder()
-        .SetBasePath(AppContext.BaseDirectory)
-        .AddJsonFile("appsettings.json", optional: false)
-        .AddJsonFile("appsettings.Secrets.json", optional: true)
-        .AddEnvironmentVariables()
-        .Build();
+static IConfiguration Configuration() => WorkerConfiguration.Build();
 
 // The swing filter's shape counts, printed for the operator to rule the starting settings from. It
 // opens the configured store read-only and writes nothing, and progress goes to the error stream so

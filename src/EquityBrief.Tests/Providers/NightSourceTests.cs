@@ -169,7 +169,8 @@ public class NightSourceTests
         // it happened.
         var script = File.ReadAllText(Repository.Tool("nightly"));
 
-        Assert.Contains("nightly \"$@\"", script, StringComparison.Ordinal);
+        // Everything given is passed through to the worker's own verb, after the commit the script built.
+        Assert.Contains("nightly --built-from \"$short\" --build-note \"$note\" \"${pass[@]}\"", script, StringComparison.Ordinal);
         Assert.DoesNotContain("--fixture \"$fixture\"", script, StringComparison.Ordinal);
         Assert.Contains(NightFeeds.SourceKey, script, StringComparison.Ordinal);
     }

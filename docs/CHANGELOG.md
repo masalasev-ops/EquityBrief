@@ -9787,3 +9787,24 @@ Was:
 Now:
 > Sweeping the swing filter over the stored history: "..., under the folder `sweep` beside the store, or the folder the setting `EquityBrief:Sweep:Folder` names; nothing sits at that folder's root, a run's report lives in its folder alone and enters no document of the corpus, and the runs before it are the operator's to remove (see: The sweep reads the live store read-only ...)."
 Why: the same ruling, stated where the operator finds the sweep's files.
+### 2026-10-01 - ARCHITECTURE.html - each night is built from a clean copy of the committed code, and the pages show a refusal and the commit
+Authorised by: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+Was:
+> Section 14 opened on "Before the first nightly run, once" with nothing on what the night is built from.
+> Section 15.7, The night's state: "...; a press running the rest of a night left unfinished; a one-line note where the night finished (see: ...) (see: ...)"
+> Section 15.10, How last night went: "...; each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished; a press running the rest of a night left unfinished (see: ...) (see: ...)"
+> Section 18 carried no row for a checkout the night refuses.
+Now:
+> Section 14 opens on "What the night is built from": a clean copy of the main checkout's own commit, read with no fetch, exported whole into a folder under the data root, one a commit, built once and run by every try, the rest of the night and the drain; a checkout off main or ahead of the remote's main refused before any worker exists with the reason written where the pages read it, one behind it run and said so, an uncommitted or untracked file never built; the store by absolute path, the secrets read by path and never copied, and the commit recorded on the run log.
+> Section 15.7, The night's state: "...; a one-line note where the night finished; a refusal before its first step with its reason (see: ...) (see: ...) (see: Each night is built from a clean copy ...)"
+> Section 15.10, How last night went: "...; a press running the rest of a night left unfinished; the commit the night was built from (see: ...) (see: ...) (see: Each night is built from a clean copy ...)"
+> Section 18 gains "The night's checkout is off main or holds a commit the remote's main lacks": refused before any worker exists, nothing built or written, the instant and the reason in a file under the data root the pages read as the night's state, a non-zero exit, a checkout behind the remote's main run and said so.
+Why: the operator's ruling of 2026-09-29, built as track 3 of the queue of 2026-09-30, and the rows are what the harness holds the pages and the script to.
+### 2026-10-01 - RUNBOOK.md - what the night builds, and a night refused before its first step
+Authorised by: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+Was:
+> "What runs, and when" held no paragraph on what the night is built from, and the morning table held no row for a night the script refused.
+Now:
+> A paragraph, "Each night is built from a clean copy of the committed code, never from the main checkout's working tree", naming the refusal and its file, the export into `data/nights/<commit>/`, the Release build run with the data root and the secrets file named from the checkout, the build reused and removed after a week unused, the `build` stage, `night.build` for `--resume`, the resume press and the drain, and `--check`.
+> A row in the morning table: tonight's notice and the run page saying the night was refused before its first step, its cause and what to do.
+Why: the same ruling, stated where the operator runs the night and reads the morning.

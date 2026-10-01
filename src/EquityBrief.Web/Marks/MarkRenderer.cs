@@ -384,6 +384,11 @@ public static class NightStates
     public const string NotYet = "not yet run";
     public const string NeverRan = "never ran";
     public const string NoSession = "no session";
+
+    // A night the script refused before any worker existed, read off the file the script left under the data
+    // root rather than off run log rows, since none were written.
+    // see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+    public const string Refused = "refused before its first step";
 }
 
 // One group of the night's steps as the Run page's time bar draws it: the steps in it, how many of
@@ -415,7 +420,8 @@ public sealed record NightView(
     string? AfterTheClose,
     IReadOnlyList<StepGroupView> Groups,
     IReadOnlyList<NightTry>? Tries = null,
-    DateTimeOffset? NextTry = null)
+    DateTimeOffset? NextTry = null,
+    string? BuiltFrom = null)
 {
     public IReadOnlyList<NightTry> TriesMade => Tries ?? [];
 }
@@ -6488,6 +6494,7 @@ public sealed class MarkRenderer : IComponent
         NightStates.Unfinished => night.StoppedAt is { } step ? "Left unfinished at " + step : "Left unfinished",
         NightStates.NotYet => "Not run yet",
         NightStates.NeverRan => "Never ran",
+        NightStates.Refused => "Refused before its first step",
         _ => "No session",
     };
 
@@ -6509,6 +6516,7 @@ public sealed class MarkRenderer : IComponent
             NightStates.Unfinished => Formatted($"Its last step written was {night.StoppedAt} at {written}, and no step recorded a stop, so the night ended without saying why, a machine asleep or a task ended among the causes."),
             NightStates.NotYet => Formatted($"No night has run for {day} yet."),
             NightStates.NeverRan => Formatted($"No night ran for {day}: the run log holds none of its steps."),
+            NightStates.Refused => Formatted($"No night ran for {day}: {night.Reason ?? "the night's script refused the checkout before any step ran"}. Nothing was built and nothing was written; tonight's list is the one before it."),
             _ => Formatted($"The exchange did not trade on {day}, so the night fetched nothing and exited clean."),
         };
 
@@ -6538,7 +6546,7 @@ public sealed class MarkRenderer : IComponent
     {
         NightStates.Finished or NightStates.Running => "ok",
         NightStates.NotYet or NightStates.Waiting => "wait",
-        NightStates.Unfinished or NightStates.NeverRan => "fail",
+        NightStates.Unfinished or NightStates.NeverRan or NightStates.Refused => "fail",
         _ => "quiet",
     };
 
@@ -6622,6 +6630,16 @@ public sealed class MarkRenderer : IComponent
         region.Append(Invariant, $"<p class=\"ns-headline\">{Escaped(NightHeadline(night))}</p>");
         region.Append(Invariant, $"<p class=\"ns-said\">{Escaped(NightSaid(night))}</p>");
         region.Append(NightTries(night));
+
+        // The commit the night was built from, as the night recorded it, where the night's script built it.
+        // see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+        if (night.BuiltFrom is { Length: > 0 } built)
+        {
+            var commit = Regex.Match(built, @"^built from (\S+?),?(?:\s|$)") is { Success: true } named ? named.Groups[1].Value : string.Empty;
+
+            region.Append(Invariant, $"<p class=\"ns-built\" data-commit=\"{Escaped(commit)}\">{Escaped(char.ToUpperInvariant(built[0]) + built[1..])}.</p>");
+        }
+
         region.Append("</div></div>");
 
         region.Append("<div class=\"ns-figures\">");

@@ -60,6 +60,9 @@ public partial class ReadSurface
             .. RunBottomClaims,
             .. NightNoticeClaims,
 
+            // 12.3's build of the night from a clean copy: the refusal on tonight's notice and the commit on the Run page.
+            .. NightBuildClaims,
+
             // 12.7's correction, close to a buy point beneath tonight's list.
             .. CloseToABuyPointClaims,
 

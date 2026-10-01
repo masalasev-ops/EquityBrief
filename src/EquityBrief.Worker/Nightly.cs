@@ -62,6 +62,16 @@ public static class Nightly
         public static TryPlan Once { get; } = new(0, TimeSpan.Zero);
     }
 
+    // The commit the script built this night from and the line it states it with, which the night records
+    // on the run log under its own stage once the store can hold the row, so the run page shows the commit
+    // each night was built from. A night the suite or a person runs from a build of their own carries none
+    // and records none.
+    // see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+    public sealed record Build(string Commit, string Note)
+    {
+        public string Detail => Note.StartsWith("built from ", StringComparison.Ordinal) ? Note : $"built from {Commit}, {Note}";
+    }
+
     // What the command line calls: resolve the feeds from a fixture folder,
     // optionally replace one of them with a live feed, then run.
     //
@@ -82,7 +92,8 @@ public static class Nightly
         NightQueue? queue = null,
         IDrainLauncher? launcher = null,
         bool askForTheFirstName = true,
-        TryPlan? tries = null)
+        TryPlan? tries = null,
+        Build? build = null)
     {
         if (!Directory.Exists(fixtureFolder))
         {
@@ -108,7 +119,8 @@ public static class Nightly
             deadline,
             launcher,
             askForTheFirstName,
-            tries);
+            tries,
+            build: build);
     }
 
     // `runId` is the id of the night's first try, and `tryNumber` the try this run starts as: one for a
@@ -128,7 +140,8 @@ public static class Nightly
         bool askForTheFirstName = true,
         TryPlan? tries = null,
         int tryNumber = 1,
-        bool resume = false)
+        bool resume = false,
+        Build? build = null)
     {
         // The night's deadline, and the thing that can cancel it.
         //
@@ -185,13 +198,22 @@ public static class Nightly
         // a missing column halfway through.
         Step[] steps =
         [
-            new(FirstStep, () =>
+            new(FirstStep, async () =>
             {
                 var outcome = MigrationRunner.Standard().Apply(store.DatabaseFile);
 
-                return Task.FromResult(outcome.Applied.Count == 0
-                    ? $"schema version {outcome.To}, nothing pending"
-                    : $"applied {outcome.Applied.Count}, {outcome.From} to {outcome.To}");
+                // The commit this run was built from, recorded once the store can hold the row, under this
+                // try's id, so a run of the rest of the night records the build it ran too.
+                if (build is not null)
+                {
+                    var at = clock.UtcNow;
+
+                    await NightClose.RecordStopAsync(store.DatabaseFile, store.DataRoot, runId, [NightBuild.Stage], at, at, NightClose.Ok, build.Detail);
+                }
+
+                return outcome.Applied.Count == 0
+                    ? $"schema version {outcome.To}, nothing pending" + (build is null ? string.Empty : $", {build.Detail}")
+                    : $"applied {outcome.Applied.Count}, {outcome.From} to {outcome.To}" + (build is null ? string.Empty : $", {build.Detail}");
             }),
             new("membership", async () =>
             {
