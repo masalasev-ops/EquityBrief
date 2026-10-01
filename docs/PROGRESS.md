@@ -34001,3 +34001,51 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             the second stage's two readings joined this entry, was green at the same figures.
 Carried:    the new run, started from a Release build of the merged main outside the main checkout, and the entry
             pointing at its report.
+
+### 12.5 ruling - a sweep run's report lives in its folder alone and enters no document, nothing sits at the sweep folder's root, and the runs before the newest are the operator's to remove   2026-10-01
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-10-01 at about 03:30Z, on being told the plan's track 2e would put the report's
+            figures into this record and offered a committed copy of the generated page under `docs/`, word for
+            word: "no i like the report generated under the sweep folder . So keep it that way. Replace the old
+            folder with the new one. Whatever ideas you gave keep it restricted to sweep folder." Earlier in the
+            same exchange: "Progress file is strictly to document the code progress."
+Ruled:      the sweep's report is the page the sweep writes into its run folder, served on `/sweep`, and no copy
+            of it and no entry carrying its figures enters any document of the corpus. A run's figures reach
+            this record only where a later ruling rests on them, which names the run's folder and the figures it
+            rules on. The runs before the newest are removed by hand on the operator's word, and nothing sits at
+            the sweep folder's root. This supersedes the plan's track 2e, "the report and its entry", which is
+            not done, and discharges the obligation the entry above carries as "the entry pointing at its
+            report": the report is in its folder. The 12.5 rerun ruling of 2026-09-30 said the first run's files
+            stay untouched at the root; they do not, under this ruling.
+Done:       at 03:37Z on 2026-10-01, with run 3 writing in `data/sweep/20261001T024757Z/` and untouched, the
+            first run's files at `data/sweep/`'s root were removed: `candidates/`, `fine/`, `ranks/`,
+            `report.html`, `state.json` and `sweep.log`, with the two stopped runs' folders
+            `20260930T231714Z/` and `20261001T014305Z/` and their console logs. The folder holds run 3 and its
+            console log and nothing else. The figures of the first run stand in the 12.5 ruling of 2026-09-30
+            that recorded it, and the two stopped runs' in the two corrections above.
+Code:       `SweepFolder.NewestReport` no longer falls back to a report at the root, since a file there is no
+            run's, and the read surface's run links no longer offer "the first run"; the folder test writes a
+            file at the root among run folders holding no report and reads no report, then reads the newest
+            run's once one holds it. Both specs' sentence on the root is replaced, prior text in CHANGELOG.
+Tests:      1642, unchanged: an assertion added to the folder test.
+Claims:     763, unchanged.
+Pins:       none moves.
+Mutated:    the rule, stated before the run: the one change this ruling makes to code, reversed alone, filtered
+            to the test that reads it, in a detached worktree at this entry's commit and reverted.
+            Predicted:
+            M1 the root fallback restored, a file at the root served where no run holds a report: red in the
+                folder test's new assertion alone.
+            Results: M1 ran in a detached worktree at f8f25fe, this entry's commit, filtered to the folder test,
+            the edit made there and reverted, and the tree read clean after: M1 turned the new assertion red, the
+            file at the root read as the newest report where none is, and nothing else in the test reached.
+Held:       red in the test predicted and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1642 of 1642 tests ran
+            with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 763 claims, 763 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 774 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1642 of 1642 tests.
+            Both gates ran over the tree carrying this entry, f8f25fe, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either; run 3 went on under its own build throughout.
+Carried:    nothing new. Track 3 follows run 3's end, on the operator's word.

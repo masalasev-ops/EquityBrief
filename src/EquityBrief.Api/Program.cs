@@ -1139,10 +1139,7 @@ IResult SweepReportPage(StoreLocation store, string? run)
             "text/html; charset=utf-8");
     }
 
-    var links = string.Join(
-        " ",
-        runs.Select(name => $"<a href=\"{EquityBrief.Core.Sweep.SweepFolder.Route}/{name}\">{System.Net.WebUtility.HtmlEncode(name)}</a>")
-            .Concat(File.Exists(Path.Combine(root, EquityBrief.Core.Sweep.SweepFolder.ReportFile)) ? [$"<a href=\"{EquityBrief.Core.Sweep.SweepFolder.Route}\">the first run</a>"] : Array.Empty<string>()));
+    var links = string.Join(" ", runs.Select(name => $"<a href=\"{EquityBrief.Core.Sweep.SweepFolder.Route}/{name}\">{System.Net.WebUtility.HtmlEncode(name)}</a>"));
     var page = File.ReadAllText(report);
     var nav = $"<nav class=\"runs\" data-runs=\"{runs.Count}\">Runs: {links}</nav>";
     var at = page.IndexOf("<main>", StringComparison.Ordinal);

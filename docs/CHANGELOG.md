@@ -9773,3 +9773,17 @@ Was:
 Now:
 > Section 17, Sweep point in time: "... Wilder's ATR and RSI are seeded where the night's year begins on each session, and the swings read are the year's from its fourth session on, since the swing finder judges none of the first three sessions of the series it is given; any difference stops the run ..."
 Why: the rerun's point-in-time check found the sweep holding swings made in the year's first three sessions, which the night's swing finder never judges, on 110 of 212 sampled sessions, and the row now states the rule the code reads.
+### 2026-10-01 - ARCHITECTURE.html - a sweep run's report lives in its folder alone and nothing sits at the root
+Authorised by: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night
+Was:
+> Section 17, Sweep run: "each run in a folder of its own under the sweep's folder, named by the instant it started, the first run's files untouched at the root, the newest report served on the route with the earlier runs linked, a run gone on with under the build that started it alone, and a finished run never written again; ..."
+Now:
+> Section 17, Sweep run: "each run in a folder of its own under the sweep's folder, named by the instant it started, nothing at the root, the newest report served on the route with the earlier runs linked, a run's report living in its folder alone and entering no document, a run gone on with under the build that started it alone, and a finished run never written again; ..."
+Why: the operator ruled on 2026-10-01 that the report stays where the sweep generates it, under the sweep folder, that the old runs' outputs are replaced by the new run's, and that no copy of it enters a document; the first run's files at the root were removed by hand under that ruling, and the row says what the folder holds.
+### 2026-10-01 - RUNBOOK.md - a sweep run's report lives in its folder alone and the runs before it are the operator's to remove
+Authorised by: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night
+Was:
+> Sweeping the swing filter over the stored history: "..., under the folder `sweep` beside the store, or the folder the setting `EquityBrief:Sweep:Folder` names; the first run's files stay untouched at that folder's root (see: The sweep reads the live store read-only ...)."
+Now:
+> Sweeping the swing filter over the stored history: "..., under the folder `sweep` beside the store, or the folder the setting `EquityBrief:Sweep:Folder` names; nothing sits at that folder's root, a run's report lives in its folder alone and enters no document of the corpus, and the runs before it are the operator's to remove (see: The sweep reads the live store read-only ...)."
+Why: the same ruling, stated where the operator finds the sweep's files.
