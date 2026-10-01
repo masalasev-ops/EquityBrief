@@ -34036,8 +34036,9 @@ Mutated:    the rule, stated before the run: the one change this ruling makes to
             Predicted:
             M1 the root fallback restored, a file at the root served where no run holds a report: red in the
                 folder test's new assertion alone.
-            Results: M1 ran in a detached worktree at RULSHA, this entry's commit, filtered to the folder test,
-            the edit made there and reverted, and the tree read clean after: RULM1.
+            Results: M1 ran in a detached worktree at f8f25fe, this entry's commit, filtered to the folder test,
+            the edit made there and reverted, and the tree read clean after: M1 turned the new assertion red, the
+            file at the root read as the newest report where none is, and nothing else in the test reached.
 Held:       red in the test predicted and in no other.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1642 of 1642 tests ran
             with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
@@ -34045,6 +34046,6 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             `tools/verify-phase.ps1` green at 44 tables, 763 claims, 763 PASS, 0 FAIL, 0 out of scope,
             0 unexamined, 774 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
             41 of 41 roster checks carried and all 41 run, 1642 of 1642 tests.
-            Both gates ran over the tree carrying this entry, RULSHA, in a worktree beside the repository, and the
+            Both gates ran over the tree carrying this entry, f8f25fe, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either; run 3 went on under its own build throughout.
 Carried:    nothing new. Track 3 follows run 3's end, on the operator's word.
