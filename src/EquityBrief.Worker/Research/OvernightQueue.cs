@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Quarters;
 using EquityBrief.Core.Research;
@@ -74,6 +75,8 @@ public sealed class OvernightQueue(
         Stores:
         [
             new StoreTouch(Store.Listing, Touch.Read),
+            new StoreTouch(Store.FamilyNight, Touch.Read),
+            new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Read),
@@ -103,17 +106,25 @@ public sealed class OvernightQueue(
     // rows are the index that night, and the names on tonight's list lead in the order
     // the list is drawn in: improving businesses first where the night stored its
     // readings, and the swing filter's own order within each state and on a night that
-    // stored none.
+    // stored none. On a night the families drew the page's list, the stocks it lists lead, in the page's order.
     // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
     static readonly string MembersOnNight = @"
-        SELECT l.ticker, CASE WHEN g.passed = 1 THEN 1 ELSE 0 END
-        FROM listing l
-        LEFT JOIN gate_result g ON g.ticker = l.ticker AND g.session_date = l.session_date
-        LEFT JOIN fundamental_reading f ON f.ticker = l.ticker AND f.session_date = l.session_date
-        WHERE l.session_date = $session
-        ORDER BY CASE WHEN g.passed = 1 THEN 0 ELSE 1 END,
-                 CASE WHEN g.passed = 1 THEN " + FundamentalState.PlaceIn("f.state") + @" ELSE 0 END,
-                 g.rank, l.ticker;
+        SELECT ticker, listed
+        FROM (
+            SELECT l.ticker AS ticker,
+                   CASE WHEN " + FamilyList.OnTheList("l.ticker", "l.session_date", "g.passed = 1") + @" THEN 1 ELSE 0 END AS listed,
+                   IFNULL(" + FamilyList.PlaceOn("l.ticker", "l.session_date") + @", 0) AS place,
+                   " + FundamentalState.PlaceIn("f.state") + @" AS state_place,
+                   g.rank AS rank
+            FROM listing l
+            LEFT JOIN gate_result g ON g.ticker = l.ticker AND g.session_date = l.session_date
+            LEFT JOIN fundamental_reading f ON f.ticker = l.ticker AND f.session_date = l.session_date
+            WHERE l.session_date = $session)
+        ORDER BY CASE WHEN listed = 1 THEN 0 ELSE 1 END,
+                 place,
+                 CASE WHEN listed = 1 THEN state_place ELSE 0 END,
+                 rank, ticker;
     ";
 
     // Each listed member's stored result on the night, as "Close to a buy point" reads it, with the state its

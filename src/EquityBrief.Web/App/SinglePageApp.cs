@@ -1378,7 +1378,7 @@ public sealed class SinglePageApp : IComponent
 
         body.Append(Cards.Key(
             "What is listed.",
-            "Every report that has been asked for, from a row on tonight's list, from a name's own page or by the night for the first name its list draws, with what came of it. One name holds one outstanding request at a time, which the store enforces: a second press for a name already waiting adds nothing and says so.",
+            "Every report that has been asked for, from a row on tonight's list, from a name's own page or by the night for the first six names its page draws, with what came of it. One name holds one outstanding request at a time, which the store enforces: a second press for a name already waiting adds nothing and says so.",
             "A request nobody has started can be taken out. One the worker has claimed cannot, because what a withdrawal removes is a report that has not been generated, and the refusal says which state refused it."));
 
         return Invariant($"<section class=\"queue\" data-requests=\"{rows.Count}\" data-outstanding=\"{outstanding.Length}\" data-writing=\"{writing.Length}\" data-settled=\"{settled.Length}\">")
@@ -1477,7 +1477,8 @@ public sealed class SinglePageApp : IComponent
         int? listed = null,
         IReadOnlyList<DateOnly>? held = null,
         IReadOnlyList<ListingCell>? close = null,
-        IReadOnlyList<StillOpenCell>? stillOpen = null)
+        IReadOnlyList<StillOpenCell>? stillOpen = null,
+        IReadOnlyList<FamilyCardView>? families = null)
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -1511,6 +1512,28 @@ public sealed class SinglePageApp : IComponent
             lede: "These names appear whether or not they are on the list.",
             region: "watch"));
 
+        // On a night the families drew the page's list, one card a family in the page's order, each with
+        // its rule in a sentence, whether it is live or provisional, its picks and the notes on what it
+        // passed and the page holds back; on a night before them, the one list as it was drawn.
+        // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+        if (families is not null)
+        {
+            foreach (var card in families)
+            {
+                region.Append(Cards.Computed(
+                    Invariant($"Setup {card.Place} of {card.Of} · {card.Eyebrow}"),
+                    marks.FamilyCard(card) + Cards.Key(
+                        "How to read the card.",
+                        "Each row is one stock this setup lists tonight, bought at the evening's close. The stop is the price that says the plan was wrong and the target the price that says it was right, and the bar shows where the buy sits between them. Select a row to draw its plan just below the cards; report opens the stock's full page.",
+                        "A stock is listed once across every card, under the first setup it qualified for, and never while a trade for it is still open; the notes under the rows name what was held back and why. The reward to risk is a fact about the chart and not a chance of anything."),
+                    title: Escaped(card.Heading),
+                    lede: Escaped(card.Rule),
+                    stamp: Cards.Night(night),
+                    region: "family"));
+            }
+        }
+        else
+        {
         region.Append(Cards.Computed(
             "The list",
             marks.TonightList(rows, TonightDrawn, records, rule) + Cards.Key(
@@ -1529,12 +1552,14 @@ public sealed class SinglePageApp : IComponent
                 : "Each one has reached a price its own chart made significant. Most reasons first, then the plan's reward to risk.",
             stamp: Cards.Night(night),
             region: "list"));
+        }
 
         // "Still open", between the list and "Close to a buy point" on a night the swing filter listed: the
         // stocks that passed every gate tonight while a trade the list recommended for them on an earlier
-        // night is still open. A stock holds one open trade at a time, so none of these is a new trade.
+        // night is still open. A stock holds one open trade at a time, so none of these is a new trade. On a
+        // night the families drew the list, the card of the family that passed the stock says so in a note.
         // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
-        if (byFilter && stillOpen is not null)
+        if (byFilter && stillOpen is not null && families is null)
         {
             region.Append(Cards.Computed(
                 "Still open",

@@ -1038,7 +1038,7 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.7 Tonight", "The report's state"),
 
         // 11.4, section 14's step writing the night's own request and section 17's count of one.
-        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, improving businesses first where the night stored its readings, one request marked as asked by the night unless that name has one outstanding or being written and none on a night no name passed, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first six names the page draws, in the page's order across every family, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws)."),
         CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
 
         // 11.5, section 17's floor for a name's industry to be its group.
@@ -1074,7 +1074,7 @@ public partial class ArchitectureConformance
     [
         CheckReach.Key("15.15 Queue", "When each will be written"),
         CheckReach.Key("15.7 Tonight", "The report's state"),
-        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, improving businesses first where the night stored its readings, one request marked as asked by the night unless that name has one outstanding or being written and none on a night no name passed, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first six names the page draws, in the page's order across every family, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws)."),
         CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
         CheckReach.Key("15.9 Name", "Each move beside its group"),
         CheckReach.Key(Scope.LimitsTable, "Group floor"),
@@ -1302,7 +1302,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.MatrixTable, "Filter counts"),
         CheckReach.Key(Scope.StoresTable, "Gate results"),
         CheckReach.Key(Scope.StoresTable, "Filter versions"),
-        CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are the pullback family's, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it); then draw the page's list from what each setup family passed, the families in the page's order and each family's names in its own, at most five a family, a stock once and none whose trade from any family is still open, and record the session as one the families drew (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order)."),
         CheckReach.Key(Scope.LimitsTable, "Market gate"),
         CheckReach.Key(Scope.LimitsTable, "Strength gate"),
         CheckReach.Key(Scope.LimitsTable, "Pullback depth"),
@@ -1578,8 +1578,15 @@ public partial class ArchitectureConformance
 
         var actual = predicted + PhaseTwelveBeyondThePrediction.Length - PhaseTwelveNotLanded - TakenOutAfterPhaseTwelve.Length - PhaseTwelveAddedThenTakenOut.Length;
 
+        // Phase 13's rows came after the phase this pair is about, each named where it was added, and
+        // the ones its record does not yet reach are out of scope, beside this pair's figures.
+        var now = actual + PhaseThirteenRows.Length;
+        var pending = PhaseThirteenPending(report);
+
+        Assert.All(PhaseThirteenRows, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
+
         Assert.Equal(
-            (actual, 0, 0, actual),
+            (now, pending, 0, now - pending),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum. 725 from the
@@ -1703,6 +1710,7 @@ public partial class ArchitectureConformance
         .. PhaseTenRows,
         .. PhaseElevenRows,
         .. PhaseTwelveRows,
+        .. PhaseThirteenRows,
     ];
 
 
@@ -1771,7 +1779,9 @@ public partial class ArchitectureConformance
 
         // Phase 12's rows came after the phase this pair is about, each named where it was added, and
         // the rows it took out are named too, 11.9's region among them.
-        var now = expected + PhaseTwelveRows.Length - PhaseTwelveRemoved.Length - TakenOutAfterPhaseTwelve.Length;
+        // And phase 13's after phase 12's, the ones its record does not yet reach out of scope.
+        var now = expected + PhaseTwelveRows.Length - PhaseTwelveRemoved.Length - TakenOutAfterPhaseTwelve.Length + PhaseThirteenRows.Length;
+        var pending = PhaseThirteenPending(report);
 
         Assert.All(PhaseTwelveRemoved, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
         Assert.All(TakenOutAfterPhaseTwelve, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
@@ -1779,7 +1789,7 @@ public partial class ArchitectureConformance
         Assert.All(PhaseTwelveRows, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
 
         Assert.Equal(
-            (now, 0, 0, now),
+            (now, pending, 0, now - pending),
             (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
@@ -1811,7 +1821,8 @@ public partial class ArchitectureConformance
         // draws each.
         var outOfScope = PredictedOutOfScope
             + PhaseNineRows.Length - PhaseNineDrawn.Length
-            + PhaseElevenRows.Length - PhaseElevenDrawn.Length;
+            + PhaseElevenRows.Length - PhaseElevenDrawn.Length
+            + PhaseThirteenPending(report);
 
         Assert.All(PhaseNineDrawn, key => Assert.Contains(PhaseNineRows, row => row == key));
         Assert.All(PhaseElevenDrawn, key => Assert.Contains(PhaseElevenRows, row => row == key));

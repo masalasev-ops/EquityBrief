@@ -1109,7 +1109,7 @@ public partial class NightlyCost
         // and of the retry nights before it rather than by the universe. It is
         // carved rather than the rule loosened, because a night that refetched
         // every name would satisfy a loosened rule.
-        Assert.Contains("the backfill, the corporate action refetch, the quarters fetch after the close and the night's own request carved out of it", limits, StringComparison.Ordinal);
+        Assert.Contains("the backfill, the corporate action refetch, the quarters fetch after the close and the night's own requests carved out of it", limits, StringComparison.Ordinal);
         Assert.Contains($"bounded by the actions of the day and of the {CorporateActionChecker.RetryNights} nights before it, and by one request every {CorporateActionChecker.WeeklyRetryDays} days for each name whose retries are spent, rather than by the universe", limits, StringComparison.Ordinal);
         Assert.Contains($"A name it stored nothing for is asked for again on each of the {Backfill.RetryNights} nights after the first and then every {Backfill.WeeklyRetryDays} days until one stores its year or the name leaves the index", limits, StringComparison.Ordinal);
     }

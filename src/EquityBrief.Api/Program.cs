@@ -293,6 +293,19 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
             readings: await read.FundamentalReadingsAsync(evening))
         : [];
 
+    // On a night the families drew the page's list, the neighbours are the stocks the page lists, in its order.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    if (night is { } drawn && await read.FamilyNightAsync(drawn) is not null)
+    {
+        ordered = TonightScreen.ListedByFamilies(
+            drawn,
+            await read.FamilyPicksAsync(drawn),
+            listings,
+            UniverseScreen.Rows(universe).ToDictionary(cell => cell.Ticker, StringComparer.Ordinal),
+            await read.ClosesToTheNightAsync(drawn),
+            readings: await read.FundamentalReadingsAsync(drawn));
+    }
+
     var at = ordered.Select((row, position) => (row.Ticker, position))
         .Where(pair => pair.Ticker == ticker)
         .Select(pair => (int?)pair.position)
@@ -857,6 +870,27 @@ app.MapGet("/screens/tonight/{night?}", async (
 
     listed = TonightScreen.MarkedAsRepeats(dated, listed, picks);
 
+    // On a night the families drew the page's list, the rows are the stocks the page lists, in its order,
+    // and the list is drawn as a card a family.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    var onThePage = gates is null ? null : await read.FamilyNightAsync(dated);
+    IReadOnlyList<FamilyPickRow> familyPicks = onThePage is null ? [] : await read.FamilyPicksAsync(dated);
+
+    if (onThePage is not null)
+    {
+        listed = TonightScreen.ListedByFamilies(
+            dated,
+            familyPicks,
+            listings,
+            cells,
+            closes,
+            suspects,
+            researched,
+            gates,
+            readings,
+            await read.NewsCountsAsync(dated));
+    }
+
     // The members one gate short, on a night the swing filter listed, each measured against the settings of
     // the version its result was stored under, and a missed trigger against the firings its own results show.
     // see: A member that missed exactly one gate and no exclusion is drawn close to a buy point nearest first, and recommends nothing
@@ -951,7 +985,17 @@ app.MapGet("/screens/tonight/{night?}", async (
             TonightScreen.Listed(listings),
             held: held,
             close: nearRows,
-            stillOpen: gates is null ? null : TonightScreen.StillOpen(dated, gates, picks)),
+            stillOpen: gates is null ? null : TonightScreen.StillOpen(dated, gates, picks),
+            families: onThePage is null || gates is null
+                ? null
+                : TonightScreen.Families(
+                    dated,
+                    onThePage,
+                    familyPicks,
+                    rows,
+                    gates,
+                    await read.RegisteredCandidatesAsync(),
+                    TonightScreen.RuleView(rule, gates, market))),
         "text/html; charset=utf-8");
 });
 

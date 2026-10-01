@@ -359,6 +359,18 @@ span[data-last-asked-at]::before{content:none}
 .list-table td.news-counts{white-space:nowrap;font-variant-numeric:tabular-nums}
 .list-table .np{color:var(--sup)}
 .list-table .nn{color:var(--res)}
+.family-state{margin:0 0 10px;font-size:13.5px;color:var(--ink-2)}
+.family-state .provisional{font-weight:600;color:var(--ink)}
+.family-empty{margin:0 0 8px}
+.family-note{margin:8px 0 0;padding-top:8px;border-top:1px solid var(--hair-2);font-size:13px;color:var(--soft)}
+.family-table td.why-tonight{font-size:13px;max-width:340px;white-space:normal}
+.family-table td.plan-stop{color:var(--sup-ink)}
+.family-table td.plan-target{color:var(--res-ink)}
+.also-family{display:inline-block;margin-left:6px;font:400 11px var(--sans);border:1px solid var(--hair-2);border-radius:999px;padding:0 7px;color:var(--soft);vertical-align:middle}
+.stt{position:relative;display:inline-block;width:120px;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--sup) 0,var(--sup) 3px,var(--s2) 3px,var(--s2) calc(100% - 3px),var(--res) calc(100% - 3px))}
+.stt .stt-mark{position:absolute;top:-4px;width:3px;height:14px;margin-left:-1px;border-radius:2px;background:var(--ink)}
+.stt.trailing{width:auto;height:auto;background:none;font-size:12px;color:var(--soft);white-space:nowrap}
+.stt.trailing .stt-stop{display:inline-block;width:3px;height:10px;margin-right:6px;border-radius:2px;background:var(--sup);vertical-align:middle}
 .rp-labeller{margin:10px 0 0;font-size:13.5px}
 .trade-line{display:block;overflow:visible}
 .tl-track{stroke:var(--s2);stroke-width:1.5}

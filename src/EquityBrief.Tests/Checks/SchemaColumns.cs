@@ -27,6 +27,10 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "News articles"),
             CheckReach.Key(Scope.StoresTable, "News labels"),
 
+            // 13.1, the family lister's two stores.
+            CheckReach.Key(Scope.StoresTable, "Family nights"),
+            CheckReach.Key(Scope.StoresTable, "Family picks"),
+
             // 6.1, the fundamentals store: migration 19's columns and types against
             // SCHEMA's own declaration of them.
             CheckReach.Key(Scope.StoresTable, "Fundamentals"),

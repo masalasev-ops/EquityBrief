@@ -673,7 +673,34 @@ public static class SchemaMigrations
         new Migration(50, "add research_section.parts", AddRiskParts),
         new Migration(51, "create pulled_surprise", CreatePulledSurprise),
         new Migration(52, "create news_article and news_label", CreateNewsArticlesAndLabels),
+        new Migration(53, "create family_night and family_pick", CreateFamilyPick),
     ];
+
+    // The page's list on a night, drawn from the setup families. `family_night` holds one row a session the
+    // families drew, with the families on the page that night in the page's order, so a session they drew
+    // and listed nothing on is told from one drawn before them. `family_pick` holds one row a stock under
+    // each family that passed it, listed with its place down the page and the other families it qualified
+    // under, or held back with why, a trade still open naming the family and the night that listed it.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    // see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
+    const string CreateFamilyPick = @"
+        CREATE TABLE family_night (
+            session_date TEXT NOT NULL PRIMARY KEY,
+            families     TEXT NOT NULL
+        ) STRICT;
+
+        CREATE TABLE family_pick (
+            session_date TEXT NOT NULL,
+            ticker       TEXT NOT NULL,
+            family       TEXT NOT NULL,
+            state        TEXT NOT NULL CHECK (state IN ('listed', 'under another', 'open trade', 'past five')),
+            place        INTEGER,
+            also         TEXT NOT NULL,
+            held_family  TEXT,
+            held_night   TEXT,
+            PRIMARY KEY (session_date, ticker, family)
+        ) STRICT;
+    ";
 
     // One completed block of one version's record, frozen when the block completed.
     //
@@ -834,7 +861,7 @@ public static class SchemaMigrations
     // comes from. A rebuild rather than an alter, because SQLite cannot change a check a table
     // was created with: every row is copied across whole, and the index refusing a second
     // outstanding request for a name is built again over them.
-    // see: The night asks for a report on the first name of its list
+    // see: The night asks for a report on the first six names its page draws
     const string RequestAskedByTheNight = @"
         CREATE TABLE research_request_rebuilt (
             ticker       TEXT NOT NULL,

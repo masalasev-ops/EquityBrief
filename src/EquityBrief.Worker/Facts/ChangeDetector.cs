@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Facts;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
@@ -41,6 +42,8 @@ public sealed class ChangeDetector : IComponent
         Stores:
         [
             new StoreTouch(Store.Listing, Touch.Read),
+            new StoreTouch(Store.FamilyNight, Touch.Read),
+            new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.ListRule, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read | Touch.Update),
@@ -99,7 +102,11 @@ public sealed class ChangeDetector : IComponent
     // "or was opened" is not one of the conditions, because nothing in this
     // store records that a name was read, and a cell promising a behaviour no
     // test can induce is worse than a cell that says less.
-    const string EmptyUnlistedPayloads = @"
+    //
+    // A name was listed on a night by the rule that drew that night's list: by a family where the
+    // families drew it, by the swing filter passing it before them, and by a reason firing before that.
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    static readonly string EmptyUnlistedPayloads = @"
         UPDATE facts
         SET payload = ''
         WHERE payload != ''
@@ -110,7 +117,7 @@ public sealed class ChangeDetector : IComponent
               LEFT JOIN gate_result g ON g.ticker = l.ticker AND g.session_date = l.session_date
               WHERE l.ticker = facts.ticker
                 AND l.session_date = facts.session_date
-                AND CASE WHEN r.rule = 'filter' THEN IFNULL(g.passed, 0) = 1 ELSE l.fired_count > 0 END);
+                AND " + FamilyList.OnTheList("l.ticker", "l.session_date", "CASE WHEN r.rule = 'filter' THEN IFNULL(g.passed, 0) = 1 ELSE l.fired_count > 0 END") + @");
     ";
 
     const string AppendRun = @"

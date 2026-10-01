@@ -12,10 +12,11 @@ using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Checks;
 
-// nightly-run, 11.4 and 12.6: after the overnight queue the night asks for a report on the first
-// name drawn on its list, improving businesses first where the night stored its readings and the
-// swing filter's own order within a state, one request marked as asked by the night, and starts the
-// drain it was handed as a press does.
+// nightly-run, 11.4, 12.6 and 13.1: after the overnight queue the night asks for a report on the first
+// six names its page draws, in the page's order on a night the families drew it and, on a night before
+// them, improving businesses first where the night stored its readings and the swing filter's own
+// order within a state, one request a name marked as asked by the night, and starts the drain it was
+// handed as a press does.
 public partial class NightlyRun
 {
     // What the night starts, held by the test so a night is run without a drain reaching a model.
@@ -147,8 +148,10 @@ public partial class NightlyRun
     }
 
     [Fact]
-    public async Task TheNightAsksForTheFirstNameTheSwingFilterPassedInItsOrderAndNoOther()
+    public async Task TheNightAsksForTheFirstSixNamesDownItsPageInItsOrderAndNoOther()
     {
+        // A night the families did not draw, which a replayed night is: the names the swing filter passed,
+        // in its order, MSFT's trade at 3.2 before AAPL's at 2.4, both inside the six.
         using var store = await FixtureReplay.ReplayedAsync();
 
         var night = Expected("night-request").GetProperty("replayNight").GetString()!;
@@ -158,15 +161,58 @@ public partial class NightlyRun
         var first = FirstPassed(store, night);
 
         Assert.Equal("MSFT", first);
+        Assert.Empty(StoreRows(store, $"SELECT session_date FROM family_night WHERE session_date = '{night}';"));
 
-        var ask = await RequestDrain.AskForTheNightAsync(
-            store.DatabaseFile,
-            DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture),
-            FixedClock.At(new DateTimeOffset(2026, 9, 8, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates));
+        var at = FixedClock.At(new DateTimeOffset(2026, 9, 8, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+        var ask = await RequestDrain.AskForTheNightAsync(store.DatabaseFile, DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture), at);
 
-        Assert.Equal([first!], ask.Asked);
-        Assert.Equal($"{first} is first on the list, and a report on it was asked for", ask.Line);
-        Assert.Equal([[first!, "night", "paid", "outstanding"]], StoreRows(store, "SELECT ticker, asked_from, lane, state FROM research_request;"));
+        Assert.Equal(["MSFT", "AAPL"], ask.Asked);
+        Assert.Equal("MSFT is first on the list, and a report on it was asked for; AAPL is number 2 on the list, and a report on it was asked for", ask.Line);
+        Assert.Equal(
+            [["AAPL", "night", "paid", "outstanding"], ["MSFT", "night", "paid", "outstanding"]],
+            StoreRows(store, "SELECT ticker, asked_from, lane, state FROM research_request ORDER BY ticker;"));
+
+        // A night the families drew, constructed: seven stocks listed down the page across two cards, the
+        // places given out of ticker order, one more held back by an open trade and one past its family's
+        // five. The six asked for are the first six places, in that order; the seventh, the held and the
+        // one past five are not. Section 17 states six, and the constant is the families' own.
+        Assert.Equal(6, RequestDrain.NightAsksFor);
+        Assert.Equal(EquityBrief.Core.Families.SetupFamilies.ReportsANight, RequestDrain.NightAsksFor);
+
+        using var drawn = new TemporaryStore().Migrated();
+
+        drawn.Execute("INSERT INTO family_night (session_date, families) VALUES ('2026-10-01', '[\"pullback\",\"breakout\"]');");
+
+        foreach (var (ticker, family, state, place) in new[]
+        {
+            ("ZED", "pullback", "listed", "1"), ("YAK", "pullback", "listed", "2"), ("XYL", "pullback", "listed", "3"),
+            ("WAB", "pullback", "listed", "4"), ("VFC", "pullback", "listed", "5"), ("AAA", "breakout", "listed", "6"),
+            ("BBB", "breakout", "listed", "7"), ("CCC", "pullback", "open trade", "NULL"), ("DDD", "pullback", "past five", "NULL"),
+        })
+        {
+            drawn.Execute(
+                "INSERT INTO family_pick (session_date, ticker, family, state, place, also) " +
+                $"VALUES ('2026-10-01', '{ticker}', '{family}', '{state}', {place}, '[]');");
+        }
+
+        var six = await RequestDrain.AskForTheNightAsync(drawn.DatabaseFile, new DateOnly(2026, 10, 1), at);
+
+        Assert.Equal(["ZED", "YAK", "XYL", "WAB", "VFC", "AAA"], six.Asked);
+        Assert.StartsWith("ZED is first on the list, and a report on it was asked for; YAK is number 2 on the list, and a report on it was asked for", six.Line, StringComparison.Ordinal);
+        Assert.EndsWith("AAA is number 6 on the list, and a report on it was asked for", six.Line, StringComparison.Ordinal);
+        Assert.Equal(6, StoreRows(drawn, "SELECT ticker FROM research_request WHERE asked_from = 'night' AND state = 'outstanding';").Count);
+        Assert.Empty(StoreRows(drawn, "SELECT ticker FROM research_request WHERE ticker IN ('BBB', 'CCC', 'DDD');"));
+
+        // And a night the families drew with every stock held back asks for none and says the page lists none.
+        using var held = new TemporaryStore().Migrated();
+
+        held.Execute("INSERT INTO family_night (session_date, families) VALUES ('2026-10-01', '[\"pullback\"]');");
+        held.Execute("INSERT INTO family_pick (session_date, ticker, family, state, place, also, held_family, held_night) VALUES ('2026-10-01', 'CCC', 'pullback', 'open trade', NULL, '[]', 'pullback', '2026-09-29');");
+
+        var none = await RequestDrain.AskForTheNightAsync(held.DatabaseFile, new DateOnly(2026, 10, 1), at);
+
+        Assert.Empty(none.Asked);
+        Assert.Equal("no stock is on the page's list for 2026-10-01, so no report was asked for", none.Line);
     }
 
     [Fact]
@@ -215,9 +261,12 @@ public partial class NightlyRun
                 DateOnly.ParseExact(night, "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 FixedClock.At(new DateTimeOffset(2026, 9, 8, 23, 40, 0, TimeSpan.Zero), SessionZones.UnitedStates));
 
-            Assert.Empty(ask.Asked);
-            Assert.Equal($"{first} is first on the list and has a request {state} already, so none was added", ask.Line);
-            Assert.Single(StoreRows(store, "SELECT ticker FROM research_request;"));
+            // The first is passed over and the second, AAPL, is asked for, since the night asks down its page.
+            Assert.Equal(["AAPL"], ask.Asked);
+            Assert.Equal($"{first} is first on the list and has a request {state} already, so none was added; AAPL is number 2 on the list, and a report on it was asked for", ask.Line);
+            Assert.Equal(
+                [["AAPL", "night", "outstanding"], [first!, "list", state]],
+                StoreRows(store, "SELECT ticker, asked_from, state FROM research_request ORDER BY ticker;"));
         }
 
         // And a night the store holds no gate row for asks for nothing and says so.

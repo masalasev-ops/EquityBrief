@@ -1150,7 +1150,7 @@ public sealed record ContentsEntry(int At, string Title, string Id);
 // It touches no store and computes no figure, which is what its blank
 // matrix cells claim. Geometry is not a figure: nothing here is reported to a
 // reader as a number, and every price drawn arrives already computed.
-public sealed class MarkRenderer : IComponent
+public sealed partial class MarkRenderer : IComponent
 {
     // The empty declaration, which is a claim and not an omission. Section
     // 15.4 puts the marks on the server, and the seam between rendering and

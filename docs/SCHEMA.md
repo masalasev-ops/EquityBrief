@@ -53,6 +53,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `shape_proposal` | ShapeProposer | ShapeCommand | none |
 | `listing` | ShortlistBuilder | ShortlistBuilder | none |
 | `list_rule` | NightClose | NightClose | none |
+| `family_night` | FamilyLister | none | FamilyLister |
+| `family_pick` | FamilyLister | none | FamilyLister |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
 | `fundamentals` | FundamentalsFetcher | none | none |
@@ -93,7 +95,7 @@ The `DELETE` lives in each component's own file rather than in a shared helper, 
 
 **`facts` is inserted by one component and updated by another, and no column is written by both in one operation.** FactsAssembler inserts the facts file and its hash. ChangeDetector writes the material-change list on a row that already exists, and empties `payload` on that same row under the retention. A split is permitted where two components own disjoint declared column sets per operation on the same grain, and the declared sets are below. The delete is the assembler's, and it removes one row only: tonight's file for a name, where it differs from the one the store now computes, so the insert writes the new one in its place (see: A re-run replaces a night's facts file where the store now computes a different one).
 
-**`research_request` and `watch_list` are the two tables the read surface writes, and the split on the first is by operation.** ReadApi does two things: it inserts a request when a press asks for one, from tonight's list or from a name's page, and it updates a request nobody has claimed to `withdrawn` when a press on the queue screen takes it out. RequestDrain belongs to the worker and moves the same row through `writing` and then `written` or `refused`, and after the night's overnight queue it inserts the night's own request, for the first name drawn on the night's list: the insert is split between the two by what asks, a press on a screen or the night (see: The night asks for a report on the first name of its list). No column is written by both in one operation and the declared sets are below, which is the permission `facts` is already declared under. The read surface still writes nothing a pass writes: a request is an ask, and the research it leads to is the worker's (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours). The watch list is the operator's own: ReadApi inserts a name on one press and deletes it on another, and nothing but the pages reads it (see: The watch list is the operator's own, up to twenty names of the index, on a page of its own).
+**`research_request` and `watch_list` are the two tables the read surface writes, and the split on the first is by operation.** ReadApi does two things: it inserts a request when a press asks for one, from tonight's list or from a name's page, and it updates a request nobody has claimed to `withdrawn` when a press on the queue screen takes it out. RequestDrain belongs to the worker and moves the same row through `writing` and then `written` or `refused`, and after the night's overnight queue it inserts the night's own requests, one for each of the first six names the night's page draws: the insert is split between the two by what asks, a press on a screen or the night (see: The night asks for a report on the first six names its page draws). No column is written by both in one operation and the declared sets are below, which is the permission `facts` is already declared under. The read surface still writes nothing a pass writes: a request is an ask, and the research it leads to is the worker's (see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours). The watch list is the operator's own: ReadApi inserts a name on one press and deletes it on another, and nothing but the pages reads it (see: The watch list is the operator's own, up to twenty names of the index, on a page of its own).
 
 **`research_section` and `theme_section` are inserted by the writers and updated only by the checker.** A pending section is written by whichever model wrote it and is then accepted or rejected by ClaimChecker. Nothing else touches the status.
 
@@ -535,6 +537,36 @@ Grain: one row per session a night's swing filter drew the list for.
 Primary key: `session_date`.
 
 **The night close writes it and is its only writer, from the swing filter's step** (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it). Once the swing filter has stored its rows for the night's session, the night records that session as listed by the filter, before any later step can stop the night, and only where the filter stored rows for it. A night run again over a session records it again, and the session is then listed by the rule of the night that drew it last. An evening holding no row was listed by any of the six reasons firing, which is every evening before the switch, so every surface reading a listing reads this table beside it and names the rule. Nothing deletes a row.
+
+### family_night
+Grain: one row per session the setup families drew the page's list for.
+
+| Column | Type | Notes |
+|---|---|---|
+| `session_date` | TEXT | the session the list was drawn for, the newest any name holds on the night that drew it |
+| `families` | TEXT | JSON: the families on the page that night, by the word each is stored under, in the page's order |
+
+Primary key: `session_date`.
+
+**The family lister writes it in the swing filter's step and is its own deleter** (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: Every computed table's writer is its own deleter). It records each session it draws whether or not any family passed a stock on it, so a session the families drew and listed nothing on is told from one drawn before them: a reader of the list asks this table which rule drew a session's list, and where it holds no row reads the list as it did before the families, by the swing filter's passing names on a night `list_rule` names the filter for and by the reasons before that. The families are kept by the night, so an earlier night's page is drawn with the families that night's page held whatever families have joined since. A night run again replaces its own row, and a night the swing filter stored no result for writes none.
+
+### family_pick
+Grain: one row per session, stock and family that passed it.
+
+| Column | Type | Notes |
+|---|---|---|
+| `session_date` | TEXT | the session the list was drawn for |
+| `ticker` | TEXT | |
+| `family` | TEXT | the family that passed the stock, by the word it is stored under |
+| `state` | TEXT | `listed`, the page lists the stock under this family; `under another`, it is listed tonight under a family earlier in the page's order; `open trade`, a trade a list made for it on an earlier night is still open; `past five`, the family's five places were taken |
+| `place` | INTEGER | a listed row's place down the page, counted from one across every family; null on a row held back |
+| `also` | TEXT | JSON: on a listed row, the other families the stock qualified under that night, in the page's order; an empty list on every other row |
+| `held_family` | TEXT | on an `open trade` row, the family that listed the trade still open; null otherwise |
+| `held_night` | TEXT | on an `open trade` row, the session that trade was listed on; null otherwise |
+
+Primary key: `session_date`, `ticker`, `family`.
+
+**The family lister writes the page's list here and is its own deleter** (see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order). After the swing filter has stored its rows it reads the names each family passed, in that family's own order, and every trade a list made on an earlier night with what became of it, and draws the list by one rule: the families in the page's order; a stock whose trade is still open is listed by none and its row names the family and the night that listed that trade; a stock already listed tonight is not listed again; and a family lists at most five, a name past its five still listed by a later family it qualified under. So a stock holds at most one `listed` row a session, and that row's `also` carries the labels the page draws beside it. The pullback family's names are the ones `gate_result` holds as passed, improving businesses first and then the filter's own order, and its trade is the plan its night's trade gate read; nothing here restates a plan. A trade's outcome is the `forward_return` row of its stock and session under its family's horizon. A night run again replaces its own rows whole and touches no other night's.
 
 ### forward_return
 Grain: one row per listing per horizon, and one per swing filter row carrying a plan per swing horizon.

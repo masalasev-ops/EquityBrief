@@ -1,5 +1,6 @@
 using System.Globalization;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
@@ -30,6 +31,8 @@ public sealed class NightClose : IComponent
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Ladder, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
+            new StoreTouch(Store.FamilyNight, Touch.Read),
+            new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.ListRule, Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
@@ -43,12 +46,15 @@ public sealed class NightClose : IComponent
         WHERE as_of = (SELECT MAX(as_of) FROM ladder);
     ";
 
-    // The names on the night's list, being the members the swing filter passed on its night, the newest
-    // session any name holds, which is the session the night records the rule for.
+    // The names on the night's list, the newest session any name holds, which is the session the night
+    // records the rule for: the stocks the page lists where the families drew it, and the members the swing
+    // filter passed where they drew none.
     // see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it
-    const string OnTheList = @"
-        SELECT COUNT(*) FROM gate_result
-        WHERE session_date = (SELECT MAX(session_date) FROM bar) AND passed = 1;
+    // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+    static readonly string OnTheList = @"
+        SELECT COUNT(*) FROM gate_result g
+        WHERE g.session_date = (SELECT MAX(session_date) FROM bar)
+          AND " + FamilyList.OnTheList("g.ticker", "g.session_date", "g.passed = 1") + @";
     ";
 
     // The rule is recorded for the session the filter drew and only where it stored its rows, so an

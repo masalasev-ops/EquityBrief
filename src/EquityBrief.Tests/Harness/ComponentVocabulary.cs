@@ -26,7 +26,8 @@ internal static class ComponentVocabulary
     // The columns of the read and write matrix, and what each holds. Six
     // aggregate, which section 16 states of itself: computed tables is the row
     // naming six stores, listings is the listings beside the rule each evening's
-    // list was drawn by, research and theme is the two research rows, sources is
+    // list was drawn by and, from 13.1, the sessions the setup families drew and
+    // the page's list they drew, research and theme is the two research rows, sources is
     // source documents, version scores and blocks is the scores a night writes
     // beside the blocks frozen from them, which no component touches one of
     // without the other, fundamentals is the filings beside the copy each
@@ -42,7 +43,7 @@ internal static class ComponentVocabulary
         ("Calendar", [DataStore.Calendar]),
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise]),
         ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading]),
-        ("Listings", [DataStore.Listing, DataStore.ListRule]),
+        ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick]),
         ("Forward returns", [DataStore.ForwardReturn]),
         ("Facts", [DataStore.Facts]),
         ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk]),
@@ -148,6 +149,8 @@ internal static class ComponentVocabulary
         ["series state"] = DataStore.SeriesState,
         ["listings"] = DataStore.Listing,
         ["list rules"] = DataStore.ListRule,
+        ["family nights"] = DataStore.FamilyNight,
+        ["family picks"] = DataStore.FamilyPick,
         ["indicators"] = DataStore.Indicator,
         ["swings"] = DataStore.Swing,
         ["volume profile"] = DataStore.VolumeProfile,

@@ -65,7 +65,7 @@ public partial class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Count the ordinary nights stored under the open filter version and, once they reach sixty, propose for each gate the one setting that brings its median count inside its band, writing one proposal for the version and stating the crossed trigger on the night's run log; nothing proposed is applied until the operator's command accepts it."),
 
             // 12.2, the swing filter.
-            CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are tonight's list, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it)."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are the pullback family's, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it); then draw the page's list from what each setup family passed, the families in the page's order and each family's names in its own, at most five a family, a stock once and none whose trade from any family is still open, and record the session as one the families drew (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order)."),
 
             // 12.2's correction, the fundamentals item: the readings step and the quarters step.
             CheckReach.Key(NightlyRunSteps.Heading, ArchitectureConformance.ReadingsStep),
@@ -103,8 +103,8 @@ public partial class NightlyRun
             // operating obligation, read on the operational header.
             CheckReach.Key(Scope.LimitsTable, "Nightly wall clock, at index size"),
 
-            // 11.4, the night's own request after the queue, and the count of one it asks for.
-            CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, improving businesses first where the night stored its readings, one request marked as asked by the night unless that name has one outstanding or being written and none on a night no name passed, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list)."),
+            // 11.4 and 13.1, the night's own requests after the queue, and the count of six it asks for.
+            CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first six names the page draws, in the page's order across every family, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws)."),
             CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
             CheckReach.Key(Scope.FailureTable, "Bulk price feed unavailable, run log"),
             CheckReach.Key(Scope.FailureTable, "A feed answers with a session other than the one asked for"),
@@ -1230,7 +1230,7 @@ public partial class NightlyRun
         Assert.StartsWith("Close the arithmetic", steps[^5], StringComparison.Ordinal);
         Assert.StartsWith("Ask the provider for the reported quarters", steps[^4], StringComparison.Ordinal);
         Assert.StartsWith("Run the overnight queue", steps[^3], StringComparison.Ordinal);
-        Assert.StartsWith("Ask for a report on the first name", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for a report on the first six names", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Start the news labeller", steps[^1], StringComparison.Ordinal);
 
         using var store = new TemporaryStore();
@@ -1394,7 +1394,7 @@ public partial class NightlyRun
 
         Assert.Equal(steps.Count - 2, queue);
         Assert.Equal((close + 1, close + 2), (quarters, queue));
-        Assert.StartsWith("Ask for a report on the first name", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for a report on the first six names", steps[^2], StringComparison.Ordinal);
         Assert.StartsWith("Start the news labeller", steps[^1], StringComparison.Ordinal);
 
         // Section 14's note, the section with its list removed.

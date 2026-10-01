@@ -34940,3 +34940,90 @@ Claims:     none added: section 20's row is read by the check that counts the ph
 Verified:   with the checkpoints after it, in one pull request: `tools/ci.ps1` green end to end and
             `tools/verify-phase.ps1` green over the tree carrying every entry from this one to 13.5's,
             F13SHA, with the figures 13.5's entry states.
+
+### 13.1 - the family framework: the page's list drawn each night from what each setup family passed, five a family, a stock once and none while its trade is open, the pullback as the first family, the night asking for six reports, and tonight's page drawing a card a family   2026-10-01
+
+Built:      - `FamilyList.Draw`, the one rule that draws the page's list: the families in the page's order
+              and each family's names in its own; a stock whose trade is still open is listed by none; a
+              stock already listed tonight is not listed again and labels the row that lists it; a family
+              lists at most 5, `SetupFamilies.ListedANight`, and a name past its five may be listed by a
+              later family it qualified under. A pure function of what it is handed.
+            - `FamilyLister`, a component of its own running as a second stage, `families`, of the swing
+              filter's step, so no step is renumbered. It reads the names the swing filter passed, improving
+              businesses first, as the pullback family's, and every trade a list made on an earlier night
+              with what became of it on its own horizon, the nights the filter listed before the families
+              among them, and stores the list in `family_pick`, recording the session in `family_night`
+              whether or not any stock is listed. A night run again replaces its own rows, and a night the
+              filter stored no result for draws nothing and says so.
+            - Migration 53: `family_night`, one row a session the families drew with the families on the
+              page that night, and `family_pick`, one row a session, stock and family that passed it,
+              listed with its place and labels or held back with why.
+            - Every reader of tonight's list reads the stored list on a night the families drew and the
+              list as it was on a night before them, by one statement of it, `FamilyList.OnTheList`: the
+              overnight queue, the news labeller, the night's count, the facts retention, the read
+              surface's three listing reads and Past picks' rows. No earlier evening is redrawn.
+            - The night asks for a report on the first 6 names its page draws, `SetupFamilies.ReportsANight`,
+              where it asked for the first alone; each row it writes says the name's place.
+            - Tonight's page, on a night the families drew: a card a family in place of the one list and of
+              Still open, with the family's rule in a sentence, the day its live candidate was registered
+              or the ruling's words where none stands, its picks and the variants standing beside it, a row
+              a pick with its business state, its buy, stop and target, where the buy sits between them,
+              its reward to risk, why it is listed tonight in the figures its gates stored, and its news
+              counts, the notes on what it passed and the page holds back, and why it lists none where it
+              lists none. A night before the families is drawn as it was.
+            - Documents: section 7's row and the matrix's for the lister, the reads of the five readers,
+              section 14's two steps and its note, section 15.7's card and 15.15's sentence, section 16's
+              two rows, section 17's six reports and five a family, section 18's three rows, `SCHEMA.md`'s
+              two tables and ownership, and the decision asking for six reports, which supersedes the one
+              asking for the first name alone, moved to Previously decided with every citation of it
+              repointed, the first hard rule's among them. The four decisions the framework is built to
+              were written by the planning pass above. Prior text in CHANGELOG.
+Not built:  the swing filter's own code is untouched, so the pullback's rule, its gates and its registered
+            versions are exactly as they were. The one trade a stock across families is the lister's and
+            is on the page's list; a registered rule's own record still walks its own open trades.
+Tests:      five added, each by hand over constructed input. `FamilyList.Draw` over three constructed
+            families: five a family, a stock two pass listed once with the other's label, a stock past an
+            earlier family's five listed by a later one, a stock holding an open trade listed by none, and a
+            family passing exactly five listing all five. The lister over a constructed store: the
+            pullback's own order, a stock whose earlier trade is undecided and one whose outcome row is
+            missing held back, one stopped out the session before freed, its own night replaced, the page's
+            own earlier trades read on the next night with a stop's night still holding the stock, and
+            nothing drawn on a night the filter stored no result. A night read as listed by the page, by the
+            filter and by the reasons, off the read surface's own rows, with Past picks' rows following.
+            The card read back off the rendered page against the store in both directions. And a family no
+            registration stands for marked provisional, with a card listing none saying why on a closed
+            market and on a night no stock passed.
+            Changed: the night's request tests now ask down the page, the first six of a constructed seven
+            among them; two queue tests and one of the quarters' draw the list again after changing the
+            fixture night's gate rows, as the night's own step does; and the fixture's `night-request`
+            expectation states the row the night now writes on a night the page lists none.
+Claims:     25 added: the lister's catalogue and matrix rows, its two stores, section 17's five a family,
+            section 18's three rows, and the card as the seventeen parts its row states. Three of them are
+            placed at 13.2, which puts a second family on the page: the label, the note under the later
+            card, and section 18's row about a stock two families pass.
+Pins:       none moves. The three lists were read off the code's own declarations, the twelve the ladder
+            rules' code version pins, the sources every candidate evaluator's version pins and the sixteen
+            the swing filter's pins, and the tree touches none of them.
+Remedy:     migration 53, which the night's own first step applies; applied by hand with `tools/migrate.ps1`
+            straight after the merge, before the read surface is started again, since its pages read the
+            two tables.
+Unpredicted: the plan counted about 20 claims here and the card alone is seventeen parts, so 25. A second
+            store, `family_night`: the list's own rows cannot say that the families drew a night on which
+            no family passed a stock, and a card that lists nothing has to be drawn on such a night.
+Mutated:    the rule, stated before the run: each rule this checkpoint adds, reversed alone, filtered to the
+            tests that read it, in a detached worktree at the pull request's tree and reverted.
+            Predicted:
+            A1 the open trade never holding a stock back in `FamilyList.Draw`: red in the list's test, h
+               listed, and in the lister's and the card's tests.
+            A2 a family listing six: red in the list's test, the lister's and the card's.
+            A3 a stock listed again under a later family: red in the list's test alone.
+            A4 the night asking for seven: red in the six names test alone.
+            A5 a night the families drew read as listed by the swing filter's passing names: red in the
+               test of a night read by the rule that drew it, and in no other of the five.
+            A6 the lister keeping its night's earlier rows where it is run again: red in the lister's test.
+            A7 the card's standing read as provisional whatever the register holds: red in the card's test.
+            Results: F131MUT.
+Held:       F131HELD.
+Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
+            with the figures 13.5's entry states.
