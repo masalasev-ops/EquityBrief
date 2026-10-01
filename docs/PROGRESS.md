@@ -34255,7 +34255,7 @@ Built:      - The stores. Migration 52 creates `news_article`, one row per membe
 Measured:   nothing paid: no live call was made. The labeller's cost, its durations and the share of answers
             refused for a digit are read from its first twenty nights on the Run page's line, which the fourth
             pull request draws; the first night it runs on is the first after this merges.
-Tests:      T7TESTS, from 1652: T7ADDED added: the instruction's reading by hand, the labeller over a constructed
+Tests:      1660, from 1652: eight added: the instruction's reading by hand, the labeller over a constructed
             store (its order, the retry, the cause, the switch, the three stops, the cap, a model gone), the
             night's step, the counter's articles, and no deciding source naming the labels.
 Claims:     784, from 766: eighteen added, the labeller's catalogue and matrix rows, the two stores, section 14's
@@ -34276,15 +34276,19 @@ Mutated:    the rule, stated before the run: the one assertion guarding each rul
             L4 an unreadable answer stored with a fixed cause: red in the order test alone.
             L5 a refused article sent, the admissibility condition dropped: red in the order test alone, the
                refused article among the requests.
-            Results: T7MUT.
-Held:       T7HELD.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, T7TESTS of T7TESTS tests ran
+            Results: L1 to L5 ran in a detached worktree at 5cd3d42, this entry's commit, each filtered to its test,
+            the edit made there and reverted, and the tree read clean after each: every one turned its
+            predicted test red, and no other test was run. One prediction missed in its figure and not in its
+            test: L2 made three calls where five, not four, since both articles that fail a check lose their
+            second ask and not only the first.
+Held:       red in the test predicted and in no other, for each of the five.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1660 of 1660 tests ran
             with none failed, migrations 0 to 52 with none pending, schema version 52, exit 0, against
             `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 44 tables, 784 claims, 784 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, T7PLACE placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, T7TESTS of T7TESTS tests.
-            Both gates ran over the tree carrying this entry, T7SHA, in a worktree beside the repository, and the
+            0 unexamined, 795 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1660 of 1660 tests.
+            Both gates ran over the tree carrying this entry, 5cd3d42, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either; run 3 of the sweep went on under its own
             build throughout.
 Carried:    the screens, the fourth pull request: the name page's News region, Tonight's counts, the Run page's
