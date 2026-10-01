@@ -103,6 +103,33 @@ internal static class Shell
         }
     }
 
+    // The words of the one failure this machine shows now and then and a git lock a killed process leaves,
+    // which are faults of the machine and not of what a test runs.
+    static readonly System.Text.RegularExpressions.Regex Transient = new(
+        "unable to write|Permission denied|failed to insert into database|index\\.lock",
+        System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    // A command run again, up to the attempts given half a second apart and growing, while it fails with
+    // those words, and returned at once on success or on any other failure, so a gate's suite does not fail
+    // on a refused object write that a second try succeeds at.
+    internal static ShellResult RunRetrying(
+        string executable,
+        IReadOnlyList<string> arguments,
+        string? workingDirectory = null,
+        IReadOnlyDictionary<string, string>? environment = null,
+        int attempts = 6)
+    {
+        var result = Run(executable, arguments, workingDirectory, environment);
+
+        for (var attempt = 1; attempt < attempts && result.ExitCode != 0 && Transient.IsMatch(result.StandardError); attempt++)
+        {
+            Thread.Sleep(TimeSpan.FromMilliseconds(500 * attempt));
+            result = Run(executable, arguments, workingDirectory, environment);
+        }
+
+        return result;
+    }
+
     internal static ShellResult Run(
         string executable,
         IReadOnlyList<string> arguments,

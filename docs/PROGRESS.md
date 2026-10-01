@@ -34137,3 +34137,48 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
 Carried:    the build's time over the first five nights against the one-hour deadline, read on the Run page's
             build line from the night of 2026-10-01 on, the line this build adds; the labeller, which the
             ruling names and which is not built, runs the night's build when it is, on the drain launcher's rule.
+
+### 12.3 - correction: the suite's git calls are tried again on the object write this machine refuses now and then, and a temporary folder a killed process still holds is left rather than failing its test, where each failed a gate's suite   2026-10-01
+
+Corrects:   the 12.3 build of the night from a clean copy above, whose script tests make git calls over a temporary
+            repository through the suite's shell helper once each, and the suite's temporary folder, which failed
+            its test where the removal was refused with access denied rather than with a file in use.
+Found:      `tools/ci.ps1` over the track 5 branch's entry commit, dc674fb, failed in its suite on the script's
+            resume test, a test that branch does not touch, and the same test passed three times running under
+            the same environment straight after. The ci log kept the failing test's name and not its message, so
+            the cause is not read off it; what this machine does now and then is refuse a git object write with
+            "unable to write file ... Permission denied", which this session met twice committing by hand, and the
+            test's git calls, a commit among them, were made once each with no retry. And `tools/verify-phase.ps1`
+            failed twice in two days on the read surface's own-checkout test, over e3594a9 and over dc674fb, with
+            "Access to the path 'EquityBrief.Api.dll' is denied" from the temporary folder's removal after the
+            surface the test started was killed, the folder's helper catching a file in use and not access denied,
+            which is what Windows answers while a killed process's image is still mapped. A suite that fails on a
+            fault of the machine fails a gate on a question the gate did not ask.
+Repaired:   `Shell.RunRetrying` runs a command again, up to six times half a second apart and growing, while it
+            fails with the words of that write refusal or a lock left behind, and returns at once on any other
+            failure or on success; the script tests' git calls go through it. A test over a script that fails that
+            way twice and then succeeds reads three calls and success, and over one failing another way reads one
+            call and its exit code. The temporary folder's removal is tried five times a moment apart and growing
+            on either refusal, and the folder is left where it still cannot be removed; a test holds a file the
+            removal is refused on and reads no failure, and a folder nothing holds is gone on the first try.
+Expected:   derived: no expectation file moves.
+Tests:      1652, from 1650: two added.
+Claims:     766, unchanged.
+Pins:       none moves.
+Mutated:    the rule, stated before the run: each repair reversed alone, filtered to the test that reads it, in a
+            detached worktree at this entry's commit and reverted.
+            Predicted:
+            R1 the helper trying once whatever the failure: red in the retry test alone.
+            R2 the folder's removal failing its test on access denied as before: red in the folder test alone.
+            Results: T3BMUT.
+Held:       T3BHELD.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1652 of 1652 tests ran
+            with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 766 claims, 766 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 777 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1652 of 1652 tests.
+            Both gates ran over the tree carrying this entry, T3BSHA, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either; run 3 of the sweep went on under its own
+            build throughout.
+Carried:    nothing new.

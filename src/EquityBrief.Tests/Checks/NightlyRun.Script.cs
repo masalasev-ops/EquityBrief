@@ -43,9 +43,11 @@ public partial class NightlyRun
 
         public string Data => Path.Combine(Root, "data");
 
+        // Tried again on the object write this machine refuses now and then, since a git call that fails
+        // that way is a fault of the machine and not of the script under test.
         public string Run(params string[] arguments)
         {
-            var result = Shell.Run(Git, arguments, Root);
+            var result = Shell.RunRetrying(Git, arguments, Root);
 
             Assert.True(result.ExitCode == 0, $"git {string.Join(' ', arguments)}: {result.Output}");
 
@@ -245,5 +247,78 @@ public partial class NightlyRun
 
         Assert.Equal(1, gone.ExitCode);
         Assert.Contains("the newest night was built from 0123456789abcdef0123456789abcdef01234567, which this repository no longer holds", gone.StandardError, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ASuiteCallThatFailsOnTheWriteThisMachineRefusesNowAndThenIsTriedAgainAndAnyOtherFailureIsNot()
+    {
+        if (Tools() is not var (_, bash))
+        {
+            return;
+        }
+
+        using var root = new TemporaryDirectory();
+
+        // A script that fails the way git does on this machine twice and then succeeds, counting its calls.
+        var counted = Path.Combine(root.Path, "calls.txt").Replace('\\', '/');
+        var flaky = Path.Combine(root.Path, "flaky.sh");
+
+        File.WriteAllText(
+            flaky,
+            "#!/usr/bin/env bash\n" +
+            $"n=$(( $(cat '{counted}' 2>/dev/null || echo 0) + 1 ))\n" +
+            $"echo $n > '{counted}'\n" +
+            "if [ $n -lt 3 ]; then echo 'error: unable to write file .git/objects/00/4372: Permission denied' >&2; exit 1; fi\n" +
+            "echo done\n");
+
+        var tried = Shell.RunRetrying(bash, [flaky], root.Path);
+
+        Assert.Equal((0, "3"), (tried.ExitCode, File.ReadAllText(counted).Trim()));
+        Assert.Contains("done", tried.StandardOutput, StringComparison.Ordinal);
+
+        // A failure that is not that write is not tried again.
+        var other = Path.Combine(root.Path, "other.sh");
+        var otherCount = Path.Combine(root.Path, "other.txt").Replace('\\', '/');
+
+        File.WriteAllText(
+            other,
+            "#!/usr/bin/env bash\n" +
+            $"n=$(( $(cat '{otherCount}' 2>/dev/null || echo 0) + 1 ))\n" +
+            $"echo $n > '{otherCount}'\n" +
+            "echo 'fatal: not a git repository' >&2; exit 128\n");
+
+        var once = Shell.RunRetrying(bash, [other], root.Path);
+
+        Assert.Equal((128, "1"), (once.ExitCode, File.ReadAllText(otherCount).Trim()));
+    }
+
+    [Fact]
+    public void ATemporaryFolderHoldingAFileTheMachineRefusesToRemoveIsLeftRatherThanFailingTheTest()
+    {
+        // A file the removal is refused on, as a process a test killed holds its own image for a moment,
+        // which Windows refuses with access denied rather than with a file in use.
+        var folder = new TemporaryDirectory();
+        var held = Path.Combine(folder.Path, "held.dll");
+
+        File.WriteAllText(held, "held");
+        File.SetAttributes(held, FileAttributes.ReadOnly);
+
+        try
+        {
+            folder.Dispose();
+        }
+        finally
+        {
+            File.SetAttributes(held, FileAttributes.Normal);
+            Directory.Delete(folder.Path, recursive: true);
+        }
+
+        // And one nothing holds is removed on the first try.
+        var free = new TemporaryDirectory();
+
+        File.WriteAllText(Path.Combine(free.Path, "free.txt"), "free");
+        free.Dispose();
+
+        Assert.False(Directory.Exists(free.Path));
     }
 }

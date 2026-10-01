@@ -14,15 +14,28 @@ internal sealed class TemporaryDirectory : IDisposable
 
     internal string Path { get; }
 
+    // Tried a few times a moment apart, since a process a test killed may still hold a file for a moment
+    // after it ends, and left where it still cannot be removed: a leftover temporary directory is not a
+    // reason to fail a run, whichever of the two exceptions Windows refuses the removal with.
     public void Dispose()
     {
-        try
+        for (var attempt = 1; attempt <= 5; attempt++)
         {
-            Directory.Delete(Path, recursive: true);
-        }
-        catch (IOException)
-        {
-            // A leftover temporary directory is not a reason to fail a run.
+            try
+            {
+                Directory.Delete(Path, recursive: true);
+
+                return;
+            }
+            catch (Exception held) when (held is IOException or UnauthorizedAccessException)
+            {
+                if (!Directory.Exists(Path))
+                {
+                    return;
+                }
+
+                Thread.Sleep(TimeSpan.FromMilliseconds(200 * attempt));
+            }
         }
     }
 }
