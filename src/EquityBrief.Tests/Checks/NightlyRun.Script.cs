@@ -61,9 +61,20 @@ public partial class NightlyRun
             return Run("rev-parse", "HEAD");
         }
 
-        // The script's check mode: what a run would build and run, and nothing run.
-        public ShellResult Check(IReadOnlyDictionary<string, string>? environment = null, params string[] arguments) =>
-            Shell.Run(Bash, [Path.Combine(Root, "tools", "nightly"), .. arguments, "--check"], Root, environment);
+        // The script's check mode: what a run would build and run, and nothing run. The data root is named
+        // in the environment the script is handed, the repository's own unless the test names another, so
+        // a root the suite's own environment carries, as the gates' scripts set one, never reaches the script.
+        public ShellResult Check(IReadOnlyDictionary<string, string>? environment = null, params string[] arguments)
+        {
+            var handed = new Dictionary<string, string> { ["EquityBrief__DataRoot"] = Data.Replace('\\', '/') };
+
+            foreach (var (key, value) in environment ?? new Dictionary<string, string>())
+            {
+                handed[key] = value;
+            }
+
+            return Shell.Run(Bash, [Path.Combine(Root, "tools", "nightly"), .. arguments, "--check"], Root, handed);
+        }
 
         public void Dispose()
         {
