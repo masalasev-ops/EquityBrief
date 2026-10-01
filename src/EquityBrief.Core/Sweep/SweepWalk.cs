@@ -12,6 +12,38 @@ namespace EquityBrief.Core.Sweep;
 // see: An unresolved setup is never a win
 public static class SweepWalk
 {
+    // The close a setup was entered at, by the scorer's own rule: the listing's close where it sits inside the
+    // plan's range, and otherwise the first close after it at or under the zone's top edge, a close through the
+    // stop or at the target before that leaving none. The scorer states the fill on a win and on a loss and not
+    // on a setup that ran out of sessions, whose result the sweep counts at its last close as its benchmark
+    // counts it, so the fill it is measured from is read here.
+    public static decimal? FillOf(IReadOnlyList<ReturnBar> after, decimal stop, decimal target, decimal? entryHigh, decimal closeAtListing, int cap)
+    {
+        var highestEntry = entryHigh is { } top && top < target ? top : target;
+
+        if (closeAtListing >= stop && closeAtListing <= highestEntry)
+        {
+            return closeAtListing;
+        }
+
+        for (var session = 0; session < Math.Min(after.Count, cap); session++)
+        {
+            var close = after[session].Close;
+
+            if (close < stop || close >= target)
+            {
+                return null;
+            }
+
+            if (close <= highestEntry)
+            {
+                return close;
+            }
+        }
+
+        return null;
+    }
+
     public static ForwardReturn OverSetupMovingTheStop(
         IReadOnlyList<ReturnBar> after,
         decimal stop,

@@ -36,8 +36,17 @@ public sealed class SweepPlanOutcomes
 
     public readonly float[] Benchmark = [float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN];
 
+    // The stepped plan's fill under each exit, in typical moves above its stop, and none for a plan bought at
+    // the close, whose fill is its own entry, the distance its stop setting read.
+    public readonly float[] FillMoves = [float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN, float.NaN];
+
     // The trade's edge under an exit: its result less the benchmark, and none where either is missing.
     public float EdgeAt(int exit) => float.IsNaN(Multiple[exit]) || float.IsNaN(Benchmark[exit]) ? float.NaN : Multiple[exit] - Benchmark[exit];
+
+    // Whether the fill under an exit is a trade at a stop option's low bound: a stepped plan filled nearer its
+    // stop than that is none, and a plan bought at the close always is one.
+    // see: The stepped plan's result is counted on the risk its plan stated, and a fill nearer its stop than the stop setting's floor is no trade
+    public bool IsATradeAt(int exit, float stopFloor) => !(FillMoves[exit] < stopFloor);
 }
 
 // One member-session some setting of the grid could list: every reading each axis chooses between, each plan
@@ -162,6 +171,7 @@ public sealed class SweepCandidate
                 writer.Write(plan.Multiple[exit]);
                 writer.Write(plan.Ends[exit]);
                 writer.Write(plan.Benchmark[exit]);
+                writer.Write(plan.FillMoves[exit]);
             }
         }
 
@@ -243,6 +253,7 @@ public sealed class SweepCandidate
                 plan.Multiple[exit] = reader.ReadSingle();
                 plan.Ends[exit] = reader.ReadInt16();
                 plan.Benchmark[exit] = reader.ReadSingle();
+                plan.FillMoves[exit] = reader.ReadSingle();
             }
 
             candidate.Plans[at] = plan;
@@ -479,7 +490,7 @@ public static class SweepCandidates
                     continue;
                 }
 
-                candidate.Plans[at] = Outcomes(plan, after, close, volatility, seed, series, bar);
+                candidate.Plans[at] = Outcomes(plan, at == SweepCandidate.PlanAt(PlanRule.Ladder, default), after, close, volatility, seed, series.Bars, series.SessionAt, bar, atr);
                 kept = true;
             }
 
@@ -621,12 +632,35 @@ public static class SweepCandidates
         return new SweepPlan(entry, stop, target, ratio, Statistic.FromPrice(entry - stop) / series.Atr[bar], plan.Tranches[0].HighEdge);
     }
 
-    // Each exit's outcome, scored as the live scorer scores a setup, the calibrated bar its paths set, and the
-    // sessions the trade blocks the stock for.
-    static SweepPlanOutcomes Outcomes(SweepPlan plan, IReadOnlyList<ReturnBar> after, decimal close, double? volatility, int seed, SweepSeries series, int bar)
+    // The risk a trade's result is counted in, as a per cent of the price it is measured from. A plan bought at
+    // the close is filled at its own entry, so its risk is the fill's distance to its stop. The stepped plan is
+    // bought where a close first sits in its zone, anywhere down to its stop, so a risk read from the fill goes
+    // to nothing as the fill nears the stop and an ordinary gain reads as hundreds of times it: its risk is the
+    // distance its plan stated, the entry it named to its stop, which is the distance its stop setting read.
+    // see: The stepped plan's result is counted on the risk its plan stated, and a fill nearer its stop than the stop setting's floor is no trade
+    public static double RiskPercent(SweepPlan plan, bool stepped, decimal fill)
+    {
+        var from = stepped ? plan.Entry : fill;
+
+        return Statistic.FromRatio((from - plan.Stop) / from) * 100;
+    }
+
+    // Each exit's outcome, scored as the live scorer scores a setup, the calibrated bar its paths set, the
+    // sessions the trade blocks the stock for, and for the stepped plan the fill's distance above the stop in
+    // typical moves, which the walk holds to the stop setting's floor.
+    public static SweepPlanOutcomes Outcomes(
+        SweepPlan plan,
+        bool stepped,
+        IReadOnlyList<ReturnBar> after,
+        decimal close,
+        double? volatility,
+        int seed,
+        SweepBar[] bars,
+        int[] sessionAt,
+        int bar,
+        double typicalMove)
     {
         var outcomes = new SweepPlanOutcomes { RewardToRisk = Statistic.FromRatio(plan.RewardToRisk), StopMoves = plan.StopMoves };
-        var bars = series.Bars;
 
         for (var exit = 0; exit < SweepAxes.Exits; exit++)
         {
@@ -654,15 +688,26 @@ public static class SweepCandidates
                 {
                     if (after[at].SessionDate == ended)
                     {
-                        outcomes.Ends[exit] = (short)Math.Max(1, series.SessionAt[bar + at + 1] - series.SessionAt[bar]);
+                        outcomes.Ends[exit] = (short)Math.Max(1, sessionAt[bar + at + 1] - sessionAt[bar]);
                         break;
                     }
                 }
             }
 
-            if (result.EnteredAt is { } fill && fill > plan.Stop)
+            // A setup that ran out of sessions carries its return and not its fill, so the fill is read by the
+            // scorer's own entry rule: its result is counted at its last close, as the benchmark counts a member
+            // still open at a hold's cap.
+            var enteredAt = result.EnteredAt
+                ?? (outcomes.Code[exit] == SweepPlanOutcomes.Unresolved ? SweepWalk.FillOf(after, plan.Stop, plan.Target, plan.EntryHigh, close, hold) : null);
+
+            if (enteredAt is { } fill && fill > plan.Stop)
             {
-                var risk = Statistic.FromRatio((fill - plan.Stop) / fill) * 100;
+                var risk = RiskPercent(plan, stepped, fill);
+
+                if (stepped && typicalMove > 0)
+                {
+                    outcomes.FillMoves[exit] = (float)(Statistic.FromPrice(fill - plan.Stop) / typicalMove);
+                }
 
                 if (result.ReturnPct is { } made)
                 {

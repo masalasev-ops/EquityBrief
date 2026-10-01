@@ -192,6 +192,12 @@ public class PriceStorageForm
         // entry in typical moves out, which is what the trade gate reads, and `Statistic.FromPrice` one
         // call in. It lives in a file of its own, the helpers the ladder rules' code version pins being
         // edited by nothing in phase 12.
+        // `SweepCandidates.RiskPercent` joined it at the 12.5 correction of 2026-10-01: a plan and the price
+        // it was filled at in, the risk a sweep result is counted in out, as a per cent, and
+        // `Statistic.FromRatio` one call in. It was arithmetic inside the function that scores a plan's
+        // outcomes until the stepped plan's risk had to be read from its plan and not from its fill, and a
+        // rule with two branches is stated once where a test can hold it.
+        // see: The stepped plan's result is counted on the risk its plan stated, and a fill nearer its stop than the stop setting's floor is no trade
         Assert.Equal(
             [
                 "Distances.cs: InTypicalDays",
@@ -202,6 +208,7 @@ public class PriceStorageForm
                 "Statistic.cs: FromPrice",
                 "Statistic.cs: FromRatio",
                 "Statistic.cs: ToPrice",
+                "SweepCandidates.cs: RiskPercent",
                 "SwingGates.cs: Moves",
                 "UniverseScreen.cs: Distance",
             ],

@@ -34369,3 +34369,352 @@ Carried:    the captures of a label of each fixture article on the Haiku and Son
             authorised and which wait on the operator's word, since each costs a live call; the three operating
             rows, read on the run page from the labeller's first night; and the news region read on the live
             store once the labeller has run, which the first night after the merge gives.
+
+### 12.5 ruling - a starting point from the base and the ideas added to it one at a time, the stepped plan's result counted on its stated risk, and the index and the VIX pulled, planned and approved before anything is built   2026-10-01
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-10-01, after the sweep's run `20261001T024757Z` wrote its report at 15:04Z
+            proposing no starting point. Told that the run's highest designs rested on a counting fault in the
+            stepped plan and that the correctly counted designs showed nothing much better than the live rule,
+            the operator asked what experiment could still find something, then pasted a brief with the words
+            "Can you evaluate this", word for word:
+
+            Goal: one starting point and its variants, proposed for the operator to approve
+            before the freeze. The sweep showed that within today's kind of rule the best
+            steady version is today's rule with a reward-to-risk floor of 2, better in 7 of 8
+            years. What is left is to test whether a different kind of idea improves on it.
+
+            === 1. Make every figure trustworthy ===
+            Fix the counting fault: every plan's risk is at least one typical move, and every
+            figure is also stated with the five largest results removed. Check and state
+            whether the first run's proposal or any live page counted risk the same way, and
+            fix it if so. Judge the last three years combined, not each year separately: an
+            edge this thin misses in some single year whatever the rule.
+
+            === 2. The base ===
+            Today's rule with a reward-to-risk floor of 2. State its edge, trades, names per
+            night, nights with none and each year, beside today's rule.
+
+            === 3. Each new idea added to the base, one at a time, read-only ===
+              a. Trade only in good markets: the index above its 50 and 200-day averages,
+                 breadth rising over ten sessions, the VIX's level and direction, and new
+                 highs against new lows; each alone, then the useful ones combined.
+              b. A stop that sells when the day's low touches it, at the stop or at the open
+                 if it opened below, in place of selling at the close below.
+              c. Only the night's best three or five by the list's own order.
+              d. A trailing stop behind the price in place of a fixed target.
+            An idea improves the base if it raises the edge over the eight years, still does
+            so with the five largest results removed, does not trail the base over the last
+            three years combined, and still lists a stock on most nights.
+
+            === 4. The proposal ===
+            The starting point is the base plus every idea that improves it, combined and
+            checked once more as a whole by the same tests. The variants are the ideas that
+            helped a little but not enough, plus the market filter at 50% and the pullback
+            depth from 1.5, each one change from the starting point. Report the starting
+            point in plain words with its figures beside today's rule, each year, and the
+            variants with theirs. Freeze nothing until the operator says go.
+
+Reviewed:   the brief was measured against the run's saved candidates, read-only, and nine corrections were
+            returned with it amended: the one-move floor on every plan's risk reaches 30% of the live rule's
+            trades and 49% of the base's, so the fault is fixed where it is, in the stepped plan; the base's
+            gap to the live rule, 0.098 against 0.064 with a standard error of 0.05, is inside the noise and
+            it was the best of 34 changes tried, so it is a base and not a result; the base lists a stock on
+            49% of nights, so "most nights" needs a number; the edge subtracts what every member made that
+            night and cannot credit a market switch, which is judged on the plain result and the year's
+            total; the store holds no index series and no VIX; the touched stop and the trailing stop are new
+            exits and not a read of saved results; the best five is nearly empty, the base listing six or more
+            on 19 of 1,947 nights; the test is too loose for about eleven tries; and the five largest are taken
+            by size, wins or losses. The amended brief, as the operator approved it:
+
+            Goal: one starting point and its variants, proposed for the operator to approve
+            before the freeze. Within today's kind of rule the strongest single change the
+            saved history shows is a reward-to-risk floor of 2: edge 0.098 against 0.064,
+            better in 7 of 8 years, on 1,889 trades against 2,761. That gap is inside the
+            noise (one standard error is 0.05) and it was the best of 34 changes tried, so it
+            is the base to build on and not a result. Today's rule stays beside every figure.
+
+            === 1. Make every figure trustworthy ===
+            Fix the counting fault where it is: the stepped plan's result is divided by the
+            distance from the buy price its plan stated to its stop, the distance its stop
+            setting already checked, and a fill closer to the stop than that setting's floor
+            is not a trade. No other plan's counting changes, and today's stop floor of half
+            a typical move stays. Every figure is also stated with the five largest results
+            by size, wins or losses, removed. State with the evidence that the first run's
+            proposal bought at the close on section 10's plan and that Past picks divides by
+            the listing's own buy to stop, so neither carried the fault; fix either if the
+            reading proves wrong. Judge the last three years combined, and print 2026 alone
+            beside it.
+
+            === 2. The base ===
+            Today's rule with a reward-to-risk floor of 2. State beside today's rule: edge,
+            plain result, trades, the standard error of the edge, names a night, nights with
+            none, each year, and the last three years combined.
+
+            === 3. Each new idea added to the base, one at a time ===
+            Every setting below is fixed before any result is read. Before the plan is
+            written, the published evidence on each idea is looked up and named.
+              a. Trade only in good markets, each switch alone, then the ones that pass
+                 combined: (1) the share of members above their 200-day average higher than
+                 ten sessions before; (2) new 52-week highs outnumbering new lows among the
+                 members; (3) the index above its 50-day average; (4) above its 200-day;
+                 (5) the VIX under 20; (6) the VIX below its level ten sessions before.
+                 (1) and (2) are computed from the stored bars. (3) to (6) need two series
+                 the store does not hold. Branch A: the operator runs a pull of the index
+                 and the VIX from 2018. Branch B: (3) and (4) read an equal-weight average
+                 of the members and (5) and (6) are left out. The operator rules the branch.
+                 Judged on the plain result a trade and the total a year with nights off
+                 counted as nothing, the edge stated beside it.
+              b. A stop that sells when the day's low touches it, at the stop or at the open
+                 if it opened below. Where one day's range holds both the stop and the
+                 target, the stop is taken. The benchmark is scored the same way.
+              c. Only the night's best three by the list's own order, which is reward to
+                 risk and then strength.
+              d. A trailing stop in place of the target: 2 typical moves below the highest
+                 close since the buy, and 3, never lowered, 63 sessions at most.
+              e. A stop no closer than one typical move.
+            (b) and (d) are new exits, so the base's candidates and their benchmark are
+            scored again. Nothing is written to the store.
+            An idea improves the base if it is better in at least 6 of the 8 years with at
+            least 2 of the last 3, is no worse over the last three years combined, still is
+            with the five largest results by size removed, and leaves at least 1,000 scored
+            trades. An idea other than (a) also lists a stock on at least 40% of nights.
+            The 1,000 and the 40% are proposed and the operator's to rule. The report states
+            how many ideas were tried, how many passed, and how many luck alone would pass.
+
+            === 4. The proposal ===
+            The starting point is the base plus every idea that improves it, combined and
+            checked once more as a whole by the same tests, against the base and against
+            today's rule. If no idea passes, the starting point is the base. If the base
+            itself is no better than today's rule by those tests, the starting point is
+            today's rule and the base is a variant. The variants are the ideas that helped
+            but did not pass, plus the market filter at 50% and the pullback depth from 1.5,
+            each one change from the starting point. Report the starting point in plain
+            words with its figures beside today's rule, each year, and the variants with
+            theirs. The work lands in the repository, its report under the sweep's own
+            folder and page. Freeze nothing until the operator says go.
+
+Ruled:      the operator, on 2026-10-01, word for word:
+
+            1. Go on the amended brief as written.
+            2. Branch A, and you run the pull yourself: the index and the VIX from 2018,
+               into tables of their own marked by the pull, with no night, queue, labeller or
+               drain running. If it needs a migration, apply it yourself under the same
+               condition and restart 5152 after. Record the pull, its weighted calls and
+               what it stored in swepe  folder. If a market switch ends up in the starting point,
+               state what the nightly run must then fetch each night and its cost, added with
+               the freeze.
+            3. Yes to both floors: at least 1,000 scored trades, and a stock listed on at
+               least 40% of nights.
+
+            And on the plan written from it, at its first submission the same day, word for word:
+
+            Plan approved with one correction and one addition.
+
+            === 1. The run's figures enter the record ===
+            When the ideas' run has produced its report, a documents pull request records
+            in PROGRESS the figures the proposal rests on: the starting point's and today's
+            rule's edge, plain result, trades, standard error, nights with a stock, each
+            year, 2026 alone and the last three years together, with the same for the base
+            and each variant, and each idea's pass or fail with its figures. The report in
+            the run folder stays as the full account; the record holds what the freeze
+            cites.
+
+            === 2. The share of tight stops, stated ===
+            For today's rule, the base, each idea and the starting point, the report states
+            the share of trades whose stop sits under one typical move, beside the edge, so
+            a gain bought with closer stops is visible as such.
+
+            Everything else is approved as written: the counting correction and its guard,
+            the market series pulled by the session under the stated conditions, the six
+            market switches with branch A, the exits, the best three, the stop floor, the
+            test each idea must pass, the combining rule, the luck figure, and the proposal
+            reported for the operator's go before any freeze.
+
+Planned:    four pull requests, one at a time, each in a worktree beside the repository, each with its entry
+            written before the run that verifies it. The plan with both points folded in was approved at its
+            second submission.
+            1. The counting corrected, the entry below this one: the stepped plan's result on the risk its plan
+               stated, a fill nearer its stop than the stop setting's floor no trade, and every record stated
+               again without its five largest results by size.
+            2. The index and the VIX pulled: a table of their own, marked by the pull and read by no night, a
+               feed asking the provider's daily endpoint for each as an index, and `history-pull --market`,
+               two requests at a weight of 1. After its merge the session applies the migration, runs the pull
+               and restarts the read surface, with no night, queue, labeller or drain running.
+            3. The ideas' run, a verb of its own writing a run folder under the sweep's folder: the base, the
+               live rule at a reward-to-risk floor of 2, and eleven ideas each added alone with its setting
+               fixed in the plan: six market switches, a stop touched in the day, the night's best three, a
+               trailing stop at 2 and at 3 typical moves, and a stop no closer than one typical move. An idea
+               improves the base where it is better in at least 6 of the 8 years with at least 2 of the last 3,
+               is no lower over the last three years together, still is without the five largest results by
+               size, and leaves at least 1,000 scored trades; an idea other than a market switch also lists a
+               stock on at least 40% of nights, and a market switch is judged on the year's total result with
+               a night off counting nothing. The report states the tries, the passes and how many luck alone
+               would pass, 34 of 256 a try, and beside every edge the share of trades whose stop sits under
+               one typical move.
+            4. The run's figures recorded here by a pull request of documents, as the review's first point
+               rules.
+Evidence:   the published work on each idea was looked up on 2026-10-01 before the plan was written, and the
+            ideas' report names it beside each idea. Found: Faber (2007) and Cooper, Gutierrez and Hameed
+            (2004) for the index above its long average; Wang and Xu (2015), Daniel and Moskowitz (2016) and
+            Barroso and Santa-Clara (2015) for low market volatility, all reading realised volatility and not
+            the VIX; Zaremba and others (2021) for breadth, across markets and not timing one; Han, Zhou and
+            Zhu (2016), Kaminski and Lo (2014) and Lo and Remorov (2017) for stops; and Dai, Marshall, Nguyen
+            and Visaltanachoti (2021) for trailing stops, which found a lower average return and less
+            downside. No study was found for the 50-day average, new highs against new lows beyond
+            practitioner use, the best three a night, the one-move stop or the reward-to-risk floor: those
+            settings, and the 20 on the VIX, the ten sessions and the trails of 2 and 3 typical moves, are
+            judgement and the operator's to rule at the report.
+Amends:     the ruling of 2026-10-01 above, that a sweep run's report enters no document. That ruling let a
+            run's figures reach this record where a later ruling rests on them; the review's first point makes
+            that the practice for the figures a freeze cites. Section 17's sweep run row and RUNBOOK's sentence
+            say so from this pull request, prior text in CHANGELOG. The report stays in its run folder as the
+            full account.
+Queue:      restated, since the list lives in the newest queue ruling. Done: track 1, one open trade per stock,
+            the trade table and the remedy script; track 2, the sweep pushed, recorded, rebuilt and run three
+            times; track 3, the night built from a clean copy; track 7, the news labeller and its screens. In
+            progress: track 4, the operator's review of the sweep, which this ruling turns into the four pull
+            requests above and the operator's review of the starting point they report. Held: track 5, the
+            fundamentals candidate, built as a draft pull request and merged at the freeze. Next: track 6, the
+            freeze, on the operator's go after the report; track 8, phase 12's sign-off in a fresh session;
+            track 9, the preview command.
+Stored:     the brief, the go and the rulings, the review and the approved plan, word for word, in the main
+            checkout's `prompts/` as `2026-10-01-12.5-ideas-on-the-base-*.md`.
+Verified:   with the correction below, in one pull request: `tools/ci.ps1` green end to end and
+            `tools/verify-phase.ps1` green over the tree carrying both entries, 1a2723c, with the figures the
+            correction's entry states.
+
+### 12.5 - correction: the stepped plan's result is counted on the risk its plan stated with a fill nearer its stop than the stop setting's floor no trade, a trade that runs out of sessions is counted at its last close as its benchmark counts it, and every record is stated again without its five largest results by size   2026-10-01
+
+Corrects:   the 12.5 corrections of 2026-09-29 and 2026-09-30 that built the sweep and reran it on the edge, in the
+            function that counts a trade's result, on the operator's ruling above.
+Asked:      the operator, on 2026-10-01, in the amended brief the ruling above holds whole: "Fix the counting
+            fault where it is: the stepped plan's result is divided by the distance from the buy price its plan
+            stated to its stop, the distance its stop setting already checked, and a fill closer to the stop
+            than that setting's floor is not a trade. No other plan's counting changes, and today's stop floor of
+            half a typical move stays. Every figure is also stated with the five largest results by size, wins
+            or losses, removed."
+Found:      over the run `20261001T024757Z`'s saved candidates, read with the sweep's own code and nothing
+            written. A result is counted in multiples of the risk, and `SweepCandidates.Outcomes` read the risk
+            from the fill. The stepped plan is bought where a close first sits in its zone, anywhere down to its
+            stop, while its stop setting reads the distance from the entry its plan named. One trade, NVDA listed
+            on 2020-01-29, read as 1,474.67 times its risk on a plan aiming for 1.42; three more read as 366.90,
+            149.90 and 110.07; one loss read as 22,744 times its risk. Under the ten-session exit the stepped
+            plan held 19 results beyond 50 times the risk and no other plan held one. Each of the five designs
+            that run sent to its second stage, and each of the ten its conditions were tried on, was a stepped
+            plan design. The four of them read trade by trade stood at -0.094, -0.089, -0.016 and -0.068
+            without their five largest results, from 1.047, 0.849, 0.926 and 0.891 with them.
+Second:     found while writing this correction's tests, and not in the plan. The scorer states the fill on a
+            win and on a loss and not on a setup that ran out of sessions, and `Outcomes` counted a result only
+            where the fill was stated. So a trade that ran out of sessions was given no result, while
+            `SweepBenchmark.Walk` ends a member still open at a hold's cap at that close and counts it. The
+            trade side of every edge left such trades out and the benchmark side kept them, and the shorter the
+            hold the more it left out: the live rule held at most 20 sessions read -0.011 and reads 0.058 with
+            its 464 such trades counted.
+Repaired:   - `SweepCandidates.RiskPercent`: the risk a result is counted in. A plan bought at the close keeps
+              its fill's distance to its stop, and the fill is its own entry; the stepped plan's is the distance
+              its plan stated, the entry it named to its stop. It takes prices and returns a statistic, so it
+              joins the stated set of crossings the price rule's check holds, through `Statistic.FromRatio`.
+            - `SweepPlanOutcomes.FillMoves`, a reading an exit: the stepped plan's fill above its stop in
+              typical moves, none for a plan bought at the close, saved and read with the candidate.
+              `IsATradeAt` holds it to a stop option's low bound, a fill at the bound being a trade.
+            - `SweepStages.Walk` counts a stepped-plan pick whose fill is under the setting's stop floor as the
+              scorer counts a setup never entered: listed, its night held and the stock held through its end as
+              the pages' rule holds it, and no result. `StopFloor` reads the bound off the extended grid, which
+              every pick's corner is placed on.
+            - `SweepWalk.FillOf` reads the close a setup was entered at by the scorer's own entry rule, and
+              `Outcomes` counts a trade that ran out of sessions from it, at its last close. It is no win and
+              is not among the trades scored as won or lost.
+            - `SweepStages.WithoutTheLargest` gives a setting's edge and plain result without its 5 largest
+              results by size, `LargestLeftOut`, a large loss leaving as a large win does. The report states it
+              under the live rule's record, the starting point's and each carried design's.
+            - `SweepReport.ResultSizes`: for each kind of plan over every saved candidate and exit, how many
+              results, the largest, the smallest and how many lie beyond 20 times the risk, `ResultBound`,
+              drawn in the report's seventh part.
+            - `Outcomes` is public and takes the bars, their sessions and the typical move in place of the whole
+              series, so a test scores a constructed plan by hand.
+            - Documents: section 13.9 and section 17's sweep edge row state the rule, section 18 gains the row
+              about a fill nearer the stop than the floor, the decision the code cites is written, and section
+              17's sweep run row and RUNBOOK's sentence carry the ruling's amendment on where a run's figures
+              go; prior text in CHANGELOG, and the roster's row names the new assertions.
+Measured:   over the history that run read, 826 names and 2,198 sessions through 2026-09-30, the candidates
+            computed again in memory from this branch's build by the sweep's own functions, 292,271 of them in
+            498 s with their benchmarks in 5 s, the store read through the sweep's read-only reader and nothing
+            written anywhere.
+            - The stepped plan: 557,334 results over every candidate and exit, the largest 16.3 times the risk
+              and the smallest -18.2, none beyond 20. The plan at the nearest bands: 3,516,621, 40.6 and -28.1,
+              134 beyond 20. Section 10's plan: 3,911,901, 35.1 and -28.1, 148 beyond 20. No plan holds a
+              result beyond 50.
+            - The live rule at its settings: 2,804 listed, 2,774 with a result, 13 of them run out of sessions,
+              2,761 scored, an edge of 0.065 and a plain result of 0.185, and 0.057 and 0.177 without its five
+              largest by size. Before: 2,761 with a result, 0.064 and 0.183. Its scored trades, its share won
+              and its break-even are unchanged.
+            - The live rule at a reward-to-risk floor of 2: 1,916 listed, 1,898 with a result, 9 run out of
+              sessions, 1,889 scored, 0.099 and 0.224, and 0.081 and 0.206 without its five largest. Before:
+              0.098 and 0.220.
+            - The live rule held at most 10, 20 and 40 sessions: 1,191, 464 and 83 trades run out of sessions
+              and now counted, and edges of 0.063, 0.058 and 0.058.
+            - Four stepped-plan designs that run carried or ranked highest, each at its coarse centre read
+              again: edges of 0.040, 0.049, 0.072 and 0.059 over 2,641 to 4,598 trades, with 526, 184, 757 and
+              668 fills refused by the stop floor and no result beyond 20 times the risk.
+Unpredicted: three things the plan did not state.
+            - The second fault and its repair, with a fifth test and a fourth mutation.
+            - The live rule's edge moves from 0.064 to 0.065 and the base's from 0.098 to 0.099, where the plan
+              expected the live rule's figures unchanged: the trades run out of sessions, 13 and 9, are now
+              counted. The scored trades are unchanged at 2,761 and 1,889.
+            - The plan's third test was to read a plan bought at the close over the fixture's candidates. A
+              candidate keeps its outcomes and not its plan's prices, so there is nothing to count it again
+              from; the test scores a plan bought at the close over five constructed paths by hand, under every
+              exit, and the measurement above reads the live rule over the real history.
+Stands:     the run `20261001T024757Z` and its report, since a finished run is never written again. What it
+            ranked is not relied on: its stepped-plan designs by the first fault, and every design's edge by the
+            second, least at the 63-session hold the live rule and the base use. The first run's proposal bought
+            at the close on section 10's plan held 63 sessions, and Past picks divides a finished trade's return
+            by the listing's own buy to its stop and counts a trade ended by time, so neither carried the first
+            fault and the pages carried neither.
+Tests:      1669, from 1664: five added, each by hand over constructed closes: a stepped plan filled a hair
+            over its stop is no trade at a stop floor of half a move and one filled at the floor is; a stepped
+            plan filled inside its zone counts its return over the risk its plan stated, a fill and a stop on
+            one session among them; a trade that runs out of sessions is counted at its last close as the
+            benchmark's walk counts it; a plan bought at the close is counted on its own fill whichever way its
+            risk is read; and a record is stated again without its five largest results by size, a large loss
+            among them, with each kind of plan's results counted.
+Claims:     789, from 788: one added, section 18's row about a stepped plan filled nearer its stop than the stop
+            setting's floor. The sweep edge row gains two pinned numbers, the 5 and the 20.
+Pins:       none moves: no file touched is in any of the three pin lists, which the diff was read against.
+Remedy:     none: no store changes shape and no stored row is read differently. A sweep run started by an
+            earlier build is refused by this one, as a run goes on under the build that started it alone.
+Mutated:    the rule, stated before the run: each rule this correction adds, reversed alone, filtered to the
+            tests that read it, in a detached worktree at this entry's commit and reverted.
+            Predicted:
+            C1 the stepped plan's risk read from the fill again: red in the two stepped plan tests, the hair's
+               win reading 149 times its risk and the loss inside the zone 1.167, and in no other.
+            C2 the fill floor never refusing, `IsATradeAt` true whatever the fill: red in the hair's test alone.
+            C3 the five largest taken by value and not by size, the loss of 8 staying: red in the largest
+               results test alone.
+            C4 a trade that ran out of sessions left without a result, the fill read from the scorer alone: red
+               in the run-out test and in the test of a plan bought at the close, whose ten quiet sessions end
+               unresolved, and in no other.
+            Results: all four ran in a detached worktree at 1a2723c, this entry's commit, each filtered to the
+            five tests this correction adds, the edit made there and reverted, and the tree read clean after
+            each. C1 turned three red: the hair's win read 149 times its risk where 3.1335 is stated, the risk
+            inside the zone read 5.94 per cent where 5 is, and the run-out test's stepped trade read 0.3333
+            where 0.3960 is. C2 turned the hair's test red, the fill a twentieth of a move over the stop read
+            as a trade. C3 turned the largest results test red, the three left averaging -3.0833 where -0.25
+            is stated. C4 turned two red: the trade run out of sessions read no result where half a risk is
+            stated, and the ten quiet sessions of the plan bought at the close read none where 0.1667 is.
+Held:       C2, C3 and C4 red in the tests predicted and in no other of the five. C1 red in the two
+            predicted and in a third, the run-out test, which scores a stepped plan filled inside its zone and
+            so reads the same risk: not predicted, and named here.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1669 of 1669 tests ran
+            with none failed, migrations 0 to 52 with none pending, schema version 52, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 789 claims, 789 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 800 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1669 of 1669 tests.
+            Both gates ran over the tree carrying this entry, 1a2723c, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either.
+Carried:    the search itself is not run again here. The ruling's plan tests ideas on the live rule's own design
+            at its 63-session hold, which both faults touch least; whether to run the twelve-hour search again
+            under the corrected counting is the operator's to rule, since its first stage ranked every design
+            on edges the second fault understated at the shorter holds.

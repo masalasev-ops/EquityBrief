@@ -19,6 +19,10 @@ public sealed record SweepDesignRank(
     double? MedianMultiple,
     SweepMeasures? Live);
 
+// A setting's figures without its largest results by size: how many were left out, the trades left, and their
+// edge and plain result.
+public sealed record SweepTrimmed(int LeftOut, int Left, double? Edge, double? AverageMultiple);
+
 // Stage 1's row for one design as the run saves it.
 public sealed record RankRow(
     string Key,
@@ -196,10 +200,20 @@ public static class SweepStages
         }
     }
 
+    // The results a figure is also stated without, the largest by size, wins and losses alike.
+    public const int LargestLeftOut = 5;
+
+    // The low bound of a setting's stop option, in typical moves, which a stepped plan's fill is held to. Every
+    // walk reads a setting on the extended grid, as every pick's corner is placed on it.
+    public static float StopFloor(DialSetting setting) => (float)SweepGrid.Extended.StopBounds[setting.Stop].Low;
+
     // One setting walked over a design's picks: every pick the setting and the conditions pass is kept unless
     // the stock's kept trade under that exit is still open on its session, in which case it is counted as
     // blocked; a kept pick's figures, its night and the session its trade blocks the stock through are recorded
-    // under each exit the tally reads.
+    // under each exit the tally reads. A stepped plan filled nearer its stop than the setting's stop floor is
+    // counted as the scorer counts a setup never entered: listed, holding its night and the stock through its
+    // end as the pages' rule holds it, and no trade.
+    // see: The stepped plan's result is counted on the risk its plan stated, and a fill nearer its stop than the stop setting's floor is no trade
     public static void Walk(IReadOnlyList<SweepPick> picks, DialSetting setting, in ConditionSetting conditions, Tally tally)
     {
         tally.Clear();
@@ -208,6 +222,7 @@ public static class SweepStages
         var width = SweepFigures.Width;
         var words = tally.Words;
         var name = -1;
+        var stopFloor = StopFloor(setting);
 
         for (var at = 0; at < picks.Count; at++)
         {
@@ -238,11 +253,78 @@ public static class SweepStages
                     continue;
                 }
 
-                SweepFigures.Tally(sums, pick.Year, pick.Block, plan.Code[exit], plan.Null[exit], plan.BreakEven[exit], plan.Multiple[exit], plan.EdgeAt(exit));
+                if (plan.IsATradeAt(exit, stopFloor))
+                {
+                    SweepFigures.Tally(sums, pick.Year, pick.Block, plan.Code[exit], plan.Null[exit], plan.BreakEven[exit], plan.Multiple[exit], plan.EdgeAt(exit));
+                }
+                else
+                {
+                    SweepFigures.Tally(sums, pick.Year, pick.Block, SweepPlanOutcomes.NeverEntered, float.NaN, float.NaN, float.NaN, float.NaN);
+                }
+
                 tally.Nights[(index * words) + (pick.Session >> 6)] |= 1UL << (pick.Session & 63);
                 tally.OpenUntil[index] = pick.Session + plan.Ends[exit];
             }
         }
+    }
+
+    // A setting's edge and plain result without its largest results by size, a large loss leaving as a large
+    // win does, so a figure a few trades carry is seen beside the one that states it. The trades are the ones
+    // the walk counts a result for, under the design's own exit.
+    public static SweepTrimmed WithoutTheLargest(IReadOnlyList<SweepPick> picks, SweepDesign design, DialSetting setting, in ConditionSetting conditions, int largest = LargestLeftOut)
+    {
+        var exit = design.ExitIndex;
+        var stopFloor = StopFloor(setting);
+        var results = new List<(float Multiple, float Edge)>();
+        var name = -1;
+        var openUntil = -1;
+
+        foreach (var pick in picks)
+        {
+            if (pick.Name != name)
+            {
+                name = pick.Name;
+                openUntil = -1;
+            }
+
+            if (!pick.Corner.Passes(setting) || !conditions.Passes(pick.Readings) || pick.Session <= openUntil)
+            {
+                continue;
+            }
+
+            var plan = pick.Plan;
+
+            openUntil = pick.Session + plan.Ends[exit];
+
+            if (pick.Year is >= 0 and < SweepFigures.Years
+                && plan.Code[exit] is SweepPlanOutcomes.Win or SweepPlanOutcomes.Loss or SweepPlanOutcomes.Unresolved
+                && !float.IsNaN(plan.Multiple[exit])
+                && plan.IsATradeAt(exit, stopFloor))
+            {
+                results.Add((plan.Multiple[exit], plan.EdgeAt(exit)));
+            }
+        }
+
+        var left = results.OrderByDescending(result => Math.Abs(result.Multiple)).Skip(largest).ToArray();
+        double edgeSum = 0, multipleSum = 0;
+        var edges = 0;
+
+        foreach (var (multiple, edge) in left)
+        {
+            multipleSum += multiple;
+
+            if (!float.IsNaN(edge))
+            {
+                edgeSum += edge;
+                edges++;
+            }
+        }
+
+        return new SweepTrimmed(
+            Math.Min(largest, results.Count),
+            left.Length,
+            edges > 0 ? edgeSum / edges : null,
+            left.Length > 0 ? multipleSum / left.Length : null);
     }
 
     // One setting's summary under one exit, the buffers handed in reused.
