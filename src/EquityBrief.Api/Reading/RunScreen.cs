@@ -1219,7 +1219,7 @@ public static class RunScreen
     // since a run of the rest of an earlier session's night stamps its rows on that session's evening. The
     // notice on tonight's page is handed this same view.
     // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
-    public static NightView Night(IReadOnlyList<RunStageRow> log, DateOnly session, DateTimeOffset now, TimeSpan deadline, string? heldBy = null)
+    public static NightView Night(IReadOnlyList<RunStageRow> log, DateOnly session, DateTimeOffset now, TimeSpan deadline, string? heldBy = null, string? refusal = null)
     {
         var runs = log
             .Where(row => row.RunId.StartsWith(NightPrefix, StringComparison.Ordinal) && !row.RunId.Contains(QueuePass, StringComparison.Ordinal))
@@ -1232,12 +1232,16 @@ public static class RunScreen
 
         if (runs.Length == 0)
         {
-            var state = !Traded(session) ? NightStates.NoSession
+            // A refusal the night's script wrote for this session, before any worker existed, is the night's
+            // state where no run of it is stored, with the reason the script gave.
+            // see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+            var state = refusal is not null ? NightStates.Refused
+                : !Traded(session) ? NightStates.NoSession
                 : now < new DateTimeOffset(session.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero) + NeverRanFrom ? NightStates.NotYet
                 : NightStates.NeverRan;
 
             return new NightView(
-                session, state, null, null, null, null, null, deadline.TotalMinutes, null, 0, spend, 0, null,
+                session, state, null, refusal, null, null, null, deadline.TotalMinutes, null, 0, spend, 0, null,
                 [.. groups.Select(group => new StepGroupView(group.Name, group.Stages.Count, 0, 0, false))]);
         }
 
@@ -1327,7 +1331,8 @@ public static class RunScreen
                 }),
             ],
             madeTries,
-            nightState == NightStates.Waiting ? nextTry : null);
+            nightState == NightStates.Waiting ? nextTry : null,
+            merged.FirstOrDefault(row => row.Stage == EquityBrief.Core.Configuration.NightBuild.Stage)?.Detail);
 
         static string FirstTry(string runId)
         {

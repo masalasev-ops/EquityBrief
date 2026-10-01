@@ -88,11 +88,20 @@ builder.Services.AddSingleton<ReportExporter>();
 // What a press starts once its request is written: the worker's drain, from a copy of the
 // worker's build beside the surface's own. A surface running from any build but its own,
 // as the suite hosts it, finds no worker beside it and starts nothing.
-builder.Services.AddSingleton<IDrainLauncher>(services => new WorkerDrainLauncher(
-    checkout,
-    WorkerDrainLauncher.WorkerBuildBeside(checkout, AppContext.BaseDirectory),
-    services.GetRequiredService<StoreLocation>().DataRoot,
-    services.GetRequiredService<IClock>()));
+// The drain and the rest of a night start from the newest night's own build where the night's script left
+// one under the data root, so they run the build the night made and never a newer one.
+// see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+builder.Services.AddSingleton<IDrainLauncher>(services =>
+{
+    var dataRoot = services.GetRequiredService<StoreLocation>().DataRoot;
+
+    return new WorkerDrainLauncher(
+        checkout,
+        WorkerDrainLauncher.WorkerBuildBeside(checkout, AppContext.BaseDirectory),
+        dataRoot,
+        services.GetRequiredService<IClock>(),
+        nightBuild: () => EquityBrief.Core.Configuration.NightBuild.NewestWorkerBuild(dataRoot));
+});
 
 var app = builder.Build();
 
@@ -666,7 +675,15 @@ static async Task<IReadOnlyList<SpentRow>> SpentOn(ReadApi read, DateOnly night)
 // night's run log rows and the night holding the lock, if one does.
 // see: A night's state is read off its own run log rows and its tries, and the pages that state it read that one state
 static NightView NightFrom(IReadOnlyList<RunStageRow> log, DateOnly night, IClock clock, StoreLocation store) =>
-    RunScreen.Night(log, night, clock.UtcNow, EquityBrief.Core.Providers.RetryPolicy.Standard.Deadline, NightLock.Holder(store.DataRoot));
+    RunScreen.Night(log, night, clock.UtcNow, EquityBrief.Core.Providers.RetryPolicy.Standard.Deadline, NightLock.Holder(store.DataRoot), RefusalOf(night, clock, store));
+
+// The reason the night's script refused the night of a session before any worker existed, read off the file
+// it left under the data root where that refusal fell on the session's own evening, and none otherwise.
+// see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+static string? RefusalOf(DateOnly night, IClock clock, StoreLocation store) =>
+    EquityBrief.Core.Configuration.NightBuild.Refusal(store.DataRoot) is { } refusal && clock.SessionDateAt(refusal.At) == night
+        ? refusal.Reason
+        : null;
 
 // The session tonight's notice is about: the date the page was asked for, and with none the session the clock
 // is in where the exchange trades it, whose night may not have drawn its list yet, and otherwise the night the

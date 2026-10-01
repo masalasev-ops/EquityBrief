@@ -1,23 +1,163 @@
 #!/usr/bin/env bash
-# What the scheduler calls. Runs the night's steps in order and exits non-zero
-# on the first failure, naming the step.
+# What the scheduler calls. Builds the night from a clean copy of the committed
+# code and runs its steps in order, exiting non-zero on the first failure,
+# naming the step.
 #
-# Runs from the repository root, because a relative data root in appsettings.json
-# resolves against the working directory and the store must land in the same
-# place whoever calls this and from wherever.
+# Runs from the repository root, which is the main checkout: the commit built is
+# that checkout's own HEAD, read with no fetch, and the data folder, the store
+# and the secrets file are the checkout's, each named by absolute path, so the
+# copy never finds, creates or writes a store of its own and holds no secret.
 #
-# No arguments. Where the feeds come from is a setting rather than an argument
-# from 2.6: `EquityBrief:Providers:Source` is `live` or `fixture`, and a fixture
-# night names its folder in `EquityBrief:Providers:Fixture`. A scheduled night's
-# source should not be a property of this file.
+# What is built. The checkout's commit is exported whole with `git archive`, so
+# an uncommitted or untracked file is never built and costs no night, into one
+# folder a commit under the data root's `nights/`, built once in Release and
+# run by every try of the night, the rest of one and the drain it starts. A copy
+# already holding the worker is run as it is, and a copy no night has used for a
+# week is removed.
+#
+# What is refused. A checkout off main, or holding a commit origin/main does not
+# have, is refused before any worker exists, with the reason on stderr and in
+# `night.refused` under the data root, which tonight's page reads in place of a
+# night that never ran. A checkout behind origin/main runs, and says so in the
+# line the night records. With no origin/main to read against, the night runs
+# and says that too.
+#
+# Where the feeds come from is a setting rather than an argument from 2.6:
+# `EquityBrief:Providers:Source` is `live` or `fixture`, and a fixture night
+# names its folder in `EquityBrief:Providers:Fixture`. A scheduled night's source
+# should not be a property of this file.
 #
 # Anything given is passed through, which is how the run RUNBOOK asks for by hand
 # is made: `--fixture <folder>` and `--live` override the setting for one run and
-# refuse if both are given, and `--session <yyyy-MM-dd>` runs the night for a
-# session the operator names rather than the one the clock falls on.
+# refuse if both are given, `--session <yyyy-MM-dd>` runs the night for a session
+# the operator names rather than the one the clock falls on, and `--resume` runs
+# the rest of the newest night from the build that night was made with, read off
+# `night.build` under the data root, never a newer one. `--check` prints what a
+# run would build and run, and runs nothing, which is what the suite reads.
 set -euo pipefail
 
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# The root in the form the platform's own tools read: `pwd -W` on a Windows bash
+# gives the drive-lettered path a .NET process resolves, and elsewhere it is
+# not a flag and `pwd` is used.
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && (pwd -W 2>/dev/null || pwd))"
 cd "$root"
 
-exec dotnet run --project src/EquityBrief.Worker -- nightly "$@"
+data="${EquityBrief__DataRoot:-$root/data}"
+case "$data" in
+    /*|[A-Za-z]:*) ;;
+    *) data="$root/$data" ;;
+esac
+mkdir -p "$data"
+
+check=0
+resume=0
+pass=()
+
+for argument in "$@"; do
+    case "$argument" in
+        --check) check=1 ;;
+        --resume) resume=1; pass+=("$argument") ;;
+        *) pass+=("$argument") ;;
+    esac
+done
+
+now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
+
+# A refusal, before any worker exists: on stderr, and in the file the pages read.
+refuse() {
+    printf '%s %s\n' "$(now)" "$1" > "$data/night.refused"
+    echo "nightly: refused before the first step: $1" >&2
+    exit 1
+}
+
+branch="$(git symbolic-ref --short -q HEAD || true)"
+
+if [ "$branch" != "main" ]; then
+    refuse "the checkout is on '${branch:-no branch}' and not on main, so no night was built from it"
+fi
+
+commit="$(git rev-parse HEAD)"
+short="${commit:0:12}"
+note="built from $short"
+
+if git rev-parse --verify -q refs/remotes/origin/main >/dev/null; then
+    ahead="$(git rev-list --count origin/main..HEAD)"
+
+    if [ "$ahead" != 0 ]; then
+        refuse "the checkout holds $ahead commit(s) origin/main does not have, so no night was built from it"
+    fi
+
+    behind="$(git rev-list --count HEAD..origin/main)"
+
+    if [ "$behind" != 0 ]; then
+        note="$note, $behind commit(s) behind origin/main"
+    fi
+else
+    note="$note, with no origin/main to read against"
+fi
+
+# The rest of a night runs the commit that night was built from, never a newer one.
+if [ "$resume" = 1 ] && [ -s "$data/night.build" ]; then
+    recorded="$(tr -d '[:space:]' < "$data/night.build")"
+
+    if [ "$recorded" != "$commit" ]; then
+        if ! git rev-parse --verify -q "$recorded^{commit}" >/dev/null; then
+            refuse "the newest night was built from $recorded, which this repository no longer holds, so the rest of it cannot be run"
+        fi
+
+        commit="$recorded"
+        short="${commit:0:12}"
+        note="built from $short, the newest night's own commit rather than the checkout's"
+    fi
+fi
+
+copies="$data/nights"
+copy="$copies/$short"
+secrets="$root/src/EquityBrief.Worker/appsettings.Secrets.json"
+
+worker_in() {
+    find "$1/src/EquityBrief.Worker/bin/Release" -name EquityBrief.Worker.dll 2>/dev/null | head -n 1 || true
+}
+
+built="$(worker_in "$copy")"
+
+if [ "$check" = 1 ]; then
+    echo "nightly: would run $commit, $note"
+    echo "nightly: copy $copy, ${built:+built already}${built:-to build}"
+    echo "nightly: data root $data"
+    echo "nightly: secrets read from $secrets, none copied"
+    rm -f "$data/night.refused"
+    exit 0
+fi
+
+rm -f "$data/night.refused"
+
+if [ -z "$built" ]; then
+    started=$SECONDS
+    rm -rf "$copy" "$copy.partial"
+    mkdir -p "$copy.partial"
+    git archive "$commit" | tar -x -C "$copy.partial"
+    dotnet build "$copy.partial/src/EquityBrief.Worker" -c Release --nologo -v quiet
+    mv "$copy.partial" "$copy"
+    built="$(worker_in "$copy")"
+
+    if [ -z "$built" ]; then
+        echo "nightly: the build of $short left no worker assembly under $copy" >&2
+        exit 1
+    fi
+
+    note="$note, built in $((SECONDS - started)) s"
+else
+    note="$note, build reused"
+fi
+
+touch "$copy"
+find "$copies" -mindepth 1 -maxdepth 1 -type d -mtime +7 ! -path "$copy" -exec rm -rf {} + 2>/dev/null || true
+printf '%s\n' "$commit" > "$data/night.build"
+
+echo "nightly: $note"
+
+export EquityBrief__DataRoot="$data"
+export EquityBrief__SecretsFile="$secrets"
+
+exec dotnet "$built" nightly --built-from "$short" --build-note "$note" "${pass[@]}"

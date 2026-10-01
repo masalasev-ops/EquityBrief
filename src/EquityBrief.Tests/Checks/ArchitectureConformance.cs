@@ -1485,8 +1485,10 @@ public partial class ArchitectureConformance
         // 379 at the 12.6 correction that draws how each report did and the section trials: the seven parts their
         // two rows state. 376 at the 12.6 correction that writes the comparisons to files: the section trials row's
         // three parts go with it. 387 at the 12.2 correction reading one open trade per stock on the pages:
-        // tonight's Still open row as its nine parts and Past picks' two parts.
-        Assert.Equal(387, inDocument.Length);
+        // tonight's Still open row as its nine parts and Past picks' two parts. 389 at the 12.3 build of the
+        // night from a clean copy of the committed code: the refusal on tonight's notice and the commit on the
+        // Run page.
+        Assert.Equal(389, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1570,8 +1572,9 @@ public partial class ArchitectureConformance
         // its two halves. 355 at 12.6's correction that draws how each report did and the section trials: the
         // seven parts their two rows state. 352 at the 12.6 correction that writes the comparisons to files: the
         // section trials row's three parts go with it. 363 at the 12.2 correction reading one open trade per
-        // stock on the pages: Still open's nine parts and Past picks' two.
-        Assert.Equal(363, checkedElements);
+        // stock on the pages: Still open's nine parts and Past picks' two. 365 at the 12.3 build of the night
+        // from a clean copy of the committed code: the refusal on tonight's notice and the commit on the Run page.
+        Assert.Equal(365, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

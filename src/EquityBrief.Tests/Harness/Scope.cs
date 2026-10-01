@@ -781,6 +781,10 @@ internal static class Scope
             Verdict.Pass,
             "a rejection writes the decision, when and why on the proposal's row and nothing else, a second decision is refused, and the next proposal for the version waits on sixty more ordinary nights, over constructed stores",
             ByExpectations),
+        [CheckReach.Key(FailureTable, "The night's checkout is off main or holds a commit the remote's main lacks")] = new Scoped(
+            Verdict.Pass,
+            "the script's check mode over temporary repositories off main, holding a commit the remote's main lacks, clean, edited with a stray file, and behind the remote's main, the refusal file read back with its reason, the rest of a night run from the night's own commit, and the refusal drawn on both pages by `read-surface`",
+            ByNight),
         [CheckReach.Key(NightlyRunSteps.Heading, "Count the ordinary nights stored under the open filter version and, once they reach sixty, propose for each gate the one setting that brings its median count inside its band, writing one proposal for the version and stating the crossed trigger on the night's run log; nothing proposed is applied until the operator's command accepts it.")] = new Scoped(
             Verdict.Pass,
             "the night runs the step after the swing filter and before the facts, and it writes a proposal at the trigger and none before",
@@ -1684,6 +1688,13 @@ internal static class Scope
             Verdict.Pass, "the tries worked by hand over constructed run log rows, a try again read with what the earlier try stored, and read off the Run page", ByReadSurface),
         [CheckReach.Key("15.10 Run", "How last night went, a press running the rest of a night left unfinished")] = new Scoped(
             Verdict.Pass, "the press read off the Run page on a night left unfinished and absent while it waits", ByReadSurface),
+
+        // The 12.3 build of the night from a clean copy of the committed code: a refusal before any worker exists
+        // on tonight's notice and the Run page, and the commit the night recorded on the Run page.
+        [CheckReach.Key("15.7 Tonight", "The night's state, a refusal before its first step with its reason")] = new Scoped(
+            Verdict.Pass, "the notice read off tonight's page over a refusal file in the script's own shape, naming the refusal and its reason for the session it fell on and never ran for another", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "How last night went, the commit the night was built from")] = new Scoped(
+            Verdict.Pass, "the line read off the Run page over a build row the night writes, and absent over a night that recorded none", ByReadSurface),
 
         // 12.7's correction, close to a buy point, on the operator's specification of 2026-09-29.
         [CheckReach.Key("15.7 Tonight", "Close to a buy point, one row per member whose stored result missed exactly one of the five gates and carries no exclusion")] = new Scoped(
@@ -3565,6 +3576,8 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "The night's state, a one-line note where the night finished")] = "12.3",
         [CheckReach.Key("15.10 Run", "How last night went, each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished")] = "12.3",
         [CheckReach.Key("15.10 Run", "How last night went, a press running the rest of a night left unfinished")] = "12.3",
+        [CheckReach.Key("15.7 Tonight", "The night's state, a refusal before its first step with its reason")] = "12.3",
+        [CheckReach.Key("15.10 Run", "How last night went, the commit the night was built from")] = "12.3",
         [CheckReach.Key("15.7 Tonight", "Close to a buy point, one row per member whose stored result missed exactly one of the five gates and carries no exclusion")] = "12.7",
         [CheckReach.Key("15.7 Tonight", "Close to a buy point, nearest to qualifying first with a tie in the list's own order")] = "12.7",
         [CheckReach.Key("15.7 Tonight", "Close to a buy point, drawing the places the list leaves of the twenty")] = "12.7",
@@ -3945,9 +3958,9 @@ internal static class Scope
         // The 12.3 correction that opens the Run page on its pictures, each of its first three regions read as
         // the parts its row states.
         [CheckReach.Key("15.10 Run", "How last night went")] =
-            ["a status mark and a headline naming the night's state as its own run log rows give it", "four headline figures being the stocks read and the provider requests with the research spend and the steps run again", "a time bar of the night's steps in six named groups showing where a stopped night stopped", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished"],
+            ["a status mark and a headline naming the night's state as its own run log rows give it", "four headline figures being the stocks read and the provider requests with the research spend and the steps run again", "a time bar of the night's steps in six named groups showing where a stopped night stopped", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished", "the commit the night was built from"],
         [CheckReach.Key("15.7 Tonight", "The night's state")] =
-            ["a notice at the top naming the night's state as the Run page's headline names it", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished", "a one-line note where the night finished"],
+            ["a notice at the top naming the night's state as the Run page's headline names it", "each try so far with the step it stopped at and its reason while the night waits to try again or is left unfinished", "a press running the rest of a night left unfinished", "a one-line note where the night finished", "a refusal before its first step with its reason"],
         // 12.7's correction: the nine parts close to a buy point enumerates, and the line a closed market draws
         // and the key, which its row states outside the enumerations.
         [CheckReach.Key("15.7 Tonight", "Close to a buy point")] =
@@ -4325,6 +4338,8 @@ internal static class Scope
         ["A gate's reading is absent for a name"] = "12.2",
         // 12.4's, answered by the command's rejection.
         ["A shape proposal rejected"] = "12.4",
+        // 12.3's, answered by the night's script before any worker exists.
+        ["The night's checkout is off main or holds a commit the remote's main lacks"] = "12.3",
         // 12.6's, answered by tonight's page and the night's own request.
         ["The market gate closed on a night"] = "12.6",
         ["No name passed the swing filter on a night"] = "12.6",

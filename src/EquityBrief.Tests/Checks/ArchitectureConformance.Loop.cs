@@ -1188,6 +1188,15 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.MatrixTable, "Comparison files"),
     ];
 
+    // 12.3's build of the night from a clean copy of the committed code, on the ruling of 2026-09-29: the refusal
+    // on tonight's notice, the commit on the Run page, and section 18's row about a checkout refused. Declared
+    // before the lists that take them in.
+    internal static readonly string[] NightBuildClaims =
+    [
+        .. Reading.ReadSurface.NightBuildClaims,
+        CheckReach.Key(Scope.FailureTable, "The night's checkout is off main or holds a commit the remote's main lacks"),
+    ];
+
     // 12.5's correction on the operator's rulings of 2026-09-29: the sweep history as a component with its
     // catalogue and matrix rows, section 17's four sweep rows and section 18's row about a chunk that fails twice.
     // Declared before the lists that take them in.
@@ -1383,6 +1392,7 @@ public partial class ArchitectureConformance
         .. ModelProfileClaims,
         .. ResearchTemplateClaims,
         .. SweepClaims,
+        .. NightBuildClaims,
     ];
 
     // Rows taken out of the document after phase 12's prediction, which counted each: the name page's
@@ -1501,6 +1511,7 @@ public partial class ArchitectureConformance
         .. ModelProfileClaims,
         .. ResearchTemplateClaims,
         .. SweepClaims,
+        .. NightBuildClaims,
     ];
 
     // The claims the plan predicted and phase 12 did not land, all at 12.6: tonight's list read as six new parts
@@ -1547,8 +1558,10 @@ public partial class ArchitectureConformance
         // and section 18's row, 755 from the 12.5 correction that brings the sweep, its seven claims named
         // in theirs, and 763 from the 12.5 correction that reruns it on the edge, its eight more: the
         // point-in-time check's catalogue and matrix rows, section 17's edge, conditions, point in time and
-        // search rows, and section 18's two.
-        Assert.Equal((550, 763), (predicted, actual));
+        // search rows, and section 18's two, and 766 from the 12.3 build of the night from a clean copy of the
+        // committed code, its three: the refusal on tonight's notice, the commit on the Run page and section 18's
+        // row about a checkout refused.
+        Assert.Equal((550, 766), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

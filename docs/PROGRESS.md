@@ -34049,3 +34049,91 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             Both gates ran over the tree carrying this entry, f8f25fe, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either; run 3 went on under its own build throughout.
 Carried:    nothing new. Track 3 follows run 3's end, on the operator's word.
+
+### 12.3 - each night is built from a clean copy of the main checkout's own commit and never from its working tree, refusing only a checkout off main or ahead of the remote's main, recording the commit it ran and reading its store and its secrets from the checkout by path, on the 12.3 ruling of 2026-09-29   2026-10-01
+
+Builds:     the 12.3 ruling of 2026-09-29, track 3 of the queue the 12.2 ruling of 2026-09-30 sets, started on the
+            operator's word of 2026-10-01 ("proceed with those while I go to bed") while the sweep's third run went on
+            under its own build.
+Asked:      the ruling's conditions, word for word in its entry above: a clean copy of the committed code at the main
+            checkout's own HEAD read with no fetch; a refusal only off main or holding commits origin/main lacks; the
+            data folder, the store and the secrets the main checkout's by absolute path with nothing secret copied;
+            the report press, the drain and the labeller on the night's build; the run log recording the commit and
+            the run page showing it; a retry, the resume press and the run-the-rest command reusing the night's
+            build; a refusal with an outcome of its own the resume press reads as a refusal, written where the
+            Tonight notice reads it; and the tests listed.
+Built:      - The script. `tools/nightly` reads the checkout's HEAD with no fetch, refuses a checkout off main or
+              holding a commit origin/main does not have before any worker exists, with the reason on stderr and in
+              `night.refused` under the data root, and exits 1; a checkout behind origin/main runs and the line says
+              by how many; with no origin/main it runs and says that. It exports the commit whole with `git archive`
+              into `data/nights/<commit>/`, builds the worker there once in Release, runs a copy already holding the
+              worker as it is, removes a copy no night has used for a week, writes the commit to `night.build`, and
+              runs the worker's own verb from that build with `EquityBrief__DataRoot` at the checkout's `data` and
+              `EquityBrief__SecretsFile` at the checkout's secrets file, handing it `--built-from` and `--build-note`.
+              `--resume` runs the commit `night.build` names, built again from the repository where its copy is
+              gone, and refuses a commit the repository no longer holds. `--check` prints what a run would build
+              and run and runs nothing, which is what the suite reads. A fresh copy a commit rather than a persistent
+              worktree: the copy is the committed code and nothing else, a commit's copy is built once and reused
+              by every try, the rest of the night and the drain, and nothing is reset or cleaned.
+            - The worker. `WorkerConfiguration` reads the secrets file the environment names by path, after the
+              settings beside the build and before the environment, so a variable still wins; the night records
+              the commit on the run log under the stage `build` once the store is migrated, as a row of its own
+              under each try's id, and a night handed no commit records none.
+            - The read surface. The drain and the rest of the night start from the newest night's own build where
+              `night.build` names a commit whose copy holds the worker, and from the build beside the surface
+              otherwise; a refusal file whose instant falls on a session's evening is that night's state, refused
+              before its first step with its reason, on tonight's notice and the Run page's headline where no run
+              of it is stored, and the Run page shows the commit a night recorded.
+            - The documents. Section 14 opens on what the night is built from; the Tonight and Run page rows carry
+              the refusal and the commit; section 18 carries the checkout refused; the decision is named; the
+              runbook says what the night builds and what to do in the morning after a refusal; prior text in
+              CHANGELOG.
+Measured:   the build's time the ruling asks for over the first five nights is read on the Run page's build line,
+            which states it, from the night of 2026-10-01 on; none has run under this yet. The script's check mode
+            over a temporary repository answers in under a second a case. A dry run of the script over a throwaway
+            clone of this entry's first commit, its branch named main with the remote's main at the same commit and
+            a scratch data root in the environment, exported the commit and built the worker in 20 s, 16 s of it
+            the build, wrote the commit file, and handed the worker its verb with both sources named, which the
+            worker refused before its first step as asked; the copy held no secrets file and the scratch root no
+            store.
+Tests:      1650, from 1642: eight added, the script's two over temporary repositories, the night's build row, the
+            configuration's secrets file, the files under the data root, the refusal on both pages, the commit on
+            the Run page and the launcher's choice of build.
+Claims:     766, from 763: three added, tonight's refusal, the Run page's commit and section 18's checkout refused.
+Pins:       none moves: no pinned source is touched.
+Mutated:    the rule, stated before the run: each rule this build adds, reversed alone, filtered to the test that
+            reads it, in a detached worktree at this entry's commit and reverted.
+            Predicted:
+            N1 the script refusing no checkout ahead of origin/main: red in the script's checkout test alone.
+            N2 the rest of a night running the checkout's commit rather than the one `night.build` names: red in the
+               script's resume test alone.
+            N3 the launcher starting the build beside the surface whatever the night left: red in the launcher
+               test alone.
+            N4 the refusal read as any session's rather than the one it fell on: red in the refusal page test alone.
+            N5 the build row not written: red in the build row test alone.
+            Results: N1 to N5 ran in a detached worktree at e3594a9, this entry's commit, each filtered to its test,
+            the edit made there and reverted, and the tree read clean after each: every one turned its predicted
+            test red, and no other test was run. The five ran first at 0db470b and again at 0d07b20, the two commits
+            before the test corrections the Verified line names, with the same results each time.
+Held:       red in the test predicted and in no other, for each of the five.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1650 of 1650 tests ran
+            with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 766 claims, 766 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 777 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1650 of 1650 tests.
+            Both gates ran over the tree carrying this entry, e3594a9, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either; run 3 of the sweep went on under its own
+            build throughout. The gates ran three times. Over 0db470b and 0d07b20, `tools/ci.ps1` failed in the
+            suite on one of this build's own tests each time, which `dotnet test` alone had passed: the script
+            test let the script inherit the data root `tools/ci.*` puts into the environment, and the
+            configuration test asserted the data root key, which that root overrides; each was corrected as its
+            own commit, the script test handing the script its own root and the configuration test reading a key
+            of its own through the environment, and the eight new tests were run again under that root before
+            each commit. Over e3594a9, `tools/ci.ps1` was green, and `tools/verify-phase.ps1`'s first run failed
+            on one test of 1650 that this build does not touch, the read surface's own-checkout test, in the
+            deletion of its temporary folder after the surface it had started was killed, with the sweep's run
+            and the gate loading the machine; its second run over the same tree is the one recorded above.
+Carried:    the build's time over the first five nights against the one-hour deadline, read on the Run page's
+            build line from the night of 2026-10-01 on, the line this build adds; the labeller, which the
+            ruling names and which is not built, runs the night's build when it is, on the drain launcher's rule.

@@ -47,7 +47,8 @@ public sealed class WorkerDrainLauncher(
     string? workerBuild,
     string dataRoot,
     IClock clock,
-    Func<ProcessStartInfo, bool>? start = null) : IDrainLauncher
+    Func<ProcessStartInfo, bool>? start = null,
+    Func<string?>? nightBuild = null) : IDrainLauncher
 {
     public const string Executable = "dotnet";
 
@@ -96,6 +97,20 @@ public sealed class WorkerDrainLauncher(
     public DrainStart StartTheRestOfTheNight() =>
         Launch(RestOfTheNight, "The rest of the night has started from the first step its tries have not finished.", "the rest of the night waits for tools/nightly --resume run by hand");
 
+    // The build a drain or the rest of the night is started from: the newest night's own build where the
+    // night's script left one holding the worker, so the drain and the rest of a night run the build the
+    // night made and never a newer one, and the build beside the surface otherwise.
+    // see: Each night is built from a clean copy of the main checkout's own commit and never from its working tree, and refuses only a checkout off main or ahead of the remote's main
+    public string? BuildToStart()
+    {
+        if (nightBuild?.Invoke() is { } made && File.Exists(Path.Combine(made, Assembly)))
+        {
+            return made;
+        }
+
+        return workerBuild is not null && File.Exists(Path.Combine(workerBuild, Assembly)) ? workerBuild : null;
+    }
+
     DrainStart Launch(IReadOnlyList<string> verb, string started, string waits)
     {
         if (checkout is null || workerBuild is null)
@@ -103,7 +118,7 @@ public sealed class WorkerDrainLauncher(
             return new DrainStart(false, $"The worker was not started, because the read surface is not running from its own build inside a checkout, so {waits}.");
         }
 
-        if (!File.Exists(Path.Combine(workerBuild, Assembly)))
+        if (BuildToStart() is not { } build)
         {
             return new DrainStart(false, $"The worker was not started, because no worker is built beside the read surface, so {waits}.");
         }
@@ -112,7 +127,7 @@ public sealed class WorkerDrainLauncher(
 
         try
         {
-            copy = CopyOf(workerBuild);
+            copy = CopyOf(build);
         }
         catch (Exception failure) when (failure is IOException or UnauthorizedAccessException)
         {
