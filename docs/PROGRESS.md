@@ -34939,7 +34939,7 @@ Stored:     the plan as it was put to the operator, in the main checkout's `prom
 Claims:     none added: section 20's row is read by the check that counts the phases and is no claim.
 Verified:   with the checkpoints after it, in one pull request: `tools/ci.ps1` green end to end and
             `tools/verify-phase.ps1` green over the tree carrying every entry from this one to 13.5's,
-            F13SHA, with the figures 13.5's entry states.
+            9dfe60d, with the figures 13.5's entry states.
 
 ### 13.1 - the family framework: the page's list drawn each night from what each setup family passed, five a family, a stock once and none while its trade is open, the pullback as the first family, the night asking for six reports, and tonight's page drawing a card a family   2026-10-01
 
@@ -35022,10 +35022,21 @@ Mutated:    the rule, stated before the run: each rule this checkpoint adds, rev
                test of a night read by the rule that drew it, and in no other of the five.
             A6 the lister keeping its night's earlier rows where it is run again: red in the lister's test.
             A7 the card's standing read as provisional whatever the register holds: red in the card's test.
-            Results: F131MUT.
-Held:       F131HELD.
+            Results: all seven ran in a detached worktree at 9dfe60d, each filtered to the six tests of this
+            checkpoint, the five it added and the six names test, and reverted. All seven red, none
+            survived. A1 red in the list's, the lister's and the card's tests as predicted, and in the
+            test of a night read by the rule that drew it, which was not: Past picks' rows there count on
+            the stock held back. A2 red in those four and in the provisional card's test, whose card
+            lists a sixth pick. A3 red in the list's test alone. A4 red in the six names test alone.
+            A5 red in the test of a night read by the rule that drew it and in the lister's, which the
+            prediction said it would not be: with the families' record unread the lister takes the
+            night the families drew for one the filter listed, and holds back a stock past five as if
+            it held a trade. A6 red in the lister's test alone. A7 red in the card's test alone.
+Held:       A3, A4, A6 and A7 red in the test predicted and in no other of the six. A1 and A2 red in
+            the tests predicted and in one and two more. A5 red in the test predicted and in the
+            lister's, against the prediction.
 Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
-            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, 9dfe60d,
             with the figures 13.5's entry states.
 
 ### 13.2 - breakouts: the second setup family, a close above the year's high on heavy volume after its ranges narrowed, evaluated for every member every night and stored, bought at the close on a stop that trails the highest close and no target, scored in multiples of its risk, and drawn as a card of its own   2026-10-01
@@ -35114,10 +35125,19 @@ Mutated:    the rule, stated before the run: each rule this checkpoint adds, rev
                filler's test.
             B9 the lister reading another family's names by ticker and not by place: red in the
                evaluator's test, where the lister draws the two families.
-            Results: F132MUT.
-Held:       F132HELD.
+            Results: all nine ran in a detached worktree at 9dfe60d, each filtered to the seven tests this
+            checkpoint added, and reverted. All nine red, none survived. B1 and B3 red in the gates'
+            test alone. B2 red in the gates' test and the evaluator's as predicted, and in the closed
+            market's, where the three members a gate short become two gates short. B4 red in the
+            trailing stop's test and the filler's. B5 red in the trailing stop's test alone. B6 red in
+            the evaluator's test as predicted and in the closed market's, whose counts move with it.
+            B7 red in the closed market's test as predicted and in the evaluator's, which reads the
+            stored market gate's own words. B8 red in the filler's test alone. B9 red in the
+            evaluator's test alone.
+Held:       B1, B3, B4, B5, B8 and B9 red in the tests predicted and in no other of the seven. B2, B6
+            and B7 red in the tests predicted and in one more each.
 Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
-            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, 9dfe60d,
             with the figures 13.5's entry states.
 
 ### 13.3 - the earnings drift: the third setup family, a report that beat its estimate with a reaction up a typical move on heavy volume, bought within five sessions while it holds above the reaction's low, read from the reactions the night already stores, and drawn as a card of its own   2026-10-01
@@ -35192,10 +35212,15 @@ Mutated:    the rule, stated before the run: each rule this checkpoint adds, rev
             C7 the evaluator reading a name's oldest print and not its newest: red in the evaluator's
                test, where DA holds an older print, a miss eight sessions back, beside the one it passes on.
             C8 the filler scoring a drift over 63 sessions: red in the filler's test, C1 not yet ended.
-            Results: F133MUT.
-Held:       F133HELD.
+            Results: all eight ran in a detached worktree at 9dfe60d, each filtered to the four tests this
+            checkpoint added, and reverted. All eight red, none survived. C1 red in the gates' test as
+            predicted and in the evaluator's, where the member one session past the window passes.
+            C2, C3, C4 and C6 red in the gates' test alone. C5 red in the gates' test and the
+            evaluator's. C7 red in the evaluator's test alone. C8 red in the filler's test alone.
+Held:       C2 to C8 red in the tests predicted and in no other of the four. C1 red in the test
+            predicted and in the evaluator's.
 Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
-            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, 9dfe60d,
             with the figures 13.5's entry states.
 
 ### 13.3 ruling - the operator's store is never deleted: a hard rule, the decision behind it, and a check holding every site that removes a file to a stated list   2026-10-01
@@ -35247,10 +35272,13 @@ Mutated:    the rule, stated before the run: each reader made blind in turn, in 
             S2 `rm -rf "$data"` added to the night's script: red in the scripts' test, twice.
             S3 the sweep's scratch root moved under the data root: red in the scratch root's test.
             S4 a migration dropping a table with no rebuild: red in the migrations' test.
-            Results: F133SMUT.
+            Results: all four ran in a detached worktree at 9dfe60d, each filtered to the check's six
+            tests, and reverted. All four red, each in the one test predicted and in no other: S1 in
+            the test of the shipped sites, S2 in the scripts' test, S3 in the scratch root's test and
+            S4 in the migrations' test.
 Stored:     the operator's words in `prompts/2026-10-01-13.3-store-never-deleted-ruling.md`.
 Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
-            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, 9dfe60d,
             with the figures 13.5's entry states.
 
 ### 13.4 - sector leaders: the fourth setup family, a stock in the top quarter of one of the three strongest sectors at a pullback's buy point, on the pullback's plan as the swing filter stored it, drawn as a card of its own   2026-10-01
@@ -35311,10 +35339,19 @@ Mutated:    the rule, stated before the run: each rule this checkpoint adds, rev
             D4 a sector under the floor ranked: red in the ranking's test.
             D5 the filter's trend gate read as a leader's gate: red in the evaluator's test, A2 and B1.
             D6 the filler scoring a leader's own row: red in the evaluator's test, a second outcome row.
-            Results: F134MUT.
-Held:       F134HELD.
+            Results: all six ran in a detached worktree at 9dfe60d, each filtered to the three tests this
+            checkpoint added, and reverted. All six red, none survived. D1 and D3 red in the ranking's
+            test alone. D2 and D4 red in the ranking's test as predicted and in the evaluator's, where
+            a fourth sector's member and an unranked sector's then pass. D5 and D6 red in the
+            evaluator's test alone. D6 was read against the test before the run and would have survived
+            it: the filler would score the leader's row under the same horizon as the filter's and
+            write the same row, so nothing the test read would move. The test was given the filler's
+            own count of the trades it scored from the other families' rows, which is none, before
+            the run, and D6 is red on that.
+Held:       D1, D3, D5 and D6 red in the test predicted and in no other of the three. D2 and D4 red in
+            the test predicted and in the evaluator's.
 Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
-            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, 9dfe60d,
             with the figures 13.5's entry states.
 
 ### 13.5 - the pages: tonight's market line and one list of stocks close to a buy point across every setup, Past picks with a setup filter and label and a trailing trade drawn in multiples of its risk, a name's page saying which setup lists it, and the run page's row a setup   2026-10-01
@@ -35375,7 +35412,17 @@ Mutated:    the rule, stated before the run: each rule this checkpoint adds, rev
             E4 a provisional setup's trades counted in the share: red in Past picks' test, the line gone.
             E5 a trailing trade's result left blank: red in Past picks' test.
             E6 the run page's rows drawn for every setup as live: red in the name and run page's test.
-            Results: F135MUT.
-Held:       F135HELD.
+            Results: all six ran in a detached worktree at 9dfe60d, each filtered to the three tests this
+            checkpoint added, and reverted. All six red, each in the one test predicted and in no
+            other. Two were read against the tests before the run and would have survived, so the
+            tests were strengthened first: E2, since the constructed night held no member two gates
+            short of a breakout, which it now holds; and E4, since no trade of a provisional setup
+            had reached a target, which the test now works by hand over two constructed trades.
+Held:       red in the test predicted and in no other, for each of the six.
 Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green over the tree carrying every
-            entry from 13.0's to this one, F13SHA: F13FIG.
+            entry from 13.0's to this one, 9dfe60d: `tools/ci.ps1` all six steps, 0 warnings, 0 errors,
+            1697 of 1697 tests ran with none failed, migrations 0 to 54 with none pending, schema
+            version 54, exit 0, against `data-ci` and never `data`. `tools/verify-phase.ps1` green at
+            44 tables, 855 claims, 855 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 866 placements and
+            verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the roster and 42
+            carried, 42 passed. The pair predicted, 853 within 840 to 870, is 855 and 855.
