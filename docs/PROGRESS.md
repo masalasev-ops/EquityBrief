@@ -33914,7 +33914,7 @@ Guarded:    one test, new, in `fixture-expectations`: over eight hundred constru
             and differ from the whole history's where the year's first three sessions hold a swing.
 Written:    section 17's point-in-time row in `ARCHITECTURE.html`, and its prior text in `CHANGELOG.md`.
 Expected:   derived: no expectation file moves; the fixture's two nights read the same under both rules.
-Tests:      303T1, from 1640: one added.
+Tests:      1641, from 1640: one added.
 Claims:     763, unchanged.
 Pins:       none moves.
 Mutated:    the rule, stated before the run: the mechanism this correction rests on, reversed alone, filtered to
@@ -33923,15 +33923,17 @@ Mutated:    the rule, stated before the run: the mechanism this correction rests
             S23 the fourth-session rule dropped, the year's first session read as the first a swing may sit on:
                 red in the swings test alone; the point-in-time test over the fixture stays green under it, for the
                 reason given under Found.
-            Results: 303M1
-Held:       303H1
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 303T1 of 303T1 tests ran
+            Results: one run in a detached worktree at eb5a85c, this entry's commit, filtered to the two tests, the
+            edit made there and reverted, and the tree read clean after. S23 turned the swings test red and left
+            the point-in-time test green.
+Held:       red in the test predicted, and in no other.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1641 of 1641 tests ran
             with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
             `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 44 tables, 763 claims, 763 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, 303P1 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, 303T1 of 303T1 tests.
-            Both gates ran over the tree carrying this entry, 303SHA1, in a worktree beside the repository, and the
+            0 unexamined, 774 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1641 of 1641 tests.
+            Both gates ran over the tree carrying this entry, eb5a85c, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either.
 Carried:    the new run, started from a Release build of the merged main outside the main checkout, and the entry
             pointing at its report.
