@@ -34334,7 +34334,7 @@ Built:      - The read surface. `ReadApi` reads a name's articles of the window 
 Measured:   nothing paid: no live call was made, and the pages were rehearsed over a copy of the store holding
             constructed articles and labels, every screen screenshotted. The labeller's durations, its spend
             and the digit share are read on the run page from its first night on.
-Tests:      T7BTESTS, from 1660: T7BADDED added, the four over the rendered pages: the region under its tabs
+Tests:      1664, from 1660: four added, the four over the rendered pages: the region under its tabs
             with the bar and the model named once, the one line saying why by each cause, tonight's counts
             and the second list's none, and the run page's line and count; the calibration test reads the
             fourth trigger line.
@@ -34352,15 +34352,17 @@ Mutated:    the rule, stated before the run: the one assertion guarding each rul
             M4 the one line saying why fixed to one cause whatever the store holds: red in the why test alone.
             M5 the run page reading the labeller's newest run whatever night it labelled: red in the run page
                test alone, the earlier night drawing the later night's run.
-            Results: T7BMUT.
-Held:       T7BHELD.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, T7BTESTS of T7BTESTS tests ran
+            Results: M1 to M5 ran in a detached worktree at ba4ae95, this entry's commit, each filtered to its test,
+            the edit made there and reverted, and the tree read clean after each: every one turned its
+            predicted test red, and no other test was run.
+Held:       red in the test predicted and in no other, for each of the five.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1664 of 1664 tests ran
             with none failed, migrations 0 to 52 with none pending, schema version 52, exit 0, against
             `data-ci` and never `data`.
             `tools/verify-phase.ps1` green at 44 tables, 788 claims, 788 PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, T7BPLACE placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, T7BTESTS of T7BTESTS tests.
-            Both gates ran over the tree carrying this entry, T7BSHA, in a worktree beside the repository, and the
+            0 unexamined, 799 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1664 of 1664 tests.
+            Both gates ran over the tree carrying this entry, ba4ae95, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either; run 3 of the sweep went on under its own
             build throughout.
 Carried:    the captures of a label of each fixture article on the Haiku and Sonnet profiles, which the plan
