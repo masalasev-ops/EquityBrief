@@ -6,11 +6,11 @@ using EquityBrief.Worker.Candidates;
 namespace EquityBrief.Tests.Reading;
 
 // read-surface, 12.5: with the swing family registered and phase 10's three retired, the run page's
-// shadow region reads six registered and a divisor of 6.
+// shadow region reads seven registered and a divisor of 7.
 public partial class ReadSurface
 {
     [Fact]
-    public async Task WithTheSwingFamilyRegisteredTheShadowRegionReadsSixAndADivisorOfSix()
+    public async Task WithTheSwingFamilyRegisteredTheShadowRegionReadsSevenAndADivisorOfSeven()
     {
         using var store = await FixtureExpectations.FamilyStore(new DateTimeOffset(2026, 9, 6, 22, 0, 0, TimeSpan.Zero));
 
@@ -22,10 +22,10 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/run/2026-09-08"));
         var region = Regex.Match(page, "<section class=\"shadow-candidates\" data-shadow=\"([0-9]+)\" data-divisor=\"([0-9]+)\" data-maximum=\"([0-9]+)\">");
 
-        // Worked by hand: nine registrations and three retirements leave six standing, all registered at one
-        // instant before the page is read, so the divisor is six too.
+        // Worked by hand: ten registrations and three retirements leave seven standing, all registered at one
+        // instant before the page is read, so the divisor is seven too.
         Assert.True(region.Success);
-        Assert.Equal(("6", "6", "8"), (region.Groups[1].Value, region.Groups[2].Value, region.Groups[3].Value));
-        Assert.Contains("6 candidate condition(s) registered as this page is read, of at most 8, and the family's divisor is 6", page, StringComparison.Ordinal);
+        Assert.Equal(("7", "7", "8"), (region.Groups[1].Value, region.Groups[2].Value, region.Groups[3].Value));
+        Assert.Contains("7 candidate condition(s) registered as this page is read, of at most 8, and the family's divisor is 7", page, StringComparison.Ordinal);
     }
 }

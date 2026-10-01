@@ -35605,3 +35605,79 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             out of scope, 0 unexamined, 873 placements and verdicts reconciled against a floor of 34, fixture
             PRESENT, 42 checks on the roster, 42 carried and 42 passed. Both were green over b93d5f1 at 1717
             tests, before the drift's target test was added.
+
+### 12.2 - the seventh swing family candidate, the live filter leaving off a member whose reported quarters read deteriorating, built as code and held for the freeze's remedy, on the fundamentals ruling of 2026-09-27   2026-10-01
+
+Builds:     item 9 and part 2 of the 12.2 fundamentals ruling of 2026-09-27, track 5 of the queue the 12.2 ruling of
+            2026-09-30 sets, "the fundamentals candidate, code only", started on the operator's word of 2026-10-01
+            while the sweep's third run went on under its own build. Its pull request is gated and left open: the
+            code moves the filter's pin and every evaluator's version, so it merges with the freeze, track 6, in
+            one change with the one remedy that retires the six and registers the seven at one instant, on the
+            operator's go, and not before.
+Asked:      the ruling's item 9, word for word: "A candidate over the live filter that skips members whose state is
+            deteriorating, scored in shadow beside the others, the family becoming seven, each tested at 0.05
+            over 7, registered only once every member holds fundamentals or is marked absent." And R3: "part 2,
+            the candidate with the swing filter reading the state and the readings' sources joining the ones every
+            evaluator's version pins, lands after with a remedy of its own that registers the six again beside the
+            seventh at one instant."
+Built:      - The candidate. The swing filter's own evaluator gains one parameter, `skipDeteriorating`, 1 or 0, and
+              a registration stating it on fires where every gate read passes, no exclusion applies and the state
+              the night stored for the member reads anything but deteriorating, or nothing; the verdict names the
+              state read and whether the rule leaves a deteriorating business off. `TheSwingFamily` writes a seventh
+              registration, the swing filter leaving off a deteriorating business, with its own rule words, the six
+              stating the parameter off, and the family's test words say 0.05 over the distinct trials rather than
+              a sixth. The registrar's refusals count the rows at once from the family rather than naming nine.
+            - The state. `GateInputs` carries the state the night's fundamental readings stored for the member, the
+              swing filter reads it for the session and hands it to the family's shadow, and no gate reads it; the
+              filter declares the readings table among what it reads, in the catalogue and the matrix.
+            - The pin. `SwingFilterRule`'s version moves from abcf6df67b7d to d30b185d9565, and the five other
+              evaluators' versions move with it, since two sources every evaluation runs through, the gates' inputs
+              and the filter, changed; every registered family candidate stalls under the old version until the
+              freeze's remedy registers the seven, which is why this merges with it and not alone. The swing
+              filter's own code version moves from 76466298a7f0 to e0b775d67060 first, the pin of its source and the
+              gates' inputs, set to the value the filter's pin test demands; the evaluators' pins cover the filter's
+              source, that line among them, so each version was set after it, to the pin the register check
+              demands, read off a throwaway test run once and removed.
+            - The pages. The Run page's learning region words the seventh's change, leaving off a business whose
+              reported quarters read deteriorating, which the live list keeps; the comparison's choice offers six
+              versions beside the live list, and the checkpoint rows, the edge clock and the shadow region count
+              seven.
+            - The documents. Section 3's family row, section 13.8, the Holm paragraph and section 17's family row
+              say seven and name the seventh; the catalogue and the matrix carry the filter's new read; the
+              decision is named; the runbook's two sentences and the roster's three phrases say seven.
+Measured:   nothing runs live by this until the freeze; over the constructed store of four members, ZZA's state
+            deteriorating and ZZC's improving, the seventh leaves ZZA off and every other candidate fires on it, 28
+            evaluations over 4 members and 7 candidates.
+Tests:      1650, unchanged: the family's three tests extended to the seventh, the by-hand firing on every state
+            and none with the live filter firing on deteriorating, the command's ten rows and the seventh's rule
+            and parameters, and the stored shadow carrying the state each candidate read on each member's row;
+            the shape command's two corrections, the learning region's two, the edge clock's and the shadow
+            region's tests count seven, the learning region's reading the seventh's change in its words, and the
+            pinned constants' family row reads 7.
+Claims:     766, unchanged: four rows reworded, none added.
+Pins:       `SwingFilterRule.Version` moves, as the Built line says; the swing filter's code version and the
+            candidates' evaluation sources move with the gates' inputs and the filter, and the remedy is the
+            freeze's.
+Mutated:    the rule, stated before the run: each rule this build adds, reversed alone, filtered to the test that
+            reads it, in a detached worktree at this entry's commit and reverted.
+            Predicted:
+            F1 the seventh leaving no deteriorating member off, the parameter read and not applied: red in the
+               family's firing test alone.
+            F2 the filter handing the shadow no state, every member read as not stored: red in the stored-shadow
+               test alone.
+            F3 every registration leaving a deteriorating business off, the parameter on by default: red in the
+               firing test, where the live filter must fire on a deteriorating member, and in the command test,
+               where the live filter's parameter must read off.
+            Results: T5MUT.
+Held:       T5HELD.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, T5TESTS of T5TESTS tests ran
+            with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, T5CLAIMS claims, T5CLAIMS PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, T5PLACE placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, T5TESTS of T5TESTS tests.
+            Both gates ran over the tree carrying this entry, T5SHA, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either; run 3 of the sweep went on under its own
+            build throughout.
+Carried:    the merge, at the freeze with its remedy, which registers the seven at one instant and records what the
+            second restart cost in the six's nights, as R3 asks; the pull request stands open until then.

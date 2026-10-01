@@ -4,12 +4,14 @@ using EquityBrief.Core.Filter;
 namespace EquityBrief.Worker.Candidates;
 
 // The swing family, written down rather than typed at the command line: the live filter at the open
-// version's settings and five variants, each the same whole rule with one thing moved, all run by the
-// one evaluator and each named for the version it was defined against, since a variant defined against
-// another version's settings is another rule. And the words each retirement of phase 10's three carries.
+// version's settings and six variants, each the same whole rule with one thing moved, the sixth leaving
+// off a member whose reported quarters read deteriorating, all run by the one evaluator and each named
+// for the version it was defined against, since a variant defined against another version's settings is
+// another rule. And the words each retirement of phase 10's three carries.
 // see: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
 // see: A variant of the swing filter is registered as a whole rule and runs on unchanged when the live settings move
 // see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read
+// see: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
 public static class TheSwingFamily
 {
     // The words every retirement at the family's registration carries.
@@ -23,9 +25,13 @@ public static class TheSwingFamily
         "the swing filter's gates, its trigger's arrival inside its window and its exclusions at every setting stated, " +
         "a member firing where every gate read passes and no exclusion applies";
 
+    // The seventh's rule: the same, with a member whose reported quarters read deteriorating left off.
+    public const string RuleSkippingDeteriorating =
+        Rule + ", and a member whose reported quarters read deteriorating on the night left off, every other state and none firing as the gates say";
+
     public const string Test =
         "a sign-flip test over blocks of 63 exchange sessions, read at 8, 12 and 16 non-empty whole blocks, against each " +
-        "setup's own calibrated bar, at a sixth of 0.05 spent across the looks";
+        "setup's own calibrated bar, at 0.05 over the distinct trials spent across the looks";
 
     // The one thing each variant moves: the plan the trade gate reads, and the other side of each live
     // setting a variant moves to.
@@ -49,10 +55,15 @@ public static class TheSwingFamily
 
     public const string ArrivalName = "the swing filter with one-session arrival";
 
+    public const string DeterioratingName = "the swing filter leaving off a deteriorating business";
+
     // A variant's name against the version it was defined against.
     public static string Variant(string name, string version) => FormattableString.Invariant($"{name}, from version {version}");
 
-    // The six, the live filter first at the open version's settings.
+    // The rows the family's registration writes at one instant: phase 10's three retired and the seven registered.
+    public static int RowsAtOnce => Retires.Count + For("0", FilterSettings.Proposed).Count;
+
+    // The seven, the live filter first at the open version's settings.
     public static IReadOnlyList<Registration> For(string version, FilterSettings live) =>
     [
         new(SwingFamily.LiveCandidate(version), Rule, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live)),
@@ -61,6 +72,7 @@ public static class TheSwingFamily
         new(Variant(MarketOffName, version), Rule, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live, marketGate: false)),
         new(Variant(StrengthName, version), Rule, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live with { StrengthFloor = VariantStrength })),
         new(Variant(ArrivalName, version), Rule, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live with { ArrivalSessions = VariantArrival })),
+        new(Variant(DeterioratingName, version), RuleSkippingDeteriorating, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live, skipDeteriorating: true)),
     ];
 
     // The candidates the family's registration retires: phase 10's three.
