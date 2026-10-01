@@ -2262,7 +2262,7 @@ internal static class Scope
         // 11.4, the night's own request, after the queue.
         [CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first name drawn on tonight's list, improving businesses first where the night stored its readings, one request marked as asked by the night unless that name has one outstanding or being written and none on a night no name passed, and start the drain as a press does, whose pass is its own run at the off-peak rate with its calls and its requests on its own rows (see: The night asks for a report on the first name of its list).")] = new Scoped(
             Verdict.Pass,
-            "over the fixture's night, on which no member passes the swing filter, the night asks for no report, starts no drain, runs last with no model call and no request, and its row says why; over a constructed night it asks for the first name the filter passed in its order and no other, worked out by the test's own arithmetic off the gate rows rather than the stored rank, marked as asked by the night; where that night stored its readings it asks for the improving business the filter ranked below a deteriorating one, and on the same night holding no reading for the filter's first; a name with a request waiting gets none and the row says so, and a night run again for an earlier session asks for none",
+            "over the fixture's night, on which no member passes the swing filter, the night asks for no report, starts no drain, runs after the queue with no model call and no request, and its row says why; over a constructed night it asks for the first name the filter passed in its order and no other, worked out by the test's own arithmetic off the gate rows rather than the stored rank, marked as asked by the night; where that night stored its readings it asks for the improving business the filter ranked below a deteriorating one, and on the same night holding no reading for the filter's first; a name with a request waiting gets none and the row says so, and a night run again for an earlier session asks for none",
             ByNight),
         [CheckReach.Key(LimitsTable, "Reports the night asks for")] = new Scoped(
             Verdict.Pass,
@@ -2504,6 +2504,80 @@ internal static class Scope
             ByExpectations),
         // 12.6's correction, the model profiles: section 17's three rows, and section 18's row about a key the
         // secrets file does not hold in its two halves, the job stopping and the line the run page draws.
+        // 12.6's correction, the news labeller: its catalogue and matrix rows, its two stores, section 14's step,
+        // section 17's five rows and section 18's eight.
+        [CheckReach.Key(CatalogueTable, "News labeller")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, listings, gate results, fundamental readings, articles and run log it reads, the paid model it asks through the spend cap and the labels and run log it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "News labeller")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "News articles")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "News labels")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(NightlyRunSteps.Heading, "Start the news labeller as the drain is started, a process of its own that labels the stored admitted articles of the names on tonight's list, newest first and at most twenty a name over the thirty days before the night, through the news job's paid model one article at a time, with every call and every dollar on the labeller's own run and never the night's, bounded by its own time and month limits, and starting none on a night run again for an earlier session (see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own).")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed night the launcher the night was handed is asked to start one labeller, after the night's own request and as the last row the night writes, with no model call on the night's row; a night run again for an earlier session starts none and its row says so, and a night handed nothing to start one with says so",
+            ByNight),
+        [CheckReach.Key(LimitsTable, "News labelling window")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store the labeller sends each listed name's admitted articles of the window newest first and none outside it, the window, the count a name and the cut read off the document against the constants, and the counter stores each article cut at the instruction's length",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "News labeller time limit")] = new Scoped(
+            Verdict.Pass,
+            "a labeller whose limit has passed before its first article sends nothing and names the limit as its stop with the names it reached, the twenty minutes read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "News labeller month limit")] = new Scoped(
+            Verdict.Pass,
+            "a month already at the limit sends nothing, and a limit the first call's ceiling would pass sends nothing, each naming the limit as its stop, the five dollars read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Unreadable answers for a digit")] = new Scoped(
+            Verdict.Pass,
+            "the instruction refuses a reason holding a digit by that cause, and the labeller stores an answer unreadable twice with its cause and counts it by cause on its row",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "News article retention")] = new Scoped(
+            Verdict.Pass,
+            "the counter drops an article older than the retention and keeps the day's, the thirty-one read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The news job's model does not answer")] = new Scoped(
+            Verdict.Pass,
+            "a model that answers nothing stops the labeller where it is with the model named as its stop and the labels before it kept, and a run refused before it asked writes its own refused row with the line",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "An answer the labeller cannot read")] = new Scoped(
+            Verdict.Pass,
+            "an answer failing a check is asked for once more, and one failing twice is stored as unreadable with the second answer's cause, counted by cause on the run's row and not sent again under the profile",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The labeller's month limit reached")] = new Scoped(
+            Verdict.Pass,
+            "a month at the limit sends nothing and names the limit as its stop with the names reached",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The day or month cap pauses a label")] = new Scoped(
+            Verdict.Pass,
+            "a cap the first call would pass makes no call, and the labeller names the cap as its stop with no label written",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The labeller's time limit passes")] = new Scoped(
+            Verdict.Pass,
+            "a limit passed before the first article sends nothing and names the limit as its stop with the names reached",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A peak window of the news profile opens while the labeller runs")] = new Scoped(
+            Verdict.Pass,
+            "a clock inside the recorded profile's peak window sends nothing and names the window as its stop",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "An article refused by admissibility")] = new Scoped(
+            Verdict.Pass,
+            "an article the counter stored refused is never among the requests and is counted on the run's row as refused",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The labeller fails")] = new Scoped(
+            Verdict.Pass,
+            "a run refused before it asked anything writes its own row saying why and no row of the night's, and a labeller that stopped partway leaves the night's rows, listings and gate results as they were",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "Paid model profiles")] = new Scoped(
             Verdict.Pass,
             "each shipped profile resolves from the shipped settings with its format, model, key and its provider's prices and dates, the one word a job names reaches the feed of that profile's format asking for that model, and the fixture's own models file holds its recordings to the profile they were made under whatever the shipped word says",
@@ -3306,6 +3380,9 @@ internal static class Scope
         // The fundamentals item's asks and readings, a 12.2 correction, which the plan names by what they do.
         ["Quarter asks"] = "12.2",
         ["Fundamental readings"] = "12.2",
+        // 12.6's correction, the news labeller's two stores; the labeller itself derives from the plan.
+        ["News articles"] = "12.6",
+        ["News labels"] = "12.6",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -4356,6 +4433,15 @@ internal static class Scope
         ["Both lists on tonight's page empty on a night the swing filter listed"] = "12.7",
         // The model profiles, a 12.6 correction.
         ["A paid job's profile names a key the secrets file does not hold"] = "12.6",
+        // The news labeller, a 12.6 correction.
+        ["The news job's model does not answer"] = "12.6",
+        ["An answer the labeller cannot read"] = "12.6",
+        ["The labeller's month limit reached"] = "12.6",
+        ["The day or month cap pauses a label"] = "12.6",
+        ["The labeller's time limit passes"] = "12.6",
+        ["A peak window of the news profile opens while the labeller runs"] = "12.6",
+        ["An article refused by admissibility"] = "12.6",
+        ["The labeller fails"] = "12.6",
         // The sweep, a 12.5 correction, and its rerun.
         ["A chunk of the sweep fails twice"] = "12.5",
         ["The point-in-time check finds a difference"] = "12.5",
@@ -4429,6 +4515,12 @@ internal static class Scope
         ["Paid model profiles"] = "12.6",
         ["Paid model retirement warning"] = "12.6",
         ["A report named for its cost"] = "12.6",
+        // The news labeller, a 12.6 correction.
+        ["News labelling window"] = "12.6",
+        ["News labeller time limit"] = "12.6",
+        ["News labeller month limit"] = "12.6",
+        ["Unreadable answers for a digit"] = "12.6",
+        ["News article retention"] = "12.6",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",
@@ -4483,6 +4575,8 @@ internal static class Scope
         ["Evaluate the list reasons"] = "5.4",
         ["Run the overnight queue"] = "6.10",
         ["Ask for a report on the first name"] = "11.4",
+        // 12.6's correction, the news labeller the night starts after its request.
+        ["Start the news labeller"] = "12.6",
         ["Write the facts file"] = "5.3",
 
         ["Fill forward returns"] = "5.5",

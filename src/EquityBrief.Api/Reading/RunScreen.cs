@@ -1177,7 +1177,7 @@ public static class RunScreen
         ("Plans and moves", ["ladders", "moves"]),
         ("Readings and the list", ["swing-readings", "fundamental-readings", "listings", "swing-filter", "shape-proposal"]),
         ("Records", ["facts", "changes", "forward-returns", "news-pulse", "rule-versions", "close"]),
-        ("After the close", ["quarters", QueueStage, "report"]),
+        ("After the close", ["quarters", QueueStage, "report", "label-news"]),
     ];
 
     // The words a night's stop is written with, beside `ok`. The read surface holds no reference to the

@@ -1,3 +1,4 @@
+using EquityBrief.Worker.News;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -50,6 +51,9 @@ public partial class NightlyRun
             CheckReach.Key(NightlyRunSteps.Heading, "Fill forward returns for past listings that matured today, and recompute the universe base rate, and score every swing filter row on each plan it carries (see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Count today's articles per name from one dated news query, paged until the day is covered and every page counted, fanned out to names in code rather than asked for per name. The page count follows the day's news volume and not the size of the universe (see: News is one dated query, paged to cover the day, and attributed to names locally)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Close the arithmetic and record its counts: names computed, names on the list, reasons fired, stale names, duration."),
+
+            // 12.6's correction, the news labeller the night starts after its own request.
+            CheckReach.Key(NightlyRunSteps.Heading, "Start the news labeller as the drain is started, a process of its own that labels the stored admitted articles of the names on tonight's list, newest first and at most twenty a name over the thirty days before the night, through the news job's paid model one article at a time, with every call and every dollar on the labeller's own run and never the night's, bounded by its own time and month limits, and starting none on a night run again for an earlier session (see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own)."),
 
             // 5.4, tonight's list.
             CheckReach.Key(NightlyRunSteps.Heading, "Evaluate the list reasons for every name."),
@@ -140,7 +144,8 @@ public partial class NightlyRun
         TimeSpan? deadline = null,
         IClock? clock = null,
         IDrainLauncher? launcher = null,
-        Nightly.Build? build = null)
+        Nightly.Build? build = null,
+        bool askForTheFirstName = true)
     {
         var output = new StringWriter();
         var error = new StringWriter();
@@ -156,6 +161,7 @@ public partial class NightlyRun
             bulk,
             deadline,
             launcher: launcher,
+            askForTheFirstName: askForTheFirstName,
             build: build);
 
         return (code, output.ToString(), error.ToString());
@@ -1217,14 +1223,15 @@ public partial class NightlyRun
     {
         // Section 14's order at the end of the night, read off the document, and the night
         // running it: the close records the arithmetic's counts, the quarters step asks for the
-        // members due after it, the queue runs after that, and the night's own request comes last,
-        // on the night's own output and on the run log's order.
+        // members due after it, the queue runs after that, the night's own request after the queue and
+        // the labeller's start last, on the night's own output and on the run log's order.
         var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
 
-        Assert.StartsWith("Close the arithmetic", steps[^4], StringComparison.Ordinal);
-        Assert.StartsWith("Ask the provider for the reported quarters", steps[^3], StringComparison.Ordinal);
-        Assert.StartsWith("Run the overnight queue", steps[^2], StringComparison.Ordinal);
-        Assert.StartsWith("Ask for a report on the first name", steps[^1], StringComparison.Ordinal);
+        Assert.StartsWith("Close the arithmetic", steps[^5], StringComparison.Ordinal);
+        Assert.StartsWith("Ask the provider for the reported quarters", steps[^4], StringComparison.Ordinal);
+        Assert.StartsWith("Run the overnight queue", steps[^3], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for a report on the first name", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Start the news labeller", steps[^1], StringComparison.Ordinal);
 
         using var store = new TemporaryStore();
 
@@ -1242,10 +1249,11 @@ public partial class NightlyRun
 
         var stages = RunLog(store, "night-with-queue").Select(row => row.Stage).ToArray();
 
-        Assert.Equal("report", stages[^1]);
-        Assert.Equal(OvernightQueue.Stage, stages[^2]);
-        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^3]);
-        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^4]);
+        Assert.Equal(NewsLabeller.NightStage, stages[^1]);
+        Assert.Equal("report", stages[^2]);
+        Assert.Equal(OvernightQueue.Stage, stages[^3]);
+        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^4]);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^5]);
 
         // The night's last line states the queue's local calls apart from the arithmetic's,
         // read off the queue's own row.
@@ -1384,9 +1392,10 @@ public partial class NightlyRun
         var quarters = steps.ToList().FindIndex(step => step.StartsWith("Ask the provider for the reported quarters", StringComparison.Ordinal)) + 1;
         var queue = steps.ToList().FindIndex(step => step.StartsWith("Run the overnight queue", StringComparison.Ordinal)) + 1;
 
-        Assert.Equal(steps.Count - 1, queue);
+        Assert.Equal(steps.Count - 2, queue);
         Assert.Equal((close + 1, close + 2), (quarters, queue));
-        Assert.StartsWith("Ask for a report on the first name", steps[^1], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for a report on the first name", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Start the news labeller", steps[^1], StringComparison.Ordinal);
 
         // Section 14's note, the section with its list removed.
         var from = architecture.IndexOf("<h2>14.", StringComparison.Ordinal);

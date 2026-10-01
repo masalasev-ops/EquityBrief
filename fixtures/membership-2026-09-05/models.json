@@ -40,6 +40,13 @@
         "Use": "deepseek",
         "TimeoutSeconds": "600",
         "AnswerTokens": "32768"
+      },
+      "News": {
+        "Use": "claude-sonnet",
+        "TimeoutSeconds": "60",
+        "AnswerTokens": "2000",
+        "MonthLimit": "5",
+        "TimeLimitMinutes": "20"
       }
     }
   }

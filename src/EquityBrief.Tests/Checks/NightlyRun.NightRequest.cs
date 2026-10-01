@@ -1,3 +1,4 @@
+using EquityBrief.Worker.News;
 using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Configuration;
@@ -18,17 +19,28 @@ namespace EquityBrief.Tests.Checks;
 public partial class NightlyRun
 {
     // What the night starts, held by the test so a night is run without a drain reaching a model.
-    sealed class NightLauncher : IDrainLauncher
+    internal sealed class NightLauncherForTheSuite : IDrainLauncher
     {
         public const string Line = "The worker was asked to start by the suite.";
 
+        public const string LabellerLine = "The labeller was asked to start by the suite.";
+
         public int Started { get; private set; }
+
+        public int LabellerStarts { get; private set; }
 
         public DrainStart Start()
         {
             Started++;
 
             return new DrainStart(true, Line);
+        }
+
+        public DrainStart StartTheLabeller()
+        {
+            LabellerStarts++;
+
+            return new DrainStart(true, LabellerLine);
         }
     }
 
@@ -97,7 +109,7 @@ public partial class NightlyRun
     public async Task AfterTheQueueTheNightAsksForNoReportOnANightNoNamePassedAndItsRowSaysWhy()
     {
         var expected = Expected("night-request");
-        var launcher = new NightLauncher();
+        var launcher = new NightLauncherForTheSuite();
 
         using var store = new TemporaryStore();
 
@@ -115,8 +127,9 @@ public partial class NightlyRun
             [[night, expected.GetProperty("rule").GetString()!]],
             StoreRows(store, "SELECT session_date, rule FROM list_rule;"));
 
-        // No request and no drain started, and the step still runs last, after the close, the quarters
-        // step and the queue, its own row saying why and recording no model call and no request.
+        // No request and no drain started, and the step still runs after the close, the quarters step and
+        // the queue, with the labeller's start after it, its own row saying why and recording no model call
+        // and no request.
         Assert.Empty(StoreRows(store, "SELECT ticker FROM research_request;"));
         Assert.Equal(expected.GetProperty("count").GetInt32(), StoreRows(store, "SELECT ticker FROM research_request;").Count);
         Assert.Equal(0, launcher.Started);
@@ -124,10 +137,10 @@ public partial class NightlyRun
         var stages = RunLog(store, "night-with-request");
 
         Assert.Equal(
-            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage, OvernightQueue.Stage, "report"],
-            stages.Select(row => row.Stage).TakeLast(4));
-        Assert.Equal("ok", stages[^1].Outcome);
-        Assert.Equal(expected.GetProperty("line").GetString(), stages[^1].Detail);
+            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage, OvernightQueue.Stage, "report", NewsLabeller.NightStage],
+            stages.Select(row => row.Stage).TakeLast(5));
+        Assert.Equal("ok", stages[^2].Outcome);
+        Assert.Equal(expected.GetProperty("line").GetString(), stages[^2].Detail);
         Assert.Equal(
             [["0", "0"]],
             StoreRows(store, "SELECT model_calls, network_requests FROM run_log WHERE run_id = 'night-with-request' AND stage = 'report';"));
@@ -223,7 +236,7 @@ public partial class NightlyRun
     [Fact]
     public async Task ANightRunAgainForAnEarlierSessionAsksForNoReport()
     {
-        var launcher = new NightLauncher();
+        var launcher = new NightLauncherForTheSuite();
 
         using var store = new TemporaryStore();
 
@@ -244,7 +257,7 @@ public partial class NightlyRun
         Assert.True(code == 0, error.ToString());
         Assert.Empty(StoreRows(store, "SELECT ticker FROM research_request;"));
         Assert.Equal(0, launcher.Started);
-        Assert.Equal("no report was asked for, since this night was run again for an earlier session", RunLog(store, "night-again")[^1].Detail);
+        Assert.Equal("no report was asked for, since this night was run again for an earlier session", RunLog(store, "night-again")[^2].Detail);
 
         // And it asks for no member's quarters: what it would store is today's answer and not that
         // night's, so the step says so and writes no ask and no quarter.

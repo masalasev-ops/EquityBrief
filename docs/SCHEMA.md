@@ -61,6 +61,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `quarter_ask` | QuarterFetcher | none | none |
 | `fundamental_reading` | FundamentalReader | none | FundamentalReader |
 | `news_pulse` | NewsPulseCounter | none | NewsPulseCounter |
+| `news_article` | NewsPulseCounter | none | NewsPulseCounter |
+| `news_label` | NewsLabeller | none | NewsLabeller |
 | `research_section` | ResearchRunner, ProseWriter | ClaimChecker | none |
 | `theme_section` | ThemeResearchRunner | ClaimChecker | none |
 | `source_document` | ResearchRunner, ThemeResearchRunner | none | none |
@@ -708,6 +710,48 @@ One year retained, which is enough to hold a ninety-day baseline. This table exi
 **A night run twice writes the same count rather than a second row or a changed one.** Update is none and the primary key is `ticker` and `session_date`, so a second run of the same night conflicts on every row it already wrote. The insert ignores the conflict rather than replacing the row, which keeps the table insert-only as the ownership row declares and keeps the night idempotent in what it records about the market. Replacing would be an update by another name and would need declaring as one; failing would make a night that ran twice an error rather than a repeat.
 
 The counter drops rows older than the window on the night they fall out of it, and is declared above as this table's deleter. It was declared retained with no deleter at all until 1.4, which is the same defect as `bar`'s in a second table: a retention window nobody owns is a table that grows forever while this file says it does not.
+
+### news_article
+Grain: one row per ticker per article, the article being one the night's one news query brought back naming the member.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `article_id` | TEXT | the first sixteen hex characters of a hash of the link |
+| `link` | TEXT | |
+| `title` | TEXT | |
+| `source` | TEXT | the channel that delivered it, as the feed names it |
+| `published_at` | TEXT | UTC instant, as the provider stamped it |
+| `text` | TEXT | cut at the instruction's length |
+| `length` | INTEGER | the text's length as delivered, before the cut |
+| `admissibility` | TEXT | the verdict the admissibility test gave the article as it was stored |
+| `session_date` | TEXT | the session it was first stored on |
+
+Primary key: `ticker`, `article_id`.
+
+Thirty-one days retained, a day past the thirty the labeller reads, and the counter drops the rows past it on the night they fall out, as it drops its own. Insert only, with a conflict ignored, so a night run twice and a second night that brings the same article back leave the row as it was (see: A news article is stored once per member with its admissibility judged, and a label is never overwritten).
+
+### news_label
+Grain: one row per ticker per article per profile per instruction version.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `article_id` | TEXT | |
+| `profile` | TEXT | the news job's profile that labelled it |
+| `instruction_version` | INTEGER | the instruction's version it was labelled under |
+| `model` | TEXT | the model as the provider answered, with the options it was asked with |
+| `outcome` | TEXT | `labelled` or `unreadable` |
+| `cause` | TEXT | why an answer was unreadable, one of the seven causes, null on a label |
+| `kind` | TEXT | one of the nine kinds, null on an unreadable answer |
+| `direction` | TEXT | `positive`, `negative` or `neutral`, null on an unreadable answer |
+| `reason` | TEXT | one sentence holding no digit, null on an unreadable answer |
+| `labelled_at` | TEXT | UTC instant |
+| `run_id` | TEXT | the labeller's run that wrote it |
+
+Primary key: `ticker`, `article_id`, `profile`, `instruction_version`.
+
+Insert only, with a conflict ignored, so a label is never overwritten and after a switch the new profile writes rows of its own; an unreadable answer keeps its row so the article is not paid for again under that profile and version. The labeller drops a label whose article the counter has dropped, and is declared above as this table's deleter (see: A news article is stored once per member with its admissibility judged, and a label is never overwritten).
 
 ### research_section
 Grain: one row per ticker, section and version.

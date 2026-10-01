@@ -52,6 +52,8 @@ public enum Store
     QuarterAsk,
     FundamentalReading,
     NewsPulse,
+    NewsArticle,
+    NewsLabel,
     ResearchSection,
     ThemeSection,
     SourceDocument,
