@@ -103,7 +103,7 @@ public static class SweepSearch
     public static DialSetting CoarseCentre(IReadOnlyList<SweepPick> picks, SweepDesign design, int nights)
     {
         var coarse = SweepGrid.Coarse;
-        var tally = SweepStages.Tally.OneExit(design.ExitIndex, nights);
+        var tally = SweepStages.Tally.OneExit(design.ExitIndex, SweepStages.SessionsOf(picks));
         var summaries = new SweepSummary[coarse.Variations];
 
         for (var index = 0; index < coarse.Variations; index++)
@@ -337,11 +337,15 @@ public static class SweepSearch
 public sealed class SweepDesignSearch
 {
     readonly int nights;
+    readonly int sessions;
     readonly int exit;
     readonly Func<int[], SweepStages.Tally, SweepSummary> compute;
     readonly Func<int[], SweepMeasures> measure;
     readonly Dictionary<string, SweepSummary> evaluated = new(StringComparer.Ordinal);
-    readonly List<byte[]> samplePoints = [];
+
+    // The sample's points laid flat, one byte a dial, since ten million settings as arrays of their own would
+    // cost more in headers than in values, and their summaries beside them.
+    readonly List<byte> samplePoints = [];
     readonly List<SweepSummary> sampleSummaries = [];
     readonly SweepStages.Tally tally;
     int evaluations;
@@ -360,22 +364,25 @@ public sealed class SweepDesignSearch
         : this(
             design,
             nights,
+            SweepStages.SessionsOf(picks),
             space,
             (point, over) => SweepStages.Summary(picks, space.Setting(point), space.Conditions(point), nights, over),
             point => SweepStages.Measures(picks, design, space.Setting(point), space.Conditions(point), nights))
     {
     }
 
-    // The same search over any reading of a point, which is how a test hands it a landscape worked by hand.
-    public SweepDesignSearch(SweepDesign design, int nights, SweepSpace space, Func<int[], SweepStages.Tally, SweepSummary> compute, Func<int[], SweepMeasures> measure)
+    // The same search over any reading of a point, which is how a test hands it a landscape worked by hand; the
+    // sessions are what a tally's night bits reach, the history's own count.
+    public SweepDesignSearch(SweepDesign design, int nights, int sessions, SweepSpace space, Func<int[], SweepStages.Tally, SweepSummary> compute, Func<int[], SweepMeasures> measure)
     {
         Design = design;
         this.nights = nights;
+        this.sessions = sessions;
         Space = space;
         this.compute = compute;
         this.measure = measure;
         exit = design.ExitIndex;
-        tally = SweepStages.Tally.OneExit(exit, nights);
+        tally = SweepStages.Tally.OneExit(exit, sessions);
     }
 
     // One point's summary, computed once and kept.
@@ -421,7 +428,7 @@ public sealed class SweepDesignSearch
     {
         var results = new SweepSummary[points.Count];
 
-        Parallel.For(0, points.Count, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, () => SweepStages.Tally.OneExit(exit, nights), (at, _, local) =>
+        Parallel.For(0, points.Count, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, () => SweepStages.Tally.OneExit(exit, sessions), (at, _, local) =>
         {
             results[at] = Compute(points[at], local);
 
@@ -453,7 +460,19 @@ public sealed class SweepDesignSearch
             AddSample(Draw(size - timed, random), parallelism);
         }
 
-        return (samplePoints.Count, gridSize, perPoint);
+        return (sampleSummaries.Count, gridSize, perPoint);
+    }
+
+    int[] SamplePoint(int at)
+    {
+        var point = new int[Space.Count];
+
+        for (var dial = 0; dial < Space.Count; dial++)
+        {
+            point[dial] = samplePoints[(at * Space.Count) + dial];
+        }
+
+        return point;
     }
 
     // Points drawn balanced: each dial's values laid out in turn to the count and shuffled on their own.
@@ -497,7 +516,7 @@ public sealed class SweepDesignSearch
     {
         var results = new SweepSummary[points.Count];
 
-        Parallel.For(0, points.Count, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, () => SweepStages.Tally.OneExit(exit, nights), (at, _, local) =>
+        Parallel.For(0, points.Count, new ParallelOptions { MaxDegreeOfParallelism = parallelism }, () => SweepStages.Tally.OneExit(exit, sessions), (at, _, local) =>
         {
             results[at] = Compute(points[at], local);
 
@@ -506,7 +525,11 @@ public sealed class SweepDesignSearch
 
         for (var at = 0; at < points.Count; at++)
         {
-            samplePoints.Add([.. points[at].Select(value => (byte)value)]);
+            foreach (var value in points[at])
+            {
+                samplePoints.Add((byte)value);
+            }
+
             sampleSummaries.Add(results[at]);
         }
     }
@@ -529,30 +552,53 @@ public sealed class SweepDesignSearch
         Line = float.IsNaN(best) ? float.NaN : best - (float)margin;
     }
 
-    // The leaders: the highest-edge evaluated settings meeting the floors.
+    // The leaders: the highest-edge evaluated settings meeting the floors, ties to the lower key, held as a
+    // bounded heap over the sample rather than a list of every setting meeting the floors, which over ten
+    // million sampled settings would be most of them.
     public IReadOnlyList<int[]> LeadersOf(int count)
     {
-        var all = new List<(int[] Point, float Edge)>();
+        var heap = new PriorityQueue<string, (float Edge, string Key)>(Comparer<(float Edge, string Key)>.Create((one, other) =>
+            one.Edge != other.Edge ? one.Edge.CompareTo(other.Edge) : string.CompareOrdinal(other.Key, one.Key)));
+        var held = new HashSet<string>(StringComparer.Ordinal);
 
-        foreach (var (key, summary) in evaluated)
+        void Offer(string key, in SweepSummary summary)
         {
-            if (summary.MeetsTheFloors && summary.HasEdge)
+            if (!summary.MeetsTheFloors || !summary.HasEdge || !held.Add(key))
             {
-                all.Add((SweepSpace.Parse(key), summary.Edge));
+                return;
+            }
+
+            heap.Enqueue(key, (summary.Edge, key));
+
+            if (heap.Count > count)
+            {
+                held.Remove(heap.Dequeue());
             }
         }
 
-        for (var at = 0; at < samplePoints.Count; at++)
+        foreach (var (key, summary) in evaluated)
+        {
+            Offer(key, summary);
+        }
+
+        for (var at = 0; at < sampleSummaries.Count; at++)
         {
             var summary = sampleSummaries[at];
 
             if (summary.MeetsTheFloors && summary.HasEdge)
             {
-                all.Add(([.. samplePoints[at].Select(value => (int)value)], summary.Edge));
+                Offer(SweepSpace.Key(SamplePoint(at)), summary);
             }
         }
 
-        return [.. all.OrderByDescending(pair => pair.Edge).ThenBy(pair => SweepSpace.Key(pair.Point), StringComparer.Ordinal).Select(pair => pair.Point).DistinctBy(point => SweepSpace.Key(point)).Take(count)];
+        var leaders = new List<(string Key, float Edge)>();
+
+        while (heap.TryDequeue(out var key, out var priority))
+        {
+            leaders.Add((key, priority.Edge));
+        }
+
+        return [.. leaders.OrderByDescending(pair => pair.Edge).ThenBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => SweepSpace.Parse(pair.Key))];
     }
 
     // Depth along one dial is the single steps that dial can move in one direction, the others held, before the

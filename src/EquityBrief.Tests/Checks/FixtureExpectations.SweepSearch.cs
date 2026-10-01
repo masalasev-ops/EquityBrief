@@ -20,7 +20,7 @@ public partial class FixtureExpectations
     static SweepMeasures SweepMeasuresAt(double edge) => YearMeasures(SweepForty, [.. Enumerable.Repeat<double?>(edge, 8)]);
 
     static SweepDesignSearch SweepLandscape(SweepSpace space, Func<int[], double> edge, SweepDesign? design = null) =>
-        new(design ?? SweepDesign.Live, 300, space, (point, _) => SweepAt(edge(point)), point => SweepMeasuresAt(edge(point)));
+        new(design ?? SweepDesign.Live, 300, 300, space, (point, _) => SweepAt(edge(point)), point => SweepMeasuresAt(edge(point)));
 
     static readonly SweepMeasures SweepLive = SweepMeasuresAt(0.2);
 
@@ -182,6 +182,16 @@ public partial class FixtureExpectations
         var (nearest, _) = twin.Propose([up, down, live], SweepLive);
 
         Assert.Equal(live, nearest!.Point);
+
+        // The leaders asked for are the first of every leader in order: bounded to the count, and a tie on the
+        // edge going to the lower key, so the ones kept are the same whichever way the heap filled.
+        var tied = twin.LeadersOf(3);
+        var every = twin.LeadersOf(1000);
+
+        Assert.Equal(3, tied.Count);
+        Assert.True(every.Count > 3);
+        Assert.All(tied, leader => Assert.Equal(1.0f, twin.Evaluate(leader).Edge, 3));
+        Assert.Equal(every.Take(3).Select(leader => SweepSpace.Key(leader)), tied.Select(leader => SweepSpace.Key(leader)));
 
         // The deepest leader is proposed over the highest edge: a spike S at 1.0 whose every neighbour is under
         // the line, a depth of 0, beside a broad region at 0.97 around the live point, one step deep; the live

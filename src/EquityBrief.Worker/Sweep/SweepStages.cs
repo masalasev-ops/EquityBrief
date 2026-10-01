@@ -137,8 +137,23 @@ public static class SweepStages
         return picks;
     }
 
+    // The sessions a tally's night bits must reach: one past the last session any of the picks sits on, which is
+    // the history's own count and not the scored nights', since a pick's session is its place in the whole
+    // calendar and the scored nights begin a year into it.
+    public static int SessionsOf(IReadOnlyList<SweepPick> picks)
+    {
+        var last = 0;
+
+        foreach (var pick in picks)
+        {
+            last = Math.Max(last, pick.Session);
+        }
+
+        return last + 1;
+    }
+
     // The buffers one walk fills for the exits it reads: a figure vector an exit, the nights listed an exit as
-    // bits, and the session each name's kept trade blocks it through.
+    // bits over every session of the history, and the session each name's kept trade blocks it through.
     public sealed class Tally
     {
         public readonly int[] Exits;
@@ -147,18 +162,18 @@ public static class SweepStages
         public readonly int[] OpenUntil;
         public readonly int Words;
 
-        public Tally(int[] exits, int nights)
+        public Tally(int[] exits, int sessions)
         {
             Exits = exits;
-            Words = (nights + 63) / 64;
+            Words = (sessions + 63) / 64;
             Sums = new float[exits.Length * SweepFigures.Width];
             Nights = new ulong[exits.Length * Words];
             OpenUntil = new int[exits.Length];
         }
 
-        public static Tally AllExits(int nights) => new([.. Enumerable.Range(0, SweepAxes.Exits)], nights);
+        public static Tally AllExits(int sessions) => new([.. Enumerable.Range(0, SweepAxes.Exits)], sessions);
 
-        public static Tally OneExit(int exit, int nights) => new([exit], nights);
+        public static Tally OneExit(int exit, int sessions) => new([exit], sessions);
 
         public void Clear()
         {
@@ -241,7 +256,7 @@ public static class SweepStages
     // One setting's full record under one exit, and the name-sessions it kept where a set is handed in.
     public static SweepMeasures Measures(IReadOnlyList<SweepPick> picks, SweepDesign design, DialSetting setting, in ConditionSetting conditions, int nights, HashSet<(int Name, int Session)>? kept = null)
     {
-        var tally = Tally.OneExit(design.ExitIndex, nights);
+        var tally = Tally.OneExit(design.ExitIndex, SessionsOf(picks));
 
         Walk(picks, setting, conditions, tally);
 
@@ -283,7 +298,7 @@ public static class SweepStages
 
     public static IReadOnlyList<SweepDesignRank> Rank(IReadOnlyList<SweepPick> picks, SweepDesign selection, ConditionSetting conditions, int nights)
     {
-        var tally = Tally.AllExits(nights);
+        var tally = Tally.AllExits(SessionsOf(picks));
         var viable = new int[SweepAxes.Exits];
         var edges = new List<double>[SweepAxes.Exits];
         var multiples = new List<double>[SweepAxes.Exits];
