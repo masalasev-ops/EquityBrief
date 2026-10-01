@@ -35648,7 +35648,7 @@ Built:      - The candidate. The swing filter's own evaluator gains one paramete
 Measured:   nothing runs live by this until the freeze; over the constructed store of four members, ZZA's state
             deteriorating and ZZC's improving, the seventh leaves ZZA off and every other candidate fires on it, 28
             evaluations over 4 members and 7 candidates.
-Tests:      1650, unchanged: the family's three tests extended to the seventh, the by-hand firing on every state
+Tests:      1652, unchanged: the family's three tests extended to the seventh, the by-hand firing on every state
             and none with the live filter firing on deteriorating, the command's ten rows and the seventh's rule
             and parameters, and the stored shadow carrying the state each candidate read on each member's row;
             the shape command's two corrections, the learning region's two, the edge clock's and the shadow
@@ -35668,16 +35668,25 @@ Mutated:    the rule, stated before the run: each rule this build adds, reversed
             F3 every registration leaving a deteriorating business off, the parameter on by default: red in the
                firing test, where the live filter must fire on a deteriorating member, and in the command test,
                where the live filter's parameter must read off.
-            Results: T5MUT.
-Held:       T5HELD.
-Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, T5TESTS of T5TESTS tests ran
+            Results: F1 to F3 ran in a detached worktree at 98fb1a1, this entry's commit, each filtered to its tests,
+            the edit made there and reverted, and the tree read clean after each: every one turned its
+            predicted tests red, F3 both of them, and no other test was run. The three ran first at dc674fb,
+            this entry's commit before the rebase onto main at 2801928, with the same results.
+Held:       red in the tests predicted and in no other, for each of the three.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1652 of 1652 tests ran
             with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
             `data-ci` and never `data`.
-            `tools/verify-phase.ps1` green at 44 tables, T5CLAIMS claims, T5CLAIMS PASS, 0 FAIL, 0 out of scope,
-            0 unexamined, T5PLACE placements and verdicts reconciled against a floor of 34, fixture PRESENT,
-            41 of 41 roster checks carried and all 41 run, T5TESTS of T5TESTS tests.
-            Both gates ran over the tree carrying this entry, T5SHA, in a worktree beside the repository, and the
+            `tools/verify-phase.ps1` green at 44 tables, 766 claims, 766 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 777 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1652 of 1652 tests.
+            Both gates ran over the tree carrying this entry, 98fb1a1, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either; run 3 of the sweep went on under its own
             build throughout.
+            Before the rebase, over dc674fb, `tools/ci.ps1` was green three times and `tools/verify-phase.ps1`
+            failed three times on one test of 1650 this build does not touch, the read surface's own-checkout
+            test, in the removal of its temporary folder after the surface it had started was killed, with the
+            sweep's run and the gate loading the machine; the 12.3 correction of 2026-10-01 made that removal
+            try again and leave a folder the machine still holds, and over 98fb1a1, this entry's commit
+            rebased onto the main that carries it, both gates ran green as recorded above.
 Carried:    the merge, at the freeze with its remedy, which registers the seven at one instant and records what the
             second restart cost in the six's nights, as R3 asks; the pull request stands open until then.
