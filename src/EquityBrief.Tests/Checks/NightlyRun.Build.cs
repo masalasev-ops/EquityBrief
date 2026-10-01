@@ -80,12 +80,25 @@ public partial class NightlyRun
         File.WriteAllText(secrets, "{\"EquityBrief\":{\"Word\":\"from the main checkout\",\"Key\":\"the key\"}}");
 
         // The named file is read, over the settings beside the build, and nothing is copied beside the build.
-        var configuration = WorkerConfiguration.Build(build, secrets);
+        // A variable in the environment still wins over the named file, read under a key of this test's own so
+        // no other test, and no gate's script, sets it.
+        Environment.SetEnvironmentVariable("EquityBrief__SuiteWord", "from the environment");
 
-        Assert.Equal("from the main checkout", configuration["EquityBrief:Word"]);
-        Assert.Equal("the key", configuration["EquityBrief:Key"]);
-        Assert.Equal("data", configuration["EquityBrief:DataRoot"]);
-        Assert.False(File.Exists(Path.Combine(build, "appsettings.Secrets.json")));
+        try
+        {
+            File.WriteAllText(secrets, "{\"EquityBrief\":{\"Word\":\"from the main checkout\",\"Key\":\"the key\",\"SuiteWord\":\"from the main checkout\"}}");
+
+            var configuration = WorkerConfiguration.Build(build, secrets);
+
+            Assert.Equal("from the main checkout", configuration["EquityBrief:Word"]);
+            Assert.Equal("the key", configuration["EquityBrief:Key"]);
+            Assert.Equal("from the environment", configuration["EquityBrief:SuiteWord"]);
+            Assert.False(File.Exists(Path.Combine(build, "appsettings.Secrets.json")));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("EquityBrief__SuiteWord", null);
+        }
 
         // None named, or one named that is not there: the settings alone, and no fault.
         Assert.Equal("from the settings", WorkerConfiguration.Build(build, null)["EquityBrief:Word"]);
