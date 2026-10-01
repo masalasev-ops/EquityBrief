@@ -573,10 +573,18 @@ public static class SweepCandidates
     }
 
     // The swings the night's store held on a bar's session: confirmed by it, and made inside the year of bars
-    // the store keeps.
+    // the store keeps, from its fourth session on, since the swing finder judges no session among the first
+    // three of the series it is given, which on a night are the year's own first three.
     public static Swing[] SwingsHeld(SweepSeries series, int bar)
     {
-        var oldest = series.Bars[series.WindowStart[bar]].Session;
+        var first = series.WindowStart[bar] + SwingSeries.Lookback;
+
+        if (first > bar)
+        {
+            return [];
+        }
+
+        var oldest = series.Bars[first].Session;
 
         return [.. series.Swings.AsSpan(0, series.Confirmed[bar]).ToArray().Where(swing => swing.SessionDate >= oldest)];
     }

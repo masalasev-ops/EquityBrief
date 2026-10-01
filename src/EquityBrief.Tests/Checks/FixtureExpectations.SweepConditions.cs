@@ -2,6 +2,7 @@ using EquityBrief.Core.Filter;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Sweep;
+using EquityBrief.Core.Swings;
 using EquityBrief.Worker.Sweep;
 
 namespace EquityBrief.Tests.Checks;
@@ -37,6 +38,44 @@ public partial class FixtureExpectations
         var sessionAt = bars.Select((bar, at) => (bar.Session, at)).ToDictionary(pair => pair.Session, pair => pair.at);
 
         return SweepColumns.Series(new SweepName("CON", bars, [(null, null)], [], sector, surprises), sessionAt);
+    }
+
+    [Fact]
+    public void TheSwingsHeldOnASessionAreTheOnesTheSwingFinderGivesOverTheNightsYearAlone()
+    {
+        // Eight hundred sessions with a random walk. On each bar past the first year the night's series is the
+        // year of bars to it, and its swing finder judges none of that series' first three sessions, so a swing
+        // made among them, which the whole history's finder sees, is one the night never held. The sweep's
+        // swings on the bar are exactly the finder's over the year's bars, confirmed by the bar, and differ from
+        // the whole history's where the year's first three sessions hold a swing.
+        var random = new Random(20260930);
+        var close = 100m;
+        var bars = SweepBars(800, _ =>
+        {
+            close = Math.Max(10m, close + (decimal)Math.Round((random.NextDouble() - 0.5) * 4, 2));
+
+            return (close, close + 1, close - 1, close, 1_000);
+        });
+        var series = SweepSeriesOf(bars);
+        var compared = 0;
+        var differed = 0;
+
+        for (var bar = 260; bar < 800; bar += 7)
+        {
+            var start = series.WindowStart[bar];
+            var window = bars.Skip(start).Take(bar - start + 1).Select(one => new SwingBar(one.Session, one.High, one.Low)).ToArray();
+            var night = SwingSeries.For(window).Where(swing => swing.ConfirmedOn <= bars[bar].Session).OrderBy(swing => swing.SessionDate).ThenBy(swing => swing.Direction, StringComparer.Ordinal).ToArray();
+            var sweep = SweepCandidates.SwingsHeld(series, bar).OrderBy(swing => swing.SessionDate).ThenBy(swing => swing.Direction, StringComparer.Ordinal).ToArray();
+            var whole = series.Swings.AsSpan(0, series.Confirmed[bar]).ToArray().Where(swing => swing.SessionDate >= bars[start].Session).Count();
+
+            Assert.Equal(night, sweep);
+
+            compared++;
+            differed += whole != sweep.Length ? 1 : 0;
+        }
+
+        Assert.Equal(78, compared);
+        Assert.True(differed > 0, "the year's first three sessions never held a swing, so the rule was not read.");
     }
 
     [Fact]
