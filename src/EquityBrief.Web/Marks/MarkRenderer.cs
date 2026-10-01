@@ -439,7 +439,67 @@ public sealed record ResearchNight(DateOnly Session, int PaidPasses, int Drafts)
 
 // Research and spend as the Run page pictures them: the night's spend against the caps and the seven nights
 // up to it.
-public sealed record ResearchPicture(NightSpend Spend, IReadOnlyList<ResearchNight> Nights);
+public sealed record ResearchPicture(NightSpend Spend, IReadOnlyList<ResearchNight> Nights, LabellerLine? Labeller = null);
+
+// The news labeller's line on the Run page for a night: whether it ran, on which profile and model, what the
+// night's labelling cost and the month's against its limit, the articles labelled, the unreadable answers by
+// cause, the articles refused by admissibility, the names reached and what stopped it; or the line it was
+// refused with before it asked anything.
+public sealed record LabellerLine(
+    DateOnly Night,
+    bool Ran,
+    string? Profile,
+    string? Model,
+    decimal Cost,
+    decimal MonthCost,
+    decimal? MonthLimit,
+    int Labelled,
+    IReadOnlyDictionary<string, int> Unreadable,
+    int RefusedByAdmissibility,
+    int Reached,
+    int Names,
+    string? Stop,
+    string? Refusal);
+
+// One article on a name's page: its headline, source, published day and link, the state the labeller left it
+// in, its label where it has one, and the tabs it sits under, "all" with its direction for a labelled story,
+// "opinion" alone for an opinion piece, "all" alone for a row holding no label.
+public sealed record NewsRow(
+    string ArticleId,
+    string Title,
+    string Source,
+    string Published,
+    string Link,
+    string State,
+    string? Kind,
+    string? Direction,
+    string? Reason,
+    string? Cause,
+    string? Admissibility,
+    string Tabs)
+{
+    public const string Labelled = "labelled";
+    public const string Unreadable = "unreadable";
+    public const string Refused = "refused";
+    public const string Unlabelled = "unlabelled";
+}
+
+// A name's news region: the articles of the thirty days before the night newest first, the counts each tab
+// and the bar draw, the model and profile that wrote the newest label, and where the name holds no label for
+// the night the one line saying why with a code the stylesheet and the suite read.
+public sealed record NewsView(
+    string Ticker,
+    DateOnly Night,
+    IReadOnlyList<NewsRow> Rows,
+    int All,
+    int Positive,
+    int Negative,
+    int Neutral,
+    int Opinion,
+    string? Model,
+    string? Profile,
+    string? Why,
+    string? WhyCode);
 
 // How one section of one report came out, as the Run page draws it: passed first time or on retry, left out
 // with why, or not warranted where it stood from an earlier day; what its own calls cost, a trial's left out;
@@ -712,7 +772,13 @@ public sealed record ListingCell(
     // Where the row repeats a trade the live list recommended for the name on an earlier night that is still
     // open, that night; the row is drawn where the filter put it and marked. Null on every other row.
     // see: A repeat listing made before the rule reached the filter is marked and counted once
-    DateOnly? RepeatOf = null);
+    DateOnly? RepeatOf = null,
+    // The positive and negative stories of the thirty days before the night, counted as the name page's bar
+    // counts them, the newest label of each article with opinion pieces left out; null where the labeller has
+    // labelled nothing of the name's, which the cell says.
+    // see: The news labels alone name the model that wrote them
+    int? NewsPositive = null,
+    int? NewsNegative = null);
 
 // The state a member's reported quarters gave it on a night and the sentences its readings say, which
 // tonight's row draws beside the trend word, the sentences showing while the word is under the pointer
@@ -3077,6 +3143,16 @@ public sealed class MarkRenderer : IComponent
                 ? Formatted($"<td class=\"r num\" data-reward-to-risk=\"{ratio.ToString(Invariant)}\">{Figures.Ratio(ratio)}</td>")
                 : $"<td class=\"reward-to-risk\"><span class=\"degraded\" data-reward-to-risk=\"none\">{Escaped(row.NoRewardToRisk ?? NoRewardToRiskStated)}</span></td>");
 
+            // The positive and negative stories of the thirty days before, as the name page's bar counts
+            // them, on the first list alone: the labeller reads that list and no other.
+            // see: The news labels alone name the model that wrote them
+            if (!oneGateShort)
+            {
+                list.Append(row.NewsPositive is { } positive && row.NewsNegative is { } negative
+                    ? Formatted($"<td class=\"news-counts\" data-positive=\"{positive}\" data-negative=\"{negative}\"><span class=\"np\">+{positive}</span> <span class=\"nn\">-{negative}</span></td>")
+                    : "<td class=\"news-counts\" data-positive=\"none\" data-negative=\"none\"><span class=\"degraded\">no label</span></td>");
+            }
+
             // The gates that put the row on the list, each with why, the setup's family, the session its
             // trigger arrived on and the trade the gate read, its figures to the hundredth as the reward to
             // risk column and the name page draw them rather than as the gate stored them.
@@ -3109,7 +3185,7 @@ public sealed class MarkRenderer : IComponent
         // see: A reason's record is displayed, beside the reason and never beside the name
         if (byReason is not null)
         {
-            list.Append(Invariant, $"<tfoot><tr><td colspan=\"{(byFilter ? 8 : 7)}\" class=\"rec-lab\">Each reason's record across every name it has fired for. ");
+            list.Append(Invariant, $"<tfoot><tr><td colspan=\"{(byFilter ? 9 : 8)}\" class=\"rec-lab\">Each reason's record across every name it has fired for. ");
             list.Append("Solid: the share that reached target before stop, of how many resolved, against the break-even they needed. ");
             list.Append("Dashed: not enough setups have finished to say anything yet, shown as how many have finished against the number needed.</td>");
 
@@ -5629,12 +5705,17 @@ public sealed class MarkRenderer : IComponent
         ("Trend", TrendSays + " Beside it, where the night read one, the state the company's reported quarters gave it, with what its numbers say under the pointer."),
         ("Distance to levels", DistanceSays),
         ("Reward to risk", "How far the plan's target sits above its buy against how far its stop sits below it, so 2.00 means twice as much to gain as to lose. It is a fact about the chart and not a chance of anything. Where the plan states none, the row says why."),
+        .. oneGateShort ? Array.Empty<(string, string)>() : new[] { ("News", NewsSays) },
         .. oneGateShort
             ? new[] { ("Gate missed", GateMissedSays) }
             : byFilter
             ? new[] { ("Gates", "How the swing filter passed the stock: the setup's family, the session its trigger arrived on, and the plan the trade gate read with its reward to risk and how far its stop sits below the entry in typical days' moves. Hold the pointer on the cell for each gate's reason.") }
             : Array.Empty<(string, string)>(),
     ];
+
+    // What the list's news column holds.
+    public const string NewsSays =
+        "The stories labelled positive and the stories labelled negative for the company over the thirty days before the night, counted as the name page's bar counts them: the newest label of each article, with opinion pieces left out. No label where the labeller has labelled nothing of the name's.";
 
     // What the second list's gate column holds.
     public const string GateMissedSays =
@@ -6476,6 +6557,97 @@ public sealed class MarkRenderer : IComponent
             + PicksTable(earlier, named: false);
     }
 
+    // A name's page, after the nights the list picked it: what was written about the company in the thirty
+    // days before the night, each article with the newest label the labeller wrote for it, the bar of positive
+    // against negative stories above tabs for all, positive, negative, neutral and opinion, an opinion piece in
+    // the opinion tab alone and in no count, the model that wrote the labels named once, and where the name
+    // holds no label for the night one line saying why. The tabs are radio inputs the stylesheet reads, so the
+    // region carries no script of its own.
+    // see: The news labels alone name the model that wrote them
+    // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
+    public string NewsRegion(NewsView view)
+    {
+        const double Wide = 520;
+
+        var region = new StringBuilder();
+
+        region.Append(Invariant, $"<div class=\"news-region\" data-ticker=\"{Escaped(view.Ticker)}\" data-articles=\"{view.Rows.Count}\" data-all=\"{view.All}\" data-positive=\"{view.Positive}\" data-negative=\"{view.Negative}\" data-neutral=\"{view.Neutral}\" data-opinion=\"{view.Opinion}\">");
+
+        if (view.Rows.Count == 0)
+        {
+            region.Append(Invariant, $"<p class=\"news-none\" data-why=\"{Escaped(view.WhyCode ?? "none")}\">{Escaped(view.Why ?? $"No article naming {view.Ticker} was stored in the thirty days before this night.")}</p></div>");
+
+            return region.ToString();
+        }
+
+        // The bar: positive against negative over the window, opinion pieces in neither.
+        var total = view.Positive + view.Negative;
+        var positiveWidth = total == 0 ? 0 : Wide * view.Positive / total;
+
+        region.Append(Invariant, $"<svg class=\"news-bar\" viewBox=\"0 0 {Wide} 14\" role=\"img\" aria-label=\"{view.Positive} positive against {view.Negative} negative over the thirty days before\">");
+        region.Append(Invariant, $"<rect class=\"nb-track\" x=\"0\" y=\"1\" width=\"{Wide}\" height=\"12\" rx=\"6\"></rect>");
+        region.Append(Invariant, $"<rect class=\"nb-positive\" x=\"0\" y=\"1\" width=\"{Number(positiveWidth)}\" height=\"12\" rx=\"6\"></rect>");
+        region.Append(Invariant, $"<rect class=\"nb-negative\" x=\"{Number(positiveWidth)}\" y=\"1\" width=\"{Number(total == 0 ? 0 : Wide - positiveWidth)}\" height=\"12\" rx=\"6\"></rect></svg>");
+        region.Append(Invariant, $"<p class=\"news-counts-line\"><b>{view.Positive}</b> positive, <b>{view.Negative}</b> negative and <b>{view.Neutral}</b> neutral over the thirty days before, opinion pieces counted in none.</p>");
+
+        if (view.Why is { } why)
+        {
+            region.Append(Invariant, $"<p class=\"news-unlabelled\" data-why=\"{Escaped(view.WhyCode ?? "unknown")}\">{Escaped(why)}</p>");
+        }
+
+        // The tabs: five radio inputs the stylesheet shows one list under, their labels drawn as chips.
+        var tabs = new[] { ("all", view.All, "All"), ("positive", view.Positive, "Positive"), ("negative", view.Negative, "Negative"), ("neutral", view.Neutral, "Neutral"), ("opinion", view.Opinion, "Opinion") };
+
+        foreach (var (tab, _, _) in tabs)
+        {
+            region.Append(Invariant, $"<input type=\"radio\" class=\"news-tab\" name=\"news-tab\" id=\"news-tab-{tab}\" value=\"{tab}\"{(tab == "all" ? " checked" : string.Empty)}>");
+        }
+
+        region.Append("<nav class=\"news-tabs\" aria-label=\"Filter the stories\">");
+
+        foreach (var (tab, count, word) in tabs)
+        {
+            region.Append(Invariant, $"<label class=\"chip\" for=\"news-tab-{tab}\" data-tab=\"{tab}\" data-count=\"{count}\">{word}<span class=\"n\">{count}</span></label>");
+        }
+
+        region.Append("</nav><ul class=\"news-rows\">");
+
+        foreach (var row in view.Rows)
+        {
+            region.Append(Invariant, $"<li class=\"news-row\" data-article=\"{Escaped(row.ArticleId)}\" data-state=\"{Escaped(row.State)}\" data-tabs=\"{Escaped(row.Tabs)}\" data-kind=\"{Escaped(row.Kind ?? "none")}\" data-direction=\"{Escaped(row.Direction ?? "none")}\">");
+            region.Append(Invariant, $"<a class=\"news-title\" href=\"{Escaped(row.Link)}\" rel=\"noopener\" target=\"_blank\">{Escaped(row.Title)}</a>");
+            region.Append(row.State switch
+            {
+                NewsRow.Labelled => Formatted($"<span class=\"tag kind\">{Escaped(row.Kind ?? string.Empty)}</span><span class=\"tag dir\">{Escaped(row.Direction ?? string.Empty)}</span>"),
+                NewsRow.Unreadable => Formatted($"<span class=\"tag state\">unreadable: {Escaped(row.Cause ?? string.Empty)}</span>"),
+                NewsRow.Refused => Formatted($"<span class=\"tag state\">refused: {Escaped(row.Admissibility ?? string.Empty)}</span>"),
+                _ => "<span class=\"tag state\">unlabelled</span>",
+            });
+            region.Append(Invariant, $"<span class=\"news-meta\">{Escaped(row.Source)}, {Escaped(row.Published)}</span>");
+
+            // The reason, shown while its word is under the pointer or holds the focus, placed by the shell as
+            // the business word's sentences are.
+            if (row.Reason is { } reason)
+            {
+                region.Append(Invariant, $"<span class=\"news-why\" tabindex=\"0\">why<span class=\"says\" role=\"tooltip\">{Escaped(reason)}</span></span>");
+            }
+
+            region.Append("</li>");
+        }
+
+        region.Append("</ul>");
+
+        // The model, named once and in small type, which the labels alone may do.
+        if (view.Model is { } model)
+        {
+            region.Append(Invariant, $"<p class=\"news-model\">Labelled by {Escaped(model)}{(view.Profile is { } profile ? $", the news job's profile {Escaped(profile)}" : string.Empty)}.</p>");
+        }
+
+        region.Append("</div>");
+
+        return region.ToString();
+    }
+
     static string DayOf(DateOnly day) => day.ToString("yyyy-MM-dd", Invariant);
 
     static string StoredPrice(decimal? price) => price is { } held ? held.ToString(Invariant) : "none";
@@ -7000,9 +7172,38 @@ public sealed class MarkRenderer : IComponent
         region.Append("</svg><div class=\"rp-tiles\">");
         region.Append(Invariant, $"<div class=\"tile\" data-figure=\"paid reports\"><b>{picture.Nights.Sum(night => night.PaidPasses)}</b><span>reports written by the paid model</span></div>");
         region.Append(Invariant, $"<div class=\"tile\" data-figure=\"overnight drafts\"><b>{picture.Nights.Sum(night => night.Drafts)}</b><span>drafts written overnight on this machine</span></div>");
-        region.Append("</div></div>");
+        region.Append("</div>");
+        region.Append(LabellerParagraph(picture.Labeller));
+        region.Append("</div>");
 
         return region.ToString();
+    }
+
+    // The news labeller's line for the night: what it cost and the month against its limit, the articles
+    // labelled, the unreadable answers by cause, the articles refused by admissibility, the names reached
+    // and the stop; the line it was refused with; or that no run is recorded for the night.
+    // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+    static string LabellerParagraph(LabellerLine? line)
+    {
+        if (line is null)
+        {
+            return "<p class=\"rp-labeller\" data-ran=\"none\">The news labeller has no run recorded for this night.</p>";
+        }
+
+        var unreadable = line.Unreadable.Values.Sum();
+        var causes = unreadable == 0 ? string.Empty : " (" + string.Join(", ", line.Unreadable.Where(pair => pair.Value > 0).OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => $"{Escaped(pair.Key)} {pair.Value}")) + ")";
+        var head = Formatted($"<p class=\"rp-labeller\" data-session=\"{DayOf(line.Night)}\" data-ran=\"{(line.Ran ? "true" : "false")}\" data-cost=\"{line.Cost.ToString(Invariant)}\" data-month=\"{line.MonthCost.ToString(Invariant)}\" data-month-limit=\"{(line.MonthLimit is { } limit ? limit.ToString(Invariant) : "none")}\" data-labelled=\"{line.Labelled}\" data-unreadable=\"{unreadable}\" data-refused=\"{line.RefusedByAdmissibility}\" data-reached=\"{line.Reached}\" data-names=\"{line.Names}\" data-stop=\"{Escaped(line.Stop ?? "none")}\">");
+
+        if (!line.Ran)
+        {
+            return head + Formatted($"The news labeller was refused before it asked anything: {Escaped(line.Refusal ?? "no reason recorded")}.</p>");
+        }
+
+        var against = line.MonthLimit is { } ceiling ? Formatted($" against its {SpendVerdict.Money(ceiling)} limit") : string.Empty;
+        var opening = Formatted($"The news labeller on {Escaped(line.Profile ?? "no profile")} ({Escaped(line.Model ?? "no model")}) cost {SpendVerdict.Money(line.Cost)} this night and {SpendVerdict.Money(line.MonthCost)} this month");
+        var counts = Formatted($": {line.Labelled} article(s) labelled, {unreadable} unreadable{causes}, {line.RefusedByAdmissibility} refused by admissibility, {line.Reached} of {line.Names} name(s) reached, stopped by {Escaped(line.Stop ?? "nothing recorded")}.</p>");
+
+        return head + opening + against + counts;
     }
 
     // How each report did, in section 15.10's detail: one numbered row for each report of the seven nights with its

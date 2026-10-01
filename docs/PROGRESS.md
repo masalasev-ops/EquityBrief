@@ -34296,3 +34296,76 @@ Carried:    the screens, the fourth pull request: the name page's News region, T
             preview before its pull request; the captures of a label of each fixture article on the Haiku and
             Sonnet profiles, which the plan authorised and which wait on the operator's word, since each costs a
             live call; the time and month limits and the digit share, settled from the first twenty nights.
+
+### 12.6 - correction: a name's page draws what was written about the company in the thirty days before under tabs with a bar and the labelling model named once, tonight's list counts each row's positive and negative stories, and the run page draws the labeller's line and counts its nights toward the twenty its limits settle from   2026-10-01
+
+Builds:     the screens of the news labeller of the 12.6 ruling of 2026-09-29, its fourth pull request, as track 7
+            of the queue the 12.2 ruling of 2026-09-30 sets, on the operator's word of 2026-10-01 ("proceed with
+            those while I go to bed") while the sweep's third run went on under its own build.
+Asked:      the ruling's screens: a News region on the name page after "On the list before" with tabs for all,
+            positive, negative, neutral and opinion, each headline with its kind as a small tag, its source, date
+            and link and its reason on hover or focus, a bar of positive against negative over the thirty days
+            above the tabs, the labelling model named once in small type, an opinion piece in the opinion tab
+            alone and in no count, a stock with no labels showing its headlines unlabelled with one line saying
+            why, and a refused or unreadable row saying so; tonight's positive and negative counts per row by the
+            bar's rule; the labeller's own line in the run page's research and spend region; and, under what else
+            is waiting on a count, the labeller's nights against twenty with its measured duration, its month's
+            spend and the share of answers refused for a digit, which settle its three operating rows
+            (correction 2). The retirement warning the ruling's correction 1 asked for was built with the
+            profiles and is not touched here.
+Built:      - The read surface. `ReadApi` reads a name's articles of the window with the newest label written
+              for each, every name's positive and negative counts by the bar's rule, and the labeller's own rows;
+              `NewsScreen` projects them into the name page's region with the one line saying why a name holds
+              no label, read off the night's list and the labeller's run for the night, into tonight's counts and
+              into the run page's line and its count of the labeller's nights with the median run, the month's
+              spend and the answers refused for a digit. The labeller's row names the night it labelled and the
+              limits it ran under, and its refused row names the night, so the pages find both by night.
+            - The pages. The News card after the nights the list picked the name and before the written sections,
+              its tabs five radio inputs the stylesheet shows one list under, so the region carries no script;
+              tonight's News column on the first list alone, the second list's key saying so; the labeller's
+              paragraph under the research picture's tiles; the fourth line under what else is waiting on a
+              count. The words the labeller's rows carry moved to Core as `NewsLabelling`, which the worker's
+              labeller states its own by.
+            - The documents. Section 15.9's News row; 15.7's list row, 15.10's research and spend row and its
+              count of what waits each gaining a part; the decision narrowing the model-name rule to the news
+              labels alone; three operating rows in the plan for the labeller's time limit, its month limit and
+              the digit share, each settled from its first twenty nights; HOW_IT_WORKS' sentence; the runbook;
+              prior text in CHANGELOG.
+Measured:   nothing paid: no live call was made, and the pages were rehearsed over a copy of the store holding
+            constructed articles and labels, every screen screenshotted. The labeller's durations, its spend
+            and the digit share are read on the run page from its first night on.
+Tests:      1664, from 1660: four added, the four over the rendered pages: the region under its tabs
+            with the bar and the model named once, the one line saying why by each cause, tonight's counts
+            and the second list's none, and the run page's line and count; the calibration test reads the
+            fourth trigger line.
+Claims:     788, from 784: four added, the News row and the three parts.
+Pins:       none moves: no pinned source is touched, which the diff was read against the three pin lists for.
+Remedy:     none: no store changes shape, and the labeller's rows gain fields a page reads as absent on a row
+            written before.
+Mutated:    the rule, stated before the run: the one assertion guarding each rule the brief or a correction
+            states in its own words, reversed alone, filtered to the test that reads it, in a detached worktree at
+            this entry's commit and reverted.
+            Predicted:
+            M1 an opinion piece counted in the bar and the direction tabs: red in the region test alone.
+            M2 tonight's counts counting opinion pieces: red in the counts test alone.
+            M3 the model named on every labelled row rather than once: red in the region test alone.
+            M4 the one line saying why fixed to one cause whatever the store holds: red in the why test alone.
+            M5 the run page reading the labeller's newest run whatever night it labelled: red in the run page
+               test alone, the earlier night drawing the later night's run.
+            Results: M1 to M5 ran in a detached worktree at ba4ae95, this entry's commit, each filtered to its test,
+            the edit made there and reverted, and the tree read clean after each: every one turned its
+            predicted test red, and no other test was run.
+Held:       red in the test predicted and in no other, for each of the five.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1664 of 1664 tests ran
+            with none failed, migrations 0 to 52 with none pending, schema version 52, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 788 claims, 788 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 799 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1664 of 1664 tests.
+            Both gates ran over the tree carrying this entry, ba4ae95, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either; run 3 of the sweep went on under its own
+            build throughout.
+Carried:    the captures of a label of each fixture article on the Haiku and Sonnet profiles, which the plan
+            authorised and which wait on the operator's word, since each costs a live call; the three operating
+            rows, read on the run page from the labeller's first night; and the news region read on the live
+            store once the labeller has run, which the first night after the merge gives.

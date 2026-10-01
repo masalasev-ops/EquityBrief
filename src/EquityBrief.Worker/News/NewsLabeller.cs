@@ -60,26 +60,23 @@ public sealed class NewsLabeller : IComponent
         ],
         Feeds: [Feed.ResearchModel]);
 
-    // The labeller's own run, and the stage the night records starting it under.
-    public const string RunPrefix = "label-news-";
-    public const string Stage = "news-labels";
-    public const string NightStage = "label-news";
-
-    // The outcomes a label row carries.
-    public const string Labelled = "labelled";
-    public const string Unreadable = "unreadable";
-
-    // The stops, in the words the row and the pages state.
-    public const string Finished = "every name reached";
-    public const string MonthLimitReached = "the labeller's month limit";
-    public const string TimeLimitPassed = "the time limit";
-    public const string PeakWindowOpened = "a peak window";
-    public const string CapPaused = "the day or month cap";
-    public const string ModelUnreachable = "the model could not be reached";
+    // The labeller's own run, the stage the night records starting it under, the outcomes a label row carries
+    // and the stops, each the word the Core holds for the read surface to draw by.
+    public const string RunPrefix = NewsLabelling.RunPrefix;
+    public const string Stage = NewsLabelling.Stage;
+    public const string NightStage = NewsLabelling.NightStage;
+    public const string Labelled = NewsLabelling.Labelled;
+    public const string Unreadable = NewsLabelling.Unreadable;
+    public const string Finished = NewsLabelling.Finished;
+    public const string MonthLimitReached = NewsLabelling.MonthLimitReached;
+    public const string TimeLimitPassed = NewsLabelling.TimeLimitPassed;
+    public const string PeakWindowOpened = NewsLabelling.PeakWindowOpened;
+    public const string CapPaused = NewsLabelling.CapPaused;
+    public const string ModelUnreachable = NewsLabelling.ModelUnreachable;
 
     // The window read, and the most articles a name is sent for.
-    public const int WindowDays = 30;
-    public const int ArticlesAName = 20;
+    public const int WindowDays = NewsLabelling.WindowDays;
+    public const int ArticlesAName = NewsLabelling.ArticlesAName;
 
     public static string RunIdFor(DateTimeOffset startedAt) =>
         RunPrefix + startedAt.UtcDateTime.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture);
@@ -285,7 +282,7 @@ public sealed class NewsLabeller : IComponent
         var dropped = await DropOrphansAsync(connection, cancellation);
         var outcome = new NewsLabelOutcome(names.Count, reached, labelled, unreadable, refused, already, cost, monthBefore + cost, stop, dropped);
 
-        await RecordAsync(connection, runId, startedAt, calls, outcome, cancellation);
+        await RecordAsync(connection, runId, session, startedAt, calls, outcome, cancellation);
 
         return outcome;
     }
@@ -312,7 +309,7 @@ public sealed class NewsLabeller : IComponent
 
     // A run refused before it asked anything, its profile's key missing, a limit that is not a number or a model
     // that does not answer, written as its own row where the store is there to hold it, so the run page says why.
-    public static async Task RefusedAsync(string databaseFile, string runId, DateTimeOffset at, string message)
+    public static async Task RefusedAsync(string databaseFile, string runId, DateTimeOffset at, string message, DateOnly? session = null)
     {
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync();
@@ -328,7 +325,7 @@ public sealed class NewsLabeller : IComponent
         command.Parameters.AddWithValue("$model_calls", 0);
         command.Parameters.AddWithValue("$network_requests", 0);
         command.Parameters.AddWithValue("$spend", "0");
-        command.Parameters.AddWithValue("$detail", JsonSerializer.Serialize(new { refused = message }));
+        command.Parameters.AddWithValue("$detail", JsonSerializer.Serialize(new { refused = message, session = session?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) }));
 
         await command.ExecuteNonQueryAsync();
     }
@@ -465,7 +462,7 @@ public sealed class NewsLabeller : IComponent
         return spent;
     }
 
-    async Task RecordAsync(SqliteConnection connection, string runId, DateTimeOffset startedAt, int calls, NewsLabelOutcome outcome, CancellationToken cancellation)
+    async Task RecordAsync(SqliteConnection connection, string runId, DateOnly session, DateTimeOffset startedAt, int calls, NewsLabelOutcome outcome, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
@@ -481,9 +478,12 @@ public sealed class NewsLabeller : IComponent
         command.Parameters.AddWithValue("$spend", outcome.Cost.ToString(CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$detail", JsonSerializer.Serialize(new
         {
+            session = session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             profile = settings.Profile,
             model = cap.Model,
             instructionVersion = NewsInstruction.Version,
+            monthLimit = limits.MonthLimit.ToString(CultureInfo.InvariantCulture),
+            timeLimitMinutes = (int)limits.TimeLimit.TotalMinutes,
             names = outcome.Names,
             reached = outcome.NamesReached,
             labelled = outcome.Labelled,

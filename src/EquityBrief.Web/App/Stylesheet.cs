@@ -241,8 +241,9 @@ span[data-last-asked-at]::before{content:none}
    The sentences are fixed to the window rather than to the table, whose box scrolls sideways and would grow a scrollbar
    around them and cut them off, and the shell's script places them beside the word. */
 .business{position:relative;display:inline-block;margin-left:6px;font-size:11.5px;border:1px solid var(--hair-2);border-radius:999px;padding:0 7px;color:var(--ink-2);cursor:help}
-.business .says{display:none;position:fixed;z-index:40;width:340px;max-width:80vw;padding:8px 10px;background:var(--panel);border:1px solid var(--hair-2);border-radius:6px;font-size:12.5px;line-height:1.45;color:var(--ink);white-space:normal}
+.news-why .says,.business .says{display:none;position:fixed;z-index:40;width:340px;max-width:80vw;padding:8px 10px;background:var(--panel);border:1px solid var(--hair-2);border-radius:6px;font-size:12.5px;line-height:1.45;color:var(--ink);white-space:normal}
 .business:hover .says,.business:focus .says,.business:focus-within .says{display:block}
+.news-why:hover .says,.news-why:focus .says,.news-why:focus-within .says{display:block}
 .numbers-say{margin:0 0 12px}
 .numbers-say .says-heading{margin:0 0 4px;font:600 15px var(--serif)}
 .numbers-say .read-from{margin:0 0 6px;font-size:12.5px;color:var(--soft)}
@@ -334,6 +335,31 @@ span[data-last-asked-at]::before{content:none}
 .still-open-table td.stands{font-size:13px}
 .still-open-table .co{display:block;color:var(--soft);font-size:12px}
 .picked{margin:0 0 10px;font-size:14.5px}
+.news-region{position:relative}
+.news-bar{display:block;width:100%;max-width:520px;height:14px;margin:4px 0 8px}
+.nb-track{fill:var(--s2)}
+.nb-positive{fill:var(--sup)}
+.nb-negative{fill:var(--res)}
+.news-counts-line{margin:0 0 8px;font-size:13.5px}
+.news-unlabelled,.news-none{margin:0 0 8px;font-size:13.5px;color:var(--soft)}
+.news-region>.news-tab{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.news-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.news-tabs .chip{cursor:pointer}
+.news-tab[value="all"]:checked~.news-tabs .chip[for="news-tab-all"],.news-tab[value="positive"]:checked~.news-tabs .chip[for="news-tab-positive"],.news-tab[value="negative"]:checked~.news-tabs .chip[for="news-tab-negative"],.news-tab[value="neutral"]:checked~.news-tabs .chip[for="news-tab-neutral"],.news-tab[value="opinion"]:checked~.news-tabs .chip[for="news-tab-opinion"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.news-tab[value="all"]:checked~.news-tabs .chip[for="news-tab-all"] .n,.news-tab[value="positive"]:checked~.news-tabs .chip[for="news-tab-positive"] .n,.news-tab[value="negative"]:checked~.news-tabs .chip[for="news-tab-negative"] .n,.news-tab[value="neutral"]:checked~.news-tabs .chip[for="news-tab-neutral"] .n,.news-tab[value="opinion"]:checked~.news-tabs .chip[for="news-tab-opinion"] .n{color:var(--surface);opacity:.75}
+.news-rows{list-style:none;margin:0;padding:0}
+.news-row{padding:6px 0;border-top:1px solid var(--hair-2);font-size:13.5px}
+.news-row .news-title{font-weight:600;color:var(--ink);text-decoration:none}
+.news-row .news-title:hover,.news-row .news-title:focus{text-decoration:underline}
+.news-row .tag{display:inline-block;font:600 11px var(--sans);border:1px solid var(--hair-2);border-radius:999px;padding:1px 8px;margin-left:6px;color:var(--ink-2);vertical-align:middle}
+.news-row .news-meta{display:block;color:var(--soft);font-size:12px}
+.news-row .news-why{display:inline-block;margin-left:6px;font:600 11px var(--sans);color:var(--soft);border-bottom:1px dotted var(--soft);cursor:help}
+.news-tab[value="all"]:checked~.news-rows .news-row:not([data-tabs~="all"]),.news-tab[value="positive"]:checked~.news-rows .news-row:not([data-tabs~="positive"]),.news-tab[value="negative"]:checked~.news-rows .news-row:not([data-tabs~="negative"]),.news-tab[value="neutral"]:checked~.news-rows .news-row:not([data-tabs~="neutral"]),.news-tab[value="opinion"]:checked~.news-rows .news-row:not([data-tabs~="opinion"]){display:none}
+.news-model{margin:8px 0 0;font-size:11.5px;color:var(--soft)}
+.list-table td.news-counts{white-space:nowrap;font-variant-numeric:tabular-nums}
+.list-table .np{color:var(--sup)}
+.list-table .nn{color:var(--res)}
+.rp-labeller{margin:10px 0 0;font-size:13.5px}
 .trade-line{display:block;overflow:visible}
 .tl-track{stroke:var(--s2);stroke-width:1.5}
 .tl-stop{stroke:var(--sup);stroke-width:2.5}

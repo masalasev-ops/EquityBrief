@@ -58,6 +58,8 @@ public partial class ReadSurface
             ("earnings soon", "rz tipped", "earnings", "Earnings soon fires when the next earnings report is within 20 sessions on the exchange's calendar." + AMarkMeans),
         ];
 
+        (string Heading, string Classes, string Shown, string Says) news = ("News", "tipped", "News", MarkRenderer.NewsSays);
+
         (string Heading, string Classes, string Shown, string Says) gates =
             ("Gates", "tipped", "Gates", "How the swing filter passed the stock: the setup's family, the session its trigger arrived on, and the plan the trade gate read with its reward to risk and how far its stop sits below the entry in typical days' moves. Hold the pointer on the cell for each gate's reason.");
 
@@ -65,8 +67,8 @@ public partial class ReadSurface
         // the reward to risk; every heading either way carries its sentence, one to each column a row draws.
         foreach (var (list, expected) in new[]
         {
-            (marks.TonightList(FiredNight(night, 3), SinglePageApp.TonightDrawn, []), (IReadOnlyList<(string, string, string, string)>)[.. fixedColumns, .. reasonColumns]),
-            (marks.TonightList(FiredNight(night, 3), SinglePageApp.TonightDrawn, [], new ListRuleView(ListRules.Filter, true, 0.6, 0.45, [])), [.. fixedColumns, gates, .. reasonColumns]),
+            (marks.TonightList(FiredNight(night, 3), SinglePageApp.TonightDrawn, []), (IReadOnlyList<(string, string, string, string)>)[.. fixedColumns, news, .. reasonColumns]),
+            (marks.TonightList(FiredNight(night, 3), SinglePageApp.TonightDrawn, [], new ListRuleView(ListRules.Filter, true, 0.6, 0.45, [])), [.. fixedColumns, news, gates, .. reasonColumns]),
         })
         {
             var (tipped, all) = TableHeadingsOf(list, "list-table");

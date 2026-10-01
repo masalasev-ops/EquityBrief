@@ -390,7 +390,13 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
         missed,
         // The plan the gate row's version reads, by its word, naming the plan the night's live rule read where
         // the row stores no input.
-        gate is null ? null : await VersionPlanOf(read, gate.Version));
+        gate is null ? null : await VersionPlanOf(read, gate.Version),
+        // What was written about the company in the thirty days before the night, each article with the newest
+        // label the labeller wrote for it, whether the name was on the night's list and the labeller's own run
+        // for the night, which say why a name holds no label.
+        news: night is { } storied
+            ? NewsScreen.Build(ticker, storied, await read.NewsAsync(ticker, storied), gate is not null && gate.SessionDate == storied && gate.Passed, NewsScreen.RunFor(await read.LabellerRunsAsync(), storied))
+            : null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -841,7 +847,8 @@ app.MapGet("/screens/tonight/{night?}", async (
         suspects,
         researched,
         gates,
-        readings);
+        readings,
+        news: await read.NewsCountsAsync(dated));
 
     // Every trade the live list recommended up to the night, which "Still open" reads and the list's rows
     // are marked from where one repeats a trade still open.
@@ -1288,6 +1295,9 @@ app.MapGet("/screens/run/{night?}", async (
     // The research region's seven nights, and each report written over them read section by section.
     // see: The run page draws how each report's sections came out and each section's rates over the newest twenty reports, and no trial's drafts
     var week = await WeekOf(read, dated);
+
+    // The news labeller's own rows, for its line on the night and its count toward the nights its limits settle from.
+    var labellerRuns = await read.LabellerRunsAsync();
     var reports = RunScreen.Reports(await read.ReportRowsAsync(), await read.ReportVersionsAsync(), week.Count > 0 ? week[0].Night : dated, dated);
 
     return Results.Content(
@@ -1336,7 +1346,7 @@ app.MapGet("/screens/run/{night?}", async (
                 dated),
             market,
             funnel,
-            RunScreen.Triggers(await read.TriggerReadsAsync(), priced),
+            RunScreen.Triggers(await read.TriggerReadsAsync(), priced, NewsScreen.Trigger(labellerRuns)),
             RunScreen.Proposal(
                 await read.LatestShapeProposalAsync(),
                 await read.RegisteredCandidatesAsync(),
@@ -1356,7 +1366,8 @@ app.MapGet("/screens/run/{night?}", async (
             fresh: RunScreen.Freshness(everyListing, dated, first),
             research: new ResearchPicture(
                 TonightScreen.Spend(dated, await SpentOn(read, dated), caps),
-                RunScreen.Research(week)),
+                RunScreen.Research(week),
+                NewsScreen.Line(dated, NewsScreen.RunFor(labellerRuns, dated))),
             worries: RunScreen.Worries(
                 await read.StaleNamesAsync(index, dated),
                 how,

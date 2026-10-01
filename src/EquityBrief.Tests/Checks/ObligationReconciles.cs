@@ -486,8 +486,10 @@ public class ObligationReconciles
         // section trial's reports read to the operator and a document's kind read from the news labeller's
         // label. The state rule was discharged by the operator's ruling the same day, and the section
         // trial's reports by the operator's ruling that report generation asks DeepSeek alone, so five
-        // stand operating.
-        ["12"] = 5,
+        // stood operating; three more opened by the 12.6 correction of 2026-10-01 drawing the news on the pages,
+        // the labeller's time limit, its month limit and the share of its answers refused for a digit, each
+        // settled from its first twenty nights, so eight stand operating.
+        ["12"] = 8,
     };
 
     internal const string NoOperatingRowOpened = "opened no operating row";
