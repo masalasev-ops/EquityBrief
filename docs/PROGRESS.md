@@ -33985,8 +33985,10 @@ Mutated:    the rule, stated before the run: the mechanism this correction rests
             test red and the whole-run test red as well, where the prediction had it green: the fixture's picks a
             design are fewer than its sessions too, so a tally sized to their count fell short there. The miss is
             in the prediction, which read the fixture's sessions as scored and did not count its picks; the
-            mutant was caught on both sides. S25 ran in a detached worktree at 304SHA2, this entry's commit,
-            filtered to the leaders test, the edit made there and reverted, and the tree read clean after: 304S25.
+            mutant was caught on both sides. S25 ran in a detached worktree at 31ac81d, this entry's commit,
+            filtered to the leaders test, the edit made there and reverted, and the tree read clean after: S25
+            turned the new assertion red, the three kept reading as the highest keys among the tied where the
+            first three in order are the lowest, and nothing else in the test reached.
 Held:       red in the tests predicted and in one more, whose reason is given, and in no other.
 Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1642 of 1642 tests ran
             with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
@@ -33994,7 +33996,7 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             `tools/verify-phase.ps1` green at 44 tables, 763 claims, 763 PASS, 0 FAIL, 0 out of scope,
             0 unexamined, 774 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
             41 of 41 roster checks carried and all 41 run, 1642 of 1642 tests.
-            Both gates ran over the tree carrying this entry, 304SHA2, in a worktree beside the repository, and the
+            Both gates ran over the tree carrying this entry, 31ac81d, in a worktree beside the repository, and the
             operator's store under `data/` was not touched by either; an earlier run of both over e760374, before
             the second stage's two readings joined this entry, was green at the same figures.
 Carried:    the new run, started from a Release build of the merged main outside the main checkout, and the entry
