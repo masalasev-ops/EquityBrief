@@ -2660,7 +2660,7 @@ internal static class Scope
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Sweep edge")] = new Scoped(
             Verdict.Pass,
-            "the benchmark is worked by hand over three members under both exits with the edge read from it and none where a series runs out, and the walk keeps one open trade a stock as the pages' rule does with the boundary by hand",
+            "the benchmark is worked by hand over three members under both exits with the edge read from it and none where a series runs out, the walk keeps one open trade a stock as the pages' rule does with the boundary by hand, and over constructed closes the stepped plan's result is its return over the risk its plan stated, a trade run out of sessions is counted at its last close as the benchmark's walk counts it, a plan bought at the close is counted on its own fill, and a record is stated again without its five largest results by size with each kind of plan's results counted beyond the bound",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Sweep conditions")] = new Scoped(
             Verdict.Pass,
@@ -2689,6 +2689,10 @@ internal static class Scope
         [CheckReach.Key(FailureTable, "A sweep candidate with no sector label")] = new Scoped(
             Verdict.Pass,
             "a name with no sector is ranked in no sector and reads no rank, a sector condition that is on fails it, and one that is off passes it",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A stepped plan filled nearer its stop than the stop setting's floor")] = new Scoped(
+            Verdict.Pass,
+            "a stepped plan filled a twentieth of a typical move over its stop is listed and counted as no trade at a floor of half a move, with nothing entered and no result, and one filled at the floor is entered with its return over the risk its plan stated",
             ByExpectations),
         [CheckReach.Key(FailureTable, "A chunk of the sweep fails twice")] = new Scoped(
             Verdict.Pass,
@@ -4468,6 +4472,8 @@ internal static class Scope
         ["A chunk of the sweep fails twice"] = "12.5",
         ["The point-in-time check finds a difference"] = "12.5",
         ["A sweep candidate with no sector label"] = "12.5",
+        // The stepped plan's risk, the 12.5 correction of 2026-10-01.
+        ["A stepped plan filled nearer its stop than the stop setting's floor"] = "12.5",
     };
 
     // The two rows of the read and write matrix whose component already exists.

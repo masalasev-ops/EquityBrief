@@ -37,7 +37,11 @@ public static class SweepReport
         var page = new StringBuilder();
         var liveSetting = grid.Carry(SweepGrid.Fine, DialSetting.LiveOnFine);
         var liveMeasures = SweepStages.Direct(candidates, SweepDesign.Live, liveSetting, ConditionSetting.Off, nights);
+        var liveTrimmed = SweepStages.WithoutTheLargest(SweepStages.Picks(candidates, SweepDesign.Live), SweepDesign.Live, liveSetting, ConditionSetting.Off);
         var span = FormattableString.Invariant($"{calendar[firstScored]:yyyy-MM-dd} to {calendar[^1]:yyyy-MM-dd}");
+
+        SweepTrimmed TrimmedAt(SweepDesign design, SweepSpace space, int[] point) =>
+            SweepStages.WithoutTheLargest(SweepStages.Picks(candidates, design), design, space.Setting(point), space.Conditions(point));
 
         // The starting point across the designs: edge first, then depth.
         var starts = results.Select(result => (Result: result, Space: SweepSpace.For(result.ConditionsOn), Design: RankRow.Parse(result.DesignKey))).ToArray();
@@ -72,7 +76,7 @@ public static class SweepReport
             page.Append(DesignWords(start.Design, start.Space, start.Point));
             page.Append("<h3>How it differs from today's live rule</h3>");
             page.Append(Differences(start.Design, start.Space, start.Point));
-            page.Append(Record("The starting point over the history", start.Measures, calendar, firstScored));
+            page.Append(Record("The starting point over the history", start.Measures, calendar, firstScored, TrimmedAt(start.Design, start.Space, start.Point)));
             page.Append(AcrossDesigns(starts, chosenAt.Value));
             page.Append(Invariant($"<h3>The same design at the other margins</h3><p>The margin, {SweepSearch.PlateauMargin:0.00} of the risk, is proposed and the operator's to rule; the design's proposal at each other margin follows, from the same leaders.</p><ul>"));
 
@@ -84,7 +88,7 @@ public static class SweepReport
             page.Append("</ul>");
         }
 
-        page.Append(Record("Today's live rule over the same history", liveMeasures, calendar, firstScored));
+        page.Append(Record("Today's live rule over the same history", liveMeasures, calendar, firstScored, liveTrimmed));
 
         // 2. The variants.
         page.Append("<h2>2. The proposed variants</h2>");
@@ -119,7 +123,7 @@ public static class SweepReport
         {
             if (result.Proposal is { } held)
             {
-                page.Append(Record(Words(design) + " at " + space.Describe(held.Point), held.Measures, calendar, firstScored));
+                page.Append(Record(Words(design) + " at " + space.Describe(held.Point), held.Measures, calendar, firstScored, TrimmedAt(design, space, held.Point)));
             }
             else
             {
@@ -127,7 +131,7 @@ public static class SweepReport
             }
         }
 
-        page.Append(Record("The live rule", liveMeasures, calendar, firstScored));
+        page.Append(Record("The live rule", liveMeasures, calendar, firstScored, liveTrimmed));
         page.Append(Ranking(rows, carried));
 
         // 5. The plateau maps.
@@ -150,6 +154,7 @@ public static class SweepReport
         page.Append("<h2>7. The point-in-time result, machine time, the decisions the sweep took, and what failed</h2>");
         page.Append(PointInTime(pointInTime));
         page.Append(Machine(state, starts));
+        page.Append(ResultSizesList(candidates));
         page.Append(SupportChoice(candidates, starts, nights));
 
         // The registration command the freeze would use.
@@ -194,12 +199,18 @@ public static class SweepReport
         return page.Append("</main></body></html>").ToString();
     }
 
-    static string Record(string title, SweepMeasures measures, IReadOnlyList<DateOnly> calendar, int firstScored)
+    static string Record(string title, SweepMeasures measures, IReadOnlyList<DateOnly> calendar, int firstScored, SweepTrimmed? trimmed = null)
     {
         var html = new StringBuilder();
 
         html.Append("<h3>").Append(Esc(title)).Append(" <span class=\"tag\">history</span></h3>");
         html.Append(Invariant($"<p>{measures.Scored:N0} trades scored of {measures.Listed:N0} kept, {measures.Blocked:N0} listing(s) kept off by an open trade of the same stock; won {Pct(measures.Share)} against a break-even of {Pct(measures.BreakEven)} and no skill at {Pct(measures.NoSkill)}; an edge of {Mult(measures.Edge)} and a raw average of {Mult(measures.AverageMultiple)} times the risk; beating its break-even in {measures.YearsBeatingBreakEven} of 8 years and both in {measures.YearsBeatingBoth}; trades in {measures.BlocksWithTrades} of 30 blocks; a stock listed on {Share(measures.ListingShareOfNights, 0)} of nights.</p>"));
+
+        if (trimmed is not null)
+        {
+            html.Append(Trimmed(trimmed));
+        }
+
         html.Append("<table><tr><th>Year</th><th>Trades</th><th>Kept off</th><th>Won</th><th>Break-even</th><th>No skill</th><th>Edge</th><th>Raw average</th></tr>");
 
         for (var year = 0; year < SweepFigures.Years; year++)
@@ -208,6 +219,81 @@ public static class SweepReport
         }
 
         return html.Append("</table>").ToString();
+    }
+
+    // The same record without its largest results by size, stated under it so a figure a few trades carry is
+    // seen beside the one that states it.
+    public static string Trimmed(SweepTrimmed trimmed) =>
+        Invariant($"<p class=\"trimmed\" data-left-out=\"{trimmed.LeftOut}\" data-left=\"{trimmed.Left}\">Without its {trimmed.LeftOut} largest result(s) by size, wins and losses alike: an edge of {Mult(trimmed.Edge)} and a raw average of {Mult(trimmed.AverageMultiple)} times the risk over the {trimmed.Left:N0} trade(s) left.</p>");
+
+    // A result beyond this many times the risk is counted on the page, by the kind of plan that made it.
+    public const double ResultBound = 20;
+
+    // Each kind of plan's results over every saved candidate and exit: how many, the largest, the smallest and
+    // how many lie beyond the bound either way, so a plan whose results are counted on a risk near nothing shows
+    // on the page that reads it.
+    public static IReadOnlyList<(string Plan, int Results, float Largest, float Smallest, int Beyond)> ResultSizes(IReadOnlyList<SweepCandidate> candidates, double bound = ResultBound)
+    {
+        (string Plan, int From, int To)[] kinds =
+        [
+            ("the stepped plan", SweepCandidate.PlanAt(PlanRule.Ladder, default), SweepCandidate.PlanAt(PlanRule.Ladder, default)),
+            ("the plan at the nearest bands", SweepCandidate.PlanAt(PlanRule.NearestBands, SupportKind.AnchoredBand), SweepCandidate.PlanAt(PlanRule.NearestBands, SupportKind.Average)),
+            ("section 10's plan", SweepCandidate.PlanAt(PlanRule.Clear, SupportKind.AnchoredBand), SweepCandidate.PlanAt(PlanRule.Clear, SupportKind.Average)),
+        ];
+
+        var sizes = new List<(string, int, float, float, int)>();
+
+        foreach (var (plan, from, to) in kinds)
+        {
+            var results = 0;
+            var beyond = 0;
+            var largest = float.NaN;
+            var smallest = float.NaN;
+
+            foreach (var candidate in candidates)
+            {
+                for (var at = from; at <= to; at++)
+                {
+                    if (candidate.Plans[at] is not { } outcomes)
+                    {
+                        continue;
+                    }
+
+                    for (var exit = 0; exit < SweepAxes.Exits; exit++)
+                    {
+                        var multiple = outcomes.Multiple[exit];
+
+                        if (float.IsNaN(multiple))
+                        {
+                            continue;
+                        }
+
+                        results++;
+                        beyond += Math.Abs(multiple) > bound ? 1 : 0;
+                        largest = float.IsNaN(largest) || multiple > largest ? multiple : largest;
+                        smallest = float.IsNaN(smallest) || multiple < smallest ? multiple : smallest;
+                    }
+                }
+            }
+
+            sizes.Add((plan, results, largest, smallest, beyond));
+        }
+
+        return sizes;
+    }
+
+    static string ResultSizesList(IReadOnlyList<SweepCandidate> candidates)
+    {
+        var html = new StringBuilder(Invariant($"<p><b>The size of the results, by the kind of plan.</b> Over every saved candidate and exit, whatever setting reads it; the stepped plan's are counted on the risk its plan stated, and a fill nearer its stop than a setting's stop floor is no trade under that setting.</p><ul class=\"result-sizes\">"));
+
+        foreach (var (plan, results, largest, smallest, beyond) in ResultSizes(candidates))
+        {
+            html.Append(results == 0
+                ? Invariant($"<li data-plan=\"{Esc(plan)}\" data-results=\"0\">{Esc(plan)}: no result.</li>")
+                : Invariant($"<li data-plan=\"{Esc(plan)}\" data-results=\"{results}\" data-beyond=\"{beyond}\">{Esc(plan)}: {results:N0} result(s), the largest {largest:0.0} and the smallest {smallest:0.0} times the risk, {beyond:N0} beyond {ResultBound:0} either way.</li>"));
+        }
+
+        return html.Append("</ul>").ToString();
     }
 
     // The record carries the blocked count over the history alone; a year's is not kept, and the cell says so.

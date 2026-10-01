@@ -9871,3 +9871,28 @@ Was:
 Now:
 > Section 4 names up to twenty-two regions: a "News" row after "On the list before", what was written about the company in the thirty days before the night with the labels the news labeller wrote, read from the stored articles and labels, paid one call an article on the labeller's own run, kept thirty-one days with the articles.
 Why: section 4 defines the report region by region and the harness holds the name page to it, so the region the labeller's screens add is named where every other part is.
+### 2026-10-01 - ARCHITECTURE.html - the stepped plan's result is counted on the risk its plan stated, and a trade run out of sessions at its last close
+Authorised by: The stepped plan's result is counted on the risk its plan stated, and a fill nearer its stop than the stop setting's floor is no trade
+Was:
+> Section 13.9: "... The trades are scored the way the live record is: target first or stop first on closes from the fill, against the break-even the plan needed and the calibrated bar its own paths set, after costs, in blocks of 63 sessions. The report is one page, ..."
+> Section 17, Sweep edge: "... a trade's end is the session its outcome was decided on, and a trade the history ran out on blocks the stock for the setup's whole 63 sessions (see: The sweep ranks on the edge over the same plan entered on every member, with one open trade a stock and seven conditions tested in steps)", its reason ending "the same plan on every member is what the market did in the same shape over the same window", and its check ending "the walk keeping one open trade a stock as the pages' rule does with the boundary by hand".
+> Section 18 held no row for a stepped plan filled nearer its stop than the stop setting's floor.
+Now:
+> Section 13.9 goes on, after the blocks of 63 sessions: a result is counted in multiples of the risk, for a plan bought at the close the fill's distance to its stop and for the stepped plan the distance its plan stated, a fill nearer its stop than the stop setting's floor being no trade; a trade that runs out of sessions is counted at its last close, as its benchmark is, and never as a win; and each record the page states is stated again without its largest results by size.
+> Section 17, Sweep edge goes on, after the 63 sessions: the same rule with its figures, a fill of the stepped plan nearer its stop than the low bound of the setting's stop option counted as a setup never entered, each record stated again without its 5 largest results by size, and the page counting for each kind of plan the results beyond 20 times the risk; its reason adds that a risk read from a fill a hair over the stop is near nothing; its check adds the five readings worked by hand over constructed closes.
+> Section 18 gains "A stepped plan filled nearer its stop than the stop setting's floor": the listing is counted under that setting as a setup never entered, listed and holding its night and the stock through its end, and carries no result.
+Why: the sweep read the risk from the fill, and the stepped plan is bought anywhere in its zone down to its stop, so one trade read as 1,474 times its risk and a few such trades carried every design the run of 2026-10-01 ranked highest; and a trade that ran out of sessions was given no result while its benchmark counted one.
+### 2026-10-01 - ARCHITECTURE.html - the figures a freeze cites are recorded in the progress record
+Authorised by: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night
+Was:
+> Section 17, Sweep run: "... the newest report served on the route with the earlier runs linked, a run's report living in its folder alone and entering no document, a run gone on with under the build that started it alone, ..."
+Now:
+> Section 17, Sweep run: "... the newest report served on the route with the earlier runs linked, a run's report living in its folder as the full account and the figures a freeze cites recorded in the progress record by a pull request of documents, a run gone on with under the build that started it alone, ..."
+Why: the operator ruled on 2026-10-01, reviewing the plan for the ideas' run, that the report in the run folder stays as the full account and the record holds what the freeze cites, which reverses the half of the ruling earlier that day keeping a run's figures out of every document.
+### 2026-10-01 - RUNBOOK.md - the figures a freeze cites are recorded in the progress record
+Authorised by: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night
+Was:
+> Sweeping the swing filter over the stored history: "... nothing sits at that folder's root, a run's report lives in its folder alone and enters no document of the corpus, and the runs before it are the operator's to remove ..."
+Now:
+> "... nothing sits at that folder's root, a run's report lives in its folder as the full account, the figures a freeze cites are recorded in `PROGRESS.md` by a pull request of documents, and the runs before it are the operator's to remove ..."
+Why: the same ruling, stated where the operator runs the sweep from.

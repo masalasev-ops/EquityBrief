@@ -322,6 +322,8 @@ public class PinnedConstants
             new(SweepRun, "5", (decimal)Worker.Sweep.SweepRunner.Longest.TotalDays, "SweepRunner.Longest in days, the sample's bound"),
             new(SweepEdgeRow, "8", Core.Sweep.SweepAxes.Exits, "SweepAxes.Exits"),
             new(SweepEdgeRow, "63", Core.Returns.ForwardReturnSeries.SetupSessionCap, "ForwardReturnSeries.SetupSessionCap"),
+            new(SweepEdgeRow, "5", Worker.Sweep.SweepStages.LargestLeftOut, "SweepStages.LargestLeftOut"),
+            new(SweepEdgeRow, "20", (decimal)Worker.Sweep.SweepReport.ResultBound, "SweepReport.ResultBound"),
             new(SweepConditionsRow, "7", Core.Sweep.SweepConditions.Count, "SweepConditions.Count"),
             new(SweepConditionsRow, "31", Core.Sweep.SweepConditions.Settings.Count, "SweepConditions.Settings"),
             new(SweepConditionsRow, "252", Core.Sweep.SweepConditions.HighSessions, "SweepConditions.HighSessions"),

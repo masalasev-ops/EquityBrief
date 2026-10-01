@@ -1251,6 +1251,8 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.LimitsTable, "Sweep search"),
         CheckReach.Key(Scope.FailureTable, "The point-in-time check finds a difference"),
         CheckReach.Key(Scope.FailureTable, "A sweep candidate with no sector label"),
+        // The stepped plan's risk, on the operator's ruling of 2026-10-01.
+        CheckReach.Key(Scope.FailureTable, "A stepped plan filled nearer its stop than the stop setting's floor"),
     ];
 
     // Phase 12's rows, each written by the checkpoint that draws or asserts it, so none reads as out
@@ -1601,8 +1603,9 @@ public partial class ArchitectureConformance
         // eighteen: its catalogue and matrix rows, its two stores, section 14's step, section 17's five rows and
         // section 18's eight, and 788 from the 12.6 correction drawing the news on the pages, its four: the name
         // page's News row and the parts tonight's list, the Run page's research and spend and its count of what
-        // waits gain.
-        Assert.Equal((550, 788), (predicted, actual));
+        // waits gain, and 789 from the 12.5 correction counting the stepped plan's result on the risk its plan
+        // stated, its one: section 18's row about a fill nearer the stop than the stop setting's floor.
+        Assert.Equal((550, 789), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before
