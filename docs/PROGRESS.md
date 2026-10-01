@@ -35252,3 +35252,67 @@ Stored:     the operator's words in `prompts/2026-10-01-13.3-store-never-deleted
 Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
             `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
             with the figures 13.5's entry states.
+
+### 13.4 - sector leaders: the fourth setup family, a stock in the top quarter of one of the three strongest sectors at a pullback's buy point, on the pullback's plan as the swing filter stored it, drawn as a card of its own   2026-10-01
+
+Built:      - `LeaderRule`. `Standings` ranks the sectors by the median of their members' returns over
+              the long span, highest first and the sector's name where two tie, leaves a sector holding
+              fewer than 5 members with a return unranked, and places each member inside its sector by
+              return, the ticker deciding a tie. `Evaluate` answers six gates: the market, the sector
+              among the top 3, the member in its sector's top quarter, and the swing filter's setup,
+              trigger and trade gates as stored that night. The filter's trend and strength gate is not
+              among them. The names passing are ordered by the sector's rank and then the return.
+            - The trade is the pullback's plan as the filter's row stored it under the open version's
+              trade input. `FamilyEvaluator` reads each member's sector, its return and those three
+              gates with that plan, carries every exclusion the filter stored for the plan but its own
+              open trade, and stores the leader's answer beside the other families'.
+            - A family on the pullback's plan is scored on the filter's row: the filler writes no row
+              of its own for a leader, and the lister reads a leader's earlier trade under the horizon
+              of the plan its night's filter version read.
+            - Tonight's page: the sector leaders' card, fourth on the page, marked provisional, each
+              pick with the pullback's buy, stop and target and why it is listed, its sector's rank and
+              its own place in it. A stock the pullback passes too is drawn once, under the pullback,
+              with the leader's label.
+            - Documents: the family evaluator's reads in section 7 and its matrix row, section 11.4's
+              paragraph, section 17's three rows, each marked provisional, section 18's two rows, a
+              source row, `SCHEMA.md`'s note on a leader's order and where its trade is scored, and the
+              decision the family rests on. Prior text in CHANGELOG.
+            - A test store's temporary directory is removed when the store is disposed. It was left
+              behind on every disposal: the pool was cleared under one of the three strings a store is
+              opened with, the other two held the file, and the removal was refused and swallowed.
+              184,766 such directories, 213 GB, stood under the machine's temporary folder on
+              2026-10-01 and were removed at the operator's word.
+Not built:  no leader is registered and none counts toward a checkpoint until its sweep, 13.8, and its
+            freeze. The swing filter's code is untouched.
+Tests:      three added, each by hand over constructed input. Five constructed sectors: the ranking with
+            a tie on the median and a sector a member short of the floor; the top quarter of a sector
+            of eight and of five at its boundary, with a tie on it; a member with no sector and one with
+            no return; a leader whose stored setup, trigger or trade gate did not pass; an exclusion; a
+            closed market; and the order. The evaluator over a constructed store, three leaders passed
+            in order on the filter's stored plan, one of them a stock the pullback passes, then the
+            lister listing that one under the pullback with the leader's label, and the filler writing
+            no outcome row of a leader's own. And the card read back off the rendered page.
+            Changed: the framework's test names four families on the page.
+Claims:     5 added: section 17's three rows and section 18's two.
+Pins:       none moves. The three lists were read off the code's own declarations and the tree touches
+            none of them: the rule is a file of its own and reads the filter's stored rows.
+Remedy:     none of its own.
+Unpredicted: the plan said the leaders reuse the plan clear of the noise; they take the plan the open
+            version's trade gate read, which is that plan today and stays the pullback's if a version
+            reads the other. The leak of temporary directories, found while clearing the temporary
+            folder at the operator's word, is repaired here and not in a correction of its own, since
+            it produced no wrong result.
+Mutated:    the rule, stated before the run: each rule this checkpoint adds, reversed alone, filtered to the
+            tests that read it, in a detached worktree at the pull request's tree and reverted.
+            Predicted:
+            D1 the sectors ranked on the mean and not the median: red in the ranking's test.
+            D2 the top four sectors taken: red in the ranking's test, G1 passing.
+            D3 the quarter rounded down: red in the ranking's test, a sector of five taking one.
+            D4 a sector under the floor ranked: red in the ranking's test.
+            D5 the filter's trend gate read as a leader's gate: red in the evaluator's test, A2 and B1.
+            D6 the filler scoring a leader's own row: red in the evaluator's test, a second outcome row.
+            Results: F134MUT.
+Held:       F134HELD.
+Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
+            with the figures 13.5's entry states.

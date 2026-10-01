@@ -201,12 +201,12 @@ public partial class FixtureExpectations
             FamilyRows(store, "SELECT ticker, state, place, also, held_family, held_night FROM family_pick WHERE session_date = '2026-09-30' AND family = 'pullback' ORDER BY state, place, ticker;"));
         // The page's families in its order. The ones after the pullback stored no answer for this night, so
         // each passes none.
-        Assert.Equal(["pullback", "breakout", "drift"], SetupFamilies.InPageOrder.Select(family => family.Name));
-        Assert.Equal(["2026-09-30|[\"pullback\",\"breakout\",\"drift\"]"], FamilyRows(store, "SELECT session_date, families FROM family_night;"));
+        Assert.Equal(["pullback", "breakout", "drift", "leader"], SetupFamilies.InPageOrder.Select(family => family.Name));
+        Assert.Equal(["2026-09-30|[\"pullback\",\"breakout\",\"drift\",\"leader\"]"], FamilyRows(store, "SELECT session_date, families FROM family_night;"));
         Assert.Equal((new DateOnly(2026, 9, 30), 5, 2, 0, 2), (outcome.Night!.Value, outcome.Listed, outcome.OpenTrade, outcome.UnderAnother, outcome.PastFive));
-        Assert.Equal([("pullback", 9, 5), ("breakout", 0, 0), ("drift", 0, 0)], outcome.Families);
+        Assert.Equal([("pullback", 9, 5), ("breakout", 0, 0), ("drift", 0, 0), ("leader", 0, 0)], outcome.Families);
         Assert.Equal(
-            ["families|ok|9|0|0|5 listed for 2026-09-30: 5 of the 9 the pullback family passed, 0 of the 0 the breakout family passed, 0 of the 0 the drift family passed; 2 held back by a trade still open, 0 listed under another family, 2 past a family's 5"],
+            ["families|ok|9|0|0|5 listed for 2026-09-30: 5 of the 9 the pullback family passed, 0 of the 0 the breakout family passed, 0 of the 0 the drift family passed, 0 of the 0 the leader family passed; 2 held back by a trade still open, 0 listed under another family, 2 past a family's 5"],
             FamilyRows(store, "SELECT stage, outcome, rows_written, model_calls, network_requests, detail FROM run_log WHERE run_id = 'families-first';"));
 
         // Run again, the night replaces its own rows and no other night's: nine rows still, and one session.
@@ -291,7 +291,7 @@ public partial class FixtureExpectations
         // The page's list as the store holds it, the listed first in the page's order.
         var stored = await read.FamilyPicksAsync(new DateOnly(2026, 9, 30));
 
-        Assert.Equal(["pullback", "breakout", "drift"], await read.FamilyNightAsync(new DateOnly(2026, 9, 30)));
+        Assert.Equal(["pullback", "breakout", "drift", "leader"], await read.FamilyNightAsync(new DateOnly(2026, 9, 30)));
         Assert.Null(await read.FamilyNightAsync(new DateOnly(2026, 9, 28)));
         Assert.Equal(["PE", "PJ", "PB", "PF", "PG"], stored.Where(pick => pick.State == FamilyList.Listed).Select(pick => pick.Ticker));
         Assert.Equal(9, stored.Count);

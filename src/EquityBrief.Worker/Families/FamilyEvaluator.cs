@@ -35,8 +35,11 @@ public sealed class FamilyEvaluator : IComponent
     public static ComponentAccess Access => new(
         Stores:
         [
+            new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
+            new StoreTouch(Store.SwingReading, Touch.Read),
+            new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
@@ -51,12 +54,23 @@ public sealed class FamilyEvaluator : IComponent
 
     // Every member the swing filter evaluated on the night, with the exclusions and the gates it stored. A
     // replayed result is none of the night's.
+    // With them, the pullback's setup, trigger and trade gates and the plan the version's trade gate read,
+    // which a family bought at the pullback's buy point takes as stored.
     const string FilterRowsOn = @"
-        SELECT ticker, exclusions, gates
-        FROM gate_result
-        WHERE session_date = $night AND version <> '" + ReplayedResults.Version + @"'
-        ORDER BY ticker;
+        SELECT g.ticker, g.exclusions, g.gates, g.setup, g.trigger_pass, g.trade, g.swing_entry,
+               CASE json_extract(v.settings, '$.trade') WHEN '" + FilterSettings.ClearWord + @"' THEN g.clear_stop WHEN '" + FilterSettings.SwingWord + @"' THEN g.swing_stop END,
+               CASE json_extract(v.settings, '$.trade') WHEN '" + FilterSettings.ClearWord + @"' THEN g.clear_target WHEN '" + FilterSettings.SwingWord + @"' THEN g.swing_target END,
+               CASE json_extract(v.settings, '$.trade') WHEN '" + FilterSettings.ClearWord + @"' THEN g.clear_reward_to_risk WHEN '" + FilterSettings.SwingWord + @"' THEN g.swing_reward_to_risk END
+        FROM gate_result g
+        LEFT JOIN filter_version v ON v.version = g.version
+        WHERE g.session_date = $night AND g.version <> '" + ReplayedResults.Version + @"'
+        ORDER BY g.ticker;
     ";
+
+    // The sector the membership names for each name, and each name's return over the long span on the night.
+    const string SectorsOf = "SELECT ticker, MAX(sector) FROM membership WHERE sector IS NOT NULL GROUP BY ticker;";
+
+    const string ReturnsOn = "SELECT ticker, return_long FROM swing_reading WHERE session_date = $night AND return_long IS NOT NULL;";
 
     // Every session the store keeps, a name at a time and oldest first.
     const string EveryBar = @"
@@ -118,7 +132,17 @@ public sealed class FamilyEvaluator : IComponent
         this.databaseFile = databaseFile;
     }
 
-    sealed record Member(string Ticker, IReadOnlyList<string> Exclusions);
+    sealed record Member(
+        string Ticker,
+        IReadOnlyList<string> Exclusions,
+        IReadOnlyList<string> PullbackExclusions,
+        bool Setup,
+        bool Trigger,
+        bool Trade,
+        decimal? Entry,
+        decimal? Stop,
+        decimal? Target,
+        double? RewardToRisk);
 
     public async Task<FamilyEvaluatorOutcome> RunAsync(string runId, CancellationToken cancellation = default)
     {
@@ -157,6 +181,15 @@ public sealed class FamilyEvaluator : IComponent
         var prints = await PrintsAsync(connection, session, cancellation);
         var bands = await BandsAsync(connection, session, cancellation);
 
+        // Every sector's standing and every member's place in its own, over the members the filter evaluated.
+        var sectors = await TextsAsync(connection, SectorsOf, null, cancellation);
+        var returns = await ReturnsAsync(connection, session, cancellation);
+        double? ReturnOf(string ticker) => returns.TryGetValue(ticker, out var over) ? over : null;
+
+        var (ranked, standings) = LeaderRule.Standings(
+            [.. members.Select(member => (member.Ticker, sectors.GetValueOrDefault(member.Ticker), ReturnOf(member.Ticker)))]);
+        var sectorsRanked = ranked.Count(sector => sector.Rank is not null);
+
         var results = new List<FamilyResult>();
 
         foreach (var member in members)
@@ -186,6 +219,22 @@ public sealed class FamilyEvaluator : IComponent
                 typical,
                 bands.GetValueOrDefault(member.Ticker) ?? [],
                 member.Exclusions)));
+
+            results.Add(LeaderRule.Evaluate(new LeaderInputs(
+                member.Ticker,
+                market,
+                sectors.GetValueOrDefault(member.Ticker),
+                ReturnOf(member.Ticker),
+                standings[member.Ticker],
+                sectorsRanked,
+                member.Setup,
+                member.Trigger,
+                member.Trade,
+                member.Entry,
+                member.Stop,
+                member.Target,
+                member.RewardToRisk,
+                member.PullbackExclusions)));
         }
 
         var places = SetupFamilies.Evaluated
@@ -271,13 +320,73 @@ public sealed class FamilyEvaluator : IComponent
         {
             var exclusions = JsonSerializer.Deserialize<string[]>(reader.GetString(1)) ?? [];
 
-            members.Add(new Member(reader.GetString(0), [.. exclusions.Where(exclusion => SeriesExclusions.Contains(exclusion, StringComparer.Ordinal))]));
+            decimal? Price(int at) => reader.IsDBNull(at) ? null : Money.FromStorage(reader.GetString(at));
+
+            // A family bought at the pullback's buy point carries every exclusion the filter stored for the
+            // plan but its own open trade, which is the page's to hold back and not a family's.
+            members.Add(new Member(
+                reader.GetString(0),
+                [.. exclusions.Where(exclusion => SeriesExclusions.Contains(exclusion, StringComparer.Ordinal))],
+                [.. exclusions.Where(exclusion => !OpenTrades.IsExclusion(exclusion))],
+                reader.GetInt64(3) == 1,
+                reader.GetInt64(4) == 1,
+                reader.GetInt64(5) == 1,
+                Price(6),
+                Price(7),
+                Price(8),
+                reader.IsDBNull(9) ? null : reader.GetDouble(9)));
 
             // The market gate is one answer for the night, so the first row's is every row's.
             market ??= FamilyRule.GatesOf(reader.GetString(2)).FirstOrDefault(gate => gate.Name == FamilyRule.Market);
         }
 
         return (members, market ?? FamilyRule.NoMarketCheck);
+    }
+
+    // One text a name off a query whose first column is the ticker, keyed on the night where it takes one.
+    static async Task<IReadOnlyDictionary<string, string>> TextsAsync(SqliteConnection connection, string query, DateOnly? night, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = query;
+
+        if (night is { } on)
+        {
+            command.Parameters.AddWithValue("$night", Stamp(on));
+        }
+
+        var texts = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            if (!reader.IsDBNull(1))
+            {
+                texts[reader.GetString(0)] = reader.GetString(1);
+            }
+        }
+
+        return texts;
+    }
+
+    static async Task<IReadOnlyDictionary<string, double>> ReturnsAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = ReturnsOn;
+        command.Parameters.AddWithValue("$night", Stamp(night));
+
+        var returns = new Dictionary<string, double>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            returns[reader.GetString(0)] = reader.GetDouble(1);
+        }
+
+        return returns;
     }
 
     // Every name's sessions ending on the night, oldest first. A name whose newest session is not the

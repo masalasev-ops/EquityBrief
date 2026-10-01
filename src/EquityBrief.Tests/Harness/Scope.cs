@@ -1810,7 +1810,7 @@ internal static class Scope
         // breakout's settings and section 18's two rows.
         [CheckReach.Key(CatalogueTable, "Family evaluator")] = new Scoped(
             Verdict.Pass,
-            "the class declares the bars, indicators, levels, earnings reactions and gate results it reads and the family results it reads, inserts and deletes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            "the class declares the membership, bars, indicators, levels, earnings reactions, swing readings, filter versions and gate results it reads and the family results it reads, inserts and deletes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
             ByAccess),
         [CheckReach.Key(MatrixTable, "Family evaluator")] = new Scoped(
             Verdict.Pass,
@@ -1881,6 +1881,28 @@ internal static class Scope
         [CheckReach.Key(FailureTable, "A reaction session the stored bars do not reach")] = new Scoped(
             Verdict.Pass,
             "a print whose reaction session is not among the member's sessions, and one with no close before it, read not available with the session named, and a member with no stored print passes nothing",
+            ByExpectations),
+
+        // 13.4, the sector leaders: section 17's rows for its settings and section 18's two rows.
+        [CheckReach.Key(LimitsTable, "Leader sectors")] = new Scoped(
+            Verdict.Pass,
+            "over constructed sectors worked by hand, each ranked on its members' median return with a tie broken by the sector's name, the first in the third sector a leader and the first in the fourth not, and the names passing ordered by the sector's rank and then the return",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Leader share")] = new Scoped(
+            Verdict.Pass,
+            "the top quarter worked at its boundary over a sector of eight and a sector of five, the member just inside it passing and the next not, with a tie on the boundary decided by the ticker",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Sector ranking floor")] = new Scoped(
+            Verdict.Pass,
+            "a constructed sector a member short of the floor is given no rank whatever its median, the sectors ranked are counted without it, and its members pass nothing",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A member the membership names no sector for")] = new Scoped(
+            Verdict.Pass,
+            "a member with no sector stands in no sector's median, its sector gate does not pass and says so, by hand and over a constructed store",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A sector too small to rank")] = new Scoped(
+            Verdict.Pass,
+            "the members of a sector a member short of the floor are stored as not passed, each saying how many members with a return the sector holds against the floor",
             ByExpectations),
 
         // 12.6's correction drawing the news: the name page's region, read off the rendered page over a constructed store.
@@ -4759,6 +4781,10 @@ internal static class Scope
         ["Drift volume multiple"] = "13.3",
         ["Drift target"] = "13.3",
         ["Drift session cap"] = "13.3",
+        // The sector leaders' settings, 13.4.
+        ["Leader sectors"] = "13.4",
+        ["Leader share"] = "13.4",
+        ["Sector ranking floor"] = "13.4",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",

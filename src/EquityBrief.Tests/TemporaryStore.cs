@@ -1,4 +1,5 @@
 using EquityBrief.Core.Configuration;
+using EquityBrief.Data;
 using EquityBrief.Data.Migrations;
 using Microsoft.Data.Sqlite;
 
@@ -58,8 +59,15 @@ internal sealed class TemporaryStore : IDisposable
         // button again instead of reading the result, and on CI it would have
         // arrived as one run in fifteen going red for no reason anyone could
         // reproduce.
-        using (var connection = new SqliteConnection(MigrationRunner.ConnectionStringFor(DatabaseFile)))
+        //
+        // Under each string the store is opened with, since a pool is kept per string: the migration
+        // runner's, the one the components share, and the bare one the read surface and a test open it
+        // with. A pool left under any of them holds the file, the delete below is refused, and the
+        // directory is left behind in the temporary folder.
+        foreach (var opened in new[] { MigrationRunner.ConnectionStringFor(DatabaseFile), StoreConnection.For(DatabaseFile), $"Data Source={DatabaseFile}" })
         {
+            using var connection = new SqliteConnection(opened);
+
             SqliteConnection.ClearPool(connection);
         }
 

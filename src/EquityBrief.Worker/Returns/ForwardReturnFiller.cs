@@ -71,8 +71,9 @@ public sealed class ForwardReturnFiller : IComponent
         ORDER BY g.session_date, g.ticker;
     ";
 
-    // Every trade a setup family but the pullback passed, with its family's horizon already written for it.
-    // The pullback's trades are the swing filter's rows above.
+    // Every trade a setup family passed that is scored from its own row, with its family's horizon already
+    // written for it. The pullback's trades are the swing filter's rows above, and so are the trades of a
+    // family bought on the pullback's plan, whose outcome is that row's.
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
     static readonly string EveryFamilyTrade = @"
         SELECT r.ticker, r.session_date, r.family, r.stop, r.target, f.horizon, f.outcome
@@ -81,6 +82,7 @@ public sealed class ForwardReturnFiller : IComponent
             ON f.ticker = r.ticker AND f.session_date = r.session_date
             AND f.horizon = " + SetupFamilies.HorizonIn("r.family", "NULL") + @"
         WHERE r.passed = 1 AND r.stop IS NOT NULL
+          AND r.family IN (" + string.Join(", ", SetupFamilies.ScoredOnTheirOwnRows.Select(family => $"'{family.Name}'")) + @")
         ORDER BY r.session_date, r.ticker, r.family;
     ";
 

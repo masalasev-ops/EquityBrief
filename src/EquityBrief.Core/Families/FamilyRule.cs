@@ -18,7 +18,8 @@ public sealed record FamilyResult(
     decimal? Stop,
     decimal? Target,
     double? OrderBy,
-    IReadOnlyList<string> Exclusions)
+    IReadOnlyList<string> Exclusions,
+    double? ThenBy = null)
 {
     public bool Passed => Gates.Count > 0 && Gates.All(gate => gate.Passed) && Exclusions.Count == 0;
 
@@ -48,6 +49,7 @@ public static class FamilyRule
         .. results
             .Where(result => result.Passed)
             .OrderByDescending(result => result.OrderBy)
+            .ThenByDescending(result => result.ThenBy)
             .ThenBy(result => result.Ticker, StringComparer.Ordinal),
     ];
 

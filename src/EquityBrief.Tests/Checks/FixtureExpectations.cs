@@ -183,6 +183,9 @@ public partial class FixtureExpectations
 
             // 13.3, the earnings drift: section 17's rows for its settings and section 18's two rows.
             .. DriftClaims,
+
+            // 13.4, the sector leaders: section 17's rows for its settings and section 18's two rows.
+            .. LeaderClaims,
             CheckReach.Key(Scope.FixtureTable, "reported quarters"),
 
             // 11.5, the floor a name's industry has to reach before it is the name's group.

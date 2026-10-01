@@ -4,8 +4,9 @@ namespace EquityBrief.Core.Families;
 
 // One setup family as every surface names it: the word the store keeps, the card's heading and the line
 // above it, its rule in one sentence, the horizon its trades are scored under with that horizon's cap, and
-// whether its trade is sold on a trailing stop with no target.
-public sealed record SetupFamily(string Name, string Label, string Heading, string Eyebrow, string Rule, string Horizon, int CapSessions, bool Trails = false);
+// whether its trade is sold on a trailing stop with no target, or is the pullback's own plan as the swing
+// filter stored it, which is scored on the swing filter's row and under the horizon that row's plan names.
+public sealed record SetupFamily(string Name, string Label, string Heading, string Eyebrow, string Rule, string Horizon, int CapSessions, bool Trails = false, bool OnThePullbacksPlan = false);
 
 // The setup families tonight's page is drawn from, in the page's order, and the numbers they share.
 //
@@ -33,7 +34,8 @@ public static class SetupFamilies
         "Pullback in an uptrend",
         "A strong stock in an uptrend dips to a support band and turns back up. Stop below the band, target at the next band above.",
         ForwardReturnSeries.Clear,
-        ForwardReturnSeries.SetupSessionCap);
+        ForwardReturnSeries.SetupSessionCap,
+        OnThePullbacksPlan: true);
 
     // The breakout, on provisional settings until its freeze.
     // see: A breakout is a close above the year's high on heavy volume after its ranges narrowed, sold on a trailing stop with no target
@@ -58,9 +60,25 @@ public static class SetupFamilies
         DriftRule.Horizon,
         DriftRule.CapSessions);
 
+    // The sector leader, on provisional settings until its freeze, bought on the pullback's plan.
+    // see: A sector leader is a stock in the top quarter of a top three sector, bought at the pullback's buy point
+    public static SetupFamily SectorLeaders { get; } = new(
+        LeaderRule.Name,
+        "Sector leader",
+        "Sector leaders",
+        "Strongest stocks of the strongest sectors",
+        "A stock in the top quarter of one of the three strongest sectors, at a pullback's buy point. Stop below the band, target at the next band above, as a pullback's.",
+        ForwardReturnSeries.Clear,
+        ForwardReturnSeries.SetupSessionCap,
+        OnThePullbacksPlan: true);
+
     // The page's order, which is the order a stock qualifying under two families is listed in and the
     // order the night's reports are asked for in.
-    public static IReadOnlyList<SetupFamily> InPageOrder { get; } = [Pullbacks, Breakouts, EarningsDrift];
+    public static IReadOnlyList<SetupFamily> InPageOrder { get; } = [Pullbacks, Breakouts, EarningsDrift, SectorLeaders];
+
+    // The families whose trades are scored from their own stored rows under a horizon of their own. A
+    // family on the pullback's plan is scored on the swing filter's row, which holds that plan.
+    public static IReadOnlyList<SetupFamily> ScoredOnTheirOwnRows { get; } = [.. InPageOrder.Where(family => !family.OnThePullbacksPlan)];
 
     // The families whose answers the family evaluator stores, every one but the pullback, whose answers
     // are the swing filter's own rows.
@@ -94,7 +112,7 @@ public static class SetupFamilies
     // night's filter settings, written from the families above so a query and the page read one rule.
     public static string HorizonIn(string family, string settings) =>
         "CASE " + family
-        + string.Concat(InPageOrder.Select(one => $" WHEN '{one.Name}' THEN " + (one.Name == Pullback ? PullbackHorizonIn(settings) : $"'{one.Horizon}'")))
+        + string.Concat(InPageOrder.Select(one => $" WHEN '{one.Name}' THEN " + (one.OnThePullbacksPlan ? PullbackHorizonIn(settings) : $"'{one.Horizon}'")))
         + " END";
 
     // The sessions a family's trade is given, over a column holding its family.

@@ -141,6 +141,7 @@ public static partial class TonightScreen
                 {
                     BreakoutRule.Name => BreakoutWhy(result),
                     DriftRule.Name => DriftWhy(result),
+                    LeaderRule.Name => LeaderWhy(result),
                     _ => "its setup's gates all passed tonight",
                 },
                 also);
@@ -231,6 +232,27 @@ public static partial class TonightScreen
             : string.Empty;
 
         return closed + volume + ranges + ".";
+    }
+
+    // Why the sector leaders list a stock tonight, in the figures its gates stored: where its sector ranks,
+    // where its own return stands inside it, and that it is at the pullback's buy point.
+    public static string LeaderWhy(FamilyResultRow result)
+    {
+        var sector = Stored(result.Gates, LeaderRule.Sector, "sector");
+        var rank = Stored(result.Gates, LeaderRule.Sector, "rank");
+        var ranked = Stored(result.Gates, LeaderRule.Sector, "ranked");
+        var own = StoredFigure(result.Gates, LeaderRule.Leader, "return");
+        var place = Stored(result.Gates, LeaderRule.Leader, "place");
+        var of = Stored(result.Gates, LeaderRule.Leader, "of");
+
+        var standing = sector is { Length: > 0 } && rank is { Length: > 0 } && ranked is { Length: > 0 }
+            ? $"Its sector, {sector}, ranks {rank} of {ranked} by its members' return"
+            : "Its sector is among the strongest";
+        var leading = own is { } over && place is { Length: > 0 } && of is { Length: > 0 }
+            ? FormattableString.Invariant($", and its own return of {over * 100:0.0}% is {place} of the {of} in it")
+            : string.Empty;
+
+        return standing + leading + ". It is at a pullback's buy point tonight.";
     }
 
     // Why the earnings drift lists a stock tonight, in the figures its gates stored: the print and how far

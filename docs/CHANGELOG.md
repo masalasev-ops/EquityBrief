@@ -9991,3 +9991,17 @@ Was:
 Now:
 > Between the two, the row `store-never-deleted`, every CI run: every site in the shipped source, the scripts and the suite that removes, moves or overwrites a file is one of a stated list and none reaches the store or the data root; nothing destroys a store through its connection; the sweep's scratch stores are rooted in the temporary folder; every table a migration drops is a stated rebuild; and each reader is shown to find a removal of the store over constructed input.
 Why: a hard rule is held by a check on the roster, and the roster is where a check is promised.
+### 2026-10-01 - ARCHITECTURE.html - the sector leader family
+Authorised by: A sector leader is a stock in the top quarter of a top three sector, bought at the pullback's buy point
+Was:
+> The family evaluator's row in section 7 read "bar store, indicators, levels, earnings reactions, gate results, family results" and ended at the earnings drift's citation, and its matrix row held no read of membership. Section 11.4 ended at the earnings drift's paragraph. Section 17 held no row after "Drift session cap" for a leader's settings, section 18 none after "A reaction session the stored bars do not reach", and section 23 no row for Moskowitz and Grinblatt (1999).
+Now:
+> The family evaluator's row reads "membership, bar store, indicators, levels, earnings reactions, swing readings, filter versions, gate results, family results" and adds that the sector leaders read each member's sector, its return over the long span and the pullback's setup, trigger and trade gates with the plan the filter stored; its matrix row reads membership. Section 11.4 gains the sector leaders' paragraph: how the sectors and the members are ranked, that a leader is passed at a pullback's buy point on the pullback's plan, its order, its evidence and what in it is judgement. Section 17 gains three rows, each marked provisional: the top 3 sectors by the median of their members' returns over 126 sessions, the top quarter of a sector as the first of every 4 rounded up, and the floor of 5 members a sector is ranked on. Section 18 gains two rows, a member the membership names no sector for and a sector too small to rank. Section 23 gains the source row.
+Why: the operator ruled sector leaders the fourth setup family on 2026-10-01, on provisional settings until its sweep.
+### 2026-10-01 - SCHEMA.md - a sector leader's order and where its trade is scored
+Authorised by: A sector leader is a stock in the top quarter of a top three sector, bought at the pullback's buy point
+Was:
+> `family_result.order_by`'s note ended "an earnings drift's surprise; null where the family reads none for the member", and the paragraph on scoring ended at the earnings drift.
+Now:
+> The note adds "a sector leader's sector rank, negated so the first sector sorts first, its own return then deciding among the leaders of one sector", and the paragraph adds that a sector leader's row holds the pullback's plan as the swing filter's row stored it and is scored on that `gate_result` row, so no outcome row is written for it here.
+Why: a leader's trade is the pullback's, and one trade is scored once.
