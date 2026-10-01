@@ -9977,3 +9977,17 @@ Was:
 Now:
 > "called one print at a time (see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it)."
 Why: the decision the sentence cited is superseded, and no spec cites a superseded decision; what the sentence says of how a reaction is read is unchanged.
+### 2026-10-01 - CLAUDE.md - a hard rule: the operator's store is never deleted
+Authorised by: The operator's store is never deleted, and every site that removes a file is stated where a check holds it
+Was:
+> The hard rules went from "**No absolute path is written into a store row.**" to "**A listings row is written for every name in the index every night,**" with no rule about deleting the store. That the store a script drops is `/data-ci` and never `/data` was stated of the two verification scripts alone, in `.claude/rules/scripts.md`.
+Now:
+> Between the two, "**The operator's store is never deleted.** No code, script, migration, test or session deletes, moves, truncates or replaces the store file under the configured data root, and no migration drops a table without copying its rows across in the same migration. The one store a script drops is the one `tools/ci.*` created under `/data-ci`. `store-never-deleted` holds every site in the shipped source, in `tools/` and in the suite that removes or replaces a file to a stated list, none of them naming the store, and every dropped table to a stated rebuild. A repair that seems to need a fresh store needs the operator's word first, and a copy of the store made before anything is touched."
+Why: the operator asked for it on 2026-10-01, another project of theirs having deleted its database. The store holds nights no provider serves again, and a rule about it held by memory is the kind that failed there, so it is a named rule with a check behind it.
+### 2026-10-01 - .claude/rules/checks.md - the roster gains `store-never-deleted`
+Authorised by: The operator's store is never deleted, and every site that removes a file is stated where a check holds it
+Was:
+> The roster went from `bar-append-only` to `bar-bounds` and held no check about removing a file.
+Now:
+> Between the two, the row `store-never-deleted`, every CI run: every site in the shipped source, the scripts and the suite that removes, moves or overwrites a file is one of a stated list and none reaches the store or the data root; nothing destroys a store through its connection; the sweep's scratch stores are rooted in the temporary folder; every table a migration drops is a stated rebuild; and each reader is shown to find a removal of the store over constructed input.
+Why: a hard rule is held by a check on the roster, and the roster is where a check is promised.

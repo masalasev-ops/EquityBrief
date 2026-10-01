@@ -137,6 +137,8 @@ Named, and cited by name. A violation is a defect regardless of what else is tru
 
 **No absolute path is written into a store row.** The store must remain a file that can be copied to another machine. (see: The whole system is a checkout and one database file)
 
+**The operator's store is never deleted.** No code, script, migration, test or session deletes, moves, truncates or replaces the store file under the configured data root, and no migration drops a table without copying its rows across in the same migration. The one store a script drops is the one `tools/ci.*` created under `/data-ci`. `store-never-deleted` holds every site in the shipped source, in `tools/` and in the suite that removes or replaces a file to a stated list, none of them naming the store, and every dropped table to a stated rebuild. A repair that seems to need a fresh store needs the operator's word first, and a copy of the store made before anything is touched. (see: The operator's store is never deleted, and every site that removes a file is stated where a check holds it)
+
 **A listings row is written for every name in the index every night,** whether or not a reason fired. A shadow candidate has to be evaluated on the nights it would have fired, and most of those are nights no live reason surfaced that name. (see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look)
 
 **The candidate register is append-only.** No update and no delete. A retirement is a new dated row naming what it retires. A register that can be edited after results are in is not a pre-registration.

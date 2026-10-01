@@ -35197,3 +35197,58 @@ Held:       F133HELD.
 Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
             `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
             with the figures 13.5's entry states.
+
+### 13.3 ruling - the operator's store is never deleted: a hard rule, the decision behind it, and a check holding every site that removes a file to a stated list   2026-10-01
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-10-01, while 13.3 was being committed, word for word:
+
+            Can you make sure to have an entry which ensures that the db is never deleted. My other
+            project deleted its db
+
+Read as:    three things, since a rule a session has to remember is the kind that failed there. A hard rule
+            in `CLAUDE.md`, "The operator's store is never deleted". The decision behind it, "The
+            operator's store is never deleted, and every site that removes a file is stated where a check
+            holds it". And a check on the roster, `store-never-deleted`, so the rule is held by the suite
+            and not by a habit.
+Found:      reading the tree for it, at bf5b99d. No code and no script deletes the store. Shipped source
+            holds 23 sites that remove a file or a folder, move one or write one over what was there:
+            the night's lock file; the drain launcher's build copies; two report files written into a
+            folder the operator names; the sweep's own run folder, 13 of them; and the scratch stores
+            the sweep's point-in-time check builds and removes under the machine's temporary folder,
+            the one place shipped code deletes a store file. The scripts hold 8 removals: `tools/ci.*`
+            dropping `data-ci`, the store it created, which was the data root itself until 5.7; the
+            phase report's own artifacts; and the night's script removing its refusal note and build
+            copies under the data root's folder of nights. Two migrations drop a table,
+            `research_request` and `membership`, each after copying its rows to a rebuilt table and
+            renaming it back. The suite deletes 8 things, each inside a temporary directory it made.
+Built:      `StoreNeverDeleted`, six tests. Every such site in the shipped source is one of a stated
+            list, each with what it acts on, and none is handed the store's path; nothing destroys a
+            store through its connection. The sweep's scratch root is read off its one caller as a
+            folder under the temporary folder, so that delete cannot be pointed at the data root with
+            the suite still green. Every removal in a script is one of a stated list and none reaches
+            the data root or the store's file, the night's two lines naming its folder of copies read
+            off the script. Every table a migration drops is one of the two stated rebuilds, its rows
+            copied before the drop and the table renamed back after. The suite's own deletions are a
+            stated list, and the two helpers every test store and folder is made by are rooted in the
+            temporary folder. And each reader is shown to find a removal of the store, over constructed
+            source and a constructed script. The roster's row and the map from it to the class.
+Not built:  nothing in shipped code changed: the rule was already kept, and what is added is what stops
+            it being broken without a line saying so. No backup of the store is made by anything here.
+            A person or a tool outside this repository removing the file is beyond any check in it, and
+            a copy of the store on another disk is the answer to that; it is put to the operator.
+Tests:      six added, 1,685 to 1,691.
+Claims:     none: the rule is `CLAUDE.md`'s and the roster's, and no row of `ARCHITECTURE.html` moved.
+Pins:       none moves. No shipped source was edited.
+Mutated:    the rule, stated before the run: each reader made blind in turn, in a detached worktree and
+            reverted. Predicted:
+            S1 a `File.Delete` of the store's path added to a shipped source: red in the test of the
+               shipped sites, twice, as a site not stated and as one naming the store.
+            S2 `rm -rf "$data"` added to the night's script: red in the scripts' test, twice.
+            S3 the sweep's scratch root moved under the data root: red in the scratch root's test.
+            S4 a migration dropping a table with no rebuild: red in the migrations' test.
+            Results: F133SMUT.
+Stored:     the operator's words in `prompts/2026-10-01-13.3-store-never-deleted-ruling.md`.
+Verified:   with the checkpoints beside it, in one pull request: `tools/ci.ps1` green end to end and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 13.0's to 13.5's, F13SHA,
+            with the figures 13.5's entry states.

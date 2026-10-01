@@ -47,6 +47,7 @@ public class CoverageReported
         ["build-properties-central"] = "BuildPropertiesCentral",
         ["api-isolation"] = "ApiIsolation",
         ["bar-append-only"] = "StoreWrites",
+        ["store-never-deleted"] = "StoreNeverDeleted",
         ["bar-bounds"] = "BarBounds",
         ["read-surface"] = "ReadSurface",
         ["nightly-cost"] = "NightlyCost",
