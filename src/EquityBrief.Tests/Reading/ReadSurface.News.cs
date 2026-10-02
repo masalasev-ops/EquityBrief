@@ -252,4 +252,26 @@ public partial class ReadSurface
         Assert.Equal(" data-ran=\"none\"", earlier.Groups[1].Value);
         Assert.Equal("The news labeller has no run recorded for this night.", earlier.Groups[2].Value);
     }
+
+    [Fact]
+    public void ARefusedLabellerRunEndsItsLineWithTheRefusalsOwnPeriodAndNoSecond()
+    {
+        static string Line(string? refusal) => Regex.Match(
+            WebUtility.HtmlDecode(new EquityBrief.Web.Marks.MarkRenderer().ResearchRegion(new EquityBrief.Web.Marks.ResearchPicture(
+                new EquityBrief.Web.Marks.NightSpend(0m, 0m, 10m, 50m),
+                [],
+                new EquityBrief.Web.Marks.LabellerLine(new DateOnly(2026, 10, 1), false, null, null, 0m, 0m, null, 0, new Dictionary<string, int>(), 0, 0, 0, null, refusal)))),
+            "<p class=\"rp-labeller\"[^>]*>(.*?)</p>",
+            RegexOptions.Singleline).Groups[1].Value;
+
+        // The refusal of 2026-10-01 began as the labeller wrote it, a sentence closing on its own period, which
+        // the run page drew with a second one after it.
+        Assert.Equal(
+            "The news labeller was refused before it asked anything: The News job uses the profile 'claude-haiku', whose key 'Claude' the secrets file does not hold.",
+            Line("The News job uses the profile 'claude-haiku', whose key 'Claude' the secrets file does not hold."));
+
+        // A refusal written with no period of its own, or none recorded, is closed by one.
+        Assert.Equal("The news labeller was refused before it asked anything: no answer came.", Line("no answer came"));
+        Assert.Equal("The news labeller was refused before it asked anything: no reason recorded.", Line(null));
+    }
 }
