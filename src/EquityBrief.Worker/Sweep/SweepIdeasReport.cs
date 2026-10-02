@@ -193,7 +193,7 @@ public static class SweepIdeasReport
     // result, the share of its trades whose stop sat under one typical move, its total, the last three years'
     // edge and total, 2026 alone, the edge and the total without the five largest results by size, and each
     // year's edge, total and trades.
-    static string Table(IReadOnlyList<(string Label, IdeaFigures Figures)> rows)
+    internal static string Table(IReadOnlyList<(string Label, IdeaFigures Figures)> rows)
     {
         var html = new StringBuilder("<div class=\"table\"><table><thead><tr><th>Rule</th><th>Trades</th><th>Nights listing</th><th>Edge</th><th>Error</th><th>Result</th><th>Stops under a typical move</th><th>Total</th><th>2024 to 2026 edge</th><th>2024 to 2026 total</th><th>2026 edge</th><th>Without the five largest, edge</th><th>Without the five largest, total</th>");
 

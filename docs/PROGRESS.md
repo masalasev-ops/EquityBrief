@@ -36175,3 +36175,44 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the two files the suite left in the operator's folder, the copy of 17:13 and the unfinished one of
             17:22, removed by hand once this merges, each read first as the suite's store; and the sign-offs of
             phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.10 ruling - the ideas read on the breakouts and the earnings drift as frozen, each added alone and judged by the pullback's test, with nothing frozen or registered   2026-10-02
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off. It carries
+the code item 8 of the operator's rulings of 2026-10-02, recorded above, calls for, which meets the done
+conditions a checkpoint's code meets.
+Built:      `FamilyIdeasRunner` and the `sweep-family-ideas` verb. They read the history and the market series
+            read-only, replay each family's rule as frozen through its own sweep at the level of its grid its live
+            rule holds, and add each idea alone: the six switches, the touched stop, the best three, the stop at
+            least a typical move beneath and the holds of 10 and 20 sessions on both families, and the trails of 2
+            and 3 moves on the drift alone. `SweepWalk.TouchedTrailing` reads the breakout's trailing stop against
+            each session's open and low; the families' walk takes a count a night. The report states the tries,
+            the passes, what luck passes and an idea that changes nothing the rule makes. A decision names it;
+            ARCHITECTURE's section 13.9 gains a paragraph and RUNBOOK the command.
+Tests:      1756, from 1750: six added, the touched stop under a trail by hand, each family's rule as frozen
+            off its grid with a setting off it refused, the ideas each family is read with and luck over them,
+            each new exit and its benchmark by hand over three members, each idea over the rule's own listings at
+            its switch, its count a night, its stops and its exit, and the report.
+Claims:     887, with 887 PASS: none added, since the change adds a paragraph and no row.
+Pins:       none moves: the sweep's sources sit in no pin list.
+Mutated:    the rule, stated before the run: each property the change adds, broken alone, made on the branch in
+            this checkout, filtered to the tests named and reverted.
+            F1 the touched stop under a trail read against the stop its own session's close sets: red in the
+            touched-stop test.
+            F2 the best three's count not handed to the walk: red in the replay test.
+            F3 a new exit benchmarked by the family's own exit: red in the replay test.
+            F4 a switch read one session ahead: red in the replay test.
+            F5 the rule as frozen read at the provisional setting: red in the frozen-rule test.
+            F6 an idea read as unchanged on its trades alone: red in the report test.
+            Results: F1 red in the touched-stop test alone; F2, F3 and F4 each red in the replay test alone; F5
+            red in the frozen-rule test alone; F6 red in the report test alone. Each ran over 9aac3ee, which
+            carries the correction above, and was reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 9aac3ee.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1756 of 1756 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 887 claims, 887 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
+Carried:    the run itself, once the twelve-hour rerun has finished, each family's tries, passes and luck recorded
+            by a pull request of documents; and the sign-offs of phases 12 and 13, each owed by a session that
+            committed none of its code.

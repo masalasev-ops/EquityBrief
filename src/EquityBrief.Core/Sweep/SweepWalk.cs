@@ -96,6 +96,61 @@ public static class SweepWalk
         return null;
     }
 
+    // The touched stop under a trailing stop, for a family whose plan trails and names no target: the stop starts
+    // where the plan put it and follows the highest close since the buy at the trail's distance, never lowered; a
+    // session opening under it sells at its open, one whose low reaches it sells at the stop, and the cap's close
+    // ends a trade neither reached. The stop a session is read against is the one the closes before it set. The
+    // result is in multiples of the risk, the buy less the plan's stop; none where the series runs out first.
+    // see: The frozen families are read with the pullback's ideas one at a time, and nothing they show is frozen or registered
+    public static double? TouchedTrailing(ReadOnlySpan<double> opens, ReadOnlySpan<double> lows, ReadOnlySpan<double> closes, int from, double entry, double stop, double trail, int cap, out int sessions)
+    {
+        sessions = cap;
+
+        var risk = entry - stop;
+
+        if (risk <= 0 || trail <= 0)
+        {
+            return null;
+        }
+
+        var floor = stop;
+
+        for (var session = 1; session <= cap; session++)
+        {
+            var at = from + session;
+
+            if (at >= closes.Length)
+            {
+                return null;
+            }
+
+            if (opens[at] > 0 && opens[at] < floor)
+            {
+                sessions = session;
+
+                return (opens[at] - entry) / risk;
+            }
+
+            if (lows[at] <= floor)
+            {
+                sessions = session;
+
+                return (floor - entry) / risk;
+            }
+
+            if (session == cap)
+            {
+                sessions = session;
+
+                return (closes[at] - entry) / risk;
+            }
+
+            floor = Math.Max(floor, closes[at] - trail);
+        }
+
+        return null;
+    }
+
     public static ForwardReturn OverSetupMovingTheStop(
         IReadOnlyList<ReturnBar> after,
         decimal stop,
