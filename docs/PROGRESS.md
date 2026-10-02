@@ -36107,11 +36107,11 @@ Built:      `StoreBackup` and the `backup` verb. It waits while the night holds 
             copies" and section 18's two rows.
 Setting:    on the operator's machine `E:\EquityBrief-backups`, written into the worker's secrets file after
             the merge, which the night and every process it starts read.
-Tests:      F13CTESTS, from 1744: four added, the copy made and read with its row's folder relative, the newest
+Tests:      1748, from 1744: four added, the copy made and read with its row's folder relative, the newest
             three kept with each read first and none removed past a damaged one, each wait and the twenty-hour
             limit over a clock the copy's own wait moves, and the run page's line over a constructed store; the
             night's order tests read the copy's step last.
-Claims:     F13CCLAIMS, from 880: seven added, the catalogue's and the matrix's rows, section 14's step, the
+Claims:     887, from 880, with 887 PASS: seven added, the catalogue's and the matrix's rows, section 14's step, the
             worry row's part, section 17's row and section 18's two, each reached and passing, and every pair
             names them as rows added after phase 13's report.
 Pins:       none moves: the night's step list, the launcher, the read surface and the copy sit in no pin list.
@@ -36123,6 +36123,14 @@ Mutated:    the rule, stated before the run: each property the change adds, brok
             S4 the row naming the folder as the full path: red in the copying test.
             S5 the night starting the copy with no wait for the labeller it started: red in the labeller's
             night test.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F13CGATES
+            Results: S1 red in the keeping test alone; S2 and S3 each red in the waiting test alone; S4 red in
+            the copying test, and in the keeping and waiting tests, which read every row through the same
+            reader; S5 red in the labeller's night test alone. Each ran over c6c2240 and was reverted, the tree
+            reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: c6c2240.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1748 of 1748 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 887 claims, 887 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
