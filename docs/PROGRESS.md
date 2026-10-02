@@ -35830,7 +35830,7 @@ Operating:  phase 13 opened no operating row, and no carried obligation of eithe
             `obligation-reconciles` states phase 13 at none.
 Remedy:     13.9's ran on the operator's store at 11:35Z after its merge, migration 56 first. 22 rules
             stand: the swing family's eight on filter version 5, seven breakout rules and seven drift rules.
-Tests:      F10TESTS, from 1726: one added.
+Tests:      1727, from 1726: one added.
 Claims:     876, unchanged, with 876 PASS; the pair is 876 and 876.
 Pins:       none moves. The branch edits two tests, a rules file and the records, none of them in a pin list.
 Mutated:    the rule, stated before the run: each property this checkpoint adds, broken alone, made on the
@@ -35838,7 +35838,13 @@ Mutated:    the rule, stated before the run: each property this checkpoint adds,
             T1 13.5's move counted as predicted, Past picks' rows held at four: red in the pair test alone.
             T2 the freezes' rows left out of the rows after the pair: red in the pair test alone.
             T3 phase 13 stated as opening one operating row: red in the operating rows test alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F10GATES
+            Results: T1 to T3 each red where stated, the other test green each time. Each ran over 74329e0
+            and was reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 74329e0.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1727 of 1727 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 876 claims, 876 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            887 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
 Carried:    phase 13's sign-off, owed on the phase as a whole by a session that committed none of its code.
             This session committed phase 13's code and signs nothing.
