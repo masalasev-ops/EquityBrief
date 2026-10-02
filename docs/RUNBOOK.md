@@ -227,7 +227,7 @@ The paid models are the one part of the system that costs money, and nothing in 
 | the sections a review asks it for, one entry per section | `EquityBrief:Models:Research:Review:Sections` | `The two cases, The risks, each with what would confirm it` |
 | the reports a review runs over before it stops | `EquityBrief:Models:Research:Review:Reports` | `3` |
 | the day a review counts its reports from, as `yyyy-MM-dd` | `EquityBrief:Models:Research:Review:From` | `2026-09-30` |
-| the profile the news job uses | `EquityBrief:Models:News:Use` | `claude-haiku` |
+| the profile the news job uses | `EquityBrief:Models:News:Use` | `deepseek` |
 | how long one label call may take, in seconds | `EquityBrief:Models:News:TimeoutSeconds` | `60` |
 | the most one label answer may run to, in tokens | `EquityBrief:Models:News:AnswerTokens` | `2000` |
 | the most the news labeller's own calls may cost in a UTC month, in dollars | `EquityBrief:Models:News:MonthLimit` | `5` |

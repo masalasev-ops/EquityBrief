@@ -35978,3 +35978,64 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 4f5b6e8
             it filtered.
 Carried:    the operator's go or not on the starting point and its variants; the twelve-hour rerun, running as
             `20261002T122612Z`.
+
+### 13.10 ruling - the operator's rulings on the waiting items: the news job asks deepseek, a pull request of documents runs the checkpoint script alone, the best three join the pullback's family at a cap of nine, the store is copied after every night, and the ideas' run reads the breakout and the drift   2026-10-02
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Ruled:      by the operator on 2026-10-02 at about 14:30Z, word for word:
+            "Rulings on the waiting items. Let the twelve-hour rerun finish.
+            1. The ideas' starting point: do not freeze it. One idea of 13 passed against a luck figure of 1.7.
+            Register "the night's best three, in the list's own order" as a variant of the pullback, through the
+            remedy script, now while the freeze's records are a day old; state what restarts.
+            2. The news labeller: switch Models:News:Use to deepseek now so it stops refusing, and first say
+            whether the Anthropic key in the secrets file sits under a name the claude-haiku profile does not
+            read. Haiku retires on 15 October in any case. Items 14 and 17 then start counting.
+            3. The replayed rows of 2026-09-21 to 2026-09-23: yes, remove them after tonight's night.
+            4. Delete the three branches and close draft PR 309.
+            5. Documents-only pull requests run tools/ci.ps1 alone. Amend CLAUDE.md's merge rule and the check
+            that disagree, so the rules stop conflicting; the reason, that code changes need both gates, stays.
+            6. Backup: yes. After every night finishes, copy the store to <SSD folder, for example
+            E:\EquityBrief-backups>, keep the last 3 copies, check each copy opens and reads before deleting the
+            oldest, and show the newest copy's time and folder on the run page.
+            7. The six commits with a co-author line: do not rewrite history. State whether CLAUDE.md forbids the
+            line, and if so, add a check so future commits cannot carry it.
+            8. After the rerun finishes, run the ideas' run on the breakout and the earnings drift as frozen, each
+            idea added alone with the same pass test: the six market switches, the stop sold on touch, the stop
+            at least one typical move under the buy, the best three a night, and holds of at most 10 and 20
+            sessions; plus the trailing stops of 2 and 3 typical moves for the drift only. State the tries, the
+            passes and the luck figure for each. Nothing is frozen or registered.
+            9. Write the handoff prompt for the phase 12 and phase 13 sign-off session, with the finding about
+            phase 12's report heading as the first thing it examines."
+            At about 15:00Z, two questions put back: the family already holds eight, the most a family holds,
+            answered "Raise the cap to 9 (Recommended)"; and the drive the store is on is a spinning disk, the
+            solid state drive another, answered with the folder as written, "E:\EquityBrief-backups".
+Answered:   2. The secrets file holds the Claude key under `EquityBrief:Models:Claude:ApiKey`, the path the
+            claude-haiku profile reads, with both of its lines commented out, so the reader finds no key and the
+            labeller refused every night. Nothing sits under a name the profile does not read.
+            4. Done: draft pull request 309 closed, and its branch, `phase-12-5-sweep` and `phase-13-9-freezes`
+            deleted here and on the remote.
+            5. The merge rule asked for `tools/ci.ps1` alone on every pull request, and `two-platform` reads that
+            run off every entry, so neither asked more of documents than the ruling does; what disagreed was the
+            practice and the operator's word of 2026-10-01. The merge rule now states both cases with the reason
+            code needs both scripts, and no check moves.
+            7. CLAUDE.md does not forbid the line, so no check is added, and the six commits stay as they are.
+Changed:    `EquityBrief:Models:News:Use` from claude-haiku to deepseek, with the runbook's row; the merge rule,
+            its prior text in `CHANGELOG.md`; and the decision "A pull request of documents alone runs the
+            checkpoint script alone, and one changing code runs the phase report as well". The labeller's first
+            twenty nights, which settle its limits, count from its first night on deepseek.
+Queue:      done: phase 13; the ideas' run. In progress: the twelve-hour rerun, `20261002T122612Z`.
+            Next, in order: this ruling; the best three as the pullback's ninth rule with every family's cap at
+            nine and the store copied after every night, one pull request whose remedy registers the best three
+            before tonight's night; after tonight's night, the replayed rows removed and the first night on the
+            freezes read; once the rerun ends, its report read, then the ideas' run on the breakout and the drift
+            as frozen, its figures recorded; the sign-off of phases 12 and 13 in a fresh session; the preview
+            command after the sign-offs.
+Tests:      1741, none added.
+Claims:     880, none added, with 880 PASS.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 572adfd.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1741 of 1741 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 880 claims, 880 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            891 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
