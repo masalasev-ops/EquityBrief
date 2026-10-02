@@ -35457,7 +35457,7 @@ Built:      `history-pull --market --from <date>` asks the provider's historical
 Differs:    the plan named a limits row and a failure row in sections 17 and 18. The other pulls carry
             neither, so the rule sits in the history pull's catalogue row and the pulled history's store row
             as theirs does, and no claim is added.
-Tests:      M2TESTS, from 1697: five added. A market pull storing both series marked by its run, one request
+Tests:      1702, from 1697: five added. A market pull storing both series marked by its run, one request
             each; a purge removing them whole and nothing else; a date on or after tonight refused before any
             request; a refused series storing nothing and failing the command; the request naming the index
             exchange and never a stock's. The pulled tables' source scan now names the new table.
@@ -35470,5 +35470,13 @@ Mutated:    the rule, stated before the run: each new rule reversed alone, made 
             P1 the market sessions written into `pulled_bar`: red in the market pull's test.
             P2 the purge leaving the market sessions: red in the purge's test.
             P3 the stock suffix on the request: red in the feed's test.
-            Results: M2MUT
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over M2SHA: M2GATES
+            Results: all three red. P1 in the market pull's test as predicted, and in the purge's and the
+            refused series' tests too, since each pulls before it reads; P2 in the purge's test alone; P3 in
+            the feed's test alone.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over de39e7b. `tools/ci.ps1`: all six
+            steps, 0 warnings, 0 errors, 1702 of 1702 tests ran with none failed, migrations 0 to 55 with
+            none pending, schema version 55, against `data-ci` and never `data`. `tools/verify-phase.ps1`: 44
+            tables, 855 claims, 855 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 866 placements reconciled
+            against a floor of 34, fixture PRESENT, 42 checks on the roster, 42 carried and 42 passed. The
+            first `tools/ci.ps1` run, over the commit before de39e7b, failed one test: a second count of the
+            files that may hold a client, raised to 14 in the same commit.
