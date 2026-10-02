@@ -41,6 +41,9 @@ public partial class ArchitectureConformance
         .. FixtureExpectations.DriftClaims,
         .. FixtureExpectations.LeaderClaims,
         .. Reading.ReadSurface.FamilyPagesClaims,
+        .. FixtureExpectations.FamilySweepClaims,
+        .. FixtureExpectations.DriftSweepClaims,
+        .. FixtureExpectations.LeaderSweepClaims,
     ];
 
     // The rows of phase 13 the record does not yet reach: each is placed at the checkpoint that draws it

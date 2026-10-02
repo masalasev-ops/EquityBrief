@@ -299,6 +299,9 @@ public static class SweepCandidates
     // One name's bands on one of its bars, as the level builder draws them and as the gates read them.
     sealed record Bands(IReadOnlyList<Level> Levels, IReadOnlyList<FilterBand> Filter);
 
+    // With `only` given, the bars it names are read and no other, whatever their uptrend and strength: the sector
+    // leaders' sweep reads the pullback's setup, trigger and trade there with leadership in place of the trend
+    // and strength gate.
     public static List<SweepCandidate> For(
         SweepSeries series,
         int name,
@@ -306,7 +309,8 @@ public static class SweepCandidates
         IReadOnlyList<DateOnly> calendar,
         int firstScored,
         int fromSession,
-        int toSession)
+        int toSession,
+        IReadOnlySet<int>? only = null)
     {
         var found = new List<SweepCandidate>();
         var bands = new Dictionary<int, Bands>();
@@ -349,7 +353,8 @@ public static class SweepCandidates
         {
             var session = series.SessionAt[bar];
 
-            if (session < firstScored || session < fromSession || session >= toSession || !series.Member[bar] || series.Gap[bar] || series.Uptrend[bar] == 0)
+            if (session < firstScored || session < fromSession || session >= toSession || !series.Member[bar] || series.Gap[bar]
+                || (only is null ? series.Uptrend[bar] == 0 : !only.Contains(bar)))
             {
                 continue;
             }
@@ -362,7 +367,7 @@ public static class SweepCandidates
                 strength[measure] = cross.Strength[measure].TryGetValue(name, out var place) ? place : double.NaN;
             }
 
-            if (!strength.Any(value => value >= loosestStrength))
+            if (only is null && !strength.Any(value => value >= loosestStrength))
             {
                 continue;
             }

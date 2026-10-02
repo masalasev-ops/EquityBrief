@@ -1905,6 +1905,37 @@ internal static class Scope
             "the members of a sector a member short of the floor are stored as not passed, each saying how many members with a return the sector holds against the floor",
             ByExpectations),
 
+        // 13.6, the breakouts' sweep: section 17's rows for its grid and every family sweep's floors and test,
+        // and section 18's row for a family set aside.
+        [CheckReach.Key(LimitsTable, "Breakout sweep grid")] = new Scoped(
+            Verdict.Pass,
+            "the grid's levels are the breakout's own values with a step either side, the year's high, the volume over its average, the newer ranges over the older and the typical move read back against the rows the night's own rule stored over the fixture, and a constructed history's breakout, its trailing trade and its benchmark worked by hand and read back off its report",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Drift sweep grid")] = new Scoped(
+            Verdict.Pass,
+            "the grid's levels are the drift's own values with a step either side, the sweep's rise, volume multiple, low, stop and target the night's own rule's over the same constructed member, the night's print over the fixture, a print only the pull holds read from it, and a constructed history's trade, its near stop and its benchmark read back off its report",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Leader sweep grid")] = new Scoped(
+            Verdict.Pass,
+            "the grid's levels are the leaders' own values with a step either side, the sectors ranked and the members placed by the night's own rule over constructed members and read back against the rows the night stored over the fixture, and constructed candidates outside any uptrend listed by the sectors and the share and read back off their report",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A leader sweep name with no sector")] = new Scoped(
+            Verdict.Pass,
+            "over constructed members the strongest of which carries no sector, it is in no ranking and lists nothing, and it is counted among the names carrying none",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Family sweep floors")] = new Scoped(
+            Verdict.Pass,
+            "the proposal worked by hand over constructed records: the best edge with too few trades passed over, one short of its years passed over, a tie on the edge going to the setting one dial from the provisional, its neighbours as the variants the higher edge first, and every setting short of the floors setting the family aside",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Family sweep test")] = new Scoped(
+            Verdict.Pass,
+            "the report over a constructed history read back stating the test its checkpoints read, word for word",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A family sweep with no setting meeting its floors")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed history no setting of which holds the floors, the proposal is none, the report says the family is set aside and draws the provisional setting's record as the walk read it",
+            ByExpectations),
+
         // 13.5, the pages around the setup families, each read off the rendered page over a constructed night.
         [CheckReach.Key("15.7 Tonight", "The market line, whether the market check left the lists open with the breadth and its floor")] = new Scoped(
             Verdict.Pass, "the line's words and both figures read off the page on an open night and on a night the check closed, against the stored market reading and the floor the gates stored", ByReadSurface),
@@ -4786,6 +4817,9 @@ internal static class Scope
         ["A breakout with no typical move to place its stop by"] = "13.2",
         // 13.3, the earnings drift. Its row about a reaction session the bars do not reach derives from the plan.
         ["A print whose actual the calendar does not carry yet"] = "13.3",
+        // 13.6, the family sweeps.
+        ["A family sweep with no setting meeting its floors"] = "13.6",
+        ["A leader sweep name with no sector"] = "13.8",
         // The sweep, a 12.5 correction, and its rerun.
         ["A chunk of the sweep fails twice"] = "12.5",
         ["The point-in-time check finds a difference"] = "12.5",
@@ -4886,6 +4920,12 @@ internal static class Scope
         ["Leader sectors"] = "13.4",
         ["Leader share"] = "13.4",
         ["Sector ranking floor"] = "13.4",
+        // The family sweeps, 13.6.
+        ["Breakout sweep grid"] = "13.6",
+        ["Drift sweep grid"] = "13.7",
+        ["Leader sweep grid"] = "13.8",
+        ["Family sweep floors"] = "13.6",
+        ["Family sweep test"] = "13.6",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",

@@ -35499,3 +35499,109 @@ Queue:      restated, since the list lives in the newest queue ruling. Done: tra
 Verified:   documents alone over `tools/ci.ps1` green at de39e7b, the code beneath them, with the document
             checks run filtered over this commit and the hosted checks over the pull request's tree.
 Stored:     the operator's words in `prompts/2026-10-02-13.6-phase-13-first-ruling.md`.
+
+### 13.6 - the breakouts' sweep: the breakout's rule replayed over the stored history at every setting of its grid, five a night with one open trade a stock, each trade an edge over the same trailing plan entered on every member that night, and a report proposing the best edge among the settings meeting the floors or setting the family aside   2026-10-02
+
+Built:      `sweep-family --family breakout`, the shared engine the drift's and the leaders' sweeps reuse:
+            the family's walk night by night in the family's order, five a night and one open trade a stock;
+            a setting's figures; the proposal; the trailing and the fixed walks; the report in a run folder of
+            its own beside the pullback sweep's runs. The breakout's adapter reads the year's high, the volume
+            over its fifty-session average, the newer ranges over the older and the typical move over every
+            scored session, on nights the market check left open, across a grid of 54 settings.
+Measured:   a trial from this branch over the live store, read-only, its report written outside the store's
+            folder: 827 names, 1,948 sessions scored, the lists open on 1,609, 10,707 member-sessions the
+            loosest setting could list, in 18 s. The provisional setting: 1,658 trades, an edge of 0.041, 6 of
+            8 years above nothing, 0.013 without its five largest. The best edge meeting the floors: a 126-session
+            high, volume 1.5, a range ceiling of 0.85 and a stop of 1.5 moves, 1,009 trades, an edge of 0.082,
+            0.031 without its five largest. The run the operator reads is made from main after the merge.
+Tests:      1710, from 1702: eight added. The trailing and the fixed walks by hand; the trailing benchmark
+            over constructed members; five a night in the family's order with one open trade a stock; a
+            setting's figures and the proposal by hand; the breakout's readings read back against the rows the
+            night's own rule stored over the fixture's night; and a constructed history's breakout, trade and
+            benchmark read back off its report.
+Claims:     four added: section 17's grid, floors and test rows, and section 18's row for a family set aside.
+Pins:       the three pin lists read; the tree touches none of their sources.
+Mutated:    the rule, stated before the run: each new rule reversed alone, made on the branch in this
+            checkout, filtered to the eight tests and reverted.
+            F1 a sixth listing kept a night: red in the five-a-night test.
+            F2 the trailing stop lowered with a lower close: red in the trailing walk's test.
+            F3 the proposal ignoring the trade floor: red in the proposal's test.
+            F4 the year's high read with tonight's own bar in it: red in the fixture readings' test and the
+               constructed history's.
+            Results: F1, F2 and F3 red where stated. F4 red in the constructed history's test and green in the
+            fixture readings' test, an unreachable boundary: tonight's bar moves the high only where it stands
+            above every high before it, and no member's did on the fixture's night.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
+            this one to 13.8's, 0aa7da9, with the figures 13.8's entry states.
+
+### 13.7 - the earnings drift's sweep: the drift's rule replayed over the stored history and the pulled surprises at every setting of its grid, on 13.6's engine, with the share of trades whose stop sat under a typical move beside each edge   2026-10-02
+
+Built:      `sweep-family --family drift`. Its adapter reads each member's newest print with a surprise, the
+            reaction's rise in typical moves of the session before it, its volume over its fifty-session
+            average, tonight's close against the reaction's low, and the lowest band far enough above the close
+            to be a target, over every scored session the market check left open, across a grid of 81
+            settings. Every family's figures now state the share of trades whose stop sat under one typical
+            move: the drift's stop at the reaction's low can sit a hair under the close, and a result counted
+            in risks grows with how near it is.
+Measured:   a trial from this branch over the live store, read-only, its report written outside the store's
+            folder: 33,725 member-sessions the loosest setting could list, in 21 s. The provisional setting:
+            2,829 trades, an edge of 0.230 but 4 of 8 years above nothing and 0.048 without its five largest,
+            37% of its stops under a typical move. The best edge meeting the floors: a window of 3, a rise of
+            0.5, volume 2.0 and a target at 2.5 times the risk, 2,243 trades, an edge of 0.123, 6 of 8 years,
+            0.095 without its five largest, 40% of its stops under a typical move.
+Tests:      1715, from 1710: five added. The drift's readings the night's own rule's over the same
+            constructed member on the reaction's session and the next; the target the nearer of a band and the
+            multiple of the risk over constructed readings, added after D2 survived; the night's print on the
+            fixture's night; a print the pulled surprises hold and the calendar does not, read from the pull
+            through the store; and a constructed history's trade, its near stop and its benchmark read back off
+            its report.
+Claims:     one added: section 17's row for the drift's grid.
+Pins:       the three pin lists read; the tree touches none of their sources.
+Mutated:    the rule, stated before the run: each new rule reversed alone, made on the branch in this
+            checkout, filtered to the drift's tests and 13.6's eight, and reverted.
+            D1 the reaction's rise read against tonight's typical move: red in the readings' test.
+            D2 the target read as the farther of the band and the multiple: red in the readings' test.
+            D3 the calendar's surprises read even where a pull holds some: red in the pulled print's test.
+            Results: D1 and D3 red where stated. D2 survived, an unreachable boundary: the constructed history
+            holds no band above the close, so its target is always the multiple's. The target's test was added
+            and D2 is red in it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
+            13.6's to 13.8's, 0aa7da9, with the figures 13.8's entry states.
+
+### 13.8 - the sector leaders' sweep: each session's sectors ranked and members placed by the night's own rule, the pullback's setup, trigger and trade read at the live settings with leadership in place of the trend and strength gate, and the history's names with and without a sector counted   2026-10-02
+
+Built:      `sweep-family --family leader`, on 13.6's engine. Its adapter ranks each open session's sectors and
+            places each member with the leader rule's own standings, keeps those inside the loosest setting's
+            sectors and share, computes the sweep's candidates on those bars alone with the uptrend and strength
+            pre-checks set aside, and keeps the ones the pullback's setup, trigger and trade pass at the live
+            settings, read with a strength that passes every bar and the live design's earnings window held,
+            their trade and its benchmark the pullback's own under its exit. A grid of 9 settings. The report
+            counts the history's names carrying a sector and those not, and how many of the latter the index
+            held on the history's last session, since the membership files a sector as it stands today.
+Measured:   a trial from this branch over the live store, read-only, its report written outside the store's
+            folder, in 187 s: 508 of the history's 827 names carry a sector and 319 do not; 143,416
+            member-sessions stood inside the loosest setting's sectors and share, and the pullback's setup,
+            trigger and trade passed on 6,317. The provisional setting, the top 3 sectors and the top quarter,
+            is the best edge meeting the floors: 1,021 trades, an edge of 0.070, 6 of 8 years, 0.038 without
+            its five largest, 29% of its stops under a typical move.
+Tests:      1718, from 1715: three added. The sectors ranked and members placed over constructed members,
+            the strongest carrying no sector left out and counted; the standings read back against the rows the
+            night's own rule stored over the fixture's night; and constructed candidates outside any uptrend,
+            listed by the sectors and the share and read back off their report.
+Claims:     two added: section 17's row for the leaders' grid and section 18's row for a name with no sector.
+Pins:       the three pin lists read; the tree touches none of their sources.
+Mutated:    the rule, stated before the run: each new rule reversed alone, made on the branch in this
+            checkout, filtered to the three tests and reverted.
+            L1 a sector's share rounded down: red in the standings' test and the report's.
+            L2 the trend gate read for a leader: red in the report's test.
+            L3 a leader listed past its share: red in the report's test.
+            Results: L1 red in the standings' test and green in the report's, an unreachable boundary: the
+            report's candidates stand first in their sector or third of Tech's six under a half, which divides
+            whole, so rounding down drops none. L2 and L3 red where stated.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
+            13.6's to this one, 0aa7da9. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1718 of 1718
+            tests ran with none failed, migrations 0 to 55 with none pending, schema version 55, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1`: 44 tables, 862 claims, 862 PASS, 0 FAIL, 0
+            out of scope, 0 unexamined, 873 placements and verdicts reconciled against a floor of 34, fixture
+            PRESENT, 42 checks on the roster, 42 carried and 42 passed. Both were green over b93d5f1 at 1717
+            tests, before the drift's target test was added.

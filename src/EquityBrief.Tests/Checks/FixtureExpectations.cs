@@ -186,6 +186,17 @@ public partial class FixtureExpectations
 
             // 13.4, the sector leaders: section 17's rows for its settings and section 18's two rows.
             .. LeaderClaims,
+
+            // 13.6, the breakouts' sweep: section 17's rows for its grid and every family sweep's floors and
+            // test, and section 18's row for a family set aside.
+            .. FamilySweepClaims,
+
+            // 13.7, the earnings drift's sweep: section 17's row for its grid.
+            .. DriftSweepClaims,
+
+            // 13.8, the sector leaders' sweep: section 17's row for its grid and section 18's row for a name
+            // with no sector.
+            .. LeaderSweepClaims,
             CheckReach.Key(Scope.FixtureTable, "reported quarters"),
 
             // 11.5, the floor a name's industry has to reach before it is the name's group.

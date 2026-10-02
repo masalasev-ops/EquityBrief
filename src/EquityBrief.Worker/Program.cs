@@ -40,6 +40,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "quarters" => await QuartersRun(args),
     "measure-sources" => await MeasureSources(args),
     "sweep" => await SweepRun(args),
+    "sweep-family" => await SweepFamilyRun(args),
     "label-news" => await LabelNews(args),
     "news-fill" => await NewsFill(args),
     _ => NoVerb(),
@@ -48,7 +49,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 16 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 17 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -82,6 +83,8 @@ static int NoVerb()
         "'sweep' replays the swing filter over the stored history across its designs and settings, reading the store and " +
         "writing nothing to it, and writes its report in a run folder of its own beside it, '--run <name>' going on with a " +
         "run started before from its last saved chunk, " +
+        "'sweep-family --family <name>' replays a setup family's rule over the stored history across its settings, " +
+        "reading the store and writing nothing to it, and writes its report in a run folder of its own, " +
         "'label-news' labels the stored articles of the names on the newest night's list through the news job's paid model, " +
         "as the night starts it after the close, with '--session <yyyy-MM-dd>' naming the night, and " +
         "'news-fill --days <n>' stores the articles of the last n days from the news feed's dated query, one a day, " +
@@ -276,6 +279,22 @@ static async Task<int> QuartersRun(string[] args)
 // sweep's folder, named by the instant it started, and '--run <name>' goes on with a run started before. The
 // verb's work is in `SweepRunner`, so a test runs the runner the verb runs.
 // see: The sweep reads the live store read-only in short reads and writes nothing to it, pausing for every night
+// A setup family's sweep, by hand: the family's rule replayed over the stored history across its grid, read-only,
+// its report written into a run folder of its own. The work is in `FamilySweepRunner`.
+// see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
+static async Task<int> SweepFamilyRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await new EquityBrief.Worker.Sweep.FamilySweepRunner(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        store.DataRoot,
+        configuration[EquityBrief.Core.Sweep.SweepFolder.Key],
+        Console.Out).RunAsync(VerbArguments.Value(args, "--family") ?? string.Empty);
+}
+
 static async Task<int> SweepRun(string[] args)
 {
     var configuration = Configuration();
