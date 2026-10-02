@@ -42,6 +42,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "sweep" => await SweepRun(args),
     "sweep-family" => await SweepFamilyRun(args),
     "sweep-ideas" => await SweepIdeasRun(),
+    "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
     "label-news" => await LabelNews(args),
     "news-fill" => await NewsFill(args),
     "backup" => await BackupRun(args),
@@ -51,7 +52,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 19 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 20 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -87,6 +88,9 @@ static int NoVerb()
         "run started before from its last saved chunk, " +
         "'sweep-family --family <name>' replays a setup family's rule over the stored history across its settings, " +
         "reading the store and writing nothing to it, and writes its report in a run folder of its own, " +
+        "'sweep-family-ideas --family <name>' adds each of the pullback's ideas that fits the breakout or the earnings " +
+        "drift to its rule as frozen, one at a time over the stored history and the market series, reading the store " +
+        "and writing nothing to it, and writes its report in a run folder of its own, " +
         "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
         "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
         "report in a run folder of its own, " +
@@ -296,6 +300,23 @@ static async Task<int> SweepFamilyRun(string[] args)
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
 
     return await new EquityBrief.Worker.Sweep.FamilySweepRunner(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        store.DataRoot,
+        configuration[EquityBrief.Core.Sweep.SweepFolder.Key],
+        Console.Out).RunAsync(VerbArguments.Value(args, "--family") ?? string.Empty);
+}
+
+// The ideas' run on a frozen family, by hand: each of the pullback's ideas that fits the family added to its rule
+// as frozen alone, over the stored history, read-only, its report written into a run folder of its own. The work
+// is in `FamilyIdeasRunner`.
+// see: The frozen families are read with the pullback's ideas one at a time, and nothing they show is frozen or registered
+static async Task<int> SweepFamilyIdeasRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await new EquityBrief.Worker.Sweep.FamilyIdeasRunner(
         SystemClock.ForUnitedStatesSessions(),
         store.DatabaseFile,
         store.DataRoot,

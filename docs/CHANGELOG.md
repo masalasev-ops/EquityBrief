@@ -10315,3 +10315,24 @@ Was:
 Now:
 > `nightly-run`: "... once after its own request, with no model call on its row, ...; and the night starts the store's copy as the last row it writes, ..."; `fixture-expectations` and `read-surface` each gain a clause on the copy, its waits and its line on the run page.
 Why: the checks reach what the copy asserts.
+### 2026-10-02 - ARCHITECTURE.html - the ideas read on the frozen families
+Authorised by: The frozen families are read with the pullback's ideas one at a time, and nothing they show is frozen or registered
+Was:
+> Section 13.9 ending on the ideas' run's paragraph, "... Nothing it finds is registered: a starting point it proposes is a freeze of its own, taken on the operator's word."
+Now:
+> A paragraph after it, "The same ideas are read on the breakouts and the earnings drift as frozen, by hand and one family a run, ...", ending "Nothing it shows is frozen or registered."
+Why: the operator's ruling of 2026-10-02, item 8.
+### 2026-10-02 - RUNBOOK.md - the ideas on a frozen family
+Authorised by: The frozen families are read with the pullback's ideas one at a time, and nothing they show is frozen or registered
+Was:
+> No section after "The ideas on the base".
+Now:
+> "The ideas on a frozen family", with `sweep-family-ideas --family breakout` and `--family drift`.
+Why: the worker's verb for the run, shown where a person runs it.
+### 2026-10-02 - .claude/rules/checks.md - fixture-expectations reaches the ideas on the frozen families
+Authorised by: The frozen families are read with the pullback's ideas one at a time, and nothing they show is frozen or registered
+Was:
+> `fixture-expectations`: "... and the report states its tries against what luck passes, the share of near stops beside each edge and each market series as the store holds it; and the store's copy ..."
+Now:
+> `fixture-expectations`: "... each market series as the store holds it; and the ideas' run on the frozen families reads each family's rule as frozen off its sweep's grid and refuses a setting off it, ..., and the report stating the tries, the passes and an idea that changes nothing the rule makes; and the store's copy ..."
+Why: the check reaches what the families' run asserts.
