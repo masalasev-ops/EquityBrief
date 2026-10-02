@@ -10241,3 +10241,17 @@ Was:
 Now:
 > The same, then "; and the ideas' run's touched stop sells at the stop, ... and the report states its tries against what luck passes, the share of near stops beside each edge and each market series as the store holds it |"
 Why: the check reaches what the ideas' run asserts.
+### 2026-10-02 - CLAUDE.md - the merge rule states what a pull request of documents and one of code each run
+Authorised by: A pull request of documents alone runs the checkpoint script alone, and one changing code runs the phase report as well
+Was:
+> **CI green before merge, and `tools/ci.ps1` green on the operator's machine over the tree being merged. Those are the only conditions.** Sign-off is a separate activity ...
+Now:
+> **CI green before merge, and `tools/ci.ps1` green on the operator's machine over the tree being merged, with `tools/verify-phase.ps1` green over it as well where the pull request changes code. Those are the only conditions.** A pull request of documents alone runs `tools/ci.ps1` alone, since that script carries every check that reads them. One that changes shipped source, the suite, a fixture or a setting runs both, because a change there can move a claim's verdict, and the phase report is the one run that gives every claim in scope a verdict from what the checks did and is green only with none unexamined, where a green suite says only that nothing it ran failed (see: ...). Sign-off is a separate activity ...
+Why: the operator's ruling of 2026-10-02, so the merge rule, the practice and the operator's word of 2026-10-01 stop disagreeing.
+### 2026-10-02 - RUNBOOK.md - the news job uses deepseek
+Authorised by: A paid job names its model profile in one word the operator switches, and a profile is priced at its configured rates at its call's own timestamp
+Was:
+> | the profile the news job uses | `EquityBrief:Models:News:Use` | `claude-haiku` |
+Now:
+> | the profile the news job uses | `EquityBrief:Models:News:Use` | `deepseek` |
+Why: the operator's ruling of 2026-10-02. The secrets file's Claude key is commented out, so the labeller refused every night, and Claude Haiku 4.5 retires on 2026-10-15.
