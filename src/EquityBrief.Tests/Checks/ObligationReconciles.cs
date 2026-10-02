@@ -490,6 +490,8 @@ public class ObligationReconciles
         // the labeller's time limit, its month limit and the share of its answers refused for a digit, each
         // settled from its first twenty nights, so eight stand operating.
         ["12"] = 8,
+        // None: phase 13 opened no carried obligation of either form.
+        ["13"] = 0,
     };
 
     internal const string NoOperatingRowOpened = "opened no operating row";

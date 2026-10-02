@@ -10205,3 +10205,9 @@ Was:
 Now:
 > `fixture-expectations` reaches the eighth, the eight registrations, each new family's freeze, the pullback's, the shadow on every member's row and the family recorder's list, results and benchmarks; `read-surface` reaches eight and a divisor of 8, each registered rule's record and the card's live day off the register; `register-append-only` counts twenty-two evaluation sources and each family evaluator's own pin.
 Why: the checks reach what 13.9 asserts.
+### 2026-10-02 - .claude/rules/checks.md - architecture-conformance checks phase 13's pair
+Was:
+> `architecture-conformance`: "... Phase 12's pair is read off the plan and checked against the actual, every claim that moved named; and no sentence ..."
+Now:
+> `architecture-conformance`: "... Phase 12's pair is read off the plan and checked against the actual, every claim that moved named, and phase 13's is read and checked the same way, each row the phase added reached once and passing; and no sentence ..."
+Why: 13.10 builds it.
