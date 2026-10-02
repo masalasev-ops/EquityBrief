@@ -29,6 +29,11 @@ public static class RegisterVerb
     // evaluator a code change moved, on the evidence given.
     public const string Moved = "--moved";
 
+    // The flag that registers the swing family again whole at one instant under the filter version already
+    // open, on the evidence given, which is how a rule joins it.
+    // see: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
+    public const string TheFamilyAgain = "--the-family-again";
+
     // The flag that freezes a new setup family, its live rule and its variants registered at one instant,
     // naming the family.
     // see: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
@@ -42,6 +47,7 @@ public static class RegisterVerb
         new(TheFamily, [], [], [TheFamily]),
         new(Moved, ["--evidence"], [], [Moved]),
         new(Family, [Family], [], []),
+        new(TheFamilyAgain, ["--evidence"], [], [TheFamilyAgain]),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -106,6 +112,11 @@ public static class RegisterVerb
         if (form.Flag == Moved)
         {
             return await Said(await registrar.RegisterMovedAgainAsync(Given("--evidence"), runId), output, error);
+        }
+
+        if (form.Flag == TheFamilyAgain)
+        {
+            return await Said(await registrar.RegisterTheFamilyAgainAsync(Given("--evidence"), runId), output, error);
         }
 
         if (form.Flag == TheThree)

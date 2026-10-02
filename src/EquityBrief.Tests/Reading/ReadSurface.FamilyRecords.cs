@@ -12,7 +12,7 @@ namespace EquityBrief.Tests.Reading;
 // and a registered family's card and row reading the day its rule went live off the register, each read back
 // off the rendered page over a constructed store.
 // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
-// see: Each setup family's correction for luck counts its own rules alone, at most eight a family
+// see: Each setup family's correction for luck counts its own rules alone, at most nine a family
 public partial class ReadSurface
 {
     internal static readonly string[] FamilyRecordPageClaims =

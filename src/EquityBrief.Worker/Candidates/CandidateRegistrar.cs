@@ -144,7 +144,7 @@ public sealed class CandidateRegistrar : IComponent
     // share. All or none for the same reason: a set half written leaves the level of the ones that
     // landed divided by a family that never stood.
     // see: The three candidates are registered at one instant
-    // see: The candidate family is at most eight and the threshold is divided by it
+    // see: Each setup family's correction for luck counts its own rules alone, at most nine a family
     public async Task<RegistrationOutcome> RegisterTogetherAsync(
         IReadOnlyList<Registration> registrations,
         string runId,
@@ -345,6 +345,44 @@ public sealed class CandidateRegistrar : IComponent
         return new RegistrationOutcome(Registered, null, detail);
     }
 
+    // The swing family registered again whole at one instant under the filter version already open: every
+    // standing swing family rule retired on the evidence given and the family the code writes for that version
+    // registered, a rule added to it among them, or none of it. No version opens, so the shape clock's count
+    // goes on. Refused where no version is open, since the live filter's candidate states the settings the list
+    // runs on, and where no swing family rule stands, since there is then no family to register again.
+    // see: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
+    public async Task<RegistrationOutcome> RegisterTheFamilyAgainAsync(string evidence, string runId, CancellationToken cancellation = default)
+    {
+        (string Version, FilterSettings Settings)? open = null;
+
+        await using (var connection = new SqliteConnection(StoreConnection.For(databaseFile)))
+        {
+            await connection.OpenAsync(cancellation);
+
+            await using var command = connection.CreateCommand();
+
+            command.CommandText = OpenVersion;
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            if (await reader.ReadAsync(cancellation))
+            {
+                open = (reader.GetString(0), FilterSettings.Read(reader.GetString(1)));
+            }
+        }
+
+        if (open is not { } held)
+        {
+            const string said = "no filter version is open, so the live filter's candidate has no settings to state and the family was not registered again.";
+
+            await RecordRefusalAsync(runId, said, cancellation);
+
+            return new RegistrationOutcome(Refused, null, said);
+        }
+
+        return await CorrectTheFamilyAsync(TheSwingFamily.For(held.Version, held.Settings), evidence, (_, _, _) => Task.CompletedTask, runId, cancellation);
+    }
+
     // Every standing candidate whose evaluator the code no longer carries at the version it was
     // registered with, retired on the evidence given and registered again unchanged at the version the
     // code carries now, all at one instant or none. Unchanged because nothing about the candidate was
@@ -498,7 +536,8 @@ public sealed class CandidateRegistrar : IComponent
     // candidate retired on the evidence given, the family the caller writes for the version it opens
     // registered, and the caller's own write in the same transaction, all at one instant or none. Refused
     // whole where no swing family candidate stands, since a correction replaces a family and registers
-    // none from nothing, and where any one row would be refused.
+    // none from nothing, and where any one row would be refused. The family registered again under the
+    // version already open is the same write with nothing of the caller's beside it.
     // see: A rule correction taken before the family's first scored night opens a filter version and registers the family again at one instant, and is no shape acceptance
     public async Task<RegistrationOutcome> CorrectTheFamilyAsync(
         IReadOnlyList<Registration> family,
@@ -767,7 +806,7 @@ public sealed class CandidateRegistrar : IComponent
         }
 
         // A setup family's own rules alone, since each family's correction divides by its own.
-        // see: Each setup family's correction for luck counts its own rules alone, at most eight a family
+        // see: Each setup family's correction for luck counts its own rules alone, at most nine a family
         var family = CandidateFamily.SetupFamilyOf(evaluator);
         var standing = CandidateFamily.In(CandidateFamily.Standing(rows, at), family).Count;
 

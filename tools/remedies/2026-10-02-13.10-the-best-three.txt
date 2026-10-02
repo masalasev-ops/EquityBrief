@@ -1,0 +1,6 @@
+# The remedy of the 13.10 ruling of 2026-10-02 (the night's best three), as its PROGRESS entry prints it: the merge
+# moves the swing filter rule's evaluator version, so the eight swing family rules the freeze registered would be
+# skipped and named as failures on the night until they are registered again. Registering the family again whole
+# under filter version 5, still open, retires the eight and registers nine at one instant, the night's best three
+# among them, and opens no version. Run after the merge and before the night, when no night is running.
+register --the-family-again --evidence "the operator's ruling of 2026-10-02: the night's best three, in the list's own order, registered as a variant of the pullback with every family's cap raised to nine; no night had scored the freeze's rules"

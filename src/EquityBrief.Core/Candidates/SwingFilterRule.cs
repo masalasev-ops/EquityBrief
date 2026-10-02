@@ -37,6 +37,12 @@ public sealed class SwingFilterRule : GateEvaluator
 
     public const string LeaderShareOfParameter = "leaderShareOf";
 
+    // The most a night the rule's list keeps of the members it fires on, the first in the list's own order once
+    // its own open trades have kept a stock off, and nought for every one. A member's verdict is its own and
+    // the night's order is the list's, so it is read where the rule's record is read and moves no verdict.
+    // see: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
+    public const string BestOfParameter = "bestOf";
+
     // The verdict's value naming where the member stood in its sector, where the rule reads leadership.
     public const string LeadershipValue = "leadership";
 
@@ -50,10 +56,10 @@ public sealed class SwingFilterRule : GateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "b03e06fdd7f9";
+    public override string Version => "b1148c77cd8c";
 
-    // The settings' own names as a version stores them, then the trade gate's input, the market gate and
-    // the deteriorating business.
+    // The settings' own names as a version stores them, then the trade gate's input, the market gate, the
+    // deteriorating business, sector leadership and the most a night the list keeps.
     public override IReadOnlyList<string> Parameters { get; } =
     [
         "breadthFloor",
@@ -71,11 +77,13 @@ public sealed class SwingFilterRule : GateEvaluator
         SkipDeterioratingParameter,
         LeaderSectorsParameter,
         LeaderShareOfParameter,
+        BestOfParameter,
     ];
 
     // The parameters a registration states for settings, the market gate read or not, a deteriorating
-    // business left off or not, and sector leadership read in place of the trend and strength gate or not.
-    public static IReadOnlyDictionary<string, double> ParametersOf(FilterSettings settings, bool marketGate = true, bool skipDeteriorating = false, Families.LeaderSettings? leadership = null) =>
+    // business left off or not, sector leadership read in place of the trend and strength gate or not, and
+    // the most a night its list keeps, nought for every member it fires on.
+    public static IReadOnlyDictionary<string, double> ParametersOf(FilterSettings settings, bool marketGate = true, bool skipDeteriorating = false, Families.LeaderSettings? leadership = null, int bestOf = 0) =>
         new Dictionary<string, double>(StringComparer.Ordinal)
         {
             ["breadthFloor"] = settings.BreadthFloor,
@@ -98,6 +106,7 @@ public sealed class SwingFilterRule : GateEvaluator
             [SkipDeterioratingParameter] = skipDeteriorating ? 1 : 0,
             [LeaderSectorsParameter] = leadership?.TopSectors ?? 0,
             [LeaderShareOfParameter] = leadership?.ShareOf ?? 0,
+            [BestOfParameter] = bestOf,
         };
 
     // The settings a registration's parameters state.

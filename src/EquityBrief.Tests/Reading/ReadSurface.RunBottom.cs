@@ -56,7 +56,7 @@ public partial class ReadSurface
     {
         var shadow = JsonSerializer.Serialize(new
         {
-            candidates = TheFamilyEight.Select(candidate => new
+            candidates = TheFamilyNine.Select(candidate => new
             {
                 candidate,
                 fired = fired.Contains(candidate),
@@ -203,10 +203,10 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/2026-09-16?version={RunScreen.Slug(Depth)}"));
         var compare = Card(page, "compare-picture");
 
-        // The choice names the page's own route, offers the seven versions beside the live list and selects the
+        // The choice names the page's own route, offers the eight versions beside the live list and selects the
         // one the link names; the shell writes a new choice back to the link.
         Assert.Contains($"<select id=\"compare-version\" data-compare=\"{SinglePageApp.RunRoute}2026-09-16\">", compare, StringComparison.Ordinal);
-        Assert.Equal(7, Regex.Matches(compare, "<option ").Count);
+        Assert.Equal(8, Regex.Matches(compare, "<option ").Count);
         Assert.Contains($"<option value=\"{RunScreen.Slug(Depth)}\" selected>{Depth}</option>", compare, StringComparison.Ordinal);
         Assert.DoesNotContain($"<option value=\"{RunScreen.Slug(SwingFamily.LiveCandidate("1"))}\"", compare, StringComparison.Ordinal);
         Assert.Contains("data-only-live=\"2\" data-both=\"0\" data-only-version=\"0\"", compare, StringComparison.Ordinal);
@@ -256,7 +256,7 @@ public partial class ReadSurface
         // picked, the live list first.
         var rows = Blocks(learning, "<tr data-version=.*?</tr>");
 
-        Assert.Equal(8, rows.Count);
+        Assert.Equal(9, rows.Count);
         Assert.Contains($"data-version=\"{RunScreen.Slug(SwingFamily.LiveCandidate("1"))}\" data-picks=\"2\"", rows[0], StringComparison.Ordinal);
         Assert.Contains("<td>is the live list</td>", rows[0], StringComparison.Ordinal);
 
@@ -283,8 +283,8 @@ public partial class ReadSurface
         // Every version below its first look is a locked row at the checkpoint.
         var checkpoint = Card(page, "checkpoint-picture");
 
-        Assert.Contains("<div class=\"checkpoint-picture\" data-rows=\"8\" data-unlocked=\"0\">", checkpoint, StringComparison.Ordinal);
-        Assert.Equal(8, Regex.Matches(checkpoint, "unlocks at checkpoint 1, after block 8 of 8").Count);
+        Assert.Contains("<div class=\"checkpoint-picture\" data-rows=\"9\" data-unlocked=\"0\">", checkpoint, StringComparison.Ordinal);
+        Assert.Equal(9, Regex.Matches(checkpoint, "unlocks at checkpoint 1, after block 8 of 8").Count);
     }
 
     [Fact]

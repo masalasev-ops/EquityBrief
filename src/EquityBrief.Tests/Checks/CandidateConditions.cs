@@ -402,7 +402,7 @@ public sealed class CandidateConditions
             $"{CandidateRegistrar.Registered}|3",
             Assert.Single(Query(store, "SELECT outcome || '|' || rows_written FROM run_log WHERE stage = 'candidate-register';")));
 
-        Assert.Contains("registered 3 at one instant, family of 3 of 8", run.ToString(), StringComparison.Ordinal);
+        Assert.Contains("registered 3 at one instant, family of 3 of 9", run.ToString(), StringComparison.Ordinal);
 
         // And run again it is refused whole: the three already stand, and a refusal that had
         // written the first two would leave a family nobody registered.

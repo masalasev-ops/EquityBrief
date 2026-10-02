@@ -30,7 +30,7 @@ public sealed record FamilyRecordView(
 // the family's cap after it have passed, and read at the looks the register's candidates are read at, by the
 // sign-flip test over its whole blocks holding a trade, at the level the family's own Holm graph gives it.
 // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
-// see: Each setup family's correction for luck counts its own rules alone, at most eight a family
+// see: Each setup family's correction for luck counts its own rules alone, at most nine a family
 public static class FamilyRecords
 {
     // The words a family's live rule is named with, ahead of the rest of its name.

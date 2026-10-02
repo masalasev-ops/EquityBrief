@@ -36039,3 +36039,44 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             891 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
             roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.10 ruling - the night's best three registered as the pullback's ninth rule, every family holding at most nine, its record keeping the first three a night once its own open trades have kept a stock off   2026-10-02
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off. It carries
+the code the operator's rulings of 2026-10-02 on the best three and the family's cap call for, which meets the
+done conditions a checkpoint's code meets.
+Built:      `SwingFilterRule` reads `bestOf`, the most a night the rule's list keeps, nought for every one;
+            `TheSwingFamily` writes nine, the ninth "the night's best three, in the list's own order" at three a
+            night; `OpenTrades.WalkTheFirst` keeps a night's first so many in the list's own order once a rule's
+            own open trades have kept a stock off, a member past them no trade; the run page reads each
+            candidate's count off the registration it stands by and the order off the filter's row, reward to
+            risk on the plan its verdict names, strength and band strength; `CandidateFamily.Maximum` is 9; and
+            `register --the-family-again --evidence` retires every standing swing family rule and registers the
+            family the code writes for the open version at one instant, opening no version. A decision at nine
+            supersedes the two at eight, and a decision names the ninth rule.
+Restarts:   nothing measured. No night has scored the freeze's rules, which first run tonight. The eight are
+            registered again under their names and settings, each now stating that its list keeps every member
+            it fires on, and a record is read by name from its first night, so each starts tonight as it would
+            have. No filter version opens, so the shape clock's count goes on under version 5. Each pullback rule
+            is tested at 0.05 over nine in place of 0.05 over eight.
+Remedy:     `tools/remedies/2026-10-02-13.10-the-best-three.txt`, after the merge and before the night:
+            `register --the-family-again --evidence "the operator's ruling of 2026-10-02: the night's best three,
+            in the list's own order, registered as a variant of the pullback with every family's cap raised to
+            nine; no night had scored the freeze's rules"`.
+Tests:      F13BTESTS, from 1741: three added, the walk worked by hand over three nights, the run page's own
+            query over a constructed store, and the family registered again with a tenth refused; twenty-one
+            moved from eight to nine.
+Claims:     F13BCLAIMS, from 880: none added, the rows that moved stating nine.
+Pins:       the swing filter rule's evaluator version moves, b03e06fdd7f9 to b1148c77cd8c, which the remedy
+            registers the family under. No other pin moves: `CandidateFamily`, `OpenTrades` and the read API sit
+            in no pin list.
+Mutated:    the rule, stated before the run: each property the change adds, broken alone, made on the branch in
+            this checkout, filtered to the tests named and reverted.
+            B1 a stock held by its own open trade counted toward the three: red in the walk test.
+            B2 a listing past the three holding its stock: red in the walk test.
+            B3 strength read before reward to risk: red in the walk test.
+            B4 the count not read off the registration: red in the walk test and the query test.
+            B5 the maximum left at eight: red in the family registered again test.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F13BGATES
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.

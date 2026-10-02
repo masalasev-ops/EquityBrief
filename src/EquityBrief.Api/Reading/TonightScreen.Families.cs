@@ -487,7 +487,7 @@ public static partial class TonightScreen
     // Each registered rule of each new family standing at the night's end, read over its own trades, its
     // correction the family's own.
     // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
-    // see: Each setup family's correction for luck counts its own rules alone, at most eight a family
+    // see: Each setup family's correction for luck counts its own rules alone, at most nine a family
     public static IReadOnlyList<(string Family, FamilyRecordView View)> FamilyRecordViews(
         IReadOnlyList<CandidateRow> register,
         IReadOnlyList<FamilyTradeRow> trades,

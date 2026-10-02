@@ -5,7 +5,7 @@
  "tables": [
   "candidate_register"
  ],
- "maximumFamily": 8,
+ "maximumFamily": 9,
  "registrations": [
   {
    "candidate": "momentum index at thirty",

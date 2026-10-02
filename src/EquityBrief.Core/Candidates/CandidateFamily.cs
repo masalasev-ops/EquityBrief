@@ -19,13 +19,15 @@ public sealed record RegisterRow(
 //
 // The maximum is a convention and no count of resolved setups measures it: with
 // five worthless candidates the chance one clears an ordinary test is about 23
-// per cent and with twenty it is about 64, and eight is the size at which the
-// correction stays a correction rather than a bar no candidate could clear.
-// see: The candidate family is at most eight and the threshold is divided by it
+// per cent, with nine about 37 and with twenty about 64. Eight was the size first
+// ruled, and the operator raised it to nine to register the night's best three
+// beside the pullback's eight, each rule's share of the level falling from 0.05
+// over eight to 0.05 over nine, a bar every rule can still clear.
+// see: Each setup family's correction for luck counts its own rules alone, at most nine a family
 // see: A candidate stands by the last row naming it, and a name retired and registered again stands once
 public static class CandidateFamily
 {
-    public const int Maximum = 8;
+    public const int Maximum = 9;
 
     public const string Registered = "registered";
 
@@ -34,7 +36,7 @@ public static class CandidateFamily
     // The setup family a register row's rule belongs to, by the evaluator it names: a family rule's own
     // family, and the pullback's for every other, the swing filter and the conditions registered before
     // phase 13, which were the whole register while one family was registered.
-    // see: Each setup family's correction for luck counts its own rules alone, at most eight a family
+    // see: Each setup family's correction for luck counts its own rules alone, at most nine a family
     public static string SetupFamilyOf(string evaluator) =>
         CandidateEvaluators.Find(evaluator) is FamilyRuleEvaluator rule ? rule.Family : Families.SetupFamilies.Pullback;
 
