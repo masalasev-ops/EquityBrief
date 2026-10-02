@@ -35867,7 +35867,7 @@ Differs:    the plan's base was today's rule with its floor at 2 beside today's 
             The exits are alternatives, the one with the higher edge taken where several pass, which the plan
             said of the two trails alone. The plan named a section 15.18 row; there is none, and the sweep
             run's row already serves any run's report.
-Tests:      F12TESTS, from 1727: fourteen added. The touched stop at the stop, at an open under it and on a
+Tests:      1741, from 1727: fourteen added. The touched stop at the stop, at an open under it and on a
             day holding both; the trailing stop holding the plan's stop; the best three after the open-trade
             rule; each switch on its own session and failing on a missing one; breadth, new highs and lows
             and a series on the calendar; the yearly test at its boundary and each floor; a switch judged on
@@ -35888,7 +35888,14 @@ Mutated:    the rule, stated before the run: each new rule reversed alone, made 
             I6 the yearly test at 5 of 8: red in the yearly test.
             I7 a market switch judged on the edge in the proposal: red in the proposed switch's test.
             I8 the hold of 10 reading the hold of 20's exit: red in the base's picks test.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F12GATES
+            Results: I1 to I8 each red where stated, over the 22 tests the filter holds. I6 also turned the
+            report's test red, unpredicted: the report states the luck figure the yearly threshold sets. Each ran
+            over 4f5b6e8 and was reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 4f5b6e8.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1741 of 1741 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 880 claims, 880 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            891 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
 Carried:    the run, started by hand from main's Release build after the merge, and the fourth pull request
             recording its figures in PROGRESS, documents only.
