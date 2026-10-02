@@ -35480,3 +35480,22 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over de39e7b
             against a floor of 34, fixture PRESENT, 42 checks on the roster, 42 carried and 42 passed. The
             first `tools/ci.ps1` run, over the commit before de39e7b, failed one test: a second count of the
             files that may hold a client, raised to 14 in the same commit.
+
+### 13.6 ruling - phase 13 is finished before the ideas' run, and the pullback freezes at the base with its reward-to-risk floor raised to 2   2026-10-02
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-10-02, word for word: "why cant we finish entire phase 13 befor edoing all
+            this ?", then, offered the choices, "Freeze pullback at base (Recommended)".
+Changed:    13.9's pullback freeze carries the base, today's swing filter with its reward-to-risk floor raised
+            to 2, in place of the ideas' run's starting point, and the decision behind it. Prior text in
+            `CHANGELOG.md`.
+Queue:      restated, since the list lives in the newest queue ruling. Done: tracks 1, 2, 3 and 7; track 4's
+            first two pull requests, the counting corrected and the index and the VIX pulled; phase 13 from 13.0
+            to 13.5. In progress: phase 13, the three setups' sweeps 13.6 to 13.8, then 13.9's four freezes each
+            on the operator's go, the pullback's first with track 5's fundamentals candidate merged at it, then
+            13.10. Beside it, in a fresh session: track 8, phase 12's sign-off, and after it track 9, the preview
+            command. Shelved until phase 13 is finished: the ideas' run and its figures, the twelve-hour rerun
+            and the two more ideas.
+Verified:   documents alone over `tools/ci.ps1` green at de39e7b, the code beneath them, with the document
+            checks run filtered over this commit and the hosted checks over the pull request's tree.
+Stored:     the operator's words in `prompts/2026-10-02-13.6-phase-13-first-ruling.md`.

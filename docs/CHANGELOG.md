@@ -10064,3 +10064,11 @@ Was:
 Now:
 > The command `history-pull --market --from 2018-01-01 --live` with what it asks, two requests at a weight of one, what it stores and that a refused series fails it; and a purge removes every row that pull wrote from the four tables, each pull and each purge one row on the run log under `history-pull`, `history-pull-surprises`, `history-pull-market` and `history-purge`.
 Why: the operator runs the pull before the ideas' run, and a purge now reaches the market series too.
+
+### 2026-10-02 - BUILD_PLAN.md - the pullback freezes at the base
+Authorised by: The pullback freezes at the base with its reward-to-risk floor raised to 2, and the ideas' run waits until phase 13 is finished
+Was:
+> the pullback's, taken first, carries the frozen starting point the ideas' run reports, the open trade rule inside the rule,
+Now:
+> the pullback's, taken first, carries the base as its frozen starting point, today's swing filter with its reward-to-risk floor raised to 2 and every other setting as it stands, citing the decision, the open trade rule inside the rule,
+Why: the operator ruled on 2026-10-02 that phase 13 is finished before the ideas' run.
