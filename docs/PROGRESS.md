@@ -36030,7 +36030,12 @@ Queue:      done: phase 13; the ideas' run. In progress: the twelve-hour rerun, 
             freezes read; once the rerun ends, its report read, then the ideas' run on the breakout and the drift
             as frozen, its figures recorded; the sign-off of phases 12 and 13 in a fresh session; the preview
             command after the sign-offs.
-Tests:      F13RTESTS, none added.
-Claims:     F13RCLAIMS, none added.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F13RGATES
+Tests:      1741, none added.
+Claims:     880, none added, with 880 PASS.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 572adfd.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1741 of 1741 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 880 claims, 880 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            891 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
