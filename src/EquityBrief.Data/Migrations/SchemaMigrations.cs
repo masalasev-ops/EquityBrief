@@ -675,6 +675,7 @@ public static class SchemaMigrations
         new Migration(52, "create news_article and news_label", CreateNewsArticlesAndLabels),
         new Migration(53, "create family_night and family_pick", CreateFamilyPick),
         new Migration(54, "create family_result", CreateFamilyResult),
+        new Migration(55, "create pulled_market_bar", CreatePulledMarketBar),
     ];
 
     // One member's answer under one setup family on one night, for every family but the pullback, whose
@@ -1200,6 +1201,22 @@ public static class SchemaMigrations
             surprise_percent  REAL,
             pull              TEXT NOT NULL,
             PRIMARY KEY (ticker, event_date)
+        ) STRICT;
+    ";
+
+    // The index's and the VIX's daily series a market pull stored, one row a series and session, the
+    // prices as the provider sent them, kept as text, and the pull that wrote the row, read by no night.
+    // see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+    const string CreatePulledMarketBar = @"
+        CREATE TABLE pulled_market_bar (
+            series       TEXT NOT NULL,
+            session_date TEXT NOT NULL,
+            open         TEXT NOT NULL,
+            high         TEXT NOT NULL,
+            low          TEXT NOT NULL,
+            close        TEXT NOT NULL,
+            pull         TEXT NOT NULL,
+            PRIMARY KEY (series, session_date)
         ) STRICT;
     ";
 

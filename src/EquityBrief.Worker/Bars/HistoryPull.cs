@@ -21,6 +21,9 @@ namespace EquityBrief.Worker.Bars;
 // Each row carries the run id of the pull that wrote it. No night reads either table, so removing a
 // pull whole moves nothing any night, listing, score or page read, which is what lets these rows be
 // removed where a stored bar may not be.
+//
+// Asked for the market series, it pulls the index's and the VIX's daily series instead, one request a
+// series, into a table of their own marked and removed the same way.
 // see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
 public sealed class HistoryPull(
     IHistoricalBarFeed bars,
@@ -35,6 +38,7 @@ public sealed class HistoryPull(
             new StoreTouch(Store.PulledBar, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.PulledEarnings, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.PulledSurprise, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.PulledMarketBar, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.HistoricalPrice, Feed.EarningsCalendar]);
@@ -44,6 +48,13 @@ public sealed class HistoryPull(
 
     // The surprise pull's own stage on the run log, since it asks the calendar alone and stores one table.
     public const string SurpriseStage = "history-pull-surprises";
+
+    // The market pull's own stage, since it asks for two series and stores one table.
+    public const string MarketStage = "history-pull-market";
+
+    // The series a market pull asks for, in this order: the index itself and the VIX.
+    // see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+    public static IReadOnlyList<string> MarketSeries { get; } = ["GSPC", "VIX"];
 
     // The run ids a pull and a purge are written under, which the run page reads as runs by hand.
     public const string RunPrefix = "history-pull-";
@@ -83,18 +94,29 @@ public sealed class HistoryPull(
         ON CONFLICT (ticker, event_date) DO NOTHING;
     ";
 
+    // The index's and the VIX's sessions as the provider sent them, insert only, so a session an earlier
+    // pull holds keeps that pull's row.
+    const string InsertMarketBar = @"
+        INSERT INTO pulled_market_bar (series, session_date, open, high, low, close, pull)
+        VALUES ($series, $session_date, $open, $high, $low, $close, $pull)
+        ON CONFLICT (series, session_date) DO NOTHING;
+    ";
+
     const string BarCount = "SELECT COUNT(*) FROM pulled_bar;";
     const string EarningsCount = "SELECT COUNT(*) FROM pulled_earnings;";
     const string SurpriseCount = "SELECT COUNT(*) FROM pulled_surprise;";
+    const string MarketBarCount = "SELECT COUNT(*) FROM pulled_market_bar;";
 
     const string BarsOfPull = "SELECT COUNT(*) FROM pulled_bar WHERE pull = $pull;";
     const string EarningsOfPull = "SELECT COUNT(*) FROM pulled_earnings WHERE pull = $pull;";
     const string SurprisesOfPull = "SELECT COUNT(*) FROM pulled_surprise WHERE pull = $pull;";
+    const string MarketBarsOfPull = "SELECT COUNT(*) FROM pulled_market_bar WHERE pull = $pull;";
 
     // The removal, which takes a pull's rows whole and nothing else.
     const string DeleteBarsOfPull = "DELETE FROM pulled_bar WHERE pull = $pull;";
     const string DeleteEarningsOfPull = "DELETE FROM pulled_earnings WHERE pull = $pull;";
     const string DeleteSurprisesOfPull = "DELETE FROM pulled_surprise WHERE pull = $pull;";
+    const string DeleteMarketBarsOfPull = "DELETE FROM pulled_market_bar WHERE pull = $pull;";
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -108,15 +130,16 @@ public sealed class HistoryPull(
     public static string RunIdAt(string prefix, DateTimeOffset at) => FormattableString.Invariant($"{prefix}{at:yyyyMMddTHHmmss.fffffffZ}");
 
     // The verb a person runs: `history-pull --from <yyyy-MM-dd>`, the same with `--surprises` for the earnings
-    // surprises alone, or `history-pull --purge <pull>`. The feeds are asked for only by a pull, so removing one
-    // needs no key and reaches no provider.
+    // surprises alone or `--market` for the index's and the VIX's series alone, or `history-pull --purge <pull>`.
+    // The feeds are asked for only by a pull, so removing one needs no key and reaches no provider.
     public static async Task<int> RunAsync(
         string[] args,
         Func<NightFeeds> feeds,
         IClock clock,
         string databaseFile,
         TextWriter output,
-        TextWriter error)
+        TextWriter error,
+        Func<IMarketSeriesFeed>? market = null)
     {
         if (VerbArguments.Value(args, "--purge") is { } pull)
         {
@@ -124,7 +147,7 @@ public sealed class HistoryPull(
             {
                 var purged = await PurgeAsync(clock, databaseFile, pull, RunIdAt(PurgePrefix, clock.UtcNow));
 
-                output.WriteLine(FormattableString.Invariant($"removed the pull {purged.Pull}: {purged.Bars} bar(s), {purged.Earnings} earnings print(s) and {purged.Surprises} surprise(s)"));
+                output.WriteLine(FormattableString.Invariant($"removed the pull {purged.Pull}: {purged.Bars} bar(s), {purged.Earnings} earnings print(s), {purged.Surprises} surprise(s) and {purged.MarketBars} market session(s)"));
 
                 return 0;
             }
@@ -142,6 +165,11 @@ public sealed class HistoryPull(
             error.WriteLine("history-pull: name the first session to pull with '--from <yyyy-MM-dd>', or a pull to remove with '--purge <pull>'.");
 
             return 2;
+        }
+
+        if (VerbArguments.Has(args, "--market"))
+        {
+            return await MarketAsync(from, market, clock, databaseFile, output, error);
         }
 
         NightFeeds resolved;
@@ -477,6 +505,160 @@ public sealed class HistoryPull(
         return outcome;
     }
 
+    // The verb's market branch. A series the provider refused stores nothing and fails the command, so a run
+    // that would read it is not started over a series that is not there.
+    static async Task<int> MarketAsync(
+        DateOnly from,
+        Func<IMarketSeriesFeed>? market,
+        IClock clock,
+        string databaseFile,
+        TextWriter output,
+        TextWriter error)
+    {
+        if (market is null)
+        {
+            error.WriteLine("history-pull: this command was handed no market series feed to ask.");
+
+            return 1;
+        }
+
+        IMarketSeriesFeed resolved;
+
+        try
+        {
+            resolved = market();
+        }
+        catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
+        {
+            error.WriteLine("history-pull: " + refusal.Message);
+
+            return 1;
+        }
+
+        var runId = RunIdAt(RunPrefix, clock.UtcNow);
+
+        try
+        {
+            var pulled = await PullMarketAsync(resolved, clock, databaseFile, from, runId);
+
+            output.WriteLine("pull " + runId);
+            output.WriteLine(Detail(pulled));
+
+            return pulled.Refused.Count == 0 ? 0 : 1;
+        }
+        catch (ArgumentException refusal)
+        {
+            error.WriteLine("history-pull: " + refusal.Message);
+
+            return 1;
+        }
+    }
+
+    // Pulls the index's and the VIX's daily series from a date to tonight, one request a series, and stores each
+    // session the provider sent marked by the pull. A series the provider refuses, sends no session for or sends
+    // a payload that cannot be read stores nothing and is named, and the pull's row says partial. A date on or
+    // after tonight's session is refused before any request.
+    // see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+    public static async Task<HistoryMarketOutcome> PullMarketAsync(
+        IMarketSeriesFeed market,
+        IClock clock,
+        string databaseFile,
+        DateOnly from,
+        string runId,
+        CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        var through = clock.SessionDateAt(startedAt);
+
+        if (from >= through)
+        {
+            throw new ArgumentException(
+                FormattableString.Invariant($"A pull reaches from a date before tonight's session, {through:yyyy-MM-dd}, and {from:yyyy-MM-dd} is not before it."),
+                nameof(from));
+        }
+
+        var requestsBefore = market.Requests;
+        var answered = new List<(string Series, IReadOnlyList<ProviderBar> Bars)>();
+        var refused = new List<string>();
+
+        foreach (var series in MarketSeries)
+        {
+            try
+            {
+                var bars = await market.SeriesAsync(series, from, through, cancellation);
+
+                if (bars.Count == 0)
+                {
+                    refused.Add(FormattableString.Invariant($"{series}: the provider sent no session"));
+                }
+                else
+                {
+                    answered.Add((series, bars));
+                }
+            }
+            catch (Exception failure) when (failure is ProviderRefusal or FormatException)
+            {
+                refused.Add($"{series}: {failure.Message}");
+            }
+        }
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var before = await CountAsync(connection, MarketBarCount, null, cancellation);
+
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var (series, bars) in answered)
+        {
+            foreach (var bar in bars)
+            {
+                await using var insert = connection.CreateCommand();
+                insert.CommandText = InsertMarketBar;
+                insert.Parameters.AddWithValue("$series", series);
+                insert.Parameters.AddWithValue("$session_date", Text(bar.SessionDate));
+                Money.Bind(insert, "$open", bar.Open);
+                Money.Bind(insert, "$high", bar.High);
+                Money.Bind(insert, "$low", bar.Low);
+                Money.Bind(insert, "$close", bar.Close);
+                insert.Parameters.AddWithValue("$pull", runId);
+
+                await insert.ExecuteNonQueryAsync(cancellation);
+            }
+        }
+
+        var written = await CountAsync(connection, MarketBarCount, null, cancellation) - before;
+        var requests = market.Requests - requestsBefore;
+        IReadOnlyList<MarketSeriesStored> stored =
+        [
+            .. answered.Select(entry => new MarketSeriesStored(entry.Series, entry.Bars.Count, entry.Bars.Min(bar => bar.SessionDate), entry.Bars.Max(bar => bar.SessionDate))),
+        ];
+        var outcome = new HistoryMarketOutcome(from, through, stored, refused, written, requests);
+
+        await AppendAsync(
+            connection,
+            runId,
+            MarketStage,
+            startedAt,
+            clock.UtcNow,
+            refused.Count == 0 ? "ok" : Partial,
+            written,
+            requests,
+            JsonSerializer.Serialize(new
+            {
+                from = Text(from),
+                through = Text(through),
+                series = stored.Select(Described).ToArray(),
+                refused,
+                stored = written,
+            }),
+            cancellation);
+
+        await transaction.CommitAsync(cancellation);
+
+        return outcome;
+    }
+
     // The provider's surprise in per cent, a statistic, read from the text the feed kept; none where the print
     // carries no estimate, no actual or no surprise, since a surprise against nothing is not one.
     public static double? SurprisePercent(CalendarEvent print) =>
@@ -485,7 +667,7 @@ public sealed class HistoryPull(
             ? percent
             : null;
 
-    // Removes one pull's rows from the three tables and says so on the run log. A pull no row carries is
+    // Removes one pull's rows from the four tables and says so on the run log. A pull no row carries is
     // refused and nothing is written, so a mistyped id cannot record a removal that removed nothing.
     public static async Task<HistoryPurgeOutcome> PurgeAsync(
         IClock clock,
@@ -502,15 +684,16 @@ public sealed class HistoryPull(
         var barsHeld = await CountAsync(connection, BarsOfPull, pull, cancellation);
         var earningsHeld = await CountAsync(connection, EarningsOfPull, pull, cancellation);
         var surprisesHeld = await CountAsync(connection, SurprisesOfPull, pull, cancellation);
+        var marketHeld = await CountAsync(connection, MarketBarsOfPull, pull, cancellation);
 
-        if (barsHeld == 0 && earningsHeld == 0 && surprisesHeld == 0)
+        if (barsHeld == 0 && earningsHeld == 0 && surprisesHeld == 0 && marketHeld == 0)
         {
             throw new ArgumentException($"No pulled row carries the pull '{pull}', so there is nothing to remove.", nameof(pull));
         }
 
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
-        foreach (var removal in new[] { DeleteBarsOfPull, DeleteEarningsOfPull, DeleteSurprisesOfPull })
+        foreach (var removal in new[] { DeleteBarsOfPull, DeleteEarningsOfPull, DeleteSurprisesOfPull, DeleteMarketBarsOfPull })
         {
             await using var delete = connection.CreateCommand();
             delete.CommandText = removal;
@@ -528,12 +711,12 @@ public sealed class HistoryPull(
             "ok",
             0,
             0,
-            JsonSerializer.Serialize(new { pull, bars = barsHeld, earnings = earningsHeld, surprises = surprisesHeld }),
+            JsonSerializer.Serialize(new { pull, bars = barsHeld, earnings = earningsHeld, surprises = surprisesHeld, market = marketHeld }),
             cancellation);
 
         await transaction.CommitAsync(cancellation);
 
-        return new HistoryPurgeOutcome(pull, barsHeld, earningsHeld, surprisesHeld);
+        return new HistoryPurgeOutcome(pull, barsHeld, earningsHeld, surprisesHeld, marketHeld);
     }
 
     // The windows the earnings calendar is asked for: each calendar month the span touches, cut to
@@ -618,6 +801,15 @@ public sealed class HistoryPull(
     public static string Detail(HistorySurpriseOutcome outcome) =>
         FormattableString.Invariant($"pulled surprises {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Prints} print(s) of {outcome.Names} name(s) answered over {outcome.Months} calendar month(s), {outcome.WithASurprise} carrying a surprise, {outcome.Written} stored, {outcome.Requests} request(s)")
         + string.Concat(outcome.MonthsUnanswered.Select(line => Environment.NewLine + "  month unanswered: " + line));
+
+    public static string Detail(HistoryMarketOutcome outcome) =>
+        FormattableString.Invariant($"pulled the market series {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Stored.Count} of {MarketSeries.Count} series answered, {outcome.Written} session(s) stored, {outcome.Requests} request(s)")
+        + string.Concat(outcome.Stored.Select(series => Environment.NewLine + "  " + Described(series)))
+        + string.Concat(outcome.Refused.Select(line => Environment.NewLine + "  refused: " + line));
+
+    // One stored series as the pull's row and its printed lines say it: how many sessions, the first and the last.
+    static string Described(MarketSeriesStored series) =>
+        FormattableString.Invariant($"{series.Series}: {series.Sessions} session(s), {series.First:yyyy-MM-dd} to {series.Last:yyyy-MM-dd}");
 
     static async Task<IReadOnlyList<string>> NamesAsync(SqliteConnection connection, string indexCode, DateOnly from, DateOnly through, CancellationToken cancellation)
     {
@@ -715,5 +907,18 @@ public sealed record HistorySurpriseOutcome(
     int Written,
     int Requests);
 
+// What one market pull did: the span, each series stored with its sessions, each series refused and why,
+// the rows stored and the requests made.
+public sealed record HistoryMarketOutcome(
+    DateOnly From,
+    DateOnly Through,
+    IReadOnlyList<MarketSeriesStored> Stored,
+    IReadOnlyList<string> Refused,
+    int Written,
+    int Requests);
+
+// One series a market pull stored: the sessions the provider sent, the first and the last.
+public sealed record MarketSeriesStored(string Series, int Sessions, DateOnly First, DateOnly Last);
+
 // What one purge removed.
-public sealed record HistoryPurgeOutcome(string Pull, int Bars, int Earnings, int Surprises = 0);
+public sealed record HistoryPurgeOutcome(string Pull, int Bars, int Earnings, int Surprises = 0, int MarketBars = 0);

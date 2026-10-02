@@ -29,6 +29,7 @@ public enum Store
     PulledBar,
     PulledEarnings,
     PulledSurprise,
+    PulledMarketBar,
     Indicator,
     Swing,
     VolumeProfile,

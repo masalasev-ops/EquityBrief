@@ -10012,3 +10012,63 @@ Was:
 Now:
 > Section 15.7 gains "The market line", whether the market check left the lists open with the breadth and its floor, the buy points and how many setups list one, the stocks close to a buy point and the trades still open linking to Past picks, and "Close to a buy point across the setups", one row a stock and setup with the setup's label, the one gate it missed and the count shown of the count there are. Section 15.9 gains "The setup the page lists the name under". Section 15.10 gains "The setup families", one row a setup with its standing, its variants, what it lists and its trades, and its record. Section 15.17 gains "The setup filter", "The setup a trade was listed under", "A trailing trade" and "A provisional setup's trades".
 Why: with four families on the page, the pages around it say which setup a stock, a trade and a count belong to, and a provisional setup's trades stay out of every share until its freeze.
+
+### 2026-10-02 - CLAUDE.md - a branch is checked out in this tree, and no worktree or copy of the project is made beside it
+Corrects: the Merge section had every branch built in a git worktree beside the repository and every mutation made in another, because a branch left checked out here once ran a night on half-built code. Since 12.3 the night builds only a clean copy of the checkout's own commit and refuses a checkout off `main`, so that hazard is gone, and on 2026-10-01 the operator ruled that the project is not copied to other folders and that each pull request is a branch worked on here.
+Was:
+> The mutation is chosen before the run by a stated rule, not after by which assertion looks weakest, and it is made in an isolated worktree and reverted.
+>
+> A phase held open waiting on something that is not code keeps a branch open for the whole of it, which is one reason a branch is built in a worktree of its own and never in the checkout the nightly job runs from.
+>
+> The branch is built in a git worktree of its own beside this repository and never checked out in this repository's own tree, which is the production checkout the scheduled night runs from and stays on `main`: a branch left checked out there runs a night on half-built code. After the merge the branch is deleted and the production checkout is fast-forwarded to `main`. Nothing is merged to `main`, and the production checkout is not fast-forwarded, while a night is running, the overnight queue, the report pass and the news labeller the night starts included; that it has finished is read off the machine's processes and the night's own rows on the run log before the merge. Scratch worktrees for mutations that are reverted are unaffected.
+Now:
+> The mutation is chosen before the run by a stated rule, not after by which assertion looks weakest, and it is made on the branch in this checkout and reverted before anything else is committed.
+>
+> A phase held open waiting on something that is not code keeps a branch open for the whole of it, and the checkout still returns to `main` before every night.
+>
+> The branch is checked out in this repository's own tree, the one the operator follows the work in, and no worktree or second copy of the project is made beside it or anywhere else. The night builds only a clean copy of the checkout's own commit and refuses to start from a checkout off `main`, so before each night the branch's work is committed and pushed and the checkout is back on `main`. The read surface the operator uses runs from this checkout's Release build of `main`, and every build a branch's gates and tests make is Debug. After the merge the branch is deleted, locally and on the remote, and the checkout is fast-forwarded to `main`. Nothing is merged while a night is running, as before.
+Why: the operator follows the work in this one folder and does not want the project copied elsewhere, and the night no longer builds from whatever the checkout holds.
+
+### 2026-10-02 - RUNBOOK.md - the page is started from `main` in Release, and a sweep from this checkout's Release build
+Corrects: the page was started from a Debug build of the checkout and the sweep from a Release build outside it. With every branch now worked on in this checkout, a branch's Debug builds would rewrite the files a Debug page runs from, and no build is made outside the checkout.
+Was:
+> `dotnet run --project src/EquityBrief.Api`
+>
+> Start it from a Release build outside the main checkout with `EquityBrief__DataRoot` at the main checkout's `data`, so a rebuild of the checkout never stops it and the night it pauses for is the one the scheduler runs.
+Now:
+> `dotnet run --project src/EquityBrief.Api -c Release`, and a paragraph: it runs from a Release build of `main`, a branch's gates and tests build Debug in this same checkout, and after a merge the page is started again the same way.
+>
+> Start it on `main` from this checkout's Release build, so the Debug builds a branch's gates and tests make never stop it, and the night it pauses for is the one the scheduler runs.
+Why: one checkout serves the page, holds the branch being worked on and starts the sweep, and the two build configurations keep them apart.
+
+### 2026-10-02 - ARCHITECTURE.html - the history pull asks for the index's and the VIX's daily series
+Authorised by: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+Was:
+> Section 6.2's paragraph had the pulled history sitting beside the bar store "in two tables of its own". The history pull's catalogue row read and wrote "pulled bars, pulled earnings, pulled surprises", said "no night reads any of the three tables" and ended at the surprises. Section 16's "Pulled history" row ended its rows at the surprise pull's and said "no night reads any of the three tables".
+Now:
+> The paragraph says "in tables of its own". The catalogue row reads and writes "pulled market series" as well, says "no night reads any of its tables", and adds that asked for the market series alone it asks for the index's and the VIX's daily series over the span, one request a series under the provider's index exchange, a series the provider refuses storing nothing and failing the pull. The "Pulled history" row adds, from a market pull, one row per series and session holding the index's or the VIX's open, high, low and close as the provider sent them, and says "no night reads any of the four tables".
+Why: the ideas' run tests switches reading the index and the VIX, and the store held neither.
+
+### 2026-10-02 - SCHEMA.md - `pulled_market_bar`
+Authorised by: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+Was:
+> The ownership table ended the pulled tables at `pulled_surprise`, and no section described a market series.
+Now:
+> The ownership table gives `pulled_market_bar` to HistoryPull for its inserts and its deletes, and a section describes it: one row per series per session a market pull reached, `series`, `session_date`, the four prices as text and `pull`, keyed on the series and the session, read by no night and removed whole with its pull.
+Why: a table the store holds is one this file declares, with its writer.
+
+### 2026-10-02 - RUNBOOK.md - the market pull's command, and a purge reaching four tables
+Authorised by: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+Was:
+> A purge removes every row that pull wrote from the three tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull`, `history-pull-surprises` and `history-purge`, and the run page draws each as run by hand.
+Now:
+> The command `history-pull --market --from 2018-01-01 --live` with what it asks, two requests at a weight of one, what it stores and that a refused series fails it; and a purge removes every row that pull wrote from the four tables, each pull and each purge one row on the run log under `history-pull`, `history-pull-surprises`, `history-pull-market` and `history-purge`.
+Why: the operator runs the pull before the ideas' run, and a purge now reaches the market series too.
+
+### 2026-10-02 - BUILD_PLAN.md - the pullback freezes at the base
+Authorised by: The pullback freezes at the base with its reward-to-risk floor raised to 2, and the ideas' run waits until phase 13 is finished
+Was:
+> the pullback's, taken first, carries the frozen starting point the ideas' run reports, the open trade rule inside the rule,
+Now:
+> the pullback's, taken first, carries the base as its frozen starting point, today's swing filter with its reward-to-risk floor raised to 2 and every other setting as it stands, citing the decision, the open trade rule inside the rule,
+Why: the operator ruled on 2026-10-02 that phase 13 is finished before the ideas' run.

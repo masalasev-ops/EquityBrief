@@ -313,7 +313,7 @@ public class HistoryPullTests
         Assert.Equal(["AAA|2026-07-30|history-pull-b", "BBB|2026-08-05|history-pull-b"], Rows(store, "SELECT ticker, event_date, pull FROM pulled_earnings ORDER BY ticker, event_date;"));
         Assert.Equal(barsBefore, Rows(store, "SELECT * FROM bar ORDER BY ticker, session_date;"));
         Assert.Equal(
-            ["history-purge|ok|0|0|{\"pull\":\"history-pull-a\",\"bars\":30,\"earnings\":1,\"surprises\":0}"],
+            ["history-purge|ok|0|0|{\"pull\":\"history-pull-a\",\"bars\":30,\"earnings\":1,\"surprises\":0,\"market\":0}"],
             Rows(store, "SELECT stage, outcome, rows_written, network_requests, detail FROM run_log WHERE run_id = 'history-purge-a';"));
 
         // A pull no row carries any longer is refused, and the refusal writes nothing.
@@ -493,7 +493,7 @@ public class HistoryPullTests
     [Fact]
     public void NoShippedSourceButThePullAndItsMigrationNamesThePulledTables()
     {
-        var naming = new System.Text.RegularExpressions.Regex(@"pulled_(bar|earnings|surprise)\b|Store\.Pulled(Bar|Earnings|Surprise)\b");
+        var naming = new System.Text.RegularExpressions.Regex(@"pulled_(bar|earnings|surprise|market_bar)\b|Store\.Pulled(Bar|Earnings|Surprise|MarketBar)\b");
 
         var files = Repository.SourceFiles()
             .Where(file => !file.Contains(Path.DirectorySeparatorChar + "EquityBrief.Tests" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
@@ -514,6 +514,8 @@ public class HistoryPullTests
         Assert.Matches(naming, "SELECT close FROM pulled_bar WHERE ticker = $ticker;");
         Assert.Matches(naming, "new StoreTouch(Store.PulledEarnings, Touch.Read)");
         Assert.Matches(naming, "SELECT surprise_percent FROM pulled_surprise;");
+        Assert.Matches(naming, "SELECT close FROM pulled_market_bar WHERE series = 'VIX';");
+        Assert.Matches(naming, "new StoreTouch(Store.PulledMarketBar, Touch.Read)");
         Assert.DoesNotMatch(naming, "var pulled_barrier = 1; Store.PulledBarrier");
     }
 
@@ -565,6 +567,184 @@ public class HistoryPullTests
         // A date on or after tonight is refused before any request: the two pulls' six requests stand.
         await Assert.ThrowsAsync<ArgumentException>(() => pull.PullSurprisesAsync(Index, Tonight, "history-pull-refused"));
         Assert.Equal(6, prints.Requests);
+    }
+
+    // The market pull: the index and the VIX asked for once each over the span, every session stored as sent
+    // and marked by its pull, removed whole by its purge, refused before any request for a date on or after
+    // tonight, and a series the provider refuses storing nothing and failing the command.
+    // see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+    [Fact]
+    public async Task AMarketPullAsksForTheIndexAndTheVixOnceEachAndStoresEverySessionMarkedByItsRunAndNothingElse()
+    {
+        using var store = Seeded();
+
+        var market = new ConstructedSeries(new Dictionary<string, IReadOnlyList<DateOnly>>
+        {
+            ["GSPC"] = Sessions(From, Tonight),
+            ["VIX"] = Sessions(From, Tonight),
+        });
+        var barsBefore = Rows(store, "SELECT * FROM bar ORDER BY ticker, session_date;");
+
+        var outcome = await HistoryPull.PullMarketAsync(market, Clock(), store.DatabaseFile, From, "history-pull-market");
+
+        // One request a series over the whole span, the index first.
+        Assert.Equal(["GSPC 2026-07-01 2026-09-04", "VIX 2026-07-01 2026-09-04"], market.Asked);
+        Assert.Equal((2, 2 * SessionsInTheSpan, 0), (outcome.Requests, outcome.Written, outcome.Refused.Count));
+        Assert.Equal(
+            [new MarketSeriesStored("GSPC", SessionsInTheSpan, From, Tonight), new MarketSeriesStored("VIX", SessionsInTheSpan, From, Tonight)],
+            outcome.Stored);
+
+        // Each session as sent: the first and the last of each series, the 47th being the 46th after the first.
+        Assert.Equal(
+            [
+                "GSPC|2026-07-01|6000|6002|5998|6001|history-pull-market",
+                "GSPC|2026-09-04|6046|6048|6044|6047|history-pull-market",
+                "VIX|2026-07-01|15.25|17.25|13.25|16.25|history-pull-market",
+                "VIX|2026-09-04|61.25|63.25|59.25|62.25|history-pull-market",
+            ],
+            Rows(store, "SELECT series, session_date, open, high, low, close, pull FROM pulled_market_bar WHERE session_date IN ('2026-07-01', '2026-09-04') ORDER BY series, session_date;"));
+        Assert.Equal([$"GSPC|{SessionsInTheSpan}", $"VIX|{SessionsInTheSpan}"], Rows(store, "SELECT series, COUNT(*) FROM pulled_market_bar GROUP BY series ORDER BY series;"));
+
+        // Its own row on the run log, and no other table moved.
+        Assert.Equal(
+            [$"history-pull-market|ok|{2 * SessionsInTheSpan}|2"],
+            Rows(store, "SELECT stage, outcome, rows_written, network_requests FROM run_log WHERE run_id = 'history-pull-market';"));
+        Assert.Equal(["0|0|0"], Rows(store, "SELECT (SELECT COUNT(*) FROM pulled_bar), (SELECT COUNT(*) FROM pulled_earnings), (SELECT COUNT(*) FROM pulled_surprise);"));
+        Assert.Equal(barsBefore, Rows(store, "SELECT * FROM bar ORDER BY ticker, session_date;"));
+
+        // A second pull adds only the sessions no pull holds, which here is none.
+        var again = await HistoryPull.PullMarketAsync(market, Clock(), store.DatabaseFile, From, "history-pull-market-again");
+
+        Assert.Equal(0, again.Written);
+        Assert.Equal(["history-pull-market"], Rows(store, "SELECT DISTINCT pull FROM pulled_market_bar;"));
+    }
+
+    [Fact]
+    public async Task APurgeRemovesAMarketPullsSessionsWholeSaysHowManyAndLeavesEveryOtherPullsRows()
+    {
+        using var store = Seeded();
+
+        var all = Sessions(From, Tonight);
+        var bars = new ConstructedBars(new Dictionary<string, IReadOnlyList<DateOnly>> { ["AAA"] = all, ["BBB"] = all, ["CCC"] = all });
+        var market = new ConstructedSeries(new Dictionary<string, IReadOnlyList<DateOnly>> { ["GSPC"] = all, ["VIX"] = all });
+
+        await new HistoryPull(bars, new ConstructedPrints(Prints), Clock(), store.DatabaseFile).PullAsync(Index, From, "history-pull-bars");
+        await HistoryPull.PullMarketAsync(market, Clock(), store.DatabaseFile, From, "history-pull-market");
+
+        var barsKept = Rows(store, "SELECT ticker, session_date, pull FROM pulled_bar ORDER BY ticker, session_date;");
+        var purged = await HistoryPull.PurgeAsync(Clock(), store.DatabaseFile, "history-pull-market", "history-purge-market");
+
+        Assert.Equal(("history-pull-market", 0, 0, 0, 2 * SessionsInTheSpan), (purged.Pull, purged.Bars, purged.Earnings, purged.Surprises, purged.MarketBars));
+        Assert.Empty(Rows(store, "SELECT * FROM pulled_market_bar;"));
+        Assert.Equal(barsKept, Rows(store, "SELECT ticker, session_date, pull FROM pulled_bar ORDER BY ticker, session_date;"));
+        Assert.Equal(
+            [$"history-purge|ok|{{\"pull\":\"history-pull-market\",\"bars\":0,\"earnings\":0,\"surprises\":0,\"market\":{2 * SessionsInTheSpan}}}"],
+            Rows(store, "SELECT stage, outcome, detail FROM run_log WHERE run_id = 'history-purge-market';"));
+
+        // And a purge of the bars' pull leaves the market series it did not write.
+        await HistoryPull.PullMarketAsync(market, Clock(), store.DatabaseFile, From, "history-pull-market-again");
+        await HistoryPull.PurgeAsync(Clock(), store.DatabaseFile, "history-pull-bars", "history-purge-bars");
+
+        Assert.Equal([$"history-pull-market-again|{2 * SessionsInTheSpan}"], Rows(store, "SELECT pull, COUNT(*) FROM pulled_market_bar GROUP BY pull;"));
+    }
+
+    [Fact]
+    public async Task AMarketPullFromTonightOrLaterIsRefusedBeforeAnyRequestAndWritesNothing()
+    {
+        using var store = Seeded();
+
+        var market = new ConstructedSeries(new Dictionary<string, IReadOnlyList<DateOnly>> { ["GSPC"] = Sessions(From, Tonight), ["VIX"] = Sessions(From, Tonight) });
+
+        await Assert.ThrowsAsync<ArgumentException>(() => HistoryPull.PullMarketAsync(market, Clock(), store.DatabaseFile, Tonight, "history-pull-late"));
+        await Assert.ThrowsAsync<ArgumentException>(() => HistoryPull.PullMarketAsync(market, Clock(), store.DatabaseFile, Tonight.AddDays(3), "history-pull-later"));
+
+        // Through the verb a person runs, with the night's feeds never resolved, since a market pull asks none of them.
+        var output = new StringWriter();
+        var error = new StringWriter();
+        var code = await HistoryPull.RunAsync(
+            ["history-pull", "--market", "--from", Day(Tonight)],
+            () => throw new InvalidOperationException("a market pull resolves none of the night's feeds"),
+            Clock(),
+            store.DatabaseFile,
+            output,
+            error,
+            () => market);
+
+        Assert.Equal(1, code);
+        Assert.Contains("2026-09-04 is not before it", error.ToString(), StringComparison.Ordinal);
+        Assert.Equal(0, market.Requests);
+        Assert.Equal(["0|0"], Rows(store, "SELECT (SELECT COUNT(*) FROM pulled_market_bar), (SELECT COUNT(*) FROM run_log);"));
+    }
+
+    [Fact]
+    public async Task ASeriesTheProviderRefusesStoresNothingIsNamedAndTheCommandFails()
+    {
+        using var store = Seeded();
+
+        var market = new ConstructedSeries(
+            new Dictionary<string, IReadOnlyList<DateOnly>> { ["GSPC"] = Sessions(From, Tonight), ["VIX"] = Sessions(From, Tonight) },
+            refused: ["VIX"]);
+        var output = new StringWriter();
+        var error = new StringWriter();
+
+        var code = await HistoryPull.RunAsync(
+            ["history-pull", "--market", "--from", Day(From), "--live"],
+            () => throw new InvalidOperationException("a market pull resolves none of the night's feeds"),
+            Clock(),
+            store.DatabaseFile,
+            output,
+            error,
+            () => market);
+
+        Assert.Equal(1, code);
+        Assert.Equal(["GSPC 2026-07-01 2026-09-04", "VIX 2026-07-01 2026-09-04"], market.Asked);
+        Assert.Equal([$"GSPC|{SessionsInTheSpan}"], Rows(store, "SELECT series, COUNT(*) FROM pulled_market_bar GROUP BY series;"));
+        Assert.StartsWith("pull " + HistoryPull.RunPrefix, output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("1 of 2 series answered", output.ToString(), StringComparison.Ordinal);
+        Assert.Contains("refused: VIX: the provider answered 404", output.ToString(), StringComparison.Ordinal);
+        Assert.Equal(
+            [$"history-pull-market|partial|{SessionsInTheSpan}|2"],
+            Rows(store, "SELECT stage, outcome, rows_written, network_requests FROM run_log WHERE stage = 'history-pull-market';"));
+
+        // A series the provider answers with no session is refused the same way.
+        var silent = new ConstructedSeries(new Dictionary<string, IReadOnlyList<DateOnly>> { ["GSPC"] = Sessions(From, Tonight) });
+        var outcome = await HistoryPull.PullMarketAsync(silent, Clock(), store.DatabaseFile, From, "history-pull-market-silent");
+
+        Assert.Equal(["VIX: the provider sent no session"], outcome.Refused);
+    }
+
+    // A market series feed answering from constructed sessions, the index around 6,000 and the VIX around 15,
+    // each price saying which session it is, refusing the series it is told to and recording each series asked
+    // for with its span, in the order asked.
+    sealed class ConstructedSeries(IReadOnlyDictionary<string, IReadOnlyList<DateOnly>> series, IReadOnlyList<string>? refused = null) : IMarketSeriesFeed
+    {
+        public int Requests { get; private set; }
+
+        public List<string> Asked { get; } = [];
+
+        public Task<IReadOnlyList<ProviderBar>> SeriesAsync(string name, DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
+        {
+            Requests++;
+            Asked.Add($"{name} {Day(from)} {Day(to)}");
+
+            if (refused?.Contains(name) == true)
+            {
+                throw new ProviderRefusal("the provider answered 404", transient: false);
+            }
+
+            return Task.FromResult<IReadOnlyList<ProviderBar>>(
+                series.TryGetValue(name, out var sessions)
+                    ? [.. sessions.Where(session => session >= from && session <= to).Select(session => Level(name, session))]
+                    : []);
+        }
+
+        // The n-th session of the span opens at the series' base plus n, trades two either side and closes one above.
+        static ProviderBar Level(string name, DateOnly session)
+        {
+            var open = (name == "VIX" ? 15.25m : 6000m) + Sessions(From, Tonight).ToList().IndexOf(session);
+
+            return new ProviderBar(session, open, open + 2m, open - 2m, open + 1m, open + 1m, 0);
+        }
     }
 
     // A historical feed answering from constructed sessions, refusing the names it is told to, and
