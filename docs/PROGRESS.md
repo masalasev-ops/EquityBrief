@@ -35514,7 +35514,7 @@ Measured:   a trial from this branch over the live store, read-only, its report 
             8 years above nothing, 0.013 without its five largest. The best edge meeting the floors: a 126-session
             high, volume 1.5, a range ceiling of 0.85 and a stop of 1.5 moves, 1,009 trades, an edge of 0.082,
             0.031 without its five largest. The run the operator reads is made from main after the merge.
-Tests:      F6TESTS, from 1702: eight added. The trailing and the fixed walks by hand; the trailing benchmark
+Tests:      1710, from 1702: eight added. The trailing and the fixed walks by hand; the trailing benchmark
             over constructed members; five a night in the family's order with one open trade a stock; a
             setting's figures and the proposal by hand; the breakout's readings read back against the rows the
             night's own rule stored over the fixture's night; and a constructed history's breakout, trade and
@@ -35532,7 +35532,7 @@ Mutated:    the rule, stated before the run: each new rule reversed alone, made 
             fixture readings' test, an unreachable boundary: tonight's bar moves the high only where it stands
             above every high before it, and no member's did on the fixture's night.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
-            this one to 13.8's: F6GATES
+            this one to 13.8's, 0aa7da9, with the figures 13.8's entry states.
 
 ### 13.7 - the earnings drift's sweep: the drift's rule replayed over the stored history and the pulled surprises at every setting of its grid, on 13.6's engine, with the share of trades whose stop sat under a typical move beside each edge   2026-10-02
 
@@ -35549,7 +35549,7 @@ Measured:   a trial from this branch over the live store, read-only, its report 
             37% of its stops under a typical move. The best edge meeting the floors: a window of 3, a rise of
             0.5, volume 2.0 and a target at 2.5 times the risk, 2,243 trades, an edge of 0.123, 6 of 8 years,
             0.095 without its five largest, 40% of its stops under a typical move.
-Tests:      F7TESTS, from F6TESTS: five added. The drift's readings the night's own rule's over the same
+Tests:      1715, from 1710: five added. The drift's readings the night's own rule's over the same
             constructed member on the reaction's session and the next; the target the nearer of a band and the
             multiple of the risk over constructed readings, added after D2 survived; the night's print on the
             fixture's night; a print the pulled surprises hold and the calendar does not, read from the pull
@@ -35566,7 +35566,7 @@ Mutated:    the rule, stated before the run: each new rule reversed alone, made 
             holds no band above the close, so its target is always the multiple's. The target's test was added
             and D2 is red in it.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
-            13.6's to 13.8's: F7GATES
+            13.6's to 13.8's, 0aa7da9, with the figures 13.8's entry states.
 
 ### 13.8 - the sector leaders' sweep: each session's sectors ranked and members placed by the night's own rule, the pullback's setup, trigger and trade read at the live settings with leadership in place of the trend and strength gate, and the history's names with and without a sector counted   2026-10-02
 
@@ -35584,7 +35584,7 @@ Measured:   a trial from this branch over the live store, read-only, its report 
             trigger and trade passed on 6,317. The provisional setting, the top 3 sectors and the top quarter,
             is the best edge meeting the floors: 1,021 trades, an edge of 0.070, 6 of 8 years, 0.038 without
             its five largest, 29% of its stops under a typical move.
-Tests:      F8TESTS, from F7TESTS: three added. The sectors ranked and members placed over constructed members,
+Tests:      1718, from 1715: three added. The sectors ranked and members placed over constructed members,
             the strongest carrying no sector left out and counted; the standings read back against the rows the
             night's own rule stored over the fixture's night; and constructed candidates outside any uptrend,
             listed by the sectors and the share and read back off their report.
@@ -35599,4 +35599,9 @@ Mutated:    the rule, stated before the run: each new rule reversed alone, made 
             report's candidates stand first in their sector or third of Tech's six under a half, which divides
             whole, so rounding down drops none. L2 and L3 red where stated.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
-            13.6's to this one: F8GATES
+            13.6's to this one, 0aa7da9. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1718 of 1718
+            tests ran with none failed, migrations 0 to 55 with none pending, schema version 55, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1`: 44 tables, 862 claims, 862 PASS, 0 FAIL, 0
+            out of scope, 0 unexamined, 873 placements and verdicts reconciled against a floor of 34, fixture
+            PRESENT, 42 checks on the roster, 42 carried and 42 passed. Both were green over b93d5f1 at 1717
+            tests, before the drift's target test was added.
