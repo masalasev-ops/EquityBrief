@@ -244,6 +244,31 @@ public class StoreNeverDeleted
     }
 
     [Fact]
+    public void EveryWorkerTheSuiteStartsKeepsItsStoresCopiesUnderItsOwnRoot()
+    {
+        // A worker the suite starts reads the machine's settings, the copies' folder among them, and a night it
+        // runs ends by starting the store's copy, which put the suite's store into the operator's folder on
+        // 2026-10-02. Every suite source that starts the worker's own build hands it its store's worker
+        // environment, which names a copies' folder under that store's root; two such sources, stated in advance.
+        var starts = "BuildOutput(\"EquityBrief." + "Worker\"";
+        var starting = Repository.SourceFiles()
+            .Where(IsTheSuite)
+            .Where(file => File.ReadAllText(file).Contains(starts, StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.Equal(["NightlyRun.NightRequest.cs", "NightlyRun.cs"], starting.Select(Path.GetFileName).Order(StringComparer.Ordinal));
+        Assert.All(starting, file => Assert.Contains(".WorkerEnvironment()", File.ReadAllText(file), StringComparison.Ordinal));
+        Assert.All(starting, file => Assert.DoesNotContain("[\"EquityBrief__DataRoot\"]", File.ReadAllText(file), StringComparison.Ordinal));
+
+        using var store = new TemporaryStore();
+        var environment = store.WorkerEnvironment();
+
+        Assert.Equal(store.Root, environment["EquityBrief__DataRoot"]);
+        // Named as the variable the worker's own setting is read from, so a name it does not read fails here.
+        Assert.Equal(Path.Combine(store.Root, StoreCopies.DefaultFolder), environment[StoreCopies.FolderKey.Replace(":", "__", StringComparison.Ordinal)]);
+    }
+
+    [Fact]
     public void TheCheckFindsARemovalOfTheStoreWhereOneIsWritten()
     {
         // The permanent proof that each reader can fail, over constructed source and a constructed script.
