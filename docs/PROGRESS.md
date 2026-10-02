@@ -35717,3 +35717,29 @@ Queue:      restated, since the list lives in the newest queue ruling. Done: tra
 Verified:   with the pull request that carries it, `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the
             tree carrying 13.9's entry, with the figures 13.9's entry states.
 Stored:     the operator's words in `prompts/2026-10-02-13.9-freeze-answers.md`.
+
+### 13.9 ruling - the sector leaders are a variant of the pullback and not a family, and the breakouts and the drift freeze as answered once neither proposal is an isolated point   2026-10-02
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-10-02, pasting a correction headed "Correction to 13.9 before it merges.", stored
+            whole beside the morning's answers, and confirming it: "Apply it as written (Recommended)". The leaders:
+            "Do not freeze it as a family. Register "the pullback in the top 3 sectors, top quarter of each" as a
+            variant of the pullback's starting point, beside its other variants. Remove the sector leaders' card
+            from Tonight". The breakouts and the drift: "If either proposal is isolated as the leaders' was, bring
+            it to me with that table before freezing; if both pass, freeze them as answered." The timing: "The
+            22:30Z hold still applies."
+Measured:   each proposal's one-step neighbours off the three runs from e7881e1. Breakouts, five: ranges no wider
+            at 0.060 and volume 2 at 0.064 meet the floors, each in 6 of 8 years; volume 1.25, a stop of 2 and the
+            251-session high do not. Drift, five: a rise of one typical move at 0.119 and a target of 3 at 0.096
+            meet them; a target of 2, volume 1.5 and a window of 5 do not. Leaders, three: none meets them, at 4, 5
+            and 4 years, the top 4 sectors at 0.016. Neither remaining proposal is isolated, so both freeze.
+Changed:    13.9: the leaders registered as the pullback's eighth rule, leadership in place of the trend and
+            strength gate, their card off Tonight, and each remaining proposal checked against its neighbours
+            first. A decision for the leaders, which supersedes the leader family's, moved to Previously decided;
+            the freeze's and the pullback freeze's own entries narrowed to two families and eight pullback rules.
+            Prior text in `CHANGELOG.md`.
+Queue:      unchanged from the ruling above. 13.9 stays in progress in one pull request and does not merge on
+            2026-10-02; the night runs on main's code.
+Verified:   with the pull request that carries it, `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the
+            tree carrying 13.9's entry, with the figures 13.9's entry states.
+Stored:     the operator's words in `prompts/2026-10-02-13.9-freeze-answers.md`.
