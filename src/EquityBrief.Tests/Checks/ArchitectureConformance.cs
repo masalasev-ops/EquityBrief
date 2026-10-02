@@ -1496,8 +1496,9 @@ public partial class ArchitectureConformance
         // list's counts, the Run page's labeller line and its count of the labeller's nights. 410 at 13.1, the
         // family framework: a family's card on tonight's page as the seventeen parts its row states. 428 at 13.5,
         // the pages around the setup families: the eighteen parts their eight rows state. 434 at 13.9, the
-        // run page's records of the registered family rules as the six parts its setup families row adds.
-        Assert.Equal(434, inDocument.Length);
+        // run page's records of the registered family rules as the six parts its setup families row adds. 435
+        // from the operator's ruling of 2026-10-02, the store's newest copy beneath anything to worry about.
+        Assert.Equal(435, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1587,7 +1588,8 @@ public partial class ArchitectureConformance
         // 385 at 13.1, the family framework: the seventeen parts a family's card states.
         // 403 at 13.5, the pages around the setup families: the eighteen parts their eight rows state.
         // 409 at 13.9, the run page's records of the registered family rules: the six parts its row adds.
-        Assert.Equal(409, checkedElements);
+        // 410 from the operator's ruling of 2026-10-02: the store's newest copy beneath anything to worry about.
+        Assert.Equal(410, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

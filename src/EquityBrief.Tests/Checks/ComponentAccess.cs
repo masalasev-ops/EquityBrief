@@ -109,6 +109,9 @@ public partial class ComponentAccess
             // 12.6's correction, the news labeller.
             CheckReach.Key(Scope.CatalogueTable, "News labeller"),
             CheckReach.Key(Scope.MatrixTable, "News labeller"),
+            // The store's copy, on the operator's ruling of 2026-10-02.
+            CheckReach.Key(Scope.CatalogueTable, "Store backup"),
+            CheckReach.Key(Scope.MatrixTable, "Store backup"),
 
             // 13.1, the family lister.
             CheckReach.Key(Scope.CatalogueTable, "Family lister"),

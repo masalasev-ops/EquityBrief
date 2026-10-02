@@ -388,6 +388,9 @@ public sealed record NewsArticleRow(
 // One of the news labeller's own rows: its run, its outcome, when it ran and the detail naming the night.
 public sealed record LabellerRunRow(string RunId, string Outcome, string StartedAt, string EndedAt, string Detail);
 
+// One attempt of the store's copy, as its own row records it.
+public sealed record StoreBackupRow(string RunId, string Outcome, string StartedAt, string EndedAt, string Detail);
+
 // One member's swing filter result on a night as the filter stored it: each gate's pass, the family
 // and the trigger, the trade read three ways, the exclusions, the rank among the names passing, and
 // the gates' reasons and values as stored. The plan clear of the noise enters at the same close as the
@@ -2437,6 +2440,14 @@ public sealed class ReadApi : IComponent
         GROUP BY a.ticker;
     ";
 
+    // The store's copies, each attempt's own row, newest first.
+    const string StoreBackupRows = @"
+        SELECT run_id, outcome, started_at, ended_at, detail FROM run_log
+        WHERE stage = $stage
+        ORDER BY rowid DESC
+        LIMIT 20;
+    ";
+
     // The news labeller's own row of each of its runs, newest first; the night each labelled is in its detail.
     const string LabellerRunRows = @"
         SELECT run_id, outcome, started_at, ended_at, detail FROM run_log
@@ -2518,6 +2529,33 @@ public sealed class ReadApi : IComponent
         while (await reader.ReadAsync())
         {
             rows.Add(new LabellerRunRow(
+                reader.GetString(0),
+                reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
+                reader.IsDBNull(4) ? string.Empty : reader.GetString(4)));
+        }
+
+        return rows;
+    }
+
+    // The store's copies as their own rows record them, newest first.
+    // see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
+    public async Task<IReadOnlyList<StoreBackupRow>> StoreBackupsAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = StoreBackupRows;
+        command.Parameters.AddWithValue("$stage", EquityBrief.Core.Configuration.StoreCopies.Stage);
+
+        var rows = new List<StoreBackupRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new StoreBackupRow(
                 reader.GetString(0),
                 reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
                 reader.IsDBNull(2) ? string.Empty : reader.GetString(2),

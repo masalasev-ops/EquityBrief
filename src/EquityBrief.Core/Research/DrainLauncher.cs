@@ -29,6 +29,12 @@ public interface IDrainLauncher
     // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
     DrainStart StartTheLabeller() =>
         new(false, "The labeller was not started, because this surface holds no way to start the worker.");
+
+    // The store's copy, which the night starts after its labeller as a process of its own, waiting for the
+    // labeller where the night started one.
+    // see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
+    DrainStart StartTheBackup(bool afterTheLabeller) =>
+        new(false, "The store's copy was not started, because this surface holds no way to start the worker.");
 }
 
 // The worker's drain, started as a process of its own from a copy of the worker's build
@@ -67,6 +73,11 @@ public sealed class WorkerDrainLauncher(
 
     // The verb that labels tonight's news.
     public static readonly IReadOnlyList<string> LabelTheNews = ["label-news"];
+
+    // The verb that copies the store, and its flag that has it wait for the labeller the night started.
+    public static readonly IReadOnlyList<string> CopyTheStore = ["backup"];
+
+    public static readonly IReadOnlyList<string> CopyTheStoreAfterTheLabeller = ["backup", "--after-labeller"];
 
     // The folder under the data root the copies are made in.
     public const string CopiesFolder = "drains";
@@ -107,6 +118,12 @@ public sealed class WorkerDrainLauncher(
 
     public DrainStart StartTheLabeller() =>
         Launch(LabelTheNews, "The labeller has started on tonight's list as a process of its own.", "tonight's news waits for the label-news verb run by hand");
+
+    public DrainStart StartTheBackup(bool afterTheLabeller) =>
+        Launch(
+            afterTheLabeller ? CopyTheStoreAfterTheLabeller : CopyTheStore,
+            "The store's copy has started as a process of its own, and waits until the night, its drain and its labeller have finished.",
+            "the store waits for the backup verb run by hand");
 
     // The build a drain or the rest of the night is started from: the newest night's own build where the
     // night's script left one holding the worker, so the drain and the rest of a night run the build the

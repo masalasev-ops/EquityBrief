@@ -1755,7 +1755,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<CheckpointRow>? checkpoints = null,
         ReportsView? reports = null,
         IReadOnlyList<FamilyRunRow>? setupFamilies = null,
-        IReadOnlyList<FamilyRecordRow>? familyRecords = null)
+        IReadOnlyList<FamilyRecordRow>? familyRecords = null,
+        StoreCopyRead? storeCopy = null)
     {
         var region = new StringBuilder();
 
@@ -1889,9 +1890,11 @@ public sealed class SinglePageApp : IComponent
 
         if (worries is { } items)
         {
+            // The store's newest copy beneath the checklist, where the surface was handed the copies to read.
+            // see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
             region.Append(Cards.Computed(
                 "Health",
-                marks.WorryRegion(items, harness),
+                marks.WorryRegion(items, harness) + (storeCopy is { } copies ? marks.StoreCopyLine(copies.Newest) : string.Empty),
                 title: "Anything to worry about?",
                 lede: "Each item turns red with its reason when it fails.",
                 stamp: Cards.Night(night),

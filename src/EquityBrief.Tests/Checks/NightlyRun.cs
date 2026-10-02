@@ -55,6 +55,9 @@ public partial class NightlyRun
             // 12.6's correction, the news labeller the night starts after its own request.
             CheckReach.Key(NightlyRunSteps.Heading, "Start the news labeller as the drain is started, a process of its own that labels the stored admitted articles of the names on tonight's list, newest first and at most twenty a name over the thirty days before the night, through the news job's paid model one article at a time, with every call and every dollar on the labeller's own run and never the night's, bounded by its own time and month limits, and starting none on a night run again for an earlier session (see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own)."),
 
+            // The store's copy, on the operator's ruling of 2026-10-02, the night's last step.
+            CheckReach.Key(NightlyRunSteps.Heading, FixtureExpectations.StoreCopyStep),
+
             // 5.4, tonight's list.
             CheckReach.Key(NightlyRunSteps.Heading, "Evaluate the list reasons for every name."),
 
@@ -1227,11 +1230,12 @@ public partial class NightlyRun
         // the labeller's start last, on the night's own output and on the run log's order.
         var steps = NightlyRunSteps.In(File.ReadAllText(Repository.Architecture));
 
-        Assert.StartsWith("Close the arithmetic", steps[^5], StringComparison.Ordinal);
-        Assert.StartsWith("Ask the provider for the reported quarters", steps[^4], StringComparison.Ordinal);
-        Assert.StartsWith("Run the overnight queue", steps[^3], StringComparison.Ordinal);
-        Assert.StartsWith("Ask for a report on the first six names", steps[^2], StringComparison.Ordinal);
-        Assert.StartsWith("Start the news labeller", steps[^1], StringComparison.Ordinal);
+        Assert.StartsWith("Close the arithmetic", steps[^6], StringComparison.Ordinal);
+        Assert.StartsWith("Ask the provider for the reported quarters", steps[^5], StringComparison.Ordinal);
+        Assert.StartsWith("Run the overnight queue", steps[^4], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for a report on the first six names", steps[^3], StringComparison.Ordinal);
+        Assert.StartsWith("Start the news labeller", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
 
         using var store = new TemporaryStore();
 
@@ -1249,11 +1253,12 @@ public partial class NightlyRun
 
         var stages = RunLog(store, "night-with-queue").Select(row => row.Stage).ToArray();
 
-        Assert.Equal(NewsLabeller.NightStage, stages[^1]);
-        Assert.Equal("report", stages[^2]);
-        Assert.Equal(OvernightQueue.Stage, stages[^3]);
-        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^4]);
-        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^5]);
+        Assert.Equal(EquityBrief.Worker.Backup.StoreBackup.NightStage, stages[^1]);
+        Assert.Equal(NewsLabeller.NightStage, stages[^2]);
+        Assert.Equal("report", stages[^3]);
+        Assert.Equal(OvernightQueue.Stage, stages[^4]);
+        Assert.Equal(EquityBrief.Worker.Quarters.QuarterFetcher.Stage, stages[^5]);
+        Assert.Equal(EquityBrief.Worker.Nights.NightClose.Stage, stages[^6]);
 
         // The night's last line states the queue's local calls apart from the arithmetic's,
         // read off the queue's own row.
@@ -1392,10 +1397,11 @@ public partial class NightlyRun
         var quarters = steps.ToList().FindIndex(step => step.StartsWith("Ask the provider for the reported quarters", StringComparison.Ordinal)) + 1;
         var queue = steps.ToList().FindIndex(step => step.StartsWith("Run the overnight queue", StringComparison.Ordinal)) + 1;
 
-        Assert.Equal(steps.Count - 2, queue);
+        Assert.Equal(steps.Count - 3, queue);
         Assert.Equal((close + 1, close + 2), (quarters, queue));
-        Assert.StartsWith("Ask for a report on the first six names", steps[^2], StringComparison.Ordinal);
-        Assert.StartsWith("Start the news labeller", steps[^1], StringComparison.Ordinal);
+        Assert.StartsWith("Ask for a report on the first six names", steps[^3], StringComparison.Ordinal);
+        Assert.StartsWith("Start the news labeller", steps[^2], StringComparison.Ordinal);
+        Assert.StartsWith("Start the store's copy", steps[^1], StringComparison.Ordinal);
 
         // Section 14's note, the section with its list removed.
         var from = architecture.IndexOf("<h2>14.", StringComparison.Ordinal);

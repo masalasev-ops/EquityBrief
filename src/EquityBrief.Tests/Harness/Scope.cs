@@ -2871,6 +2871,35 @@ internal static class Scope
             Verdict.Pass,
             "an article the counter stored refused is never among the requests and is counted on the run's row as refused",
             ByExpectations),
+        // The store's copy, on the operator's ruling of 2026-10-02.
+        [CheckReach.Key(CatalogueTable, "Store backup")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the bars and run log it reads and the run log it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Store backup")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(NightlyRunSteps.Heading, Checks.FixtureExpectations.StoreCopyStep)] = new Scoped(
+            Verdict.Pass,
+            "over a constructed night the launcher the night was handed is asked to start one copy after the labeller, waiting for the labeller, as the last row the night writes, and a night run again for an earlier session starts one that waits for none",
+            ByNight),
+        [CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopyLine)] = new Scoped(
+            Verdict.Pass,
+            "the newest copy's time, folder read back against the surface's data root and copies kept, a newer attempt that made none with why, and a store holding no copy's row, each read off the page",
+            ByReadSurface),
+        [CheckReach.Key(LimitsTable, "Store copies")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store the copy is made, opened and read, the newest three kept with each read before an older one is removed, each wait worked by a clock the copy's own wait moves, and the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A store copy that does not open and read")] = new Scoped(
+            Verdict.Pass,
+            "a kept copy whose header is damaged is named as unread on the row and nothing is removed, the newer copy kept beside it",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The night, its drain or its labeller still holding the store after twenty hours")] = new Scoped(
+            Verdict.Pass,
+            "a night holding its lock for twenty hours leaves no copy and a failed row naming the night as what still held the store",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "The labeller fails")] = new Scoped(
             Verdict.Pass,
             "a run refused before it asked anything writes its own row saying why and no row of the night's, and a labeller that stopped partway leaves the night's rows, listings and gate results as they were",
@@ -3666,6 +3695,8 @@ internal static class Scope
         ["Sweep point in time"] = "12.5",
         // 13.9's, which the plan describes by what it stores rather than by the component's name.
         ["Family recorder"] = "13.9",
+        // The operator's ruling of 2026-10-02, built after the phase 13 report.
+        ["Store backup"] = "13.10",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -3952,6 +3983,8 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Anything to worry about, the four harness counts beneath")] = "12.3",
         [CheckReach.Key("15.10 Run", "Anything to worry about, no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date")] = "12.6",
         [CheckReach.Key("15.10 Run", "Anything to worry about, no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost")] = "12.6",
+        // The store's copy, the operator's ruling of 2026-10-02.
+        [CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopyLine)] = "13.10",
         [CheckReach.Key("15.5 The mark vocabulary", "Trades ring")] = "12.3",
         [CheckReach.Key("15.5 The mark vocabulary", "Freshness bars")] = "12.3",
         [CheckReach.Key("15.5 The mark vocabulary", "Research bars")] = "12.3",
@@ -4507,7 +4540,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "How each report did")] =
             ["one row per report over the seven nights with its stock and day and what it cost", "a cell per section saying whether it passed first time or on retry or was left out with why or was not warranted, with what its own calls cost and none of a trial's", "the two cases' cell marked where a draft of the pass carried a figure on both sides, with how many of the newest twenty reports' two cases did", "each section's share passed first time and its share left out over the newest twenty reports that warranted it"],
         [CheckReach.Key("15.10 Run", "Anything to worry about")] =
-            ["a checklist of plain items each turning red with its reason where it fails", "every stock holding the night's prices and every step of the night finished", "no research document refused and no section fallen back", "every company awaiting a quarter asked on schedule", "no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date", "no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost", "the four harness counts beneath"],
+            ["a checklist of plain items each turning red with its reason where it fails", "every stock holding the night's prices and every step of the night finished", "no research document refused and no section fallen back", "every company awaiting a quarter asked on schedule", "no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date", "no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost", "the four harness counts beneath", "the store's newest copy beneath them with the time it was made and its folder and the copies kept and the newest attempt that made none with why"],
         // 12.2. The name page's gates and the run page's funnel, each read as the parts its row enumerates.
         [CheckReach.Key("15.9 Name", "Gates")] =
             ["each of the five gates with whether it passed and why", "the setup's family and whether the trigger's event happened", "the trade read from the ladder's first tranche and from the one swing plan that night's live rule used with that plan marked and no candidate's plan drawn whichever filter version the night ran under", "the exclusions with a key saying how to read it"],
@@ -4888,6 +4921,9 @@ internal static class Scope
         ["A peak window of the news profile opens while the labeller runs"] = "12.6",
         ["An article refused by admissibility"] = "12.6",
         ["The labeller fails"] = "12.6",
+        // The store's copy, the operator's ruling of 2026-10-02.
+        ["A store copy that does not open and read"] = "13.10",
+        ["The night, its drain or its labeller still holding the store after twenty hours"] = "13.10",
         // 13.1, the family framework. The row about two families is read on the page once a second family is on it.
         ["A stock a family passes while a trade for it is still open"] = "13.1",
         ["A stock two families pass on one night"] = "13.2",
@@ -4986,6 +5022,8 @@ internal static class Scope
         ["News labelling window"] = "12.6",
         ["News labeller time limit"] = "12.6",
         ["News labeller month limit"] = "12.6",
+        // The store's copy, the operator's ruling of 2026-10-02.
+        ["Store copies"] = "13.10",
         ["Unreadable answers for a digit"] = "12.6",
         ["News article retention"] = "12.6",
         // The family framework, 13.1.
@@ -5075,6 +5113,8 @@ internal static class Scope
         ["Ask for a report on the first six names"] = "11.4",
         // 12.6's correction, the news labeller the night starts after its request.
         ["Start the news labeller"] = "12.6",
+        // The store's copy, the operator's ruling of 2026-10-02.
+        ["Start the store's copy"] = "13.10",
         ["Write the facts file"] = "5.3",
 
         ["Fill forward returns"] = "5.5",

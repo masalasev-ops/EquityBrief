@@ -43,6 +43,18 @@ public partial class NightlyRun
 
             return new DrainStart(true, LabellerLine);
         }
+
+        public const string BackupLine = "The store's copy was asked to start by the suite.";
+
+        // Each copy the night asked for, and whether it was to wait for the labeller.
+        public List<bool> BackupStarts { get; } = [];
+
+        public DrainStart StartTheBackup(bool afterTheLabeller)
+        {
+            BackupStarts.Add(afterTheLabeller);
+
+            return new DrainStart(true, BackupLine);
+        }
     }
 
     static JsonElement Expected(string stage) =>
@@ -138,10 +150,10 @@ public partial class NightlyRun
         var stages = RunLog(store, "night-with-request");
 
         Assert.Equal(
-            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage, OvernightQueue.Stage, "report", NewsLabeller.NightStage],
-            stages.Select(row => row.Stage).TakeLast(5));
-        Assert.Equal("ok", stages[^2].Outcome);
-        Assert.Equal(expected.GetProperty("line").GetString(), stages[^2].Detail);
+            [EquityBrief.Worker.Nights.NightClose.Stage, EquityBrief.Worker.Quarters.QuarterFetcher.Stage, OvernightQueue.Stage, "report", NewsLabeller.NightStage, EquityBrief.Worker.Backup.StoreBackup.NightStage],
+            stages.Select(row => row.Stage).TakeLast(6));
+        Assert.Equal("ok", stages[^3].Outcome);
+        Assert.Equal(expected.GetProperty("line").GetString(), stages[^3].Detail);
         Assert.Equal(
             [["0", "0"]],
             StoreRows(store, "SELECT model_calls, network_requests FROM run_log WHERE run_id = 'night-with-request' AND stage = 'report';"));
@@ -306,7 +318,7 @@ public partial class NightlyRun
         Assert.True(code == 0, error.ToString());
         Assert.Empty(StoreRows(store, "SELECT ticker FROM research_request;"));
         Assert.Equal(0, launcher.Started);
-        Assert.Equal("no report was asked for, since this night was run again for an earlier session", RunLog(store, "night-again")[^2].Detail);
+        Assert.Equal("no report was asked for, since this night was run again for an earlier session", RunLog(store, "night-again")[^3].Detail);
 
         // And it asks for no member's quarters: what it would store is today's answer and not that
         // night's, so the step says so and writes no ask and no quarter.
