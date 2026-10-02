@@ -78,6 +78,8 @@ public partial class FixtureExpectations
             // The ideas' run, a 12.5 correction built once phase 13 was finished: section 17's rows for the ideas'
             // settings and the test, and section 18's rows for a run no idea passes and a series missing a session.
             .. IdeasClaims,
+            // The store's copy, on the operator's ruling of 2026-10-02: section 17's row and section 18's two.
+            .. StoreCopyClaims,
 
             // 12.6's correction, the model profiles: section 17's profiles over the shipped settings and the
             // fixture's own models file, and the half of section 18's row about a key the secrets file does not

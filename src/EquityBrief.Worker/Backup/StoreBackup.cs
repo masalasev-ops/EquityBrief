@@ -21,7 +21,7 @@ public sealed record StoreBackupOutcome(string Outcome, string? Copy, string Det
 // before any older one is removed, and removes nothing where one of them does not open and read. It gives up
 // waiting after twenty hours, well before the next night is built. It writes one row of its own on the run
 // log, naming the folder relative to the data root and never as an absolute path, and nothing else.
-// see: The store is copied after every night once the night, its drain and its labeller have finished, and the newest three copies are kept, each opened and read before an older one is removed
+// see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
 // see: The operator's store is never deleted, and every site that removes a file is stated where a check holds it
 public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFile, string folder, TimeSpan labellerLimit, Func<TimeSpan, CancellationToken, Task>? wait = null) : IComponent
 {
@@ -155,7 +155,12 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
             await store.OpenAsync(cancellation);
             source = await BarsAsync(store, cancellation);
 
-            await using var copy = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = partial, Pooling = false }.ToString());
+            // Unpooled, so the file is let go once the copy is written and can be named.
+            var target = StoreConnection.Builder(partial);
+
+            target.Pooling = false;
+
+            await using var copy = new SqliteConnection(target.ConnectionString);
 
             await copy.OpenAsync(cancellation);
             store.BackupDatabase(copy);
@@ -228,7 +233,12 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
     {
         try
         {
-            await using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = copy, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ToString());
+            var reading = StoreConnection.Builder(copy);
+
+            reading.Mode = SqliteOpenMode.ReadOnly;
+            reading.Pooling = false;
+
+            await using var connection = new SqliteConnection(reading.ConnectionString);
 
             await connection.OpenAsync(cancellation);
 

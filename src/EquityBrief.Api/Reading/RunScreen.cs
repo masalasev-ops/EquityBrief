@@ -1183,7 +1183,7 @@ public static class RunScreen
         ("Plans and moves", ["ladders", "moves"]),
         ("Readings and the list", ["swing-readings", "fundamental-readings", "listings", "swing-filter", "family-rules", "families", "family-records", "shape-proposal"]),
         ("Records", ["facts", "changes", "forward-returns", "news-pulse", "rule-versions", "close"]),
-        ("After the close", ["quarters", QueueStage, "report", "label-news"]),
+        ("After the close", ["quarters", QueueStage, "report", "label-news", "backup"]),
     ];
 
     // The words a night's stop is written with, beside `ok`. The read surface holds no reference to the
@@ -2089,7 +2089,7 @@ public static class RunScreen
     // The store's newest copy off the copies' own rows, newest first: the newest that made one, its folder read
     // against this surface's data root or named alone where its row could carry no path to it, and the newest
     // attempt after it that made none, with why.
-    // see: The store is copied after every night once the night, its drain and its labeller have finished, and the newest three copies are kept, each opened and read before an older one is removed
+    // see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
     public static StoreCopyRead StoreCopy(IReadOnlyList<StoreBackupRow> rows, string dataRoot)
     {
         var made = rows.Select((row, place) => (Row: row, Place: place)).FirstOrDefault(one => one.Row.Outcome == Ok);

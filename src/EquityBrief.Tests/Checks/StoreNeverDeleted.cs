@@ -73,7 +73,10 @@ public class StoreNeverDeleted
         // run folder they made for them under the sweep's folder. NightLock writes and removes the night's lock file.
         // SweepPointInTime removes the scratch stores it built under the machine's temporary folder, which
         // hold nothing of the operator's. SweepRunner writes and replaces its own run folder's files, and
-        // removes its own saved candidates where the history moved under them.
+        // removes its own saved candidates where the history moved under them. StoreBackup, in the copies'
+        // folder alone, removes an unfinished copy an earlier run left, names a finished copy by moving it from
+        // its unfinished name, and removes a copy older than the newest three once each of those has opened and
+        // read; the store itself it only reads, through SQLite's own backup.
         Assert.Equal(
             [
                 "ComparisonCommand.cs: File.WriteAllTextAsync(Path.Combine(folder, name))",
@@ -86,6 +89,9 @@ public class StoreNeverDeleted
                 "NightLock.cs: File.Delete(holder)",
                 "NightLock.cs: File.WriteAllText(holder)",
                 "SourceMeasurementRun.cs: File.WriteAllTextAsync(file)",
+                "StoreBackup.cs: File.Delete(leftover)",
+                "StoreBackup.cs: File.Delete(old)",
+                "StoreBackup.cs: File.Move(partial)",
                 "SweepIdeasRunner.cs: File.WriteAllText(figures)",
                 "SweepIdeasRunner.cs: File.WriteAllText(report)",
                 "SweepPointInTime.cs: Directory.Delete(scratchRoot)",

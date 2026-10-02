@@ -2,6 +2,7 @@ using System.Text.Json;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
+using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Backup;
 using EquityBrief.Worker.Research;
 
@@ -12,9 +13,40 @@ namespace EquityBrief.Tests.Checks;
 // and its row names the folder relative to the data root; the newest three are kept, each opened and read before
 // an older one is removed and none removed where one does not; and the copy waits for the night, the labeller the
 // night started and the drain, holding the drain's lock while it copies, and gives up after twenty hours.
-// see: The store is copied after every night once the night, its drain and its labeller have finished, and the newest three copies are kept, each opened and read before an older one is removed
+// see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
 public partial class FixtureExpectations
 {
+    // The night's step that starts the copy, as section 14 states it.
+    internal const string StoreCopyStep =
+        "Start the store's copy as the labeller is started, a process of its own that waits until the night, the drain it started and the " +
+        "labeller have finished, holding the drain's lock while it copies the store through SQLite's own backup into the copies' folder, " +
+        "opens and reads the copy against the store, keeps the newest three after opening and reading each, and writes one row of its own " +
+        "and nothing else; a night run again for an earlier session starts one that waits for no labeller (see: The store is copied once the " +
+        "night and every process it started have finished, and the newest three copies are kept after each is opened and read).";
+
+    // The part of the run page's worry row the copy adds.
+    internal const string StoreCopyLine =
+        "Anything to worry about, the store's newest copy beneath them with the time it was made and its folder and the copies kept and the " +
+        "newest attempt that made none with why";
+
+    // The rows the copy adds that this check reaches: section 17's row and section 18's two.
+    internal static readonly string[] StoreCopyClaims =
+    [
+        CheckReach.Key(Scope.LimitsTable, "Store copies"),
+        CheckReach.Key(Scope.FailureTable, "A store copy that does not open and read"),
+        CheckReach.Key(Scope.FailureTable, "The night, its drain or its labeller still holding the store after twenty hours"),
+    ];
+
+    // Every row the copy adds, whichever check reaches it, which the phase's pair names apart.
+    internal static readonly string[] StoreCopyRows =
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Store backup"),
+        CheckReach.Key(Scope.MatrixTable, "Store backup"),
+        CheckReach.Key(NightlyRunSteps.Heading, StoreCopyStep),
+        CheckReach.Key("15.10 Run", StoreCopyLine),
+        .. StoreCopyClaims,
+    ];
+
     sealed class CopyClock(DateTimeOffset start) : IClock
     {
         public DateTimeOffset UtcNow { get; set; } = start;

@@ -83,6 +83,9 @@ public partial class ReadSurface
             // and the half of section 18's row about a key the secrets file does not hold that the run page draws.
             .. ProfileSurfaceClaims,
 
+            // The store's copy, on the operator's ruling of 2026-10-02: the worry region's line beneath its items.
+            CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopyLine),
+
             // 12.6's correction drawing how each report did: the two regions' parts and section 17's window.
             .. ReportClaims,
 

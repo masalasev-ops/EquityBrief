@@ -51,7 +51,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 18 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 19 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -974,7 +974,7 @@ static async Task<int> LabelNews(string[] args)
 // The store copied into the copies' folder, as the night starts it after its labeller or by hand: it waits while a
 // night or a drain holds the store, and for the labeller where '--after-labeller' says the night started one, then
 // copies, opens and reads the copy and keeps the newest three.
-// see: The store is copied after every night once the night, its drain and its labeller have finished, and the newest three copies are kept, each opened and read before an older one is removed
+// see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
 static async Task<int> BackupRun(string[] args)
 {
     var configuration = Configuration();

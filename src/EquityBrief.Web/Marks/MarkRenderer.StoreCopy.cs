@@ -12,7 +12,7 @@ public sealed partial class MarkRenderer
 {
     // The store's newest copy in one line beneath anything to worry about: its time, its folder and the copies
     // kept, the newest attempt that made none with why, or that no copy is recorded yet.
-    // see: The store is copied after every night once the night, its drain and its labeller have finished, and the newest three copies are kept, each opened and read before an older one is removed
+    // see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
     public string StoreCopyLine(StoreCopyView? copy)
     {
         if (copy is null)

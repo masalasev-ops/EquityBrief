@@ -32,7 +32,7 @@ public interface IDrainLauncher
 
     // The store's copy, which the night starts after its labeller as a process of its own, waiting for the
     // labeller where the night started one.
-    // see: The store is copied after every night once the night, its drain and its labeller have finished, and the newest three copies are kept, each opened and read before an older one is removed
+    // see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
     DrainStart StartTheBackup(bool afterTheLabeller) =>
         new(false, "The store's copy was not started, because this surface holds no way to start the worker.");
 }

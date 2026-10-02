@@ -10287,3 +10287,31 @@ Now:
 > `fixture-expectations`: "... each of the swing family's nine ..., the eighth reading a member's standing in its sector ..., and the ninth firing where the live filter fires, its record keeping the night's first three in the list's own order once its own open trades have kept a stock off, a member past them no trade and holding its stock on no later night, worked by hand over three nights and read back through the run page's own query, ..., and the family's command writes nine registrations and three retirements at one instant, and the family registered again under the open version retires every standing rule, the eight the freeze wrote among them, and registers the nine at one instant with no version opened, refused where no version is open or no rule stands, and a tenth refused, ..."
 > `read-surface`: "... reads nine registered and a divisor of 9; ..."
 Why: the checks reach what the ninth rule and the register's new form assert.
+### 2026-10-02 - ARCHITECTURE.html - the store's copy after every night
+Authorised by: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
+Was:
+> No store backup in the component catalogue or the read and write matrix; section 14 ending on "Start the news labeller as the drain is started, ..."; section 15.10's "Anything to worry about" ending on "the four harness counts beneath"; no "Store copies" row in section 17 and no row in section 18 about a copy.
+Now:
+> The catalogue's and the matrix's "Store backup" rows; section 14's last step, "Start the store's copy as the labeller is started, ..."; the worry row's "the store's newest copy beneath them with the time it was made and its folder and the copies kept and the newest attempt that made none with why"; section 17's "Store copies", the newest 3 kept and a copy waiting at most 20 hours, looking every 30 seconds and 10 minutes past the labeller's limit; and section 18's "A store copy that does not open and read" and "The night, its drain or its labeller still holding the store after twenty hours".
+Why: the operator's ruling of 2026-10-02, "Backup: yes."
+### 2026-10-02 - SCHEMA.md - the store's copy's row
+Authorised by: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
+Was:
+> No paragraph under `run_log` about the copy.
+Now:
+> "The store's copy writes one row of its own, and names its folder relative to the data root. ..."
+Why: the run log row the copy writes and the night's own step row beside it.
+### 2026-10-02 - RUNBOOK.md - the night's fifth step and the store's copies
+Authorised by: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
+Was:
+> "Four steps a night, from one scheduled invocation."; "All four are idempotent. ... and a labeller run twice asks for no article twice under one profile."; "Back it up by copying the file. No row holds an absolute path, so the copy works anywhere."
+Now:
+> "Five steps a night, ...", with the store's copy as the table's fifth row; "All five are idempotent. ..., and a copy run twice makes a second copy, keeps the newest three and changes nothing in the store beyond its own row."; and in its place "The night copies it, and keeps the newest three copies", "The copies' folder is a setting of the worker's", "A copy can be made by hand" with `backup`, and "To restore from a copy".
+Why: the operator's ruling of 2026-10-02, the folder `E:\EquityBrief-backups` on the operator's machine.
+### 2026-10-02 - .claude/rules/checks.md - fixture-expectations, nightly-run and read-surface reach the store's copy
+Authorised by: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
+Was:
+> `nightly-run`: "... and the night starts the news labeller once after its own request, as the last row it writes and with no model call on it, ..."
+Now:
+> `nightly-run`: "... once after its own request, with no model call on its row, ...; and the night starts the store's copy as the last row it writes, ..."; `fixture-expectations` and `read-surface` each gain a clause on the copy, its waits and its line on the run page.
+Why: the checks reach what the copy asserts.

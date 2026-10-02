@@ -36087,3 +36087,42 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             891 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
             roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.10 ruling - the store copied once the night and every process it started have finished, the newest three kept after each is opened and read, and the newest copy's time and folder on the run page   2026-10-02
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off. It carries
+the code the operator's ruling of 2026-10-02 on a backup calls for, which meets the done conditions a
+checkpoint's code meets.
+Built:      `StoreBackup` and the `backup` verb. It waits while the night holds its lock, for the labeller the
+            night started until its last row or its time limit and ten minutes more, and for the drain, whose
+            lock it holds while it copies; copies the store through SQLite's own backup into the copies' folder
+            under an unfinished name, names the copy by its instant once written, and opens and reads it against
+            the store; keeps the newest three, opening and reading each before an older one is removed and
+            removing none where one does not; gives up after twenty hours; and writes one row naming the folder
+            relative to the data root. The night starts it as its last step through the launcher, waiting for
+            the labeller where the night started one. `StoreCopies` holds the setting, `EquityBrief:Backup:Folder`,
+            and the copies' names. The run page draws the newest copy's time and folder beneath anything to
+            worry about, read off the copy's row against its own data root. A decision names it; ARCHITECTURE
+            gains the component's two rows, section 14's last step, the worry row's part, section 17's "Store
+            copies" and section 18's two rows.
+Setting:    on the operator's machine `E:\EquityBrief-backups`, written into the worker's secrets file after
+            the merge, which the night and every process it starts read.
+Tests:      F13CTESTS, from 1744: four added, the copy made and read with its row's folder relative, the newest
+            three kept with each read first and none removed past a damaged one, each wait and the twenty-hour
+            limit over a clock the copy's own wait moves, and the run page's line over a constructed store; the
+            night's order tests read the copy's step last.
+Claims:     F13CCLAIMS, from 880: seven added, the catalogue's and the matrix's rows, section 14's step, the
+            worry row's part, section 17's row and section 18's two, each reached and passing, and every pair
+            names them as rows added after phase 13's report.
+Pins:       none moves: the night's step list, the launcher, the read surface and the copy sit in no pin list.
+Mutated:    the rule, stated before the run: each property the change adds, broken alone, made on the branch in
+            this checkout, filtered to the tests named and reverted.
+            S1 an older copy removed without the kept copies opened first: red in the keeping test.
+            S2 the copy made without the drain's lock: red in the waiting test.
+            S3 the labeller never waited for: red in the waiting test.
+            S4 the row naming the folder as the full path: red in the copying test.
+            S5 the night starting the copy with no wait for the labeller it started: red in the labeller's
+            night test.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F13CGATES
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.

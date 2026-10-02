@@ -6,7 +6,7 @@ namespace EquityBrief.Core.Configuration;
 // data root where it names none; each copy named by the instant it was made, which orders them; and the folder
 // as a store row carries it, relative to the data root with forward separators, since no absolute path is
 // written into a store row, or by its name alone where it lies on a volume no relative path reaches.
-// see: The store is copied after every night once the night, its drain and its labeller have finished, and the newest three copies are kept, each opened and read before an older one is removed
+// see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
 public static class StoreCopies
 {
     public const string FolderKey = "EquityBrief:Backup:Folder";
