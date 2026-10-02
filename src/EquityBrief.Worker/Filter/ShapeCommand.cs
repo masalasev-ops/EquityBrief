@@ -58,17 +58,30 @@ public sealed class ShapeCommand : IComponent
     // does not count.
     public const string CorrectionEvidence = "a rule correction opening filter version";
 
+    public const string Frozen = "frozen";
+
+    // The words the pullback's freeze opens its version's evidence and every retirement it writes with, which
+    // the bound on acceptances does not count and a second freeze is refused by.
+    public const string FreezeEvidence = "the pullback's freeze opening filter version";
+
+    // The pullback's base: the open version's settings with its reward-to-risk floor at this.
+    // see: The pullback freezes at the base with its reward-to-risk floor raised to 2, and the ideas' run waits until phase 13 is finished
+    public const double FreezeRewardToRiskFloor = 2;
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--accept", ["--accept"], ["--restarts"], []),
         new("--settings", ["--settings", "--evidence"], ["--trade", "--restarts"], []),
         new("--reject", ["--reject", "--reason"], [], []),
         new("--rule-correction", ["--evidence", "--restarts"], ["--trade"], ["--rule-correction"]),
+        new("--freeze", ["--evidence", "--restarts"], [], ["--freeze"]),
     ];
 
     const string OpenVersion = "SELECT version, settings FROM filter_version WHERE closed_at IS NULL ORDER BY opened_at DESC LIMIT 1;";
 
     const string OpenVersionSettings = "SELECT settings FROM filter_version WHERE closed_at IS NULL ORDER BY opened_at DESC LIMIT 1;";
+
+    const string OpenVersionEvidence = "SELECT evidence FROM filter_version WHERE closed_at IS NULL ORDER BY opened_at DESC LIMIT 1;";
 
     const string VersionCount = "SELECT COUNT(*) FROM filter_version;";
 
@@ -97,14 +110,16 @@ public sealed class ShapeCommand : IComponent
     // see: A swing filter row carries both swing plans, each scored from the night's close, and a candidate's setups are scored on the plan its own trade gate reads
     const string LiveSetups = @"
         SELECT l.session_date, f.outcome,
-               f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings
+               f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings,
+               l.ticker, f.resolved_on, f.ticker IS NOT NULL
         FROM listing l, json_each(COALESCE(l.shadow_reasons, '{}'), '$.candidates') c
         LEFT JOIN forward_return f
             ON f.ticker = l.ticker AND f.session_date = l.session_date AND f.horizon = $horizon
         WHERE json_extract(c.value, '$.fired') = 1 AND json_extract(c.value, '$.candidate') = $candidate
         UNION ALL
         SELECT g.session_date, f.outcome,
-               f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings
+               f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings,
+               g.ticker, f.resolved_on, f.ticker IS NOT NULL
         FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.candidates') c
         LEFT JOIN forward_return f
             ON f.ticker = g.ticker AND f.session_date = g.session_date
@@ -212,13 +227,87 @@ public sealed class ShapeCommand : IComponent
             return await CorrectAsync(Given("--trade"), Given("--evidence")!, restarts!.Value, runId);
         }
 
+        if (form.Flag == "--freeze")
+        {
+            return await FreezeAsync(Given("--evidence")!, restarts!.Value, runId);
+        }
+
         return await AcceptSettingsAsync(Given("--settings")!, Given("--trade"), Given("--evidence")!, restarts, runId);
+    }
+
+    // The pullback's freeze: the open version closed and the next opened at the base, its settings with the
+    // reward-to-risk floor raised, every standing swing family candidate retired and the family the code writes
+    // for the new version registered, all at one instant, stating the non-empty blocks the live candidate has
+    // run, which it restarts. Refused where no version is open, where no swing family candidate stands, where
+    // the open version was opened by a freeze, and where the count of blocks is another.
+    // see: The pullback's freeze opens its base as the next filter version and registers the swing family again at one instant
+    public async Task<ShapeOutcome> FreezeAsync(string evidence, int restarts, string runId, CancellationToken cancellation = default)
+    {
+        await using var connection = await OpenAsync(cancellation);
+
+        if (await OpenVersionAsync(connection, cancellation) is not { } held)
+        {
+            return await RefuseAsync(runId, "no filter version is open, so there is no rule to freeze. Nothing was changed.");
+        }
+
+        if ((await OpenEvidenceAsync(connection, cancellation))?.StartsWith(FreezeEvidence, StringComparison.Ordinal) == true)
+        {
+            return await RefuseAsync(runId, FormattableString.Invariant($"filter version {held.Version} was opened by the pullback's freeze, which is taken once. Nothing was changed."));
+        }
+
+        var startedAt = clock.UtcNow;
+        var registrar = new CandidateRegistrar(clock, databaseFile);
+        var live = SwingFamily.Standing(await registrar.RowsAsync(cancellation), startedAt);
+
+        if (live is null)
+        {
+            return await RefuseAsync(runId, "no live filter candidate stands registered, so there is no family to freeze. Nothing was changed.");
+        }
+
+        var blocks = await LiveBlocksAsync(connection, live.Candidate, cancellation);
+
+        if (restarts != blocks)
+        {
+            return await RefuseAsync(runId, FormattableString.Invariant($"'{live.Candidate}' has run {blocks} non-empty block(s), and --restarts {restarts} states another count. Nothing was changed."));
+        }
+
+        var settings = held.Settings with { RewardToRiskFloor = FreezeRewardToRiskFloor };
+        var next = FormattableString.Invariant($"{await CountAsync(connection, cancellation) + 1}");
+        var opened = FormattableString.Invariant($"{FreezeEvidence} {next}, restarting {blocks} non-empty block(s): {evidence}");
+
+        async Task Write(SqliteConnection writing, SqliteTransaction transaction, CancellationToken token)
+        {
+            await ExecuteAsync(writing, transaction, CloseVersion, token, ("$at", Stamp(startedAt)));
+            await ExecuteAsync(
+                writing,
+                transaction,
+                OpenNext,
+                token,
+                ("$version", next),
+                ("$settings", settings.Write()),
+                ("$at", Stamp(startedAt)),
+                ("$evidence", opened));
+        }
+
+        var frozen = await registrar.CorrectTheFamilyAsync(TheSwingFamily.For(next, settings), opened, Write, runId, cancellation);
+
+        if (frozen.Outcome == CandidateRegistrar.Refused)
+        {
+            return await RefuseAsync(runId, frozen.Detail + " Nothing was changed.");
+        }
+
+        var said = FormattableString.Invariant(
+            $"filter version {next} opened at the pullback's base, closing {held.Version}, its reward-to-risk floor at {FreezeRewardToRiskFloor:0.##} and every other setting as version {held.Version} held it; {frozen.Detail}; the pullback's freeze and no shape acceptance, restarting {blocks} non-empty block(s)");
+
+        await RecordAsync(connection, null, runId, startedAt, Frozen, 1, said, cancellation);
+
+        return new ShapeOutcome(Frozen, next, said);
     }
 
     // A rule correction taken before the family's first scored night: the open version closed and the
     // next opened with the trade input the ruling names, or the one it held where none is named, and every
     // other setting as it stood, written as the code now writes a version's settings, every standing swing
-    // family candidate retired and the six the code writes for the new version registered, all at one
+    // family candidate retired and the family the code writes for the new version registered, all at one
     // instant. A correction naming no plan is the one a change to the filter's rule takes, which moves no
     // setting and drops any the filter no longer reads. It states the non-empty blocks the live candidate
     // has run, which it restarts, or is refused, and it is no acceptance: the bound counts the acceptances
@@ -594,7 +683,7 @@ public sealed class ShapeCommand : IComponent
             first = await command.ExecuteScalarAsync(cancellation) is string earliest ? Date(earliest) : null;
         }
 
-        var setups = new List<CandidateSetup>();
+        var read = new List<(CandidateSetup Setup, OpenTradeListing Listing)>();
 
         await using (var command = connection.CreateCommand())
         {
@@ -611,17 +700,34 @@ public sealed class ShapeCommand : IComponent
             {
                 double? Real(int at) => reader.IsDBNull(at) ? null : reader.GetDouble(at);
 
-                setups.Add(new CandidateSetup(
-                    Date(reader.GetString(0)),
-                    reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                    Real(2),
-                    Real(3),
-                    Real(4),
-                    Real(5),
-                    Real(6),
-                    !reader.IsDBNull(7) && reader.GetInt64(7) == 1));
+                var session = Date(reader.GetString(0));
+                var outcome = reader.IsDBNull(1) ? null : reader.GetString(1);
+
+                read.Add((
+                    new CandidateSetup(
+                        session,
+                        outcome ?? string.Empty,
+                        Real(2),
+                        Real(3),
+                        Real(4),
+                        Real(5),
+                        Real(6),
+                        !reader.IsDBNull(7) && reader.GetInt64(7) == 1),
+                    new OpenTradeListing(
+                        reader.GetString(8),
+                        session,
+                        reader.GetInt64(10) == 1,
+                        outcome,
+                        reader.IsDBNull(9) ? null : Date(reader.GetString(9)),
+                        ForwardReturnSeries.SetupSessionCap)));
             }
         }
+
+        // The setups the candidate's own record counts, every one listed while its own trade on the stock
+        // was still open left out, as the run page leaves it out.
+        // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
+        var walked = OpenTrades.Walk(read.Select(pair => pair.Listing));
+        var setups = read.Where(pair => walked[(pair.Listing.Ticker, pair.Listing.Night)] is null).Select(pair => pair.Setup).ToList();
 
         return SwingFamily.Blocks(setups, first, until);
     }
@@ -640,6 +746,14 @@ public sealed class ShapeCommand : IComponent
     {
         await using var command = connection.CreateCommand();
         command.CommandText = OpenVersionSettings;
+
+        return await command.ExecuteScalarAsync(cancellation) as string;
+    }
+
+    static async Task<string?> OpenEvidenceAsync(SqliteConnection connection, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = OpenVersionEvidence;
 
         return await command.ExecuteScalarAsync(cancellation) as string;
     }

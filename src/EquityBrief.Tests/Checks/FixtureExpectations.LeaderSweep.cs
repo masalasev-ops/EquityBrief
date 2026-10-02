@@ -73,17 +73,25 @@ public partial class FixtureExpectations
     [Fact]
     public async Task TheLeadersSweepReadsTheFixturesNightAsTheNightStoredIt()
     {
-        // On the fixture's night, every member the leader's rule stored a row for: the long return, its place in
-        // its sector and how many of the sector hold a return are the sweep's own standings, read through the
-        // sweep's path from the bars and the membership the store holds.
+        // On the fixture's night, each member's long return as the swing readings stored it, and its place in
+        // its sector and how many of the sector hold a return as the night's own standings give them over those
+        // readings and the membership's sectors, which is what the swing filter hands the pullback's variant in
+        // the top sectors, are the sweep's own standings, read through the sweep's path from the bars and the
+        // membership the store holds.
+        // see: The sector leaders are a variant of the pullback's starting point and not a family of their own
         using var store = await WithTwoNights();
-
-        await new Worker.Families.FamilyEvaluator(Core.Time.FixedClock.At(FixtureEvening, Core.Time.SessionZones.UnitedStates), store.DatabaseFile).RunAsync("two-nights-fixture-family-rules");
 
         var inputs = await new SweepHistory(store.DatabaseFile).ReadAsync(FixtureNight);
         var day = FixtureNight.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        var stored = SweepRows(store, $"SELECT ticker FROM family_result WHERE session_date = '{day}' AND family = '{LeaderRule.Name}' ORDER BY ticker;")
-            .ToDictionary(ticker => ticker, ticker => SweepRows(store, $"SELECT gates FROM family_result WHERE session_date = '{day}' AND family = '{LeaderRule.Name}' AND ticker = '{ticker}';").Single());
+        var night = SweepRows(
+                store,
+                "SELECT m.ticker, (SELECT MAX(sector) FROM membership WHERE ticker = m.ticker AND sector IS NOT NULL), CASE WHEN s.note IS NULL THEN s.return_long END " +
+                $"FROM membership m LEFT JOIN swing_reading s ON s.ticker = m.ticker AND s.session_date = '{day}' " +
+                $"WHERE (m.joined IS NULL OR m.joined <= '{day}') AND (m.\"left\" IS NULL OR m.\"left\" > '{day}') ORDER BY m.ticker;")
+            .Select(row => row.Split('|'))
+            .Select(cells => (Ticker: cells[0], Sector: cells[1].Length > 0 ? cells[1] : null, Return: cells[2].Length > 0 ? double.Parse(cells[2], CultureInfo.InvariantCulture) : (double?)null))
+            .ToArray();
+        var (_, standings) = LeaderRule.Standings(night);
 
         SweepRelease(store);
 
@@ -93,27 +101,25 @@ public partial class FixtureExpectations
         var (rows, places) = LeaderSweep.StandingsOn(series, members, sessionAt[FixtureNight]);
         var compared = 0;
 
-        Assert.True(stored.Count >= 4, $"The fixture's night stored {stored.Count} leader row(s), expected a row for each of its four members.");
+        Assert.True(night.Length >= 4, $"The fixture's night holds {night.Length} member(s), expected its four.");
 
-        foreach (var (ticker, gatesJson) in stored)
+        foreach (var (ticker, _, held) in night)
         {
-            var leader = FamilyRule.GatesOf(gatesJson).Single(gate => gate.Name == LeaderRule.Leader).Values;
-
-            if (!leader.TryGetValue("return", out var held))
+            if (held is null || standings[ticker].Place is null)
             {
-                Assert.True(!places.TryGetValue(ticker, out var none) || none.Place is null, $"{ticker}: the night read no return and the sweep placed it.");
+                Assert.True(!places.TryGetValue(ticker, out var none) || none.Place is null, $"{ticker}: the night placed no return and the sweep placed it.");
                 continue;
             }
 
             var row = rows.Single(one => one.Ticker == ticker);
 
-            Assert.Equal(double.Parse(held, CultureInfo.InvariantCulture), row.Return!.Value, 9);
-            Assert.Equal(leader["place"], places[ticker].Place!.Value.ToString(CultureInfo.InvariantCulture));
-            Assert.Equal(leader["of"], places[ticker].Sector!.Counted.ToString(CultureInfo.InvariantCulture));
+            Assert.Equal(held.Value, row.Return!.Value, 9);
+            Assert.Equal(standings[ticker].Place, places[ticker].Place);
+            Assert.Equal(standings[ticker].Sector!.Counted, places[ticker].Sector!.Counted);
             compared++;
         }
 
-        Assert.True(compared >= 1, "The fixture's night stored no return the leader's rule read.");
+        Assert.True(compared >= 1, "The fixture's night placed no member the sweep could be read against.");
     }
 
     [Fact]

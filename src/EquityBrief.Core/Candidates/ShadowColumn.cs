@@ -1,3 +1,4 @@
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 
 namespace EquityBrief.Core.Candidates;
@@ -66,8 +67,9 @@ public static class ShadowColumn
         var outcomes = new List<ShadowOutcome>();
         var skipped = new List<ShadowSkip>();
 
-        // The candidates the swing filter's stage evaluates are left to it, and named in its shadow rather than here.
-        foreach (var row in standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is not GateEvaluator))
+        // The candidates the swing filter's stage and the family evaluator's evaluate are left to them, and
+        // named in their shadows rather than here.
+        foreach (var row in standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is not (GateEvaluator or FamilyRuleEvaluator)))
         {
             var evaluator = CandidateEvaluators.Find(row.Evaluator);
 
@@ -186,6 +188,62 @@ public static class ShadowColumn
             var verdict = evaluator.EvaluateGates(inputs, CandidateEvaluator.Read(row.Parameters));
 
             outcomes.Add(new ShadowOutcome(row.Candidate, verdict.Fired, verdict.Values));
+        }
+
+        return new ShadowResult(outcomes, skipped);
+    }
+
+    // The standing candidates the family evaluator's stage evaluates for one setup family, the family kind
+    // whose rule is that family's alone.
+    public static IReadOnlyList<RegisterRow> ForTheFamily(IReadOnlyList<RegisterRow> standing, string family) =>
+        [.. standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is FamilyRuleEvaluator rule && rule.Family == family)];
+
+    // Every standing family candidate evaluated over one member's inputs in the family evaluator's stage, or
+    // skipped with a reason, by the rules the other stages apply to their own: a missing or moved evaluator is
+    // a fault, and a member the night holds no bar for, or holds across a gap, is a counted skip.
+    // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
+    public static ShadowResult EvaluateFamily(IReadOnlyList<RegisterRow> standing, FamilyMember member, NameWithheld? withheld = null)
+    {
+        var outcomes = new List<ShadowOutcome>();
+        var skipped = new List<ShadowSkip>();
+
+        foreach (var row in standing)
+        {
+            var found = CandidateEvaluators.Find(row.Evaluator);
+
+            if (found is null)
+            {
+                skipped.Add(new ShadowSkip(row.Candidate, $"the code carries no evaluator named '{row.Evaluator}'", ShadowSkipCause.NoEvaluator));
+
+                continue;
+            }
+
+            if (found is not FamilyRuleEvaluator evaluator)
+            {
+                continue;
+            }
+
+            if (evaluator.Version != row.EvaluatorVersion)
+            {
+                skipped.Add(new ShadowSkip(
+                    row.Candidate,
+                    $"registered under {row.Evaluator} at {row.EvaluatorVersion} and the code carries " +
+                    $"{evaluator.Version}, so a score would be about a rule the register does not name",
+                    ShadowSkipCause.VersionMoved));
+
+                continue;
+            }
+
+            if (withheld is not null)
+            {
+                skipped.Add(new ShadowSkip(row.Candidate, withheld.Reason, withheld.Cause));
+
+                continue;
+            }
+
+            var result = evaluator.EvaluateMember(member, CandidateEvaluator.Read(row.Parameters));
+
+            outcomes.Add(new ShadowOutcome(row.Candidate, result.Passed, FamilyRuleEvaluator.ValuesOf(result, evaluator.TypicalMoveOf(member))));
         }
 
         return new ShadowResult(outcomes, skipped);

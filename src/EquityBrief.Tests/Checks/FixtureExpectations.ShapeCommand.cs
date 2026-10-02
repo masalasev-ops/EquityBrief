@@ -220,7 +220,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(0, corrected);
         Assert.StartsWith(
-            "shape: filter version 2 opened, closing 1, its trade gate reading the clear plan and every other setting as version 1 held it; retired 7 and registered 7 at one instant, family of 7 of 8",
+            "shape: filter version 2 opened, closing 1, its trade gate reading the clear plan and every other setting as version 1 held it; retired 8 and registered 8 at one instant, family of 8 of 8",
             said,
             StringComparison.Ordinal);
 
@@ -228,7 +228,7 @@ public partial class FixtureExpectations
         Assert.Equal("[[\"1\",\"2026-09-27T22:00:00Z\"],[\"2\",null]]", Text(store, "SELECT json_group_array(json_array(version, closed_at)) FROM (SELECT * FROM filter_version ORDER BY version);"));
         Assert.Equal(Ruled, FilterSettings.Read(Text(store, "SELECT settings FROM filter_version WHERE version = '2';")));
 
-        // The seven standing retired and the seven the code writes for version 2 registered, all at that instant,
+        // The eight standing retired and the eight the code writes for version 2 registered, all at that instant,
         // each retirement stating what it restarts and that it is a correction.
         const string At = "2026-09-27T22:00:00Z";
 
@@ -281,7 +281,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(0, corrected);
         Assert.StartsWith(
-            $"shape: filter version 2 opened, closing 1, its trade gate reading the {FilterSettings.Word(Ruled.Trade)} plan and every other setting as version 1 held it, written as the code now writes a version's settings; retired 7 and registered 7 at one instant",
+            $"shape: filter version 2 opened, closing 1, its trade gate reading the {FilterSettings.Word(Ruled.Trade)} plan and every other setting as version 1 held it, written as the code now writes a version's settings; retired 8 and registered 8 at one instant",
             said,
             StringComparison.Ordinal);
 

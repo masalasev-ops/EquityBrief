@@ -48,6 +48,7 @@ public enum Store
     FamilyResult,
     FamilyNight,
     FamilyPick,
+    FamilyTrade,
     ForwardReturn,
     Facts,
     Fundamentals,

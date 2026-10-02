@@ -7,6 +7,10 @@ namespace EquityBrief.Core.Families;
 // One session of a name as a family's rule reads it.
 public readonly record struct FamilyBar(DateOnly Session, decimal High, decimal Low, decimal Close, long Volume);
 
+// What the families' rules the family evaluator reads take for one member on one night, together, which a
+// registered family rule is handed so it reads its own family's.
+public sealed record FamilyMember(BreakoutInputs Breakout, DriftInputs Drift);
+
 // One member's answer under one family on one night: the family's gates in order, each with the sentence
 // saying why and the values that decided it, the trade it is bought on where one could be placed, the
 // figure the family's order reads, and what keeps a name passing every gate off the family's list.

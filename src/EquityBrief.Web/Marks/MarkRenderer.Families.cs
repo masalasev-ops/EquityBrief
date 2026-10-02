@@ -57,6 +57,12 @@ public sealed record ListedUnderView(DateOnly Night, string? Family, string? Hea
 // open and finished, and its record in words.
 public sealed record FamilyRunRow(string Family, string Heading, DateOnly? LiveSince, int Variants, int ListedTonight, int Trades, int Open, int Finished, string Record);
 
+// One registered rule of a new setup family on the run page, read over its own trades: the family's heading,
+// the rule's name and whether it is the live one, the trades it kept, those decided and their edge, the whole
+// blocks against the look they wait for, the level its looks are read at, and the record in words.
+// see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
+public sealed record FamilyRecordRow(string Family, string Heading, string Rule, bool Live, int Trades, int Decided, double? Edge, int Blocks, int NextLook, double Level, string Record);
+
 public sealed partial class MarkRenderer
 {
     // The run page's setups, one row a family in the page's order.
@@ -91,6 +97,45 @@ public sealed partial class MarkRenderer
             body.Append(Invariant, $"<td class=\"r num\">{row.Variants}</td><td class=\"r num\">{row.ListedTonight}</td>");
             body.Append(Invariant, $"<td>{Count(row.Trades, "trade")}, {row.Open} open and {row.Finished} finished</td>");
             body.Append(Invariant, $"<td class=\"family-record\">{Escaped(row.Record)}</td></tr>");
+        }
+
+        body.Append("</tbody></table></div>");
+
+        return body.ToString();
+    }
+
+    // The registered rules of the new setups, one row a rule, each read over its own trades.
+    public string FamilyRecords(IReadOnlyList<FamilyRecordRow> rows)
+    {
+        var body = new StringBuilder();
+
+        body.Append(Invariant, $"<div class=\"tbl-wrap\"><table class=\"list-table family-records\" data-rows=\"{rows.Count}\"><thead><tr>");
+
+        foreach (var (heading, says) in new[]
+        {
+            ("Setup", "The setup family the rule belongs to."),
+            ("Rule", "The registered rule, its live one first, each a variant otherwise."),
+            ("Trades", "The trades its own list kept, five a night at most with one open a stock."),
+            ("Decided", "Its trades ended with a result and the benchmark of the same plan on every member that night."),
+            ("Edge", "The average of each decided trade's result less its benchmark, in multiples of its risk."),
+            ("Whole blocks", "Blocks of 63 sessions whose trades have all had their cap, against the look they wait for."),
+            ("Level", "The level its looks are read at, the setup's own share of 0.05 over its own rules."),
+        })
+        {
+            body.Append(TippedHeading(heading, says, heading is "Trades" or "Decided" or "Edge" or "Whole blocks" or "Level" ? "r" : null));
+        }
+
+        body.Append("</tr></thead><tbody>");
+
+        foreach (var row in rows)
+        {
+            body.Append(Invariant, $"<tr data-family=\"{Escaped(row.Family)}\" data-rule=\"{Escaped(row.Rule)}\" data-live=\"{Flag(row.Live)}\" data-trades=\"{row.Trades}\" data-decided=\"{row.Decided}\" data-edge=\"{(row.Edge is { } edge ? edge.ToString("0.###", Invariant) : "none")}\" data-blocks=\"{row.Blocks}\" data-look=\"{row.NextLook}\" data-level=\"{row.Level.ToString("0.#####", Invariant)}\">");
+            body.Append(Invariant, $"<td class=\"setup\">{Escaped(row.Heading)}</td>");
+            body.Append(Invariant, $"<td>{Escaped(row.Rule)}{(row.Live ? " <b>live</b>" : string.Empty)}</td>");
+            body.Append(Invariant, $"<td class=\"r num\">{row.Trades}</td><td class=\"r num\">{row.Decided}</td>");
+            body.Append(Invariant, $"<td class=\"r num\">{(row.Edge is { } shown ? shown.ToString("0.000", Invariant) : "none yet")}</td>");
+            body.Append(Invariant, $"<td class=\"r num\">{row.Blocks} of {row.NextLook}</td>");
+            body.Append(Invariant, $"<td class=\"r num\">{row.Level.ToString("0.####", Invariant)}</td></tr>");
         }
 
         body.Append("</tbody></table></div>");

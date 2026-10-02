@@ -27,11 +27,12 @@ public readonly record struct DriftReading(
 // see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
 public sealed class DriftSweep
 {
+    // The grid around the provisional setting the sweep proposed its freeze from.
     public static FamilyGrid Grid { get; } = new(
         [
-            ("window", [3, DriftRule.WindowSessions, 10]),
-            ("reaction", [0.5, DriftRule.ReactionMoves, 1.5]),
-            ("volume", [1.25, DriftRule.VolumeMultiple, 2.0]),
+            ("window", [3, DriftRule.ProvisionalWindowSessions, 10]),
+            ("reaction", [0.5, DriftRule.ProvisionalReactionMoves, 1.5]),
+            ("volume", [1.25, DriftRule.ProvisionalVolumeMultiple, 2.0]),
             ("target", [2.0, DriftRule.TargetRiskMultiple, 3.0]),
         ],
         [1, 1, 1, 1]);

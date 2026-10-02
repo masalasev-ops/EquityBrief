@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
@@ -12,7 +13,7 @@ namespace EquityBrief.Worker.Families;
 
 public sealed record FamilyEvaluation(string Family, int Members, int Passed, int OneShort);
 
-public sealed record FamilyEvaluatorOutcome(DateOnly? Night, int RowsWritten, IReadOnlyList<FamilyEvaluation> Families);
+public sealed record FamilyEvaluatorOutcome(DateOnly? Night, int RowsWritten, IReadOnlyList<FamilyEvaluation> Families, int Evaluated = 0, IReadOnlyList<string>? Faults = null);
 
 // The family evaluator. Evaluates every member the swing filter evaluated on the night under each setup
 // family but the pullback, whose answers are the filter's own rows, and stores every answer with the
@@ -22,24 +23,24 @@ public sealed record FamilyEvaluatorOutcome(DateOnly? Night, int RowsWritten, IR
 // draws the page's list. The market check it hands every family is the one the filter stored, so one
 // answer closes every family's list, and a series the filter excluded for a gap or as suspect is excluded
 // here. The earnings drift reads each name's newest print as the move annotator stored it and the night's
-// bands, so nothing is asked of a provider. It replaces its own rows for the night where the night is run
-// again, and drops a row that did not pass once its session is older than the bars the store keeps. It
-// makes no request and calls no model.
+// bands, so nothing is asked of a provider. Every family candidate standing when the night started is
+// evaluated over the same inputs at its own settings, by the shadow the night hands in, and its verdict
+// stored on the member's row of its family, a missing or moved evaluator failing the stage. It replaces its
+// own rows for the night where the night is run again, and drops a row that did not pass once its session is
+// older than the bars the store keeps. It makes no request and calls no model.
 // see: The nightly run is arithmetic only
 // see: The market check closes every family's list together
 // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
 // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
+// see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
 public sealed class FamilyEvaluator : IComponent
 {
     // see: Every computed table's writer is its own deleter
     public static ComponentAccess Access => new(
         Stores:
         [
-            new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Bar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
-            new StoreTouch(Store.SwingReading, Touch.Read),
-            new StoreTouch(Store.FilterVersion, Touch.Read),
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.EarningsReaction, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
@@ -54,23 +55,12 @@ public sealed class FamilyEvaluator : IComponent
 
     // Every member the swing filter evaluated on the night, with the exclusions and the gates it stored. A
     // replayed result is none of the night's.
-    // With them, the pullback's setup, trigger and trade gates and the plan the version's trade gate read,
-    // which a family bought at the pullback's buy point takes as stored.
     const string FilterRowsOn = @"
-        SELECT g.ticker, g.exclusions, g.gates, g.setup, g.trigger_pass, g.trade, g.swing_entry,
-               CASE json_extract(v.settings, '$.trade') WHEN '" + FilterSettings.ClearWord + @"' THEN g.clear_stop WHEN '" + FilterSettings.SwingWord + @"' THEN g.swing_stop END,
-               CASE json_extract(v.settings, '$.trade') WHEN '" + FilterSettings.ClearWord + @"' THEN g.clear_target WHEN '" + FilterSettings.SwingWord + @"' THEN g.swing_target END,
-               CASE json_extract(v.settings, '$.trade') WHEN '" + FilterSettings.ClearWord + @"' THEN g.clear_reward_to_risk WHEN '" + FilterSettings.SwingWord + @"' THEN g.swing_reward_to_risk END
+        SELECT g.ticker, g.exclusions, g.gates
         FROM gate_result g
-        LEFT JOIN filter_version v ON v.version = g.version
         WHERE g.session_date = $night AND g.version <> '" + ReplayedResults.Version + @"'
         ORDER BY g.ticker;
     ";
-
-    // The sector the membership names for each name, and each name's return over the long span on the night.
-    const string SectorsOf = "SELECT ticker, MAX(sector) FROM membership WHERE sector IS NOT NULL GROUP BY ticker;";
-
-    const string ReturnsOn = "SELECT ticker, return_long FROM swing_reading WHERE session_date = $night AND return_long IS NOT NULL;";
 
     // Every session the store keeps, a name at a time and oldest first.
     const string EveryBar = @"
@@ -109,9 +99,9 @@ public sealed class FamilyEvaluator : IComponent
 
     const string Insert = @"
         INSERT INTO family_result (
-            session_date, ticker, family, passed, missed, place, entry, stop, target, order_by, exclusions, gates)
+            session_date, ticker, family, passed, missed, place, entry, stop, target, order_by, exclusions, gates, shadow)
         VALUES (
-            $night, $ticker, $family, $passed, $missed, $place, $entry, $stop, $target, $order_by, $exclusions, $gates);
+            $night, $ticker, $family, $passed, $missed, $place, $entry, $stop, $target, $order_by, $exclusions, $gates, $shadow);
     ";
 
     const string AppendRun = @"
@@ -119,7 +109,7 @@ public sealed class FamilyEvaluator : IComponent
             run_id, stage, started_at, ended_at, outcome,
             rows_written, model_calls, network_requests, spend, detail)
         VALUES (
-            $run_id, $stage, $started_at, $ended_at, 'ok',
+            $run_id, $stage, $started_at, $ended_at, $outcome,
             $rows_written, 0, 0, '0', $detail);
     ";
 
@@ -132,19 +122,12 @@ public sealed class FamilyEvaluator : IComponent
         this.databaseFile = databaseFile;
     }
 
-    sealed record Member(
-        string Ticker,
-        IReadOnlyList<string> Exclusions,
-        IReadOnlyList<string> PullbackExclusions,
-        bool Setup,
-        bool Trigger,
-        bool Trade,
-        decimal? Entry,
-        decimal? Stop,
-        decimal? Target,
-        double? RewardToRisk);
+    sealed record Member(string Ticker, IReadOnlyList<string> Exclusions);
 
-    public async Task<FamilyEvaluatorOutcome> RunAsync(string runId, CancellationToken cancellation = default)
+    public Task<FamilyEvaluatorOutcome> RunAsync(string runId, CancellationToken cancellation = default) =>
+        RunAsync(runId, FamilyRuleShadow.None, cancellation);
+
+    public async Task<FamilyEvaluatorOutcome> RunAsync(string runId, FamilyRuleShadow shadow, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;
 
@@ -156,7 +139,7 @@ public sealed class FamilyEvaluator : IComponent
 
         if (night is not { } session)
         {
-            await AppendAsync(connection, null, runId, startedAt, 0, "no session is stored, so no family was evaluated", cancellation);
+            await AppendAsync(connection, null, runId, startedAt, 0, "no session is stored, so no family was evaluated", false, cancellation);
 
             return new FamilyEvaluatorOutcome(null, 0, []);
         }
@@ -165,80 +148,62 @@ public sealed class FamilyEvaluator : IComponent
 
         if (members.Count == 0)
         {
-            await AppendAsync(connection, null, runId, startedAt, 0, FormattableString.Invariant($"the swing filter stored no result for {Stamp(session)}, so no family was evaluated"), cancellation);
+            await AppendAsync(connection, null, runId, startedAt, 0, FormattableString.Invariant($"the swing filter stored no result for {Stamp(session)}, so no family was evaluated"), false, cancellation);
 
             return new FamilyEvaluatorOutcome(null, 0, []);
         }
 
         var bars = await BarsAsync(connection, session, cancellation);
 
-        // The indicators are read from the oldest session a reaction inside the drift's window can follow.
+        // The indicators are read from the oldest session a reaction inside the widest drift window a standing
+        // rule admits can follow.
         var from = bars.Values
-            .Select(held => held[Math.Max(0, held.Count - 1 - DriftRule.WindowSessions)].Session)
+            .Select(held => held[Math.Max(0, held.Count - 1 - shadow.DriftWindowReach)].Session)
             .DefaultIfEmpty(session)
             .Min();
         var indicators = await IndicatorsAsync(connection, from, session, cancellation);
         var prints = await PrintsAsync(connection, session, cancellation);
         var bands = await BandsAsync(connection, session, cancellation);
 
-        // Every sector's standing and every member's place in its own, over the members the filter evaluated.
-        var sectors = await TextsAsync(connection, SectorsOf, null, cancellation);
-        var returns = await ReturnsAsync(connection, session, cancellation);
-        double? ReturnOf(string ticker) => returns.TryGetValue(ticker, out var over) ? over : null;
-
-        var (ranked, standings) = LeaderRule.Standings(
-            [.. members.Select(member => (member.Ticker, sectors.GetValueOrDefault(member.Ticker), ReturnOf(member.Ticker)))]);
-        var sectorsRanked = ranked.Count(sector => sector.Rank is not null);
-
-        var results = new List<FamilyResult>();
+        var results = new List<(FamilyResult Result, string? Shadow)>();
 
         foreach (var member in members)
         {
             var held = bars.GetValueOrDefault(member.Ticker) ?? [];
             var typical = Indicator(indicators, member.Ticker, session, IndicatorSeries.Atr14);
 
-            results.Add(BreakoutRule.Evaluate(new BreakoutInputs(
-                member.Ticker,
-                market,
-                held,
-                Indicator(indicators, member.Ticker, session, IndicatorSeries.VolAvg50),
-                typical,
-                member.Exclusions)));
-
             // The reaction's own session among the member's bars, which the two readings beside it are stored for.
             var print = prints.GetValueOrDefault(member.Ticker);
             var at = print is null ? -1 : held.Select((bar, index) => (bar, index)).Where(pair => pair.bar.Session == print.ReactionSession).Select(pair => pair.index).DefaultIfEmpty(-1).First();
 
-            results.Add(DriftRule.Evaluate(new DriftInputs(
-                member.Ticker,
-                market,
-                held,
-                print,
-                at >= 1 ? Indicator(indicators, member.Ticker, held[at - 1].Session, IndicatorSeries.Atr14) : null,
-                at >= 0 ? Indicator(indicators, member.Ticker, held[at].Session, IndicatorSeries.VolAvg50) : null,
-                typical,
-                bands.GetValueOrDefault(member.Ticker) ?? [],
-                member.Exclusions)));
+            var inputs = new FamilyMember(
+                new BreakoutInputs(
+                    member.Ticker,
+                    market,
+                    held,
+                    Indicator(indicators, member.Ticker, session, IndicatorSeries.VolAvg50),
+                    typical,
+                    member.Exclusions),
+                new DriftInputs(
+                    member.Ticker,
+                    market,
+                    held,
+                    print,
+                    at >= 1 ? Indicator(indicators, member.Ticker, held[at - 1].Session, IndicatorSeries.Atr14) : null,
+                    at >= 0 ? Indicator(indicators, member.Ticker, held[at].Session, IndicatorSeries.VolAvg50) : null,
+                    typical,
+                    bands.GetValueOrDefault(member.Ticker) ?? [],
+                    member.Exclusions));
 
-            results.Add(LeaderRule.Evaluate(new LeaderInputs(
-                member.Ticker,
-                market,
-                sectors.GetValueOrDefault(member.Ticker),
-                ReturnOf(member.Ticker),
-                standings[member.Ticker],
-                sectorsRanked,
-                member.Setup,
-                member.Trigger,
-                member.Trade,
-                member.Entry,
-                member.Stop,
-                member.Target,
-                member.RewardToRisk,
-                member.PullbackExclusions)));
+            // A member the night holds no bar for, or holds across a gap, is a counted skip of every family candidate.
+            var withheld = FamilyRuleShadow.Withheld(held.Count == 0, member.Exclusions.Contains(SwingGates.GapExclusion, StringComparer.Ordinal));
+
+            results.Add((BreakoutRule.Evaluate(inputs.Breakout), shadow.Evaluate(BreakoutRule.Name, inputs, withheld)));
+            results.Add((DriftRule.Evaluate(inputs.Drift), shadow.Evaluate(DriftRule.Name, inputs, withheld)));
         }
 
         var places = SetupFamilies.Evaluated
-            .SelectMany(family => FamilyRule.Ranked(results.Where(result => result.Family == family.Name)).Select((result, at) => (result.Family, result.Ticker, Place: at + 1)))
+            .SelectMany(family => FamilyRule.Ranked(results.Select(pair => pair.Result).Where(result => result.Family == family.Name)).Select((result, at) => (result.Family, result.Ticker, Place: at + 1)))
             .ToDictionary(row => (row.Family, row.Ticker), row => row.Place);
 
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
@@ -252,7 +217,7 @@ public sealed class FamilyEvaluator : IComponent
             await clear.ExecuteNonQueryAsync(cancellation);
         }
 
-        foreach (var result in results)
+        foreach (var (result, verdicts) in results)
         {
             await using var insert = connection.CreateCommand();
 
@@ -270,6 +235,7 @@ public sealed class FamilyEvaluator : IComponent
             insert.Parameters.AddWithValue("$order_by", result.OrderBy is { } figure ? figure : DBNull.Value);
             insert.Parameters.AddWithValue("$exclusions", JsonSerializer.Serialize(result.Exclusions));
             insert.Parameters.AddWithValue("$gates", FamilyRule.GatesJson(result.Gates));
+            insert.Parameters.AddWithValue("$shadow", verdicts is null ? DBNull.Value : verdicts);
 
             await insert.ExecuteNonQueryAsync(cancellation);
         }
@@ -277,7 +243,7 @@ public sealed class FamilyEvaluator : IComponent
         var families = SetupFamilies.Evaluated
             .Select(family =>
             {
-                var own = results.Where(result => result.Family == family.Name).ToArray();
+                var own = results.Select(pair => pair.Result).Where(result => result.Family == family.Name).ToArray();
 
                 return new FamilyEvaluation(
                     family.Name,
@@ -286,9 +252,9 @@ public sealed class FamilyEvaluator : IComponent
                     own.Count(result => result.Missed == 1 && result.Exclusions.Count == 0));
             })
             .ToArray();
-        var outcome = new FamilyEvaluatorOutcome(session, results.Count, families);
+        var outcome = new FamilyEvaluatorOutcome(session, results.Count, families, shadow.Evaluated, shadow.Faults);
 
-        await AppendAsync(connection, transaction, runId, startedAt, results.Count, Detail(outcome), cancellation);
+        await AppendAsync(connection, transaction, runId, startedAt, results.Count, Detail(outcome) + shadow.Said, shadow.Faults.Count > 0, cancellation);
         await transaction.CommitAsync(cancellation);
 
         return outcome;
@@ -320,73 +286,15 @@ public sealed class FamilyEvaluator : IComponent
         {
             var exclusions = JsonSerializer.Deserialize<string[]>(reader.GetString(1)) ?? [];
 
-            decimal? Price(int at) => reader.IsDBNull(at) ? null : Money.FromStorage(reader.GetString(at));
-
-            // A family bought at the pullback's buy point carries every exclusion the filter stored for the
-            // plan but its own open trade, which is the page's to hold back and not a family's.
             members.Add(new Member(
                 reader.GetString(0),
-                [.. exclusions.Where(exclusion => SeriesExclusions.Contains(exclusion, StringComparer.Ordinal))],
-                [.. exclusions.Where(exclusion => !OpenTrades.IsExclusion(exclusion))],
-                reader.GetInt64(3) == 1,
-                reader.GetInt64(4) == 1,
-                reader.GetInt64(5) == 1,
-                Price(6),
-                Price(7),
-                Price(8),
-                reader.IsDBNull(9) ? null : reader.GetDouble(9)));
+                [.. exclusions.Where(exclusion => SeriesExclusions.Contains(exclusion, StringComparer.Ordinal))]));
 
             // The market gate is one answer for the night, so the first row's is every row's.
             market ??= FamilyRule.GatesOf(reader.GetString(2)).FirstOrDefault(gate => gate.Name == FamilyRule.Market);
         }
 
         return (members, market ?? FamilyRule.NoMarketCheck);
-    }
-
-    // One text a name off a query whose first column is the ticker, keyed on the night where it takes one.
-    static async Task<IReadOnlyDictionary<string, string>> TextsAsync(SqliteConnection connection, string query, DateOnly? night, CancellationToken cancellation)
-    {
-        await using var command = connection.CreateCommand();
-
-        command.CommandText = query;
-
-        if (night is { } on)
-        {
-            command.Parameters.AddWithValue("$night", Stamp(on));
-        }
-
-        var texts = new Dictionary<string, string>(StringComparer.Ordinal);
-
-        await using var reader = await command.ExecuteReaderAsync(cancellation);
-
-        while (await reader.ReadAsync(cancellation))
-        {
-            if (!reader.IsDBNull(1))
-            {
-                texts[reader.GetString(0)] = reader.GetString(1);
-            }
-        }
-
-        return texts;
-    }
-
-    static async Task<IReadOnlyDictionary<string, double>> ReturnsAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
-    {
-        await using var command = connection.CreateCommand();
-
-        command.CommandText = ReturnsOn;
-        command.Parameters.AddWithValue("$night", Stamp(night));
-
-        var returns = new Dictionary<string, double>(StringComparer.Ordinal);
-
-        await using var reader = await command.ExecuteReaderAsync(cancellation);
-
-        while (await reader.ReadAsync(cancellation))
-        {
-            returns[reader.GetString(0)] = reader.GetDouble(1);
-        }
-
-        return returns;
     }
 
     // Every name's sessions ending on the night, oldest first. A name whose newest session is not the
@@ -506,7 +414,7 @@ public sealed class FamilyEvaluator : IComponent
         return await command.ExecuteScalarAsync(cancellation) is string newest ? Date(newest) : null;
     }
 
-    async Task AppendAsync(SqliteConnection connection, SqliteTransaction? transaction, string runId, DateTimeOffset startedAt, int rows, string detail, CancellationToken cancellation)
+    async Task AppendAsync(SqliteConnection connection, SqliteTransaction? transaction, string runId, DateTimeOffset startedAt, int rows, string detail, bool failed, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
@@ -514,6 +422,7 @@ public sealed class FamilyEvaluator : IComponent
         command.CommandText = AppendRun;
         command.Parameters.AddWithValue("$run_id", runId);
         command.Parameters.AddWithValue("$stage", Stage);
+        command.Parameters.AddWithValue("$outcome", failed ? "failed" : "ok");
         command.Parameters.AddWithValue("$started_at", startedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
         command.Parameters.AddWithValue("$rows_written", rows);

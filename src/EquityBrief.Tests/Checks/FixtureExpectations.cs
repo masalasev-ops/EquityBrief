@@ -197,6 +197,10 @@ public partial class FixtureExpectations
             // 13.8, the sector leaders' sweep: section 17's row for its grid and section 18's row for a name
             // with no sector.
             .. LeaderSweepClaims,
+
+            // 13.9, the freezes: section 17's rows for the pullback's base and a family rule's list, and
+            // section 18's three rows.
+            .. FamilyRecordClaims,
             CheckReach.Key(Scope.FixtureTable, "reported quarters"),
 
             // 11.5, the floor a name's industry has to reach before it is the name's group.

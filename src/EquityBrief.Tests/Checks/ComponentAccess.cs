@@ -118,6 +118,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Family evaluator"),
             CheckReach.Key(Scope.MatrixTable, "Family evaluator"),
 
+            // 13.9, the family recorder.
+            CheckReach.Key(Scope.CatalogueTable, "Family recorder"),
+            CheckReach.Key(Scope.MatrixTable, "Family recorder"),
+
             // 5.4, tonight's list.
             CheckReach.Key(Scope.CatalogueTable, "Shortlist builder"),
             CheckReach.Key(Scope.MatrixTable, "Shortlist builder"),

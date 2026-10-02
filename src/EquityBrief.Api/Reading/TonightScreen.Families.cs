@@ -221,8 +221,13 @@ public static partial class TonightScreen
         var multiple = StoredFigure(result.Gates, BreakoutRule.Volume, "multiple");
         var ratio = StoredFigure(result.Gates, BreakoutRule.Tightened, "ratio");
 
+        // The sessions its night read the close against, and the provisional setting's for a row stored
+        // before the freeze, which names none.
+        var window = Stored(result.Gates, BreakoutRule.NewHigh, BreakoutRule.WindowValue)
+            ?? BreakoutRule.ProvisionalHighSessions.ToString(CultureInfo.InvariantCulture);
+
         var closed = close is { Length: > 0 } and not "none" && high is { Length: > 0 } and not "none"
-            ? FormattableString.Invariant($"Closed at {Price(close)}, above its high of {Price(high)} over the {BreakoutRule.HighSessions} sessions before")
+            ? FormattableString.Invariant($"Closed at {Price(close)}, above its high of {Price(high)} over the {window} sessions before")
             : "Closed above its high of the year before";
         var volume = multiple is { } times
             ? FormattableString.Invariant($", on volume {times:0.00} times its average")
@@ -292,32 +297,33 @@ public static partial class TonightScreen
     }
 
     // The day a family's rule went live and the variants scored beside it, read off the register as it
-    // stood at the night's end: the pullback's live candidate and the other candidates its evaluator runs.
-    // A family no registration stands for runs on provisional settings and reads no day.
+    // stood at the night's end: the family's live candidate and the other candidates registered under its
+    // evaluator, the pullback's the swing filter's. A family no registration stands for runs on provisional
+    // settings and reads no day.
     // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    // see: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
     static (DateOnly? LiveSince, int Variants) Standing(SetupFamily family, IReadOnlyList<CandidateRow> register, DateOnly night)
     {
-        if (family.Name != SetupFamilies.Pullback)
-        {
-            return (null, 0);
-        }
-
         var at = new DateTimeOffset(night.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var standing = CandidateFamily.Standing(
-                [
-                    .. register.Select(row => new RegisterRow(
-                        row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
-                        row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
-                ],
-                at)
-            .Where(row => row.Evaluator == SwingFilterRule.EvaluatorName)
+        var standing = CandidateFamily.In(
+                CandidateFamily.Standing(
+                    [
+                        .. register.Select(row => new RegisterRow(
+                            row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
+                            row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
+                    ],
+                    at),
+                family.Name)
+            .Where(row => family.Name != SetupFamilies.Pullback || row.Evaluator == SwingFilterRule.EvaluatorName)
             .ToArray();
 
-        var live = standing.LastOrDefault(row => SwingFamily.IsLive(row.Candidate));
+        bool IsLive(string candidate) => family.Name == SetupFamilies.Pullback ? SwingFamily.IsLive(candidate) : FamilyRecords.IsLive(candidate);
+
+        var live = standing.LastOrDefault(row => IsLive(row.Candidate));
 
         return (
             live is null ? null : DateOnly.FromDateTime(live.RegisteredAt.UtcDateTime),
-            standing.Count(row => !SwingFamily.IsLive(row.Candidate)));
+            standing.Count(row => !IsLive(row.Candidate)));
     }
 
     // The notes beneath a family's picks: each stock it passed that a trade still open holds back, each one
@@ -439,14 +445,18 @@ public static partial class TonightScreen
 
     // The run page's setups: each family the page draws with its rule's standing, the variants scored
     // beside it, what it lists on the night, the trades the page has listed under it and how they stand,
-    // and its record, which for a family no freeze has registered is the words saying it starts at the freeze.
+    // and its record, which for a family no freeze has registered is the words saying it starts at the freeze,
+    // for the pullback the live list's, and for a registered new family its live rule's own.
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
     public static IReadOnlyList<FamilyRunRow> FamilyRun(
         DateOnly night,
         IReadOnlyList<FamilyPickRow> picksTonight,
         IReadOnlyList<PickCell> trades,
-        IReadOnlyList<CandidateRow> register)
+        IReadOnlyList<CandidateRow> register,
+        IReadOnlyList<FamilyTradeRow>? familyTrades = null)
     {
+        var records = FamilyRecordViews(register, familyTrades ?? [], night);
+
         return
         [
             .. SetupFamilies.InPageOrder.Select(family =>
@@ -454,6 +464,7 @@ public static partial class TonightScreen
                 var (liveSince, variants) = Standing(family, register, night);
                 var own = trades.Where(trade => trade.Family == family.Name && trade.RepeatOf is null).ToArray();
                 var summary = PicksScreen.Summary(own);
+                var live = records.FirstOrDefault(record => record.Family == family.Name && record.View.Live).View;
 
                 return new FamilyRunRow(
                     family.Name,
@@ -466,10 +477,77 @@ public static partial class TonightScreen
                     summary.Finished,
                     liveSince is null
                         ? SetupFamilies.Provisional
-                        : FormattableString.Invariant($"{summary.Decided} decided of the {summary.MinimumDecided} its record waits for, on {summary.DecidedNights} of {summary.MinimumNights} nights"));
+                        : family.Name != SetupFamilies.Pullback && live is not null
+                            ? RecordWords(live)
+                            : FormattableString.Invariant($"{summary.Decided} decided of the {summary.MinimumDecided} its record waits for, on {summary.DecidedNights} of {summary.MinimumNights} nights"));
             }),
         ];
     }
+
+    // Each registered rule of each new family standing at the night's end, read over its own trades, its
+    // correction the family's own.
+    // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
+    // see: Each setup family's correction for luck counts its own rules alone, at most eight a family
+    public static IReadOnlyList<(string Family, FamilyRecordView View)> FamilyRecordViews(
+        IReadOnlyList<CandidateRow> register,
+        IReadOnlyList<FamilyTradeRow> trades,
+        DateOnly night)
+    {
+        var at = new DateTimeOffset(night.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        RegisterRow[] rows =
+        [
+            .. register.Select(row => new RegisterRow(
+                row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
+                row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
+        ];
+        var standing = CandidateFamily.Standing(rows, at);
+
+        return
+        [
+            .. SetupFamilies.Evaluated.SelectMany(family =>
+            {
+                var rules = CandidateFamily.In(standing, family.Name);
+                var trials = CandidateFamily.Trials(CandidateFamily.In(rows, family.Name), rules.Select(rule => rule.Candidate));
+
+                return FamilyRecords.Family(rules, trades, night, family.CapSessions, trials).Select(view => (family.Name, view));
+            }),
+        ];
+    }
+
+    // The run page's rows of the new setups' registered rules, each family's live rule first.
+    public static IReadOnlyList<FamilyRecordRow> FamilyRecordRows(
+        IReadOnlyList<CandidateRow> register,
+        IReadOnlyList<FamilyTradeRow> trades,
+        DateOnly night) =>
+    [
+        .. FamilyRecordViews(register, trades, night)
+            .OrderBy(record => SetupFamilies.PlaceOf(record.Family))
+            .ThenBy(record => record.View.Live ? 0 : 1)
+            .ThenBy(record => record.View.Candidate, StringComparer.Ordinal)
+            .Select(record => new FamilyRecordRow(
+                record.Family,
+                SetupFamilies.Named(record.Family)?.Heading ?? record.Family,
+                record.View.Candidate,
+                record.View.Live,
+                record.View.Trades,
+                record.View.Decided,
+                record.View.Edge,
+                record.View.Blocks,
+                record.View.NextLook,
+                record.View.Level,
+                RecordWords(record.View))),
+    ];
+
+    // A registered rule's record in words: its trades, the decided ones and their edge, and the whole blocks
+    // against the look they wait for, or what its last look read.
+    public static string RecordWords(FamilyRecordView view) =>
+        view.Trades == 0
+            ? FormattableString.Invariant($"no trade kept yet; its first look reads {view.NextLook} whole blocks of {EquityBrief.Core.Returns.Blocks.Sessions} sessions")
+            : FormattableString.Invariant($"{view.Decided} of {view.Trades} trades decided")
+                + (view.Edge is { } edge ? FormattableString.Invariant($", an edge of {edge:0.000}") : string.Empty)
+                + (view.LooksTaken == 0
+                    ? FormattableString.Invariant($"; {view.Blocks} whole blocks of the {view.NextLook} its first look reads")
+                    : FormattableString.Invariant($"; its last look read {view.PValue:0.0000} against {view.Level:0.0000}{(view.Crossed ? ", crossed" : ", not crossed")}"));
 
     // What a name's page says of the page's list on its night, from the name's own rows on it: the setup that
     // lists it, its place and the labels of the other setups it qualified under, and a sentence for a setup

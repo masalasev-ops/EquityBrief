@@ -29,6 +29,11 @@ public static class RegisterVerb
     // evaluator a code change moved, on the evidence given.
     public const string Moved = "--moved";
 
+    // The flag that freezes a new setup family, its live rule and its variants registered at one instant,
+    // naming the family.
+    // see: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
+    public const string Family = "--family";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
@@ -36,6 +41,7 @@ public static class RegisterVerb
         new(TheThree, [], [], [TheThree]),
         new(TheFamily, [], [], [TheFamily]),
         new(Moved, ["--evidence"], [], [Moved]),
+        new(Family, [Family], [], []),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -105,6 +111,13 @@ public static class RegisterVerb
         if (form.Flag == TheThree)
         {
             return await Said(await registrar.RegisterTogetherAsync(TheThreeCandidates.All, runId), output, error);
+        }
+
+        if (form.Flag == Family)
+        {
+            return TheSetupFamilies.For(Given(Family)) is { } family
+                ? await Said(await registrar.RegisterTogetherAsync(family, runId), output, error)
+                : await RefusedAsync(registrar, runId, $"no freeze is written for a family named '{Given(Family)}'; the families a freeze is written for are {string.Join(", ", TheSetupFamilies.Names)}.", error);
         }
 
         IReadOnlyDictionary<string, double> parameters;

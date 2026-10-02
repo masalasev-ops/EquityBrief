@@ -626,6 +626,7 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.FamilyResult, Touch.Read),
             new StoreTouch(Store.FamilyNight, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
+            new StoreTouch(Store.FamilyTrade, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
             new StoreTouch(Store.Fundamentals, Touch.Read),
@@ -1512,18 +1513,21 @@ public sealed class ReadApi : IComponent
     //
     // The fired ones alone. A candidate's record is over the setups it produced, and a name-night
     // it did not fire on produced none; the quiet rows are what the base rate is over and are read
-    // by the query that reads them.
+    // by the query that reads them. With each, the name, the session its setup resolved on and
+    // whether an outcome row is stored, which the open trade walk reads and nothing hands on.
     // see: A candidate is judged by a sign-flip test over blocks of 63 sessions, with at least eight blocks
     const string CandidateSetups = @"
         SELECT json_extract(c.value, '$.candidate'), l.session_date, f.outcome,
-               f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings
+               f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings,
+               l.ticker, f.resolved_on, f.ticker IS NOT NULL
         FROM listing l, json_each(COALESCE(l.shadow_reasons, '{}'), '$.candidates') c
         LEFT JOIN forward_return f
             ON f.ticker = l.ticker AND f.session_date = l.session_date AND f.horizon = $horizon
         WHERE json_extract(c.value, '$.fired') = 1
         UNION ALL
         SELECT json_extract(c.value, '$.candidate'), g.session_date, f.outcome,
-               f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings
+               f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings,
+               g.ticker, f.resolved_on, f.ticker IS NOT NULL
         FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.candidates') c
         LEFT JOIN forward_return f
             ON f.ticker = g.ticker AND f.session_date = g.session_date
@@ -2956,6 +2960,46 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
+    // Every trade a registered family rule kept up to a night, with its result and its benchmark where written.
+    // The name is not read: a rule's record is over its trades' edges and the sessions they were listed on.
+    const string FamilyTradesUpTo = @"
+        SELECT candidate, session_date,
+               CASE WHEN ended_on <= $on THEN ended_on END,
+               CASE WHEN ended_on <= $on THEN result END,
+               CASE WHEN ended_on <= $on THEN benchmark END
+        FROM family_trade
+        WHERE session_date <= $on
+        ORDER BY candidate, session_date;
+    ";
+
+    // The trades every registered family rule kept up to a night, which each rule's record is read over, a trade
+    // that ended after the night read as still open on it.
+    // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
+    public async Task<IReadOnlyList<EquityBrief.Core.Candidates.FamilyTradeRow>> FamilyTradesAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FamilyTradesUpTo;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<EquityBrief.Core.Candidates.FamilyTradeRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new EquityBrief.Core.Candidates.FamilyTradeRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.IsDBNull(2) ? null : DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.IsDBNull(3) ? null : reader.GetDouble(3),
+                reader.IsDBNull(4) ? null : reader.GetDouble(4)));
+        }
+
+        return rows;
+    }
+
     const string FamilyResultsOn = @"
         SELECT session_date, ticker, family, passed, missed, place, entry, stop, target, order_by, exclusions, gates
         FROM family_result
@@ -4237,26 +4281,53 @@ public sealed class ReadApi : IComponent
         command.Parameters.AddWithValue("$clear", EquityBrief.Core.Returns.ForwardReturnSeries.Clear);
         command.Parameters.AddWithValue("$clearPlan", EquityBrief.Core.Filter.FilterSettings.ClearWord);
 
-        var rows = new List<CandidateSetupRow>();
+        var read = new List<(CandidateSetupRow Row, EquityBrief.Core.Filter.OpenTradeListing Listing)>();
 
         await using var reader = await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
         {
-            rows.Add(new CandidateSetupRow(
-                reader.GetString(0),
-                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                reader.IsDBNull(2) ? null : reader.GetString(2),
-                reader.IsDBNull(3) ? null : reader.GetDouble(3),
-                reader.IsDBNull(4) ? null : reader.GetDouble(4),
-                reader.IsDBNull(5) ? null : reader.GetDouble(5),
-                reader.IsDBNull(6) ? null : reader.GetDouble(6),
-                reader.IsDBNull(7) ? null : reader.GetDouble(7),
-                !reader.IsDBNull(8) && reader.GetInt64(8) == 1));
+            var session = DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var outcome = reader.IsDBNull(2) ? null : reader.GetString(2);
+
+            read.Add((
+                new CandidateSetupRow(
+                    reader.GetString(0),
+                    session,
+                    outcome,
+                    reader.IsDBNull(3) ? null : reader.GetDouble(3),
+                    reader.IsDBNull(4) ? null : reader.GetDouble(4),
+                    reader.IsDBNull(5) ? null : reader.GetDouble(5),
+                    reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                    reader.IsDBNull(7) ? null : reader.GetDouble(7),
+                    !reader.IsDBNull(8) && reader.GetInt64(8) == 1),
+                new EquityBrief.Core.Filter.OpenTradeListing(
+                    reader.GetString(9),
+                    session,
+                    reader.GetInt64(11) == 1,
+                    outcome,
+                    reader.IsDBNull(10) ? null : DateOnly.ParseExact(reader.GetString(10), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap)));
         }
 
-        return rows;
+        return CandidateSetupsKept(read);
     }
+
+    // A candidate's setups less every one listed while its own trade on the stock was still open: each rule
+    // walks its own open trades, so its record counts the trades it alone would have made and never one move
+    // twice. The walk reads the name and nothing after it hands the name on.
+    // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
+    public static IReadOnlyList<CandidateSetupRow> CandidateSetupsKept(IReadOnlyList<(CandidateSetupRow Row, EquityBrief.Core.Filter.OpenTradeListing Listing)> read) =>
+    [
+        .. read
+            .GroupBy(pair => pair.Row.Candidate, StringComparer.Ordinal)
+            .SelectMany(candidate =>
+            {
+                var walked = EquityBrief.Core.Filter.OpenTrades.Walk(candidate.Select(pair => pair.Listing));
+
+                return candidate.Where(pair => walked[(pair.Listing.Ticker, pair.Listing.Night)] is null).Select(pair => pair.Row);
+            }),
+    ];
 
     // The candidates each night evaluated, which is what a candidate's first night and its family
     // are read from.

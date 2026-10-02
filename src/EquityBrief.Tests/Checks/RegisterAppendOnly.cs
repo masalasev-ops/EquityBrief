@@ -365,7 +365,7 @@ public class RegisterAppendOnly
         var ninth = await RegisterAtAsync(store, "one more", 30, Opened.AddDays(-1).AddHours(1));
 
         Assert.Equal(CandidateRegistrar.Refused, ninth.Outcome);
-        Assert.Contains("8 candidates already stand registered", ninth.Detail, StringComparison.Ordinal);
+        Assert.Contains("8 candidates of the pullback family already stand registered", ninth.Detail, StringComparison.Ordinal);
 
         var rows = await RowsAsync(store);
 
@@ -513,8 +513,9 @@ public class RegisterAppendOnly
         Assert.True(evaluators.Count >= 5, $"The code carries {evaluators.Count} evaluator(s), expected at least 5.");
         // Fourteen until 12.5, and twenty-one from it, when the swing family's evaluation through the filter's
         // gates over the readings the reader stores added the reader's and the filter's six files and the
-        // family's shadow.
-        Assert.Equal(21, CandidateEvaluator.EvaluationSources.Count);
+        // family's shadow. Twenty-two from 13.9, when the pullback's variant in the top sectors added the
+        // sector standings' file.
+        Assert.Equal(22, CandidateEvaluator.EvaluationSources.Count);
 
         var shared = CandidateEvaluator.EvaluationSources
             .Select(path => File.ReadAllText(Path.Combine(Repository.Root, path)))
@@ -524,9 +525,14 @@ public class RegisterAppendOnly
 
         var faults = new List<string>();
 
+        // An evaluator's own sources besides its file, a family rule's own files, read between its file and the
+        // shared ones.
+        static string[] OwnOf(CandidateEvaluator evaluator) =>
+            [.. evaluator.OwnSources.Select(path => File.ReadAllText(Path.Combine(Repository.Root, path)))];
+
         foreach (var evaluator in evaluators)
         {
-            var pin = CandidateEvaluator.Pin([SourceOf(evaluator), .. shared]);
+            var pin = CandidateEvaluator.Pin([SourceOf(evaluator), .. OwnOf(evaluator), .. shared]);
 
             if (pin != evaluator.Version)
             {
@@ -537,11 +543,37 @@ public class RegisterAppendOnly
             }
         }
 
-        Assert.Empty(faults);
+        Assert.True(faults.Count == 0, string.Join("\n", faults));
+
+        // Each family rule's evaluator pins its own rule's file, the files every family rule shares, the shadow
+        // that hands it each member and the stage that reads each member's inputs, and a change to one family's
+        // rule moves that family's version and no other evaluator's.
+        // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
+        var families = evaluators.OfType<FamilyRuleEvaluator>().ToArray();
+
+        Assert.Equal(["breakout", "drift"], families.Select(family => family.Family).Order(StringComparer.Ordinal));
+        Assert.All(families, family => Assert.Equal(4, family.OwnSources.Count));
+        Assert.All(evaluators.Where(evaluator => evaluator is not FamilyRuleEvaluator), evaluator => Assert.Empty(evaluator.OwnSources));
+
+        foreach (var family in families)
+        {
+            var rule = family.OwnSources[0];
+            var movedRule = OwnOf(family);
+
+            movedRule[0] += "\ninternal static class ChangesWhatThisRuleDoes { }\n";
+
+            Assert.EndsWith("Rule.cs", rule, StringComparison.Ordinal);
+            Assert.NotEqual(family.Version, CandidateEvaluator.Pin([SourceOf(family), .. movedRule, .. shared]));
+
+            foreach (var other in evaluators.Where(other => !other.OwnSources.Contains(rule, StringComparer.Ordinal)))
+            {
+                Assert.Equal(other.Version, CandidateEvaluator.Pin([SourceOf(other), .. OwnOf(other), .. shared]));
+            }
+        }
 
         foreach (var evaluator in evaluators)
         {
-            string[] sources = [SourceOf(evaluator), .. shared];
+            string[] sources = [SourceOf(evaluator), .. OwnOf(evaluator), .. shared];
 
             // Every source moves the pin, the evaluator's own and each it runs through.
             for (var at = 0; at < sources.Length; at++)
@@ -581,12 +613,23 @@ public class RegisterAppendOnly
         Assert.Contains(Sweep, found);
         Assert.DoesNotContain(EquityBrief.Worker.Sweep.SweepHistory.Access.Stores, touch => touch.Touch != EquityBrief.Core.Components.Touch.Read);
         Assert.True(onThePath.Length >= 3, $"Found {onThePath.Length} file(s) on the evaluation path, expected at least 3.");
-        Assert.All(onThePath, path => Assert.Contains(path, CandidateEvaluator.EvaluationSources));
+
+        // A file on the path is a shared source, or one only the family rules' evaluation runs through and every
+        // family rule's evaluator pins.
+        Assert.All(onThePath, path => Assert.True(
+            CandidateEvaluator.EvaluationSources.Contains(path, StringComparer.Ordinal)
+                || evaluators.OfType<FamilyRuleEvaluator>().All(family => family.OwnSources.Contains(path, StringComparer.Ordinal)),
+            $"{path} is on the evaluation path and pinned by neither every evaluator nor every family rule's."));
+        Assert.Contains("src/EquityBrief.Worker/Families/FamilyEvaluator.cs", onThePath);
+        Assert.Contains("src/EquityBrief.Core/Candidates/FamilyRuleShadow.cs", onThePath);
 
         // Each way the evaluation hands a registration's parameters on is found, and a registration
         // reading its own parameters to check them is not.
         Assert.Matches(EvaluationCall, "var verdict = evaluator.Evaluate(night, CandidateEvaluator.Read(row.Parameters));");
         Assert.Matches(EvaluationCall, "var verdict = evaluator.EvaluateGates(inputs, CandidateEvaluator.Read(row.Parameters));");
+        Assert.Matches(EvaluationCall, "var result = evaluator.EvaluateMember(member, CandidateEvaluator.Read(row.Parameters));");
+        Assert.Matches(EvaluationCall, "var shadow = ShadowColumn.EvaluateFamily(own, member, withheld);");
+        Assert.Matches(EvaluationCall, "var inputs = new FamilyMember(");
         Assert.Matches(EvaluationCall, "? gate.ArrivalSessions(CandidateEvaluator.Read(row.Parameters))");
         Assert.DoesNotMatch(EvaluationCall, "Refusal(taken, row.Candidate, row.Evaluator, CandidateEvaluator.Read(row.Parameters), startedAt)");
         Assert.Contains("src/EquityBrief.Core/Candidates/ShadowColumn.cs", onThePath);
@@ -619,6 +662,7 @@ public class RegisterAppendOnly
             typeof(ListedTranche),
             typeof(SwingFilter),
             typeof(FamilyShadow),
+            typeof(EquityBrief.Core.Families.LeaderRule),
         ];
 
         Assert.Equal(CandidateEvaluator.EvaluationSources, called.Select(FileOf));
@@ -632,7 +676,7 @@ public class RegisterAppendOnly
     // A registration's parameters read back counts where they are handed to an evaluation, and not
     // where the registrar reads a row's own parameters to check a registration of it, which runs nothing.
     static readonly Regex EvaluationCall = new(
-        @"\bIndicatorSeries\.For\(|\bnew\s+CandidateNight\(|\bShadowColumn\.Evaluate\(|\bShadowColumn\.EvaluateGates\(|\.(?:Evaluate|EvaluateGates|ArrivalSessions)\([^;]*\bCandidateEvaluator\.Read\(|\binsert\s+into\s+indicator\b",
+        @"\bIndicatorSeries\.For\(|\bnew\s+CandidateNight\(|\bnew\s+FamilyMember\(|\bShadowColumn\.Evaluate\(|\bShadowColumn\.EvaluateGates\(|\bShadowColumn\.EvaluateFamily\(|\.(?:Evaluate|EvaluateGates|EvaluateMember|ArrivalSessions)\([^;]*\bCandidateEvaluator\.Read\(|\binsert\s+into\s+indicator\b",
         RegexOptions.IgnoreCase);
 
     static string FileOf(Type type) =>

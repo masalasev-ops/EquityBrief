@@ -9,11 +9,12 @@ using EquityBrief.Worker.Filter;
 
 namespace EquityBrief.Tests.Checks;
 
-// fixture-expectations, 12.5: the swing family. Each of the seven evaluated over constructed input on both
+// fixture-expectations, 12.5: the swing family. Each of the eight evaluated over constructed input on both
 // sides of the settings it holds, the seventh leaving off a member whose reported quarters read
-// deteriorating, the listings stage leaving them to the filter's stage, the filter's stage storing their
-// shadow on every member's row with the state it handed each, and the one command writing the seven
-// registrations and phase 10's three retirements at one instant or none.
+// deteriorating and the eighth, from 13.9, reading sector leadership in place of the trend and strength
+// gate, the listings stage leaving them to the filter's stage, the filter's stage storing their shadow on
+// every member's row with the state it handed each, and the one command writing the eight registrations
+// and phase 10's three retirements at one instant or none.
 public partial class FixtureExpectations
 {
     // The operator's ruled settings as the live filter's candidate states them, the trade gate reading
@@ -47,9 +48,19 @@ public partial class FixtureExpectations
     // The member that passes every gate on both swing plans. Entered at 102 on a typical move of 4, the
     // setup band 100 to 104 half a move below: the plan at the nearest bands stops at 100 and section 10's
     // at the next support band's low edge, 95, 1.75 moves below; both target the band at 120, the nearest
-    // above the close and 4.5 moves up.
+    // above the close and 4.5 moves up. It leads at the edge of the top sectors and of its own sector's
+    // top quarter, second of the eight holding a return in the third sector ranked.
     static GateInputs FamilyPassing() =>
-        Passing() with { Bands = [new FilterBand(95m, 96m, "support", 3, true), .. Passing().Bands] };
+        Passing() with
+        {
+            Bands = [new FilterBand(95m, 96m, "support", 3, true), .. Passing().Bands],
+            Leadership = Standing(3, 2),
+        };
+
+    // A member's standing on the night: its sector's rank, none where the sector is too small to rank, and
+    // its place among the sector's members holding a return, the cut the top quarter of them rounded up.
+    static Core.Families.LeaderStanding Standing(int? rank, int? place, int counted = 8) =>
+        new(new Core.Families.SectorStanding("Alpha", counted, 0.45, rank), place, Core.Families.LeaderRule.Cut(counted, Core.Families.LeaderRule.QuarterOf));
 
     // The same member with its target band moved to set each plan's reward to risk: (target - 102) / 7 on
     // section 10's plan wherever the target is two typical moves or more above the entry, 110, and
@@ -58,15 +69,15 @@ public partial class FixtureExpectations
         Passing() with { Bands = [new FilterBand(95m, 96m, "support", 3, true), new FilterBand(100m, 104m, "support", 10, true), new FilterBand(target, target + 1, "resistance", 5, true)] };
 
     [Fact]
-    public void EachOfTheSevenFiresOnItsOwnSideOfEverySettingItMovesAndNotAStepPastIt()
+    public void EachOfTheEightFiresOnItsOwnSideOfEverySettingItMovesAndNotAStepPastIt()
     {
         // Worked by hand. The passing member: breadth 0.75, an uptrend at strength 0.8, a pullback 3 moves
         // deep on a dry-up of 0.8 inside the band 100 to 104, its event tonight and none on the session
         // before; section 10's plan from 102 to 120 over a stop at 95, 18 / 7 = 2.57 with the stop 7 / 4 =
         // 1.75 typical moves below, and the plan at the nearest bands over a stop at 100, 18 / 2 = 9 with
-        // the stop 2 / 4 = 0.5 below. Every one of the seven fires.
+        // the stop 2 / 4 = 0.5 below; second of eight in the third sector. Every one of the eight fires.
         Assert.All(Fires(FamilyPassing()), fire => Assert.True(fire.Value, fire.Key));
-        Assert.Equal(7, Fires(FamilyPassing()).Count);
+        Assert.Equal(8, Fires(FamilyPassing()).Count);
 
         // The plan: the live filter reads section 10's, the variant the nearest bands'. The live floor of 1.5
         // at a target of 112.5, 10.5 / 7, and not at 112.49, 1.4986. A target at 105 is 0.75 typical moves
@@ -91,7 +102,7 @@ public partial class FixtureExpectations
         Assert.Equal((true, false), (Fires(Deep(3.0))[Variant(TheSwingFamily.DepthName)], Fires(Deep(3.01))[Variant(TheSwingFamily.DepthName)]));
         Assert.True(Fires(Deep(3.01))[Live]);
 
-        // The dry-up, which every one of the six holds at the live 1.5.
+        // The dry-up, which every one of the eight holds at the live 1.5.
         GateInputs Dry(double dryUp) => FamilyPassing() with { Reading = FamilyPassing().Reading! with { DryUp = dryUp } };
 
         Assert.All(Fires(Dry(1.49)), fire => Assert.True(fire.Value, fire.Key));
@@ -135,12 +146,49 @@ public partial class FixtureExpectations
         Assert.False(Fires(Arrived(true, true, true))[Live]);
         Assert.True(Fires(FamilyPassing())[Variant(TheSwingFamily.ArrivalName)]);
 
-        // An exclusion leaves every one of the seven unfired.
+        // An exclusion leaves every one of the eight unfired.
         Assert.All(Fires(FamilyPassing() with { Suspect = true }), fire => Assert.False(fire.Value, fire.Key));
+
+        // Sector leadership, the eighth, read in place of the trend and strength gate at the top 3 sectors and
+        // the top quarter of each. Third sector and second of eight, the cut 8 / 4 = 2, leads, and fourth or
+        // third does not; in a sector of nine the cut rounds up to 3, so third leads and fourth does not. A
+        // sector holding too few to rank, a member the night ranked in no sector and one it read no standing
+        // for lead nothing, and the other seven fire whatever the standing.
+        // see: The sector leaders are a variant of the pullback's starting point and not a family of their own
+        var leaders = Variant(TheSwingFamily.LeadersName);
+
+        GateInputs Led(Core.Families.LeaderStanding? standing) => FamilyPassing() with { Leadership = standing };
+
+        Assert.Equal((true, false), (Fires(Led(Standing(3, 2)))[leaders], Fires(Led(Standing(4, 2)))[leaders]));
+        Assert.False(Fires(Led(Standing(3, 3)))[leaders]);
+        Assert.Equal((true, false), (Fires(Led(Standing(1, 3, counted: 9)))[leaders], Fires(Led(Standing(1, 4, counted: 9)))[leaders]));
+        Assert.All(
+            new Core.Families.LeaderStanding?[] { Standing(null, 1, counted: 4), new(null, null, 0), null },
+            standing => Assert.False(Fires(Led(standing))[leaders]));
+        Assert.Equal(7, Fires(Led(Standing(4, 2))).Count(fire => fire.Value));
+        Assert.True(Fires(Led(null))[Live]);
+
+        // The trend and strength gate is not read where leadership is: a leader at strength 0.49 fires the
+        // eighth and not the live filter, and one in no uptrend the same.
+        Assert.Equal((true, false), (Fires(FamilyPassing() with { Strength = 0.49 })[leaders], Fires(FamilyPassing() with { Strength = 0.49 })[Live]));
+        Assert.Equal((true, false), (Fires(FamilyPassing() with { TrendState = "range" })[leaders], Fires(FamilyPassing() with { TrendState = "range" })[Live]));
+
+        // Its verdict says where the member stood, and its parameters state the settings it reads.
+        Assert.Equal(
+            ("sector 3 of the top 3, place 2 of 8 against 2, leading", "sector 4 of the top 3, place 2 of 8 against 2, not leading", "not ranked"),
+            (new SwingFilterRule().EvaluateGates(FamilyPassing(), SwingFilterRule.ParametersOf(Ruled, leadership: Core.Families.LeaderRule.Live)).Values[SwingFilterRule.LeadershipValue],
+             new SwingFilterRule().EvaluateGates(Led(Standing(4, 2)), SwingFilterRule.ParametersOf(Ruled, leadership: Core.Families.LeaderRule.Live)).Values[SwingFilterRule.LeadershipValue],
+             new SwingFilterRule().EvaluateGates(Led(null), SwingFilterRule.ParametersOf(Ruled, leadership: Core.Families.LeaderRule.Live)).Values[SwingFilterRule.LeadershipValue]));
+        Assert.Equal((3.0, 4.0, 0.0, 0.0), (
+            SwingFilterRule.ParametersOf(Ruled, leadership: Core.Families.LeaderRule.Live)[SwingFilterRule.LeaderSectorsParameter],
+            SwingFilterRule.ParametersOf(Ruled, leadership: Core.Families.LeaderRule.Live)[SwingFilterRule.LeaderShareOfParameter],
+            SwingFilterRule.ParametersOf(Ruled)[SwingFilterRule.LeaderSectorsParameter],
+            SwingFilterRule.ParametersOf(Ruled)[SwingFilterRule.LeaderShareOfParameter]));
+        Assert.DoesNotContain(SwingFilterRule.LeadershipValue, new SwingFilterRule().EvaluateGates(FamilyPassing(), SwingFilterRule.ParametersOf(Ruled)).Values.Keys);
 
         // The business state: the seventh leaves off a member whose reported quarters read deteriorating on
         // the night and fires on improving, steady, not enough quarters, no fundamentals yet and a state the
-        // night did not store; the live filter and the other five read no state and fire on deteriorating as
+        // night did not store; the live filter and the other six read no state and fire on deteriorating as
         // on any other.
         // see: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
         var skipping = Variant(TheSwingFamily.DeterioratingName);
@@ -149,7 +197,7 @@ public partial class FixtureExpectations
 
         Assert.False(Fires(InState(FundamentalState.Deteriorating))[skipping]);
         Assert.True(Fires(InState(FundamentalState.Deteriorating))[Live]);
-        Assert.Equal(6, Fires(InState(FundamentalState.Deteriorating)).Count(fire => fire.Value));
+        Assert.Equal(7, Fires(InState(FundamentalState.Deteriorating)).Count(fire => fire.Value));
         Assert.All(
             new[] { FundamentalState.Improving, FundamentalState.Steady, FundamentalState.NotEnoughQuarters, FundamentalState.NoFundamentalsYet, null },
             state => Assert.True(Fires(InState(state))[skipping], state ?? "no state stored"));
@@ -271,7 +319,7 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task TheFamilysCommandWritesSevenRegistrationsAndThreeRetirementsAtOneInstantOrNone()
+    public async Task TheFamilysCommandWritesEightRegistrationsAndThreeRetirementsAtOneInstantOrNone()
     {
         var threeAt = new DateTimeOffset(2026, 9, 6, 22, 0, 0, TimeSpan.Zero);
         var familyAt = new DateTimeOffset(2026, 9, 7, 22, 0, 0, TimeSpan.Zero);
@@ -286,7 +334,7 @@ public partial class FixtureExpectations
             Assert.Equal(3, Scalar(closed, "SELECT COUNT(*) FROM candidate_register;"));
         }
 
-        // One of the three already retired refuses all ten, since a retirement names a candidate that stands.
+        // One of the three already retired refuses all eleven, since a retirement names a candidate that stands.
         using (var one = await FamilyStore(threeAt))
         {
             Assert.Equal(0, (await RegisterVerbAt(one, threeAt.AddHours(1), "--retire", TheThreeCandidates.CrossedByAMarginName, "--evidence", "an earlier retirement")).Code);
@@ -294,8 +342,8 @@ public partial class FixtureExpectations
             var (code, said) = await RegisterVerbAt(one, familyAt, RegisterVerb.TheFamily);
 
             Assert.Equal(1, code);
-            Assert.Equal(10, TheSwingFamily.RowsAtOnce);
-            Assert.Contains($"'{TheThreeCandidates.CrossedByAMarginName}' was refused, so none of the 10 rows was written", said, StringComparison.Ordinal);
+            Assert.Equal(11, TheSwingFamily.RowsAtOnce);
+            Assert.Contains($"'{TheThreeCandidates.CrossedByAMarginName}' was refused, so none of the 11 rows was written", said, StringComparison.Ordinal);
             Assert.Equal(4, Scalar(one, "SELECT COUNT(*) FROM candidate_register;"));
         }
 
@@ -304,10 +352,10 @@ public partial class FixtureExpectations
         var (written, told) = await RegisterVerbAt(store, familyAt, RegisterVerb.TheFamily);
 
         Assert.Equal(0, written);
-        Assert.Contains("retired 3 and registered 7 at one instant, the live filter at filter version 1, family of 7 of 8", told, StringComparison.Ordinal);
+        Assert.Contains("retired 3 and registered 8 at one instant, the live filter at filter version 1, family of 8 of 8", told, StringComparison.Ordinal);
 
-        // Ten rows after the three, all at one instant.
-        Assert.Equal(13, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
+        // Eleven rows after the three, all at one instant.
+        Assert.Equal(14, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
         Assert.Equal(1, Scalar(store, "SELECT COUNT(DISTINCT registered_at) FROM candidate_register WHERE id > 3;"));
         Assert.Equal("2026-09-07T22:00:00Z", Text(store, "SELECT MIN(registered_at) FROM candidate_register WHERE id > 3;"));
 
@@ -317,15 +365,26 @@ public partial class FixtureExpectations
             [.. TextRows(store, "SELECT retires FROM candidate_register WHERE event = 'retired' ORDER BY retires;")]);
         Assert.All(TextRows(store, "SELECT evidence FROM candidate_register WHERE event = 'retired';"), evidence => Assert.Contains(TheSwingFamily.NothingRead, evidence, StringComparison.Ordinal));
 
-        // The seven are the family, each on the one evaluator at its version, the live filter stating the open
+        // The eight are the family, each on the one evaluator at its version, the live filter stating the open
         // version's settings and each variant those with one thing moved, named for version 1, the seventh
-        // leaving a deteriorating business off and stating so in its rule and its parameters.
+        // leaving a deteriorating business off and the eighth reading sector leadership, each stating so in
+        // its rule and its parameters.
+        var leaders = Variant(TheSwingFamily.LeadersName);
+
         Assert.Equal(
-            [Live, NearestBands, Variant(TheSwingFamily.DepthName), Variant(TheSwingFamily.MarketOffName), Variant(TheSwingFamily.StrengthName), Variant(TheSwingFamily.ArrivalName), Variant(TheSwingFamily.DeterioratingName)],
+            [Live, NearestBands, Variant(TheSwingFamily.DepthName), Variant(TheSwingFamily.MarketOffName), Variant(TheSwingFamily.StrengthName), Variant(TheSwingFamily.ArrivalName), Variant(TheSwingFamily.DeterioratingName), leaders],
             TextRows(store, "SELECT candidate FROM candidate_register WHERE event = 'registered' AND id > 3 ORDER BY id;"));
+        Assert.Equal("the pullback in the top 3 sectors, top quarter of each, from version 1", leaders);
         Assert.Equal(1.0, CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{Variant(TheSwingFamily.DeterioratingName)}';"))[SwingFilterRule.SkipDeterioratingParameter]);
         Assert.Equal(0.0, CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{Live}';"))[SwingFilterRule.SkipDeterioratingParameter]);
         Assert.Equal(TheSwingFamily.RuleSkippingDeteriorating, Text(store, $"SELECT rule FROM candidate_register WHERE candidate = '{Variant(TheSwingFamily.DeterioratingName)}';"));
+        Assert.Equal(TheSwingFamily.RuleReadingLeadership, Text(store, $"SELECT rule FROM candidate_register WHERE candidate = '{leaders}';"));
+        Assert.Equal(
+            (3.0, 4.0, 0.0),
+            (CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{leaders}';"))[SwingFilterRule.LeaderSectorsParameter],
+             CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{leaders}';"))[SwingFilterRule.LeaderShareOfParameter],
+             CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{Live}';"))[SwingFilterRule.LeaderSectorsParameter]));
+        Assert.Equal(Ruled, SwingFilterRule.SettingsOf(CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{leaders}';"))));
         Assert.Equal(TheSwingFamily.Rule, Text(store, $"SELECT rule FROM candidate_register WHERE candidate = '{Live}';"));
         Assert.All(TextRows(store, "SELECT evaluator || '|' || evaluator_version FROM candidate_register WHERE event = 'registered' AND id > 3;"), row => Assert.Equal(SwingFilterRule.EvaluatorName + "|" + new SwingFilterRule().Version, row));
         Assert.Equal(Ruled, SwingFilterRule.SettingsOf(CandidateEvaluator.Read(Text(store, $"SELECT parameters FROM candidate_register WHERE candidate = '{Live}';"))));
@@ -336,7 +395,7 @@ public partial class FixtureExpectations
 
         // A second run is refused whole, the three no longer standing.
         Assert.Equal(1, (await RegisterVerbAt(store, familyAt.AddHours(1), RegisterVerb.TheFamily)).Code);
-        Assert.Equal(13, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
+        Assert.Equal(14, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
     }
 
     [Fact]
@@ -356,18 +415,32 @@ public partial class FixtureExpectations
             $"('ZZA', '{FilterNight}', '{FundamentalState.Deteriorating}', NULL, NULL, NULL, '{{}}'), " +
             $"('ZZC', '{FilterNight}', '{FundamentalState.Improving}', NULL, NULL, NULL, '{{}}');");
 
+        // The night's sectors: the four and ZZE in Alpha, the five a sector is ranked on, ZZE holding a long
+        // return of 30 and no bar on the night, ZZD 20 and the other three 10 each. Alpha ranks first, alone,
+        // and the top quarter of its five rounded up is 2, so ZZE and ZZD lead, and ZZA, ZZB and ZZC, third to
+        // fifth on the ticker, do not.
+        store.Execute(
+            "UPDATE membership SET sector = 'Alpha';" +
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at, sector) VALUES ('GSPC', 'ZZE', NULL, NULL, '2026-09-05T21:00:00Z', 'Alpha');" +
+            "INSERT INTO bar (ticker, session_date, open, high, low, close, volume, source, observed_at, raw_close) " +
+            $"VALUES ('ZZE', '{FilterBefore}', '100', '101', '99', '100', 1000, 'test', '2026-09-04T21:00:00Z', '100');" +
+            $"INSERT INTO swing_reading (ticker, session_date, bars, return_long) VALUES ('ZZE', '{FilterNight}', 252, 30);" +
+            "UPDATE swing_reading SET return_long = 20 WHERE ticker = 'ZZD';");
+
         // Worked by hand under the ruled settings: ZZA, ZZB and ZZC pass every gate, section 10's plan from
         // 102 over a stop at 95 to 120 or 126 and the plan at the nearest bands over a stop at 100, and their
-        // events tonight with none on the session before; ZZD is in a range. So ZZC fires for all seven, ZZA
-        // for all but the seventh, which leaves a deteriorating business off, ZZB for all but the strength
-        // variant, its state not stored and so not read against, and ZZD for none.
+        // events tonight with none on the session before; ZZD is in a range and passes every other gate. So
+        // ZZC fires for all but the eighth, ZZA for all but the seventh, which leaves a deteriorating business
+        // off, and the eighth, ZZB for all but the strength variant and the eighth, its state not stored and
+        // so not read against, and ZZD for the eighth alone, which reads its leadership in place of the trend
+        // and strength gate it fails. ZZE, holding no bar on the night, is skipped by all eight.
         var family = FamilyShadow.For(
             await new CandidateRegistrar(FixedClock.At(FilterEvening, SessionZones.UnitedStates), store.DatabaseFile).RowsAsync(),
             FilterEvening.AddMinutes(-30));
         var outcome = await new SwingFilter(FixedClock.At(FilterEvening, SessionZones.UnitedStates), store.DatabaseFile)
             .RunAsync("GSPC", "filter-family", family);
 
-        Assert.Equal((28, 0), (outcome.Evaluated, outcome.Faults!.Count));
+        Assert.Equal((32, 0), (outcome.Evaluated, outcome.Faults!.Count));
 
         IReadOnlyDictionary<string, bool> FiredOn(string ticker)
         {
@@ -390,20 +463,41 @@ public partial class FixtureExpectations
         }
 
         var skipping = Variant(TheSwingFamily.DeterioratingName);
+        var leaders = Variant(TheSwingFamily.LeadersName);
 
-        Assert.All(FiredOn("ZZC"), fire => Assert.True(fire.Value, fire.Key));
-        Assert.All(FiredOn("ZZD"), fire => Assert.False(fire.Value, fire.Key));
-        Assert.Equal([skipping], FiredOn("ZZA").Where(fire => !fire.Value).Select(fire => fire.Key));
+        Assert.Equal([leaders], FiredOn("ZZC").Where(fire => !fire.Value).Select(fire => fire.Key));
+        Assert.Equal([leaders], FiredOn("ZZD").Where(fire => fire.Value).Select(fire => fire.Key));
+        Assert.Equal([leaders, skipping], FiredOn("ZZA").Where(fire => !fire.Value).Select(fire => fire.Key).Order(StringComparer.Ordinal));
         Assert.Equal(
-            [Variant(TheSwingFamily.StrengthName)],
-            FiredOn("ZZB").Where(fire => !fire.Value).Select(fire => fire.Key));
-        Assert.Equal(7, FiredOn("ZZB").Count);
+            [leaders, Variant(TheSwingFamily.StrengthName)],
+            FiredOn("ZZB").Where(fire => !fire.Value).Select(fire => fire.Key).Order(StringComparer.Ordinal));
+        Assert.Equal(8, FiredOn("ZZB").Count);
         Assert.Equal(
             (FundamentalState.Deteriorating, FundamentalState.Deteriorating, FundamentalState.Improving, SwingFilterRule.StateNotRead),
             (StateReadOn("ZZA", skipping), StateReadOn("ZZA", Live), StateReadOn("ZZC", skipping), StateReadOn("ZZB", skipping)));
 
+        // The standing the filter handed each member, as the eighth's verdict names it.
+        string StandingOn(string ticker)
+        {
+            using var document = JsonDocument.Parse(Text(store, $"SELECT shadow FROM gate_result WHERE ticker = '{ticker}' AND session_date = '{FilterNight}';"));
+
+            return document.RootElement.GetProperty("candidates").EnumerateArray()
+                .Single(one => one.GetProperty("candidate").GetString() == leaders)
+                .GetProperty("values").GetProperty(SwingFilterRule.LeadershipValue).GetString()!;
+        }
+
+        Assert.Equal(
+            ["sector 1 of the top 3, place 2 of 5 against 2, leading", "sector 1 of the top 3, place 3 of 5 against 2, not leading", "sector 1 of the top 3, place 5 of 5 against 2, not leading"],
+            [StandingOn("ZZD"), StandingOn("ZZA"), StandingOn("ZZC")]);
+
+        using (var skippedE = JsonDocument.Parse(Text(store, $"SELECT shadow FROM gate_result WHERE ticker = 'ZZE' AND session_date = '{FilterNight}';")))
+        {
+            Assert.Empty(skippedE.RootElement.GetProperty("candidates").EnumerateArray());
+            Assert.Equal(8, skippedE.RootElement.GetProperty("skipped").GetArrayLength());
+        }
+
         Assert.EndsWith(
-            "; 7 swing family candidate(s) registered, 28 shadow evaluation(s) written, 0 skipped on a member without the readings: 0 stale, 0 gapped",
+            "; 8 swing family candidate(s) registered, 32 shadow evaluation(s) written, 8 skipped on a member without the readings: 8 stale, 0 gapped",
             Text(store, "SELECT detail FROM run_log WHERE run_id = 'filter-family' AND stage = 'swing-filter';"),
             StringComparison.Ordinal);
         Assert.Equal("ok", Text(store, "SELECT outcome FROM run_log WHERE run_id = 'filter-family' AND stage = 'swing-filter';"));

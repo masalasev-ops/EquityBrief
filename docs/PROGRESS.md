@@ -35743,3 +35743,66 @@ Queue:      unchanged from the ruling above. 13.9 stays in progress in one pull 
 Verified:   with the pull request that carries it, `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the
             tree carrying 13.9's entry, with the figures 13.9's entry states.
 Stored:     the operator's words in `prompts/2026-10-02-13.9-freeze-answers.md`.
+
+### 13.9 - the freezes: the pullback's base opened as the next filter version with the swing family registered again and the sector leaders as its eighth rule, the breakouts and the earnings drift frozen at their sweeps' proposals with their variants, and each registered family rule evaluated at its own settings, keeping its own list, its trades and its record on the run page   2026-10-02
+
+Built:      13.9 as the two rulings above shape it. 13.9 amends its own done condition: both rulings rewrote
+            its text and its done condition before this build, each with its prior text in `CHANGELOG.md`.
+            - The pullback. `shape --freeze` opens the open version's settings with the reward-to-risk floor at
+              2 as the next version, retires every standing swing family candidate and registers the family's
+              eight at one instant, taken once. The eighth, the pullback in the top 3 sectors, top quarter of
+              each, reads the sector standings the swing filter works out from the membership's sectors and the
+              long returns, in place of the trend and strength gate. The leaders' family, its evaluator and its
+              card are gone; a pick an earlier night listed under them is still named.
+            - The breakouts and the earnings drift. Each rule reads its settings, the night listing at the
+              frozen ones: a high over the 126 sessions before, 1.5 times the volume, ranges at 0.85 and a stop
+              of 1.5 typical moves; a window of 3 sessions, a rise of 0.5 typical moves on 2 times the volume,
+              the target at 2.5 times the risk. `register --family breakout` and `register --family drift` write
+              each live rule, its five grid neighbours and the operator's variant at one instant: the breakout's
+              provisional setting, and the drift's proposal with its stop no closer than a typical move under
+              the buy. A breakout's gate stores its window, so a night before the freeze reads as it ran.
+            - The measuring. Each new family's evaluator pins its rule's file and the files every family rule's
+              evaluation runs through. The family evaluator evaluates every registered family rule over every
+              member at its own settings and stores each verdict on the member's row, a moved evaluator failing
+              its stage. The family recorder, a new component and store, migration 56, keeps each rule's own
+              list, five a night with one open trade a stock freed the night after, and stores each trade's
+              result in multiples of its risk and the benchmark of the same plan on every member. The run page
+              draws each rule's record with its setup's own level, and each setup family's correction counts
+              its own rules, at most eight.
+            - The documents. Sections 7, 11.4, 13.6, 13.8, 13.9, 14, 15.10, 16, 17, 18 and 20, `SCHEMA.md`, the
+              runbook's two commands and the roster's three rows; prior text in `CHANGELOG.md`.
+Tests:      F9TESTS, from 1718: eight added. Each new family's freeze at one instant or none, counted in its own
+            family; each variant at its own settings on both sides of the setting it moves; the pullback's
+            freeze, taken once; every registered rule's verdict on every member's row and a moved evaluator
+            failing the stage; a rule's list over three constructed nights; a trailing and a fixed trade's
+            result and benchmark, a trade whose closes ran out and one with no member to benchmark; the run
+            page's records over constructed trades; and a registered family's card reading its live day off the
+            register. The breakout's and the drift's gate tests moved to the frozen settings with the provisional
+            ones beside them, and the swing family's tests to eight.
+Claims:     fourteen added: the family recorder's catalogue and matrix rows, the family trades' store, section
+            17's rows for the pullback's base and a family rule's list, section 18's three rows, and the run
+            page's records as six parts.
+Pins:       the three pin lists read. The ladder rules' code version: none of its sources edited. The swing
+            filter's code version: `LeaderRule.cs` joins its sources, `SwingGates.cs` and `SwingFilter.cs`
+            edited, e0b775d67060 to 6791a58a062a. The candidate evaluation sources: `LeaderRule.cs` joins them,
+            now 22, and `CandidateEvaluator.cs`, `CandidateEvaluators.cs`, `ShadowColumn.cs`, `SwingGates.cs` and
+            `SwingFilter.cs` edited, with the new families' `BreakoutRule.cs`, `DriftRule.cs`, `FamilyRule.cs`,
+            `FamilyRuleShadow.cs` and `FamilyEvaluator.cs`; every evaluator's version moved to its pin, the
+            swing filter's d30b185d9565 to b03e06fdd7f9.
+Remedy:     `tools/remedies/2026-10-02-13.9-the-freezes.txt`, three steps through `tools/remedy.ps1` after the
+            merge and before the night: the pullback's freeze, then `register --family breakout` and
+            `register --family drift`. The six swing family candidates on version 4 are the only ones standing
+            in the operator's store, so no other candidate needs registering again.
+Mutated:    the rule, stated before the run: each new rule this build adds, reversed alone, made on the branch in
+            this checkout, filtered to its tests and reverted.
+            R1 a rule held by another rule's open trade: red in the list's test.
+            R2 a stock freed on the night its trade ends: red in the list's test.
+            R3 a benchmark counting a member whose closes ran out as nought: red in the trades' test.
+            R4 the maximum counted over every setup family: red in the family command's test.
+            R5 the eighth reading the trend and strength gate as well: red in the eight's test and the filter
+               stage's.
+            R6 a family rule evaluated at the live settings whatever its registration states: red in the family
+               evaluator's shadow test and the variants' test.
+            Results: F9MUT
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F9GATES
+Carried:    the remedy, run after the merge and before the night; then 13.10, the phase report.

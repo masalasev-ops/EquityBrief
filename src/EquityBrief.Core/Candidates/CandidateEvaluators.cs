@@ -22,6 +22,8 @@ public static class CandidateEvaluators
         new VolumeAgainstTheNight(),
         new CrossedByAMargin(),
         new SwingFilterRule(),
+        new BreakoutCandidate(),
+        new DriftCandidate(),
     ];
 
     public static CandidateEvaluator? Find(string name) =>

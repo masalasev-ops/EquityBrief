@@ -31,6 +31,17 @@ public static class CandidateFamily
 
     public const string Retired = "retired";
 
+    // The setup family a register row's rule belongs to, by the evaluator it names: a family rule's own
+    // family, and the pullback's for every other, the swing filter and the conditions registered before
+    // phase 13, which were the whole register while one family was registered.
+    // see: Each setup family's correction for luck counts its own rules alone, at most eight a family
+    public static string SetupFamilyOf(string evaluator) =>
+        CandidateEvaluators.Find(evaluator) is FamilyRuleEvaluator rule ? rule.Family : Families.SetupFamilies.Pullback;
+
+    // The rows of one setup family, which its divisor, its trials and its graph are read over.
+    public static IReadOnlyList<RegisterRow> In(IEnumerable<RegisterRow> rows, string family) =>
+        [.. rows.Where(row => string.Equals(SetupFamilyOf(row.Evaluator), family, StringComparison.Ordinal))];
+
     // The words a retirement's evidence opens with where what retired the candidate was its own
     // record crossing, which is what the runbook's promotion procedure writes. A candidate leaves
     // the family either way, and the two are opposite: one was shown and one was not, and only the

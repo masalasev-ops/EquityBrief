@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Prices;
@@ -56,12 +57,13 @@ public sealed class SwingFilter : IComponent
     // the list from the compiled code and holds this to it.
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "e0b775d67060";
+    public const string CodeVersion = "6791a58a062a";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
         "src/EquityBrief.Core/Bars/ExchangeClosures.cs",
         "src/EquityBrief.Core/Bars/TradingCalendar.cs",
+        "src/EquityBrief.Core/Families/LeaderRule.cs",
         "src/EquityBrief.Core/Filter/FilterSettings.cs",
         "src/EquityBrief.Core/Filter/SwingFunnel.cs",
         "src/EquityBrief.Core/Filter/SwingGates.cs",
@@ -150,6 +152,9 @@ public sealed class SwingFilter : IComponent
     // see: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
     const string StatesOn = "SELECT ticker, state FROM fundamental_reading WHERE session_date = $session;";
 
+    // The sector the membership names for each name, which the sector leaders' variant reads its standing by.
+    const string SectorsOf = "SELECT ticker, MAX(sector) FROM membership WHERE sector IS NOT NULL GROUP BY ticker;";
+
     // The trigger events one session stored, one per name it evaluated, and none where it read none.
     const string EventsOn = "SELECT ticker, trigger_event FROM gate_result WHERE session_date = $session;";
 
@@ -216,6 +221,13 @@ public sealed class SwingFilter : IComponent
         var suspects = await SuspectsAsync(connection, cancellation);
         var states = await TextsAsync(connection, StatesOn, session, cancellation);
 
+        // Every member's place in its sector on the night by the leader rule's own standings, which the sector
+        // leaders' variant reads in place of the trend and strength gate and no gate reads.
+        // see: The sector leaders are a variant of the pullback's starting point and not a family of their own
+        var sectors = await TextsAsync(connection, SectorsOf, session, cancellation);
+        var (_, standings) = LeaderRule.Standings(
+            [.. members.Select(ticker => (ticker, sectors.GetValueOrDefault(ticker), readings.GetValueOrDefault(ticker)?.Reading?.ReturnLong))]);
+
         // Each name's sessions before are its own, the ones it holds behind tonight's, and the events
         // stored for them are read once for each distinct session.
         var befores = new Dictionary<DateOnly, IReadOnlyDictionary<string, bool?>>();
@@ -266,7 +278,8 @@ public sealed class SwingFilter : IComponent
                     before?.Session,
                     fired,
                     earlier,
-                    states.GetValueOrDefault(ticker));
+                    states.GetValueOrDefault(ticker),
+                    standings.GetValueOrDefault(ticker));
 
             results.Add(SwingGates.Evaluate(inputs, settings));
 

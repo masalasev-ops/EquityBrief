@@ -15,13 +15,20 @@ namespace EquityBrief.Tests.Reading;
 public partial class ReadSurface
 {
     // A member's stored answer under the breakout on the night: the gates it passed, with the figures the
-    // card's words are read from, its trade and its place among the names the family passed.
-    static void BreakoutAnswer(TemporaryStore store, string ticker, int? place, string close, string high, double multiple, double ratio, string? stop, bool newHigh = true, bool volume = true, bool tightened = true)
+    // card's words are read from, its trade and its place among the names the family passed. A row stored
+    // before the freeze names no window.
+    static void BreakoutAnswer(TemporaryStore store, string ticker, int? place, string close, string high, double multiple, double ratio, string? stop, bool newHigh = true, bool volume = true, bool tightened = true, string? window = "126")
     {
         var gates = FamilyRule.GatesJson(
         [
             new Gate(FamilyRule.Market, true, "breadth at or above its floor", FamilyRule.Values(("breadth", "0.6"), ("floor", "0.5"))),
-            new Gate(BreakoutRule.NewHigh, newHigh, "the close against the year's high", FamilyRule.Values(("close", close), ("high", high), ("sessions", "252"))),
+            new Gate(
+                BreakoutRule.NewHigh,
+                newHigh,
+                "the close against its high",
+                window is null
+                    ? FamilyRule.Values(("close", close), ("high", high), ("sessions", "252"))
+                    : FamilyRule.Values(("close", close), ("high", high), ("sessions", "252"), (BreakoutRule.WindowValue, window))),
             new Gate(BreakoutRule.Volume, volume, "the volume against its average", FamilyRule.Values(("multiple", FamilyRule.Figure(multiple)), ("floor", "1.5"))),
             new Gate(BreakoutRule.Tightened, tightened, "the ranges against the ones before", FamilyRule.Values(("ratio", FamilyRule.Figure(ratio)), ("ceiling", "1"))),
             new Gate(FamilyRule.Trade, stop is not null, "the stop two typical moves beneath", FamilyRule.Values(("close", close))),
@@ -54,7 +61,7 @@ public partial class ReadSurface
         Evening(store, TheSwitch, filter: false, [new Member("K1", Trend: false), new Member("K2", Trend: false), new Member("K3", Trend: false)]);
         BreakoutAnswer(store, "F1", 1, "100", "99.75", 2.5, 0.9, "96");
         BreakoutAnswer(store, "K1", 2, "50", "49.5", 2.1, 0.8, "47");
-        BreakoutAnswer(store, "K2", 3, "80.25", "80", 1.6, 1, "76.25");
+        BreakoutAnswer(store, "K2", 3, "80.25", "80", 1.6, 1, "76.25", window: null);
         BreakoutAnswer(store, "K3", null, "30", "29", 1.2, 0.7, "28", volume: false);
         await RedrawTheFamilies(store);
 
@@ -89,8 +96,10 @@ public partial class ReadSurface
         Assert.Contains("<span class=\"stt-open\">no fixed target</span>", first, StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\" data-reward-to-risk=\"none\">open</td>", first, StringComparison.Ordinal);
 
-        // Why each is listed, in the figures its gates stored.
-        Assert.Contains("<td class=\"why-tonight\">Closed at 50.00, above its high of 49.50 over the 251 sessions before, on volume 2.10 times its average, after its daily ranges ran at 0.80 of the 20 sessions before them.</td>", first, StringComparison.Ordinal);
+        // Why each is listed, in the figures its gates stored: K1's high over the 126 sessions its gate names,
+        // and K2's, stored as a night before the freeze stored it with no window named, over the provisional
+        // setting's 251.
+        Assert.Contains("<td class=\"why-tonight\">Closed at 50.00, above its high of 49.50 over the 126 sessions before, on volume 2.10 times its average, after its daily ranges ran at 0.80 of the 20 sessions before them.</td>", first, StringComparison.Ordinal);
         Assert.Contains("<td class=\"why-tonight\">Closed at 80.25, above its high of 80.00 over the 251 sessions before, on volume 1.60 times its average, after its daily ranges ran at 1.00 of the 20 sessions before them.</td>", FamilyRowOf(card, "K2"), StringComparison.Ordinal);
 
         // F1, which both families passed, is drawn once, on the pullback's card, with the breakout's label

@@ -1754,7 +1754,8 @@ public sealed class SinglePageApp : IComponent
         CompareView? compare = null,
         IReadOnlyList<CheckpointRow>? checkpoints = null,
         ReportsView? reports = null,
-        IReadOnlyList<FamilyRunRow>? setupFamilies = null)
+        IReadOnlyList<FamilyRunRow>? setupFamilies = null,
+        IReadOnlyList<FamilyRecordRow>? familyRecords = null)
     {
         var region = new StringBuilder();
 
@@ -2032,7 +2033,7 @@ public sealed class SinglePageApp : IComponent
         {
             region.Append(Cards.Computed(
                 "Setup families",
-                marks.FamilyRun(setupFamilies) + Cards.Key(
+                marks.FamilyRun(setupFamilies) + (familyRecords is { Count: > 0 } ? marks.FamilyRecords(familyRecords) : string.Empty) + Cards.Key(
                     "How to read it.",
                     "Each row is one setup the page is drawn from. A live setup's rule is registered and its record counts from that day; a provisional one runs on settings taken from published evidence until its sweep proposes the values its freeze registers.",
                     "A provisional setup's trades are listed and followed like any other and are in no share and no checkpoint until its freeze."),

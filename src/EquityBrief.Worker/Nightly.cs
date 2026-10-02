@@ -387,20 +387,25 @@ public static class Nightly
             // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
             new("swing-filter", async () =>
             {
-                // The swing family standing when the night started, evaluated in the filter's shadow.
-                var family = FamilyShadow.For(await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync(night.Token), nightStartedAt);
+                // The swing family standing when the night started, evaluated in the filter's shadow, and every
+                // other family's registered rules, evaluated in the family evaluator's.
+                var register = await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync(night.Token);
+                var family = FamilyShadow.For(register, nightStartedAt);
+                var rules = FamilyRuleShadow.For(register, nightStartedAt);
                 var outcome = await new SwingFilter(clock, store.DatabaseFile)
                     .RunAsync(indexCode, runId, family, night.Token);
                 var recorded = await NightClose.RecordRuleAsync(store.DatabaseFile, night.Token);
-                var evaluated = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync(runId, night.Token);
+                var evaluated = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync(runId, rules, night.Token);
                 var listed = await new FamilyLister(clock, store.DatabaseFile).RunAsync(runId, night.Token);
+                var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token);
 
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
                     $"{outcome.Excluded} excluded, version {outcome.Version}" +
                     (recorded ? ", listed by the swing filter" : ", no session stored for the list's rule") +
                     $"; {evaluated.Families.Sum(family => family.Passed)} passed by the other setup families" +
-                    $"; {listed.Listed} on the page's list";
-            }, [SwingFilter.Stage, FamilyEvaluator.Stage, FamilyLister.Stage]),
+                    $"; {listed.Listed} on the page's list" +
+                    $"; {kept.Kept} kept by the registered family rules";
+            }, [SwingFilter.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage]),
             // Section 14's step 16. The shape proposer, after the swing filter, since it counts the
             // gate results the filter has just stored. It writes a proposal once the open version's
             // ordinary nights reach the trigger, and never a version: an acceptance is the operator's.

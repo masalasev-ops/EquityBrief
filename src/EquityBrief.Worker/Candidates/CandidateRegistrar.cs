@@ -128,7 +128,7 @@ public sealed class CandidateRegistrar : IComponent
 
         var detail =
             $"registered '{candidate}' as {id} on {evaluator} at {carried.Version}, " +
-            FormattableString.Invariant($"family of {CandidateFamily.Standing(rows, startedAt).Count + 1} of {CandidateFamily.Maximum}");
+            FormattableString.Invariant($"family of {CandidateFamily.In(CandidateFamily.Standing(rows, startedAt), CandidateFamily.SetupFamilyOf(evaluator)).Count + 1} of {CandidateFamily.Maximum}");
 
         await RecordAsync(connection, runId, startedAt, Registered, 1, detail, cancellation);
         await transaction.CommitAsync(cancellation);
@@ -229,7 +229,7 @@ public sealed class CandidateRegistrar : IComponent
         }
 
         var detail = FormattableString.Invariant(
-            $"registered {written.Count} at one instant, family of {CandidateFamily.Standing(appended, startedAt).Count} of {CandidateFamily.Maximum}: ")
+            $"registered {written.Count} at one instant, family of {CandidateFamily.In(CandidateFamily.Standing(appended, startedAt), CandidateFamily.SetupFamilyOf(registrations[0].Evaluator)).Count} of {CandidateFamily.Maximum}: ")
             + string.Join("; ", written);
 
         await RecordAsync(connection, runId, startedAt, Registered, written.Count, detail, cancellation);
@@ -336,7 +336,7 @@ public sealed class CandidateRegistrar : IComponent
 
         var detail = FormattableString.Invariant(
             $"retired {TheSwingFamily.Retires.Count} and registered {family.Count} at one instant, the live filter at filter version {held.Version}, ")
-            + FormattableString.Invariant($"family of {CandidateFamily.Standing(appended, startedAt).Count} of {CandidateFamily.Maximum}: ")
+            + FormattableString.Invariant($"family of {CandidateFamily.In(CandidateFamily.Standing(appended, startedAt), Core.Families.SetupFamilies.Pullback).Count} of {CandidateFamily.Maximum}: ")
             + string.Join("; ", family.Select(one => $"'{one.Candidate}'"));
 
         await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation);
@@ -579,7 +579,7 @@ public sealed class CandidateRegistrar : IComponent
         await alongside(connection, transaction, cancellation);
 
         var detail = FormattableString.Invariant(
-            $"retired {standing.Length} and registered {family.Count} at one instant, family of {CandidateFamily.Standing(appended, startedAt).Count} of {CandidateFamily.Maximum}: retired ")
+            $"retired {standing.Length} and registered {family.Count} at one instant, family of {CandidateFamily.In(CandidateFamily.Standing(appended, startedAt), Core.Families.SetupFamilies.Pullback).Count} of {CandidateFamily.Maximum}: retired ")
             + string.Join("; ", standing.Select(row => $"'{row.Candidate}'"))
             + "; registered "
             + string.Join("; ", family.Select(one => $"'{one.Candidate}'"))
@@ -766,11 +766,14 @@ public sealed class CandidateRegistrar : IComponent
                 "that does not say what will run.";
         }
 
-        var standing = CandidateFamily.Standing(rows, at).Count;
+        // A setup family's own rules alone, since each family's correction divides by its own.
+        // see: Each setup family's correction for luck counts its own rules alone, at most eight a family
+        var family = CandidateFamily.SetupFamilyOf(evaluator);
+        var standing = CandidateFamily.In(CandidateFamily.Standing(rows, at), family).Count;
 
         return standing >= CandidateFamily.Maximum
             ? FormattableString.Invariant(
-                $"{standing} candidates already stand registered, which is the maximum family of ")
+                $"{standing} candidates of the {family} family already stand registered, which is the maximum family of ")
                 + FormattableString.Invariant($"{CandidateFamily.Maximum}. ")
                 + "Retire one before registering another, because the threshold is divided by the family "
                 + "and a family that grows without bound is a correction that stops correcting."
