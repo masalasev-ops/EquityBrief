@@ -10371,3 +10371,10 @@ Was:
 Now:
 > `read-surface`: "... reads nine registered and a divisor of 9, each of the family's rules drawn in words written for what it moves and none as a setting's own name against the live list's, a registration stating no count a night read as keeping every name it passes; ..."
 Why: the run page of 2026-10-02 drew the ninth rule as "BestOf at 3 where the live list has 0".
+### 2026-10-02 - .claude/rules/checks.md - read-surface reaches a refused labeller run's line
+Authorised by: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
+Was:
+> `read-surface`: "... and the run page draws the labeller's line for the night from its own row or that none is recorded, and counts its nights against twenty ..."
+Now:
+> `read-surface`: "... from its own row or that none is recorded, a refusal closing the line on its own period and never a second, and counts its nights against twenty ..."
+Why: the run page of the 2026-10-01 night closed the labeller's refusal with two periods.

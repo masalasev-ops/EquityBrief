@@ -36248,3 +36248,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
             roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 12.6 - correction: the run page's line for a refused news labeller run closes on the refusal's own period and never a second   2026-10-02
+
+Corrects:   the news labeller's line on the run page, of the 12.6 correction of 2026-10-01. A run refused before it
+            asked anything drew "...: <the refusal>." after a refusal that closes on its own period, so the
+            2026-10-01 night's line, refused on the claude-haiku profile's missing key, ended "who wrote..". The
+            test reading the line held a run that ran and a night with none, not a refused run. Seen on the live
+            run page while gathering the sign-off handoff's figures.
+Built:      the refusal ends the line as the sentence it was written as, closed by one period where it carries
+            none of its own.
+Tests:      1758, from 1757: one added, the 2026-10-01 refusal as the labeller wrote it drawn with its own
+            period alone, a refusal with none closed by one, and none recorded saying so.
+Claims:     887, with 887 PASS: none added.
+Pins:       none moves: the read surface sits in no pin list.
+Mutated:    the rule, stated before the run: the property the correction adds, broken alone, made on the branch
+            in this checkout, filtered to the test named and reverted.
+            R1 the period added after the refusal whatever it ends with: red in the refusal test.
+            Results: R1 red in the refusal test, run over e8ccece and reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: e8ccece.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1758 of 1758 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 887 claims, 887 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.

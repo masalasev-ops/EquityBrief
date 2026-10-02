@@ -7235,7 +7235,11 @@ public sealed partial class MarkRenderer : IComponent
 
         if (!line.Ran)
         {
-            return head + Formatted($"The news labeller was refused before it asked anything: {Escaped(line.Refusal ?? "no reason recorded")}.</p>");
+            // The refusal ends the line as the sentence it was written as, its own closing period kept and no
+            // second one added after it.
+            var refusal = (line.Refusal ?? "no reason recorded").TrimEnd();
+
+            return head + Formatted($"The news labeller was refused before it asked anything: {Escaped(refusal.EndsWith('.') ? refusal : refusal + ".")}</p>");
         }
 
         var against = line.MonthLimit is { } ceiling ? Formatted($" against its {SpendVerdict.Money(ceiling)} limit") : string.Empty;
