@@ -36227,17 +36227,24 @@ Corrects:   the night's best three of the 13.10 ruling above, merged as PR 320. 
 Built:      the region says "Keeps only the night's first 3 in the list's own order, where the live list keeps
             every name it passes", and a registration stating no count a night reads as keeping every name, as
             the eight registered before the count was stated do.
-Tests:      F13FTESTS, from 1756: one added, every rule the family registers at filter version 5's settings as
+Tests:      1757, from 1756: one added, every rule the family registers at filter version 5's settings as
             the store holds them drawn in words written for what it moves and none as a setting's own name, and
             both directions of the count worked; the run page's region test holds the ninth's words and refuses
             the fallback on every row.
-Claims:     F13FCLAIMS, from 887: none added.
+Claims:     887, with 887 PASS: none added.
 Pins:       none moves: the read surface sits in no pin list.
 Mutated:    the rule, stated before the run: each property the correction adds, broken alone, made on the
             branch in this checkout, filtered to the tests named and reverted.
             W1 the ninth's words removed, the count read through the fallback again: red in the words test and
             in the region test.
             W2 a registration stating no count read as a count of none apart from zero: red in the words test.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F13FGATES
+            Results: W1 red in the words test and in the region test; W2 red in the words test alone. Each ran
+            over e44eae7, which carries the families' ideas' change merged as PR 323, and was reverted, the
+            tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: e44eae7.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1757 of 1757 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 887 claims, 887 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
