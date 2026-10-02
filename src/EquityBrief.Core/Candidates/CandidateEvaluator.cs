@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 
 namespace EquityBrief.Core.Candidates;
@@ -47,6 +48,11 @@ public abstract class CandidateEvaluator
     // name, or missing one it does, is refused at the write.
     public abstract IReadOnlyList<string> Parameters { get; }
 
+    // The sources besides its own and the shared evaluation sources that this evaluator's evaluation runs
+    // through, from the repository root, which its version pins between the two: a family rule's own files,
+    // which no other evaluator reads, so a change to one family's rule moves that family's version alone.
+    public virtual IReadOnlyList<string> OwnSources => [];
+
     public abstract CandidateVerdict Evaluate(CandidateNight night, IReadOnlyDictionary<string, double> parameters);
 
     // The line that carries a version, which is the one line the pin is taken
@@ -66,7 +72,8 @@ public abstract class CandidateEvaluator
     // the bands and the plan those two write, so a change to either moves what a
     // registered condition would have fired on. The swing reader's and the swing
     // filter's files are in it because the swing family is evaluated through the
-    // filter's gates over the readings the reader stores. That is what makes a registration
+    // filter's gates over the readings the reader stores, and the sector standings' file because the
+    // pullback's variant in the top sectors reads the standings it computes. That is what makes a registration
     // stall rather than drift: an evaluation under a rule the register does not
     // name is evidence about a different condition.
     public static IReadOnlyList<string> EvaluationSources { get; } =
@@ -92,6 +99,7 @@ public abstract class CandidateEvaluator
         "src/EquityBrief.Worker/Filter/ListedTranche.cs",
         "src/EquityBrief.Worker/Filter/SwingFilter.cs",
         "src/EquityBrief.Core/Candidates/FamilyShadow.cs",
+        "src/EquityBrief.Core/Families/LeaderRule.cs",
     ];
 
     // The pin, over an evaluator's own source first and then the evaluation sources in the order listed.
@@ -178,4 +186,61 @@ public abstract class GateEvaluator : CandidateEvaluator
     public abstract CandidateVerdict EvaluateGates(GateInputs inputs, IReadOnlyDictionary<string, double> parameters);
 
     public abstract int ArrivalSessions(IReadOnlyDictionary<string, double> parameters);
+}
+
+// A candidate evaluated in the family evaluator's own stage over a member's inputs for one setup family: a
+// registered rule of the breakout or the earnings drift family, the family's rule read at the registration's
+// settings. The listings stage and the filter's leave it to that stage.
+// see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
+public abstract class FamilyRuleEvaluator : CandidateEvaluator
+{
+    // Read nothing off a listings night, which never evaluates one.
+    public override IReadOnlyList<string> Reads => [];
+
+    public override CandidateVerdict Evaluate(CandidateNight night, IReadOnlyDictionary<string, double> parameters) =>
+        throw new InvalidOperationException(
+            $"{Name} is evaluated in the family evaluator's stage over a member's inputs, and never over a listings night.");
+
+    // The family the rule belongs to, by the word the store keeps it under.
+    public abstract string Family { get; }
+
+    // The family's answer for one member at the registration's settings.
+    public abstract FamilyResult EvaluateMember(FamilyMember member, IReadOnlyDictionary<string, double> parameters);
+
+    // The typical move the night stored for the member, which the stop's distance is counted in.
+    public abstract double? TypicalMoveOf(FamilyMember member);
+
+    // A family rule's own sources: its rule's file, what every family's rule shares, the shadow that hands
+    // it each member and the stage that reads every member's inputs and evaluates it.
+    protected static IReadOnlyList<string> SourcesWith(string rule) =>
+    [
+        rule,
+        "src/EquityBrief.Core/Families/FamilyRule.cs",
+        "src/EquityBrief.Core/Candidates/FamilyRuleShadow.cs",
+        "src/EquityBrief.Worker/Families/FamilyEvaluator.cs",
+    ];
+
+    // The trade a member passing the rule is bought on, as a shadow verdict carries it: the gates' answers, the
+    // buy, the stop, the target where the plan names one, the figures the family's order reads, and the typical
+    // move the night stored, which the stop's distance is counted in.
+    public static IReadOnlyDictionary<string, string> ValuesOf(FamilyResult result, double? typicalMove)
+    {
+        var values = result.Gates.ToDictionary(gate => gate.Name, gate => gate.Passed ? "passed" : "failed", StringComparer.Ordinal);
+
+        values[EntryValue] = FamilyRule.Price(result.Entry);
+        values[StopValue] = FamilyRule.Price(result.Stop);
+        values[TargetValue] = FamilyRule.Price(result.Target);
+        values[OrderValue] = FamilyRule.Figure(result.OrderBy);
+        values[ThenByValue] = FamilyRule.Figure(result.ThenBy);
+        values[MoveValue] = FamilyRule.Figure(typicalMove);
+
+        return values;
+    }
+
+    public const string EntryValue = "entry";
+    public const string StopValue = "stop";
+    public const string TargetValue = "target";
+    public const string OrderValue = "order";
+    public const string ThenByValue = "then by";
+    public const string MoveValue = "typical move";
 }

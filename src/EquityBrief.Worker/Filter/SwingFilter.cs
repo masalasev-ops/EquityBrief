@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Prices;
@@ -37,6 +38,7 @@ public sealed class SwingFilter : IComponent
             new StoreTouch(Store.Ladder, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.Listing, Touch.Read),
+            new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.SeriesState, Touch.Read),
             new StoreTouch(Store.SwingReading, Touch.Read),
             new StoreTouch(Store.MarketReading, Touch.Read),
@@ -55,12 +57,13 @@ public sealed class SwingFilter : IComponent
     // the list from the compiled code and holds this to it.
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "76466298a7f0";
+    public const string CodeVersion = "6791a58a062a";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
         "src/EquityBrief.Core/Bars/ExchangeClosures.cs",
         "src/EquityBrief.Core/Bars/TradingCalendar.cs",
+        "src/EquityBrief.Core/Families/LeaderRule.cs",
         "src/EquityBrief.Core/Filter/FilterSettings.cs",
         "src/EquityBrief.Core/Filter/SwingFunnel.cs",
         "src/EquityBrief.Core/Filter/SwingGates.cs",
@@ -144,6 +147,14 @@ public sealed class SwingFilter : IComponent
 
     const string Suspects = "SELECT ticker FROM series_state WHERE state = 'suspect';";
 
+    // The state each member's reported quarters gave it on the session, handed to the family's shadow
+    // and read by no gate.
+    // see: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+    const string StatesOn = "SELECT ticker, state FROM fundamental_reading WHERE session_date = $session;";
+
+    // The sector the membership names for each name, which the sector leaders' variant reads its standing by.
+    const string SectorsOf = "SELECT ticker, MAX(sector) FROM membership WHERE sector IS NOT NULL GROUP BY ticker;";
+
     // The trigger events one session stored, one per name it evaluated, and none where it read none.
     const string EventsOn = "SELECT ticker, trigger_event FROM gate_result WHERE session_date = $session;";
 
@@ -208,6 +219,14 @@ public sealed class SwingFilter : IComponent
         var plans = await TextsAsync(connection, ListingsOn, session, cancellation);
         var prints = await TextsAsync(connection, NextPrints, session, cancellation);
         var suspects = await SuspectsAsync(connection, cancellation);
+        var states = await TextsAsync(connection, StatesOn, session, cancellation);
+
+        // Every member's place in its sector on the night by the leader rule's own standings, which the sector
+        // leaders' variant reads in place of the trend and strength gate and no gate reads.
+        // see: The sector leaders are a variant of the pullback's starting point and not a family of their own
+        var sectors = await TextsAsync(connection, SectorsOf, session, cancellation);
+        var (_, standings) = LeaderRule.Standings(
+            [.. members.Select(ticker => (ticker, sectors.GetValueOrDefault(ticker), readings.GetValueOrDefault(ticker)?.Reading?.ReturnLong))]);
 
         // Each name's sessions before are its own, the ones it holds behind tonight's, and the events
         // stored for them are read once for each distinct session.
@@ -258,7 +277,9 @@ public sealed class SwingFilter : IComponent
                     SwingReader.GapIn(read?.Note),
                     before?.Session,
                     fired,
-                    earlier);
+                    earlier,
+                    states.GetValueOrDefault(ticker),
+                    standings.GetValueOrDefault(ticker));
 
             results.Add(SwingGates.Evaluate(inputs, settings));
 

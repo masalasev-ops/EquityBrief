@@ -37,31 +37,34 @@ public static class SetupFamilies
         ForwardReturnSeries.SetupSessionCap,
         OnThePullbacksPlan: true);
 
-    // The breakout, on provisional settings until its freeze.
+    // The breakout, at the settings its freeze registered.
     // see: A breakout is a close above the year's high on heavy volume after its ranges narrowed, sold on a trailing stop with no target
+    // see: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
     public static SetupFamily Breakouts { get; } = new(
         BreakoutRule.Name,
         "Breakout",
         "Breakouts to a new high",
         "Breakout from a base",
-        "A stock closes above its highest price of the past year on heavy volume, after its daily ranges narrowed. Stop two typical moves below, raised as the price climbs and never lowered; no target.",
+        "A stock closes above its highest price of the past six months on heavy volume, after its daily ranges narrowed. Stop one and a half typical moves below, raised as the price climbs and never lowered; no target.",
         BreakoutRule.Horizon,
         BreakoutRule.CapSessions,
         Trails: true);
 
-    // The earnings drift, on provisional settings until its freeze.
+    // The earnings drift, at the settings its freeze registered.
     // see: The earnings drift buys a beat with a strong reaction within five sessions, stopped under the reaction session's low
+    // see: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
     public static SetupFamily EarningsDrift { get; } = new(
         DriftRule.Name,
         "Earnings drift",
         "Earnings drift",
         "After a strong report",
-        "A company beats its estimate and the stock closes sharply higher on heavy volume. Bought within five sessions while it holds above that day's low. Stop at that day's low, target at the next band above or 2.5 times the risk, whichever is nearer.",
+        "A company beats its estimate and the stock closes up at least half a typical day's move on twice its usual volume. Bought within three sessions while it holds above that day's low. Stop at that day's low, target at the next band above or 2.5 times the risk, whichever is nearer.",
         DriftRule.Horizon,
         DriftRule.CapSessions);
 
-    // The sector leader, on provisional settings until its freeze, bought on the pullback's plan.
-    // see: A sector leader is a stock in the top quarter of a top three sector, bought at the pullback's buy point
+    // The sector leader, a family until the freeze of 2026-10-02 and a variant of the pullback since, named
+    // still for the picks it listed before, which are scored on the pullback's plan.
+    // see: The sector leaders are a variant of the pullback's starting point and not a family of their own
     public static SetupFamily SectorLeaders { get; } = new(
         LeaderRule.Name,
         "Sector leader",
@@ -74,7 +77,10 @@ public static class SetupFamilies
 
     // The page's order, which is the order a stock qualifying under two families is listed in and the
     // order the night's reports are asked for in.
-    public static IReadOnlyList<SetupFamily> InPageOrder { get; } = [Pullbacks, Breakouts, EarningsDrift, SectorLeaders];
+    public static IReadOnlyList<SetupFamily> InPageOrder { get; } = [Pullbacks, Breakouts, EarningsDrift];
+
+    // The families the page drew once and draws no longer, kept so a pick one listed is still named and scored.
+    public static IReadOnlyList<SetupFamily> Former { get; } = [SectorLeaders];
 
     // The families whose trades are scored from their own stored rows under a horizon of their own. A
     // family on the pullback's plan is scored on the swing filter's row, which holds that plan.
@@ -85,7 +91,7 @@ public static class SetupFamilies
     public static IReadOnlyList<SetupFamily> Evaluated { get; } = [.. InPageOrder.Where(family => family.Name != Pullback)];
 
     public static SetupFamily? Named(string name) =>
-        InPageOrder.FirstOrDefault(family => string.Equals(family.Name, name, StringComparison.Ordinal));
+        InPageOrder.Concat(Former).FirstOrDefault(family => string.Equals(family.Name, name, StringComparison.Ordinal));
 
     // Where a family stands in the page's order, counted from one, and past every family for a name the
     // page does not draw.
@@ -112,12 +118,12 @@ public static class SetupFamilies
     // night's filter settings, written from the families above so a query and the page read one rule.
     public static string HorizonIn(string family, string settings) =>
         "CASE " + family
-        + string.Concat(InPageOrder.Select(one => $" WHEN '{one.Name}' THEN " + (one.OnThePullbacksPlan ? PullbackHorizonIn(settings) : $"'{one.Horizon}'")))
+        + string.Concat(InPageOrder.Concat(Former).Select(one => $" WHEN '{one.Name}' THEN " + (one.OnThePullbacksPlan ? PullbackHorizonIn(settings) : $"'{one.Horizon}'")))
         + " END";
 
     // The sessions a family's trade is given, over a column holding its family.
     public static string CapIn(string family) =>
-        "CASE " + family + string.Concat(InPageOrder.Select(one => FormattableString.Invariant($" WHEN '{one.Name}' THEN {one.CapSessions}"))) + FormattableString.Invariant($" ELSE {ForwardReturnSeries.SetupSessionCap} END");
+        "CASE " + family + string.Concat(InPageOrder.Concat(Former).Select(one => FormattableString.Invariant($" WHEN '{one.Name}' THEN {one.CapSessions}"))) + FormattableString.Invariant($" ELSE {ForwardReturnSeries.SetupSessionCap} END");
 
     // What a family's card says of a rule no freeze has registered yet.
     // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint

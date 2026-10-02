@@ -35605,3 +35605,212 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             out of scope, 0 unexamined, 873 placements and verdicts reconciled against a floor of 34, fixture
             PRESENT, 42 checks on the roster, 42 carried and 42 passed. Both were green over b93d5f1 at 1717
             tests, before the drift's target test was added.
+
+### 12.2 - the seventh swing family candidate, the live filter leaving off a member whose reported quarters read deteriorating, built as code and held for the freeze's remedy, on the fundamentals ruling of 2026-09-27   2026-10-01
+
+Builds:     item 9 and part 2 of the 12.2 fundamentals ruling of 2026-09-27, track 5 of the queue the 12.2 ruling of
+            2026-09-30 sets, "the fundamentals candidate, code only", started on the operator's word of 2026-10-01
+            while the sweep's third run went on under its own build. Its pull request is gated and left open: the
+            code moves the filter's pin and every evaluator's version, so it merges with the freeze, track 6, in
+            one change with the one remedy that retires the six and registers the seven at one instant, on the
+            operator's go, and not before.
+Asked:      the ruling's item 9, word for word: "A candidate over the live filter that skips members whose state is
+            deteriorating, scored in shadow beside the others, the family becoming seven, each tested at 0.05
+            over 7, registered only once every member holds fundamentals or is marked absent." And R3: "part 2,
+            the candidate with the swing filter reading the state and the readings' sources joining the ones every
+            evaluator's version pins, lands after with a remedy of its own that registers the six again beside the
+            seventh at one instant."
+Built:      - The candidate. The swing filter's own evaluator gains one parameter, `skipDeteriorating`, 1 or 0, and
+              a registration stating it on fires where every gate read passes, no exclusion applies and the state
+              the night stored for the member reads anything but deteriorating, or nothing; the verdict names the
+              state read and whether the rule leaves a deteriorating business off. `TheSwingFamily` writes a seventh
+              registration, the swing filter leaving off a deteriorating business, with its own rule words, the six
+              stating the parameter off, and the family's test words say 0.05 over the distinct trials rather than
+              a sixth. The registrar's refusals count the rows at once from the family rather than naming nine.
+            - The state. `GateInputs` carries the state the night's fundamental readings stored for the member, the
+              swing filter reads it for the session and hands it to the family's shadow, and no gate reads it; the
+              filter declares the readings table among what it reads, in the catalogue and the matrix.
+            - The pin. `SwingFilterRule`'s version moves from abcf6df67b7d to d30b185d9565, and the five other
+              evaluators' versions move with it, since two sources every evaluation runs through, the gates' inputs
+              and the filter, changed; every registered family candidate stalls under the old version until the
+              freeze's remedy registers the seven, which is why this merges with it and not alone. The swing
+              filter's own code version moves from 76466298a7f0 to e0b775d67060 first, the pin of its source and the
+              gates' inputs, set to the value the filter's pin test demands; the evaluators' pins cover the filter's
+              source, that line among them, so each version was set after it, to the pin the register check
+              demands, read off a throwaway test run once and removed.
+            - The pages. The Run page's learning region words the seventh's change, leaving off a business whose
+              reported quarters read deteriorating, which the live list keeps; the comparison's choice offers six
+              versions beside the live list, and the checkpoint rows, the edge clock and the shadow region count
+              seven.
+            - The documents. Section 3's family row, section 13.8, the Holm paragraph and section 17's family row
+              say seven and name the seventh; the catalogue and the matrix carry the filter's new read; the
+              decision is named; the runbook's two sentences and the roster's three phrases say seven.
+Measured:   nothing runs live by this until the freeze; over the constructed store of four members, ZZA's state
+            deteriorating and ZZC's improving, the seventh leaves ZZA off and every other candidate fires on it, 28
+            evaluations over 4 members and 7 candidates.
+Tests:      1652, unchanged: the family's three tests extended to the seventh, the by-hand firing on every state
+            and none with the live filter firing on deteriorating, the command's ten rows and the seventh's rule
+            and parameters, and the stored shadow carrying the state each candidate read on each member's row;
+            the shape command's two corrections, the learning region's two, the edge clock's and the shadow
+            region's tests count seven, the learning region's reading the seventh's change in its words, and the
+            pinned constants' family row reads 7.
+Claims:     766, unchanged: four rows reworded, none added.
+Pins:       `SwingFilterRule.Version` moves, as the Built line says; the swing filter's code version and the
+            candidates' evaluation sources move with the gates' inputs and the filter, and the remedy is the
+            freeze's.
+Mutated:    the rule, stated before the run: each rule this build adds, reversed alone, filtered to the test that
+            reads it, in a detached worktree at this entry's commit and reverted.
+            Predicted:
+            F1 the seventh leaving no deteriorating member off, the parameter read and not applied: red in the
+               family's firing test alone.
+            F2 the filter handing the shadow no state, every member read as not stored: red in the stored-shadow
+               test alone.
+            F3 every registration leaving a deteriorating business off, the parameter on by default: red in the
+               firing test, where the live filter must fire on a deteriorating member, and in the command test,
+               where the live filter's parameter must read off.
+            Results: F1 to F3 ran in a detached worktree at 98fb1a1, this entry's commit, each filtered to its tests,
+            the edit made there and reverted, and the tree read clean after each: every one turned its
+            predicted tests red, F3 both of them, and no other test was run. The three ran first at dc674fb,
+            this entry's commit before the rebase onto main at 2801928, with the same results.
+Held:       red in the tests predicted and in no other, for each of the three.
+Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors, 1652 of 1652 tests ran
+            with none failed, migrations 0 to 51 with none pending, schema version 51, exit 0, against
+            `data-ci` and never `data`.
+            `tools/verify-phase.ps1` green at 44 tables, 766 claims, 766 PASS, 0 FAIL, 0 out of scope,
+            0 unexamined, 777 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            41 of 41 roster checks carried and all 41 run, 1652 of 1652 tests.
+            Both gates ran over the tree carrying this entry, 98fb1a1, in a worktree beside the repository, and the
+            operator's store under `data/` was not touched by either; run 3 of the sweep went on under its own
+            build throughout.
+            Before the rebase, over dc674fb, `tools/ci.ps1` was green three times and `tools/verify-phase.ps1`
+            failed three times on one test of 1650 this build does not touch, the read surface's own-checkout
+            test, in the removal of its temporary folder after the surface it had started was killed, with the
+            sweep's run and the gate loading the machine; the 12.3 correction of 2026-10-01 made that removal
+            try again and leave a folder the machine still holds, and over 98fb1a1, this entry's commit
+            rebased onto the main that carries it, both gates ran green as recorded above.
+Carried:    the merge, at the freeze with its remedy, which registers the seven at one instant and records what the
+            second restart cost in the six's nights, as R3 asks; the pull request stands open until then.
+
+### 13.9 ruling - the three new families freeze at their sweeps' proposals with two variants of the operator's own, and the four freezes land in one pull request once a registered family rule is measured as the pullback's is   2026-10-02
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-10-02 after the three sweeps' reports, word for word. Breakouts: "The proposal,
+            with the provisional setting (year's high, ranges no wider, stop 2 typical moves) registered as one of
+            its variants, replacing the weakest of the five if needed." Earnings drift: "The proposal, with one
+            variant being the same rule with the stop no closer than one typical move under the buy, replacing the
+            weakest of the five if needed.", and asked which reading, "Move the stop down (Recommended)". Sector
+            leaders: "Freeze it (Recommended)". Then, told that no new family's variant could yet be evaluated or
+            scored: "All four together (Recommended)".
+Changed:    13.9 carries the three starting points with their variants, each new rule reading its settings, the
+            family evaluator evaluating every registered family rule at its own settings, each rule's own list with
+            its trades stored with their benchmark when they end, each record on the run page with its family's own
+            correction, the pullback's base opened as a filter version with the swing family registered again, and
+            the four freezes in one pull request with one remedy; four decisions, and a sentence each on the
+            breakout's and the drift's own. Prior text in `CHANGELOG.md`. No family passes eight rules, so no
+            neighbour is dropped for the two variants.
+Queue:      restated, since the list lives in the newest queue ruling. Done: tracks 1, 2, 3 and 7; track 4's first
+            two pull requests; phase 13 from 13.0 to 13.8. In progress: 13.9, the four freezes in one pull request,
+            the pullback's carrying track 5's fundamentals candidate, whose two commits this branch carries. Next:
+            13.10. Beside it, in a fresh session: track 8, phase 12's sign-off, and after it track 9, the preview
+            command. Shelved until phase 13 is finished: the ideas' run and its figures, the twelve-hour rerun and
+            the two more ideas.
+Verified:   with the pull request that carries it, `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the
+            tree carrying 13.9's entry, with the figures 13.9's entry states.
+Stored:     the operator's words in `prompts/2026-10-02-13.9-freeze-answers.md`.
+
+### 13.9 ruling - the sector leaders are a variant of the pullback and not a family, and the breakouts and the drift freeze as answered once neither proposal is an isolated point   2026-10-02
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-10-02, pasting a correction headed "Correction to 13.9 before it merges.", stored
+            whole beside the morning's answers, and confirming it: "Apply it as written (Recommended)". The leaders:
+            "Do not freeze it as a family. Register "the pullback in the top 3 sectors, top quarter of each" as a
+            variant of the pullback's starting point, beside its other variants. Remove the sector leaders' card
+            from Tonight". The breakouts and the drift: "If either proposal is isolated as the leaders' was, bring
+            it to me with that table before freezing; if both pass, freeze them as answered." The timing: "The
+            22:30Z hold still applies."
+Measured:   each proposal's one-step neighbours off the three runs from e7881e1. Breakouts, five: ranges no wider
+            at 0.060 and volume 2 at 0.064 meet the floors, each in 6 of 8 years; volume 1.25, a stop of 2 and the
+            251-session high do not. Drift, five: a rise of one typical move at 0.119 and a target of 3 at 0.096
+            meet them; a target of 2, volume 1.5 and a window of 5 do not. Leaders, three: none meets them, at 4, 5
+            and 4 years, the top 4 sectors at 0.016. Neither remaining proposal is isolated, so both freeze.
+Changed:    13.9: the leaders registered as the pullback's eighth rule, leadership in place of the trend and
+            strength gate, their card off Tonight, and each remaining proposal checked against its neighbours
+            first. A decision for the leaders, which supersedes the leader family's, moved to Previously decided;
+            the freeze's and the pullback freeze's own entries narrowed to two families and eight pullback rules.
+            Prior text in `CHANGELOG.md`.
+Queue:      unchanged from the ruling above. 13.9 stays in progress in one pull request and does not merge on
+            2026-10-02; the night runs on main's code.
+Verified:   with the pull request that carries it, `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the
+            tree carrying 13.9's entry, with the figures 13.9's entry states.
+Stored:     the operator's words in `prompts/2026-10-02-13.9-freeze-answers.md`.
+
+### 13.9 - the freezes: the pullback's base opened as the next filter version with the swing family registered again and the sector leaders as its eighth rule, the breakouts and the earnings drift frozen at their sweeps' proposals with their variants, and each registered family rule evaluated at its own settings, keeping its own list, its trades and its record on the run page   2026-10-02
+
+Built:      13.9 as the two rulings above shape it. 13.9 amends its own done condition: both rulings rewrote
+            its text and its done condition before this build, each with its prior text in `CHANGELOG.md`.
+            - The pullback. `shape --freeze` opens the open version's settings with the reward-to-risk floor at
+              2 as the next version, retires every standing swing family candidate and registers the family's
+              eight at one instant, taken once. The eighth, the pullback in the top 3 sectors, top quarter of
+              each, reads the sector standings the swing filter works out from the membership's sectors and the
+              long returns, in place of the trend and strength gate. The leaders' family, its evaluator and its
+              card are gone; a pick an earlier night listed under them is still named.
+            - The breakouts and the earnings drift. Each rule reads its settings, the night listing at the
+              frozen ones: a high over the 126 sessions before, 1.5 times the volume, ranges at 0.85 and a stop
+              of 1.5 typical moves; a window of 3 sessions, a rise of 0.5 typical moves on 2 times the volume,
+              the target at 2.5 times the risk. `register --family breakout` and `register --family drift` write
+              each live rule, its five grid neighbours and the operator's variant at one instant: the breakout's
+              provisional setting, and the drift's proposal with its stop no closer than a typical move under
+              the buy. A breakout's gate stores its window, so a night before the freeze reads as it ran.
+            - The measuring. Each new family's evaluator pins its rule's file and the files every family rule's
+              evaluation runs through. The family evaluator evaluates every registered family rule over every
+              member at its own settings and stores each verdict on the member's row, a moved evaluator failing
+              its stage. The family recorder, a new component and store, migration 56, keeps each rule's own
+              list, five a night with one open trade a stock freed the night after, and stores each trade's
+              result in multiples of its risk and the benchmark of the same plan on every member. The run page
+              draws each rule's record with its setup's own level, and each setup family's correction counts
+              its own rules, at most eight.
+            - The documents. Sections 3, 7, 11.4, 13.6, 13.8, 13.9, 14, 15.10, 16, 17, 18 and 20, `SCHEMA.md`,
+              the runbook's two commands and the roster's three rows; prior text in `CHANGELOG.md`.
+Tests:      1726, from 1718: eight added. Each new family's freeze at one instant or none, counted in its own
+            family; each variant at its own settings on both sides of the setting it moves; the pullback's
+            freeze, taken once; every registered rule's verdict on every member's row and a moved evaluator
+            failing the stage; a rule's list over three constructed nights; a trailing and a fixed trade's
+            result and benchmark, a trade whose closes ran out and one with no member to benchmark; the run
+            page's records over constructed trades; and a registered family's card reading its live day off the
+            register. The breakout's and the drift's gate tests moved to the frozen settings with the provisional
+            ones beside them, and the swing family's tests to eight.
+Claims:     fourteen added: the family recorder's catalogue and matrix rows, the family trades' store, section
+            17's rows for the pullback's base and a family rule's list, section 18's three rows, and the run
+            page's records as six parts.
+Pins:       the three pin lists read. The ladder rules' code version: none of its sources edited. The swing
+            filter's code version: `LeaderRule.cs` joins its sources, `SwingGates.cs` and `SwingFilter.cs`
+            edited, e0b775d67060 to 6791a58a062a. The candidate evaluation sources: `LeaderRule.cs` joins them,
+            now 22, and `CandidateEvaluator.cs`, `CandidateEvaluators.cs`, `ShadowColumn.cs`, `SwingGates.cs` and
+            `SwingFilter.cs` edited, with the new families' `BreakoutRule.cs`, `DriftRule.cs`, `FamilyRule.cs`,
+            `FamilyRuleShadow.cs` and `FamilyEvaluator.cs`; every evaluator's version moved to its pin, the
+            swing filter's d30b185d9565 to b03e06fdd7f9.
+Remedy:     `tools/remedies/2026-10-02-13.9-the-freezes.txt`, three steps through `tools/remedy.ps1` after the
+            merge and before the night: the pullback's freeze, then `register --family breakout` and
+            `register --family drift`. The six swing family candidates on version 4 are the only ones standing
+            in the operator's store, so no other candidate needs registering again.
+Mutated:    the rule, stated before the run: each new rule this build adds, reversed alone, made on the branch in
+            this checkout, filtered to its tests and reverted.
+            R1 a rule held by another rule's open trade: red in the list's test.
+            R2 a stock freed on the night its trade ends: red in the list's test.
+            R3 a benchmark counting a member whose closes ran out as nought: red in the trades' test.
+            R4 the maximum counted over every setup family: red in the family command's test.
+            R5 the eighth reading the trend and strength gate as well: red in the eight's test and the filter
+               stage's.
+            R6 a family rule evaluated at the live settings whatever its registration states: red in the family
+               evaluator's shadow test and the variants' test.
+            Results: R1 to R6 each red where stated. R1, R2 and R3 ran over both of the recorder's tests and
+            turned only the predicted one red; R5 and R6 turned both of theirs red. Each ran over d714c5f and
+            was reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: d714c5f.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1726 of 1726 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 876 claims, 876 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            887 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed. Both were green at the same counts over 20363f2, before section
+            3's row was corrected.
+Carried:    the remedy, run after the merge and before the night; then 13.10, the phase report.

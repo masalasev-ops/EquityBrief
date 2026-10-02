@@ -271,11 +271,16 @@ public static class RunScreen
             level is { } first && Looks.Spent(first, Looks.Fraction(0)) >= 1d / (1 << Looks.At[0]));
     }
 
+    // The pullback family's rows, which this region's divisor, trials and graph are read over: every other
+    // setup family's correction is its own.
+    // see: Each setup family's correction for luck counts its own rules alone, at most eight a family
     static RegisterRow[] Register(IReadOnlyList<CandidateRow> rows) =>
     [
-        .. rows.Select(row => new RegisterRow(
-            row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
-            row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
+        .. CandidateFamily.In(
+            rows.Select(row => new RegisterRow(
+                row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
+                row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
+            EquityBrief.Core.Families.SetupFamilies.Pullback),
     ];
 
     static Dictionary<string, IReadOnlyList<CandidateSetup>> Fired(IReadOnlyList<CandidateSetupRow> setups) =>
@@ -1176,7 +1181,7 @@ public static class RunScreen
         ("Prices and calendar", ["migrate", "membership", "backfill", "fetch", "actions", "calendar"]),
         ("Indicators and levels", ["indicators", "swings", "volume-profile", "levels"]),
         ("Plans and moves", ["ladders", "moves"]),
-        ("Readings and the list", ["swing-readings", "fundamental-readings", "listings", "swing-filter", "family-rules", "families", "shape-proposal"]),
+        ("Readings and the list", ["swing-readings", "fundamental-readings", "listings", "swing-filter", "family-rules", "families", "family-records", "shape-proposal"]),
         ("Records", ["facts", "changes", "forward-returns", "news-pulse", "rule-versions", "close"]),
         ("After the close", ["quarters", QueueStage, "report", "label-news"]),
     ];
@@ -1739,12 +1744,38 @@ public static class RunScreen
 
         static string Strength(double floor) => Math.Abs(floor - (2.0 / 3)) < 0.001 ? "the top third" : Math.Abs(floor - 0.5) < 0.001 ? "the top half" : floor.ToString("0.00", CultureInfo.InvariantCulture);
 
+        static string Share(double of) => of switch
+        {
+            2 => "half",
+            3 => "third",
+            4 => "quarter",
+            _ => FormattableString.Invariant($"1 in {of:0}"),
+        };
+
         var said = new List<string>();
-        var named = new HashSet<string>(StringComparer.Ordinal) { "marketGate", "strengthFloor", "depthLow", "depthHigh", "arrivalSessions", "trade", "rewardToRiskFloor" };
+        var named = new HashSet<string>(StringComparer.Ordinal) { "marketGate", "strengthFloor", "depthLow", "depthHigh", "arrivalSessions", "trade", "rewardToRiskFloor", "skipDeteriorating", "leaderSectors", "leaderShareOf" };
 
         if (Moved("marketGate"))
         {
             said.Add(Of(version, "marketGate") == 0 ? "lists on every night, the market gate off" : "reads the market gate, which the live list does not");
+        }
+
+        // The seventh candidate, which leaves off a business whose reported quarters read deteriorating.
+        // see: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+        if (Moved("skipDeteriorating"))
+        {
+            said.Add(Of(version, "skipDeteriorating") == 1
+                ? "leaves off a business whose reported quarters read deteriorating, which the live list keeps"
+                : "keeps a business whose reported quarters read deteriorating, which the live list leaves off");
+        }
+
+        // The eighth, which reads sector leadership in place of the trend and strength gate.
+        // see: The sector leaders are a variant of the pullback's starting point and not a family of their own
+        if (Moved("leaderSectors") || Moved("leaderShareOf"))
+        {
+            said.Add(Of(version, "leaderSectors") > 0 && Of(version, "leaderShareOf") > 0
+                ? FormattableString.Invariant($"only the top {Share(Of(version, "leaderShareOf"))} of one of the {Of(version, "leaderSectors"):0} strongest sectors, in place of an uptrend's strength")
+                : "an uptrend's strength in place of sector leadership");
         }
 
         if (Moved("strengthFloor"))

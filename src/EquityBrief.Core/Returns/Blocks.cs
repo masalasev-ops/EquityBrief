@@ -37,7 +37,13 @@ public static class Blocks
     // over the arrangement it had.
     // see: A look counts only the setups whose whole outcome window has closed
     public static bool Complete(DateOnly first, int block, DateOnly asOf) =>
-        Position(first, asOf) - ((Sessions * (block + 1)) - 1) >= ForwardReturnSeries.SetupSessionCap;
+        Complete(first, block, asOf, ForwardReturnSeries.SetupSessionCap);
+
+    // The same for trades given a cap of their own, a setup family's, whose window closes that many sessions
+    // after the block's last.
+    // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
+    public static bool Complete(DateOnly first, int block, DateOnly asOf, int cap) =>
+        Position(first, asOf) - ((Sessions * (block + 1)) - 1) >= cap;
 
     // The sessions from the first to a session, the first being 0.
     static int Position(DateOnly first, DateOnly session) =>

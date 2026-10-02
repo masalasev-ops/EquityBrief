@@ -56,7 +56,7 @@ public partial class ReadSurface
     {
         var shadow = JsonSerializer.Serialize(new
         {
-            candidates = TheSix.Select(candidate => new
+            candidates = TheFamilyEight.Select(candidate => new
             {
                 candidate,
                 fired = fired.Contains(candidate),
@@ -203,10 +203,10 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/2026-09-16?version={RunScreen.Slug(Depth)}"));
         var compare = Card(page, "compare-picture");
 
-        // The choice names the page's own route, offers the five versions beside the live list and selects the
+        // The choice names the page's own route, offers the seven versions beside the live list and selects the
         // one the link names; the shell writes a new choice back to the link.
         Assert.Contains($"<select id=\"compare-version\" data-compare=\"{SinglePageApp.RunRoute}2026-09-16\">", compare, StringComparison.Ordinal);
-        Assert.Equal(5, Regex.Matches(compare, "<option ").Count);
+        Assert.Equal(7, Regex.Matches(compare, "<option ").Count);
         Assert.Contains($"<option value=\"{RunScreen.Slug(Depth)}\" selected>{Depth}</option>", compare, StringComparison.Ordinal);
         Assert.DoesNotContain($"<option value=\"{RunScreen.Slug(SwingFamily.LiveCandidate("1"))}\"", compare, StringComparison.Ordinal);
         Assert.Contains("data-only-live=\"2\" data-both=\"0\" data-only-version=\"0\"", compare, StringComparison.Ordinal);
@@ -256,7 +256,7 @@ public partial class ReadSurface
         // picked, the live list first.
         var rows = Blocks(learning, "<tr data-version=.*?</tr>");
 
-        Assert.Equal(6, rows.Count);
+        Assert.Equal(8, rows.Count);
         Assert.Contains($"data-version=\"{RunScreen.Slug(SwingFamily.LiveCandidate("1"))}\" data-picks=\"2\"", rows[0], StringComparison.Ordinal);
         Assert.Contains("<td>is the live list</td>", rows[0], StringComparison.Ordinal);
 
@@ -268,11 +268,23 @@ public partial class ReadSurface
         Assert.Contains("<td>block 0 of 8</td>", nearest, StringComparison.Ordinal);
         Assert.Contains("no pick yet", Assert.Single(rows, row => row.Contains($"data-version=\"{RunScreen.Slug(Depth)}\"", StringComparison.Ordinal)), StringComparison.Ordinal);
 
+        // The seventh's change in plain words: it leaves off a deteriorating business, which the live list keeps.
+        Assert.Contains(
+            "Leaves off a business whose reported quarters read deteriorating, which the live list keeps",
+            Assert.Single(rows, row => row.Contains($"data-version=\"{RunScreen.Slug(TheSwingFamily.Variant(TheSwingFamily.DeterioratingName, "1"))}\"", StringComparison.Ordinal)),
+            StringComparison.Ordinal);
+
+        // The eighth's: it reads sector leadership in place of the trend and strength gate.
+        Assert.Contains(
+            "Only the top quarter of one of the 3 strongest sectors, in place of an uptrend's strength",
+            Assert.Single(rows, row => row.Contains($"data-version=\"{RunScreen.Slug(TheSwingFamily.Variant(TheSwingFamily.LeadersName, "1"))}\"", StringComparison.Ordinal)),
+            StringComparison.Ordinal);
+
         // Every version below its first look is a locked row at the checkpoint.
         var checkpoint = Card(page, "checkpoint-picture");
 
-        Assert.Contains("<div class=\"checkpoint-picture\" data-rows=\"6\" data-unlocked=\"0\">", checkpoint, StringComparison.Ordinal);
-        Assert.Equal(6, Regex.Matches(checkpoint, "unlocks at checkpoint 1, after block 8 of 8").Count);
+        Assert.Contains("<div class=\"checkpoint-picture\" data-rows=\"8\" data-unlocked=\"0\">", checkpoint, StringComparison.Ordinal);
+        Assert.Equal(8, Regex.Matches(checkpoint, "unlocks at checkpoint 1, after block 8 of 8").Count);
     }
 
     [Fact]

@@ -17,12 +17,13 @@ public sealed class BreakoutSweep
     // The shorter window the year's high is read against beside the rule's own, half a year of sessions.
     public const int ShortHighSessions = 126;
 
+    // The grid around the provisional setting the sweep proposed its freeze from.
     public static FamilyGrid Grid { get; } = new(
         [
-            ("high", [ShortHighSessions, BreakoutRule.HighSessions]),
+            ("high", [ShortHighSessions, BreakoutRule.ProvisionalHighSessions]),
             ("volume", [1.25, BreakoutRule.VolumeMultiple, 2.0]),
-            ("ceiling", [0.85, BreakoutRule.RangeCeiling, double.PositiveInfinity]),
-            ("stop", [1.5, BreakoutRule.StopMoves, 3]),
+            ("ceiling", [0.85, BreakoutRule.ProvisionalRangeCeiling, double.PositiveInfinity]),
+            ("stop", [1.5, BreakoutRule.ProvisionalStopMoves, 3]),
         ],
         [1, 1, 1, 1]);
 
@@ -51,7 +52,7 @@ public sealed class BreakoutSweep
         {
             var one = series[name];
             var shortHigh = HighsBefore(one.Bars, ShortHighSessions);
-            var yearHigh = HighsBefore(one.Bars, BreakoutRule.HighSessions);
+            var yearHigh = HighsBefore(one.Bars, BreakoutRule.ProvisionalHighSessions);
             var ranges = RangesBefore(one.Bars, BreakoutRule.RangeSessions);
 
             for (var bar = 0; bar < one.Bars.Length; bar++)
@@ -91,7 +92,7 @@ public sealed class BreakoutSweep
 
         foreach (var reading in readings)
         {
-            var above = high >= BreakoutRule.HighSessions ? reading.Close > reading.HighYear : reading.Close > reading.HighShort;
+            var above = high >= BreakoutRule.ProvisionalHighSessions ? reading.Close > reading.HighYear : reading.Close > reading.HighShort;
             var tightened = double.IsPositiveInfinity(ceiling) || reading.Ranges <= ceiling;
             var risk = moves * reading.Move;
 

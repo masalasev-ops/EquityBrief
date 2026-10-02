@@ -57,6 +57,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `family_result` | FamilyEvaluator | none | FamilyEvaluator |
 | `family_night` | FamilyLister | none | FamilyLister |
 | `family_pick` | FamilyLister | none | FamilyLister |
+| `family_trade` | FamilyRecorder | FamilyRecorder | FamilyRecorder |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
 | `fundamentals` | FundamentalsFetcher | none | none |
@@ -571,12 +572,13 @@ Grain: one row per session, member and setup family but the pullback.
 | `order_by` | REAL | the figure the family's order reads, largest first: a breakout's volume against its average, an earnings drift's surprise, a sector leader's sector rank, negated so the first sector sorts first, its own return then deciding among the leaders of one sector; null where the family reads none for the member |
 | `exclusions` | TEXT | JSON: the exclusions the member's series carries, a gap or a suspect series as the swing filter stored them, empty where none does |
 | `gates` | TEXT | JSON: the family's gates in order, each with whether it passed, its reason and the values that decided it, the first of them the market gate the swing filter stored that night |
+| `shadow` | TEXT | JSON: each candidate registered under the row's family and standing when the night started, with whether it fired at its own settings and the values that decided it, among them the buy, the stop, the target, the figures the family's order reads and the night's typical move; and each one skipped with why; null where none of the family stands registered (see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end) |
 
 Primary key: `session_date`, `ticker`, `family`.
 
 **The family evaluator writes it in the swing filter's step and is its own deleter** (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: Every computed table's writer is its own deleter). After the swing filter has stored its rows, it evaluates every member the filter evaluated under each family but the pullback, whose answers are the filter's own `gate_result` rows, and stores every answer, the ones that did not pass included, since a card that lists nothing says how far the members got and a name one gate short is drawn as close to a buy point. The market gate on each row is the one answer the filter stored for the night, so no family passes a member on a night it closed (see: The market check closes every family's list together). A night run again replaces its own rows whole. A row that passed is a trade its family's record counts and is kept; a row that did not is deleted once its session is older than the oldest bar the store holds, since nothing reads a near miss whose bars are gone.
 
-**A passed row's trade is scored on `forward_return` under its family's horizon,** from the night's close: a breakout's under `breakout`, sold on its trailing stop (see: A breakout is a close above the year's high on heavy volume after its ranges narrowed, sold on a trailing stop with no target), and an earnings drift's under `drift`, to its target, its stop or its cap as a setup is (see: The earnings drift buys a beat with a strong reaction within five sessions, stopped under the reaction session's low). A sector leader's row holds the pullback's plan as the swing filter's row stored it, and its trade is scored on that `gate_result` row, under the horizon of the plan its night's filter version read, so no outcome row is written for it here (see: A sector leader is a stock in the top quarter of a top three sector, bought at the pullback's buy point). The prices here keep the scale the series had on the night, as a setup's plan does.
+**A passed row's trade is scored on `forward_return` under its family's horizon,** from the night's close: a breakout's under `breakout`, sold on its trailing stop (see: A breakout is a close above the year's high on heavy volume after its ranges narrowed, sold on a trailing stop with no target), and an earnings drift's under `drift`, to its target, its stop or its cap as a setup is (see: The earnings drift buys a beat with a strong reaction within five sessions, stopped under the reaction session's low). A sector leader's row, stored on a night before the sector leaders became a variant of the pullback, holds the pullback's plan as the swing filter's row stored it, and its trade is scored on that `gate_result` row, under the horizon of the plan its night's filter version read, so no outcome row is written for it here (see: The sector leaders are a variant of the pullback's starting point and not a family of their own). The prices here keep the scale the series had on the night, as a setup's plan does.
 
 ### family_night
 Grain: one row per session the setup families drew the page's list for.
@@ -607,6 +609,31 @@ Grain: one row per session, stock and family that passed it.
 Primary key: `session_date`, `ticker`, `family`.
 
 **The family lister writes the page's list here and is its own deleter** (see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order). After the swing filter has stored its rows it reads the names each family passed, in that family's own order, and every trade a list made on an earlier night with what became of it, and draws the list by one rule: the families in the page's order; a stock whose trade is still open is listed by none and its row names the family and the night that listed that trade; a stock already listed tonight is not listed again; and a family lists at most five, a name past its five still listed by a later family it qualified under. So a stock holds at most one `listed` row a session, and that row's `also` carries the labels the page draws beside it. The pullback family's names are the ones `gate_result` holds as passed, improving businesses first and then the filter's own order, and its trade is the plan its night's trade gate read; another family's names are the ones `family_result` holds as passed, in the places its evaluator stored, and its trade is that row's; nothing here restates a plan. A trade's outcome is the `forward_return` row of its stock and session under its family's horizon. A night run again replaces its own rows whole and touches no other night's.
+
+### family_trade
+Grain: one row per registered family rule, stock and session the rule's own list kept a trade on.
+
+| Column | Type | Notes |
+|---|---|---|
+| `candidate` | TEXT | the registered rule's name, as the register holds it |
+| `ticker` | TEXT | |
+| `session_date` | TEXT | the session the rule listed the stock on, the trade bought at that close |
+| `family` | TEXT | the family the rule belongs to, by the word it is stored under |
+| `place` | INTEGER | the trade's place on the rule's own list that night, counted from one, at most five |
+| `entry` | TEXT | the price the trade is bought at, the night's close |
+| `stop` | TEXT | the trade's stop as the night placed it, the first level of a stop that trails |
+| `target` | TEXT | the trade's target, null for a plan that trails its stop and names none |
+| `risk_moves` | REAL | the stop's distance below the buy in the night's typical moves, which the benchmark's plan is placed by; null where the night stored no typical move |
+| `reward_to_risk` | REAL | the target's distance above the buy over the stop's below it, null for a trailing plan |
+| `cap` | INTEGER | the sessions the trade is given, its family's |
+| `ended_on` | TEXT | the session the trade ended on, a close through its stop, at its target or at its cap, or its cap's session where the stock's closes ran out before; null while it is open |
+| `result` | REAL | what the trade came to in multiples of its risk; null while it is open and where the stock's closes ran out before it ended |
+| `benchmark` | REAL | the average result of the same plan entered at the close on every member the index held that night with a bar and a typical move, the stop the trade's distance in each member's own typical moves and the target its reward to risk above, or the stop trailing at that distance; null until every such trade has had its cap, and where none could be entered |
+| `members` | INTEGER | how many members the benchmark averaged, null until it is written |
+
+Primary key: `candidate`, `ticker`, `session_date`.
+
+**The family recorder writes it in the swing filter's step, after the family lister, and is its own deleter** (see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end). For each family candidate standing when the night started it reads the verdicts the family evaluator stored on that family's rows, the members it fired on in the family's own order, and keeps at most five, none whose trade on its own list is still open, a trade freeing its stock the night after it ends, so each rule's record counts the trades it alone would have made and is never held by another rule's (see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends). Each night it first walks every trade not yet ended over the closes since, at the scale the series has now, and writes where it ended and its result; and once a trade's cap has passed it writes the benchmark and how many members it averaged. Each is written once and never recomputed, because the bars and the typical moves they are read from are kept a year and a record is read over many. A night run again replaces the trades it kept for that night and touches no other night's. The rows are never deleted otherwise: they are the record each rule's checkpoints read.
 
 ### forward_return
 Grain: one row per listing per horizon, and one per swing filter row carrying a plan per swing horizon.

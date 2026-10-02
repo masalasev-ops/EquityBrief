@@ -10080,3 +10080,128 @@ Was:
 Now:
 > The same, with "It takes minutes: the breakouts' and the drift's well under one, the sector leaders' a few, since each leader's bands and plan are computed for its session. The leaders' report states how many of the history's names carry a sector, which the membership files as it stands today." in place of "It takes minutes.", and the leaders' command beside the other two.
 Why: the leaders' run computes each leader's bands and plan and takes minutes where the other two take seconds, and its record reads only the names carrying a sector.
+### 2026-10-01 - ARCHITECTURE.html - the swing family is seven, the seventh leaving off a deteriorating business
+Authorised by: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+Was:
+> Section 3, Swing family: "The live filter and five variants, each a whole rule with one setting on its other side, judged together as one family of six."
+> Section 13.6's Holm paragraph: "... once the swing family's six (section 13.8) registered ..."
+> Section 13.8: "... the live filter at the open filter version's settings and five variants, each the same whole rule with one thing moved and named for the version it was defined against, six candidates judged by the same sign-flip test over blocks and looks ... Phase 10's three are retired by the command that registers the six, at the same instant ..."
+> Section 17, The swing family: "the live filter and five variants, ...: the plan at the nearest bands, a pullback 1 to 3 typical moves deep, the market gate off, strength in the top third and arrival on the night alone, 6 candidates, each starting at 0.05 over the distinct trials (see: ...)"
+> The swing filter's catalogue row and its matrix row read no fundamental reading.
+Now:
+> Section 3, Swing family: "The live filter and six variants, each a whole rule with one thing moved, the sixth leaving off a member whose reported quarters read deteriorating, judged together as one family of seven."
+> Section 13.6's Holm paragraph: "... once the swing family's seven (section 13.8) registered ..."
+> Section 13.8: "... the live filter at the open filter version's settings and six variants, each the same whole rule with one thing moved and named for the version it was defined against, the sixth leaving off a member whose reported quarters read deteriorating, a state no gate reads, seven candidates judged by the same sign-flip test over blocks and looks ... Phase 10's three are retired by the command that registers the seven, at the same instant ..."
+> Section 17, The swing family: "the live filter and six variants, ...: the plan at the nearest bands, a pullback 1 to 3 typical moves deep, the market gate off, strength in the top third, arrival on the night alone and a deteriorating business left off, 7 candidates, each starting at 0.05 over the distinct trials (see: ...) (see: The seventh swing family candidate ...)"
+> The swing filter's catalogue row names the fundamental readings' state among what it reads, handed to the family's shadow, and its matrix row reads the fundamentals column.
+Why: the operator's fundamentals item of 2026-09-27, item 9 and part 2 of its ruling, built as track 5 of the queue of 2026-09-30, the code held for the freeze's remedy.
+### 2026-10-01 - RUNBOOK.md - the family registers seven
+Authorised by: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+Was:
+> The shape command's acceptance paragraph: "... retires every standing swing family candidate and registers the six the code writes for the new version at the same instant ..."
+> The family's registration paragraph: "From the night after, the six are evaluated in the swing filter's own stage over every member's gate inputs, and the run page's shadow region counts six registered and a divisor of 6."
+Now:
+> "... retires every standing swing family candidate and registers the seven the code writes for the new version at the same instant ..."
+> "From the night after, the seven are evaluated in the swing filter's own stage over every member's gate inputs, the seventh reading the state the night's fundamental readings stored for each member and leaving off a deteriorating one, and the run page's shadow region counts seven registered and a divisor of 7."
+Why: the same build, stated where the operator registers and reads the family.
+### 2026-10-01 - .claude/rules/checks.md - fixture-expectations and read-surface reach the seventh
+Authorised by: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+Was:
+> `fixture-expectations`: "... each of the swing family's six fires on its own side of every setting it moves and not a step past it, ... and the family's command writes six registrations and three retirements at one instant, ..."
+> `read-surface`: "... with the swing family registered the run page's shadow region reads six registered and a divisor of 6; ..."
+Now:
+> `fixture-expectations`: "... each of the swing family's seven fires on its own side of every setting it moves and not a step past it, the seventh leaving off a member whose reported quarters read deteriorating and firing on every other state and none while the live filter fires on a deteriorating one, the filter handing each member's stored state to the shadow, ... and the family's command writes seven registrations and three retirements at one instant, ..."
+> `read-surface`: "... reads seven registered and a divisor of 7; ..."
+Why: the checks reach what the build asserts.
+### 2026-10-02 - BUILD_PLAN.md - 13.9 carries the three new families' starting points and the measuring a registered family rule needs, and the four freezes land together
+Authorised by: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
+Was:
+> every other setting as it stands (see: The pullback freezes at the base with its reward-to-risk floor raised to 2, and the ideas' run waits until phase 13 is finished), the open trade rule inside the rule, the fundamentals candidate held for it, and the three new families' evaluators joining the register's list. A family set aside registers nothing and its card says so.
+> **Done when** each command writes its rows at one instant or none, refusing all of them when one is refused; every evaluator's version is the pin of its own sources; a registered family's card reads the day its rule went live off the register;
+Now:
+> The same, with the pullback's base opened as the next filter version and every standing swing family candidate registered again beside it, citing its decision; then the three new families' starting points as the operator approved them with their variants, each new rule reading its settings, the family evaluator evaluating every standing family candidate at its own settings, each registered rule's own list and its trades stored with their benchmark when they end, the run page reading each record against the test its sweep's report fixed with the family's own correction, each citing its decision, and the four freezes landing in one pull request with one remedy.
+> The done condition gains, after the pin: each new family's rule worked by hand at a variant's settings on both sides of every setting it moves; a family candidate's verdict stored on every member's row and a moved evaluator failing the stage; a registered rule's list worked by hand, five a night in its order with one open trade a stock and a stock freed the night after its trade ends; a kept trade's result and benchmark worked by hand for a trailing and a fixed exit; and a registered rule's record read back off the run page, its blocks and its test.
+Why: the operator approved the three starting points on 2026-10-02 with two variants of their own, and ruled the four freezes land together once the three new rules are measured as the pullback's are, since none of that measuring existed.
+### 2026-10-02 - BUILD_PLAN.md - 13.9: the sector leaders are a variant of the pullback, and each new family's proposal is checked against its neighbours first
+Authorised by: The sector leaders are a variant of the pullback's starting point and not a family of their own
+Was:
+> the open trade rule inside the rule, the fundamentals candidate held for it, and the three new families' evaluators joining the register's list. The three new families freeze at the starting points the operator approved on 2026-10-02, each with its proposal's neighbours as its variants and
+> **Done when** each command writes its rows at one instant or none, refusing all of them when one is refused; every evaluator's version is the pin of its own sources; each new family's rule is worked by hand
+Now:
+> The same, with the sector leaders registered beside the pullback's variants as a variant of its base, leadership in place of its trend and strength gate and their card leaving Tonight, citing the decision, the breakout's and the drift's evaluators joining the register's list, and the breakouts and the earnings drift freezing at their approved starting points once each proposal is shown to sit where its one-step neighbours also meet the floors.
+> The done condition gains, after the pin: the leaders' variant worked by hand on both sides of the top sectors and the share whatever its trend gate says; and the sector leaders' card gone from Tonight with a pick an earlier night listed under them still named as one.
+Why: the operator corrected the morning's answer on 2026-10-02: the leaders' one qualifying setting has no qualifying neighbour, so they are a one-change pullback rule and not a family, and each remaining proposal is checked for the same before it freezes.
+### 2026-10-02 - ARCHITECTURE.html - the sector leaders are the pullback's eighth rule and no family
+Authorised by: The sector leaders are a variant of the pullback's starting point and not a family of their own
+Was:
+> Section 7, Family evaluator: "... evaluates every member the swing filter evaluated on the night under each setup family but the pullback ...; the sector leaders read each member's sector, its return over the long span and the pullback's setup, trigger and trade gates with the plan the filter stored (see: A sector leader is a stock in the top quarter of a top three sector, bought at the pullback's buy point)", reading "membership, bar store, indicators, levels, earnings reactions, swing readings, filter versions, gate results, family results".
+> Section 11.4, Sector leaders: "The sectors are ranked each night ... A member passes where the market check is open, its sector is among the top few ranked, its own return is in the top quarter of its sector's, and the swing filter's setup, trigger and trade gates passed for it that night as stored. ... The names passing are ordered by their sector's rank and then by their own return (see: A sector leader is ...). Section 17 states each setting, marked provisional."
+> Section 3, Swing family: "The live filter and six variants, each a whole rule with one thing moved, the sixth leaving off a member whose reported quarters read deteriorating, judged together as one family of seven."
+> Section 13.8: "... the live filter at the open filter version's settings and six variants, ... seven candidates judged by the same sign-flip test ... Phase 10's three are retired by the command that registers the seven, at the same instant ..."
+> Section 13.6's Holm paragraph: "... once the swing family's seven (section 13.8) registered ..."
+> Section 17, Leader sectors, Leader share and Sector ranking floor, each "provisional" and citing the superseded decision; The swing family: "the live filter and six variants, ... and a deteriorating business left off, 7 candidates, ..."
+> Section 18, A member the membership names no sector for and A sector too small to rank: "its sector gate does not pass ... no row on the sector leaders' card", citing the superseded decision.
+> Section 20's phase 13 row: "breakouts, earnings drift and sector leaders on provisional settings".
+> The matrix's family evaluator row reading the membership.
+Now:
+> The family evaluator evaluates the breakouts and the earnings drift alone, reads "bar store, indicators, levels, earnings reactions, gate results, family results", and its matrix row reads no membership; the swing filter's row says it works out every member's standing in its sector, which the pullback's variant in the top sectors reads in place of the trend and strength gate.
+> Section 11.4 states the sector leaders are a variant of the pullback, the swing filter handing the standings to the eighth rule, with the sweep's finding, the survivorship caveat of 319 of the 827 names carrying no sector, and the card drawn until the freeze.
+> Section 3: "The live filter and seven variants, each a whole rule with one thing moved, the sixth leaving off a member whose reported quarters read deteriorating and the seventh reading a member's standing in its sector in place of the trend and strength gate, judged together as one family of eight."
+> Section 13.8 counts the seventh variant and eight candidates, each rule's record keeping one open trade a stock of its own; section 13.6 counts the swing family's eight, the trials of each setup family counted apart.
+> Section 17's leader rows read as the variant's settings, unmarked, citing the new decision; the swing family row counts seven variants and 8 candidates.
+> Section 18's two rows: the variant fires on no such member and its verdict says it is not ranked; nothing on any card.
+> Section 20: "breakouts and earnings drift on provisional settings, and sector leaders swept and registered as a variant of the pullback; ... each family's freeze on the operator's go, its registered rules each keeping a record of its own".
+Why: the operator's correction of 2026-10-02: the leaders' one qualifying setting has no qualifying neighbour, and it changes one thing in the pullback's rule.
+### 2026-10-02 - ARCHITECTURE.html - the breakouts and the earnings drift run at their frozen settings
+Authorised by: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
+Was:
+> Section 11.4, Breakouts: "its close is above the highest high of the year of sessions before it ... Section 17 states each setting, marked provisional. ... Judgement: the volume multiple, reading "tightened" as no wider than the same count of sessions before, and the stop's distance, none of which a study sets."
+> Section 11.4, Earnings drift: "the reaction session closed up at least a typical move of the session before it ... Section 17 states each setting, marked provisional."
+> Section 17: Breakout high window "the 251 sessions before tonight's, provisional"; Breakout range ceiling "1.0, provisional"; Breakout stop "2 typical moves beneath the buy, provisional"; Drift window "5 sessions, provisional"; Drift reaction "at least 1.0 typical moves ..., provisional"; Drift volume multiple "at least 1.5 times ..., provisional"; Drift target "... provisional; the stop is the reaction session's low"; the volume multiple, range window and both caps each "provisional".
+Now:
+> Section 11.4: the half year of sessions; each family's settings at the proposal its sweep made and its freeze registered, the provisional setting the freeze replaced running on as a variant, and the drift's variant holding its stop no closer than a typical move under the buy.
+> Section 17: 126 sessions and 251 for the variant registering the provisional setting; 0.85 and 1.0; 1.5 and 2; 3 sessions and 5; 0.5 and 1.0; 2.0 and 1.5; the drift's target row naming the variant's stop at 1 typical move under the buy; none marked provisional.
+Why: the operator froze both on 2026-10-02 at their sweeps' proposals, each first shown to sit where two of its five one-step neighbours also meet the floors.
+### 2026-10-02 - ARCHITECTURE.html - a registered family rule keeps its own list and its trades, and the pullback's freeze opens its base
+Authorised by: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
+Was:
+> Section 7, Shape command: "... retiring every standing swing family candidate and registering the six for the new version in the same write ..."; Candidate registrar: "refuses a name nothing implements, a family already at its maximum ... registering the six, the live filter at the open filter version's settings, at one instant or none".
+> Section 16, Family results: "... the exclusions its series carries, and the family's gates in order with their reasons and values".
+> Section 14's step: "... and record the session as one the families drew (see: ...) (see: ...)."
+> Section 15.10, The setup families: "... and its record against what it waits for or the words saying it starts at the freeze (see: ...)".
+> Section 17, Family size and correction: "with a maximum family size of 8; the family's divisor, the candidates standing before a window opened, ..."
+Now:
+> Section 7 gains the family recorder's row; the shape command opens the pullback's base on its freeze, taken once, and registers the family; the registrar counts the maximum over the registration's own setup family and writes a new family's freeze through `register --family`; the family evaluator evaluates each registered family rule in its shadow.
+> Section 16 gains the family trades and the family results' shadow; the matrix gains the family recorder's row, the forward returns column holding the family trades, and the key says so.
+> Section 11.4 states what a freeze registers and each family's own correction; 13.9 states the four freezes of 2026-10-02 and the neighbour check; section 14's step ends each rule's trades, writes their benchmarks and lists tonight's; section 15.10's row draws each registered rule's record beneath the setup families.
+> Section 17 gains Pullback base and A family rule's list; Family size and correction counts the maximum over each setup family's own rules.
+> Section 18 gains a moved family rule's evaluator, a trade whose closes run out and a benchmark with no member to enter.
+Why: 13.9 as the operator ruled it on 2026-10-02, the four freezes landing together once a registered family rule is measured as the pullback's is.
+### 2026-10-02 - SCHEMA.md - a sector leader's stored row is one written before the freeze
+Authorised by: The sector leaders are a variant of the pullback's starting point and not a family of their own
+Was:
+> A sector leader's row holds the pullback's plan as the swing filter's row stored it, and its trade is scored on that `gate_result` row, under the horizon of the plan its night's filter version read, so no outcome row is written for it here (see: A sector leader is a stock in the top quarter of a top three sector, bought at the pullback's buy point).
+Now:
+> A sector leader's row, stored on a night before the sector leaders became a variant of the pullback, holds the pullback's plan ... (see: The sector leaders are a variant of the pullback's starting point and not a family of their own).
+Why: the night stores no leader's row from the freeze, and the citation repointed from the superseded decision.
+### 2026-10-02 - RUNBOOK.md - the two freeze commands, and the swing family is eight
+Authorised by: The pullback's freeze opens its base as the next filter version and registers the swing family again at one instant
+Was:
+> "... retires every standing swing family candidate and registers the seven the code writes for the new version at the same instant ..."
+> "... registers the live filter at the open filter version's settings with its five variants, all nine rows at one instant ..."
+> "From the night after, the seven are evaluated ..., and the run page's shadow region counts seven registered and a divisor of 7."
+> The evaluators carried, the five phase 10 ones, and the registrar refusing "a ninth candidate".
+Now:
+> "... registers the family the code writes for the new version ..."; "... with its seven variants, all eleven rows at one instant ..."; "From the night after, the eight are evaluated ..., the eighth reading each member's standing in its sector in place of the trend and strength gate, and the run page's shadow region counts eight registered and a divisor of 8."
+> The evaluators carried name `swing-filter`, `breakout` and `drift` with their parameters, and the registrar refuses a ninth candidate of one setup family.
+> Two new sections: the pullback's freeze, `shape --freeze`, and a new setup family's freeze, `register --family breakout` and `register --family drift`, each run after 13.9's merge and before the night.
+Why: 13.9's commands, run by the remedy the merge owes.
+### 2026-10-02 - .claude/rules/checks.md - fixture-expectations, read-surface and register-append-only reach the freezes
+Authorised by: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
+Was:
+> `fixture-expectations`: "... each of the swing family's seven fires ... and the family's command writes seven registrations and three retirements at one instant, ..." and nothing on the freezes.
+> `read-surface`: "... reads seven registered and a divisor of 7; ..." and nothing on a registered family rule's record.
+> `register-append-only`: "... and from 12.5 the evaluation sources are twenty-one, ..."
+Now:
+> `fixture-expectations` reaches the eighth, the eight registrations, each new family's freeze, the pullback's, the shadow on every member's row and the family recorder's list, results and benchmarks; `read-surface` reaches eight and a divisor of 8, each registered rule's record and the card's live day off the register; `register-append-only` counts twenty-two evaluation sources and each family evaluator's own pin.
+Why: the checks reach what 13.9 asserts.

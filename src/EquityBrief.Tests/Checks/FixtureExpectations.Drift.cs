@@ -33,7 +33,7 @@ public partial class FixtureExpectations
     // reaction closes at 103, 3 up, between 100.5 and 103.5, on the volume given. Each session after it
     // but tonight closes at 103.5, between 103 and 104. Tonight, where it is not the reaction, closes at
     // the close given, between a point beneath it and half a point above.
-    static IReadOnlyList<FamilyBar> DriftSessions(int back, decimal close = 104m, long reactionVolume = 1500)
+    static IReadOnlyList<FamilyBar> DriftSessions(int back, decimal close = 104m, long reactionVolume = 2000)
     {
         var reaction = 9 - back;
 
@@ -55,9 +55,9 @@ public partial class FixtureExpectations
         new(DriftNight.AddDays(-back - 1), DriftNight.AddDays(-back), actual, surprise);
 
     static FamilyResult Drift(
-        int back = 3,
+        int back = 2,
         decimal close = 104m,
-        long reactionVolume = 1500,
+        long reactionVolume = 2000,
         DriftPrint? print = null,
         bool noPrint = false,
         double? moveBefore = 3.0,
@@ -74,17 +74,27 @@ public partial class FixtureExpectations
             bands ?? [],
             []));
 
+    // The same member read at the settings given: the provisional ones the freeze replaced, or the variant
+    // holding the stop no closer than a typical move under the buy.
+    static FamilyResult DriftAt(DriftSettings settings, int back = 2, decimal close = 104m, long reactionVolume = 2000, double? moveBefore = 3.0, double? typicalMove = 2.0) =>
+        DriftRule.Evaluate(new DriftInputs("DR", OpenMarket, DriftSessions(back, close, reactionVolume), PrintAt(back), moveBefore, 1000, typicalMove, [], []), settings);
+
     [Fact]
     public void EachOfTheDriftsGatesIsWorkedByHandOnBothSidesOfItsThresholdAndAtIt()
     {
-        // The settings the rule is worked at, each provisional until the family's freeze.
-        Assert.Equal((5, 1.0, 1.5, 2.0, 2.5, 60), (DriftRule.WindowSessions, DriftRule.ReactionMoves, DriftRule.VolumeMultiple, DriftRule.TargetBandMoves, DriftRule.TargetRiskMultiple, DriftRule.CapSessions));
+        // The settings the rule is worked at, frozen on 2026-10-02 at its sweep's proposal, the provisional
+        // ones the freeze replaced, which a variant registers, and the stop floor of the variant the operator
+        // added.
+        // see: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
+        Assert.Equal((3, 0.5, 2.0, 2.0, 2.5, 60), (DriftRule.WindowSessions, DriftRule.ReactionMoves, DriftRule.VolumeMultiple, DriftRule.TargetBandMoves, DriftRule.TargetRiskMultiple, DriftRule.CapSessions));
+        Assert.Equal(new DriftSettings(5, 1.0, 1.5, 2.5), DriftRule.Provisional);
+        Assert.Equal(1.0, DriftRule.VariantStopFloorMoves);
         Assert.Equal(["market", "print", "beat", "reaction", "volume", "held", "trade"], DriftRule.Order);
 
-        // A print reported on 2026-09-28 whose reaction session is 2026-09-29, three sessions before tonight,
+        // A print reported on 2026-09-29 whose reaction session is 2026-09-30, two sessions before tonight,
         // with a surprise of 8.2 per cent. The reaction closed at 103 from 100, 3 up, against a typical move
-        // of 3 the session before: 1.0 typical moves, at the floor. Its volume of 1,500 is 1.5 times its
-        // average of 1,000, at the multiple. Tonight closes at 104, above the reaction's low of 100.5. The
+        // of 3 the session before: 1.0 typical moves, above the floor of 0.5. Its volume of 2,000 is 2 times
+        // its average of 1,000, at the multiple. Tonight closes at 104, above the reaction's low of 100.5. The
         // stop is that low, the risk 3.5, and 2.5 times it is 8.75 above the close, 112.75. A band's low
         // edge at 108 is 4 above the close, 2 typical moves of 2, at the floor, and nearer, so the target
         // is 108 and the reward to risk 4 over 3.5, 1.1429.
@@ -93,13 +103,14 @@ public partial class FixtureExpectations
         Assert.True(passing.Passed);
         Assert.Equal((104m, 100.5m, 108m, 8.2), (passing.Entry!.Value, passing.Stop!.Value, passing.Target!.Value, passing.OrderBy!.Value));
         Assert.Equal(DriftRule.Order, passing.Gates.Select(gate => gate.Name));
-        Assert.Equal("the print of 2026-09-28 reacted on 2026-09-29, 3 session(s) before tonight, inside the 5-session window", GateOf(passing, DriftRule.Print).Reason);
-        Assert.Equal("the print of 2026-09-28 beat its estimate by 8.2%", GateOf(passing, DriftRule.Beat).Reason);
-        Assert.Equal("the reaction session closed up 1.00 typical moves, at or above 1.0 up", GateOf(passing, DriftRule.Reaction).Reason);
-        Assert.Equal("the reaction session's volume was 1.50 times its 50-session average, at or above 1.5", GateOf(passing, DriftRule.Volume).Reason);
+        Assert.Equal("the print of 2026-09-29 reacted on 2026-09-30, 2 session(s) before tonight, inside the 3-session window", GateOf(passing, DriftRule.Print).Reason);
+        Assert.Equal("the print of 2026-09-29 beat its estimate by 8.2%", GateOf(passing, DriftRule.Beat).Reason);
+        Assert.Equal("the reaction session closed up 1.00 typical moves, at or above 0.5 up", GateOf(passing, DriftRule.Reaction).Reason);
+        Assert.Equal("the reaction session's volume was 2.00 times its 50-session average, at or above 2.0", GateOf(passing, DriftRule.Volume).Reason);
         Assert.Equal("the close of 104 is above the reaction session's low of 100.5", GateOf(passing, DriftRule.Held).Reason);
         Assert.Equal("bought at the close of 104 with the stop at the reaction session's low, 100.5, and the target at 108, the lowest band 2 typical moves or more above the close, a reward to risk of 1.14", GateOf(passing, FamilyRule.Trade).Reason);
         Assert.Equal((DriftRule.FromBand, "1.1429"), (GateOf(passing, FamilyRule.Trade).Values[DriftRule.TargetFromValue], GateOf(passing, FamilyRule.Trade).Values[FamilyRule.RewardToRiskValue]));
+        Assert.False(GateOf(passing, FamilyRule.Trade).Values.ContainsKey(DriftRule.StopFromValue));
 
         // The target: a band a cent short of 2 typical moves above is not one, so with the next at 115,
         // past 112.75, the target is 2.5 times the risk, and the reward to risk 2.5. With no band it is
@@ -115,45 +126,76 @@ public partial class FixtureExpectations
         // A night storing no typical move measures no band's distance, so the target is the multiple of the risk.
         Assert.Equal(112.75m, Drift(typicalMove: null, bands: [108m]).Target!.Value);
 
-        // The window: the reaction tonight, its first session, is inside, bought at the reaction's own
-        // close of 103 with the stop at 100.5 and 2.5 times the risk of 2.5 above, 109.25; four sessions
-        // before tonight, its last, is inside; five before is one past it, and every later gate then reads
-        // no print.
+        // The window, moved by the freeze from five sessions to three: the reaction tonight, its first
+        // session, is inside, bought at the reaction's own close of 103 with the stop at 100.5 and 2.5 times
+        // the risk of 2.5 above, 109.25; two sessions before tonight, its last, is inside; three before is one
+        // past it, and every later gate then reads no print. The provisional setting buys four sessions after
+        // the reaction and not five.
         var first = Drift(back: 0);
-        var last = Drift(back: 4);
-        var past = Drift(back: 5);
+        var last = Drift(back: 2);
+        var past = Drift(back: 3);
 
         Assert.Equal((true, 103m, 100.5m, 109.25m), (first.Passed, first.Entry!.Value, first.Stop!.Value, first.Target!.Value));
         Assert.True(last.Passed);
         Assert.Equal((false, 6), (past.Passed, past.Missed));
-        Assert.Equal("the print of 2026-09-26 reacted on 2026-09-27, 5 session(s) before tonight, outside the 5-session window", GateOf(past, DriftRule.Print).Reason);
+        Assert.Equal("the print of 2026-09-28 reacted on 2026-09-29, 3 session(s) before tonight, outside the 3-session window", GateOf(past, DriftRule.Print).Reason);
         Assert.All(new[] { DriftRule.Beat, DriftRule.Reaction, DriftRule.Volume, DriftRule.Held, FamilyRule.Trade }, name => Assert.Equal("no print inside the window to read", GateOf(past, name).Reason));
         Assert.Equal((null, null, null), (past.Stop, past.Target, past.OrderBy));
+        Assert.Equal(
+            (true, true, false),
+            (DriftAt(DriftRule.Provisional, back: 3).Passed, DriftAt(DriftRule.Provisional, back: 4).Passed, DriftAt(DriftRule.Provisional, back: 5).Passed));
 
         // The beat: a surprise of a hundredth of a per cent passes; one of exactly zero does not, and a miss
         // does not.
-        Assert.True(GateOf(Drift(print: PrintAt(3, 0.01)), DriftRule.Beat).Passed);
-        Assert.False(GateOf(Drift(print: PrintAt(3, 0.0)), DriftRule.Beat).Passed);
-        Assert.Equal("the print of 2026-09-28 did not beat its estimate: a surprise of -2.5%", GateOf(Drift(print: PrintAt(3, -2.5)), DriftRule.Beat).Reason);
+        Assert.True(GateOf(Drift(print: PrintAt(2, 0.01)), DriftRule.Beat).Passed);
+        Assert.False(GateOf(Drift(print: PrintAt(2, 0.0)), DriftRule.Beat).Passed);
+        Assert.Equal("the print of 2026-09-29 did not beat its estimate: a surprise of -2.5%", GateOf(Drift(print: PrintAt(2, -2.5)), DriftRule.Beat).Reason);
 
         // A print whose actual the calendar does not carry yet has no surprise, and passes nothing until one
         // is filed: one gate short, with every other gate read as it stands.
-        var unfiled = Drift(print: PrintAt(3, null, actual: false));
+        var unfiled = Drift(print: PrintAt(2, null, actual: false));
 
         Assert.Equal((false, 1), (unfiled.Passed, unfiled.Missed));
-        Assert.Equal("the calendar carries no actual for the print of 2026-09-28 yet, so no surprise is read", GateOf(unfiled, DriftRule.Beat).Reason);
+        Assert.Equal("the calendar carries no actual for the print of 2026-09-29 yet, so no surprise is read", GateOf(unfiled, DriftRule.Beat).Reason);
 
-        // The reaction: against a typical move of 3.01 the 3 up is 0.997 of one, below the floor; against
-        // 2.99 it is above. A night storing none for the session before reads not available.
-        Assert.False(GateOf(Drift(moveBefore: 3.01), DriftRule.Reaction).Passed);
-        Assert.True(GateOf(Drift(moveBefore: 2.99), DriftRule.Reaction).Passed);
-        Assert.Equal("the reaction session closed up 1.00 typical moves, below 1.0 up", GateOf(Drift(moveBefore: 3.01), DriftRule.Reaction).Reason);
+        // The reaction, its floor moved by the freeze from 1.0 typical moves to 0.5: against a typical move
+        // of 6 the 3 up is 0.5 of one, at the floor, and passes; against 6.01 it is 0.499, below it. Against
+        // 3.01 it is 0.997 of one, above the frozen floor and below the provisional one, which 3 reaches.
+        // A night storing none for the session before reads not available.
+        Assert.True(GateOf(Drift(moveBefore: 6.0), DriftRule.Reaction).Passed);
+        Assert.False(GateOf(Drift(moveBefore: 6.01), DriftRule.Reaction).Passed);
+        Assert.Equal("the reaction session closed up 0.50 typical moves, below 0.5 up", GateOf(Drift(moveBefore: 6.01), DriftRule.Reaction).Reason);
+        Assert.Equal(
+            (true, false, true),
+            (GateOf(Drift(moveBefore: 3.01), DriftRule.Reaction).Passed, GateOf(DriftAt(DriftRule.Provisional, moveBefore: 3.01), DriftRule.Reaction).Passed, GateOf(DriftAt(DriftRule.Provisional, moveBefore: 3.0), DriftRule.Reaction).Passed));
         Assert.Equal("not available: no typical move is stored for the session before the reaction's", GateOf(Drift(moveBefore: null), DriftRule.Reaction).Reason);
 
-        // The volume: 1,499 shares against 1,000 is under the multiple, 1,500 at it and 1,501 over.
-        Assert.False(GateOf(Drift(reactionVolume: 1499), DriftRule.Volume).Passed);
-        Assert.True(GateOf(Drift(reactionVolume: 1500), DriftRule.Volume).Passed);
-        Assert.True(GateOf(Drift(reactionVolume: 1501), DriftRule.Volume).Passed);
+        // The volume, its multiple moved by the freeze from 1.5 to 2: 1,999 shares against 1,000 is under it,
+        // 2,000 at it and 2,001 over; the provisional setting passes 1,500 and not 1,499.
+        Assert.False(GateOf(Drift(reactionVolume: 1999), DriftRule.Volume).Passed);
+        Assert.True(GateOf(Drift(reactionVolume: 2000), DriftRule.Volume).Passed);
+        Assert.True(GateOf(Drift(reactionVolume: 2001), DriftRule.Volume).Passed);
+        Assert.Equal(
+            (false, true, false),
+            (GateOf(Drift(reactionVolume: 1500), DriftRule.Volume).Passed, GateOf(DriftAt(DriftRule.Provisional, reactionVolume: 1500), DriftRule.Volume).Passed, GateOf(DriftAt(DriftRule.Provisional, reactionVolume: 1499), DriftRule.Volume).Passed));
+
+        // The stop floor of the variant the operator added, no closer than one typical move under the buy.
+        // Tonight at 101 over the reaction's low of 100.5, on a typical move of 2: the floor, 99, sits under
+        // the low, so the stop moves down to it, the risk 2 and the target 2.5 times it above, 106, where the
+        // live rule stops at the low, 0.5 under the buy, its target 102.25. At 102.5 the floor is the low
+        // itself and the stop stays there; at 102.49 it is 100.49, a cent under the low, and the stop moves.
+        var floored = DriftRule.Live with { StopFloorMoves = DriftRule.VariantStopFloorMoves };
+        var moved = DriftAt(floored, close: 101m);
+        var atTheLow = DriftAt(DriftRule.Live, close: 101m);
+
+        Assert.Equal((true, 99m, 106m, DriftRule.FromFloor), (moved.Passed, moved.Stop!.Value, moved.Target!.Value, GateOf(moved, FamilyRule.Trade).Values[DriftRule.StopFromValue]));
+        Assert.Equal("bought at the close of 101 with the stop at 99, 1 typical moves under the close and below the reaction session's low of 100.5, and the target at 106, 2.5 times the risk above the close, a reward to risk of 2.50", GateOf(moved, FamilyRule.Trade).Reason);
+        Assert.Equal((100.5m, 102.25m), (atTheLow.Stop!.Value, atTheLow.Target!.Value));
+        Assert.Equal((100.5m, DriftRule.FromLow), (DriftAt(floored, close: 102.5m).Stop!.Value, GateOf(DriftAt(floored, close: 102.5m), FamilyRule.Trade).Values[DriftRule.StopFromValue]));
+        Assert.Equal((100.49m, DriftRule.FromFloor), (DriftAt(floored, close: 102.49m).Stop!.Value, GateOf(DriftAt(floored, close: 102.49m), FamilyRule.Trade).Values[DriftRule.StopFromValue]));
+
+        // A night storing no typical move holds no floor, so the variant places no trade.
+        Assert.Equal((false, "no typical move is stored for the night to hold the stop's floor by"), (DriftAt(floored, typicalMove: null).Passed, GateOf(DriftAt(floored, typicalMove: null), FamilyRule.Trade).Reason));
 
         // The hold: a close a cent above the reaction's low of 100.5 holds; one at it does not, and then no
         // stop sits below the close, so the trade is not placed either.
@@ -175,7 +217,7 @@ public partial class FixtureExpectations
 
         // The order: the surprise, largest first, and the ticker where two tie.
         FamilyResult At(string ticker, double surprise) =>
-            DriftRule.Evaluate(new DriftInputs(ticker, OpenMarket, DriftSessions(3), PrintAt(3, surprise), 3.0, 1000, 2.0, [], []));
+            DriftRule.Evaluate(new DriftInputs(ticker, OpenMarket, DriftSessions(2), PrintAt(2, surprise), 3.0, 1000, 2.0, [], []));
 
         Assert.Equal(["B", "A", "C"], FamilyRule.Ranked([At("C", 5.0), At("A", 5.0), At("B", 12.5), At("D", -1.0)]).Select(result => result.Ticker));
     }
@@ -196,13 +238,13 @@ public partial class FixtureExpectations
     }
 
     // The constructed night the evaluator is read over for the drift, the market open, every member holding
-    // the ten sessions above and a typical move of 2 tonight.
+    // the ten sessions above, its reaction on 2,000 shares, and a typical move of 2 tonight.
     //
-    // DA reported after the close of 2026-09-28, so its reaction session is the next, 2026-09-29, three
-    // sessions before tonight: a beat of 12.5 per cent, with a band's low edge at 108. DB reported before the
-    // open tonight and reacted tonight: a beat of 5. DC reacted two sessions back and missed by 2. DD beat by
-    // 9 and reacted five sessions back, one past the window. DE reacted one session back and the calendar
-    // carries no actual for it yet. DF holds no print.
+    // DA reported after the close of 2026-09-29, so its reaction session is the next, 2026-09-30, two
+    // sessions before tonight and the window's last: a beat of 12.5 per cent, with a band's low edge at 108.
+    // DB reported before the open tonight and reacted tonight: a beat of 5. DC reacted one session back and
+    // missed by 2. DD beat by 9 and reacted three sessions back, one past the window. DE reacted one session
+    // back and the calendar carries no actual for it yet. DF holds no print.
     static TemporaryStore DriftStore()
     {
         var store = new TemporaryStore().Migrated();
@@ -210,7 +252,7 @@ public partial class FixtureExpectations
         store.Execute("INSERT INTO filter_version (version, settings, opened_at, closed_at, evidence) VALUES ('1', '{\"trade\":\"clear\"}', '2026-09-20T00:00:00Z', NULL, 'test');");
         store.Execute($"INSERT INTO list_rule (session_date, rule) VALUES ('{BreakoutNight}', 'filter');");
 
-        foreach (var (ticker, back) in new[] { ("DA", 3), ("DB", 0), ("DC", 2), ("DD", 5), ("DE", 1), ("DF", 3) })
+        foreach (var (ticker, back) in new[] { ("DA", 2), ("DB", 0), ("DC", 1), ("DD", 3), ("DE", 1), ("DF", 2) })
         {
             StoreYear(store, ticker, DriftSessions(back));
             FilterRow(store, BreakoutNight, ticker);
@@ -219,10 +261,10 @@ public partial class FixtureExpectations
 
         // DA holds an older print too, a miss eight sessions back, and its newest is the one read.
         StoreReaction(store, "DA", 8, "before", -5.0);
-        StoreReaction(store, "DA", 3, "after", 12.5);
+        StoreReaction(store, "DA", 2, "after", 12.5);
         StoreReaction(store, "DB", 0, "before", 5.0);
-        StoreReaction(store, "DC", 2, "before", -2.0);
-        StoreReaction(store, "DD", 5, "before", 9.0);
+        StoreReaction(store, "DC", 1, "before", -2.0);
+        StoreReaction(store, "DD", 3, "before", 9.0);
         StoreReaction(store, "DE", 1, "after", null, actual: false);
 
         store.Execute(
@@ -257,9 +299,9 @@ public partial class FixtureExpectations
         Assert.Equal(new FamilyEvaluation("drift", 6, 2, 2), outcome.Families.Single(family => family.Family == DriftRule.Name));
         Assert.Contains("the drift family passed 2 of 6 members, 2 one gate short", FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'rules-drift';").Single(), StringComparison.Ordinal);
 
-        // DA's print was reported after the close of 2026-09-28 and its reaction is read on the next session.
+        // DA's print was reported after the close of 2026-09-29 and its reaction is read on the next session.
         Assert.Equal(
-            ["the print of 2026-09-28 reacted on 2026-09-29, 3 session(s) before tonight, inside the 5-session window"],
+            ["the print of 2026-09-29 reacted on 2026-09-30, 2 session(s) before tonight, inside the 3-session window"],
             FamilyRows(store, "SELECT json_extract(gates, '$.gates[1].reason') FROM family_result WHERE family = 'drift' AND ticker = 'DA';"));
         Assert.Equal(
             ["the calendar carries no actual for the print of 2026-09-30 yet, so no surprise is read"],

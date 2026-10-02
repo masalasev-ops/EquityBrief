@@ -1446,14 +1446,17 @@ app.MapGet("/screens/run/{night?}", async (
             compare: compare,
             checkpoints: RunScreen.Checkpoints(edge),
             reports: reports,
-            // The setups the page is drawn from, on a night the families drew its list.
+            // The setups the page is drawn from, on a night the families drew its list, and each registered rule
+            // of a new setup read over its own trades.
             setupFamilies: await read.FamilyNightAsync(dated) is null
                 ? null
                 : TonightScreen.FamilyRun(
                     dated,
                     await read.FamilyPicksAsync(dated),
                     PicksScreen.Cells(await read.PicksAsync(dated), dated),
-                    await read.RegisteredCandidatesAsync())),
+                    await read.RegisteredCandidatesAsync(),
+                    await read.FamilyTradesAsync(dated)),
+            familyRecords: TonightScreen.FamilyRecordRows(await read.RegisteredCandidatesAsync(), await read.FamilyTradesAsync(dated), dated)),
         "text/html; charset=utf-8");
 });
 

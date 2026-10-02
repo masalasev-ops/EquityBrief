@@ -39,7 +39,16 @@ public sealed record GateInputs(
     DateOnly? Gap,
     DateOnly? SessionBefore,
     bool? TriggerFiredTheSessionBefore,
-    IReadOnlyList<SessionEvent>? Earlier = null);
+    IReadOnlyList<SessionEvent>? Earlier = null,
+    // The state the member's reported quarters gave it on the night, as the night stored it, which a
+    // family candidate may read and no gate does; null where the night stored none for the member.
+    // see: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
+    string? FundamentalState = null,
+    // Where the member stands in its sector on the night, its sector's rank by its members' median long
+    // return and its own place inside it, which the sector leaders' variant reads and no gate does; null
+    // where the night handed in none.
+    // see: The sector leaders are a variant of the pullback's starting point and not a family of their own
+    Families.LeaderStanding? Leadership = null);
 
 // One gate's answer: whether it passed, the sentence saying why, and the values that decided it.
 public sealed record Gate(string Name, bool Passed, string Reason, IReadOnlyDictionary<string, string> Values);

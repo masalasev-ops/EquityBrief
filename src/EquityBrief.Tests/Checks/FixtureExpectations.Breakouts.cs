@@ -37,8 +37,9 @@ public partial class FixtureExpectations
     // A member's year as the breakout reads it, oldest first and ending on the night: 211 quiet sessions
     // between 98 and 100 closing at 99; then the 20 the newer ranges are read against, each between 99 and
     // 101 closing at 100, a range of 2 per cent of the close; then the 20 before tonight, each as given;
-    // then tonight, at the close and the volume given. `sessions` shortens the year from its oldest end.
-    static IReadOnlyList<FamilyBar> BreakoutYear(decimal close, long volume, (decimal High, decimal Low, decimal Close)? recent = null, int sessions = 252)
+    // then tonight, at the close and the volume given. `sessions` shortens the year from its oldest end, and
+    // `highBack` raises the high of the session that many before tonight's to 110.
+    static IReadOnlyList<FamilyBar> BreakoutYear(decimal close, long volume, (decimal High, decimal Low, decimal Close)? recent = null, int sessions = 252, int? highBack = null)
     {
         var night = new DateOnly(2026, 10, 2);
         var (high, low, at) = recent ?? (100.5m, 99.5m, 100m);
@@ -53,52 +54,83 @@ public partial class FixtureExpectations
             })
             .ToArray();
 
+        if (highBack is { } back)
+        {
+            year[251 - back] = year[251 - back] with { High = 110m };
+        }
+
         return year[(252 - sessions)..];
     }
 
     static FamilyResult Breakout(IReadOnlyList<FamilyBar> bars, double? typicalMove = 1.5, Gate? market = null, string[]? exclusions = null) =>
         BreakoutRule.Evaluate(new BreakoutInputs("BK", market ?? OpenMarket, bars, 1000, typicalMove, exclusions ?? []));
 
+    // The same member read at the provisional settings the freeze replaced, which its variant registers.
+    static FamilyResult ProvisionalBreakout(IReadOnlyList<FamilyBar> bars) =>
+        BreakoutRule.Evaluate(new BreakoutInputs("BK", OpenMarket, bars, 1000, 1.5, []), BreakoutRule.Provisional);
+
     static Gate GateOf(FamilyResult result, string name) => result.Gates.Single(gate => gate.Name == name);
 
     [Fact]
     public void EachOfTheBreakoutsGatesIsWorkedByHandOnBothSidesOfItsThresholdAndAtIt()
     {
-        // The settings the rule is worked at, each provisional until the family's freeze.
-        Assert.Equal((251, 1.5, 20, 1.0, 2.0, 63), (BreakoutRule.HighSessions, BreakoutRule.VolumeMultiple, BreakoutRule.RangeSessions, BreakoutRule.RangeCeiling, BreakoutRule.StopMoves, BreakoutRule.CapSessions));
+        // The settings the rule is worked at, frozen on 2026-10-02 at its sweep's proposal, and the
+        // provisional ones the freeze replaced, which a variant registers.
+        // see: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
+        Assert.Equal((126, 1.5, 20, 0.85, 1.5, 63), (BreakoutRule.HighSessions, BreakoutRule.VolumeMultiple, BreakoutRule.RangeSessions, BreakoutRule.RangeCeiling, BreakoutRule.StopMoves, BreakoutRule.CapSessions));
+        Assert.Equal(new BreakoutSettings(251, 1.5, 1.0, 2), BreakoutRule.Provisional);
         Assert.Equal(["market", "new high", "volume", "tightened", "trade"], BreakoutRule.Order);
 
         // The year above with the 20 sessions before tonight between 99.5 and 100.5 closing at 100, a range
         // of 1 per cent against the 2 per cent of the 20 before them, so 0.5 of it. The highest high of the
-        // 251 sessions before tonight is 101. Tonight closes at 102 on 1,500 shares against an average of
-        // 1,000, 1.5 times, and a typical move of 1.5 puts the stop 3 beneath, at 99.
+        // 126 sessions before tonight is 101. Tonight closes at 102 on 1,500 shares against an average of
+        // 1,000, 1.5 times, and a typical move of 1.5 puts the stop 1.5 of them, 2.25, beneath, at 99.75.
         var passing = Breakout(BreakoutYear(102m, 1500));
 
         Assert.True(passing.Passed);
         Assert.Equal(0, passing.Missed);
-        Assert.Equal((102m, 99m, null, 1.5), (passing.Entry!.Value, passing.Stop!.Value, passing.Target, passing.OrderBy!.Value));
+        Assert.Equal((102m, 99.75m, null, 1.5), (passing.Entry!.Value, passing.Stop!.Value, passing.Target, passing.OrderBy!.Value));
         Assert.Equal(BreakoutRule.Order, passing.Gates.Select(gate => gate.Name));
-        Assert.Equal("the close of 102 is above the highest high of the 251 sessions before it, 101", GateOf(passing, BreakoutRule.NewHigh).Reason);
+        Assert.Equal("the close of 102 is above the highest high of the 126 sessions before it, 101", GateOf(passing, BreakoutRule.NewHigh).Reason);
+        Assert.Equal("126", GateOf(passing, BreakoutRule.NewHigh).Values[BreakoutRule.WindowValue]);
         Assert.Equal("volume 1.50 times its 50-session average, at or above 1.5", GateOf(passing, BreakoutRule.Volume).Reason);
-        Assert.Equal("the mean daily range of the 20 sessions before tonight is 1.00% of the close, no wider than the 2.00% of the 20 before them", GateOf(passing, BreakoutRule.Tightened).Reason);
+        Assert.Equal("the mean daily range of the 20 sessions before tonight is 1.00% of the close, no wider than 0.85 of the 2.00% of the 20 before them", GateOf(passing, BreakoutRule.Tightened).Reason);
         Assert.Equal("0.5", GateOf(passing, BreakoutRule.Tightened).Values["ratio"]);
-        Assert.Equal(("102", "99", "1.5"), (GateOf(passing, FamilyRule.Trade).Values["close"], GateOf(passing, FamilyRule.Trade).Values["stop"], GateOf(passing, FamilyRule.Trade).Values["typical move"]));
+        Assert.Equal(("102", "99.75", "1.5"), (GateOf(passing, FamilyRule.Trade).Values["close"], GateOf(passing, FamilyRule.Trade).Values["stop"], GateOf(passing, FamilyRule.Trade).Values["typical move"]));
+
+        // The provisional setting stops 2 typical moves, 3, beneath, at 99.
+        var provisional = ProvisionalBreakout(BreakoutYear(102m, 1500));
+
+        Assert.Equal((true, 99m, "251"), (provisional.Passed, provisional.Stop!.Value, GateOf(provisional, BreakoutRule.NewHigh).Values[BreakoutRule.WindowValue]));
 
         // The new high: a close a cent above the 101 passes, one at it does not, since a close at the high
         // is not above it, and one a cent beneath does not.
         Assert.True(GateOf(Breakout(BreakoutYear(101.01m, 1500)), BreakoutRule.NewHigh).Passed);
         Assert.False(GateOf(Breakout(BreakoutYear(101m, 1500)), BreakoutRule.NewHigh).Passed);
         Assert.False(GateOf(Breakout(BreakoutYear(100.99m, 1500)), BreakoutRule.NewHigh).Passed);
-        Assert.Equal("the close of 101 is not above the highest high of the 251 sessions before it, 101", GateOf(Breakout(BreakoutYear(101m, 1500)), BreakoutRule.NewHigh).Reason);
+        Assert.Equal("the close of 101 is not above the highest high of the 126 sessions before it, 101", GateOf(Breakout(BreakoutYear(101m, 1500)), BreakoutRule.NewHigh).Reason);
 
-        // A member one session short of the year: 251 sessions stored, and the gate reads not available
-        // with the count, while its other gates are read as they stand.
-        var early = Breakout(BreakoutYear(102m, 1500, sessions: 251));
+        // The window, moved by the freeze from 251 sessions to 126: a high of 110 made 126 sessions before
+        // tonight's is inside it and keeps a close of 102 from being above it, and one made 127 before is
+        // outside it; the provisional setting reads both.
+        var inside = BreakoutYear(102m, 1500, highBack: 126);
+        var outside = BreakoutYear(102m, 1500, highBack: 127);
+
+        Assert.Equal((false, true), (GateOf(Breakout(inside), BreakoutRule.NewHigh).Passed, GateOf(Breakout(outside), BreakoutRule.NewHigh).Passed));
+        Assert.Equal((false, false), (GateOf(ProvisionalBreakout(inside), BreakoutRule.NewHigh).Passed, GateOf(ProvisionalBreakout(outside), BreakoutRule.NewHigh).Passed));
+        Assert.Equal("the close of 102 is not above the highest high of the 251 sessions before it, 110", GateOf(ProvisionalBreakout(outside), BreakoutRule.NewHigh).Reason);
+
+        // A member one session short of the window: 126 sessions stored, and the gate reads not available
+        // with the count, while its other gates are read as they stand; 127 are enough. The provisional
+        // setting is one short at 251.
+        var early = Breakout(BreakoutYear(102m, 1500, sessions: 126));
 
         Assert.False(early.Passed);
         Assert.Equal(1, early.Missed);
-        Assert.Equal("not available: 251 sessions are stored, and a close is read against the 251 before it", GateOf(early, BreakoutRule.NewHigh).Reason);
-        Assert.Equal("251", GateOf(early, BreakoutRule.NewHigh).Values["sessions"]);
+        Assert.Equal("not available: 126 sessions are stored, and a close is read against the 126 before it", GateOf(early, BreakoutRule.NewHigh).Reason);
+        Assert.Equal("126", GateOf(early, BreakoutRule.NewHigh).Values["sessions"]);
+        Assert.True(GateOf(Breakout(BreakoutYear(102m, 1500, sessions: 127)), BreakoutRule.NewHigh).Passed);
+        Assert.Equal("not available: 251 sessions are stored, and a close is read against the 251 before it", GateOf(ProvisionalBreakout(BreakoutYear(102m, 1500, sessions: 251)), BreakoutRule.NewHigh).Reason);
 
         // The volume: 1,500 against 1,000 is at the multiple and passes; 1,499 is 1.499 times and does not;
         // 1,501 passes.
@@ -107,16 +139,23 @@ public partial class FixtureExpectations
         Assert.True(GateOf(Breakout(BreakoutYear(102m, 1501)), BreakoutRule.Volume).Passed);
         Assert.Equal("volume 1.50 times its 50-session average, below 1.5", GateOf(Breakout(BreakoutYear(102m, 1499)), BreakoutRule.Volume).Reason);
 
-        // The ranges: the 20 before tonight between 99 and 101, the same 2 per cent as the 20 before them,
-        // are no wider and pass at the ceiling; between 99 and 101.02 they are 2.02 per cent, 1.01 of it,
-        // and do not.
-        var level = Breakout(BreakoutYear(102m, 1500, (101m, 99m, 100m)));
+        // The ranges, the ceiling moved by the freeze from 1 to 0.85: the 20 before tonight between 99.15 and
+        // 100.85 are 1.7 per cent against the 2 per cent before them, 0.85 of it, and pass at the ceiling;
+        // between 99.15 and 100.86 they are 1.71 per cent, 0.855 of it, and do not, where the provisional
+        // setting passes them. Between 99 and 101, the same 2 per cent, they pass only the provisional
+        // setting, at its ceiling; between 99 and 101.02 they are 2.02 per cent, 1.01 of it, and pass neither.
+        var atCeiling = Breakout(BreakoutYear(102m, 1500, (100.85m, 99.15m, 100m)));
+        var pastCeiling = BreakoutYear(102m, 1500, (100.86m, 99.15m, 100m));
+        var level = BreakoutYear(102m, 1500, (101m, 99m, 100m));
         var wider = Breakout(BreakoutYear(102m, 1500, (101.02m, 99m, 100m)));
 
-        Assert.True(GateOf(level, BreakoutRule.Tightened).Passed);
-        Assert.Equal("1", GateOf(level, BreakoutRule.Tightened).Values["ratio"]);
+        Assert.Equal((true, "0.85"), (GateOf(atCeiling, BreakoutRule.Tightened).Passed, GateOf(atCeiling, BreakoutRule.Tightened).Values["ratio"]));
+        Assert.Equal((false, true), (GateOf(Breakout(pastCeiling), BreakoutRule.Tightened).Passed, GateOf(ProvisionalBreakout(pastCeiling), BreakoutRule.Tightened).Passed));
+        Assert.Equal("the mean daily range of the 20 sessions before tonight is 1.71% of the close, wider than 0.85 of the 2.00% of the 20 before them", GateOf(Breakout(pastCeiling), BreakoutRule.Tightened).Reason);
+        Assert.Equal((false, true, "1"), (GateOf(Breakout(level), BreakoutRule.Tightened).Passed, GateOf(ProvisionalBreakout(level), BreakoutRule.Tightened).Passed, GateOf(ProvisionalBreakout(level), BreakoutRule.Tightened).Values["ratio"]));
         Assert.False(GateOf(wider, BreakoutRule.Tightened).Passed);
-        Assert.Equal("the mean daily range of the 20 sessions before tonight is 2.02% of the close, wider than the 2.00% of the 20 before them", GateOf(wider, BreakoutRule.Tightened).Reason);
+        Assert.False(GateOf(ProvisionalBreakout(BreakoutYear(102m, 1500, (101.02m, 99m, 100m))), BreakoutRule.Tightened).Passed);
+        Assert.Equal("the mean daily range of the 20 sessions before tonight is 2.02% of the close, wider than 0.85 of the 2.00% of the 20 before them", GateOf(wider, BreakoutRule.Tightened).Reason);
         Assert.Equal((false, 1), (wider.Passed, wider.Missed));
 
         // A member holding 40 sessions has too few for the ranges, which are read over the 40 before tonight.
@@ -218,10 +257,10 @@ public partial class FixtureExpectations
     // The constructed night the evaluator is read over, the market open. Every member holds a typical move
     // of 1.5 and an average volume of 1,000.
     //
-    // BA, BB and BC close at 102 above a year's high of 101 after their ranges narrowed, on 2,000, 1,500 and
-    // 1,800 shares: all three pass, in the order BA at 2.0 times, BC at 1.8 and BB at 1.5. BC carries the
+    // BA, BB and BC close at 102 above a half year's high of 101 after their ranges narrowed, on 2,000, 1,500
+    // and 1,800 shares: all three pass, in the order BA at 2.0 times, BC at 1.8 and BB at 1.5. BC carries the
     // pullback's own exclusion for earnings, which is not the breakout's. NH closes at 100.5, under the high,
-    // on 1,500 shares. SH holds 251 sessions, one short. XG passes every gate on 3,000 shares and its series
+    // on 1,500 shares. SH holds 126 sessions, one short. XG passes every gate on 3,000 shares and its series
     // is excluded for a gap.
     static TemporaryStore BreakoutStore(bool market = true)
     {
@@ -236,7 +275,7 @@ public partial class FixtureExpectations
             ("BB", BreakoutYear(102m, 1500), "[]"),
             ("BC", BreakoutYear(102m, 1800), "[\"" + SwingGates.EarningsExclusion + "\"]"),
             ("NH", BreakoutYear(100.5m, 1500), "[]"),
-            ("SH", BreakoutYear(102m, 1500, sessions: 251), "[]"),
+            ("SH", BreakoutYear(102m, 1500, sessions: 126), "[]"),
             ("XG", BreakoutYear(102m, 3000), "[\"" + SwingGates.GapExclusion + "\"]"),
         };
 
@@ -270,16 +309,16 @@ public partial class FixtureExpectations
         var outcome = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync("rules-first");
 
         // Every member's answer, the three passing first in the family's order with their places. Each is
-        // bought at its close with the stop 3 beneath, two typical moves of 1.5, and no target. NH and SH
-        // are one gate short; XG missed none and its gap keeps it off.
+        // bought at its close with the stop 2.25 beneath, one and a half typical moves of 1.5, and no target.
+        // NH and SH are one gate short; XG missed none and its gap keeps it off.
         Assert.Equal(
             [
-                "BA|1|0|1|102|99|null|2|[]",
-                "BC|1|0|2|102|99|null|1.8|[]",
-                "BB|1|0|3|102|99|null|1.5|[]",
-                "NH|0|1|null|100.5|97.5|null|1.5|[]",
-                "SH|0|1|null|102|99|null|1.5|[]",
-                "XG|0|0|null|102|99|null|3|[\"gap\"]",
+                "BA|1|0|1|102|99.75|null|2|[]",
+                "BC|1|0|2|102|99.75|null|1.8|[]",
+                "BB|1|0|3|102|99.75|null|1.5|[]",
+                "NH|0|1|null|100.5|98.25|null|1.5|[]",
+                "SH|0|1|null|102|99.75|null|1.5|[]",
+                "XG|0|0|null|102|99.75|null|3|[\"gap\"]",
             ],
             FamilyRows(store, BreakoutRows));
         Assert.Equal(new DateOnly(2026, 10, 2), outcome.Night!.Value);
@@ -298,7 +337,7 @@ public partial class FixtureExpectations
         Assert.Equal(BreakoutRule.Order, stored.Select(gate => gate.Name));
         Assert.Equal([true, false, true, true, true], stored.Select(gate => gate.Passed));
         Assert.Equal(OpenMarket.Reason, stored[0].Reason);
-        Assert.Equal("the close of 100.5 is not above the highest high of the 251 sessions before it, 101", stored[1].Reason);
+        Assert.Equal("the close of 100.5 is not above the highest high of the 126 sessions before it, 101", stored[1].Reason);
 
         // The older rows: the one that passed is a trade and is kept, the one that did not is gone.
         Assert.Equal(["OLD"], FamilyRows(store, "SELECT ticker FROM family_result WHERE session_date = '2020-01-02';"));
@@ -332,7 +371,7 @@ public partial class FixtureExpectations
         Assert.Equal((4, 0, 1, 0), (listed.Listed, listed.OpenTrade, listed.UnderAnother, listed.PastFive));
 
         // PB holds no bar on the night, so the breakout reads it as not available and stores its answer.
-        Assert.Equal(["PB|0|not available: 0 sessions are stored, and a close is read against the 251 before it"], FamilyRows(store, "SELECT ticker, passed, json_extract(gates, '$.gates[1].reason') FROM family_result WHERE ticker = 'PB' AND family = 'breakout';"));
+        Assert.Equal(["PB|0|not available: 0 sessions are stored, and a close is read against the 126 before it"], FamilyRows(store, "SELECT ticker, passed, json_extract(gates, '$.gates[1].reason') FROM family_result WHERE ticker = 'PB' AND family = 'breakout';"));
     }
 
     [Fact]

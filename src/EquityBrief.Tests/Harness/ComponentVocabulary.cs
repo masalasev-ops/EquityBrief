@@ -37,6 +37,8 @@ internal static class ComponentVocabulary
     // purge removes together. The fundamental readings are a computed table, one
     // row a member a night, as the swing readings are, and so are the family
     // results, one row a member a night under each setup family but the pullback.
+    // From 13.9 the forward returns column holds the family trades beside the
+    // forward returns, each a record of what became of a trade.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
@@ -45,7 +47,7 @@ internal static class ComponentVocabulary
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar]),
         ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult]),
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick]),
-        ("Forward returns", [DataStore.ForwardReturn]),
+        ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade]),
         ("Facts", [DataStore.Facts]),
         ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk]),
         ("News", [DataStore.NewsPulse, DataStore.NewsArticle, DataStore.NewsLabel]),
@@ -153,6 +155,7 @@ internal static class ComponentVocabulary
         ["family results"] = DataStore.FamilyResult,
         ["family nights"] = DataStore.FamilyNight,
         ["family picks"] = DataStore.FamilyPick,
+        ["family trades"] = DataStore.FamilyTrade,
         ["indicators"] = DataStore.Indicator,
         ["swings"] = DataStore.Swing,
         ["volume profile"] = DataStore.VolumeProfile,

@@ -1,0 +1,10 @@
+# The remedy of 13.9 of 2026-10-02 (the freezes), as its PROGRESS entry prints it: the merge moves every
+# candidate evaluator's version and the swing filter's code version, and the ladder rules' code version does
+# not move, so no window is closed. The pullback's freeze opens filter version 5 at its base, the open version's
+# settings with the reward-to-risk floor at 2, retiring the six swing family candidates standing on version 4
+# and registering the family's eight for version 5, the pullback in the top 3 sectors among them; then the
+# breakouts' and the earnings drift's freezes register each family's live rule and its six variants.
+# Run after the merge and before the night, when no night is running.
+shape --freeze --restarts 0 --evidence "the operator's rulings of 2026-10-02: the pullback freezes at its base with the reward-to-risk floor raised to 2, the sector leaders registered beside it as its eighth rule"
+register --family breakout
+register --family drift

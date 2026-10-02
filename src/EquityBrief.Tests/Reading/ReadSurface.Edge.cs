@@ -18,7 +18,7 @@ public partial class ReadSurface
 {
     static readonly string NearestBands = TheSwingFamily.Variant(TheSwingFamily.NearestBandsName, "1");
 
-    static readonly string[] TheSix =
+    static readonly string[] TheFamilyEight =
     [
         SwingFamily.LiveCandidate("1"),
         NearestBands,
@@ -26,16 +26,18 @@ public partial class ReadSurface
         TheSwingFamily.Variant(TheSwingFamily.MarketOffName, "1"),
         TheSwingFamily.Variant(TheSwingFamily.StrengthName, "1"),
         TheSwingFamily.Variant(TheSwingFamily.ArrivalName, "1"),
+        TheSwingFamily.Variant(TheSwingFamily.DeterioratingName, "1"),
+        TheSwingFamily.Variant(TheSwingFamily.LeadersName, "1"),
     ];
 
     // One gate row under filter version 1 with the family's shadow on it: the candidates named fired and
-    // every other one of the six evaluated and quiet, each verdict naming the plan its trade gate read,
+    // every other one of the seven evaluated and quiet, each verdict naming the plan its trade gate read,
     // the nearest bands' for that variant and section 10's for every other.
     static void EdgeRow(TemporaryStore store, string session, string ticker, bool[] gates, string[] exclusions, params string[] fired)
     {
         var shadow = JsonSerializer.Serialize(new
         {
-            candidates = TheSix.Select(candidate => new
+            candidates = TheFamilyEight.Select(candidate => new
             {
                 candidate,
                 fired = fired.Contains(candidate),
@@ -70,7 +72,7 @@ public partial class ReadSurface
         // Three nights under version 1, whose trade gate reads section 10's plan. Worked by hand: the live
         // filter fires on the name the filter passed on the first two, each plan clear of the noise a win and
         // a loss, and the nearest bands' variant on A's first night and on F's, each read on the plan at the
-        // nearest bands, a win on both, where F's plan clear of the noise has no outcome; the other four fire
+        // nearest bands, a win on both, where F's plan clear of the noise has no outcome; the other six fire
         // nowhere. Every candidate was first evaluated on 2026-09-14, two sessions before the page's night.
         // The rows: three admitted, one the trigger alone rejected, one the setup alone rejected, one suspect
         // series alone removed, and one failing two gates in no group.
@@ -94,16 +96,16 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync("/screens/run/2026-09-16"));
         var edge = Assert.Single(Blocks(page, "<section class=\"edge-clock\".*?</section>"));
 
-        Assert.Contains("data-candidates=\"6\"", edge, StringComparison.Ordinal);
+        Assert.Contains("data-candidates=\"8\"", edge, StringComparison.Ordinal);
         Assert.Contains("Each candidate's first look is read at 8 non-empty blocks, no earlier than 566 sessions after its first night, and it can retire the candidate or leave it and cannot promote it; a promotion can come no earlier than the look at 12 blocks, 818 sessions after its first night.", edge, StringComparison.Ordinal);
 
-        // The live filter first, then the five in the order registered, each defined against version 1 with
+        // The live filter first, then the seven in the order registered, each defined against version 1 with
         // the live filter unmoved, two sessions run, no block closed and every figure withheld.
         var rows = Blocks(edge, "<tr data-candidate=.*?</tr>");
 
-        Assert.Equal(TheSix, rows.Select(row => System.Text.RegularExpressions.Regex.Match(row, "data-candidate=\"([^\"]+)\"").Groups[1].Value));
+        Assert.Equal(TheFamilyEight, rows.Select(row => System.Text.RegularExpressions.Regex.Match(row, "data-candidate=\"([^\"]+)\"").Groups[1].Value));
 
-        foreach (var (row, resolved) in rows.Zip(new[] { 2, 2, 0, 0, 0, 0 }))
+        foreach (var (row, resolved) in rows.Zip(new[] { 2, 2, 0, 0, 0, 0, 0, 0 }))
         {
             Assert.Contains($"data-defined=\"1\" data-moved=\"\" data-sessions=\"2\" data-blocks=\"0\" data-floor=\"8\" data-resolved=\"{resolved}\" data-withheld=\"true\"", row, StringComparison.Ordinal);
             Assert.Contains("<td>2 since its first night, 2026-09-14</td>", row, StringComparison.Ordinal);

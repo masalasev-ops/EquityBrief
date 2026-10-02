@@ -665,7 +665,7 @@ internal static class Scope
             Verdict.Pass,
             "each gate reading an absent value fails with the reason it is absent and none passes on an absence, over constructed members and the fixture's member the night read nothing for",
             ByExpectations),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are the pullback family's, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it); then evaluate every member under each other setup family, on the market check the filter stored, storing every answer with the values that decided it (see: The market check closes every family's list together); then draw the page's list from what each setup family passed, the families in the page's order and each family's names in its own, at most five a family, a stock once and none whose trade from any family is still open, and record the session as one the families drew (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are the pullback family's, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it); then evaluate every member under each other setup family, on the market check the filter stored, storing every answer with the values that decided it (see: The market check closes every family's list together); then draw the page's list from what each setup family passed, the families in the page's order and each family's names in its own, at most five a family, a stock once and none whose trade from any family is still open, and record the session as one the families drew (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order); then end each registered family rule's earlier trades whose closes reached their stop, their target or their cap, write the benchmark of each whose cap's sessions have passed, and list tonight's for each rule, at most five, none it holds a trade on still open (see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end).")] = new Scoped(
             Verdict.Pass,
             "the night runs the step after the listings and before the facts, writes a row for every member, and records its session as listed by the swing filter",
             ByNight),
@@ -1883,26 +1883,62 @@ internal static class Scope
             "a print whose reaction session is not among the member's sessions, and one with no close before it, read not available with the session named, and a member with no stored print passes nothing",
             ByExpectations),
 
-        // 13.4, the sector leaders: section 17's rows for its settings and section 18's two rows.
+        // 13.4, the sector leaders: section 17's rows for its settings and section 18's two rows, read from 13.9
+        // as the pullback's variant in the top sectors.
         [CheckReach.Key(LimitsTable, "Leader sectors")] = new Scoped(
             Verdict.Pass,
-            "over constructed sectors worked by hand, each ranked on its members' median return with a tie broken by the sector's name, the first in the third sector a leader and the first in the fourth not, and the names passing ordered by the sector's rank and then the return",
+            "over constructed sectors worked by hand, each ranked on its members' median return with a tie broken by the sector's name, and the pullback's variant leading a member in the third sector and not one in the fourth, its verdict saying where the member stood",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Leader share")] = new Scoped(
             Verdict.Pass,
-            "the top quarter worked at its boundary over a sector of eight and a sector of five, the member just inside it passing and the next not, with a tie on the boundary decided by the ticker",
+            "the top quarter worked at its boundary over a sector of eight and a sector of five, the member just inside it leading and the next not, with a tie on the boundary decided by the ticker, and a sector of nine rounding up to three",
             ByExpectations),
         [CheckReach.Key(LimitsTable, "Sector ranking floor")] = new Scoped(
             Verdict.Pass,
-            "a constructed sector a member short of the floor is given no rank whatever its median, the sectors ranked are counted without it, and its members pass nothing",
+            "a constructed sector a member short of the floor is given no rank whatever its median, the sectors ranked are counted without it, and the variant leads none of its members",
             ByExpectations),
         [CheckReach.Key(FailureTable, "A member the membership names no sector for")] = new Scoped(
             Verdict.Pass,
-            "a member with no sector stands in no sector's median, its sector gate does not pass and says so, by hand and over a constructed store",
+            "a member with no sector stands in no sector's median and is ranked in none, and the variant does not fire on it whatever its gates, its verdict saying it is not ranked, by hand and over the filter's stage",
             ByExpectations),
         [CheckReach.Key(FailureTable, "A sector too small to rank")] = new Scoped(
             Verdict.Pass,
-            "the members of a sector a member short of the floor are stored as not passed, each saying how many members with a return the sector holds against the floor",
+            "the members of a sector a member short of the floor are ranked in none, and the variant fires on none of them, by hand and over the filter's stage",
+            ByExpectations),
+
+        // 13.9, the freezes: the family recorder's catalogue and matrix rows and its store, section 17's rows for the
+        // pullback's base and a family rule's list, and section 18's three rows.
+        [CheckReach.Key(CatalogueTable, "Family recorder")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the membership, bars, indicators and family results it reads and the family trades it reads, inserts, updates and deletes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Family recorder")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Family trades")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Pullback base")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store the freeze opens the next version at the open version's settings with the floor raised, retiring and registering the family at the same instant, and a second freeze is refused with nothing changed; the floor is read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "A family rule's list")] = new Scoped(
+            Verdict.Pass,
+            "over constructed verdicts worked by hand, a rule lists its first five in its own order, skips a stock it holds a trade on, frees it the night after the trade ends, and is held by no other rule's trade; a trailing and a fixed trade's result and benchmark worked by hand over constructed bars",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A registered family rule whose evaluator the code no longer carries or has moved")] = new Scoped(
+            Verdict.Pass,
+            "a rule registered at a version the code no longer carries is evaluated on no member, its reason stored on every member's row and the stage written as failed naming it, while a standing rule beside it is evaluated",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A family rule's trade whose stock's closes run out before it ends")] = new Scoped(
+            Verdict.Pass,
+            "a kept trade whose stock holds no close past its night is ended on its cap's last session with no result once the cap has passed, its stock listed again the night after, and counted in the rule's trades and in none of its decided",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A family rule's benchmark whose night holds no member to enter")] = new Scoped(
+            Verdict.Pass,
+            "a kept trade whose night holds no member with a typical move is benchmarked as none over no member, and counted in the rule's trades and in none of its decided",
             ByExpectations),
 
         // 13.6, the breakouts' sweep: section 17's rows for its grid and every family sweep's floors and test,
@@ -1965,6 +2001,18 @@ internal static class Scope
             Verdict.Pass, "each row's listed count and its trades, open and finished, worked by hand over the constructed store and read off the row", ByReadSurface),
         [CheckReach.Key("15.10 Run", "The setup families, its record against what it waits for or the words saying it starts at the freeze")] = new Scoped(
             Verdict.Pass, "the registered setup's decided trades against the minimums read off its row, and the ruling's words on the provisional setup's", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, one row a registered rule")] = new Scoped(
+            Verdict.Pass, "over a constructed register of a new setup's rules, one row each standing rule read off the page, a retired one drawing none", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, each setup's live rule first")] = new Scoped(
+            Verdict.Pass, "the live rule's row read first and marked live, its variants after it", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, the trades its own list kept")] = new Scoped(
+            Verdict.Pass, "each row's trades read off it against the trades the store holds for that rule alone", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, those decided with their edge over their benchmark in multiples of the risk")] = new Scoped(
+            Verdict.Pass, "the decided count and the edge worked by hand over constructed trades, an open trade and one with no benchmark left out", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, its whole blocks against the look they wait for")] = new Scoped(
+            Verdict.Pass, "the whole blocks worked by hand from the first session on or after the registration, a block whose cap has not passed left out, against the first look's eight", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, the level its looks are read at")] = new Scoped(
+            Verdict.Pass, "the level read off each row as 0.05 over the setup's own distinct trials, and no other setup's rule moving it", ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "The setup filter, one chip a setup with its trades and the counts following the setup chosen")] = new Scoped(
             Verdict.Pass, "the chips and their counts read off the page, the filter keeping exactly the setup's trades against the store's listed rows, and the status chips keeping the setup chosen", ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "The setup a trade was listed under, a label on its row")] = new Scoped(
@@ -3600,6 +3648,8 @@ internal static class Scope
         ["Sweep history"] = "12.5",
         // The operator's rulings of 2026-09-30, the sweep's rerun, built as 12.5's correction.
         ["Sweep point in time"] = "12.5",
+        // 13.9's, which the plan describes by what it stores rather than by the component's name.
+        ["Family recorder"] = "13.9",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -3641,6 +3691,8 @@ internal static class Scope
         ["Family picks"] = "13.1",
         // 13.2's, every member's answer under each family but the pullback.
         ["Family results"] = "13.2",
+        // 13.9's, each registered family rule's trades with their results and benchmarks.
+        ["Family trades"] = "13.9",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -3959,6 +4011,12 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "The setup families, the variants scored beside it")] = "13.5",
         [CheckReach.Key("15.10 Run", "The setup families, what it lists on the night and the trades listed under it so far")] = "13.5",
         [CheckReach.Key("15.10 Run", "The setup families, its record against what it waits for or the words saying it starts at the freeze")] = "13.5",
+        [CheckReach.Key("15.10 Run", "The setup families, one row a registered rule")] = "13.9",
+        [CheckReach.Key("15.10 Run", "The setup families, each setup's live rule first")] = "13.9",
+        [CheckReach.Key("15.10 Run", "The setup families, the trades its own list kept")] = "13.9",
+        [CheckReach.Key("15.10 Run", "The setup families, those decided with their edge over their benchmark in multiples of the risk")] = "13.9",
+        [CheckReach.Key("15.10 Run", "The setup families, its whole blocks against the look they wait for")] = "13.9",
+        [CheckReach.Key("15.10 Run", "The setup families, the level its looks are read at")] = "13.9",
         [CheckReach.Key("15.17 Past picks", "The setup filter, one chip a setup with its trades and the counts following the setup chosen")] = "13.5",
         [CheckReach.Key("15.17 Past picks", "The setup a trade was listed under, a label on its row")] = "13.5",
         [CheckReach.Key("15.17 Past picks", "A trailing trade, drawn with no target and its result in multiples of its risk")] = "13.5",
@@ -4285,6 +4343,12 @@ internal static class Scope
             "the variants scored beside it",
             "what it lists on the night and the trades listed under it so far",
             "its record against what it waits for or the words saying it starts at the freeze",
+            "one row a registered rule",
+            "each setup's live rule first",
+            "the trades its own list kept",
+            "those decided with their edge over their benchmark in multiples of the risk",
+            "its whole blocks against the look they wait for",
+            "the level its looks are read at",
         ],
         [CheckReach.Key("15.17 Past picks", "The setup filter")] =
         [
@@ -4820,6 +4884,10 @@ internal static class Scope
         // 13.6, the family sweeps.
         ["A family sweep with no setting meeting its floors"] = "13.6",
         ["A leader sweep name with no sector"] = "13.8",
+        // 13.9, the freezes and the records the registered family rules keep.
+        ["A registered family rule whose evaluator the code no longer carries or has moved"] = "13.9",
+        ["A family rule's trade whose stock's closes run out before it ends"] = "13.9",
+        ["A family rule's benchmark whose night holds no member to enter"] = "13.9",
         // The sweep, a 12.5 correction, and its rerun.
         ["A chunk of the sweep fails twice"] = "12.5",
         ["The point-in-time check finds a difference"] = "12.5",
@@ -4926,6 +4994,9 @@ internal static class Scope
         ["Leader sweep grid"] = "13.8",
         ["Family sweep floors"] = "13.6",
         ["Family sweep test"] = "13.6",
+        // The freezes, 13.9.
+        ["Pullback base"] = "13.9",
+        ["A family rule's list"] = "13.9",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",

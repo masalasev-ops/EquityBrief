@@ -31,9 +31,20 @@ public partial class ArchitectureConformance
         .. FixtureExpectations.BreakoutClaims,
     ];
 
+    // 13.9, the freezes: the family recorder's catalogue and matrix rows and its store, section 17's rows for
+    // the pullback's base and a family rule's list, section 18's three rows, and the run page's records.
+    internal static readonly string[] FreezeClaims =
+    [
+        CheckReach.Key(Scope.CatalogueTable, "Family recorder"),
+        CheckReach.Key(Scope.MatrixTable, "Family recorder"),
+        CheckReach.Key(Scope.StoresTable, "Family trades"),
+        .. FixtureExpectations.FamilyRecordClaims,
+        .. Reading.ReadSurface.FamilyRecordPageClaims,
+    ];
+
     // Every row phase 13 has added, in the order its checkpoints add them: the framework's, the breakout's,
-    // the settings and failure rows of the earnings drift and of the sector leaders, and the parts of the
-    // pages around the families.
+    // the settings and failure rows of the earnings drift and of the sector leaders, the parts of the pages
+    // around the families, the sweeps' rows and the freezes'.
     internal static readonly string[] PhaseThirteenRows =
     [
         .. FamilyFrameworkClaims,
@@ -44,6 +55,7 @@ public partial class ArchitectureConformance
         .. FixtureExpectations.FamilySweepClaims,
         .. FixtureExpectations.DriftSweepClaims,
         .. FixtureExpectations.LeaderSweepClaims,
+        .. FreezeClaims,
     ];
 
     // The rows of phase 13 the record does not yet reach: each is placed at the checkpoint that draws it

@@ -11,35 +11,16 @@ public sealed record SectorStanding(string Sector, int Counted, double? Median, 
 // return, counted from one, and how many of them the top quarter takes.
 public sealed record LeaderStanding(SectorStanding? Sector, int? Place, int Cut);
 
-// What the sector leader's rule reads for one member on one night: the market check the night stored, the
-// sector the membership names for it, its return over the long span as the swing readings stored it, where
-// it stands, the pullback's setup, trigger and trade gates as the swing filter stored them with the plan
-// that trade gate read, and the exclusions the filter stored for it.
-public sealed record LeaderInputs(
-    string Ticker,
-    Gate Market,
-    string? Sector,
-    double? Return,
-    LeaderStanding Standing,
-    int SectorsRanked,
-    bool Setup,
-    bool Trigger,
-    bool Trade,
-    decimal? Entry,
-    decimal? Stop,
-    decimal? Target,
-    double? RewardToRisk,
-    IReadOnlyList<string> Exclusions);
+// The settings sector leadership is read at: how many of the sectors ranked a member's sector has to be
+// among, and the share of its sector's members by return it has to be among, one of every so many rounded up.
+public sealed record LeaderSettings(int TopSectors, int ShareOf);
 
-// The sector leader family's rule: a stock in the top quarter of one of the strongest sectors, at a
-// pullback's buy point. The sectors are ranked by the median of their members' returns over the long span
-// the swing readings store, and a stock's own return is ranked inside its sector. Its buy point, stop and
-// target are the pullback's: the swing filter's setup, trigger and trade gates as stored that night, with
-// sector leadership in place of the filter's trend and strength gate.
-//
-// Every setting here is provisional until the family's sweep proposes the values its freeze registers.
-// see: A sector leader is a stock in the top quarter of a top three sector, bought at the pullback's buy point
-// see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+// Sector leadership: the sectors ranked by the median of their members' returns over the long span the swing
+// readings store, and a stock's own return ranked inside its sector. A family of its own until the freeze of
+// 2026-10-02, read since by the pullback's variant in the top sectors in place of the trend and strength
+// gate, by the swing filter's own evaluator over the standings the filter hands it, and by the leaders'
+// sweep. The gates' names are kept for the rows the family stored before, which its picks are still read by.
+// see: The sector leaders are a variant of the pullback's starting point and not a family of their own
 public static class LeaderRule
 {
     public const string Name = "leader";
@@ -50,9 +31,16 @@ public static class LeaderRule
     // The share of a sector's members, by return, a leader has to be among: the top quarter, rounded up.
     public const int QuarterOf = 4;
 
+    // The settings the pullback's variant reads leadership at, the family's own as its sweep proposed them.
+    public static LeaderSettings Live { get; } = new(TopSectors, QuarterOf);
+
+    // The members a share of a sector holding a return takes, rounded up.
+    public static int Cut(int counted, int shareOf) => (counted + shareOf - 1) / shareOf;
+
     // The fewest members holding a return a sector is ranked on.
     public const int SectorFloor = 5;
 
+    // The gates the family stored on its rows, in order, which a pick it listed before is read by.
     public const string Sector = "sector";
     public const string Leader = "leader";
 
@@ -92,7 +80,7 @@ public static class LeaderRule
 
         foreach (var sector in bySector)
         {
-            var cut = (sector.Returns.Length + QuarterOf - 1) / QuarterOf;
+            var cut = Cut(sector.Returns.Length, QuarterOf);
 
             foreach (var (member, at) in sector.Returns.Select((member, at) => (member, at)))
             {
@@ -114,84 +102,4 @@ public static class LeaderRule
 
         return sorted.Length % 2 == 1 ? sorted[sorted.Length / 2] : (sorted[sorted.Length / 2 - 1] + sorted[sorted.Length / 2]) / 2;
     }
-
-    public static FamilyResult Evaluate(LeaderInputs inputs)
-    {
-        var placed = inputs.Trade && inputs.Entry is not null && inputs.Stop is not null && inputs.Target is not null;
-
-        return new FamilyResult(
-            inputs.Ticker,
-            Name,
-            [
-                inputs.Market,
-                SectorGate(inputs),
-                LeaderGate(inputs),
-                Stored(SwingGates.Setup, inputs.Setup, "setup"),
-                Stored(SwingGates.Trigger, inputs.Trigger, "trigger"),
-                new Gate(
-                    Trade,
-                    placed,
-                    placed
-                        ? Invariant($"the pullback's plan: bought at the close of {inputs.Entry} with the stop at {inputs.Stop} and the target at {inputs.Target}")
-                        : inputs.Trade ? "the swing filter's trade gate passed and its row stores no plan to buy on" : "the swing filter's trade gate did not pass tonight",
-                    Values(("close", Price(inputs.Entry)), ("stop", Price(inputs.Stop)), ("target", Price(inputs.Target)), (RewardToRiskValue, Figure(inputs.RewardToRisk)))),
-            ],
-            inputs.Entry,
-            placed ? inputs.Stop : null,
-            placed ? inputs.Target : null,
-            inputs.Standing.Sector?.Rank is { } rank ? -rank : null,
-            inputs.Exclusions,
-            inputs.Return);
-    }
-
-    // The member's sector among the top of those ranked.
-    static Gate SectorGate(LeaderInputs inputs)
-    {
-        if (inputs.Sector is not { Length: > 0 } sector)
-        {
-            return new Gate(Sector, false, "the membership names no sector for the name", Values());
-        }
-
-        if (inputs.Standing.Sector is not { } standing)
-        {
-            return new Gate(Sector, false, Invariant($"no member of its sector, {sector}, holds a return tonight, so the sector is not ranked"), Values(("sector", sector)));
-        }
-
-        if (standing.Rank is not { } rank)
-        {
-            return new Gate(
-                Sector,
-                false,
-                Invariant($"its sector, {sector}, holds {standing.Counted} member(s) with a return, fewer than the {SectorFloor} a sector is ranked on"),
-                Values(("sector", sector), ("counted", Whole(standing.Counted))));
-        }
-
-        var passed = rank <= TopSectors;
-
-        return new Gate(
-            Sector,
-            passed,
-            Invariant($"its sector, {sector}, ranks {rank} of {inputs.SectorsRanked} by its members' median return, {(passed ? "inside" : "outside")} the top {TopSectors}"),
-            Values(("sector", sector), ("rank", Whole(rank)), ("ranked", Whole(inputs.SectorsRanked)), ("median", Figure(standing.Median))));
-    }
-
-    // The member's own return among the top quarter of its sector's.
-    static Gate LeaderGate(LeaderInputs inputs)
-    {
-        if (inputs.Return is not { } own || inputs.Standing.Place is not { } place || inputs.Standing.Sector is not { } standing)
-        {
-            return new Gate(Leader, false, "not available: no return over the long span is stored for the name in a sector", Values());
-        }
-
-        var passed = place <= inputs.Standing.Cut;
-
-        return new Gate(
-            Leader,
-            passed,
-            Invariant($"its return of {own * 100:0.0}% is {place} of the {standing.Counted} in its sector, {(passed ? "inside" : "outside")} the top quarter, the first {inputs.Standing.Cut}"),
-            Values(("return", Figure(own)), ("place", Whole(place)), ("of", Whole(standing.Counted)), ("cut", Whole(inputs.Standing.Cut))));
-    }
-
-    static Gate Stored(string name, bool passed, string gate) =>
-        new(name, passed, passed ? $"the swing filter's {gate} gate passed tonight" : $"the swing filter's {gate} gate did not pass tonight", Values());
 }

@@ -676,6 +676,7 @@ public static class SchemaMigrations
         new Migration(53, "create family_night and family_pick", CreateFamilyPick),
         new Migration(54, "create family_result", CreateFamilyResult),
         new Migration(55, "create pulled_market_bar", CreatePulledMarketBar),
+        new Migration(56, "add family_result.shadow and create family_trade", AddFamilyShadowAndTrades),
     ];
 
     // One member's answer under one setup family on one night, for every family but the pullback, whose
@@ -1217,6 +1218,34 @@ public static class SchemaMigrations
             close        TEXT NOT NULL,
             pull         TEXT NOT NULL,
             PRIMARY KEY (series, session_date)
+        ) STRICT;
+    ";
+
+    // Each registered family rule's verdict on a member, stored on that member's row of its family beside the
+    // live rule's answer; and each trade a registered family rule keeps on its own list, stored the night it
+    // is made with the plan it was bought on, and once it ends with its result and the benchmark of the same
+    // plan entered on every member that night, each written once.
+    // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
+    const string AddFamilyShadowAndTrades = @"
+        ALTER TABLE family_result ADD COLUMN shadow TEXT;
+
+        CREATE TABLE family_trade (
+            candidate      TEXT    NOT NULL,
+            ticker         TEXT    NOT NULL,
+            session_date   TEXT    NOT NULL,
+            family         TEXT    NOT NULL,
+            place          INTEGER NOT NULL,
+            entry          TEXT    NOT NULL,
+            stop           TEXT    NOT NULL,
+            target         TEXT,
+            risk_moves     REAL,
+            reward_to_risk REAL,
+            cap            INTEGER NOT NULL,
+            ended_on       TEXT,
+            result         REAL,
+            benchmark      REAL,
+            members        INTEGER,
+            PRIMARY KEY (candidate, ticker, session_date)
         ) STRICT;
     ";
 
