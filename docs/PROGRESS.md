@@ -35426,3 +35426,21 @@ Verified:   `tools/ci.ps1` green end to end and `tools/verify-phase.ps1` green o
             44 tables, 855 claims, 855 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 866 placements and
             verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the roster and 42
             carried, 42 passed. The pair predicted, 853 within 840 to 870, is 855 and 855.
+
+### 13.6 ruling - one checkout: every pull request is a branch checked out in this repository's own tree, and no worktree or copy of the project is made beside it   2026-10-02
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-10-01, word for word:
+
+            I need you to stop cloning down the project to different folders and instead make a
+            separate PR branch and work on thing
+
+Changed:    `CLAUDE.md`'s Merge section and done condition 9. A branch is checked out in this tree and no
+            worktree or copy of the project is made; a mutation is made on the branch here and reverted
+            before the next commit; the checkout is back on main, the branch committed and pushed, before
+            each night, which refuses a checkout off main. `RUNBOOK.md`: the page starts from main in
+            Release and a sweep from this checkout's Release build, so a branch's Debug builds never
+            rewrite what they run from. Prior text in `CHANGELOG.md`.
+Verified:   with the pull request that carries it, `tools/ci.ps1` green and `tools/verify-phase.ps1` green
+            over its tree, the figures in the 12.5 entry beside it.
+Stored:     the operator's words in `prompts/2026-10-01-13.6-one-checkout-ruling.md`.
