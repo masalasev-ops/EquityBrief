@@ -23,7 +23,7 @@ public sealed record FamilyIdeasRead(string Family, string Frozen, IdeaFigures B
 
     public int Passes => Ideas.Count(one => one.Test.Passes);
 
-    public double Luck => Tries * (double)SweepIdeas.LuckPatterns() / (1 << SweepFigures.Years);
+    public double Luck => 1.0 * Tries * SweepIdeas.LuckPatterns() / (1 << SweepFigures.Years);
 
     // Whether every figure an idea came to is the rule's own as frozen, as where it leaves off no listing the rule
     // makes and sells none differently.
