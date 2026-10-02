@@ -24,7 +24,42 @@ public sealed class FamilySweepRunner(IClock clock, string databaseFile, string 
     public static IReadOnlyDictionary<string, string> Families { get; } = new Dictionary<string, string>(StringComparer.Ordinal)
     {
         [BreakoutRule.Name] = "breakouts'",
+        [DriftRule.Name] = "earnings drift's",
     };
+
+    // One family's sweep as the runner reads it: its grid, how many member-sessions its loosest setting could
+    // list, the listings a setting makes, its exit and its benchmark.
+    public sealed record Adapter(
+        FamilyGrid Grid,
+        int Readings,
+        Func<int[], IEnumerable<FamilyListing>> Listings,
+        Func<FamilyListing, (double? Result, int Sessions)> Exit,
+        Func<FamilyListing, double> Benchmark);
+
+    public static Adapter For(string family, IReadOnlyList<SweepSeries> series, IReadOnlyList<SweepColumns.Session> sessions, SweepBenchmark.Members members, int firstScored)
+    {
+        switch (family)
+        {
+            case BreakoutRule.Name:
+            {
+                var sweep = new BreakoutSweep(series, members);
+                var readings = sweep.Readings(sessions, firstScored);
+
+                return new(BreakoutSweep.Grid, readings.Count, setting => BreakoutSweep.Listings(readings, setting), sweep.Exit, sweep.Benchmark);
+            }
+
+            case DriftRule.Name:
+            {
+                var sweep = new DriftSweep(series, members);
+                var readings = sweep.Readings(sessions, firstScored);
+
+                return new(DriftSweep.Grid, readings.Count, setting => DriftSweep.Listings(readings, setting), sweep.Exit, sweep.Benchmark);
+            }
+
+            default:
+                throw new ArgumentException($"No sweep is built for the family '{family}'.", nameof(family));
+        }
+    }
 
     // How long a run is allowed for before the night's window, which it does not start inside.
     public static readonly TimeSpan Expected = TimeSpan.FromHours(1);
@@ -76,23 +111,22 @@ public sealed class FamilySweepRunner(IClock clock, string databaseFile, string 
 
         int YearOf(int session) => calendar[session].Year - SweepColumns.FirstScored.Year;
 
-        var sweep = new BreakoutSweep(series, members);
-        var readings = sweep.Readings(sessions, firstScored);
+        var adapter = For(family, series, sessions, members, firstScored);
         var read = new List<(int[] Setting, FamilyFigures Figures)>();
 
-        foreach (var setting in BreakoutSweep.Grid.Settings)
+        foreach (var setting in adapter.Grid.Settings)
         {
-            var trades = FamilySweep.Walk(BreakoutSweep.Listings(readings, setting), tickers, YearOf, sweep.Exit, sweep.Benchmark);
+            var trades = FamilySweep.Walk(adapter.Listings(setting), tickers, YearOf, adapter.Exit, adapter.Benchmark);
 
-            read.Add((setting, FamilySweep.Figures(BreakoutSweep.Grid.Key(setting), trades, nights)));
+            read.Add((setting, FamilySweep.Figures(adapter.Grid.Key(setting), trades, nights)));
         }
 
-        var proposal = FamilySweep.Propose(BreakoutSweep.Grid, read);
-        var run = new FamilySweepRun(family, words, calendar[firstScored], through, inputs.Names.Count, nights, open, readings.Count, started, clock.UtcNow);
+        var proposal = FamilySweep.Propose(adapter.Grid, read);
+        var run = new FamilySweepRun(family, words, calendar[firstScored], through, inputs.Names.Count, nights, open, adapter.Readings, started, clock.UtcNow);
         var report = Path.Combine(folder, SweepFolder.ReportFile);
         var figures = Path.Combine(folder, FiguresFile);
 
-        File.WriteAllText(report, FamilySweepReport.Build(run, BreakoutSweep.Grid, read, proposal));
+        File.WriteAllText(report, FamilySweepReport.Build(run, adapter.Grid, read, proposal));
         File.WriteAllText(figures, JsonSerializer.Serialize(new { run, proposal = proposal.Proposed?.Key, settings = read.Select(one => one.Figures) }, SweepRunner.Json));
 
         output.WriteLine(proposal.Proposed is { } proposed

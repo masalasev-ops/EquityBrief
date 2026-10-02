@@ -506,6 +506,7 @@ Each setup family's rule is replayed over the stored history across its own grid
 
 ```
 dotnet run --project src/EquityBrief.Worker -c Release -- sweep-family --family breakout
+dotnet run --project src/EquityBrief.Worker -c Release -- sweep-family --family drift
 ```
 
 It reads the live store read-only and writes nothing to it, and writes its report and its figures into a run folder of its own under the sweep's folder, served at `http://localhost:5152/sweep` as the newest run with the earlier runs linked. It takes minutes. It does not start while the night holds the store or when the night's window would come before an hour has passed, saying when to run it instead. Named with no family, it says which families it is built for. Start it on `main` from this checkout's Release build. It registers nothing; each family's freeze is the operator's.

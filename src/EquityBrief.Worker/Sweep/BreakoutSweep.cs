@@ -100,7 +100,7 @@ public sealed class BreakoutSweep
                 continue;
             }
 
-            yield return new FamilyListing(reading.Name, reading.Bar, reading.Session, reading.Volume, 0, reading.Close, reading.Close - risk, double.NaN, risk, BreakoutRule.CapSessions);
+            yield return new FamilyListing(reading.Name, reading.Bar, reading.Session, reading.Volume, 0, reading.Close, reading.Close - risk, double.NaN, risk, BreakoutRule.CapSessions, reading.Move);
         }
     }
 
@@ -124,7 +124,7 @@ public sealed class BreakoutSweep
             return held;
         }
 
-        var value = BenchmarkOn(series, closes, members, listing.Session, key.Item2, listing.Cap);
+        var value = BenchmarkOn(series, closes, members, listing.Session, moves, listing.Cap);
 
         benchmarks[key] = value;
 

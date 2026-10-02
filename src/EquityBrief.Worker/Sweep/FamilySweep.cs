@@ -5,7 +5,8 @@ using EquityBrief.Core.Sweep;
 namespace EquityBrief.Worker.Sweep;
 
 // One listing a setup family's rule makes on one night under one setting: the stock and its bar, the session,
-// the family's order keys, and the trade bought at the close, with a target or a trail and none of the other.
+// the family's order keys, the trade bought at the close, with a target or a trail and none of the other, and
+// the typical move on the night, which says how near the stop sits.
 public readonly record struct FamilyListing(
     int Name,
     int Bar,
@@ -16,9 +17,13 @@ public readonly record struct FamilyListing(
     double Stop,
     double Target,
     double Trail,
-    int Cap)
+    int Cap,
+    double Move = double.NaN)
 {
     public bool Trails => !double.IsNaN(Trail);
+
+    // A stop nearer the buy than one typical move, where a result counted in risks grows with how near it is.
+    public bool CloseStop => Move > 0 && Entry - Stop < Move;
 }
 
 // One listing the walk kept: what its trade came to in multiples of its risk, none while the history has not
@@ -86,7 +91,8 @@ public sealed record FamilyGrid(IReadOnlyList<(string Dial, IReadOnlyList<double
 // What one setting's trades came to over the history: the listings kept, the trades with a result, the nights
 // a stock was listed, the edge over the same plan entered on every member and the plain result, both in
 // multiples of the risk, each year's trades and edge, the years the edge stood above nothing, the last three
-// years together, the edge without its five largest results by size, and the edge's standard error.
+// years together, the edge without its five largest results by size, the edge's standard error, and the share
+// of the trades whose stop sat nearer the buy than one typical move, so an edge bought with near stops is seen.
 public sealed record FamilyFigures(
     string Key,
     int Listed,
@@ -100,7 +106,8 @@ public sealed record FamilyFigures(
     int YearsBeating,
     double? RecentEdge,
     double? EdgeWithoutLargest,
-    double? StandardError)
+    double? StandardError,
+    double? CloseStops = null)
 {
     public bool MeetsFloors => Trades >= FamilySweep.TradeFloor && YearsBeating >= FamilySweep.YearsBeating;
 
@@ -223,7 +230,8 @@ public static class FamilySweep
             yearEdge.Count(value => value > 0),
             recent.Length > 0 ? recent.Average(EdgeOf) : null,
             trimmed.Length > 0 ? trimmed.Average(EdgeOf) : null,
-            error);
+            error,
+            withResult.Length > 0 ? 1.0 * withResult.Count(trade => trade.Listing.CloseStop) / withResult.Length : null);
     }
 
     static double EdgeOf(FamilyTrade trade) => trade.Result!.Value - trade.Benchmark;

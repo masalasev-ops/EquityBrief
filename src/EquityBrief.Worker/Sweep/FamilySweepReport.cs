@@ -68,7 +68,7 @@ public static class FamilySweepReport
     // largest results by size, and each year's edge with its trades.
     static string Table(IReadOnlyList<(string Label, FamilyFigures Figures)> rows)
     {
-        var html = new StringBuilder("<div class=\"table\"><table><thead><tr><th>Setting</th><th>Trades</th><th>Nights listing</th><th>Edge</th><th>Error</th><th>Result</th><th>Years above</th><th>2024 to 2026</th><th>Without the five largest</th>");
+        var html = new StringBuilder("<div class=\"table\"><table><thead><tr><th>Setting</th><th>Trades</th><th>Nights listing</th><th>Edge</th><th>Error</th><th>Result</th><th>Years above</th><th>2024 to 2026</th><th>Without the five largest</th><th>Stops under a typical move</th>");
 
         for (var year = 0; year < 8; year++)
         {
@@ -79,7 +79,7 @@ public static class FamilySweepReport
 
         foreach (var (label, figures) in rows)
         {
-            html.Append(Invariant($"<tr data-key=\"{Esc(figures.Key)}\" data-trades=\"{figures.Trades}\" data-edge=\"{Number(figures.Edge)}\"><td>{Esc(label)}</td><td class=\"num\">{figures.Trades:N0}</td><td class=\"num\">{figures.NightShare * 100:0}%</td><td class=\"num\">{Number(figures.Edge)}</td><td class=\"num\">{Number(figures.StandardError)}</td><td class=\"num\">{Number(figures.Result)}</td><td class=\"num\">{figures.YearsBeating} of 8</td><td class=\"num\">{Number(figures.RecentEdge)}</td><td class=\"num\">{Number(figures.EdgeWithoutLargest)}</td>"));
+            html.Append(Invariant($"<tr data-key=\"{Esc(figures.Key)}\" data-trades=\"{figures.Trades}\" data-edge=\"{Number(figures.Edge)}\"><td>{Esc(label)}</td><td class=\"num\">{figures.Trades:N0}</td><td class=\"num\">{figures.NightShare * 100:0}%</td><td class=\"num\">{Number(figures.Edge)}</td><td class=\"num\">{Number(figures.StandardError)}</td><td class=\"num\">{Number(figures.Result)}</td><td class=\"num\">{figures.YearsBeating} of 8</td><td class=\"num\">{Number(figures.RecentEdge)}</td><td class=\"num\">{Number(figures.EdgeWithoutLargest)}</td><td class=\"num\">{(figures.CloseStops is { } share ? Invariant($"{share * 100:0}%") : "none")}</td>"));
 
             for (var year = 0; year < 8; year++)
             {

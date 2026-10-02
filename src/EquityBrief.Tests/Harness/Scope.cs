@@ -1911,6 +1911,10 @@ internal static class Scope
             Verdict.Pass,
             "the grid's levels are the breakout's own values with a step either side, the year's high, the volume over its average, the newer ranges over the older and the typical move read back against the rows the night's own rule stored over the fixture, and a constructed history's breakout, its trailing trade and its benchmark worked by hand and read back off its report",
             ByExpectations),
+        [CheckReach.Key(LimitsTable, "Drift sweep grid")] = new Scoped(
+            Verdict.Pass,
+            "the grid's levels are the drift's own values with a step either side, the sweep's rise, volume multiple, low, stop and target the night's own rule's over the same constructed member, the night's print over the fixture, a print only the pull holds read from it, and a constructed history's trade, its near stop and its benchmark read back off its report",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "Family sweep floors")] = new Scoped(
             Verdict.Pass,
             "the proposal worked by hand over constructed records: the best edge with too few trades passed over, one short of its years passed over, a tie on the edge going to the setting one dial from the provisional, its neighbours as the variants the higher edge first, and every setting short of the floors setting the family aside",
@@ -4909,6 +4913,7 @@ internal static class Scope
         ["Sector ranking floor"] = "13.4",
         // The family sweeps, 13.6.
         ["Breakout sweep grid"] = "13.6",
+        ["Drift sweep grid"] = "13.7",
         ["Family sweep floors"] = "13.6",
         ["Family sweep test"] = "13.6",
         // The research template, 12.6 corrections.

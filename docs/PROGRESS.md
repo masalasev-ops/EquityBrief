@@ -35531,3 +35531,33 @@ Mutated:    the rule, stated before the run: each new rule reversed alone, made 
             Results: F6MUT
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
             this one to 13.8's: F6GATES
+
+### 13.7 - the earnings drift's sweep: the drift's rule replayed over the stored history and the pulled surprises at every setting of its grid, on 13.6's engine, with the share of trades whose stop sat under a typical move beside each edge   2026-10-02
+
+Built:      `sweep-family --family drift`. Its adapter reads each member's newest print with a surprise, the
+            reaction's rise in typical moves of the session before it, its volume over its fifty-session
+            average, tonight's close against the reaction's low, and the lowest band far enough above the close
+            to be a target, over every scored session the market check left open, across a grid of 81
+            settings. Every family's figures now state the share of trades whose stop sat under one typical
+            move: the drift's stop at the reaction's low can sit a hair under the close, and a result counted
+            in risks grows with how near it is.
+Measured:   a trial from this branch over the live store, read-only, its report written outside the store's
+            folder: 33,725 member-sessions the loosest setting could list, in 21 s. The provisional setting:
+            2,829 trades, an edge of 0.230 but 4 of 8 years above nothing and 0.048 without its five largest,
+            37% of its stops under a typical move. The best edge meeting the floors: a window of 3, a rise of
+            0.5, volume 2.0 and a target at 2.5 times the risk, 2,243 trades, an edge of 0.123, 6 of 8 years,
+            0.095 without its five largest, 40% of its stops under a typical move.
+Tests:      F7TESTS, from F6TESTS: four added. The drift's readings the night's own rule's over the same
+            constructed member on the reaction's session and the next; the night's print on the fixture's
+            night; a print the pulled surprises hold and the calendar does not, read from the pull through the
+            store; and a constructed history's trade, its near stop and its benchmark read back off its report.
+Claims:     one added: section 17's row for the drift's grid.
+Pins:       the three pin lists read; the tree touches none of their sources.
+Mutated:    the rule, stated before the run: each new rule reversed alone, made on the branch in this
+            checkout, filtered to the four tests and 13.6's eight, and reverted.
+            D1 the reaction's rise read against tonight's typical move: red in the readings' test.
+            D2 the target read as the farther of the band and the multiple: red in the readings' test.
+            D3 the calendar's surprises read even where a pull holds some: red in the pulled print's test.
+            Results: F7MUT
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
+            13.6's to 13.8's: F7GATES
