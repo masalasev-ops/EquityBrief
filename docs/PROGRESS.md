@@ -36063,10 +36063,10 @@ Remedy:     `tools/remedies/2026-10-02-13.10-the-best-three.txt`, after the merg
             `register --the-family-again --evidence "the operator's ruling of 2026-10-02: the night's best three,
             in the list's own order, registered as a variant of the pullback with every family's cap raised to
             nine; no night had scored the freeze's rules"`.
-Tests:      F13BTESTS, from 1741: three added, the walk worked by hand over three nights, the run page's own
+Tests:      1744, from 1741: three added, the walk worked by hand over three nights, the run page's own
             query over a constructed store, and the family registered again with a tenth refused; twenty-one
             moved from eight to nine.
-Claims:     F13BCLAIMS, from 880: none added, the rows that moved stating nine.
+Claims:     880, none added, with 880 PASS; the rows that moved state nine.
 Pins:       the swing filter rule's evaluator version moves, b03e06fdd7f9 to b1148c77cd8c, which the remedy
             registers the family under. No other pin moves: `CandidateFamily`, `OpenTrades` and the read API sit
             in no pin list.
@@ -36077,6 +36077,13 @@ Mutated:    the rule, stated before the run: each property the change adds, brok
             B3 strength read before reward to risk: red in the walk test.
             B4 the count not read off the registration: red in the walk test and the query test.
             B5 the maximum left at eight: red in the family registered again test.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F13BGATES
+            Results: B1, B2 and B3 each red in the walk test alone; B4 red in the walk test and the query test;
+            B5 red in the family registered again test and in the query test, whose family of nine the
+            register then refuses. Each ran over b06bcaa and was reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: b06bcaa.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1744 of 1744 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 880 claims, 880 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            891 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
