@@ -135,7 +135,7 @@
 <!-- 1 -->
 <h2 id="what">1. What it is, and what it will not do</h2>
 <p class="asks">What problem does this tool solve?</p>
-<p>Every evening, after the US market closes, EquityBrief looks at every stock in the S&amp;P 500. It picks the few that are at a buy point for a swing trade, a position held for a few weeks. Those form tonight's list.</p>
+<p>Every evening, after the US market closes, EquityBrief looks at every stock in the S&amp;P 500. It picks the few that are at a buy point for a swing trade, a position held for a few weeks, under three setups, each a rule of its own: a pullback into support, a breakout to a new high, and the drift after an earnings beat. Those form tonight's list.</p>
 <p>Any stock in the index can also be opened on its own. It opens to a full research report: the chart, the prices that matter, a plan, the numbers, and a written view of the company.</p>
 
 <div class="refuse">
@@ -181,7 +181,7 @@
 
     <rect class="bx-v" x="598" y="76" width="120" height="92" rx="6"/>
     <text class="t" x="658" y="108" text-anchor="middle">Tonight</text>
-    <text class="ts" x="658" y="130" text-anchor="middle">the list,</text>
+    <text class="ts" x="658" y="130" text-anchor="middle">a card a setup,</text>
     <text class="ts" x="658" y="148" text-anchor="middle">best first</text>
 
     <rect class="bx-v" x="736" y="76" width="120" height="92" rx="6"/>
@@ -234,7 +234,10 @@
   <div><dt>Break-even rate</dt><dd>How often a plan must reach its target before its stop just to come out even.</dd></div>
   <div><dt>Breadth</dt><dd>The share of the index trading above its own 200-day average. A reading of the whole market's health.</dd></div>
   <div><dt>Relative strength</dt><dd>How a stock's recent return compares with every other stock in the index.</dd></div>
-  <div><dt>Settings version</dt><dd>The set of thresholds the list's filter runs with each night. A change opens a new version; the old one and its record are kept.</dd></div>
+  <div><dt>Setup</dt><dd>One kind of buy point with a rule of its own: the pullback, the breakout or the earnings drift. Each lists at most five stocks a night.</dd></div>
+  <div><dt>Variant</dt><dd>A copy of a setup's rule with one setting changed, scored in the background beside it and never listed.</dd></div>
+  <div><dt>Freeze</dt><dd>Fixing a setup's settings, on your word, from what its sweep of the history found. Only the trades after a freeze count toward its record.</dd></div>
+  <div><dt>Settings version</dt><dd>The set of thresholds the pullback's filter runs with each night. A change opens a new version; the old one and its record are kept.</dd></div>
   <div><dt>Calibration</dt><dd>Adjusting a setting from what the system has measured, and only with your approval.</dd></div>
 </dl>
 
@@ -400,9 +403,10 @@
 <!-- 6 -->
 <h2 id="list">6. Choosing tonight's list</h2>
 <p class="asks">Out of five hundred stocks, which are at a buy point tonight?</p>
+<p>Tonight's page is three setups, each a rule of its own with a card of its own: the pullback, the breakout and the earnings drift. The pullback's rule is the filter drawn below, five gates every stock must pass; the other two follow it.</p>
 <figure>
   <svg viewBox="0 0 1000 450" role="img" aria-labelledby="f6">
-    <title id="f6">The swing filter as a funnel of five gates</title>
+    <title id="f6">The pullback's filter as a funnel of five gates</title>
     <polygon class="f0 fun" points="30,20 400,20 388,72 42,72"/>
     <polygon class="f1 fun" points="42,76 388,76 374,128 56,128"/>
     <polygon class="f2 fun" points="56,132 374,132 356,184 74,184"/>
@@ -417,7 +421,7 @@
     <text class="t" x="215" y="276" text-anchor="middle">4  A fresh trigger</text>
     <text class="t" x="215" y="332" text-anchor="middle">5  A trade worth taking</text>
     <text class="t" x="215" y="388" text-anchor="middle">Exclusions</text>
-    <text class="t" x="215" y="438" text-anchor="middle">Tonight's list, best first</text>
+    <text class="t" x="215" y="438" text-anchor="middle">The pullback's card, best first</text>
 
     <text class="ts" x="430" y="52">All five hundred, every night.</text>
     <text class="ts" x="430" y="108">Enough of the market is healthy for buying dips to work.</text>
@@ -431,26 +435,35 @@
 </figure>
 <div class="key">
   <p><b>How to read it.</b> Each layer is one test. A stock must pass every layer to reach the bottom.</p>
-  <p><b>What to take from it.</b> The list is short on purpose, and some nights it is empty. An empty night says the market offered nothing that passed, and the page shows how many stocks reached each gate.</p>
+  <p><b>What to take from it.</b> Each card is short on purpose, and some nights every card is empty. The market gate closes every setup's card at once, and the line at the top of the page says whether the market left the lists open.</p>
 </div>
 
 <div class="wrap"><table>
   <tr><th>Gate</th><th>What it asks</th><th>Why it is there</th></tr>
   <tr><td>The market</td><td>Is a large enough share of the index above its long-term average?</td><td>Buying dips works poorly when most stocks are falling together.</td></tr>
   <tr><td>Trend and strength</td><td>Is this stock rising, and has it done better than most others lately?</td><td>Stocks that have outperformed over recent months have tended to keep outperforming (<a href="#s-jt">Jegadeesh and Titman 1993</a>; <a href="#s-gh">George and Hwang 2004</a>).</td></tr>
-  <tr><td>A setup</td><td>Has it pulled back into support from a recent high, on volume that dried up on the way down?</td><td>Short-term dips tend to partly reverse (<a href="#s-reversal">Jegadeesh 1990; Lehmann 1990</a>), and a real level gives a clear place to be wrong. Breakouts from a tight base were tried too and removed: over eight years they found about five stocks a year, too few to ever learn whether they work.</td></tr>
+  <tr><td>A setup</td><td>Has it pulled back into support from a recent high, on volume that dried up on the way down?</td><td>Short-term dips tend to partly reverse (<a href="#s-reversal">Jegadeesh 1990; Lehmann 1990</a>), and a real level gives a clear place to be wrong. The filter once read breakouts from a tight base here too; they found about five stocks a year, so breakouts now have a setup of their own, below.</td></tr>
   <tr><td>A fresh trigger</td><td>Did the buy signal fire in the last few sessions?</td><td>The list shows moments, not stocks that have been sitting at a price for weeks.</td></tr>
   <tr><td>A trade worth taking</td><td>From tonight's price, is the target far enough away compared with the stop?</td><td>A good chart with a poor payoff is not a trade. Measuring from tonight's price also drops any stock that has already run away from its buy point.</td></tr>
   <tr><td>Exclusions</td><td>Is an earnings report due within the holding period? Are the prices in doubt?</td><td>An earnings report can jump straight past a stop (<a href="#s-dubinsky">Dubinsky and others 2019</a>).</td></tr>
 </table></div>
-<p class="note">The exact values each gate uses are in the specification. They start as proposals and are adjusted by calibration, described in section 9.</p>
+<p class="note">The exact values each gate uses are in the specification. The pullback was frozen at them on 2026-10-02, with the minimum reward for the risk raised to 2, and calibration, described in section 9, moves them only on your word.</p>
 
-<p><b>Improving businesses first.</b> Among the stocks that pass, the list puts first those whose business is improving: sales above a year earlier and the operating margin wider than a year earlier, in both of the last two quarters. Steady businesses come next, then those with too few quarters or none stored yet, then those deteriorating, and inside each group the order stays reward to risk, then strength, then support. Every stock that passes is still listed. The order decides what comes first, not what is recommended, and no gate reads the business at all. A night drawn before the readings existed keeps the order it was drawn in.</p>
+<p><b>Improving businesses first.</b> Among the stocks that pass, the pullback's card puts first those whose business is improving: sales above a year earlier and the operating margin wider than a year earlier, in both of the last two quarters. Steady businesses come next, then those with too few quarters or none stored yet, then those deteriorating, and inside each group the order stays reward to risk, then strength, then support. Every stock that passes is still listed. The order decides what comes first, not what is recommended, and no gate reads the business at all. A night drawn before the readings existed keeps the order it was drawn in.</p>
 
-<p><b>Close to a buy point.</b> Beneath the list, a second list shows the stocks that passed every gate but one with nothing excluding them, nearest to qualifying first, each saying which gate it missed and by how much; none of them is a pick, and nothing counts them as one.</p>
+<p><b>The breakout.</b> A stock closes above its highest price of the past six months on heavy volume, after its daily ranges narrowed. It is bought at the close with its stop one and a half typical moves below, raised as the price climbs and never lowered, and no target, so a winner is held while it keeps climbing. Its card lists the heaviest volume against its own average first.</p>
+
+<p><b>The earnings drift.</b> A company beats its estimate and the stock closes up at least half a typical day's move on twice its usual volume. It is bought within three sessions of that day while it holds above that day's low, with its stop at that low and its target at the next band above or two and a half times the risk, whichever is nearer.</p>
+
+<p><b>Five a setup, and one trade a stock.</b> Each setup lists at most five stocks a night in its own order, and a note counts any past its five. A stock two setups pass is listed once, under the first in the page's order, with a label naming the other. A stock with a trade still open from an earlier night is not listed again under any setup until that trade ends, and the card says so in a note.</p>
+
+<p><b>Leaders in the strongest sectors.</b> The pullback has one more variant scored in the background: the same rule reading leadership in place of trend and strength, a stock in the top quarter of one of the three strongest sectors. Like every variant it lists nothing, and its record is kept beside the pullback's.</p>
+
+<p><b>Close to a buy point.</b> Beneath the cards, one list across every setup shows the stocks one gate short of a setup's rule, each labelled with its setup and the gate it missed; none of them is a pick, and nothing counts them as one.</p>
 
 <div class="why">
   <p><b>Why a filter and not a score.</b> Each gate is a fact you can check on the chart. A single blended score would hide which fact put a stock on the list. The earlier design, where any one of six conditions listed a stock, let most of the index through every night, so the filter replaced it. Those six conditions are still shown beside each stock as context.</p>
+  <p><b>Why separate setups.</b> A pullback, a breakout and the drift after an earnings beat buy different moments for different reasons, so each keeps its own rule, its own five a night and its own record, and none is judged by another's. Stocks near their own recent high have tended to keep rising (<a href="#s-gh">George and Hwang 2004</a>), and prices have tended to keep moving the way an earnings surprise moved them for weeks after the report (<a href="#s-bt">Bernard and Thomas 1989</a>).</p>
 </div>
 
 <!-- 7 -->
@@ -487,6 +500,7 @@
   <p><b>How to read it.</b> The left half is ready the moment you open a stock. The right half exists only once research has been written for it.</p>
   <p><b>What to take from it.</b> A report is never blank. Without research you still see the chart, the plan and the numbers, and the page says the written parts are not there yet.</p>
 </div>
+<p>A listed stock's page says which setup listed it, with its place on that setup's card and any other setup it qualified under, and a stock a setup passed but held back for a trade still open says so.</p>
 <p>A listed stock's news is sorted by what kind of story each article is and which way it cuts for the company, by a paid model you choose, and the page names which model wrote the labels.</p>
 <p>The numbers open with what they say: the business's state, then one plain sentence for each of four readings of its reported quarters, whether sales and the operating margin are growing on a year earlier, how it has done against analysts' estimates, whether its profits are backed by cash, and where its price sits in its own range of earnings multiples. The code writes each sentence from a fixed pattern with the stored figures filled in, so no model writes any of it, and the full table of quarters sits folded beneath. The heading says the state is read from sales and operating margin alone, so a business can read improving beside earnings that ran ahead of cash.</p>
 
@@ -602,7 +616,7 @@
 </div>
 
 <h3>What the loop can change</h3>
-<p>Only the list's filter settings move: how strong a stock's recent return must be, how deep a pullback counts, how quiet the volume must be on the way down, how far away the stop may sit, the minimum reward for the risk, and how healthy the market must be. The rules for finding levels and building the report's plan do not change through this loop.</p>
+<p>Only the pullback's filter settings move: how strong a stock's recent return must be, how deep a pullback counts, how quiet the volume must be on the way down, how far away the stop may sit, the minimum reward for the risk, and how healthy the market must be. The breakout's and the drift's settings change only at a new freeze, on your word. The rules for finding levels and building the report's plan do not change through this loop.</p>
 
 <h3>Two clocks, answering two different questions</h3>
 <figure>
@@ -625,7 +639,7 @@
   </svg>
 </figure>
 <div class="key">
-  <p><b>How to read it.</b> The shape clock adjusts those settings so each gate lets through a sensible number of stocks. The edge clock runs a few alternative versions of the filter in the background, each differing in one setting, and judges which version's trades actually win more often than they need to.</p>
+  <p><b>How to read it.</b> The shape clock adjusts those settings so each gate lets through a sensible number of stocks. The edge clock runs a few alternative versions of each setup's rule in the background, each differing in one setting, and judges which version's trades actually do better than they need to, each setup against a bar of its own.</p>
   <p><b>What to take from it.</b> The list's size can be tuned within months. Whether the picks make money takes years to answer with confidence, and the page says so plainly so an empty result reads as waiting, not broken.</p>
 </div>
 
@@ -639,9 +653,11 @@
 
 <h3>Where the starting settings come from</h3>
 <p>The settings the list starts from were first chosen by hand. The sweep replaces that guess with a starting point the stored history supports: it replays the filter over the years of history the store holds under tens of thousands of designs, each a different way of measuring strength, reading the trend, finding support, spotting the trigger and placing the trade, and under every combination of the settings, and scores every trade each would have taken the way the live record scores them, with one open trade a stock as the list holds it. Each result is read as an edge over what the same trade, placed on every stock in the index that night, would have come to, so a setting is not credited for a rising market. Seven further conditions, such as the stock sitting near its 52-week high or a recent earnings beat, are each tried alone and kept only where they help on most of the strongest designs, and before anything is ranked a sample of nights is rebuilt with the night's own code to show the sweep read each night as it stood. It does not pick the single best result, because among that many tries one always looks good by luck. It looks for a plateau instead, a region of settings that all beat the odds year after year, and proposes the setting sitting deepest inside it, the one that can be moved furthest in any direction and still hold. Beside it, it proposes a few variants, each changing one thing on a question the history left open and picking stocks the starting point would not. None of it takes effect by itself: the sweep writes a report, and the starting point and its variants begin running only when you register them, after which only the trades that follow are judged. When one variant eventually proves better and is promoted, the sweep is run again with the added years to choose the next open questions, so the loop keeps going.</p>
+<p>The breakout and the drift each have a sweep of their own, which takes minutes, since a setup's grid holds tens of settings and not millions: its own rule replayed over the history at every setting, five a night with one open trade a stock, each trade read as an edge over the same plan placed on every stock that night. You froze all three setups on 2026-10-02: the pullback at its settings with the minimum reward for the risk raised to 2, and the breakout and the drift at their sweeps' proposals, each first checked against the settings one step away so that neither is a point the history happened to favour. Each was registered with its variants beside it, and only the trades after the freeze count toward its record.</p>
+<p>The ideas' run then tests kinds of idea the sweep's grid does not hold, each added to the pullback alone: switches that keep the list off a weak market, a stop touched during the day, only the night's best three, a trailing stop, a stop no closer than a typical move, and shorter holds. An idea is kept only where it does better than the pullback in at least six of the eight years with two of the last three, and stays better without its largest few results. A market switch is judged on each year's total result instead, since the edge already subtracts what the whole market did on the nights it keeps off. The report says how many ideas were tried and how many luck alone would pass, and nothing it proposes reaches the list until you freeze it.</p>
 
 <h3>How a result reaches tonight's list</h3>
-<p>The list's filter runs every night on a stored settings version. The feedback never edits those settings itself. It prepares a change, the run page tells you it is ready, and the change reaches the list only when you accept it.</p>
+<p>The pullback's filter runs every night on a stored settings version, and each setup's rule on the settings it was frozen at. The feedback never edits those settings itself. It prepares a change, the run page tells you it is ready, and the change reaches the list only when you accept it.</p>
 <figure>
   <svg viewBox="0 0 1000 330" role="img" aria-labelledby="f12">
     <title id="f12">How a measured result becomes a change to tonight's list</title>
@@ -729,8 +745,8 @@
     <title id="f11">The screens and what each answers</title>
     <rect class="bx-v" x="6" y="8" width="486" height="112" rx="6"/>
     <text class="t" x="26" y="40">Tonight</text>
-    <text class="ts" x="26" y="66">Which stocks are at a buy point this evening,</text>
-    <text class="ts" x="26" y="86">best first, and how busy the market was.</text>
+    <text class="ts" x="26" y="66">Which stocks each setup has at a buy point this</text>
+    <text class="ts" x="26" y="86">evening, a card a setup, and how the market stands.</text>
     <rect class="bx-v" x="508" y="8" width="486" height="112" rx="6"/>
     <text class="t" x="528" y="40">The universe</text>
     <text class="ts" x="528" y="66">Where every stock in the index sits, including</text>
@@ -750,7 +766,7 @@
   </svg>
 </figure>
 <div class="key">
-  <p><b>How to read it.</b> Tonight and the universe are for finding stocks, and beneath tonight's list a second one shows the stocks one gate short of a buy point, there to be watched and never counted as picks. A report is for reading one. The run page is the evidence behind everything else, and Past picks is the record of every trade the list recommended. A stock holds one open trade at a time: while a trade the list recommended is still open, a night the stock passes the filter again is shown beneath tonight's list as still open and marked on Past picks rather than counted as a second trade. The run page also compares tonight's list with what each version of the rules running in the background would have picked: those picks are shown there and nowhere else, and how their trades turn out stays hidden until the version's checkpoint, so no version is kept or dropped on a lucky month. A night that stops partway tries again by itself from the step that stopped, up to three more times fifteen minutes apart, and tonight's page and the run page say whether it is running, waiting to try again or left unfinished, with a button that runs the rest of it.</p>
+  <p><b>How to read it.</b> Tonight and the universe are for finding stocks. Tonight opens on a line about the market, whether it left the lists open and how many stocks the setups list, then a card for each setup, and beneath the cards one list across the setups of the stocks one gate short of a buy point, there to be watched and never counted as picks. A report is for reading one. The run page is the evidence behind everything else, and Past picks is the record of every trade the list recommended, which you can filter by setup; a breakout's trade has no target and is drawn with its result in multiples of its risk. A stock holds one open trade at a time across every setup: while a trade the list recommended is still open, a night a setup passes the stock again is shown as a note on that setup's card and marked on Past picks rather than counted as a second trade. The run page draws each setup with the day its rule went live, its variants and how far each rule's record has come toward its first checkpoint, and compares tonight's list with what each version of the rules running in the background would have picked: those picks are shown there and nowhere else, and how their trades turn out stays hidden until the version's checkpoint, so no version is kept or dropped on a lucky month. A night that stops partway tries again by itself from the step that stopped, up to three more times fifteen minutes apart, and tonight's page and the run page say whether it is running, waiting to try again or left unfinished, with a button that runs the rest of it.</p>
   <p><b>What to take from it.</b> On every screen, green means a level below the price and orange means a level above it. Nothing else uses those two colours.</p>
 </div>
 
@@ -778,6 +794,7 @@
   <tr><td>Buying in steps</td><td id="s-brennan">Brennan, Li and Torous (2005), <i>Dollar cost averaging</i>, working paper. <a href="https://www.anderson.ucla.edu/documents/areas/fac/finance/dollarcostave.pdf">Link</a></td><td>When spreading a purchase over time helps and when it does not.</td></tr>
 
   <tr><td>Stops and gaps</td><td id="s-arratia">Arratia and Dorador (2019), <i>On the efficacy of stop-loss rules in the presence of overnight gaps</i>, Quantitative Finance. <a href="https://upcommons.upc.edu/server/api/core/bitstreams/2e11812d-c6d1-4e56-b88b-a14edf870e3e/content">Link</a></td><td>How overnight gaps change what a stop actually delivers.</td></tr>
+  <tr><td>Earnings drift</td><td id="s-bt">Bernard and Thomas (1989), <i>Post-earnings-announcement drift: delayed price response or risk premium?</i>, Journal of Accounting Research, read as a secondary account gives it. <a href="https://alpha-suite.org/blog/post-earnings-announcement-drift">Link</a></td><td>Prices have tended to keep moving the way an earnings surprise moved them for weeks after the report.</td></tr>
   <tr><td>Earnings risk</td><td id="s-dubinsky">Dubinsky, Johannes, Kaeck and Seeger (2019), <i>Option pricing of earnings announcement risks</i>, Review of Financial Studies. <a href="https://research.vu.nl/ws/portalfiles/portal/108247883/Option_Pricing_of_Earnings_Announcement_Risks.pdf">Link</a></td><td>How much extra risk an earnings announcement adds, which is why a report due within the holding period excludes a stock.</td></tr>
 
   <tr><td>Not fooling ourselves</td><td id="s-stw">Sullivan, Timmermann and White (1999), <i>Data-snooping, technical trading rule performance, and the bootstrap</i>, Journal of Finance. <a href="https://onlinelibrary.wiley.com/doi/10.1111/0022-1082.00163">Link</a></td><td>Many trading rules that look profitable stop looking so once you account for how many were tried.</td></tr>

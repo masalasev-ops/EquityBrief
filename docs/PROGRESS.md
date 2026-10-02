@@ -35848,3 +35848,133 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             roster, 42 carried and 42 passed.
 Carried:    phase 13's sign-off, owed on the phase as a whole by a session that committed none of its code.
             This session committed phase 13's code and signs nothing.
+
+### 12.5 - correction: the ideas' run adds each new idea to the base one at a time over the stored history and the market series, judges each by one test, and combines the ideas that pass into a starting point stated beside today's rule and the base   2026-10-02
+
+Corrects:   the sweep's grid holds no market switch, no stop touched inside the day, no cap a night, no
+            trailing stop and no stop floor of a typical move. The third of the four pull requests the 12.5
+            ruling of 2026-10-01 plans, held until phase 13 was finished, with the operator's two more ideas,
+            the base's own exit held at most 10 and at most 20 sessions: thirteen tries.
+Built:      `sweep-ideas` reads the sweep's history and the market series the pull stored, computes the
+            sweep's candidates and their benchmark, and walks the live design's picks under each idea added
+            to the base alone: six market switches, the touched stop, the best three, trailing stops at 2 and
+            3 typical moves, the stop no closer than one typical move, and the holds of 10 and 20. Each is
+            judged against the base by section 17's test, a switch on the year's total. The ideas that pass
+            are combined into a starting point. The report and its figures go to a run folder of its own under
+            the sweep's folder; nothing is written to the store.
+Differs:    the plan's base was today's rule with its floor at 2 beside today's rule; the pullback froze at
+            that base on 2026-10-02, so the base is the live rule and today's rule is the one before the freeze.
+            The exits are alternatives, the one with the higher edge taken where several pass, which the plan
+            said of the two trails alone. The plan named a section 15.18 row; there is none, and the sweep
+            run's row already serves any run's report.
+Tests:      1741, from 1727: fourteen added. The touched stop at the stop, at an open under it and on a
+            day holding both; the trailing stop holding the plan's stop; the best three after the open-trade
+            rule; each switch on its own session and failing on a missing one; breadth, new highs and lows
+            and a series on the calendar; the yearly test at its boundary and each floor; a switch judged on
+            the total, alone and in the proposal; the combination's order and its two fallbacks; the base's
+            picks at each idea's setting, exit and switch; the new exits' benchmark over three members; the
+            report's tries against luck and the market series; the share of near stops.
+Claims:     880, from 876: section 17's two rows and section 18's two.
+Pins:       none moves: no file touched is in any of the three pin lists.
+Remedy:     none owed. The run is started by hand from main's Release build after the merge.
+Mutated:    the rule, stated before the run: each new rule reversed alone, made on the branch in this
+            checkout, filtered to the ideas' tests and the family sweep's and reverted.
+            I1 the touched stop reading the close in place of the low: red in the touched stop's test.
+            I2 the target read before the stop on a day holding both: red in the touched stop's test.
+            I3 the trailing stop following the close down: red in the trailing stop's test and the family
+               sweep's trailing test.
+            I4 the best three counting a stock its open trade held: red in the best three's test.
+            I5 a market switch reading the session after its own: red in the switches' test.
+            I6 the yearly test at 5 of 8: red in the yearly test.
+            I7 a market switch judged on the edge in the proposal: red in the proposed switch's test.
+            I8 the hold of 10 reading the hold of 20's exit: red in the base's picks test.
+            Results: I1 to I8 each red where stated, over the 22 tests the filter holds. I6 also turned the
+            report's test red, unpredicted: the report states the luck figure the yearly threshold sets. Each ran
+            over 4f5b6e8 and was reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 4f5b6e8.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1741 of 1741 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 880 claims, 880 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            891 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
+Carried:    the run, started by hand from main's Release build after the merge, and the fourth pull request
+            recording its figures in PROGRESS, documents only.
+
+### 12.5 ruling - the ideas' run recorded: the starting point, the base, today's rule, each variant and each idea, with the figures a freeze would cite   2026-10-02
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Run:        `20261002T132713Z` under the sweep's folder, on the sweep's page, 11 minutes. It ran from 4f5b6e8's
+            code before the merge, built in Release outside `bin` while the twelve-hour rerun held that build,
+            and its figures are recorded here rather than in a fourth pull request. The history ran through
+            2026-10-01: 1,948 sessions scored over 827 names, 23,456 of the sweep's 292,413 candidates read by
+            the live design. A trial over the same store an hour before gave the same figures. The nights with a
+            stock match the plan's measured table exactly, 1,146 and 955, and each edge sits within a few
+            thousandths of it, the history now holding one more session.
+Pull:       `history-pull-20261002T014126.2504500Z`, 2 requests at a weight of 1: GSPC 2,199 sessions and VIX
+            2,235, each from 2018-01-02 to 2026-10-01. No switch was left out.
+Proposed:   the base with c, the night's first three in the list's own order. 13 ideas tried and 1 passed,
+            where luck alone passes about 1.7 of 13 on the yearly half. The starting point is better than the
+            base in 6 of the 8 years with 2 of the last 3, and than today's rule in 7 of 8 with 2 of 3, as the
+            base is. No market switch is in it, so the night would fetch nothing new; a freeze would carry the
+            list keeping three a night as a ruling and its code. Nothing is frozen until the operator's go.
+Figures:    in order: trades with a result; the share of nights a stock was listed; the edge, with its standard
+            error; the plain result; the share of trades whose stop sat under one typical move; 2024 to 2026
+            together; 2026 alone; the edge without the five largest results by size; each year's edge from 2019.
+            Today's rule: 2,777; 59%; 0.067 (0.038); 0.187; 29%; 0.125; -0.028; 0.059;
+              -0.087 0.186 -0.100 -0.051 0.190 0.177 0.195 -0.028.
+            The base: 1,901; 49%; 0.102 (0.052); 0.226; 49%; 0.154; -0.044; 0.085;
+              -0.070 0.266 -0.069 0.019 0.225 0.235 0.223 -0.044.
+            The starting point: 1,741; 50%; 0.118 (0.054); 0.238; 51%; 0.159; -0.090; 0.099;
+              -0.042 0.300 -0.072 0.122 0.240 0.257 0.252 -0.090.
+            Variant e: 1,070; 38%; 0.106 (0.060); 0.201; 0%; 0.137; 0.135; 0.094;
+              -0.133 0.090 0.041 0.111 0.307 0.057 0.238 0.135.
+            Variant market 50%: 1,667; 47%; 0.129 (0.056); 0.266; 51%; 0.186; -0.011; 0.110;
+              -0.040 0.306 -0.072 0.233 0.206 0.257 0.262 -0.011.
+            Variant depth 1.5: 1,627; 48%; 0.129 (0.057); 0.243; 55%; 0.174; -0.071; 0.099;
+              0.077 0.289 -0.119 0.183 0.203 0.304 0.218 -0.071.
+Ideas:      each against the base, a market switch on its yearly total in risks, where the base's eight years
+            total 429.2; each idea's answers, then the same figures, and a switch's total.
+            a1 fails: total better in 2 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest, too few trades, result not higher. 864; 24%; 0.064 (0.074); 0.206; 44%; 0.125;
+              0.001; 0.019; -0.083 0.096 -0.196 -0.047 0.261 0.169 0.173 0.001; total 177.6.
+            a2 fails: total better in 3 of 8 and 2 of the last 3, the last three lower, not higher without the
+              five largest, result not higher. 1,669; 44%; 0.076 (0.055); 0.215; 48%; 0.120; -0.176; 0.057;
+              -0.125 0.329 -0.045 -0.090 0.169 0.235 0.186 -0.176; total 358.6.
+            a3 fails: total better in 1 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest, result not higher. 1,510; 40%; 0.070 (0.058); 0.172; 48%; 0.147; -0.042; 0.049;
+              -0.159 0.187 -0.043 0.053 0.084 0.258 0.117 -0.042; total 260.1.
+            a4 fails: total better in 2 of 8 and 2 of the last 3, the last three no lower, not higher without the
+              five largest, result higher. 1,783; 46%; 0.112 (0.054); 0.235; 49%; 0.173; 0.022; 0.094;
+              -0.086 0.266 -0.069 0.060 0.232 0.235 0.220 0.022; total 419.6.
+            a5 fails: total better in 2 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest, result not higher. 1,386; 36%; 0.118 (0.060); 0.145; 46%; 0.184; 0.053; 0.095;
+              -0.063 0.008 -0.023 -0.198 0.265 0.260 0.178 0.053; total 201.1.
+            a6 fails: total better in 3 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest, too few trades. 961; 25%; 0.070 (0.071); 0.256; 47%; 0.134; -0.111; 0.029;
+              -0.015 0.353 -0.185 -0.211 0.147 0.243 0.175 -0.111; total 245.7.
+            b fails: edge better in 2 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest. 1,987; 50%; 0.073 (0.042); 0.166; 48%; 0.103; -0.012; 0.049;
+              -0.109 0.256 -0.001 -0.060 0.158 0.187 0.095 -0.012.
+            c passes: edge better in 6 of 8 and 2 of the last 3, the last three no lower, still higher without
+              the five largest, enough trades and nights. 1,741; 50%; 0.118 (0.054); 0.238; 51%; 0.159; -0.090;
+              0.099; -0.042 0.300 -0.072 0.122 0.240 0.257 0.252 -0.090.
+            d2 fails: edge better in 2 of 8 and 2 of the last 3, the last three no lower, not higher without the
+              five largest. 1,908; 49%; 0.038 (0.063); 0.164; 48%; 0.165; -0.209; -0.007;
+              -0.127 -0.036 -0.147 -0.197 0.153 0.338 0.270 -0.209.
+            d3 fails: edge better in 2 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest. 1,835; 49%; 0.014 (0.077); 0.229; 48%; 0.142; -0.417; -0.045;
+              -0.040 0.003 -0.326 -0.154 0.176 0.487 0.167 -0.417.
+            e fails: edge better in 5 of 8 and 2 of the last 3, the last three lower, a stock on too few nights.
+              1,098; 38%; 0.103 (0.059); 0.194; 0%; 0.152; 0.161; 0.091;
+              -0.161 0.113 0.006 0.081 0.292 0.079 0.232 0.161.
+            h10 fails: edge better in 4 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest. 1,986; 50%; 0.086 (0.038); 0.145; 48%; 0.105; -0.024; 0.073;
+              0.106 0.046 0.008 0.069 0.149 0.154 0.164 -0.024.
+            h20 fails: edge better in 2 of 8 and none of the last 3, the last three lower, not higher without the
+              five largest. 1,928; 49%; 0.081 (0.046); 0.185; 48%; 0.095; -0.070; 0.066;
+              0.075 0.135 -0.074 0.019 0.235 0.171 0.145 -0.070.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 4f5b6e8, the code the run was built
+            from; this entry, written after them, changes no code, and the checks that read the record ran over
+            it filtered.
+Carried:    the operator's go or not on the starting point and its variants; the twelve-hour rerun, running as
+            `20261002T122612Z`.

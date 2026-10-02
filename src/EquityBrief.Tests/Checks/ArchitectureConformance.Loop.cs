@@ -1253,6 +1253,8 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.FailureTable, "A sweep candidate with no sector label"),
         // The stepped plan's risk, on the operator's ruling of 2026-10-01.
         CheckReach.Key(Scope.FailureTable, "A stepped plan filled nearer its stop than the stop setting's floor"),
+        // The ideas' run, on the operator's rulings of 2026-10-01, built once phase 13 was finished.
+        .. FixtureExpectations.IdeasClaims,
     ];
 
     // Phase 12's rows, each written by the checkpoint that draws or asserts it, so none reads as out
@@ -1611,8 +1613,11 @@ public partial class ArchitectureConformance
         // section 18's eight, and 788 from the 12.6 correction drawing the news on the pages, its four: the name
         // page's News row and the parts tonight's list, the Run page's research and spend and its count of what
         // waits gain, and 789 from the 12.5 correction counting the stepped plan's result on the risk its plan
-        // stated, its one: section 18's row about a fill nearer the stop than the stop setting's floor.
-        Assert.Equal((550, 789), (predicted, actual));
+        // stated, its one: section 18's row about a fill nearer the stop than the stop setting's floor, and 793
+        // from the 12.5 correction that brings the ideas' run once phase 13 was finished, its four: section 17's
+        // rows for the ideas' settings and their test, and section 18's rows for a run no idea passes and a market
+        // series missing a session.
+        Assert.Equal((550, 793), (predicted, actual));
     }
 
     // A sentence the scan reads as describing tonight's list chosen by a reason firing, the live rule before

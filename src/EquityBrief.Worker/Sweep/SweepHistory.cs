@@ -49,6 +49,15 @@ public sealed record SweepHistoryInputs(
     public IReadOnlyList<(string Ticker, DateOnly Session)> LiveListed => LiveListedNameSessions ?? [];
 }
 
+// One market series a pull stored, GSPC or VIX: its closes in session order through the history's end, and the
+// pull that wrote them with the first and last session it holds.
+public sealed record SweepMarketSeries(string Series, IReadOnlyList<(DateOnly Session, double Close)> Closes, string Pull)
+{
+    public DateOnly? First => Closes.Count > 0 ? Closes[0].Session : null;
+
+    public DateOnly? Last => Closes.Count > 0 ? Closes[^1].Session : null;
+}
+
 // The sweep's one read of the store.
 //
 // It reads the live store directly and writes nothing to it, opened read-only and never immutable, since a night
@@ -74,6 +83,7 @@ public sealed class SweepHistory : IComponent
             new StoreTouch(Store.PulledBar, Touch.Read),
             new StoreTouch(Store.PulledEarnings, Touch.Read),
             new StoreTouch(Store.PulledSurprise, Touch.Read),
+            new StoreTouch(Store.PulledMarketBar, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
         ],
@@ -211,6 +221,54 @@ public sealed class SweepHistory : IComponent
             surprises.Sum(pair => pair.Value.Count),
             names.Count(name => name.Sector is null && name.Spans.Count > 0),
             liveListed);
+    }
+
+    // The market series the ideas' run reads, each series' closes through the history's end with the pull that
+    // wrote them, one statement a series; none where the store holds no market pull, or was migrated before the
+    // table existed.
+    // see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+    public async Task<IReadOnlyList<SweepMarketSeries>> MarketAsync(DateOnly through, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(ConnectionString(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var held = false;
+
+        await foreach (var row in RowsAsync(connection, "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'pulled_market_bar';", [], cancellation))
+        {
+            held = true;
+        }
+
+        if (!held)
+        {
+            return [];
+        }
+
+        var found = new List<SweepMarketSeries>();
+        var stamp = through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        foreach (var series in new[] { "GSPC", "VIX" })
+        {
+            var closes = new List<(DateOnly, double)>();
+            var pull = string.Empty;
+
+            await foreach (var row in RowsAsync(
+                connection,
+                "SELECT session_date, close, pull FROM pulled_market_bar WHERE series = $series AND session_date <= $through ORDER BY session_date;",
+                [("$series", series), ("$through", stamp)],
+                cancellation))
+            {
+                closes.Add((Date(row.GetString(0)), Core.Prices.Statistic.FromPrice(Money.FromStorage(row.GetString(1)))));
+                pull = row.GetString(2);
+            }
+
+            if (closes.Count > 0)
+            {
+                found.Add(new SweepMarketSeries(series, closes, pull));
+            }
+        }
+
+        return found;
     }
 
     // The surprises the fifth condition reads: every pulled surprise carrying a percent where a pull stored any,

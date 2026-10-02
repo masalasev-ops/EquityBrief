@@ -256,7 +256,7 @@ Grain: one row per series per session a market pull reached.
 
 Primary key: `series`, `session_date`.
 
-**The index's and the VIX's daily series, read by no night** (see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night). The operator's `history-pull --market` asks the provider once a series for the whole span, under its index exchange rather than a listing, and stores every session it sends. Kept apart from `bar` and `pulled_bar` because neither series is a member's, and removed whole with its pull as they are; a second pull inserts only the sessions no earlier pull holds. A series the provider refuses stores nothing and the pull fails, so nothing reads a series that is not there.
+**The index's and the VIX's daily series, read by no night** (see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night). The operator's `history-pull --market` asks the provider once a series for the whole span, under its index exchange rather than a listing, and stores every session it sends. Kept apart from `bar` and `pulled_bar` because neither series is a member's, and removed whole with its pull as they are; a second pull inserts only the sessions no earlier pull holds. A series the provider refuses stores nothing and the pull fails, so nothing reads a series that is not there. The ideas' run reads both series through the sweep history, by hand and never on a night.
 
 ### indicator
 Grain: one row per ticker, session and indicator name.

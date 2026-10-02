@@ -2954,6 +2954,22 @@ internal static class Scope
             Verdict.Pass,
             "over landscapes worked by hand the sample covers every value of every dial equally under one seed, depth reads a grid end and an end the grid does not limit, the refinement takes the deepest move and stops when none is deeper, a grid end is looked beyond with the proposal moving into it, a dial's own end is named as a limit, and the slices hold every other dial at the starting point",
             ByExpectations),
+        [CheckReach.Key(LimitsTable, "Ideas on the base")] = new Scoped(
+            Verdict.Pass,
+            "the touched stop is worked by hand at the stop, at an open under it and on a day holding both, the trailing stop holds the plan's stop until the trail passes it and is never lowered, the best three are taken after the open-trade rule in the list's order, each switch is read on its own session's close, breadth, new highs and lows and a market series are read over constructed members and a calendar, the base's picks are read at each idea's setting, exit and switch, and the new exits' benchmark is worked by hand over three members",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Ideas test")] = new Scoped(
+            Verdict.Pass,
+            "the yearly test passes at six of eight with two of the last three and fails one short of either, each floor at its edge, a market switch is judged on the year's total with a night off counting nothing, the ideas that pass are combined and added in order of their gain where the whole fails, and the report states the tries against the 34 of 256 luck passes and the share of near stops beside each edge",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "An ideas' run in which no idea passes")] = new Scoped(
+            Verdict.Pass,
+            "where no idea moves the base none passes, the starting point is the base holding no idea and its figures are the base's, and the report says no idea passed; where the base fails against today's rule the starting point is today's rule and the base stands first among the variants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A market series missing on a session an idea reads")] = new Scoped(
+            Verdict.Pass,
+            "a session the VIX misses fails both of its switches that night and the falling switch ten sessions on, an index session missing leaves its averages unread while it sits in their window, a day the calendar does not hold is passed over, and a store holding no market series says so in the report",
+            ByExpectations),
         [CheckReach.Key(CatalogueTable, "Sweep point in time")] = new Scoped(
             Verdict.Pass,
             "the class declares the stores it reads and that it writes none, and the declaration matches this row, its matrix row and the statements in its own source",
@@ -4894,6 +4910,9 @@ internal static class Scope
         ["A sweep candidate with no sector label"] = "12.5",
         // The stepped plan's risk, the 12.5 correction of 2026-10-01.
         ["A stepped plan filled nearer its stop than the stop setting's floor"] = "12.5",
+        // The ideas' run, a 12.5 correction built once phase 13 was finished.
+        ["An ideas' run in which no idea passes"] = "12.5",
+        ["A market series missing on a session an idea reads"] = "12.5",
     };
 
     // The two rows of the read and write matrix whose component already exists.
@@ -5011,6 +5030,9 @@ internal static class Scope
         ["Sweep conditions"] = "12.5",
         ["Sweep point in time"] = "12.5",
         ["Sweep search"] = "12.5",
+        // The ideas' run, a 12.5 correction built once phase 13 was finished.
+        ["Ideas on the base"] = "12.5",
+        ["Ideas test"] = "12.5",
     };
 
     static readonly Dictionary<string, string> NightlySteps = new(StringComparer.Ordinal)
