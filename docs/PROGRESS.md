@@ -35690,3 +35690,30 @@ Verified:   `tools/ci.ps1` green end to end, all six steps, 0 warnings, 0 errors
             rebased onto the main that carries it, both gates ran green as recorded above.
 Carried:    the merge, at the freeze with its remedy, which registers the seven at one instant and records what the
             second restart cost in the six's nights, as R3 asks; the pull request stands open until then.
+
+### 13.9 ruling - the three new families freeze at their sweeps' proposals with two variants of the operator's own, and the four freezes land in one pull request once a registered family rule is measured as the pullback's is   2026-10-02
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Asked:      the operator, on 2026-10-02 after the three sweeps' reports, word for word. Breakouts: "The proposal,
+            with the provisional setting (year's high, ranges no wider, stop 2 typical moves) registered as one of
+            its variants, replacing the weakest of the five if needed." Earnings drift: "The proposal, with one
+            variant being the same rule with the stop no closer than one typical move under the buy, replacing the
+            weakest of the five if needed.", and asked which reading, "Move the stop down (Recommended)". Sector
+            leaders: "Freeze it (Recommended)". Then, told that no new family's variant could yet be evaluated or
+            scored: "All four together (Recommended)".
+Changed:    13.9 carries the three starting points with their variants, each new rule reading its settings, the
+            family evaluator evaluating every registered family rule at its own settings, each rule's own list with
+            its trades stored with their benchmark when they end, each record on the run page with its family's own
+            correction, the pullback's base opened as a filter version with the swing family registered again, and
+            the four freezes in one pull request with one remedy; four decisions, and a sentence each on the
+            breakout's and the drift's own. Prior text in `CHANGELOG.md`. No family passes eight rules, so no
+            neighbour is dropped for the two variants.
+Queue:      restated, since the list lives in the newest queue ruling. Done: tracks 1, 2, 3 and 7; track 4's first
+            two pull requests; phase 13 from 13.0 to 13.8. In progress: 13.9, the four freezes in one pull request,
+            the pullback's carrying track 5's fundamentals candidate, whose two commits this branch carries. Next:
+            13.10. Beside it, in a fresh session: track 8, phase 12's sign-off, and after it track 9, the preview
+            command. Shelved until phase 13 is finished: the ideas' run and its figures, the twelve-hour rerun and
+            the two more ideas.
+Verified:   with the pull request that carries it, `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the
+            tree carrying 13.9's entry, with the figures 13.9's entry states.
+Stored:     the operator's words in `prompts/2026-10-02-13.9-freeze-answers.md`.
