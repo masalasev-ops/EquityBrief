@@ -36175,3 +36175,28 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    the two files the suite left in the operator's folder, the copy of 17:13 and the unfinished one of
             17:22, removed by hand once this merges, each read first as the suite's store; and the sign-offs of
             phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.10 - correction: the ninth rule's change drawn in words of its own on the run page, and every rule of the swing family held to words written for what it moves   2026-10-02
+
+Corrects:   the night's best three of the 13.10 ruling above, merged as PR 320. The run page's versions region
+            drew its change as "BestOf at 3 where the live list has 0", the words the region falls back to for a
+            setting it has none written for; the test reading the region held the seventh's and the eighth's
+            words and not the ninth's. Seen on the live run page of 2026-10-01 while gathering the sign-off
+            handoff's figures.
+Built:      the region says "Keeps only the night's first 3 in the list's own order, where the live list keeps
+            every name it passes", and a registration stating no count a night reads as keeping every name, as
+            the eight registered before the count was stated do.
+Tests:      F13FTESTS, from 1750: one added, every rule the family registers at filter version 5's settings as
+            the store holds them drawn in words written for what it moves and none as a setting's own name, and
+            both directions of the count worked; the run page's region test holds the ninth's words and refuses
+            the fallback on every row.
+Claims:     F13FCLAIMS, from 887: none added.
+Pins:       none moves: the read surface sits in no pin list.
+Mutated:    the rule, stated before the run: each property the correction adds, broken alone, made on the
+            branch in this checkout, filtered to the tests named and reverted.
+            W1 the ninth's words removed, the count read through the fallback again: red in the words test and
+            in the region test.
+            W2 a registration stating no count read as a count of none apart from zero: red in the words test.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F13FGATES
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.

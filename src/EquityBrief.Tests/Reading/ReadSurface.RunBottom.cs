@@ -280,11 +280,54 @@ public partial class ReadSurface
             Assert.Single(rows, row => row.Contains($"data-version=\"{RunScreen.Slug(TheSwingFamily.Variant(TheSwingFamily.LeadersName, "1"))}\"", StringComparison.Ordinal)),
             StringComparison.Ordinal);
 
+        // The ninth's: it keeps the night's first three in the list's own order.
+        Assert.Contains(
+            "Keeps only the night's first 3 in the list's own order, where the live list keeps every name it passes",
+            Assert.Single(rows, row => row.Contains($"data-version=\"{RunScreen.Slug(TheSwingFamily.Variant(TheSwingFamily.BestThreeName, "1"))}\"", StringComparison.Ordinal)),
+            StringComparison.Ordinal);
+
+        // And no version's change is drawn as a setting's own name against the live list's.
+        Assert.DoesNotContain(rows, row => row.Contains("where the live list has", StringComparison.Ordinal));
+
         // Every version below its first look is a locked row at the checkpoint.
         var checkpoint = Card(page, "checkpoint-picture");
 
         Assert.Contains("<div class=\"checkpoint-picture\" data-rows=\"9\" data-unlocked=\"0\">", checkpoint, StringComparison.Ordinal);
         Assert.Equal(9, Regex.Matches(checkpoint, "unlocks at checkpoint 1, after block 8 of 8").Count);
+    }
+
+    [Fact]
+    public void EveryRuleOfTheSwingFamilySaysWhatItChangesInWordsWrittenForIt()
+    {
+        // Each rule the family registers beside the live filter, at the open version's settings, is drawn in words
+        // written for what it moves, and none as a setting's own name, which is how the ninth was drawn on the run
+        // page of 2026-10-02 before its words were written.
+        // see: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
+        // Filter version 5's settings as the operator's store holds them since the freeze of 2026-10-02.
+        var five = FilterSettings.Read(
+            "{\"breadthFloor\":0.45,\"strengthFloor\":0.5,\"depthLow\":1,\"depthHigh\":5,\"dryUpCeiling\":1.5,\"rewardToRiskFloor\":2," +
+            "\"stopLow\":0.5,\"stopHigh\":4,\"earningsWindowSessions\":15,\"arrivalSessions\":3,\"trade\":\"clear\"}");
+        var family = TheSwingFamily.For("5", five);
+        var live = family[0].Parameters;
+
+        Assert.Equal(9, family.Count);
+
+        foreach (var rule in family.Skip(1))
+        {
+            var words = RunScreen.Changes(rule.Parameters, live);
+
+            Assert.DoesNotContain("where the live list has", words, StringComparison.Ordinal);
+            Assert.NotEqual("The same settings as the live list", words);
+        }
+
+        // A registration written before the count a night was stated keeps every name it passes, as the live
+        // filter does, and the other way round the words say what the live list keeps.
+        var unstated = live.Where(setting => setting.Key != SwingFilterRule.BestOfParameter).ToDictionary(setting => setting.Key, setting => setting.Value, StringComparer.Ordinal);
+
+        Assert.Equal("The same settings as the live list", RunScreen.Changes(unstated, live));
+        Assert.Equal(
+            "Keeps every name it passes, where the live list keeps only the night's first 3",
+            RunScreen.Changes(live, family.Single(rule => rule.Candidate == TheSwingFamily.Variant(TheSwingFamily.BestThreeName, "5")).Parameters));
     }
 
     [Fact]

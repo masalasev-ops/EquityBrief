@@ -10343,3 +10343,10 @@ Was:
 Now:
 > `fixture-expectations`: "... none removed where a kept one does not open, a copy another store made in the folder neither counted nor removed however old and an unfinished copy removed only once it is named for an instant further back than a copy waits, and the copy waits for the night, ..."; `store-never-deleted`: "... the suite removes only what it made under the temporary folder, and starts the worker's own build only with a copies' folder under its own store's root, since the worker reads the machine's settings and its night ends by copying its store; and each reader is shown ..."
 Why: the checks reach what the correction asserts.
+### 2026-10-02 - .claude/rules/checks.md - read-surface reaches the family's rules drawn in words of their own
+Authorised by: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
+Was:
+> `read-surface`: "... with the swing family registered the run page's shadow region reads nine registered and a divisor of 9; ..."
+Now:
+> `read-surface`: "... reads nine registered and a divisor of 9, each of the family's rules drawn in words written for what it moves and none as a setting's own name against the live list's, a registration stating no count a night read as keeping every name it passes; ..."
+Why: the run page of 2026-10-02 drew the ninth rule as "BestOf at 3 where the live list has 0".
