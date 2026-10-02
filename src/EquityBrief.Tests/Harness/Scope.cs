@@ -1915,6 +1915,14 @@ internal static class Scope
             Verdict.Pass,
             "the grid's levels are the drift's own values with a step either side, the sweep's rise, volume multiple, low, stop and target the night's own rule's over the same constructed member, the night's print over the fixture, a print only the pull holds read from it, and a constructed history's trade, its near stop and its benchmark read back off its report",
             ByExpectations),
+        [CheckReach.Key(LimitsTable, "Leader sweep grid")] = new Scoped(
+            Verdict.Pass,
+            "the grid's levels are the leaders' own values with a step either side, the sectors ranked and the members placed by the night's own rule over constructed members and read back against the rows the night stored over the fixture, and constructed candidates outside any uptrend listed by the sectors and the share and read back off their report",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A leader sweep name with no sector")] = new Scoped(
+            Verdict.Pass,
+            "over constructed members the strongest of which carries no sector, it is in no ranking and lists nothing, and it is counted among the names carrying none",
+            ByExpectations),
         [CheckReach.Key(LimitsTable, "Family sweep floors")] = new Scoped(
             Verdict.Pass,
             "the proposal worked by hand over constructed records: the best edge with too few trades passed over, one short of its years passed over, a tie on the edge going to the setting one dial from the provisional, its neighbours as the variants the higher edge first, and every setting short of the floors setting the family aside",
@@ -4811,6 +4819,7 @@ internal static class Scope
         ["A print whose actual the calendar does not carry yet"] = "13.3",
         // 13.6, the family sweeps.
         ["A family sweep with no setting meeting its floors"] = "13.6",
+        ["A leader sweep name with no sector"] = "13.8",
         // The sweep, a 12.5 correction, and its rerun.
         ["A chunk of the sweep fails twice"] = "12.5",
         ["The point-in-time check finds a difference"] = "12.5",
@@ -4914,6 +4923,7 @@ internal static class Scope
         // The family sweeps, 13.6.
         ["Breakout sweep grid"] = "13.6",
         ["Drift sweep grid"] = "13.7",
+        ["Leader sweep grid"] = "13.8",
         ["Family sweep floors"] = "13.6",
         ["Family sweep test"] = "13.6",
         // The research template, 12.6 corrections.

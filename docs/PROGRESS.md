@@ -35561,3 +35561,34 @@ Mutated:    the rule, stated before the run: each new rule reversed alone, made 
             Results: F7MUT
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
             13.6's to 13.8's: F7GATES
+
+### 13.8 - the sector leaders' sweep: each session's sectors ranked and members placed by the night's own rule, the pullback's setup, trigger and trade read at the live settings with leadership in place of the trend and strength gate, and the history's names with and without a sector counted   2026-10-02
+
+Built:      `sweep-family --family leader`, on 13.6's engine. Its adapter ranks each open session's sectors and
+            places each member with the leader rule's own standings, keeps those inside the loosest setting's
+            sectors and share, computes the sweep's candidates on those bars alone with the uptrend and strength
+            pre-checks set aside, and keeps the ones the pullback's setup, trigger and trade pass at the live
+            settings, read with a strength that passes every bar and the live design's earnings window held,
+            their trade and its benchmark the pullback's own under its exit. A grid of 9 settings. The report
+            counts the history's names carrying a sector and those not, and how many of the latter the index
+            held on the history's last session, since the membership files a sector as it stands today.
+Measured:   a trial from this branch over the live store, read-only, its report written outside the store's
+            folder, in 187 s: 508 of the history's 827 names carry a sector and 319 do not; 143,416
+            member-sessions stood inside the loosest setting's sectors and share, and the pullback's setup,
+            trigger and trade passed on 6,317. The provisional setting, the top 3 sectors and the top quarter,
+            is the best edge meeting the floors: 1,021 trades, an edge of 0.070, 6 of 8 years, 0.038 without
+            its five largest, 29% of its stops under a typical move.
+Tests:      F8TESTS, from F7TESTS: three added. The sectors ranked and members placed over constructed members,
+            the strongest carrying no sector left out and counted; the standings read back against the rows the
+            night's own rule stored over the fixture's night; and constructed candidates outside any uptrend,
+            listed by the sectors and the share and read back off their report.
+Claims:     two added: section 17's row for the leaders' grid and section 18's row for a name with no sector.
+Pins:       the three pin lists read; the tree touches none of their sources.
+Mutated:    the rule, stated before the run: each new rule reversed alone, made on the branch in this
+            checkout, filtered to the three tests and reverted.
+            L1 a sector's share rounded down: red in the standings' test and the report's.
+            L2 the trend gate read for a leader: red in the report's test.
+            L3 a leader listed past its share: red in the report's test.
+            Results: F8MUT
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
+            13.6's to this one: F8GATES

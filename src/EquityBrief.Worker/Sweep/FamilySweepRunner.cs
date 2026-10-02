@@ -25,18 +25,21 @@ public sealed class FamilySweepRunner(IClock clock, string databaseFile, string 
     {
         [BreakoutRule.Name] = "breakouts'",
         [DriftRule.Name] = "earnings drift's",
+        [LeaderRule.Name] = "sector leaders'",
     };
 
     // One family's sweep as the runner reads it: its grid, how many member-sessions its loosest setting could
-    // list, the listings a setting makes, its exit and its benchmark.
+    // list, the listings a setting makes, its exit and its benchmark, and a line of what it read that only this
+    // family's report states.
     public sealed record Adapter(
         FamilyGrid Grid,
         int Readings,
         Func<int[], IEnumerable<FamilyListing>> Listings,
         Func<FamilyListing, (double? Result, int Sessions)> Exit,
-        Func<FamilyListing, double> Benchmark);
+        Func<FamilyListing, double> Benchmark,
+        string? Note = null);
 
-    public static Adapter For(string family, IReadOnlyList<SweepSeries> series, IReadOnlyList<SweepColumns.Session> sessions, SweepBenchmark.Members members, int firstScored)
+    public static Adapter For(string family, IReadOnlyList<SweepSeries> series, IReadOnlyList<SweepColumns.Session> sessions, SweepBenchmark.Members members, int firstScored, IReadOnlyList<DateOnly>? calendar = null)
     {
         switch (family)
         {
@@ -54,6 +57,34 @@ public sealed class FamilySweepRunner(IClock clock, string databaseFile, string 
                 var readings = sweep.Readings(sessions, firstScored);
 
                 return new(DriftSweep.Grid, readings.Count, setting => DriftSweep.Listings(readings, setting), sweep.Exit, sweep.Benchmark);
+            }
+
+            case LeaderRule.Name:
+            {
+                var days = calendar ?? throw new ArgumentException("The sector leaders' sweep reads the history's calendar.", nameof(calendar));
+                var (leaders, carrying, notCarrying) = LeaderSweep.Standings(series, sessions, members, firstScored);
+                var bars = leaders.GroupBy(one => one.Name).ToDictionary(group => group.Key, group => (IReadOnlySet<int>)group.Select(one => one.Bar).ToHashSet());
+                var found = new List<SweepCandidate>[series.Count];
+
+                Parallel.For(0, series.Count, name => found[name] = bars.TryGetValue(name, out var only)
+                    ? SweepCandidates.For(series[name], name, sessions, days, firstScored, firstScored, days.Count, only)
+                    : []);
+
+                var candidates = found.SelectMany(list => list).ToArray();
+
+                SweepBenchmark.Fill(candidates, series, members, Environment.ProcessorCount);
+
+                var readings = LeaderSweep.Readings(leaders, candidates, series);
+                var byListing = readings.ToDictionary(reading => (reading.Name, reading.Session));
+                var heldToday = series.Count(one => one.Name.Sector is not { Length: > 0 } && one.Name.MemberOn(days[^1]));
+
+                return new(
+                    LeaderSweep.Grid,
+                    readings.Count,
+                    setting => LeaderSweep.Listings(readings, setting),
+                    listing => LeaderSweep.ExitOf(byListing[(listing.Name, listing.Session)]),
+                    listing => byListing[(listing.Name, listing.Session)].Benchmark,
+                    FormattableString.Invariant($"Of the history's {series.Count:N0} names, {carrying:N0} carry a sector as the membership files it today and {notCarrying:N0} do not, {heldToday:N0} of them members on the history's last session; a name with none is in no sector's ranking and lists nothing, so where the names without one are the ones the index has let go, the record reads the members that stayed. {leaders.Count:N0} member-sessions stood inside the loosest setting's sectors and share, and the pullback's setup, trigger and trade passed on {readings.Count:N0} of them."));
             }
 
             default:
@@ -111,7 +142,7 @@ public sealed class FamilySweepRunner(IClock clock, string databaseFile, string 
 
         int YearOf(int session) => calendar[session].Year - SweepColumns.FirstScored.Year;
 
-        var adapter = For(family, series, sessions, members, firstScored);
+        var adapter = For(family, series, sessions, members, firstScored, calendar);
         var read = new List<(int[] Setting, FamilyFigures Figures)>();
 
         foreach (var setting in adapter.Grid.Settings)
@@ -122,7 +153,7 @@ public sealed class FamilySweepRunner(IClock clock, string databaseFile, string 
         }
 
         var proposal = FamilySweep.Propose(adapter.Grid, read);
-        var run = new FamilySweepRun(family, words, calendar[firstScored], through, inputs.Names.Count, nights, open, adapter.Readings, started, clock.UtcNow);
+        var run = new FamilySweepRun(family, words, calendar[firstScored], through, inputs.Names.Count, nights, open, adapter.Readings, started, clock.UtcNow, adapter.Note);
         var report = Path.Combine(folder, SweepFolder.ReportFile);
         var figures = Path.Combine(folder, FiguresFile);
 

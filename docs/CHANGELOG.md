@@ -10072,3 +10072,11 @@ Was:
 Now:
 > the pullback's, taken first, carries the base as its frozen starting point, today's swing filter with its reward-to-risk floor raised to 2 and every other setting as it stands, citing the decision, the open trade rule inside the rule,
 Why: the operator ruled on 2026-10-02 that phase 13 is finished before the ideas' run.
+
+### 2026-10-02 - RUNBOOK.md - a family sweep's paragraph names how long each family takes
+Authorised by: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
+Was:
+> It reads the live store read-only and writes nothing to it, and writes its report and its figures into a run folder of its own under the sweep's folder, served at `http://localhost:5152/sweep` as the newest run with the earlier runs linked. It takes minutes. It does not start while the night holds the store or when the night's window would come before an hour has passed, saying when to run it instead.
+Now:
+> The same, with "It takes minutes: the breakouts' and the drift's well under one, the sector leaders' a few, since each leader's bands and plan are computed for its session. The leaders' report states how many of the history's names carry a sector, which the membership files as it stands today." in place of "It takes minutes.", and the leaders' command beside the other two.
+Why: the leaders' run computes each leader's bands and plan and takes minutes where the other two take seconds, and its record reads only the names carrying a sector.

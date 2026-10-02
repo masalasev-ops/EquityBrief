@@ -14,7 +14,8 @@ public sealed record FamilySweepRun(
     int OpenNights,
     int Readings,
     DateTimeOffset Started,
-    DateTimeOffset Finished);
+    DateTimeOffset Finished,
+    string? Note = null);
 
 // A setup family's sweep report: the history read, the provisional setting's record beside the proposal, the
 // proposal or the family set aside, its variants, the test its checkpoints read from the freeze, and every
@@ -35,6 +36,11 @@ public static class FamilySweepReport
         page.Append("</style></head><body><main>");
         page.Append(Invariant($"<p class=\"eyebrow\">Phase 13, the {Esc(run.Words)} sweep</p><h1>The {Esc(run.Words)} sweep</h1>"));
         page.Append(Invariant($"<p class=\"history\" data-family=\"{Esc(run.Family)}\">Every figure on this page is history: the {Esc(run.Words)} rule replayed over the stored history from {run.From:yyyy-MM-dd} to {run.Through:yyyy-MM-dd}, {run.ScoredNights:N0} sessions scored over {run.Names:N0} names the index held, the market check at the live filter's floor leaving the lists open on {run.OpenNights:N0} of them, five a night in the family's own order with one open trade a stock, and every result read as an edge over the same plan entered at the same close on every member that night. {grid.Settings.Count} settings were read over {run.Readings:N0} member-sessions the loosest one could list. None of it is a live record, and nothing here is registered.</p>"));
+
+        if (run.Note is { } note)
+        {
+            page.Append(Invariant($"<p class=\"note\">{Esc(note)}</p>"));
+        }
 
         page.Append("<h2>The proposal</h2>");
 
