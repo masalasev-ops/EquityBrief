@@ -825,7 +825,7 @@ public static class SweepReport
         </script>
         """;
 
-    const string Style = """
+    internal const string Style = """
         :root{--bg:#f7f6f2;--card:#fffefa;--ink:#1f2328;--muted:#5d6470;--line:#d9d6cc;--good:#d6ecd9;--poor:#f1dede;--flag:#fff1cc;--accent:#2f4b6e}
         @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#15181c;--card:#1c2026;--ink:#e6e8eb;--muted:#9aa3ad;--line:#343a42;--good:#1f3a26;--poor:#3d2224;--flag:#3b3316;--accent:#9dbbe0}}
         :root[data-theme="dark"]{--bg:#15181c;--card:#1c2026;--ink:#e6e8eb;--muted:#9aa3ad;--line:#343a42;--good:#1f3a26;--poor:#3d2224;--flag:#3b3316;--accent:#9dbbe0}

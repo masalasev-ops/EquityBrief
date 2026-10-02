@@ -35499,3 +35499,35 @@ Queue:      restated, since the list lives in the newest queue ruling. Done: tra
 Verified:   documents alone over `tools/ci.ps1` green at de39e7b, the code beneath them, with the document
             checks run filtered over this commit and the hosted checks over the pull request's tree.
 Stored:     the operator's words in `prompts/2026-10-02-13.6-phase-13-first-ruling.md`.
+
+### 13.6 - the breakouts' sweep: the breakout's rule replayed over the stored history at every setting of its grid, five a night with one open trade a stock, each trade an edge over the same trailing plan entered on every member that night, and a report proposing the best edge among the settings meeting the floors or setting the family aside   2026-10-02
+
+Built:      `sweep-family --family breakout`, the shared engine the drift's and the leaders' sweeps reuse:
+            the family's walk night by night in the family's order, five a night and one open trade a stock;
+            a setting's figures; the proposal; the trailing and the fixed walks; the report in a run folder of
+            its own beside the pullback sweep's runs. The breakout's adapter reads the year's high, the volume
+            over its fifty-session average, the newer ranges over the older and the typical move over every
+            scored session, on nights the market check left open, across a grid of 54 settings.
+Measured:   a trial from this branch over the live store, read-only, its report written outside the store's
+            folder: 827 names, 1,948 sessions scored, the lists open on 1,609, 10,707 member-sessions the
+            loosest setting could list, in 18 s. The provisional setting: 1,658 trades, an edge of 0.041, 6 of
+            8 years above nothing, 0.013 without its five largest. The best edge meeting the floors: a 126-session
+            high, volume 1.5, a range ceiling of 0.85 and a stop of 1.5 moves, 1,009 trades, an edge of 0.082,
+            0.031 without its five largest. The run the operator reads is made from main after the merge.
+Tests:      F6TESTS, from 1702: eight added. The trailing and the fixed walks by hand; the trailing benchmark
+            over constructed members; five a night in the family's order with one open trade a stock; a
+            setting's figures and the proposal by hand; the breakout's readings read back against the rows the
+            night's own rule stored over the fixture's night; and a constructed history's breakout, trade and
+            benchmark read back off its report.
+Claims:     four added: section 17's grid, floors and test rows, and section 18's row for a family set aside.
+Pins:       the three pin lists read; the tree touches none of their sources.
+Mutated:    the rule, stated before the run: each new rule reversed alone, made on the branch in this
+            checkout, filtered to the eight tests and reverted.
+            F1 a sixth listing kept a night: red in the five-a-night test.
+            F2 the trailing stop lowered with a lower close: red in the trailing walk's test.
+            F3 the proposal ignoring the trade floor: red in the proposal's test.
+            F4 the year's high read with tonight's own bar in it: red in the fixture readings' test and the
+               constructed history's.
+            Results: F6MUT
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
+            this one to 13.8's: F6GATES

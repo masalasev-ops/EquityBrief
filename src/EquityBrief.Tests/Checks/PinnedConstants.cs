@@ -376,6 +376,22 @@ public class PinnedConstants
             new(SweepSearchRow, "19", Core.Sweep.SweepSpace.For([1, 2, 3, 4, 5, 6, 7]).Count, "the dials of a space holding every condition"),
             new(SweepSearchRow, "3", Worker.Sweep.SweepSearch.SliceReach, "SweepSearch.SliceReach"),
             new(SweepSearchRow, "5", (decimal)Worker.Sweep.SweepRunner.Longest.TotalDays, "SweepRunner.Longest in days"),
+            new("Breakout sweep grid", "126", (decimal)Worker.Sweep.BreakoutSweep.Grid.Dials[0].Levels[0], "BreakoutSweep.Grid, the shorter high window"),
+            new("Breakout sweep grid", "251", (decimal)Worker.Sweep.BreakoutSweep.Grid.Dials[0].Levels[1], "BreakoutSweep.Grid, the year's high window"),
+            new("Breakout sweep grid", "1.25", (decimal)Worker.Sweep.BreakoutSweep.Grid.Dials[1].Levels[0], "BreakoutSweep.Grid, the lowest volume multiple"),
+            new("Breakout sweep grid", "1.5", (decimal)Worker.Sweep.BreakoutSweep.Grid.Dials[1].Levels[1], "BreakoutSweep.Grid, the middle volume multiple"),
+            new("Breakout sweep grid", "2.0", (decimal)Worker.Sweep.BreakoutSweep.Grid.Dials[1].Levels[2], "BreakoutSweep.Grid, the highest volume multiple"),
+            new("Breakout sweep grid", "0.85", (decimal)Worker.Sweep.BreakoutSweep.Grid.Dials[2].Levels[0], "BreakoutSweep.Grid, the tighter range ceiling"),
+            new("Breakout sweep grid", "1.0", (decimal)Worker.Sweep.BreakoutSweep.Grid.Dials[2].Levels[1], "BreakoutSweep.Grid, the rule's range ceiling"),
+            new("Breakout sweep grid", "1.5", (decimal)Worker.Sweep.BreakoutSweep.Grid.Dials[3].Levels[0], "BreakoutSweep.Grid, the nearest stop"),
+            new("Breakout sweep grid", "2", (decimal)Worker.Sweep.BreakoutSweep.Grid.Dials[3].Levels[1], "BreakoutSweep.Grid, the rule's stop"),
+            new("Breakout sweep grid", "3", (decimal)Worker.Sweep.BreakoutSweep.Grid.Dials[3].Levels[2], "BreakoutSweep.Grid, the widest stop"),
+            new("Family sweep floors", "300", Worker.Sweep.FamilySweep.TradeFloor, "FamilySweep.TradeFloor"),
+            new("Family sweep floors", "6", Worker.Sweep.FamilySweep.YearsBeating, "FamilySweep.YearsBeating"),
+            new("Family sweep floors", "8", Core.Sweep.SweepFigures.Years, "SweepFigures.Years"),
+            new("Family sweep floors", "8", Worker.Sweep.FamilySweep.Variants, "FamilySweep.Variants"),
+            new("Family sweep test", "63", Core.Returns.Blocks.Sessions, "Blocks.Sessions"),
+            new("Family sweep test", "0.05", (decimal)Core.Returns.ReasonVerdict.Significance, "ReasonVerdict.Significance"),
         ];
     }
 
