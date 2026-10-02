@@ -35771,7 +35771,7 @@ Built:      13.9 as the two rulings above shape it. 13.9 amends its own done con
               its own rules, at most eight.
             - The documents. Sections 3, 7, 11.4, 13.6, 13.8, 13.9, 14, 15.10, 16, 17, 18 and 20, `SCHEMA.md`,
               the runbook's two commands and the roster's three rows; prior text in `CHANGELOG.md`.
-Tests:      F9TESTS, from 1718: eight added. Each new family's freeze at one instant or none, counted in its own
+Tests:      1726, from 1718: eight added. Each new family's freeze at one instant or none, counted in its own
             family; each variant at its own settings on both sides of the setting it moves; the pullback's
             freeze, taken once; every registered rule's verdict on every member's row and a moved evaluator
             failing the stage; a rule's list over three constructed nights; a trailing and a fixed trade's
@@ -35803,6 +35803,14 @@ Mutated:    the rule, stated before the run: each new rule this build adds, reve
                stage's.
             R6 a family rule evaluated at the live settings whatever its registration states: red in the family
                evaluator's shadow test and the variants' test.
-            Results: F9MUT
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F9GATES
+            Results: R1 to R6 each red where stated. R1, R2 and R3 ran over both of the recorder's tests and
+            turned only the predicted one red; R5 and R6 turned both of theirs red. Each ran over d714c5f and
+            was reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: d714c5f.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1726 of 1726 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 876 claims, 876 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            887 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed. Both were green at the same counts over 20363f2, before section
+            3's row was corrected.
 Carried:    the remedy, run after the merge and before the night; then 13.10, the phase report.
