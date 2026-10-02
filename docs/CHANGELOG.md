@@ -10211,3 +10211,33 @@ Was:
 Now:
 > `architecture-conformance`: "... Phase 12's pair is read off the plan and checked against the actual, every claim that moved named, and phase 13's is read and checked the same way, each row the phase added reached once and passing; and no sentence ..."
 Why: 13.10 builds it.
+### 2026-10-02 - ARCHITECTURE.html - the ideas' run: section 13.9's paragraph, section 17's two rows, section 18's two, and the sweep history reading the market series
+Authorised by: A new idea is added to the base one at a time and kept only where it is better in six of eight years
+Was:
+> Section 7's sweep history row read "membership, bar store, pulled bars, pulled earnings, pulled surprises, calendar, gate results", and its description named no market series.
+> Section 13.9 ended at the freezes; sections 17 and 18 held no row for the ideas' run.
+Now:
+> The sweep history row reads the pulled market series too, "the index's and the VIX's closes the market pull stored, which the ideas' run reads".
+> Section 13.9 gains a paragraph on the ideas' run; section 17 gains "Ideas on the base" and "Ideas test"; section 18 gains "An ideas' run in which no idea passes" and "A market series missing on a session an idea reads".
+Why: the ideas' run, the 12.5 correction the operator's rulings of 2026-10-01 approved and phase 13's ruling held until the phase was finished.
+### 2026-10-02 - SCHEMA.md - the market series' one reader
+Authorised by: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+Was:
+> "... A series the provider refuses stores nothing and the pull fails, so nothing reads a series that is not there."
+Now:
+> The same, then "The ideas' run reads both series through the sweep history, by hand and never on a night."
+Why: the ideas' run reads them.
+### 2026-10-02 - RUNBOOK.md - the ideas on the base
+Authorised by: A new idea is added to the base one at a time and kept only where it is better in six of eight years
+Was:
+> No section for the ideas' run.
+Now:
+> "The ideas on the base", with `sweep-ideas` and what it reads, writes and refuses.
+Why: the verb the ideas' run adds.
+### 2026-10-02 - .claude/rules/checks.md - fixture-expectations reaches the ideas' run
+Authorised by: A new idea is added to the base one at a time and kept only where it is better in six of eight years
+Was:
+> `fixture-expectations`: "... and one whose plan states no typical move benchmarked over no member |"
+Now:
+> The same, then "; and the ideas' run's touched stop sells at the stop, ... and the report states its tries against what luck passes, the share of near stops beside each edge and each market series as the store holds it |"
+Why: the check reaches what the ideas' run asserts.

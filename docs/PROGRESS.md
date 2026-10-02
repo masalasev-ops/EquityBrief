@@ -35848,3 +35848,47 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             roster, 42 carried and 42 passed.
 Carried:    phase 13's sign-off, owed on the phase as a whole by a session that committed none of its code.
             This session committed phase 13's code and signs nothing.
+
+### 12.5 - correction: the ideas' run adds each new idea to the base one at a time over the stored history and the market series, judges each by one test, and combines the ideas that pass into a starting point stated beside today's rule and the base   2026-10-02
+
+Corrects:   the sweep's grid holds no market switch, no stop touched inside the day, no cap a night, no
+            trailing stop and no stop floor of a typical move. The third of the four pull requests the 12.5
+            ruling of 2026-10-01 plans, held until phase 13 was finished, with the operator's two more ideas,
+            the base's own exit held at most 10 and at most 20 sessions: thirteen tries.
+Built:      `sweep-ideas` reads the sweep's history and the market series the pull stored, computes the
+            sweep's candidates and their benchmark, and walks the live design's picks under each idea added
+            to the base alone: six market switches, the touched stop, the best three, trailing stops at 2 and
+            3 typical moves, the stop no closer than one typical move, and the holds of 10 and 20. Each is
+            judged against the base by section 17's test, a switch on the year's total. The ideas that pass
+            are combined into a starting point. The report and its figures go to a run folder of its own under
+            the sweep's folder; nothing is written to the store.
+Differs:    the plan's base was today's rule with its floor at 2 beside today's rule; the pullback froze at
+            that base on 2026-10-02, so the base is the live rule and today's rule is the one before the freeze.
+            The exits are alternatives, the one with the higher edge taken where several pass, which the plan
+            said of the two trails alone. The plan named a section 15.18 row; there is none, and the sweep
+            run's row already serves any run's report.
+Tests:      F12TESTS, from 1727: fourteen added. The touched stop at the stop, at an open under it and on a
+            day holding both; the trailing stop holding the plan's stop; the best three after the open-trade
+            rule; each switch on its own session and failing on a missing one; breadth, new highs and lows
+            and a series on the calendar; the yearly test at its boundary and each floor; a switch judged on
+            the total, alone and in the proposal; the combination's order and its two fallbacks; the base's
+            picks at each idea's setting, exit and switch; the new exits' benchmark over three members; the
+            report's tries against luck and the market series; the share of near stops.
+Claims:     880, from 876: section 17's two rows and section 18's two.
+Pins:       none moves: no file touched is in any of the three pin lists.
+Remedy:     none owed. The run is started by hand from main's Release build after the merge.
+Mutated:    the rule, stated before the run: each new rule reversed alone, made on the branch in this
+            checkout, filtered to the ideas' tests and the family sweep's and reverted.
+            I1 the touched stop reading the close in place of the low: red in the touched stop's test.
+            I2 the target read before the stop on a day holding both: red in the touched stop's test.
+            I3 the trailing stop following the close down: red in the trailing stop's test and the family
+               sweep's trailing test.
+            I4 the best three counting a stock its open trade held: red in the best three's test.
+            I5 a market switch reading the session after its own: red in the switches' test.
+            I6 the yearly test at 5 of 8: red in the yearly test.
+            I7 a market switch judged on the edge in the proposal: red in the proposed switch's test.
+            I8 the hold of 10 reading the hold of 20's exit: red in the base's picks test.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F12GATES
+Carried:    the run, started by hand from main's Release build after the merge, and the fourth pull request
+            recording its figures in PROGRESS, documents only.

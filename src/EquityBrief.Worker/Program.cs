@@ -41,6 +41,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "measure-sources" => await MeasureSources(args),
     "sweep" => await SweepRun(args),
     "sweep-family" => await SweepFamilyRun(args),
+    "sweep-ideas" => await SweepIdeasRun(),
     "label-news" => await LabelNews(args),
     "news-fill" => await NewsFill(args),
     _ => NoVerb(),
@@ -49,7 +50,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 17 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 18 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -85,6 +86,9 @@ static int NoVerb()
         "run started before from its last saved chunk, " +
         "'sweep-family --family <name>' replays a setup family's rule over the stored history across its settings, " +
         "reading the store and writing nothing to it, and writes its report in a run folder of its own, " +
+        "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
+        "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
+        "report in a run folder of its own, " +
         "'label-news' labels the stored articles of the names on the newest night's list through the news job's paid model, " +
         "as the night starts it after the close, with '--session <yyyy-MM-dd>' naming the night, and " +
         "'news-fill --days <n>' stores the articles of the last n days from the news feed's dated query, one a day, " +
@@ -293,6 +297,22 @@ static async Task<int> SweepFamilyRun(string[] args)
         store.DataRoot,
         configuration[EquityBrief.Core.Sweep.SweepFolder.Key],
         Console.Out).RunAsync(VerbArguments.Value(args, "--family") ?? string.Empty);
+}
+
+// The ideas' run, by hand: each new idea added to the base one at a time over the stored history, read-only, its
+// report written into a run folder of its own. The work is in `SweepIdeasRunner`.
+// see: A new idea is added to the base one at a time and kept only where it is better in six of eight years
+static async Task<int> SweepIdeasRun()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await new EquityBrief.Worker.Sweep.SweepIdeasRunner(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        store.DataRoot,
+        configuration[EquityBrief.Core.Sweep.SweepFolder.Key],
+        Console.Out).RunAsync();
 }
 
 static async Task<int> SweepRun(string[] args)

@@ -44,6 +44,58 @@ public static class SweepWalk
         return null;
     }
 
+    // The ideas' run's touched stop, for a plan bought at the listing's close: a session opening under the stop
+    // sells at its open, one whose low reaches the stop sells at the stop, the stop read before the target so a
+    // session whose range holds both is a loss, a close at or above the target sells at that close, and the cap's
+    // close ends a trade neither reached. The result is in multiples of the risk, the buy less its stop; none
+    // where the series runs out first, the trade holding its stock for its cap. A session holding no open is
+    // read from its low alone.
+    // see: A new idea is added to the base one at a time and kept only where it is better in six of eight years
+    public static double? TouchedStop(ReadOnlySpan<double> opens, ReadOnlySpan<double> lows, ReadOnlySpan<double> closes, int from, double entry, double stop, double target, int cap, out int sessions)
+    {
+        sessions = cap;
+
+        var risk = entry - stop;
+
+        if (risk <= 0 || target <= entry)
+        {
+            return null;
+        }
+
+        for (var session = 1; session <= cap; session++)
+        {
+            var at = from + session;
+
+            if (at >= closes.Length)
+            {
+                return null;
+            }
+
+            if (opens[at] > 0 && opens[at] < stop)
+            {
+                sessions = session;
+
+                return (opens[at] - entry) / risk;
+            }
+
+            if (lows[at] <= stop)
+            {
+                sessions = session;
+
+                return (stop - entry) / risk;
+            }
+
+            if (closes[at] >= target || session == cap)
+            {
+                sessions = session;
+
+                return (closes[at] - entry) / risk;
+            }
+        }
+
+        return null;
+    }
+
     public static ForwardReturn OverSetupMovingTheStop(
         IReadOnlyList<ReturnBar> after,
         decimal stop,

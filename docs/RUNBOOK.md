@@ -520,6 +520,16 @@ dotnet run --project src/EquityBrief.Worker -c Release -- sweep-family --family 
 
 It reads the live store read-only and writes nothing to it, and writes its report and its figures into a run folder of its own under the sweep's folder, served at `http://localhost:5152/sweep` as the newest run with the earlier runs linked. It takes minutes: the breakouts' and the drift's well under one, the sector leaders' a few, since each leader's bands and plan are computed for its session. The leaders' report states how many of the history's names carry a sector, which the membership files as it stands today. It does not start while the night holds the store or when the night's window would come before an hour has passed, saying when to run it instead. Named with no family, it says which families it is built for. Start it on `main` from this checkout's Release build. It registers nothing; each family's freeze is the operator's.
 
+### The ideas on the base
+
+Each new idea is added to the base, today's rule with its reward-to-risk floor at 2, one at a time, over the stored history and the index's and the VIX's series the market pull stored (see: A new idea is added to the base one at a time and kept only where it is better in six of eight years):
+
+```
+dotnet run --project src/EquityBrief.Worker -c Release -- sweep-ideas
+```
+
+It reads the live store read-only and writes nothing to it, and writes its report and its figures into a run folder of its own under the sweep's folder, served at `http://localhost:5152/sweep` as the newest run with the earlier runs linked. It computes the sweep's candidates and their benchmark first, which takes minutes, and does not start while a night holds the store or inside the night's window. A switch reading a series the store holds none of is left out and the report names it. Start it on `main` from this checkout's Release build, as the sweep is started. Nothing is registered: a starting point it proposes is frozen only on the operator's go.
+
 ### Registering a candidate and versioning a ladder rule
 
 Both are decisions a person takes, from the repository root, and a night never takes either. Nothing is registered and no window is open until someone runs one of these.
