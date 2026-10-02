@@ -36151,11 +36151,11 @@ Built:      the copy reads its own copies off its store's run log, made or refus
             and the two tests that start the worker's build use it. A decision names it; the catalogue's row,
             section 17's "Store copies", SCHEMA's paragraph, RUNBOOK's three passages and the roster's two rows
             say so, and RUNBOOK names the rehearsal's own folder.
-Tests:      F13ETESTS, from 1748: two added, another store's copies neither counted nor removed beside the
+Tests:      1750, from 1748: two added, another store's copies neither counted nor removed beside the
             store's own newest three, an unfinished copy at a copy's wait kept and one a second past it removed,
             and a refused copy counted as the store's own; and every worker the suite starts handed a copies'
             folder under its own store's root, read over the suite's sources, two of them stated in advance.
-Claims:     F13ECLAIMS, from 887: none added, since the change edits two rows and adds none.
+Claims:     887, with 887 PASS: none added, since the change edits two rows and adds none.
 Pins:       none moves: the copy, the test harness and the read surface sit in no pin list.
 Mutated:    the rule, stated before the run: each property the correction adds, broken alone, made on the
             branch in this checkout, filtered to the tests named and reverted.
@@ -36163,8 +36163,15 @@ Mutated:    the rule, stated before the run: each property the correction adds, 
             C2 an unfinished copy removed whatever its instant: red in the other store's test.
             C3 the suite's worker environment naming no copies' folder: red in the suite's worker test.
             C4 a refused copy left out of the store's own: red in the other store's test.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F13EGATES
+            Results: C1, C2 and C4 each red in the other store's test alone; C3 red in the suite's worker test
+            alone. Each ran over f0f51d8 and was reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: f0f51d8.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1750 of 1750 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`; the
+            operator's copies' folder read the same before and after.
+            `tools/verify-phase.ps1`: 44 tables, 887 claims, 887 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
 Carried:    the two files the suite left in the operator's folder, the copy of 17:13 and the unfinished one of
             17:22, removed by hand once this merges, each read first as the suite's store; and the sign-offs of
             phases 12 and 13, each owed by a session that committed none of its code.
