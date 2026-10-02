@@ -10,10 +10,12 @@ namespace EquityBrief.Tests.Checks;
 
 // fixture-expectations, the operator's ruling of 2026-10-02: the store's copy after every night. The copy is made
 // through SQLite's own backup into the copies' folder, named by its instant, opened and read against the store,
-// and its row names the folder relative to the data root; the newest three are kept, each opened and read before
-// an older one is removed and none removed where one does not; and the copy waits for the night, the labeller the
-// night started and the drain, holding the drain's lock while it copies, and gives up after twenty hours.
+// and its row names the folder relative to the data root; the newest three of the store's own copies are kept,
+// each opened and read before an older one is removed and none removed where one does not, a copy another store
+// made in the folder neither counted nor removed; and the copy waits for the night, the labeller the night
+// started and the drain, holding the drain's lock while it copies, and gives up after twenty hours.
 // see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
+// see: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own
 public partial class FixtureExpectations
 {
     // The night's step that starts the copy, as section 14 states it.
@@ -183,6 +185,85 @@ public partial class FixtureExpectations
 
         Assert.Empty(Names(row, "removed"));
         Assert.StartsWith(names[2] + ", it did not open", Assert.Single(Names(row, "unread")), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ACopyAnotherStoreMadeInTheFolderIsNeitherCountedNorRemovedAndAnUnfinishedOneWaitsOutACopysWait()
+    {
+        // The folder already holds three files named as copies that no row of this store names, as a night the
+        // suite ran left in the operator's folder: two older than any of this store's and one newer, none of them
+        // a database. Read by name, the newer would have been kept unread and stopped every removal, and the two
+        // older removed. And two unfinished copies, one named twenty hours before the first copy and one a second
+        // further back.
+        using var store = CopyStore();
+        var folder = Path.Combine(store.Root, "copies");
+
+        Directory.CreateDirectory(folder);
+
+        string[] others = [StoreCopies.NameAt(CopyStart.AddDays(-10)), StoreCopies.NameAt(CopyStart.AddDays(-9)), StoreCopies.NameAt(CopyStart.AddDays(30))];
+
+        foreach (var other in others)
+        {
+            File.WriteAllText(Path.Combine(folder, other), "another store's copy");
+        }
+
+        var waited = Path.Combine(folder, StoreCopies.NameAt(CopyStart - StoreCopies.WaitsAtMost) + StoreCopies.Unfinished);
+        var past = Path.Combine(folder, StoreCopies.NameAt(CopyStart - StoreCopies.WaitsAtMost - TimeSpan.FromSeconds(1)) + StoreCopies.Unfinished);
+
+        File.WriteAllText(waited, "being written");
+        File.WriteAllText(past, "left behind");
+
+        var names = new List<string>();
+
+        for (var night = 0; night < 4; night++)
+        {
+            var (backup, _) = Copying(store, CopyStart.AddDays(night), folder);
+            var made = await backup.RunAsync(afterTheLabeller: false);
+
+            Assert.Equal(StoreBackup.Copied, made.Outcome);
+            names.Add(made.Copy!);
+
+            // The first copy removes the unfinished one past a copy's wait and leaves the one at it.
+            if (night == 0)
+            {
+                Assert.False(File.Exists(past));
+                Assert.True(File.Exists(waited));
+            }
+        }
+
+        // The fourth night's copy keeps this store's newest three and removes its first, and the other store's
+        // three stand, in the folder and in no row.
+        var fourth = CopyRow(store, StoreBackup.RunIdAt(CopyStart.AddDays(3)), out _);
+
+        Assert.Equal([names[3], names[2], names[1]], Names(fourth, "kept"));
+        Assert.Equal([names[0]], Names(fourth, "removed"));
+        Assert.Empty(Names(fourth, "unread"));
+        Assert.All(others, other => Assert.True(File.Exists(Path.Combine(folder, other)), other));
+        Assert.Equal(
+            [others[2], names[3], names[2], names[1], others[1], others[0]],
+            StoreCopies.In(folder).Select(copy => Path.GetFileName(copy.File)));
+
+        // A day on, the unfinished copy at the wait is past it, and the next copy removes it.
+        Assert.False(File.Exists(waited));
+
+        // A copy this store made and refused is its own as much as one it kept: named by a failed row and newer
+        // than the rest, it is among the newest three, does not open, and stops every removal.
+        var refused = StoreCopies.NameAt(CopyStart.AddDays(10));
+
+        File.WriteAllText(Path.Combine(folder, refused), "a copy that did not read");
+        store.Execute(
+            "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) " +
+            $"VALUES ('backup-20261013T000500Z', '{StoreCopies.Stage}', '2026-10-13T00:05:00Z', '2026-10-13T00:06:00Z', 'failed', 0, 0, 0, '0', " +
+            $"'{{\"copy\":\"{refused}\",\"reason\":\"the copy did not open and read as the store does\"}}');");
+
+        var (fifth, _) = Copying(store, CopyStart.AddDays(4), folder);
+        var latest = await fifth.RunAsync(afterTheLabeller: false);
+        var row = CopyRow(store, StoreBackup.RunIdAt(CopyStart.AddDays(4)), out _);
+
+        Assert.Equal(StoreBackup.Copied, latest.Outcome);
+        Assert.Empty(Names(row, "removed"));
+        Assert.StartsWith(refused + ", it did not open", Assert.Single(Names(row, "unread")), StringComparison.Ordinal);
+        Assert.Equal([refused, latest.Copy!, names[3], names[2], names[1]], Names(row, "kept"));
     }
 
     [Fact]

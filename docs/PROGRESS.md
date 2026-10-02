@@ -36134,3 +36134,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
             roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.10 - correction: a store's copy counts and removes only the copies its own rows name, and the suite's night keeps its store's copies under its own root   2026-10-02
+
+Corrects:   the store's copy of the 13.10 ruling above, merged as PR 321. The copies' folder is a setting every
+            worker reads, and the suite's own night, run through the worker's build beside the checkout, which
+            carries the machine's settings, ended by copying its store into the operator's folder: a file of
+            1.4 MB at 17:13 UTC, named as the operator's copies are, beside the operator's copy made by hand at
+            17:09, and an unfinished one at 17:22. The copy read its folder by name alone, so two more suite runs
+            would have removed the operator's copy as the oldest of four, and that night's copy would have kept
+            two of the suite's beside it. Nothing was removed: the gate runs were stopped once it was seen.
+Built:      the copy reads its own copies off its store's run log, made or refused, and keeps or removes only
+            those, so a copy another store made in the folder is neither counted nor removed; an unfinished copy
+            is removed only once it is named for an instant further back than a copy waits. The suite's
+            temporary store hands a worker it starts an environment naming a copies' folder under its own root,
+            and the two tests that start the worker's build use it. A decision names it; the catalogue's row,
+            section 17's "Store copies", SCHEMA's paragraph, RUNBOOK's three passages and the roster's two rows
+            say so, and RUNBOOK names the rehearsal's own folder.
+Tests:      F13ETESTS, from 1748: two added, another store's copies neither counted nor removed beside the
+            store's own newest three, an unfinished copy at a copy's wait kept and one a second past it removed,
+            and a refused copy counted as the store's own; and every worker the suite starts handed a copies'
+            folder under its own store's root, read over the suite's sources, two of them stated in advance.
+Claims:     F13ECLAIMS, from 887: none added, since the change edits two rows and adds none.
+Pins:       none moves: the copy, the test harness and the read surface sit in no pin list.
+Mutated:    the rule, stated before the run: each property the correction adds, broken alone, made on the
+            branch in this checkout, filtered to the tests named and reverted.
+            C1 the copies read by name again, its own rows not read: red in the other store's test.
+            C2 an unfinished copy removed whatever its instant: red in the other store's test.
+            C3 the suite's worker environment naming no copies' folder: red in the suite's worker test.
+            C4 a refused copy left out of the store's own: red in the other store's test.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: F13EGATES
+Carried:    the two files the suite left in the operator's folder, the copy of 17:13 and the unfinished one of
+            17:22, removed by hand once this merges, each read first as the suite's store; and the sign-offs of
+            phases 12 and 13, each owed by a session that committed none of its code.
