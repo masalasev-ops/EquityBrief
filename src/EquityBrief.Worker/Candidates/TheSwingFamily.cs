@@ -4,17 +4,19 @@ using EquityBrief.Core.Filter;
 namespace EquityBrief.Worker.Candidates;
 
 // The swing family, written down rather than typed at the command line: the live filter at the open
-// version's settings and seven variants, each the same whole rule with one thing moved, the sixth leaving
-// off a member whose reported quarters read deteriorating and the seventh reading sector leadership in place
-// of the trend and strength gate, all run by the one evaluator and each named for the version it was defined
-// against, since a variant defined against another version's settings is another rule. Each rule's record
-// keeps one open trade a stock of its own. And the words each retirement of phase 10's three carries.
+// version's settings and eight variants, each the same whole rule with one thing moved, the sixth leaving
+// off a member whose reported quarters read deteriorating, the seventh reading sector leadership in place
+// of the trend and strength gate and the eighth keeping the night's best three in the list's own order, all
+// run by the one evaluator and each named for the version it was defined against, since a variant defined
+// against another version's settings is another rule. Each rule's record keeps one open trade a stock of its
+// own. And the words each retirement of phase 10's three carries.
 // see: The swing filter's trade gate reads section 10's plan for the swing trade, and the plan at the nearest bands is the variant in the reward to risk variant's place
 // see: A variant of the swing filter is registered as a whole rule and runs on unchanged when the live settings move
 // see: The three phase 10 candidates are retired when the swing family registers, and each retirement says no result of theirs was read
 // see: The seventh swing family candidate leaves off a member whose reported quarters read deteriorating, and no live rule removes a stock for its state
 // see: The sector leaders are a variant of the pullback's starting point and not a family of their own
 // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
+// see: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
 public static class TheSwingFamily
 {
     // The words every retirement at the family's registration carries.
@@ -38,6 +40,12 @@ public static class TheSwingFamily
         Rule + ", with the trend and strength gate read as sector leadership: the member's sector among the stated top of the sectors " +
         "ranked by their members' median long return and the member inside the stated share of its sector by its own";
 
+    // The night's best three's rule: the same, with only the first three of the members it fires on a night kept.
+    public const string RuleKeepingTheBest =
+        Rule + ", and of the members it fires on a night only the first three kept, in the list's own order of reward " +
+        "to risk on the plan its trade gate reads, strength and the setup band's strength, each higher first, then the " +
+        "ticker, once its own open trades have kept a stock off; a member past the three is no trade";
+
     public const string Test =
         "a sign-flip test over blocks of 63 exchange sessions, read at 8, 12 and 16 non-empty whole blocks, against each " +
         "setup's own calibrated bar, at 0.05 over the distinct trials spent across the looks";
@@ -54,6 +62,9 @@ public static class TheSwingFamily
 
     public const int VariantArrival = 1;
 
+    // How many a night the best three's list keeps, which the ideas' run tried as its idea c.
+    public const int VariantBestOf = 3;
+
     public const string NearestBandsName = "the swing filter on the plan at the nearest bands";
 
     public const string DepthName = "the swing filter at a pullback of 1 to 3 typical moves";
@@ -69,13 +80,16 @@ public static class TheSwingFamily
     // The sector leaders' name, in the operator's words.
     public const string LeadersName = "the pullback in the top 3 sectors, top quarter of each";
 
+    // The best three's name, in the operator's words.
+    public const string BestThreeName = "the night's best three, in the list's own order";
+
     // A variant's name against the version it was defined against.
     public static string Variant(string name, string version) => FormattableString.Invariant($"{name}, from version {version}");
 
-    // The rows the family's registration writes at one instant: phase 10's three retired and the eight registered.
+    // The rows the family's registration writes at one instant: phase 10's three retired and the nine registered.
     public static int RowsAtOnce => Retires.Count + For("0", FilterSettings.Proposed).Count;
 
-    // The eight, the live filter first at the open version's settings.
+    // The nine, the live filter first at the open version's settings.
     public static IReadOnlyList<Registration> For(string version, FilterSettings live) =>
     [
         new(SwingFamily.LiveCandidate(version), Rule, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live)),
@@ -86,6 +100,7 @@ public static class TheSwingFamily
         new(Variant(ArrivalName, version), Rule, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live with { ArrivalSessions = VariantArrival })),
         new(Variant(DeterioratingName, version), RuleSkippingDeteriorating, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live, skipDeteriorating: true)),
         new(Variant(LeadersName, version), RuleReadingLeadership, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live, leadership: Core.Families.LeaderRule.Live)),
+        new(Variant(BestThreeName, version), RuleKeepingTheBest, Test, SwingFilterRule.EvaluatorName, SwingFilterRule.ParametersOf(live, bestOf: VariantBestOf)),
     ];
 
     // The candidates the family's registration retires: phase 10's three.

@@ -277,7 +277,7 @@ public class RegisterAppendOnly
         Assert.Equal(CandidateRegistrar.Refused, mismatched.Outcome);
         Assert.Contains("does not read is a row", mismatched.Detail, StringComparison.Ordinal);
 
-        // The maximum, over constructed rows rather than by registering eight,
+        // The maximum, over constructed rows rather than by registering nine,
         // because what is being asserted is the bound and not the loop.
         var full = Enumerable.Range(1, CandidateFamily.Maximum)
             .Select(index => Row(index, FormattableString.Invariant($"candidate {index}"), CandidateFamily.Registered, null, Opened.AddDays(-1)))
@@ -291,7 +291,7 @@ public class RegisterAppendOnly
             Opened);
 
         Assert.NotNull(refusal);
-        Assert.Contains("maximum family of 8", refusal, StringComparison.Ordinal);
+        Assert.Contains("maximum family of 9", refusal, StringComparison.Ordinal);
 
         // And one below it is accepted, so the bound is the boundary rather than
         // a refusal that fires early and reads the same from outside.
@@ -345,11 +345,11 @@ public class RegisterAppendOnly
     {
         using var store = new TemporaryStore().Migrated();
 
-        for (var index = 1; index <= 7; index++)
+        for (var index = 1; index <= 8; index++)
         {
             Assert.Equal(
                 CandidateRegistrar.Registered,
-                (await RegisterAtAsync(store, FormattableString.Invariant($"candidate {index}"), 30, Opened.AddDays(index - 10))).Outcome);
+                (await RegisterAtAsync(store, FormattableString.Invariant($"candidate {index}"), 30, Opened.AddDays(index - 11))).Outcome);
         }
 
         await RegisterAtAsync(store, "momentum index at thirty", 30, Opened.AddDays(-3).AddHours(1));
@@ -359,34 +359,34 @@ public class RegisterAppendOnly
         var again = await RegisterAtAsync(store, "momentum index at thirty", 30, Opened.AddDays(-1));
 
         Assert.Equal(CandidateRegistrar.Registered, again.Outcome);
-        Assert.Contains("family of 8 of 8", again.Detail, StringComparison.Ordinal);
+        Assert.Contains("family of 9 of 9", again.Detail, StringComparison.Ordinal);
 
-        // Seven others and the name once is eight, the maximum, so a ninth is refused.
-        var ninth = await RegisterAtAsync(store, "one more", 30, Opened.AddDays(-1).AddHours(1));
+        // Eight others and the name once is nine, the maximum, so a tenth is refused.
+        var tenth = await RegisterAtAsync(store, "one more", 30, Opened.AddDays(-1).AddHours(1));
 
-        Assert.Equal(CandidateRegistrar.Refused, ninth.Outcome);
-        Assert.Contains("8 candidates of the pullback family already stand registered", ninth.Detail, StringComparison.Ordinal);
+        Assert.Equal(CandidateRegistrar.Refused, tenth.Outcome);
+        Assert.Contains("9 candidates of the pullback family already stand registered", tenth.Detail, StringComparison.Ordinal);
 
         var rows = await RowsAsync(store);
 
-        Assert.Equal(10, rows.Count);
-        Assert.Equal(8, CandidateFamily.Divisor(rows, Opened));
-        Assert.Equal(7, CandidateFamily.Divisor(rows, Opened.AddDays(-2).AddHours(1)));
+        Assert.Equal(11, rows.Count);
+        Assert.Equal(9, CandidateFamily.Divisor(rows, Opened));
+        Assert.Equal(8, CandidateFamily.Divisor(rows, Opened.AddDays(-2).AddHours(1)));
 
         var standing = ShadowColumn.StandingAt(rows, Opened);
 
-        Assert.Equal(8, standing.Count);
-        Assert.Equal(10, Assert.Single(standing, row => row.Candidate == "momentum index at thirty").Id);
+        Assert.Equal(9, standing.Count);
+        Assert.Equal(11, Assert.Single(standing, row => row.Candidate == "momentum index at thirty").Id);
 
         // The run page reads the same rule off the same rows.
         var page = new MarkRenderer().ShadowCandidates(
             RunScreen.Shadow(await new ReadApi(store.DatabaseFile, Clock(Opened)).RegisteredCandidatesAsync(), [], [], DateOnly.FromDateTime(Opened.UtcDateTime), Opened));
 
-        Assert.Contains("data-shadow=\"8\"", page, StringComparison.Ordinal);
-        Assert.Contains("data-divisor=\"8\"", page, StringComparison.Ordinal);
+        Assert.Contains("data-shadow=\"9\"", page, StringComparison.Ordinal);
+        Assert.Contains("data-divisor=\"9\"", page, StringComparison.Ordinal);
 
-        // Over these rows a count of names registered less names retired reads 7, so they tell that rule from this one.
-        Assert.Equal(7, rows.Where(row => row.Event == CandidateFamily.Registered).Select(row => row.Candidate)
+        // Over these rows a count of names registered less names retired reads 8, so they tell that rule from this one.
+        Assert.Equal(8, rows.Where(row => row.Event == CandidateFamily.Registered).Select(row => row.Candidate)
             .Except(rows.Where(row => row.Event == CandidateFamily.Retired).Select(row => row.Retires!), StringComparer.Ordinal)
             .Count());
     }

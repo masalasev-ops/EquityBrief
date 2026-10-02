@@ -12,6 +12,10 @@ public sealed record OpenTradeListing(
     DateOnly? ResolvedOn,
     int CapSessions);
 
+// Where a listing stands in its night's list: the reward to risk on the plan its rule's trade gate reads, its
+// strength and its setup band's strength, the swing filter's own three keys, none where a row holds none.
+public readonly record struct ListOrder(double? RewardToRisk, double? Strength, int? BandStrength);
+
 // One open trade per stock on each rule's list. A trade is the one listed, bought at that night's close with
 // that night's stop and target, and it is open until a close reaches its target, falls through its stop or
 // its sessions run out. A stock whose trade is open is not listed again, whatever the setup, and is free again
@@ -76,6 +80,51 @@ public static class OpenTrades
                 }
 
                 kept = listing;
+                verdicts[(listing.Ticker, listing.Night)] = null;
+            }
+        }
+
+        return verdicts;
+    }
+
+    // The walk over a rule's listings where its list keeps the night's first so many: each night in turn, its
+    // listings in the list's own order, reward to risk, strength and the setup band's strength, each higher
+    // first, then the ticker; a stock whose kept trade is still open passed over as a repeat of it, and the
+    // first so many of the rest kept as trades. A listing past them is no trade and holds its stock on no later
+    // night. The answer is, for each listing, null where it is a kept trade, the night of the kept trade it
+    // repeats, or its own night where the night's count was already kept.
+    // see: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
+    public static IReadOnlyDictionary<(string Ticker, DateOnly Night), DateOnly?> WalkTheFirst(IEnumerable<(OpenTradeListing Listing, ListOrder Order)> listings, int first)
+    {
+        var verdicts = new Dictionary<(string Ticker, DateOnly Night), DateOnly?>();
+        var kept = new Dictionary<string, OpenTradeListing>(StringComparer.Ordinal);
+
+        foreach (var night in listings.GroupBy(one => one.Listing.Night).OrderBy(group => group.Key))
+        {
+            var taken = 0;
+
+            foreach (var (listing, _) in night
+                .OrderByDescending(one => one.Order.RewardToRisk)
+                .ThenByDescending(one => one.Order.Strength)
+                .ThenByDescending(one => one.Order.BandStrength)
+                .ThenBy(one => one.Listing.Ticker, StringComparer.Ordinal))
+            {
+                if (kept.TryGetValue(listing.Ticker, out var held) && IsOpenOn(held.Night, listing.Night, held.OutcomeStored, held.Outcome, held.ResolvedOn, held.CapSessions))
+                {
+                    verdicts[(listing.Ticker, listing.Night)] = held.Night;
+
+                    continue;
+                }
+
+                if (taken == first)
+                {
+                    verdicts[(listing.Ticker, listing.Night)] = listing.Night;
+
+                    continue;
+                }
+
+                taken++;
+                kept[listing.Ticker] = listing;
                 verdicts[(listing.Ticker, listing.Night)] = null;
             }
         }

@@ -60,7 +60,7 @@ public partial class ReadSurface
 
         Assert.Contains("data-shadow=\"0\"", empty, StringComparison.Ordinal);
         Assert.Contains("no candidate condition is registered", empty, StringComparison.Ordinal);
-        Assert.Contains("at most 8", empty, StringComparison.Ordinal);
+        Assert.Contains("at most 9", empty, StringComparison.Ordinal);
         Assert.Contains("<p data-trials=\"0\">no distinct trial is counted", empty, StringComparison.Ordinal);
 
         await RegisterForTheRegionAsync(store, "momentum index at thirty", 30, Registered);
@@ -78,7 +78,7 @@ public partial class ReadSurface
         // and the trials are two as well, two rules still running.
         Assert.Contains("data-shadow=\"2\"", two, StringComparison.Ordinal);
         Assert.Contains("data-divisor=\"2\"", two, StringComparison.Ordinal);
-        Assert.Contains("2 candidate condition(s) registered as this page is read, of at most 8, and the family's divisor is 2", two, StringComparison.Ordinal);
+        Assert.Contains("2 candidate condition(s) registered as this page is read, of at most 9, and the family's divisor is 2", two, StringComparison.Ordinal);
         Assert.Contains("data-trials=\"2\" data-level=\"0.025\"", two, StringComparison.Ordinal);
         Assert.Contains("withheld until it is promoted", two, StringComparison.Ordinal);
 

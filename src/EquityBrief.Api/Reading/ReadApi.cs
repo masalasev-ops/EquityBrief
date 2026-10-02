@@ -1519,7 +1519,7 @@ public sealed class ReadApi : IComponent
     const string CandidateSetups = @"
         SELECT json_extract(c.value, '$.candidate'), l.session_date, f.outcome,
                f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings,
-               l.ticker, f.resolved_on, f.ticker IS NOT NULL
+               l.ticker, f.resolved_on, f.ticker IS NOT NULL, NULL, NULL, NULL
         FROM listing l, json_each(COALESCE(l.shadow_reasons, '{}'), '$.candidates') c
         LEFT JOIN forward_return f
             ON f.ticker = l.ticker AND f.session_date = l.session_date AND f.horizon = $horizon
@@ -1527,7 +1527,13 @@ public sealed class ReadApi : IComponent
         UNION ALL
         SELECT json_extract(c.value, '$.candidate'), g.session_date, f.outcome,
                f.null_win, f.null_win_at_sensitivity, f.break_even, f.return_pct, f.planned_risk, f.on_earnings,
-               g.ticker, f.resolved_on, f.ticker IS NOT NULL
+               g.ticker, f.resolved_on, f.ticker IS NOT NULL,
+               CASE json_extract(c.value, '$.values.plan')
+                   WHEN $clearPlan THEN g.clear_reward_to_risk
+                   WHEN $ladderPlan THEN g.ladder_reward_to_risk
+                   ELSE g.swing_reward_to_risk
+               END,
+               g.strength, g.band_strength
         FROM gate_result g, json_each(COALESCE(g.shadow, '{}'), '$.candidates') c
         LEFT JOIN forward_return f
             ON f.ticker = g.ticker AND f.session_date = g.session_date
@@ -4280,52 +4286,75 @@ public sealed class ReadApi : IComponent
         command.Parameters.AddWithValue("$swing", EquityBrief.Core.Returns.ForwardReturnSeries.Swing);
         command.Parameters.AddWithValue("$clear", EquityBrief.Core.Returns.ForwardReturnSeries.Clear);
         command.Parameters.AddWithValue("$clearPlan", EquityBrief.Core.Filter.FilterSettings.ClearWord);
+        command.Parameters.AddWithValue("$ladderPlan", EquityBrief.Core.Filter.FilterSettings.LadderWord);
 
-        var read = new List<(CandidateSetupRow Row, EquityBrief.Core.Filter.OpenTradeListing Listing)>();
+        var read = new List<(CandidateSetupRow Row, EquityBrief.Core.Filter.OpenTradeListing Listing, EquityBrief.Core.Filter.ListOrder Order)>();
 
-        await using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
+        await using (var reader = await command.ExecuteReaderAsync())
         {
-            var session = DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture);
-            var outcome = reader.IsDBNull(2) ? null : reader.GetString(2);
+            while (await reader.ReadAsync())
+            {
+                var session = DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                var outcome = reader.IsDBNull(2) ? null : reader.GetString(2);
 
-            read.Add((
-                new CandidateSetupRow(
-                    reader.GetString(0),
-                    session,
-                    outcome,
-                    reader.IsDBNull(3) ? null : reader.GetDouble(3),
-                    reader.IsDBNull(4) ? null : reader.GetDouble(4),
-                    reader.IsDBNull(5) ? null : reader.GetDouble(5),
-                    reader.IsDBNull(6) ? null : reader.GetDouble(6),
-                    reader.IsDBNull(7) ? null : reader.GetDouble(7),
-                    !reader.IsDBNull(8) && reader.GetInt64(8) == 1),
-                new EquityBrief.Core.Filter.OpenTradeListing(
-                    reader.GetString(9),
-                    session,
-                    reader.GetInt64(11) == 1,
-                    outcome,
-                    reader.IsDBNull(10) ? null : DateOnly.ParseExact(reader.GetString(10), "yyyy-MM-dd", CultureInfo.InvariantCulture),
-                    EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap)));
+                read.Add((
+                    new CandidateSetupRow(
+                        reader.GetString(0),
+                        session,
+                        outcome,
+                        reader.IsDBNull(3) ? null : reader.GetDouble(3),
+                        reader.IsDBNull(4) ? null : reader.GetDouble(4),
+                        reader.IsDBNull(5) ? null : reader.GetDouble(5),
+                        reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                        reader.IsDBNull(7) ? null : reader.GetDouble(7),
+                        !reader.IsDBNull(8) && reader.GetInt64(8) == 1),
+                    new EquityBrief.Core.Filter.OpenTradeListing(
+                        reader.GetString(9),
+                        session,
+                        reader.GetInt64(11) == 1,
+                        outcome,
+                        reader.IsDBNull(10) ? null : DateOnly.ParseExact(reader.GetString(10), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                        EquityBrief.Core.Returns.ForwardReturnSeries.SetupSessionCap),
+                    new EquityBrief.Core.Filter.ListOrder(
+                        reader.IsDBNull(12) ? null : reader.GetDouble(12),
+                        reader.IsDBNull(13) ? null : reader.GetDouble(13),
+                        reader.IsDBNull(14) ? null : reader.GetInt32(14))));
+            }
         }
 
-        return CandidateSetupsKept(read);
+        return CandidateSetupsKept(read, KeptANight(await RegisteredCandidatesAsync()));
     }
+
+    // The most a night each candidate's list keeps, read off the registration it stands by, for the candidates
+    // whose registration states a count; a candidate stating none keeps every member it fires on.
+    // see: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
+    public static IReadOnlyDictionary<string, int> KeptANight(IReadOnlyList<CandidateRow> register) =>
+        register
+            .Where(row => row.Event == EquityBrief.Core.Candidates.CandidateFamily.Registered)
+            .GroupBy(row => row.Candidate, StringComparer.Ordinal)
+            .Select(candidate => (candidate.Key, Count: (int)EquityBrief.Core.Candidates.CandidateEvaluator.Read(candidate.OrderBy(row => row.RegisteredAt).ThenBy(row => row.Id).Last().Parameters).GetValueOrDefault(EquityBrief.Core.Candidates.SwingFilterRule.BestOfParameter)))
+            .Where(candidate => candidate.Count > 0)
+            .ToDictionary(candidate => candidate.Key, candidate => candidate.Count, StringComparer.Ordinal);
 
     // A candidate's setups less every one listed while its own trade on the stock was still open: each rule
     // walks its own open trades, so its record counts the trades it alone would have made and never one move
-    // twice. The walk reads the name and nothing after it hands the name on.
+    // twice, and a rule keeping the night's first so many counts those alone, in the list's own order once its
+    // own open trades have kept a stock off. The walk reads the name and nothing after it hands the name on.
     // see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends
-    public static IReadOnlyList<CandidateSetupRow> CandidateSetupsKept(IReadOnlyList<(CandidateSetupRow Row, EquityBrief.Core.Filter.OpenTradeListing Listing)> read) =>
+    // see: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
+    public static IReadOnlyList<CandidateSetupRow> CandidateSetupsKept(
+        IReadOnlyList<(CandidateSetupRow Row, EquityBrief.Core.Filter.OpenTradeListing Listing, EquityBrief.Core.Filter.ListOrder Order)> read,
+        IReadOnlyDictionary<string, int> keptANight) =>
     [
         .. read
-            .GroupBy(pair => pair.Row.Candidate, StringComparer.Ordinal)
+            .GroupBy(one => one.Row.Candidate, StringComparer.Ordinal)
             .SelectMany(candidate =>
             {
-                var walked = EquityBrief.Core.Filter.OpenTrades.Walk(candidate.Select(pair => pair.Listing));
+                var walked = keptANight.TryGetValue(candidate.Key, out var first)
+                    ? EquityBrief.Core.Filter.OpenTrades.WalkTheFirst(candidate.Select(one => (one.Listing, one.Order)), first)
+                    : EquityBrief.Core.Filter.OpenTrades.Walk(candidate.Select(one => one.Listing));
 
-                return candidate.Where(pair => walked[(pair.Listing.Ticker, pair.Listing.Night)] is null).Select(pair => pair.Row);
+                return candidate.Where(one => walked[(one.Listing.Ticker, one.Listing.Night)] is null).Select(one => one.Row);
             }),
     ];
 

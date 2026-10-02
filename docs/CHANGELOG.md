@@ -10255,3 +10255,35 @@ Was:
 Now:
 > | the profile the news job uses | `EquityBrief:Models:News:Use` | `deepseek` |
 Why: the operator's ruling of 2026-10-02. The secrets file's Claude key is commented out, so the labeller refused every night, and Claude Haiku 4.5 retires on 2026-10-15.
+### 2026-10-02 - ARCHITECTURE.html - every setup family holds at most nine, and the night's best three are the pullback's ninth rule
+Authorised by: Each setup family's correction for luck counts its own rules alone, at most nine a family
+Was:
+> Section 3, "Swing family": "The live filter and seven variants, ... the sixth leaving off a member whose reported quarters read deteriorating and the seventh reading a member's standing in its sector in place of the trend and strength gate, judged together as one family of eight."
+> Section 13.8: "... and from 13.9 the seventh reading a member's standing in its sector in place of the trend and strength gate, eight candidates judged by the same sign-flip test ..."; "... the swing family's eight (section 13.8) registered ..."; "Each rule's record keeps one open trade a stock of its own, free the night after the trade ends (see: ...)."
+> Section 17: "at a threshold corrected for a family of eight, needs a few hundred"; "with a maximum family size of 8"; "the other, at most 8"; "The swing family": "the live filter and seven variants, ... and a member's standing in its sector read in place of the trend and strength gate, 8 candidates"; and every citation of "The candidate family is at most eight and the threshold is divided by it" and "Each setup family's correction for luck counts its own rules alone, at most eight a family".
+Now:
+> Each reads nine, the swing family's eighth variant the night's first three in the list's own order; section 13.8 adds that the best three's record keeps the first three a night once its own open trades have kept a stock off, and that the family takes a new rule by being registered again whole at one instant under the version already open; section 17's swing family row states 3 and 9 and cites the ninth rule's decision; and every citation names the decision at nine.
+Why: the operator's ruling of 2026-10-02 registering the night's best three as a variant of the pullback, and the answer "Raise the cap to 9 (Recommended)" given when the family was found full.
+### 2026-10-02 - BUILD_PLAN.md - the family's maximum reads nine
+Authorised by: Each setup family's correction for luck counts its own rules alone, at most nine a family
+Was:
+> "The family is at most eight and the correction divides the threshold ..."; "registered candidates are the other, at most eight"; and the citations of "The candidate family is at most eight and the threshold is divided by it" and "Each setup family's correction for luck counts its own rules alone, at most eight a family".
+Now:
+> The same with nine, each citation naming the decision at nine.
+Why: the operator's ruling of 2026-10-02, the plan's statements of the maximum held to the code by `pinned-constants`.
+### 2026-10-02 - RUNBOOK.md - the swing family is nine and is registered again to take a rule
+Authorised by: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
+Was:
+> "a ninth candidate of one setup family"; "registers the live filter at the open filter version's settings with its seven variants, all eleven rows at one instant"; "From the night after, the eight are evaluated ... and the run page's shadow region counts eight registered and a divisor of 8."; the citation "at most eight a family".
+Now:
+> "a tenth candidate of one setup family"; "with its eight variants, all twelve rows"; "the nine are evaluated ..., the ninth firing as the live filter does with its record keeping the night's first three in the list's own order, and the run page's shadow region counts nine registered and a divisor of 9."; then a new paragraph, "The swing family registered again", with `register --the-family-again --evidence`; the citation at nine.
+Why: the verb form the ninth rule is registered by, and the family's new size.
+### 2026-10-02 - .claude/rules/checks.md - fixture-expectations and read-surface reach the ninth rule
+Authorised by: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
+Was:
+> `fixture-expectations`: "... each of the swing family's eight fires on its own side of every setting it moves ..., and the eighth reading a member's standing in its sector ..., and the family's command writes eight registrations and three retirements at one instant, ..."
+> `read-surface`: "... the run page's shadow region reads eight registered and a divisor of 8; ..."
+Now:
+> `fixture-expectations`: "... each of the swing family's nine ..., the eighth reading a member's standing in its sector ..., and the ninth firing where the live filter fires, its record keeping the night's first three in the list's own order once its own open trades have kept a stock off, a member past them no trade and holding its stock on no later night, worked by hand over three nights and read back through the run page's own query, ..., and the family's command writes nine registrations and three retirements at one instant, and the family registered again under the open version retires every standing rule, the eight the freeze wrote among them, and registers the nine at one instant with no version opened, refused where no version is open or no rule stands, and a tenth refused, ..."
+> `read-surface`: "... reads nine registered and a divisor of 9; ..."
+Why: the checks reach what the ninth rule and the register's new form assert.

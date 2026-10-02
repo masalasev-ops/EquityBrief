@@ -29,7 +29,7 @@ public static class ReasonVerdict
     // The uncorrected level, decided rather than measured: section 13's own
     // arithmetic is what sets it, where five worthless candidates clear an
     // ordinary test about 23 per cent of the time and twenty clear it about 64.
-    // see: The candidate family is at most eight and the threshold is divided by it
+    // see: Each setup family's correction for luck counts its own rules alone, at most nine a family
     public const double Significance = 0.05;
 
     // The six live reasons are one family, registered by section 11 before the

@@ -19,7 +19,7 @@ namespace EquityBrief.Tests.Checks;
 // each trade's result and benchmark worked by hand.
 // see: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
 // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
-// see: Each setup family's correction for luck counts its own rules alone, at most eight a family
+// see: Each setup family's correction for luck counts its own rules alone, at most nine a family
 public partial class FixtureExpectations
 {
     // The claims the freezes make, which this check reaches: section 17's rows for the pullback's base and a
@@ -52,7 +52,7 @@ public partial class FixtureExpectations
         var (code, said) = await RegisterVerbAt(store, breakoutAt, RegisterVerb.Family, BreakoutRule.Name);
 
         Assert.Equal(0, code);
-        Assert.Contains("registered 7 at one instant, family of 7 of 8", said, StringComparison.Ordinal);
+        Assert.Contains("registered 7 at one instant, family of 7 of 9", said, StringComparison.Ordinal);
         Assert.Equal(
             [
                 "126|1.5|0.85|1.5",
@@ -83,7 +83,7 @@ public partial class FixtureExpectations
         var (drifted, driftSaid) = await RegisterVerbAt(store, breakoutAt.AddMinutes(1), RegisterVerb.Family, DriftRule.Name);
 
         Assert.Equal(0, drifted);
-        Assert.Contains("registered 7 at one instant, family of 7 of 8", driftSaid, StringComparison.Ordinal);
+        Assert.Contains("registered 7 at one instant, family of 7 of 9", driftSaid, StringComparison.Ordinal);
         Assert.Equal(
             [
                 "3|0.5|2|2.5|0",
@@ -97,22 +97,24 @@ public partial class FixtureExpectations
             TheSetupFamilies.Drifts.Select(one => DriftCandidate.SettingsOf(one.Parameters)).Select(settings => FormattableString.Invariant($"{settings.WindowSessions}|{settings.ReactionMoves}|{settings.VolumeMultiple}|{settings.TargetRiskMultiple}|{settings.StopFloorMoves}")));
         Assert.EndsWith(", the stop at least 1 typical move beneath", TheSetupFamilies.Drifts[^1].Candidate, StringComparison.Ordinal);
 
-        // Each family's rules counted apart: eight pullbacks, seven breakouts and seven drifts standing at once.
+        // Each family's rules counted apart: nine pullbacks, seven breakouts and seven drifts standing at once.
         var rows = await new CandidateRegistrar(FixedClock.At(breakoutAt.AddHours(1), SessionZones.UnitedStates), store.DatabaseFile).RowsAsync();
         var standing = CandidateFamily.Standing(rows, breakoutAt.AddHours(1));
 
         Assert.Equal(
-            (8, 7, 7),
+            (9, 7, 7),
             (CandidateFamily.In(standing, SetupFamilies.Pullback).Count, CandidateFamily.In(standing, BreakoutRule.Name).Count, CandidateFamily.In(standing, DriftRule.Name).Count));
 
-        // The breakouts take an eighth and refuse a ninth, whatever the other families hold.
+        // The breakouts take an eighth and a ninth and refuse a tenth, whatever the other families hold.
         var registrar = new CandidateRegistrar(FixedClock.At(breakoutAt.AddHours(2), SessionZones.UnitedStates), store.DatabaseFile);
         var eighth = await registrar.RegisterAsync("a breakout at 1.75 times the volume", "a rule", "a test", BreakoutCandidate.EvaluatorName, BreakoutCandidate.ParametersOf(BreakoutRule.Live with { VolumeMultiple = 1.75 }), "register-eighth");
         var ninth = await registrar.RegisterAsync("a breakout at 1.6 times the volume", "a rule", "a test", BreakoutCandidate.EvaluatorName, BreakoutCandidate.ParametersOf(BreakoutRule.Live with { VolumeMultiple = 1.6 }), "register-ninth");
+        var tenth = await registrar.RegisterAsync("a breakout at 1.4 times the volume", "a rule", "a test", BreakoutCandidate.EvaluatorName, BreakoutCandidate.ParametersOf(BreakoutRule.Live with { VolumeMultiple = 1.4 }), "register-tenth");
 
-        Assert.Equal((CandidateRegistrar.Registered, CandidateRegistrar.Refused), (eighth.Outcome, ninth.Outcome));
-        Assert.Contains("family of 8 of 8", eighth.Detail, StringComparison.Ordinal);
-        Assert.Contains("8 candidates of the breakout family already stand registered", ninth.Detail, StringComparison.Ordinal);
+        Assert.Equal((CandidateRegistrar.Registered, CandidateRegistrar.Registered, CandidateRegistrar.Refused), (eighth.Outcome, ninth.Outcome, tenth.Outcome));
+        Assert.Contains("family of 8 of 9", eighth.Detail, StringComparison.Ordinal);
+        Assert.Contains("family of 9 of 9", ninth.Detail, StringComparison.Ordinal);
+        Assert.Contains("9 candidates of the breakout family already stand registered", tenth.Detail, StringComparison.Ordinal);
 
         // A second freeze of a family is refused whole, its names standing, and a family no freeze is written for
         // is refused by name, each writing nothing.
@@ -233,7 +235,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(0, code);
         Assert.StartsWith(
-            "shape: filter version 2 opened at the pullback's base, closing 1, its reward-to-risk floor at 2 and every other setting as version 1 held it; retired 8 and registered 8 at one instant, family of 8 of 8",
+            "shape: filter version 2 opened at the pullback's base, closing 1, its reward-to-risk floor at 2 and every other setting as version 1 held it; retired 9 and registered 9 at one instant, family of 9 of 9",
             said,
             StringComparison.Ordinal);
 
@@ -244,8 +246,8 @@ public partial class FixtureExpectations
         Assert.Equal(Ruled with { RewardToRiskFloor = ShapeCommand.FreezeRewardToRiskFloor }, FilterSettings.Read(Text(store, "SELECT settings FROM filter_version WHERE version = '2';")));
         Assert.StartsWith("the pullback's freeze opening filter version 2, restarting 0 non-empty block(s): the operator's ruling of 2026-10-02", Text(store, "SELECT evidence FROM filter_version WHERE version = '2';"), StringComparison.Ordinal);
 
-        // The eight standing retired and the eight for version 2 registered, at that instant, the eighth the
-        // pullback in the top sectors, and none of it an acceptance.
+        // The nine standing retired and the nine for version 2 registered, at that instant, the eighth the
+        // pullback in the top sectors and the ninth the night's best three, and none of it an acceptance.
         Assert.Equal(
             [.. TheSwingFamily.For("1", Ruled).Select(one => one.Candidate).Order(StringComparer.Ordinal)],
             TextRows(store, $"SELECT retires FROM candidate_register WHERE event = 'retired' AND registered_at = '{At}' ORDER BY retires;"));

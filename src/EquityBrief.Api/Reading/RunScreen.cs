@@ -273,7 +273,7 @@ public static class RunScreen
 
     // The pullback family's rows, which this region's divisor, trials and graph are read over: every other
     // setup family's correction is its own.
-    // see: Each setup family's correction for luck counts its own rules alone, at most eight a family
+    // see: Each setup family's correction for luck counts its own rules alone, at most nine a family
     static RegisterRow[] Register(IReadOnlyList<CandidateRow> rows) =>
     [
         .. CandidateFamily.In(

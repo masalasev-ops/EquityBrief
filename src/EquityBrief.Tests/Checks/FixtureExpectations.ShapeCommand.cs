@@ -220,7 +220,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(0, corrected);
         Assert.StartsWith(
-            "shape: filter version 2 opened, closing 1, its trade gate reading the clear plan and every other setting as version 1 held it; retired 8 and registered 8 at one instant, family of 8 of 8",
+            "shape: filter version 2 opened, closing 1, its trade gate reading the clear plan and every other setting as version 1 held it; retired 9 and registered 9 at one instant, family of 9 of 9",
             said,
             StringComparison.Ordinal);
 
@@ -281,7 +281,7 @@ public partial class FixtureExpectations
 
         Assert.Equal(0, corrected);
         Assert.StartsWith(
-            $"shape: filter version 2 opened, closing 1, its trade gate reading the {FilterSettings.Word(Ruled.Trade)} plan and every other setting as version 1 held it, written as the code now writes a version's settings; retired 8 and registered 8 at one instant",
+            $"shape: filter version 2 opened, closing 1, its trade gate reading the {FilterSettings.Word(Ruled.Trade)} plan and every other setting as version 1 held it, written as the code now writes a version's settings; retired 9 and registered 9 at one instant",
             said,
             StringComparison.Ordinal);
 
