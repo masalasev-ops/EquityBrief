@@ -35899,3 +35899,82 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             roster, 42 carried and 42 passed.
 Carried:    the run, started by hand from main's Release build after the merge, and the fourth pull request
             recording its figures in PROGRESS, documents only.
+
+### 12.5 ruling - the ideas' run recorded: the starting point, the base, today's rule, each variant and each idea, with the figures a freeze would cite   2026-10-02
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off.
+Run:        `20261002T132713Z` under the sweep's folder, on the sweep's page, 11 minutes. It ran from 4f5b6e8's
+            code before the merge, built in Release outside `bin` while the twelve-hour rerun held that build,
+            and its figures are recorded here rather than in a fourth pull request. The history ran through
+            2026-10-01: 1,948 sessions scored over 827 names, 23,456 of the sweep's 292,413 candidates read by
+            the live design. A trial over the same store an hour before gave the same figures. The nights with a
+            stock match the plan's measured table exactly, 1,146 and 955, and each edge sits within a few
+            thousandths of it, the history now holding one more session.
+Pull:       `history-pull-20261002T014126.2504500Z`, 2 requests at a weight of 1: GSPC 2,199 sessions and VIX
+            2,235, each from 2018-01-02 to 2026-10-01. No switch was left out.
+Proposed:   the base with c, the night's first three in the list's own order. 13 ideas tried and 1 passed,
+            where luck alone passes about 1.7 of 13 on the yearly half. The starting point is better than the
+            base in 6 of the 8 years with 2 of the last 3, and than today's rule in 7 of 8 with 2 of 3, as the
+            base is. No market switch is in it, so the night would fetch nothing new; a freeze would carry the
+            list keeping three a night as a ruling and its code. Nothing is frozen until the operator's go.
+Figures:    in order: trades with a result; the share of nights a stock was listed; the edge, with its standard
+            error; the plain result; the share of trades whose stop sat under one typical move; 2024 to 2026
+            together; 2026 alone; the edge without the five largest results by size; each year's edge from 2019.
+            Today's rule: 2,777; 59%; 0.067 (0.038); 0.187; 29%; 0.125; -0.028; 0.059;
+              -0.087 0.186 -0.100 -0.051 0.190 0.177 0.195 -0.028.
+            The base: 1,901; 49%; 0.102 (0.052); 0.226; 49%; 0.154; -0.044; 0.085;
+              -0.070 0.266 -0.069 0.019 0.225 0.235 0.223 -0.044.
+            The starting point: 1,741; 50%; 0.118 (0.054); 0.238; 51%; 0.159; -0.090; 0.099;
+              -0.042 0.300 -0.072 0.122 0.240 0.257 0.252 -0.090.
+            Variant e: 1,070; 38%; 0.106 (0.060); 0.201; 0%; 0.137; 0.135; 0.094;
+              -0.133 0.090 0.041 0.111 0.307 0.057 0.238 0.135.
+            Variant market 50%: 1,667; 47%; 0.129 (0.056); 0.266; 51%; 0.186; -0.011; 0.110;
+              -0.040 0.306 -0.072 0.233 0.206 0.257 0.262 -0.011.
+            Variant depth 1.5: 1,627; 48%; 0.129 (0.057); 0.243; 55%; 0.174; -0.071; 0.099;
+              0.077 0.289 -0.119 0.183 0.203 0.304 0.218 -0.071.
+Ideas:      each against the base, a market switch on its yearly total in risks, where the base's eight years
+            total 429.2; each idea's answers, then the same figures, and a switch's total.
+            a1 fails: total better in 2 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest, too few trades, result not higher. 864; 24%; 0.064 (0.074); 0.206; 44%; 0.125;
+              0.001; 0.019; -0.083 0.096 -0.196 -0.047 0.261 0.169 0.173 0.001; total 177.6.
+            a2 fails: total better in 3 of 8 and 2 of the last 3, the last three lower, not higher without the
+              five largest, result not higher. 1,669; 44%; 0.076 (0.055); 0.215; 48%; 0.120; -0.176; 0.057;
+              -0.125 0.329 -0.045 -0.090 0.169 0.235 0.186 -0.176; total 358.6.
+            a3 fails: total better in 1 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest, result not higher. 1,510; 40%; 0.070 (0.058); 0.172; 48%; 0.147; -0.042; 0.049;
+              -0.159 0.187 -0.043 0.053 0.084 0.258 0.117 -0.042; total 260.1.
+            a4 fails: total better in 2 of 8 and 2 of the last 3, the last three no lower, not higher without the
+              five largest, result higher. 1,783; 46%; 0.112 (0.054); 0.235; 49%; 0.173; 0.022; 0.094;
+              -0.086 0.266 -0.069 0.060 0.232 0.235 0.220 0.022; total 419.6.
+            a5 fails: total better in 2 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest, result not higher. 1,386; 36%; 0.118 (0.060); 0.145; 46%; 0.184; 0.053; 0.095;
+              -0.063 0.008 -0.023 -0.198 0.265 0.260 0.178 0.053; total 201.1.
+            a6 fails: total better in 3 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest, too few trades. 961; 25%; 0.070 (0.071); 0.256; 47%; 0.134; -0.111; 0.029;
+              -0.015 0.353 -0.185 -0.211 0.147 0.243 0.175 -0.111; total 245.7.
+            b fails: edge better in 2 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest. 1,987; 50%; 0.073 (0.042); 0.166; 48%; 0.103; -0.012; 0.049;
+              -0.109 0.256 -0.001 -0.060 0.158 0.187 0.095 -0.012.
+            c passes: edge better in 6 of 8 and 2 of the last 3, the last three no lower, still higher without
+              the five largest, enough trades and nights. 1,741; 50%; 0.118 (0.054); 0.238; 51%; 0.159; -0.090;
+              0.099; -0.042 0.300 -0.072 0.122 0.240 0.257 0.252 -0.090.
+            d2 fails: edge better in 2 of 8 and 2 of the last 3, the last three no lower, not higher without the
+              five largest. 1,908; 49%; 0.038 (0.063); 0.164; 48%; 0.165; -0.209; -0.007;
+              -0.127 -0.036 -0.147 -0.197 0.153 0.338 0.270 -0.209.
+            d3 fails: edge better in 2 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest. 1,835; 49%; 0.014 (0.077); 0.229; 48%; 0.142; -0.417; -0.045;
+              -0.040 0.003 -0.326 -0.154 0.176 0.487 0.167 -0.417.
+            e fails: edge better in 5 of 8 and 2 of the last 3, the last three lower, a stock on too few nights.
+              1,098; 38%; 0.103 (0.059); 0.194; 0%; 0.152; 0.161; 0.091;
+              -0.161 0.113 0.006 0.081 0.292 0.079 0.232 0.161.
+            h10 fails: edge better in 4 of 8 and 1 of the last 3, the last three lower, not higher without the
+              five largest. 1,986; 50%; 0.086 (0.038); 0.145; 48%; 0.105; -0.024; 0.073;
+              0.106 0.046 0.008 0.069 0.149 0.154 0.164 -0.024.
+            h20 fails: edge better in 2 of 8 and none of the last 3, the last three lower, not higher without the
+              five largest. 1,928; 49%; 0.081 (0.046); 0.185; 48%; 0.095; -0.070; 0.066;
+              0.075 0.135 -0.074 0.019 0.235 0.171 0.145 -0.070.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over 4f5b6e8, the code the run was built
+            from; this entry, written after them, changes no code, and the checks that read the record ran over
+            it filtered.
+Carried:    the operator's go or not on the starting point and its variants; the twelve-hour rerun, running as
+            `20261002T122612Z`.
