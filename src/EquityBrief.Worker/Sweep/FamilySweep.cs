@@ -147,14 +147,15 @@ public static class FamilySweep
     public static double MarketFloor => SweepGrid.Coarse.MarketFloors[DialSetting.LiveOnCoarse.Market];
 
     // Walks one setting's listings night by night: on each session the listings of stocks no kept trade still
-    // holds, in the family's order, the first five kept, each holding its stock through the session its trade
-    // ended on or, where the history has not reached its end, through its cap.
+    // holds, in the family's order, the first five kept, or as many as the night's count says, each holding its
+    // stock through the session its trade ended on or, where the history has not reached its end, through its cap.
     public static List<FamilyTrade> Walk(
         IEnumerable<FamilyListing> listings,
         IReadOnlyList<string> tickers,
         Func<int, int> yearOf,
         Func<FamilyListing, (double? Result, int Sessions)> exit,
-        Func<FamilyListing, double> benchmark)
+        Func<FamilyListing, double> benchmark,
+        int perNight = PerNight)
     {
         var kept = new List<FamilyTrade>();
         var openUntil = new Dictionary<int, int>();
@@ -168,7 +169,7 @@ public static class FamilySweep
                 .ThenByDescending(one => one.ThenBy)
                 .ThenBy(one => tickers[one.Name], StringComparer.Ordinal))
             {
-                if (taken == PerNight)
+                if (taken == perNight)
                 {
                     break;
                 }
