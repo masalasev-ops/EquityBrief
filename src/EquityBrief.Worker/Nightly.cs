@@ -568,7 +568,7 @@ public static class Nightly
 
                 return said;
             }),
-            // Section 14's last step, after the report. The night starts the news labeller as it starts the
+            // Section 14's step after the report. The night starts the news labeller as it starts the
             // drain: one process of its own, whose calls and spend sit on the labeller's own run and never
             // the night's, the fifth carve-out of the nightly rule. It is handed no token from the night's
             // deadline. A night run again for an earlier session starts none, since its list is not tonight's,
@@ -583,6 +583,22 @@ public static class Nightly
                     : launcher?.StartTheLabeller().Line ?? "No labeller was started, since this night was handed nothing to start one with.";
 
                 await NewsLabeller.RecordTheNightAsync(store.DatabaseFile, runId, started, clock.UtcNow, said);
+
+                return said;
+            }),
+            // Section 14's last step, after the labeller's start. The night starts the store's copy as it starts
+            // the labeller: one process of its own, which waits until the night, its drain and its labeller have
+            // finished, copies the store and writes one row of its own. A night run again for an earlier session
+            // starts one that waits for no labeller, since that night starts none, and a night handed nothing to
+            // start one with says so and starts none.
+            // see: The store is copied after every night once the night, its drain and its labeller have finished, and the newest three copies are kept, each opened and read before an older one is removed
+            new(Backup.StoreBackup.NightStage, async () =>
+            {
+                var started = clock.UtcNow;
+                var said = launcher?.StartTheBackup(afterTheLabeller: askForTheFirstName).Line
+                    ?? "No copy of the store was started, since this night was handed nothing to start one with.";
+
+                await Backup.StoreBackup.RecordTheNightAsync(store.DatabaseFile, runId, started, clock.UtcNow, said);
 
                 return said;
             }),

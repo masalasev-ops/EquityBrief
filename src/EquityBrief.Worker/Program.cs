@@ -44,6 +44,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "sweep-ideas" => await SweepIdeasRun(),
     "label-news" => await LabelNews(args),
     "news-fill" => await NewsFill(args),
+    "backup" => await BackupRun(args),
     _ => NoVerb(),
 };
 
@@ -92,7 +93,10 @@ static int NoVerb()
         "'label-news' labels the stored articles of the names on the newest night's list through the news job's paid model, " +
         "as the night starts it after the close, with '--session <yyyy-MM-dd>' naming the night, and " +
         "'news-fill --days <n>' stores the articles of the last n days from the news feed's dated query, one a day, " +
-        "for the names the index holds. '--live' " +
+        "for the names the index holds, and " +
+        "'backup' copies the store into the copies' folder once no night or drain holds it, opens and reads the copy " +
+        "and keeps the newest three, as the night starts it after the labeller with '--after-labeller' waiting for " +
+        "the labeller too. '--live' " +
         "fetches from the provider instead of from a capture, and '--session <yyyy-MM-dd>' runs the " +
         "night for a session the operator names rather than the one the clock falls on.");
 
@@ -965,6 +969,41 @@ static async Task<int> LabelNews(string[] args)
         FormattableString.Invariant($"{outcome.AlreadyLabelled} labelled before, {outcome.Cost} this run and {outcome.MonthCost} this month, stopped by {outcome.Stop}"));
 
     return 0;
+}
+
+// The store copied into the copies' folder, as the night starts it after its labeller or by hand: it waits while a
+// night or a drain holds the store, and for the labeller where '--after-labeller' says the night started one, then
+// copies, opens and reads the copy and keeps the newest three.
+// see: The store is copied after every night once the night, its drain and its labeller have finished, and the newest three copies are kept, each opened and read before an older one is removed
+static async Task<int> BackupRun(string[] args)
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    if (args.Skip(1).FirstOrDefault(flag => flag != EquityBrief.Worker.Backup.StoreBackup.AfterTheLabeller) is { } unknown)
+    {
+        Console.Error.WriteLine($"backup: '{unknown}' is not a flag this verb takes; it takes '{EquityBrief.Worker.Backup.StoreBackup.AfterTheLabeller}' alone.");
+
+        return 1;
+    }
+
+    if (!File.Exists(store.DatabaseFile))
+    {
+        Console.Error.WriteLine($"backup: no store at '{store.DatabaseFile}', so there is nothing to copy.");
+
+        return 1;
+    }
+
+    var outcome = await new EquityBrief.Worker.Backup.StoreBackup(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DataRoot,
+        store.DatabaseFile,
+        StoreCopies.Folder(configuration[StoreCopies.FolderKey], store.DataRoot),
+        NewsLane.Limits(configuration).TimeLimit).RunAsync(args.Contains(EquityBrief.Worker.Backup.StoreBackup.AfterTheLabeller));
+
+    Console.WriteLine("backup: " + outcome.Detail);
+
+    return outcome.Outcome == EquityBrief.Worker.Backup.StoreBackup.Copied ? 0 : 1;
 }
 
 // The articles of the last days stored at once, one dated query a day, for the names the index holds, run by hand on

@@ -2086,6 +2086,63 @@ public static class RunScreen
         ];
     }
 
+    // The store's newest copy off the copies' own rows, newest first: the newest that made one, its folder read
+    // against this surface's data root or named alone where its row could carry no path to it, and the newest
+    // attempt after it that made none, with why.
+    // see: The store is copied after every night once the night, its drain and its labeller have finished, and the newest three copies are kept, each opened and read before an older one is removed
+    public static StoreCopyRead StoreCopy(IReadOnlyList<StoreBackupRow> rows, string dataRoot)
+    {
+        var made = rows.Select((row, place) => (Row: row, Place: place)).FirstOrDefault(one => one.Row.Outcome == Ok);
+        var failed = rows.Select((row, place) => (Row: row, Place: place)).FirstOrDefault(one => one.Row.Outcome != Ok && one.Row.RunId.Length > 0);
+
+        if (made.Row is null && failed.Row is null)
+        {
+            return new StoreCopyRead(null);
+        }
+
+        static JsonElement Detail(StoreBackupRow row)
+        {
+            try
+            {
+                using var document = JsonDocument.Parse(row.Detail);
+
+                return document.RootElement.Clone();
+            }
+            catch (JsonException)
+            {
+                return default;
+            }
+        }
+
+        static string? Text(JsonElement detail, string field) =>
+            detail.ValueKind == JsonValueKind.Object && detail.TryGetProperty(field, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+
+        DateTimeOffset? madeAt = null;
+        string? copy = null;
+        string? folder = null;
+        var kept = 0;
+
+        if (made.Row is { } row)
+        {
+            var detail = Detail(row);
+
+            copy = Text(detail, "copy");
+            madeAt = copy is null ? null : EquityBrief.Core.Configuration.StoreCopies.MadeAt(copy);
+            folder = Text(detail, "folder") is { } stored
+                ? EquityBrief.Core.Configuration.StoreCopies.FromStored(stored, dataRoot)
+                : Text(detail, "elsewhere") is { } named ? $"a folder named {named} on a drive the store's rows do not name" : null;
+            kept = detail.ValueKind == JsonValueKind.Object && detail.TryGetProperty("kept", out var list) && list.ValueKind == JsonValueKind.Array ? list.GetArrayLength() : 0;
+        }
+
+        // An attempt that made none is drawn only where it is newer than the copy drawn.
+        var notMade = failed.Row is { } attempt && (made.Row is null || failed.Place < made.Place) ? attempt : null;
+        DateTimeOffset? failedAt = notMade is null
+            ? null
+            : DateTimeOffset.TryParseExact(notMade.EndedAt, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var ended) ? ended : null;
+
+        return new StoreCopyRead(new StoreCopyView(madeAt, copy, folder, kept, failedAt, notMade is null ? null : Text(Detail(notMade), "reason") ?? "no reason was recorded"));
+    }
+
     static decimal Spent(string spend) =>
         decimal.TryParse(spend, NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var amount) ? amount : 0m;
 }
