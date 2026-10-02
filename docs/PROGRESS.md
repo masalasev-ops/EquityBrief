@@ -36135,6 +36135,47 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
 
+### 13.10 - correction: a store's copy counts and removes only the copies its own rows name, and the suite's night keeps its store's copies under its own root   2026-10-02
+
+Corrects:   the store's copy of the 13.10 ruling above, merged as PR 321. The copies' folder is a setting every
+            worker reads, and the suite's own night, run through the worker's build beside the checkout, which
+            carries the machine's settings, ended by copying its store into the operator's folder: a file of
+            1.4 MB at 17:13 UTC, named as the operator's copies are, beside the operator's copy made by hand at
+            17:09, and an unfinished one at 17:22. The copy read its folder by name alone, so two more suite runs
+            would have removed the operator's copy as the oldest of four, and that night's copy would have kept
+            two of the suite's beside it. Nothing was removed: the gate runs were stopped once it was seen.
+Built:      the copy reads its own copies off its store's run log, made or refused, and keeps or removes only
+            those, so a copy another store made in the folder is neither counted nor removed; an unfinished copy
+            is removed only once it is named for an instant further back than a copy waits. The suite's
+            temporary store hands a worker it starts an environment naming a copies' folder under its own root,
+            and the two tests that start the worker's build use it. A decision names it; the catalogue's row,
+            section 17's "Store copies", SCHEMA's paragraph, RUNBOOK's three passages and the roster's two rows
+            say so, and RUNBOOK names the rehearsal's own folder.
+Tests:      1750, from 1748: two added, another store's copies neither counted nor removed beside the
+            store's own newest three, an unfinished copy at a copy's wait kept and one a second past it removed,
+            and a refused copy counted as the store's own; and every worker the suite starts handed a copies'
+            folder under its own store's root, read over the suite's sources, two of them stated in advance.
+Claims:     887, with 887 PASS: none added, since the change edits two rows and adds none.
+Pins:       none moves: the copy, the test harness and the read surface sit in no pin list.
+Mutated:    the rule, stated before the run: each property the correction adds, broken alone, made on the
+            branch in this checkout, filtered to the tests named and reverted.
+            C1 the copies read by name again, its own rows not read: red in the other store's test.
+            C2 an unfinished copy removed whatever its instant: red in the other store's test.
+            C3 the suite's worker environment naming no copies' folder: red in the suite's worker test.
+            C4 a refused copy left out of the store's own: red in the other store's test.
+            Results: C1, C2 and C4 each red in the other store's test alone; C3 red in the suite's worker test
+            alone. Each ran over f0f51d8 and was reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: f0f51d8.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1750 of 1750 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`; the
+            operator's copies' folder read the same before and after.
+            `tools/verify-phase.ps1`: 44 tables, 887 claims, 887 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
+Carried:    the two files the suite left in the operator's folder, the copy of 17:13 and the unfinished one of
+            17:22, removed by hand once this merges, each read first as the suite's store; and the sign-offs of
+            phases 12 and 13, each owed by a session that committed none of its code.
+
 ### 13.10 ruling - the ideas read on the breakouts and the earnings drift as frozen, each added alone and judged by the pullback's test, with nothing frozen or registered   2026-10-02
 
 Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off. It carries
@@ -36148,7 +36189,7 @@ Built:      `FamilyIdeasRunner` and the `sweep-family-ideas` verb. They read the
             each session's open and low; the families' walk takes a count a night. The report states the tries,
             the passes, what luck passes and an idea that changes nothing the rule makes. A decision names it;
             ARCHITECTURE's section 13.9 gains a paragraph and RUNBOOK the command.
-Tests:      F13DTESTS, from 1748: six added, the touched stop under a trail by hand, each family's rule as frozen
+Tests:      F13DTESTS, from 1750: six added, the touched stop under a trail by hand, each family's rule as frozen
             off its grid with a setting off it refused, the ideas each family is read with and luck over them,
             each new exit and its benchmark by hand over three members, each idea over the rule's own listings at
             its switch, its count a night, its stops and its exit, and the report.

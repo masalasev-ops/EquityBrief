@@ -344,12 +344,10 @@ public partial class NightlyRun
         Assert.NotNull(dotnet);
         Assert.True(File.Exists(worker), $"No worker assembly at {worker}.");
 
-        var environment = new Dictionary<string, string>
-        {
-            ["EquityBrief__DataRoot"] = store.Root,
-            ["EquityBrief__Models__Local__BaseAddress"] = "http://127.0.0.1:9/v1/",
-            ["EquityBrief__Models__Research__BaseAddress"] = "http://127.0.0.1:9/",
-        };
+        var environment = store.WorkerEnvironment();
+
+        environment["EquityBrief__Models__Local__BaseAddress"] = "http://127.0.0.1:9/v1/";
+        environment["EquityBrief__Models__Research__BaseAddress"] = "http://127.0.0.1:9/";
 
         var night = Shell.Run(dotnet!, [worker, "nightly", "--session", "2026-09-08", "--fixture", FixtureFolder()], store.Root, environment);
 

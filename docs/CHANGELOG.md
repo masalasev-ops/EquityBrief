@@ -10315,6 +10315,34 @@ Was:
 Now:
 > `nightly-run`: "... once after its own request, with no model call on its row, ...; and the night starts the store's copy as the last row it writes, ..."; `fixture-expectations` and `read-surface` each gain a clause on the copy, its waits and its line on the run page.
 Why: the checks reach what the copy asserts.
+### 2026-10-02 - ARCHITECTURE.html - a store's copy counts only its own copies
+Authorised by: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own
+Was:
+> The catalogue's "Store backup": "... keeps the newest three, opening and reading each before an older one is removed and removing none where one does not; ..."; section 17's "Store copies": "the newest 3 kept in the folder the setting names, ..."
+Now:
+> "... keeps the newest three of the copies its own run log names, opening and reading each before an older one is removed and removing none where one does not, and counts or removes no copy another store made; ..."; "the newest 3 of the store's own copies kept in the folder the setting names, ..."
+Why: the suite's night copied its store into the operator's folder on 2026-10-02, where a copy read by name would have counted it.
+### 2026-10-02 - SCHEMA.md - the copies a store's rows name are its own
+Authorised by: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own
+Was:
+> The `run_log` paragraph on the copy, with no sentence on which copies are the store's own.
+Now:
+> "The copies these rows name, made or refused, are the store's own, and the only ones a copy counts or removes (...)."
+Why: the rows are what the copy reads its own copies from.
+### 2026-10-02 - RUNBOOK.md - a store's own copies, a rehearsal's folder and the copy restored from
+Authorised by: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own
+Was:
+> "... and keeps the newest three, opening and reading each before any older one is removed and removing none where one does not. ..."; no sentence on a rehearsal's copies' folder; "copy the newest copy that opened and read into the data root as `equitybrief.db`".
+Now:
+> "... and keeps the newest three of the copies its own run log names, ...; a copy another store made in the folder it neither counts nor removes (...)."; "Every worker run on the machine reads the same setting, so a night rehearsed over a copy of the store names a folder of its own ..."; "copy the copy the run page's line names into the data root as `equitybrief.db`".
+Why: a rehearsal's copy would otherwise stand beside the operator's, and a copy is chosen by the line naming the store's own.
+### 2026-10-02 - .claude/rules/checks.md - fixture-expectations and store-never-deleted reach the store's own copies
+Authorised by: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own
+Was:
+> `fixture-expectations`: "... the newest three kept with each opened and read before an older one is removed and none removed where a kept one does not open, and the copy waits for the night, ..."; `store-never-deleted`: "... the suite removes only what it made under the temporary folder; and each reader is shown ..."
+Now:
+> `fixture-expectations`: "... none removed where a kept one does not open, a copy another store made in the folder neither counted nor removed however old and an unfinished copy removed only once it is named for an instant further back than a copy waits, and the copy waits for the night, ..."; `store-never-deleted`: "... the suite removes only what it made under the temporary folder, and starts the worker's own build only with a copies' folder under its own store's root, since the worker reads the machine's settings and its night ends by copying its store; and each reader is shown ..."
+Why: the checks reach what the correction asserts.
 ### 2026-10-02 - ARCHITECTURE.html - the ideas read on the frozen families
 Authorised by: The frozen families are read with the pullback's ideas one at a time, and nothing they show is frozen or registered
 Was:

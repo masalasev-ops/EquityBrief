@@ -35,6 +35,16 @@ internal sealed class TemporaryStore : IDisposable
         return connection;
     }
 
+    // What a worker the suite starts runs under: this store's root as its data root, and a copies' folder under
+    // it, since the worker reads the machine's settings and the copies' folder they name keeps the operator's
+    // copies, where a night the suite runs would otherwise copy this store.
+    // see: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own
+    internal Dictionary<string, string> WorkerEnvironment() => new(StringComparer.Ordinal)
+    {
+        ["EquityBrief__DataRoot"] = Root,
+        ["EquityBrief__Backup__Folder"] = Path.Combine(Root, StoreCopies.DefaultFolder),
+    };
+
     internal void Execute(string sql)
     {
         using var connection = Open();

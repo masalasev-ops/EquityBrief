@@ -17,11 +17,13 @@ public sealed record StoreBackupOutcome(string Outcome, string? Copy, string Det
 // the night holds its lock and, started by the night, until the labeller has written its last row or its own
 // time limit has passed, then holds the drain's lock so no pass writes beneath it, copies the store page by
 // page through SQLite's own backup into a file of its own in the copies' folder, names it by its instant once
-// written, and opens and reads it against the store. It keeps the newest three, opening and reading each
-// before any older one is removed, and removes nothing where one of them does not open and read. It gives up
+// written, and opens and reads it against the store. It keeps the newest three of the copies its own rows
+// name, opening and reading each before any older one is removed, and removes nothing where one of them does
+// not open and read; a copy another store made in the same folder is neither counted nor removed. It gives up
 // waiting after twenty hours, well before the next night is built. It writes one row of its own on the run
 // log, naming the folder relative to the data root and never as an absolute path, and nothing else.
 // see: The store is copied once the night and every process it started have finished, and the newest three copies are kept after each is opened and read
+// see: A store's copy counts and removes only the copies its own rows name, and a test or a rehearsal names a copies' folder of its own
 // see: The operator's store is never deleted, and every site that removes a file is stated where a check holds it
 public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFile, string folder, TimeSpan labellerLimit, Func<TimeSpan, CancellationToken, Task>? wait = null) : IComponent
 {
@@ -58,6 +60,9 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
 
     // Whether a labeller has written its run's last row since a moment, which it writes refused or not.
     const string LabellerEnded = "SELECT COUNT(*) FROM run_log WHERE stage = $stage AND started_at >= $since;";
+
+    // The rows this store's copies wrote, each naming the copy it made, kept or refused.
+    const string OwnRows = "SELECT detail FROM run_log WHERE stage = $stage;";
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -142,10 +147,15 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
         var stored = StoreCopies.AsStored(folder, dataRoot);
         var elsewhere = stored is null ? Path.GetFileName(folder) : null;
 
-        // A copy an earlier run left unfinished holds nothing a copy needs.
+        // A copy an earlier run left unfinished holds nothing a copy needs, once it is named for an instant
+        // further back than a copy waits; a newer one may be another store's copy still being written.
         foreach (var leftover in Directory.EnumerateFiles(folder, "*" + StoreCopies.Unfinished))
         {
-            File.Delete(leftover);
+            if (StoreCopies.MadeAt(Path.GetFileName(leftover)[..^StoreCopies.Unfinished.Length]) is { } begun
+                && begun < clock.UtcNow - StoreCopies.WaitsAtMost)
+            {
+                File.Delete(leftover);
+            }
         }
 
         (string? Newest, long Bars) source;
@@ -186,12 +196,16 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
             }, name, cancellation);
         }
 
-        // The newest three kept, each opened and read before any older one is removed.
-        var copies = StoreCopies.In(folder);
+        // The newest three of this store's own copies kept, each opened and read before any older one is removed.
+        var own = await OwnCopiesAsync(cancellation);
+
+        own.Add(name);
+
+        var copies = StoreCopies.In(folder).Where(one => own.Contains(Path.GetFileName(one.File))).ToArray();
         var removed = new List<string>();
         var unread = new List<string>();
 
-        if (copies.Count > StoreCopies.Kept)
+        if (copies.Length > StoreCopies.Kept)
         {
             foreach (var (kept, _) in copies.Take(StoreCopies.Kept).Where(one => !string.Equals(one.File, finished, StringComparison.Ordinal)))
             {
@@ -221,7 +235,7 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
             bytes = new FileInfo(finished).Length,
             newest = check.Newest,
             bars = check.Bars,
-            kept = StoreCopies.In(folder).Select(one => Path.GetFileName(one.File)).ToArray(),
+            kept = StoreCopies.In(folder).Select(one => Path.GetFileName(one.File)).Where(own.Contains).ToArray(),
             removed,
             unread,
             waited = waitedFor,
@@ -291,6 +305,49 @@ public sealed class StoreBackup(IClock clock, string dataRoot, string databaseFi
         await using var reader = await command.ExecuteReaderAsync(cancellation);
 
         return await reader.ReadAsync(cancellation) ? (reader.IsDBNull(0) ? null : reader.GetString(0), reader.GetInt64(1)) : (null, 0);
+    }
+
+    // The copies this store's own rows name, read off each row's copy, whether it was kept or refused.
+    async Task<HashSet<string>> OwnCopiesAsync(CancellationToken cancellation)
+    {
+        var own = new HashSet<string>(StringComparer.Ordinal);
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = OwnRows;
+        command.Parameters.AddWithValue("$stage", StoreCopies.Stage);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            if (!reader.IsDBNull(0) && CopyNamed(reader.GetString(0)) is { } copy)
+            {
+                own.Add(copy);
+            }
+        }
+
+        return own;
+    }
+
+    static string? CopyNamed(string detail)
+    {
+        try
+        {
+            using var parsed = JsonDocument.Parse(detail);
+
+            return parsed.RootElement.ValueKind == JsonValueKind.Object
+                && parsed.RootElement.TryGetProperty("copy", out var copy)
+                && copy.ValueKind == JsonValueKind.String
+                    ? copy.GetString()
+                    : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     async Task<bool> LabellerEndedAsync(DateTimeOffset started, CancellationToken cancellation)

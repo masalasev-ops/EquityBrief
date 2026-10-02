@@ -2574,7 +2574,7 @@ public partial class NightlyRun
         Assert.NotNull(dotnet);
         Assert.True(File.Exists(worker), $"No worker assembly at {worker}.");
 
-        var environment = new Dictionary<string, string> { ["EquityBrief__DataRoot"] = store.Root };
+        var environment = store.WorkerEnvironment();
         var missing = Path.Combine(store.Root, "no-such-capture");
 
         ShellResult Night(string session) =>
