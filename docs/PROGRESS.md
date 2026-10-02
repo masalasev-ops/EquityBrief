@@ -35769,8 +35769,8 @@ Built:      13.9 as the two rulings above shape it. 13.9 amends its own done con
               result in multiples of its risk and the benchmark of the same plan on every member. The run page
               draws each rule's record with its setup's own level, and each setup family's correction counts
               its own rules, at most eight.
-            - The documents. Sections 7, 11.4, 13.6, 13.8, 13.9, 14, 15.10, 16, 17, 18 and 20, `SCHEMA.md`, the
-              runbook's two commands and the roster's three rows; prior text in `CHANGELOG.md`.
+            - The documents. Sections 3, 7, 11.4, 13.6, 13.8, 13.9, 14, 15.10, 16, 17, 18 and 20, `SCHEMA.md`,
+              the runbook's two commands and the roster's three rows; prior text in `CHANGELOG.md`.
 Tests:      F9TESTS, from 1718: eight added. Each new family's freeze at one instant or none, counted in its own
             family; each variant at its own settings on both sides of the setting it moves; the pullback's
             freeze, taken once; every registered rule's verdict on every member's row and a moved evaluator
