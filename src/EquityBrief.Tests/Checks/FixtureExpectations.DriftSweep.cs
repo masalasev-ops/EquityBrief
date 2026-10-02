@@ -7,9 +7,10 @@ using EquityBrief.Worker.Sweep;
 
 namespace EquityBrief.Tests.Checks;
 
-// The earnings drift's sweep: its readings the night's own rule's over the same member, the night's print on
-// the fixture's night, a print the pulled surprises hold and the calendar does not read from the pull, and a
-// constructed history whose report states a known answer.
+// The earnings drift's sweep: its readings the night's own rule's over the same member, its target the nearer
+// of a band and the setting's multiple of the risk, the night's print on the fixture's night, a print the
+// pulled surprises hold and the calendar does not read from the pull, and a constructed history whose report
+// states a known answer.
 // see: A setup family's sweep replays its own rule over the stored history and proposes the best edge among the settings meeting its floors
 public partial class FixtureExpectations
 {
@@ -92,6 +93,21 @@ public partial class FixtureExpectations
             Assert.Equal(double.Parse(gates[FamilyRule.Trade]["stop"], CultureInfo.InvariantCulture), listing.Stop, 9);
             Assert.Equal(double.Parse(gates[FamilyRule.Trade]["target"], CultureInfo.InvariantCulture), listing.Target, 6);
         }
+    }
+
+    [Fact]
+    public void TheDriftsTargetIsTheNearerOfABandAndTheSettingsMultipleOfTheRisk()
+    {
+        // Bought at 100 with the stop at the reaction's low of 98, a risk of 2, the provisional setting's multiple
+        // of 2.5 aims 5 above, at 105. A band at 104 is nearer and is the target; one at 107 is farther, so the
+        // multiple's 105 is; and with no band far enough above the close, 105.
+        var provisional = DriftSweep.Grid.Settings.Single(setting => DriftSweep.Grid.Changes(setting) == 0);
+
+        static DriftReading Reading(int name, double band) => new(name, 0, 0, 0, 10, 2, 3, 100, 98, band, 2);
+
+        Assert.Equal(
+            [104.0, 105.0, 105.0],
+            DriftSweep.Listings([Reading(0, 104), Reading(1, 107), Reading(2, double.NaN)], provisional).Select(listing => listing.Target));
     }
 
     [Fact]

@@ -35528,7 +35528,9 @@ Mutated:    the rule, stated before the run: each new rule reversed alone, made 
             F3 the proposal ignoring the trade floor: red in the proposal's test.
             F4 the year's high read with tonight's own bar in it: red in the fixture readings' test and the
                constructed history's.
-            Results: F6MUT
+            Results: F1, F2 and F3 red where stated. F4 red in the constructed history's test and green in the
+            fixture readings' test, an unreachable boundary: tonight's bar moves the high only where it stands
+            above every high before it, and no member's did on the fixture's night.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
             this one to 13.8's: F6GATES
 
@@ -35547,18 +35549,22 @@ Measured:   a trial from this branch over the live store, read-only, its report 
             37% of its stops under a typical move. The best edge meeting the floors: a window of 3, a rise of
             0.5, volume 2.0 and a target at 2.5 times the risk, 2,243 trades, an edge of 0.123, 6 of 8 years,
             0.095 without its five largest, 40% of its stops under a typical move.
-Tests:      F7TESTS, from F6TESTS: four added. The drift's readings the night's own rule's over the same
-            constructed member on the reaction's session and the next; the night's print on the fixture's
-            night; a print the pulled surprises hold and the calendar does not, read from the pull through the
-            store; and a constructed history's trade, its near stop and its benchmark read back off its report.
+Tests:      F7TESTS, from F6TESTS: five added. The drift's readings the night's own rule's over the same
+            constructed member on the reaction's session and the next; the target the nearer of a band and the
+            multiple of the risk over constructed readings, added after D2 survived; the night's print on the
+            fixture's night; a print the pulled surprises hold and the calendar does not, read from the pull
+            through the store; and a constructed history's trade, its near stop and its benchmark read back off
+            its report.
 Claims:     one added: section 17's row for the drift's grid.
 Pins:       the three pin lists read; the tree touches none of their sources.
 Mutated:    the rule, stated before the run: each new rule reversed alone, made on the branch in this
-            checkout, filtered to the four tests and 13.6's eight, and reverted.
+            checkout, filtered to the drift's tests and 13.6's eight, and reverted.
             D1 the reaction's rise read against tonight's typical move: red in the readings' test.
             D2 the target read as the farther of the band and the multiple: red in the readings' test.
             D3 the calendar's surprises read even where a pull holds some: red in the pulled print's test.
-            Results: F7MUT
+            Results: D1 and D3 red where stated. D2 survived, an unreachable boundary: the constructed history
+            holds no band above the close, so its target is always the multiple's. The target's test was added
+            and D2 is red in it.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
             13.6's to 13.8's: F7GATES
 
@@ -35589,6 +35595,8 @@ Mutated:    the rule, stated before the run: each new rule reversed alone, made 
             L1 a sector's share rounded down: red in the standings' test and the report's.
             L2 the trend gate read for a leader: red in the report's test.
             L3 a leader listed past its share: red in the report's test.
-            Results: F8MUT
+            Results: L1 red in the standings' test and green in the report's, an unreachable boundary: the
+            report's candidates stand first in their sector or third of Tech's six under a half, which divides
+            whole, so rounding down drops none. L2 and L3 red where stated.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from
             13.6's to this one: F8GATES
