@@ -10364,3 +10364,10 @@ Was:
 Now:
 > `fixture-expectations`: "... each market series as the store holds it; and the ideas' run on the frozen families reads each family's rule as frozen off its sweep's grid and refuses a setting off it, ..., and the report stating the tries, the passes and an idea that changes nothing the rule makes; and the store's copy ..."
 Why: the check reaches what the families' run asserts.
+### 2026-10-02 - .claude/rules/checks.md - read-surface reaches the family's rules drawn in words of their own
+Authorised by: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
+Was:
+> `read-surface`: "... with the swing family registered the run page's shadow region reads nine registered and a divisor of 9; ..."
+Now:
+> `read-surface`: "... reads nine registered and a divisor of 9, each of the family's rules drawn in words written for what it moves and none as a setting's own name against the live list's, a registration stating no count a night read as keeping every name it passes; ..."
+Why: the run page of 2026-10-02 drew the ninth rule as "BestOf at 3 where the live list has 0".

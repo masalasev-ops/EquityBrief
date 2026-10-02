@@ -1752,8 +1752,11 @@ public static class RunScreen
             _ => FormattableString.Invariant($"1 in {of:0}"),
         };
 
+        // A registration that states no count a night keeps every name it passes, as one stating none does.
+        static double BestOf(IReadOnlyDictionary<string, double> settings) => settings.TryGetValue("bestOf", out var count) ? count : 0;
+
         var said = new List<string>();
-        var named = new HashSet<string>(StringComparer.Ordinal) { "marketGate", "strengthFloor", "depthLow", "depthHigh", "arrivalSessions", "trade", "rewardToRiskFloor", "skipDeteriorating", "leaderSectors", "leaderShareOf" };
+        var named = new HashSet<string>(StringComparer.Ordinal) { "marketGate", "strengthFloor", "depthLow", "depthHigh", "arrivalSessions", "trade", "rewardToRiskFloor", "skipDeteriorating", "leaderSectors", "leaderShareOf", "bestOf" };
 
         if (Moved("marketGate"))
         {
@@ -1776,6 +1779,15 @@ public static class RunScreen
             said.Add(Of(version, "leaderSectors") > 0 && Of(version, "leaderShareOf") > 0
                 ? FormattableString.Invariant($"only the top {Share(Of(version, "leaderShareOf"))} of one of the {Of(version, "leaderSectors"):0} strongest sectors, in place of an uptrend's strength")
                 : "an uptrend's strength in place of sector leadership");
+        }
+
+        // The ninth, which keeps the night's first few in the list's own order.
+        // see: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
+        if (!BestOf(version).Equals(BestOf(live)))
+        {
+            said.Add(BestOf(version) > 0
+                ? FormattableString.Invariant($"keeps only the night's first {BestOf(version):0} in the list's own order, where the live list keeps every name it passes")
+                : FormattableString.Invariant($"keeps every name it passes, where the live list keeps only the night's first {BestOf(live):0}"));
         }
 
         if (Moved("strengthFloor"))
