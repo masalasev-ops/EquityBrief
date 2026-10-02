@@ -35814,3 +35814,37 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             roster, 42 carried and 42 passed. Both were green at the same counts over 20363f2, before section
             3's row was corrected.
 Carried:    the remedy, run after the merge and before the night; then 13.10, the phase report.
+
+### 13.10 - the phase 13 report: every claim the phase added reached and passing, and the pair checked against the actual with every claim that moved named   2026-10-02
+
+Built:      a test under `architecture-conformance` reading phase 13's pair off the plan: 789 before it,
+            853 after 13.5 within 840 to 870, counted as 25, 10, 7, 5 and 17 at 13.1 to 13.5. Those
+            checkpoints landed 25, 11, 7, 5 and 18, so 855, inside the range. The two that moved are named in
+            `ArchitectureConformance.Families.PhaseThirteenMoved`: at 13.2 section 17 states the breakout's
+            settings as six rows where the plan's ten held five, and at 13.5 Past picks has four rows where
+            the plan named three, the fourth saying a provisional setup's trades count in no share. The
+            sweeps added 7 and the freezes 14 after the pair, which counts nothing past 13.5, so 876. Each of
+            the 87 rows the phase added is reached once and passes. The roster's `architecture-conformance`
+            row says so, with its prior text in `CHANGELOG.md`.
+Operating:  phase 13 opened no operating row, and no carried obligation of either form;
+            `obligation-reconciles` states phase 13 at none.
+Remedy:     13.9's ran on the operator's store at 11:35Z after its merge, migration 56 first. 22 rules
+            stand: the swing family's eight on filter version 5, seven breakout rules and seven drift rules.
+Tests:      1727, from 1726: one added.
+Claims:     876, unchanged, with 876 PASS; the pair is 876 and 876.
+Pins:       none moves. The branch edits two tests, a rules file and the records, none of them in a pin list.
+Mutated:    the rule, stated before the run: each property this checkpoint adds, broken alone, made on the
+            branch in this checkout, filtered to the two tests and reverted.
+            T1 13.5's move counted as predicted, Past picks' rows held at four: red in the pair test alone.
+            T2 the freezes' rows left out of the rows after the pair: red in the pair test alone.
+            T3 phase 13 stated as opening one operating row: red in the operating rows test alone.
+            Results: T1 to T3 each red where stated, the other test green each time. Each ran over 74329e0
+            and was reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 74329e0.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1727 of 1727 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 876 claims, 876 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            887 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
+Carried:    phase 13's sign-off, owed on the phase as a whole by a session that committed none of its code.
+            This session committed phase 13's code and signs nothing.
