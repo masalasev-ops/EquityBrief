@@ -474,13 +474,21 @@ dotnet run --project src/EquityBrief.Worker -- history-pull --surprises --from 2
 
 It asks the earnings calendar once a calendar month of the span, about a hundred requests at a weight of one from 2018, and stores each print of a name the index held over the span in `pulled_surprise` with the figures as filed and the provider's surprise where the print carries one, every row carrying the pull's run id. Run it before a sweep whose report should read the surprises back to 2018; a sweep run without it reads the calendar's own year and says so.
 
+The index's and the VIX's daily series, which the ideas' run's market switches read, are pulled apart by the same verb (see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night):
+
+```
+dotnet run --project src/EquityBrief.Worker -- history-pull --market --from 2018-01-01 --live
+```
+
+It asks the provider's historical endpoint once for each, `GSPC` and `VIX` under its index exchange, two requests at a weight of one whatever the span, and stores every session sent in `pulled_market_bar`, every row carrying the pull's run id. It prints each series' sessions with the first and the last. A series the provider refuses stores nothing, is named, and the command exits with a failure. Run it when no night is running.
+
 Remove a pull whole by its run id:
 
 ```
 dotnet run --project src/EquityBrief.Worker -- history-pull --purge <the pull's run id>
 ```
 
-A purge removes every row that pull wrote from the three tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull`, `history-pull-surprises` and `history-purge`, and the run page draws each as run by hand.
+A purge removes every row that pull wrote from the four tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull`, `history-pull-surprises`, `history-pull-market` and `history-purge`, and the run page draws each as run by hand.
 
 ### Sweeping the swing filter over the stored history
 

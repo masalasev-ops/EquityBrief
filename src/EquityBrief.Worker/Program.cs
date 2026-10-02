@@ -74,7 +74,8 @@ static int NoVerb()
         "night can read them, and " +
         "'history-pull --from <yyyy-MM-dd>' stores the daily bars and earnings prints of every name the index held from that " +
         "date to tonight apart from the store's own, each row marked by its pull, '--surprises' with it stores the earnings " +
-        "surprises the calendar files over the span instead, and '--purge <pull>' removes a pull whole, and " +
+        "surprises the calendar files over the span instead, '--market' the index's and the VIX's daily series, and " +
+        "'--purge <pull>' removes a pull whole, and " +
         "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill, and " +
         "'measure-sources --sector <sector> --sites <a,b> --industries <x,y>' searches each proposed site for each declined " +
         "industry as a theme pass does and says which would join the sector's sites, writing a report and nothing to the store. '--live' " +
@@ -174,20 +175,27 @@ static async Task<int> HistoryPullRun(string[] args)
 {
     var configuration = Configuration();
     var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+    var source = args.Contains("--live") ? NightFeeds.LiveSource
+        : Argument(args, "--fixture") is not null ? NightFeeds.FixtureSource
+        : configuration[NightFeeds.SourceKey];
+    var fixture = Argument(args, "--fixture") ?? configuration[NightFeeds.FixtureKey];
+    var address = configuration[EodhdBulkPriceFeed.BaseAddressKey];
 
     return await EquityBrief.Worker.Bars.HistoryPull.RunAsync(
         args,
-        () => NightFeeds.Resolve(
-            args.Contains("--live") ? NightFeeds.LiveSource
-                : Argument(args, "--fixture") is not null ? NightFeeds.FixtureSource
-                : configuration[NightFeeds.SourceKey],
-            Argument(args, "--fixture") ?? configuration[NightFeeds.FixtureKey],
-            configuration[EodhdBulkPriceFeed.BaseAddressKey],
-            configuration[ProviderCredentials.ApiKeyName]),
+        () => NightFeeds.Resolve(source, fixture, address, configuration[ProviderCredentials.ApiKeyName]),
         SystemClock.ForUnitedStatesSessions(),
         store.DatabaseFile,
         Console.Out,
-        Console.Error);
+        Console.Error,
+        () => FeedSource.Resolve<IMarketSeriesFeed>(
+            source,
+            fixture,
+            RecordedMarketSeriesFeed.FromFolder,
+            () => EodhdMarketSeriesFeed.Live(
+                string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address,
+                new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty)),
+            "a market pull"));
 }
 
 // A sector's proposed sites measured for its declined industries before any joins the industry list. The search

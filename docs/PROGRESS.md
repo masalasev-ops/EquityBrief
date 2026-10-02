@@ -35444,3 +35444,31 @@ Changed:    `CLAUDE.md`'s Merge section and done condition 9. A branch is checke
 Verified:   with the pull request that carries it, `tools/ci.ps1` green and `tools/verify-phase.ps1` green
             over its tree, the figures in the 12.5 entry beside it.
 Stored:     the operator's words in `prompts/2026-10-01-13.6-one-checkout-ruling.md`.
+
+### 12.5 - correction: the index's and the VIX's daily series are pulled beside the pulled bars, one request a series, marked by their pull and read by no night, where the store held neither   2026-10-02
+
+Corrects:   the store held no index series and no VIX, and the ideas' run tests switches reading both. The
+            second of the four pull requests the 12.5 ruling of 2026-10-01 plans.
+Built:      `history-pull --market --from <date>` asks the provider's historical endpoint once for `GSPC` and
+            once for `VIX`, under its index exchange, and stores every session in `pulled_market_bar`,
+            migration 55, each row marked by the pull; a purge removes them with the pull's other rows. A
+            series refused, sent empty or unreadable stores nothing, is named, and fails the command. The feed
+            is `EodhdMarketSeriesFeed`, with a recorded double, outside the night's feeds.
+Differs:    the plan named a limits row and a failure row in sections 17 and 18. The other pulls carry
+            neither, so the rule sits in the history pull's catalogue row and the pulled history's store row
+            as theirs does, and no claim is added.
+Tests:      M2TESTS, from 1697: five added. A market pull storing both series marked by its run, one request
+            each; a purge removing them whole and nothing else; a date on or after tonight refused before any
+            request; a refused series storing nothing and failing the command; the request naming the index
+            exchange and never a stock's. The pulled tables' source scan now names the new table.
+Claims:     855, none added.
+Pins:       none moves: no file touched is in any of the three pin lists.
+Remedy:     none owed. The next night applies migration 55 itself, and the pull is run by hand after the
+            merge as `RUNBOOK.md` says, two weighted calls.
+Mutated:    the rule, stated before the run: each new rule reversed alone, made on the branch in this
+            checkout, filtered to the five tests and reverted.
+            P1 the market sessions written into `pulled_bar`: red in the market pull's test.
+            P2 the purge leaving the market sessions: red in the purge's test.
+            P3 the stock suffix on the request: red in the feed's test.
+            Results: M2MUT
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over M2SHA: M2GATES

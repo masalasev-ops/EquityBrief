@@ -10040,3 +10040,27 @@ Now:
 >
 > Start it on `main` from this checkout's Release build, so the Debug builds a branch's gates and tests make never stop it, and the night it pauses for is the one the scheduler runs.
 Why: one checkout serves the page, holds the branch being worked on and starts the sweep, and the two build configurations keep them apart.
+
+### 2026-10-02 - ARCHITECTURE.html - the history pull asks for the index's and the VIX's daily series
+Authorised by: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+Was:
+> Section 6.2's paragraph had the pulled history sitting beside the bar store "in two tables of its own". The history pull's catalogue row read and wrote "pulled bars, pulled earnings, pulled surprises", said "no night reads any of the three tables" and ended at the surprises. Section 16's "Pulled history" row ended its rows at the surprise pull's and said "no night reads any of the three tables".
+Now:
+> The paragraph says "in tables of its own". The catalogue row reads and writes "pulled market series" as well, says "no night reads any of its tables", and adds that asked for the market series alone it asks for the index's and the VIX's daily series over the span, one request a series under the provider's index exchange, a series the provider refuses storing nothing and failing the pull. The "Pulled history" row adds, from a market pull, one row per series and session holding the index's or the VIX's open, high, low and close as the provider sent them, and says "no night reads any of the four tables".
+Why: the ideas' run tests switches reading the index and the VIX, and the store held neither.
+
+### 2026-10-02 - SCHEMA.md - `pulled_market_bar`
+Authorised by: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+Was:
+> The ownership table ended the pulled tables at `pulled_surprise`, and no section described a market series.
+Now:
+> The ownership table gives `pulled_market_bar` to HistoryPull for its inserts and its deletes, and a section describes it: one row per series per session a market pull reached, `series`, `session_date`, the four prices as text and `pull`, keyed on the series and the session, read by no night and removed whole with its pull.
+Why: a table the store holds is one this file declares, with its writer.
+
+### 2026-10-02 - RUNBOOK.md - the market pull's command, and a purge reaching four tables
+Authorised by: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+Was:
+> A purge removes every row that pull wrote from the three tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull`, `history-pull-surprises` and `history-purge`, and the run page draws each as run by hand.
+Now:
+> The command `history-pull --market --from 2018-01-01 --live` with what it asks, two requests at a weight of one, what it stores and that a refused series fails it; and a purge removes every row that pull wrote from the four tables, each pull and each purge one row on the run log under `history-pull`, `history-pull-surprises`, `history-pull-market` and `history-purge`.
+Why: the operator runs the pull before the ideas' run, and a purge now reaches the market series too.

@@ -118,6 +118,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdFundamentalsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdHistoricalBarFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdIndexMembershipFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdMarketSeriesFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdNameNewsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdNewsFeed.cs",
         "src/EquityBrief.Core/Providers/SecEdgarFilingsArchiveFeed.cs",
@@ -292,9 +293,9 @@ public partial class NightlyCost
         // empty result. A carve-out that grew without anyone noticing reads
         // exactly like a scan that found nothing.
         Assert.True(
-            MayHoldAClient.Length <= 13,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are thirteen feed " +
-            "implementations. A fourteenth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 14,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are fourteen feed " +
+            "implementations. A fifteenth is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: three files, the local lane's client and
         // the paid model's live feed in each of its two formats.

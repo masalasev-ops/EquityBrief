@@ -42,7 +42,7 @@ internal static class ComponentVocabulary
         ("Membership", [DataStore.Membership]),
         ("Bars", [DataStore.Bar]),
         ("Calendar", [DataStore.Calendar]),
-        ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise]),
+        ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar]),
         ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult]),
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick]),
         ("Forward returns", [DataStore.ForwardReturn]),
@@ -97,7 +97,7 @@ internal static class ComponentVocabulary
     // splitting them produces fragments that resolve to nothing.
     static readonly Dictionary<string, DataStore[]> WholeCells = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["every store but the pulled history"] = [.. Columns.SelectMany(column => column.Stores).Except([DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise])],
+        ["every store but the pulled history"] = [.. Columns.SelectMany(column => column.Stores).Except([DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar])],
         ["none"] = [],
         ["read API"] = [],
         ["a file the user chooses"] = [],
@@ -177,6 +177,7 @@ internal static class ComponentVocabulary
         ["pulled bars"] = DataStore.PulledBar,
         ["pulled earnings"] = DataStore.PulledEarnings,
         ["pulled surprises"] = DataStore.PulledSurprise,
+        ["pulled market series"] = DataStore.PulledMarketBar,
         ["candidate register"] = DataStore.CandidateRegister,
         ["rule versions"] = DataStore.RuleVersion,
         ["version scores"] = DataStore.VersionScore,

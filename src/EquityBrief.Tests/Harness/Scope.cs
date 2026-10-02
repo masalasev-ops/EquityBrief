@@ -615,7 +615,7 @@ internal static class Scope
             ByAccess),
         [CheckReach.Key(StoresTable, "Pulled history")] = new Scoped(
             Verdict.Pass,
-            "both tables' columns and types are asserted against SCHEMA.md",
+            "every pulled table's columns and types are asserted against SCHEMA.md",
             ByMigration),
         [CheckReach.Key(StoresTable, "Gate results")] = new Scoped(
             Verdict.Pass,

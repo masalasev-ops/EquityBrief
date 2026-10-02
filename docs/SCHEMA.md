@@ -38,6 +38,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `pulled_bar` | HistoryPull | none | HistoryPull |
 | `pulled_earnings` | HistoryPull | none | HistoryPull |
 | `pulled_surprise` | HistoryPull | none | HistoryPull |
+| `pulled_market_bar` | HistoryPull | none | HistoryPull |
 | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
 | `swing` | SwingFinder | SwingFinder | SwingFinder |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
@@ -241,6 +242,20 @@ Grain: one row per ticker per earnings report date a surprise pull reached.
 Primary key: `ticker`, `event_date`.
 
 **The surprises of the names a surprise pull asked for over its span, read by no night** (see: The surprises pulled before the store's year sit beside the pulled prints and are read by no night). The operator's `history-pull --surprises` asks the earnings calendar once a calendar month of the span, as the bars' pull asks it, and stores each print of a name the index held over the span with the figures as filed and the provider's surprise, which is the one figure the sweep's fifth condition reads. Kept apart from `calendar` and from `pulled_earnings` because it carries figures those do not and is removed whole with its pull, and a second pull inserts only the prints no earlier pull holds. The sweep reads it by hand where a pull stored any print carrying a surprise, and the calendar's own year otherwise.
+
+### pulled_market_bar
+Grain: one row per series per session a market pull reached.
+
+| Column | Type | Notes |
+|---|---|---|
+| `series` | TEXT | `GSPC`, the index itself, or `VIX` |
+| `session_date` | TEXT | date |
+| `open`, `high`, `low`, `close` | TEXT | decimal in code, as the provider sent them on the pull's day |
+| `pull` | TEXT | the run id of the pull that wrote the row |
+
+Primary key: `series`, `session_date`.
+
+**The index's and the VIX's daily series, read by no night** (see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night). The operator's `history-pull --market` asks the provider once a series for the whole span, under its index exchange rather than a listing, and stores every session it sends. Kept apart from `bar` and `pulled_bar` because neither series is a member's, and removed whole with its pull as they are; a second pull inserts only the sessions no earlier pull holds. A series the provider refuses stores nothing and the pull fails, so nothing reads a series that is not there.
 
 ### indicator
 Grain: one row per ticker, session and indicator name.
