@@ -42,11 +42,45 @@ public sealed class EodhdNameNewsFeed(
             request);
     }
 
+    // Asked a month at a time: the provider's time to answer grows with the articles a window holds, and a month of a
+    // heavily covered name's news answers well inside a request's limit where its quarter did not.
+    // see: A name's news is asked of the provider a month at a time, and a window it does not answer in time is read as unread
     public async Task<IReadOnlyList<NewsArticle>> ArticlesAsync(
         string ticker,
         DateOnly from,
         DateOnly to,
         CancellationToken cancellation = default)
+    {
+        var articles = new List<NewsArticle>();
+
+        foreach (var (pieceFrom, pieceTo) in Months(from, to))
+        {
+            articles.AddRange(await PagedAsync(ticker, pieceFrom, pieceTo, cancellation).ConfigureAwait(false));
+        }
+
+        return articles;
+    }
+
+    // A window cut into pieces of at most a month, each from its first day to the day before the same date a month on.
+    public static IReadOnlyList<(DateOnly From, DateOnly To)> Months(DateOnly from, DateOnly to)
+    {
+        var pieces = new List<(DateOnly From, DateOnly To)>();
+
+        for (var start = from; start <= to; start = start.AddMonths(1))
+        {
+            var end = start.AddMonths(1).AddDays(-1);
+
+            pieces.Add((start, end < to ? end : to));
+        }
+
+        return pieces;
+    }
+
+    async Task<IReadOnlyList<NewsArticle>> PagedAsync(
+        string ticker,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken cancellation)
     {
         var articles = new List<NewsArticle>();
         var offset = 0;

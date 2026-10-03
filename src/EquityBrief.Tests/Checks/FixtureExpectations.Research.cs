@@ -544,9 +544,10 @@ public partial class FixtureExpectations
         Assert.Equal(["paused"], Query(store, "SELECT outcome FROM run_log WHERE run_id = 'research-at-cap' AND stage = 'research';"));
     }
 
-    // A name's news answered from the recording, noting each window it is asked for, and refusing
-    // the windows a test names as the live feed refuses one the provider has more of.
-    sealed class WindowedNews(INameNewsFeed inner, Func<(DateOnly From, DateOnly To), bool>? refuses = null) : INameNewsFeed
+    // A name's news answered from the recording, noting each window it is asked for, refusing the windows
+    // a test names as the live feed refuses one the provider has more of, and ending on a timeout for the
+    // windows a test names as the live feed's request does once every try has timed out.
+    sealed class WindowedNews(INameNewsFeed inner, Func<(DateOnly From, DateOnly To), bool>? refuses = null, Func<(DateOnly From, DateOnly To), bool>? timesOut = null) : INameNewsFeed
     {
         public List<(DateOnly From, DateOnly To)> Asked { get; } = [];
 
@@ -556,6 +557,11 @@ public partial class FixtureExpectations
         {
             Requests++;
             Asked.Add((from, to));
+
+            if (timesOut?.Invoke((from, to)) == true)
+            {
+                throw new TaskCanceledException("The operation was canceled.");
+            }
 
             return refuses?.Invoke((from, to)) == true
                 ? throw new ProviderRefusal($"The news query for {ticker} over {Iso(from)} to {Iso(to)} reached 20 pages of 1000 and the provider still had more.", transient: false)
@@ -619,6 +625,28 @@ public partial class FixtureExpectations
         Assert.Contains("news: The news query for KEYS", outcome.Reason, StringComparison.Ordinal);
         Assert.Contains("still had more", Query(store, "SELECT detail FROM run_log WHERE run_id = 'research-window-refused' AND stage = 'research';").Single(), StringComparison.Ordinal);
         Assert.Single(Query(store, "SELECT stage FROM run_log WHERE run_id = 'research-window-refused' AND stage = 'research';"));
+    }
+
+    // The window since the filing timing out on every try, as QCOM's did on 2026-10-03 and ended its pass on an error
+    // nothing caught. The pass does not stop on it: the window is named unread on its row, with its dates, and the
+    // sections resting on the moves are written.
+    // see: A name's news is asked of the provider a month at a time, and a window it does not answer in time is read as unread
+    [Fact]
+    public async Task AWindowTheProviderDoesNotAnswerInTimeIsNamedUnreadAndThePassWritesFromTheRest()
+    {
+        using var store = await FixtureReplay.ReplayedForResearchAsync();
+
+        var news = new WindowedNews(new RecordedNameNewsFeed(Folder()), timesOut: window => window.To == new DateOnly(2026, 9, 8));
+        var paid = new ScriptedModel([.. Enumerable.Repeat("The section, in words and citing its document [D1].", 20)]);
+
+        var outcome = await FixtureReplay.Researcher(store, ResearchClock, paid: paid, news: news, search: new NoResults()).RunAsync("KEYS", "research-window-timed-out");
+
+        Assert.NotEqual(ResearchRunner.Unavailable, outcome.Outcome);
+
+        var timedOut = Assert.Single(news.Asked, window => window.To == new DateOnly(2026, 9, 8));
+
+        Assert.Contains($"news: the provider did not answer for {Iso(timedOut.From)} to 2026-09-08 in time on any try", outcome.Reason, StringComparison.Ordinal);
+        Assert.Single(Query(store, "SELECT stage FROM run_log WHERE run_id = 'research-window-timed-out' AND stage = 'research';"));
     }
 
     // A research model whose first answers come back empty, billed as the provider bills them, and
