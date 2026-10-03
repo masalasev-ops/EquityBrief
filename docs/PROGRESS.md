@@ -36891,7 +36891,8 @@ Mutated:    the rule, stated before the run: the widened catch narrowed back to 
             filtered to the three fetch tests and reverted, the source reading as committed after it.
             M1 the fetcher's catch narrowed back: red in the new fetcher test and in the night's fetch test, the
             older fetch test green.
-Verified:   FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the 12.5
+            correction's below: FILL.
 Carried:    the night of 2026-10-05 read against the addendum's item 6 figures, recorded in the next entry.
 
 ### 12.5 - correction: the history pull's market series names an answer it cannot read or a timeout and stores the other series, where either ended the pull   2026-10-03
@@ -36914,5 +36915,6 @@ Mutated:    the rule, stated before the run: each failure the try now reads take
             the working tree carrying this correction before its commit, filtered to the pull's tests and reverted.
             M2 the catch narrowed back to a refusal or a format error: red in the new pull test.
             M3 the timeout's catch taken out: red in the new pull test.
-Verified:   with the 13.10 correction above, over the same tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            13.10 correction above states.
 Carried:    nothing.
