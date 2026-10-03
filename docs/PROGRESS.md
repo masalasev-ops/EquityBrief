@@ -36537,9 +36537,10 @@ Mutated:    the rule, stated before the run: each property added, broken alone, 
             checkout, filtered to the feed's tests, the pass's window tests and the drain's and reverted.
             M1 the window asked whole: red in the pieces test alone.
             M2 the timeout not caught: red in the timeout test alone.
-            Results: R611MUT.
+            Results: M1 and M2 each red where stated, over the 42 tests the filter holds. Each ran over 450a1bd,
+            the gated tree, and was reverted, the tree reading clean after it.
 Verified:   with the 9.2 correction after it, in one pull request: `tools/ci.ps1` green and
-            `tools/verify-phase.ps1` green over the tree carrying both entries, GATETREE, with the figures the
+            `tools/verify-phase.ps1` green over the tree carrying both entries, 450a1bd, with the figures the
             entry after this one states.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
 
@@ -36567,7 +36568,13 @@ Mutated:    the rule, stated before the run: each property added, broken alone, 
             checkout, filtered as the correction before it and reverted.
             D1 a pass's error let through the drain: red in the error test alone.
             D2 the put back taking no request: red in the put back test alone.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: GATETREE.
-            The run's figures are filled in after it.
+            Results: D1 and D2 each red where stated, over the 42 tests the filter holds, D1 written as the
+            error's filter naming another exception after a filter naming none did not compile. Each ran over
+            450a1bd and was reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 450a1bd.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1769 of 1769 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 887 claims, 887 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
