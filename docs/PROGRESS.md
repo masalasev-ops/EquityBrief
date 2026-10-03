@@ -36881,10 +36881,11 @@ Repaired:   inside `RunAsync`'s per-series try, every failure of the series requ
             below; the reader's guide giving the drift's plain result a trade falling from 0.278 to 0.241 among its
             switch's failures, the addendum's item 2; and the drain's claim stating in its comment why a deferred
             begin is equivalent to the immediate one only while the claim runs one statement, its item 5.
-Tests:      FILL, from 1776: the fetcher over the live market series feed, the VIX answered 200 with a page and
-            then with an array of strings while the index is served; and the night's fetch test extended with a
-            night whose index answer is a page, run to its close with the VIX stored.
-Claims:     FILL.
+Tests:      1778, from 1776: two added, this correction's and the 12.5 correction's below. Here, the fetcher over the
+            live market series feed, the VIX answered 200 with a page and then with an array of strings while the
+            index is served; and the night's fetch test extended with a night whose index answer is a page, run to
+            its close with the VIX stored.
+Claims:     892, unchanged: the two rows changed keep their first cells, which the claims are keyed on.
 Pins:       none moves: `MarketSeriesFetcher.cs` and `RequestDrain.cs` sit in no pin list.
 Mutated:    the rule, stated before the run: the widened catch narrowed back to a refusal or a format error, the one
             property this correction adds, made by hand over the working tree carrying it before its commit,
@@ -36892,7 +36893,11 @@ Mutated:    the rule, stated before the run: the widened catch narrowed back to 
             M1 the fetcher's catch narrowed back: red in the new fetcher test and in the night's fetch test, the
             older fetch test green.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the 12.5
-            correction's below: FILL.
+            correction's below: 3791192. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1778 of 1778 tests
+            ran with none failed, migrations 0 to 57 with none pending, schema version 57, against `data-ci` and
+            never `data`. `tools/verify-phase.ps1`: 44 tables, 892 claims, 892 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 903 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks
+            on the roster, 42 carried and 42 passed.
 Carried:    the night of 2026-10-05 read against the addendum's item 6 figures, recorded in the next entry.
 
 ### 12.5 - correction: the history pull's market series names an answer it cannot read or a timeout and stores the other series, where either ended the pull   2026-10-03
@@ -36909,7 +36914,7 @@ Repaired:   the per-series try reads a timeout as a series not answered in time 
 Tests:      in the figure the 13.10 correction above states: one added here, a page and an array of strings read
             through the recorded feed's own reader and a timeout on every try, each named while the index is
             stored.
-Claims:     unchanged by this correction.
+Claims:     892, unchanged by this correction.
 Pins:       none moves: `HistoryPull.cs` sits in no pin list.
 Mutated:    the rule, stated before the run: each failure the try now reads taken back out alone, made by hand over
             the working tree carrying this correction before its commit, filtered to the pull's tests and reverted.
