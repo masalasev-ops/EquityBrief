@@ -478,4 +478,86 @@ public partial class ReadSurface
         // Each request settled once, by the drain that claimed it, and nothing is left waiting.
         Assert.Empty(Rows(store, "SELECT ticker FROM research_request WHERE state IN ('outstanding', 'writing');"));
     }
+
+    // A pass that ends on an error it wrote no run for, as QCOM's did on 2026-10-03 on a news window that timed out on
+    // every try: its request is settled as refused with the error and the drain goes on to the next, where the drain had
+    // ended there and left the request being written.
+    // see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused
+    [Fact]
+    public async Task APassThatEndsOnAnErrorSettlesItsRequestAsRefusedAndTheDrainGoesOn()
+    {
+        using var store = RequestsFor("QCOM", "AAPL");
+
+        // A Sunday, which names no peak window, so the drain waits for nothing.
+        var clock = FixedClock.At(UtcAt("2026-09-20T12:00:05Z"), SessionZones.UnitedStates);
+        var passes = new List<string>();
+
+        var (taken, _) = await RequestDrain.DrainAsync(
+            store.DatabaseFile,
+            clock,
+            verb =>
+            {
+                passes.Add(verb[2]);
+
+                return verb[2] == "QCOM" ? throw new TaskCanceledException("The operation was canceled.") : Task.CompletedTask;
+            },
+            [Providers.ResearchModelFeedTests.Pinned().Pricing],
+            _ => throw new InvalidOperationException("nothing here is at peak, so nothing waits"));
+
+        Assert.Equal(["QCOM", "AAPL"], passes);
+        Assert.Equal(2, taken);
+        Assert.Equal(
+            "refused|the pass stopped on an error before it wrote its run: The operation was canceled.",
+            Assert.Single(Rows(store, "SELECT state || '|' || reason FROM research_request WHERE ticker = 'QCOM';"))[0]);
+        Assert.Empty(Rows(store, "SELECT ticker FROM research_request WHERE state IN ('outstanding', 'writing');"));
+    }
+
+    // A request a drain left being written when it ended is put back as outstanding before the next drain claims, which
+    // the drain verb does once it holds the lock, and is taken in its turn; no request in another state moves.
+    // see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused
+    [Fact]
+    public async Task ARequestADrainLeftBeingWrittenIsPutBackByTheNextDrainAndTakenInItsTurn()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute(
+            "INSERT INTO research_request (ticker, asked_at, asked_from, lane, state, settled_at, run_id, reason) VALUES " +
+            "('QCOM', '2026-10-03T00:26:14Z', 'night', 'paid', 'writing', NULL, NULL, NULL), " +
+            "('KEYS', '2026-10-03T01:00:00Z', 'list', 'paid', 'outstanding', NULL, NULL, NULL), " +
+            "('AAPL', '2026-10-01T10:00:00Z', 'name', 'paid', 'written', '2026-10-01T10:05:00Z', 'research-20261001T100100Z-AAPL', NULL), " +
+            "('MO', '2026-10-01T11:00:00Z', 'name', 'paid', 'refused', '2026-10-01T11:05:00Z', NULL, 'the pass left no run at all'), " +
+            "('IT', '2026-10-01T12:00:00Z', 'list', 'paid', 'withdrawn', '2026-10-01T12:01:00Z', NULL, NULL);");
+
+        Assert.Equal(1, await RequestDrain.PutBackAsync(store.DatabaseFile));
+        Assert.Equal(
+            ["AAPL|written", "IT|withdrawn", "KEYS|outstanding", "MO|refused", "QCOM|outstanding"],
+            Rows(store, "SELECT ticker || '|' || state FROM research_request ORDER BY ticker;").Select(row => row[0]));
+
+        // The next drain takes it first, as the oldest outstanding, on a Saturday, which names no peak window.
+        var clock = FixedClock.At(UtcAt("2026-10-03T02:00:00Z"), SessionZones.UnitedStates);
+        var passes = new List<string>();
+
+        await RequestDrain.DrainAsync(
+            store.DatabaseFile,
+            clock,
+            verb =>
+            {
+                passes.Add(verb[2]);
+
+                return Task.CompletedTask;
+            },
+            [Providers.ResearchModelFeedTests.Pinned().Pricing],
+            _ => throw new InvalidOperationException("nothing here is at peak, so nothing waits"));
+
+        Assert.Equal(["QCOM", "KEYS"], passes);
+
+        // The drain verb puts back once it holds the lock and before it claims, read off its own source.
+        var program = File.ReadAllText(Path.Combine(Repository.Root, "src", "EquityBrief.Worker", "Program.cs"));
+        var drainVerb = program[program.IndexOf("static async Task<int> Drain()", StringComparison.Ordinal)..];
+        var locked = drainVerb.IndexOf("DrainLock.AcquireAsync", StringComparison.Ordinal);
+        var putBack = drainVerb.IndexOf("RequestDrain.PutBackAsync", StringComparison.Ordinal);
+        var drained = drainVerb.IndexOf("RequestDrain.DrainAsync", StringComparison.Ordinal);
+
+        Assert.True(locked >= 0 && putBack > locked && drained > putBack, "The drain verb does not put back after taking the lock and before it drains.");
+    }
 }

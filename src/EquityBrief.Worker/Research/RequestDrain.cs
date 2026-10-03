@@ -268,6 +268,26 @@ public static class RequestDrain
         SELECT COUNT(*) FROM research_request WHERE state = 'outstanding';
     ";
 
+    const string PutBack = @"
+        UPDATE research_request SET state = 'outstanding' WHERE state = 'writing';
+    ";
+
+    // Every request a drain left being written when it ended, put back as outstanding so this drain takes it. Run only by
+    // a drain holding the drain's lock: one drain runs at a time, so a request being written when a drain takes the lock
+    // was left by one that ended before its pass did.
+    // see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused
+    public static async Task<int> PutBackAsync(string databaseFile, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = PutBack;
+
+        return await command.ExecuteNonQueryAsync(cancellation);
+    }
+
     // The queue, worked through oldest first until nothing is outstanding. The pass is
     // handed in, so the loop that decides which run a request settles under is the one the
     // worker runs and not a copy of it beside a test.
@@ -343,7 +363,19 @@ public static class RequestDrain
                 .. request.Refresh ? ["--refresh"] : Array.Empty<string>(),
             ];
 
-            await pass(verb);
+            // A pass that ends on an error it wrote no run for is settled as refused with the error, so its request is
+            // never left being written, and the drain goes on to the next.
+            // see: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused
+            try
+            {
+                await pass(verb);
+            }
+            catch (Exception failure) when (failure is not OperationCanceledException || !cancellation.IsCancellationRequested)
+            {
+                await SettleAsync(connection, request, SettlementFor(null).State, "the pass stopped on an error before it wrote its run: " + failure.Message, null, clock.UtcNow, cancellation);
+
+                continue;
+            }
 
             // What this request's own pass came to, and not whether the verb exited zero. A
             // verb that exits zero has run, and a pass that ran is not a pass that wrote: a
