@@ -363,17 +363,31 @@ public static class RequestDrain
         return (taken, written);
     }
 
+    // Taken inside a transaction that holds the write lock from its start and commits as a statement of its own,
+    // so the claim waits for another connection as every statement here does. Run alone, the claim's commit comes
+    // as its reader is let go, after its row is read, where the driver's wait does not reach, and it fails on a
+    // read another connection holds at that moment.
+    // see: A writer waits up to ten minutes for another, and a pass stores what it fetched in one write
     public static async Task<TakenRequest?> ClaimAsync(SqliteConnection connection, DateTimeOffset at, CancellationToken cancellation = default)
     {
-        await using var command = connection.CreateCommand();
+        await using var transaction = connection.BeginTransaction(deferred: false);
+        TakenRequest? taken;
 
-        command.CommandText = Claim;
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = Claim;
 
-        await using var reader = await command.ExecuteReaderAsync(cancellation);
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
 
-        return await reader.ReadAsync(cancellation)
-            ? new TakenRequest(reader.GetString(0), reader.GetString(1), reader.GetString(2), at, reader.GetInt64(3) == 1)
-            : null;
+            taken = await reader.ReadAsync(cancellation)
+                ? new TakenRequest(reader.GetString(0), reader.GetString(1), reader.GetString(2), at, reader.GetInt64(3) == 1)
+                : null;
+        }
+
+        await transaction.CommitAsync(cancellation);
+
+        return taken;
     }
 
     // The run is handed in rather than read again here, so the row this settles under is
