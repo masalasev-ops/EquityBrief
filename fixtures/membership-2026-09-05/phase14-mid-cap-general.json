@@ -1,0 +1,13 @@
+{
+ "Code": "MID",
+ "Type": "INDEX",
+ "Name": "S&P Midcap 400",
+ "Exchange": "INDX",
+ "MarketCap": 3437847965833.1,
+ "CurrencyCode": "USD",
+ "CurrencyName": "US Dollar",
+ "CurrencySymbol": "$",
+ "CountryName": "USA",
+ "CountryISO": "US",
+ "OpenFigi": "BBG000GRZDK3"
+}

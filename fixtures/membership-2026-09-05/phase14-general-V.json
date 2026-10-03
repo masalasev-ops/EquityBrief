@@ -1,0 +1,102 @@
+{
+ "Code": "V",
+ "Type": "Common Stock",
+ "Name": "Visa Inc. Class A",
+ "Exchange": "NYSE",
+ "CurrencyCode": "USD",
+ "CurrencyName": "US Dollar",
+ "CurrencySymbol": "$",
+ "CountryName": "USA",
+ "CountryISO": "US",
+ "OpenFigi": "BBG000PSKYX7",
+ "ISIN": "US92826C8394",
+ "LEI": "549300JZ4OKEHW3DPJ59",
+ "PrimaryTicker": "V.US",
+ "CUSIP": "92826C839",
+ "CIK": "0001403161",
+ "EmployerIdNumber": "26-0267673",
+ "FiscalYearEnd": "September",
+ "IPODate": "2008-03-19",
+ "InternationalDomestic": "International/Domestic",
+ "Sector": "Financial Services",
+ "Industry": "Credit Services",
+ "GicSector": "Financials",
+ "GicGroup": "Financial Services",
+ "GicIndustry": "Financial Services",
+ "GicSubIndustry": "Transaction & Payment Processing Services",
+ "HomeCategory": "Domestic",
+ "IsDelisted": false,
+ "Description": "Visa Inc. operates as a payment technology company in the United States and internationally. The company operates VisaNet, a transaction processing network that enables authorization, clearing, and settlement of payment transactions. It also offers credit, debit, and prepaid card products; tap to pay, tokenization, and click to pay services; Visa Direct, a platform which facilitates money movement, enabling clients to collect, hold, convert, and send funds across its network; and issuing solutions, such as airport lounge access, dining reservations, shopping experiences, event tickets, and seller offers. In addition, the company provides acceptance solutions, an omnichannel payment integration with e-commerce platforms; risk detection and prevention solutions; and advisory and other services comprising consulting practice, proprietary analytics models, data scientists and economists, marketing services, and managed services. It provides its services under the Visa, Visa Electron, V PAY, Interlink, and PLUS brands. The company serves consumers, sellers, financial institutions, and government entities. Visa Inc. was founded in 1958 and is headquartered in San Francisco, California.",
+ "Address": "300 Toni Stone Crossing, San Francisco, CA, United States, 94158",
+ "AddressData": {
+  "Street": "300 Toni Stone Crossing",
+  "City": "San Francisco",
+  "State": "CA",
+  "Country": "United States",
+  "ZIP": "94158"
+ },
+ "Listings": {
+  "0": {
+   "Code": "VISA34",
+   "Exchange": "SA",
+   "Name": "Visa Inc"
+  }
+ },
+ "Officers": {
+  "0": {
+   "Name": "Mr. Ryan M. McInerney",
+   "Title": "CEO & Director",
+   "YearBorn": "1975"
+  },
+  "1": {
+   "Name": "Mr. Christopher  Suh",
+   "Title": "Chief Financial Officer",
+   "YearBorn": "1970"
+  },
+  "2": {
+   "Name": "Mr. Rajat  Taneja",
+   "Title": "President of Technology",
+   "YearBorn": "1964"
+  },
+  "3": {
+   "Name": "Ms. Kelly Mahon Tullier J.D.",
+   "Title": "Vice Chair, Chief People & Corporate Affairs Officer and Corporate Secretary",
+   "YearBorn": "1966"
+  },
+  "4": {
+   "Name": "Mr. Paul D. Fabara",
+   "Title": "Chief Risk & Client Services Officer",
+   "YearBorn": "1966"
+  },
+  "5": {
+   "Name": "Mr. Peter  Andreski",
+   "Title": "Senior VP, Global Corporate Controller & Chief Accounting Officer",
+   "YearBorn": "1973"
+  },
+  "6": {
+   "Name": "Ms. Jennifer  Como",
+   "Title": "Head of Investor Relations",
+   "YearBorn": "NA"
+  },
+  "7": {
+   "Name": "Ms. Julie B. Rottenberg J.D.",
+   "Title": "General Counsel",
+   "YearBorn": "1969"
+  },
+  "8": {
+   "Name": "Mr. Frank  Cooper III",
+   "Title": "Chief Marketing Officer",
+   "YearBorn": "1964"
+  },
+  "9": {
+   "Name": "Mr. Oliver  Jenkyn",
+   "Title": "Group President of Global Markets",
+   "YearBorn": "1973"
+  }
+ },
+ "Phone": "650 432 3200",
+ "WebURL": "https://www.visa.com",
+ "LogoURL": "/img/logos/US/v.png",
+ "FullTimeEmployees": 34100,
+ "UpdatedAt": "2026-10-03"
+}

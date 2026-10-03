@@ -36966,3 +36966,39 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the roster, 42
             carried and 42 passed.
 Carried:    nothing.
+
+### 14.0 planning - phase 14 planned: sector heavyweights, context checks on the setups and the S&P 1500 data check, with the standing decision that rules choose the stocks and a check holding it   2026-10-03
+
+Not a checkpoint entry. It lands 14.0, the pass that plans phase 14, and builds none of the phase.
+Queue:      done, PRs 334 and 335, the sign-off's addendum items 1, 2, 4 and 5; in progress, this pass; next, 14.1,
+            then 14.2 to 14.8 in order, and the night of 2026-10-05 read the morning after it.
+Planned:    `BUILD_PLAN.md`'s phase 14 section and its checkpoints 14.0 to 14.8, the queue's names at 14.7 on the
+            operator's ruling of 2026-10-03; section 20's row; three decisions, the standing one, the heavyweights'
+            scoring and the six checks not adopted; section 1's paragraph stating the standing decision.
+Measured:   the fork over 2019-01-02 to 2026-10-02, the heavyweights replayed at their provisional settings on the
+            ranks as they stood against 4,759 swing picks: 438 trades; under A, 112 picks hidden and 82 of 478 entries
+            held back; under B, 65 stocks on two cards on 1,238 of 1,949 sessions. The provider's sentiment against
+            VADER over 200 articles: all four figures reproduced on at most 42 against a bar of 190, so the news
+            check is not run. How each was read is in the plan's section.
+Captured:   22 answers into `fixtures/membership-2026-09-05/` under the prefix `phase14-`, each declared in its
+            manifest with what was cut from it; the day's count stood at 13,122 of the provider's 100,000 weighted
+            calls afterwards, the checks, the fork's reads, the sentiment test's 260 news requests and these among
+            them.
+Check:      `rules-choose-the-stocks` joins the roster, 42 to 43: 20 deciding components, 26 folders and 123
+            sources read, and a planted read found in a constructed declaration and a constructed source.
+Tests:      1784, from 1781: three added, the check's.
+Claims:     898, unchanged: the plan, the decisions and section 1's paragraph sit in no table the harness reads,
+            and section 20's row is read by the check that counts the phases.
+Mutated:    the rule, stated before the run: the property the check adds broken where it is held, a deciding
+            component's declaration given a read of the news labels, made by hand over the working tree carrying it
+            before its commit, filtered to the check's tests and reverted.
+            R1 `ShortlistBuilder`'s access given a read of the news labels: red in both of the check's tests over
+            the shipped source, the declaration's naming the component and the scan naming its source.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 2036dd7.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1784 of 1784 tests ran with none failed, migrations
+            0 to 57 with none pending, schema version 57, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 898 claims, 898 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 909
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
+Carried:    the night of 2026-10-05 read against the addendum's item 6 figures, in the entry after that night; the
+            fork's ruling, the operator's, before 14.3.
