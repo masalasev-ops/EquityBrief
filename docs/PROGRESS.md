@@ -37039,3 +37039,20 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             FAIL, 0 out of scope, 0 unexamined, 914 placements and verdicts reconciled against a floor of 34, fixture
             PRESENT, 43 checks on the roster, 43 carried and 43 passed.
 Carried:    the remedy's run and each rule's replay line; the night of 2026-10-05 read; the fork's ruling before 14.3.
+
+### 14.1 - the remedy run: the sixteen family rules registered again, each replayed first, all carrying their records on   2026-10-03
+
+Ran:        `tools/remedy.ps1 tools/remedies/2026-10-03-14.1-the-family-rules-replayed.txt` from main at eb6dcbb, at
+            about 23:36 UTC with no night, drain or labeller running and no night lock: `register --moved` replayed
+            each of the sixteen standing family rules and registered all sixteen again at one instant, the breakout's
+            from a583427328fe to fd0abd423161 and the drift's from fc5b0bdd1256 to 699aa6c0831f.
+Replayed:   the fourteen the freezes registered on 2026-10-02 each over that one night, the one the store's family
+            results hold since: the breakout's seven reproduced their no trade and the drift's seven their trades,
+            one each for the variants within 3 sessions on 1.5 times the volume and within 5 sessions, none for the
+            other five. So each counts from 2026-10-02 again, where the market switches' registration of 2026-10-03
+            had restarted it from 2026-10-05. The two switched variants, first registered on 2026-10-03, replayed no
+            night and count from 2026-10-05. The run page for 2026-10-02 drew its fourteen rows each counting from
+            2026-10-02, none restarted, from main's Release build on 5152.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            14.2 entry below states.
+Carried:    the night of 2026-10-05 read; the fork's ruling before 14.3.
