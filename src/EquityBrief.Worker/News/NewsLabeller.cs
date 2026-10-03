@@ -37,12 +37,13 @@ public sealed record NewsLabelOutcome(
 // under the instruction's version, and asks the profile's model for a label one article at a time through
 // the spend cap. Every call and every dollar sits on this run and never on the night's.
 //
-// Before it asks anything it stops where the month's limit is already reached, and before each call where
-// the call would pass it, where its time limit has passed, where a peak window of the profile has opened,
-// or where the day or month cap pauses the call; what is left waits for the next night, and the row says
-// which stop and how many names it reached. An answer code cannot read is asked once more and then kept as
-// unreadable with its cause, so it is not paid for again under that profile and version. A label is never
-// overwritten: the insert ignores a conflict, and after a switch the new profile writes rows of its own.
+// Before it asks anything it stops where the month's limit is already reached, and before each call, a retry
+// among them, where the call would pass it, where its time limit has passed, where a peak window of the
+// profile has opened, or where the day or month cap pauses the call; what is left waits for the next night,
+// and the row says which stop and how many names it reached. An answer code cannot read is asked once more
+// and then kept as unreadable with its cause, so it is not paid for again under that profile and version; a
+// retry a stop refuses leaves the article unlabelled for the next night. A label is never overwritten: the
+// insert ignores a conflict, and after a switch the new profile writes rows of its own.
 // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
 // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
 // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
@@ -196,6 +197,25 @@ public sealed class NewsLabeller : IComponent
             stop = MonthLimitReached;
         }
 
+        // The stops judged before every call, a retry's among them: the time limit, a peak window and the month's
+        // limit, read as the spend so far and the call's own ceiling.
+        string? Stopping(ModelRequest request)
+        {
+            var now = clock.UtcNow;
+
+            if (now - startedAt >= limits.TimeLimit)
+            {
+                return TimeLimitPassed;
+            }
+
+            if (settings.Pricing.IsPeak(now))
+            {
+                return PeakWindowOpened;
+            }
+
+            return monthBefore + cost + cap.Ceiling(request) > limits.MonthLimit ? MonthLimitReached : null;
+        }
+
         foreach (var (ticker, company) in names)
         {
             if (stop != Finished)
@@ -209,24 +229,11 @@ public sealed class NewsLabeller : IComponent
 
             foreach (var (articleId, title, text) in await ArticlesAsync(connection, ticker, from, to, cancellation))
             {
-                var now = clock.UtcNow;
                 var request = new ModelRequest(NewsInstruction.Lane, NewsInstruction.Section, settings.Model, [articleId], NewsInstruction.System, NewsInstruction.Prompt(company, ticker, title, text));
 
-                if (now - startedAt >= limits.TimeLimit)
+                if (Stopping(request) is { } before)
                 {
-                    stop = TimeLimitPassed;
-                    break;
-                }
-
-                if (settings.Pricing.IsPeak(now))
-                {
-                    stop = PeakWindowOpened;
-                    break;
-                }
-
-                if (monthBefore + cost + cap.Ceiling(request) > limits.MonthLimit)
-                {
-                    stop = MonthLimitReached;
+                    stop = before;
                     break;
                 }
 
@@ -252,7 +259,14 @@ public sealed class NewsLabeller : IComponent
 
                 if (label is null)
                 {
-                    // Asked once more, the same request under a round of its own.
+                    // Asked once more, the same request under a round of its own, where the stops a first call is
+                    // judged by let it be asked; where they do not, the article is left unlabelled for the next night.
+                    if (Stopping(request) is { } again)
+                    {
+                        stop = again;
+                        break;
+                    }
+
                     var second = await cap.AskAsync(request, runId, round + ", retry", cancellation);
 
                     calls += second.Answered || second.Unusable || second.Failure is not null && !second.Paused ? 1 : 0;

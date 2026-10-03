@@ -36341,3 +36341,35 @@ Opened:     eight operating rows stand for phase 12, the two the report names an
             amends.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, GATETREE,
             with the figures the last entry of the pull request states.
+
+### 12.6 - correction: the labeller's retry is judged by its time limit, a peak window and its month limit as a first call is, and one they stop leaves its article unlabelled, where the retry was asked unjudged   2026-10-03
+
+Corrects:   the news labeller of the 12.6 correction of 2026-10-01 (5cd3d42). It judged its time limit, a peak
+            window and its month limit before an article's first call and none of them before the retry it asks
+            where the first answer cannot be read, where its own description says it stops before each call. A
+            retry could pass the month limit by a call's ceiling, run a call past the time limit and be asked
+            inside a peak window. The review's scratch test, never committed: calls priced at their 1-cent
+            ceiling, a limit of 1.5 cents and the first answer unreadable made 2 calls and left the month at
+            0.02.
+Found:      by the sign-off review of phases 12 and 13 on 2026-10-02, over 9cfabe8.
+Repaired:   one judgment before every call, the retry's among them: the time limit, a peak window, and the
+            month limit read as the spend so far and the call's own ceiling. A retry it stops is not asked, and
+            the article is left unlabelled for the next night with no row written for it. The roster's
+            `fixture-expectations` row says so, with its prior text in `CHANGELOG.md`.
+Tests:      1762, from 1759: three added, one for each stop, each over a feed priced at its ceiling that moves
+            the clock as it answers and whose first answer cannot be read, the retry refused at the stop's edge
+            and asked just inside it.
+Claims:     887, unchanged.
+Pins:       none moves: the labeller sits in no pin list.
+Mutated:    the rule, stated before the run: the retry left unjudged, and each stop read so that a retry passes
+            it, made on the branch in this checkout, filtered to the labeller's tests and reverted.
+            L1 the retry asked without the judgment: red in the three retry tests.
+            L2 the month limit read without the spend so far: red in the month limit's retry test alone.
+            L3 the time limit passed only once it is exceeded: red in the time limit's retry test and in the
+               first call's stop test.
+            L4 a peak window read at the run's start: red in the peak window's retry test alone.
+            Results: R126MUT.
+Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` green and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's correction to the last,
+            GATETREE, with the figures the last entry states.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
