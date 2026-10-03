@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Net;
+using System.Net.Http;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Candidates;
 using EquityBrief.Core.Families;
@@ -287,6 +289,53 @@ public partial class FixtureExpectations
 
         Assert.Equal((0, 0), (none.Requests, nothing.Requests));
         Assert.Equal(["market-series|ok|0|no session is stored, so no market series was asked for"], FamilyRows(empty, "SELECT stage, outcome, network_requests, detail FROM run_log WHERE run_id = 'night-empty';"));
+    }
+
+    // An answer the provider sends with a 200 that cannot be read as sessions, an error page or an array of anything
+    // but sessions, is a series not served: named on the stage's own row with its cause, nothing stored for it, the
+    // row ok, the other series stored, and the stage returning so the night goes on.
+    // see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+    [Fact]
+    public async Task ASeriesAnsweredInAFormThatCannotBeReadIsNamedStoresNothingAndStopsNothing()
+    {
+        var clock = FixedClock.At(new DateTimeOffset(2026, 10, 2, 23, 35, 0, TimeSpan.Zero), SessionZones.UnitedStates);
+
+        foreach (var (body, run) in new[] { ("<html><body>Service busy</body></html>", "night-page"), ("[\"busy\"]", "night-array") })
+        {
+            using var store = BreakoutStore();
+
+            var feed = new EodhdMarketSeriesFeed(
+                new HttpClient(new OneSeriesUnreadable(MarketCloses.Vix, body)) { BaseAddress = new Uri("https://eodhd.example/api/") },
+                new ProviderCredentials("demo-key-not-a-real-one"),
+                new ProviderRequest(RetryPolicy.Standard, (_, _) => Task.CompletedTask));
+
+            var outcome = await new MarketSeriesFetcher(feed, clock, store.DatabaseFile).RunAsync(run);
+
+            Assert.Equal((3, 2), (outcome.RowsWritten, outcome.Requests));
+            Assert.StartsWith("VIX: nothing was stored for it, its answer could not be read: ", Assert.Single(outcome.Refused), StringComparison.Ordinal);
+            Assert.Equal([$"market-series|ok|3|2"], FamilyRows(store, $"SELECT stage, outcome, rows_written, network_requests FROM run_log WHERE run_id = '{run}';"));
+            Assert.Contains("VIX: nothing was stored for it, its answer could not be read: ", FamilyRows(store, $"SELECT detail FROM run_log WHERE run_id = '{run}';").Single(), StringComparison.Ordinal);
+            Assert.Equal(["GSPC|3"], FamilyRows(store, "SELECT series, COUNT(*) FROM market_bar GROUP BY series;"));
+        }
+    }
+
+    // A provider answering every series with three sessions to 2026-10-02 but one, which it answers with the body it
+    // is handed under a 200.
+    sealed class OneSeriesUnreadable(string unreadable, string body) : HttpMessageHandler
+    {
+        const string Served = """
+            [
+              {"date":"2026-09-30","open":6700,"high":6701,"low":6699,"close":6700,"adjusted_close":6700,"volume":0},
+              {"date":"2026-10-01","open":6710,"high":6711,"low":6709,"close":6710,"adjusted_close":6710,"volume":0},
+              {"date":"2026-10-02","open":6720,"high":6721,"low":6719,"close":6720,"adjusted_close":6720,"volume":0}
+            ]
+            """;
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(request.RequestUri!.AbsolutePath.Contains($"/{unreadable}.", StringComparison.Ordinal) ? body : Served),
+            });
     }
 
     [Fact]

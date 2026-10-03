@@ -23,10 +23,11 @@ public sealed record MarketSeriesOutcome(DateOnly? Through, IReadOnlyList<string
 // The market series fetcher. Asks the provider for the index's and the VIX's daily series over the days before the
 // night's session that the market switches read back over, one request a series whatever the index's size, and
 // stores each session no night has stored yet, apart from the members' bars. Insert only: a session already held
-// keeps the row the night that first stored it wrote. A series the provider refuses, does not answer in time or
-// sends nothing for stores nothing and is named on the stage's own row, and it stops nothing, since only the
-// switches read it and each reads a night it holds no close for as closed. It runs in the fetch step after the bar
-// fetcher, reading the night's session off the bars that step stored, and calls no model.
+// keeps the row the night that first stored it wrote. A series the provider refuses, does not answer in time, sends
+// nothing for or answers in a form that cannot be read stores nothing and is named on the stage's own row, and it
+// stops nothing, since only the switches read it and each reads a night it holds no close for as closed. It runs in
+// the fetch step after the bar fetcher, reading the night's session off the bars that step stored, and calls no
+// model.
 // see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
 public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, string databaseFile) : IComponent
 {
@@ -104,13 +105,17 @@ public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, st
                     answered.Add((series, bars));
                 }
             }
-            catch (Exception failure) when (failure is ProviderRefusal or FormatException)
-            {
-                refused.Add($"{series}: nothing was stored for it, {failure.Message}");
-            }
             catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
             {
                 refused.Add($"{series}: the provider did not answer in time on any try, so nothing was stored for it");
+            }
+            catch (Exception failure) when (failure is not OperationCanceledException)
+            {
+                // Every failure of the request but the night's own cancellation is a series not served, whatever
+                // its shape: an answer that arrived and cannot be read stops nothing, as a refusal stops nothing.
+                refused.Add(failure is ProviderRefusal or FormatException
+                    ? $"{series}: nothing was stored for it, {failure.Message}"
+                    : $"{series}: nothing was stored for it, its answer could not be read: {failure.Message}");
             }
         }
 

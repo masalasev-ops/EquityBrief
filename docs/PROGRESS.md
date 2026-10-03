@@ -36858,3 +36858,38 @@ Carried:    the two found above, into phase 14's plan; the invariant (d)'s equiv
             behaviour, whose two known causes PRs 328 and 329 removed; the operator's question whether a family
             rule registered again should keep restarting its record, where the pullback's rules are read by
             name from their first night; and the switched rules' first scored night, 2026-10-05.
+
+### 13.10 - correction: the night's market series fetch reads an answer it cannot read as a series not served, where it stopped the night   2026-10-03
+
+Corrects:   the market switches' ruling of 2026-10-03, merged as PR 331. `MarketSeriesFetcher` caught a refusal,
+            a `FormatException` and a timeout around each series, so a series answered 200 with a body that is not
+            JSON threw a `JsonReaderException` out of the shared parser, and one answered with an array of anything
+            but sessions an `InvalidOperationException` out of the bar reader. Either escaped `RunAsync` after the
+            bars were stored, the fetch step failed and the night stopped there and tried again, where the decision
+            on the night's two series gives holding back every list and record as the reason a series stops
+            nothing. A wrong result on a live surface from the night of 2026-10-05, the first to run the stage.
+Found:      by the phase 13 sign-off's review over bb76de7, and carried into phase 14's plan as its addendum's item 1
+            on the operator's ruling of 2026-10-03. The review's probe, copied in as a scratch file and deleted
+            after, was red over bca4b68 on both shapes before this correction and green after it.
+Repaired:   inside `RunAsync`'s per-series try, every failure of the series request but the night's own
+            cancellation is read as a series not served: named on the stage's row with the reader's own words,
+            nothing stored for it, the row ok and the other series stored. In the fetcher and not the shared
+            parser, which the backfill and the bar feeds rely on to fail. The decision's sentence, section 18's
+            row's later cells and the component's catalogue row name the fourth case, an answer that cannot be
+            read, the row's first cell word for word, and `fixture-expectations` and `nightly-run` reach it. In the
+            same pull request as commits of their own: the history pull's sibling catch, as the 12.5 correction
+            below; the reader's guide giving the drift's plain result a trade falling from 0.278 to 0.241 among its
+            switch's failures, the addendum's item 2; and the drain's claim stating in its comment why a deferred
+            begin is equivalent to the immediate one only while the claim runs one statement, its item 5.
+Tests:      FILL, from 1776: the fetcher over the live market series feed, the VIX answered 200 with a page and
+            then with an array of strings while the index is served; and the night's fetch test extended with a
+            night whose index answer is a page, run to its close with the VIX stored.
+Claims:     FILL.
+Pins:       none moves: `MarketSeriesFetcher.cs` and `RequestDrain.cs` sit in no pin list.
+Mutated:    the rule, stated before the run: the widened catch narrowed back to a refusal or a format error, the one
+            property this correction adds, made by hand over the working tree carrying it before its commit,
+            filtered to the three fetch tests and reverted, the source reading as committed after it.
+            M1 the fetcher's catch narrowed back: red in the new fetcher test and in the night's fetch test, the
+            older fetch test green.
+Verified:   FILL.
+Carried:    the night of 2026-10-05 read against the addendum's item 6 figures, recorded in the next entry.
