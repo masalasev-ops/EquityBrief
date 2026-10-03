@@ -37014,11 +37014,11 @@ Built:      the family replay, run by `register --moved` and `register --family-
             reproduced every trade, and from its registration otherwise, the run page saying where and why. Two
             decisions: the replay's, and the market switches' restated with its restart read by the replay, the
             old moved to Previously decided and every citation repointed.
-Tests:      FILL, from 1784: three added, the replay reproducing over a store whose night the evaluator and the
+Tests:      1787, from 1784: three added, the replay reproducing over a store whose night the evaluator and the
             recorder ran and to which Monday's bars came after, the replay restarting the live rule over a stored
             trade differing in its end and result alone, and the run page read back; and the record's reader turned
             round, a rule registered again read from its first registration where a replay carried it.
-Claims:     FILL, from 898: the replay's catalogue and matrix rows, section 18's row and the setup families' two
+Claims:     903, from 898: the replay's catalogue and matrix rows, section 18's row and the setup families' two
             parts.
 Pins:       `FamilyEvaluator.cs` sits in every family rule's pin list, so the breakout's evaluator moves from
             a583427328fe to fd0abd423161 and the drift's from fc5b0bdd1256 to 699aa6c0831f; the candidates' shared
@@ -37031,5 +37031,11 @@ Mutated:    the rule, stated before the run: each property this checkpoint adds 
             G1 the comparison ignoring a trade's end and result: red in the restart test alone.
             G2 a record read from the registration it stands by where its replay reproduced it: red in all four.
             G3 a night's inputs read with the bars after the night: red in the two replay tests.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 5b50e57, the
+            entry's commit with the market switches' registration test brought to the replay's lines after the
+            first run of `tools/ci.ps1` over 7537b82 failed on it alone. `tools/ci.ps1`: all six steps, 0 warnings,
+            0 errors, 1787 of 1787 tests ran with none failed, migrations 0 to 57 with none pending, schema version
+            57, against `data-ci` and never `data`. `tools/verify-phase.ps1`: 44 tables, 903 claims, 903 PASS, 0
+            FAIL, 0 out of scope, 0 unexamined, 914 placements and verdicts reconciled against a floor of 34, fixture
+            PRESENT, 43 checks on the roster, 43 carried and 43 passed.
 Carried:    the remedy's run and each rule's replay line; the night of 2026-10-05 read; the fork's ruling before 14.3.
