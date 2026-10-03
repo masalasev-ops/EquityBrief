@@ -36430,3 +36430,27 @@ Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` 
             `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's correction to the last,
             GATETREE, with the figures the last entry states.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.10 - correction: the store's copy is shown holding the drain's lock from the moment it names the copy until it writes its row, where only its wait was asserted   2026-10-03
+
+Corrects:   the store's copy of the 13.10 ruling (c6c2240, merged as PR 321). The copy waits for the drain's
+            lock and holds it while it copies, as the roster and the wait test's comment state, and only the wait
+            was asserted: the review's mutation d3, the lock let go before the copy is made, passed the whole
+            suite, 1758 of 1758. A missing property: an assertion only, and no shipped code changes.
+Found:      by the sign-off review of phases 12 and 13 on 2026-10-02, over 9cfabe8.
+Repaired:   a test reads the copy over a clock that steps a second at each read and, at each, asks for the
+            drain's lock as the drain does and lets it go at once. The lock is free as the copy starts, held at
+            the read that names the copy and at the read that stamps its row's end, after the copy is written
+            and read back, and free once the copy has finished.
+Tests:      1764, from 1763: one added.
+Claims:     887, unchanged.
+Pins:       none moves: no shipped file changes.
+Mutated:    the rule, stated before the run: the property the test adds, broken alone, made on the branch in
+            this checkout, filtered to the store copy's tests and reverted.
+            D1 the review's mutation d3, the drain's lock let go before the copy is made: red in the new test
+               alone.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's
+            correction to this one: GATETREE.
+            The run's figures are filled in after it.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.

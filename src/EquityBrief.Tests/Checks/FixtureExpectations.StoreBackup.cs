@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Configuration;
 using EquityBrief.Core.Research;
@@ -355,5 +356,75 @@ public partial class FixtureExpectations
                 CopyRow(store, StoreBackup.RunIdAt(CopyStart), out var outcome).GetProperty("reason").GetString());
             Assert.Equal(StoreBackup.NotCopied, outcome);
         }
+    }
+
+    // A clock that steps a second at each read and, at each, asks for the drain's lock as the drain asks for it and
+    // lets it go at once, so every instant a copy reads says whether the lock was held at that moment.
+    sealed class DrainProbe(DateTimeOffset start, string dataRoot) : IClock
+    {
+        DateTimeOffset next = start;
+
+        public Dictionary<DateTimeOffset, bool> Held { get; } = [];
+
+        public DateTimeOffset UtcNow
+        {
+            get
+            {
+                var at = next;
+
+                next += TimeSpan.FromSeconds(1);
+                Held[at] = DrainHeld(dataRoot);
+
+                return at;
+            }
+        }
+
+        public TimeZoneInfo SessionZone { get; } = SessionZones.ResolveSessionZone(SessionZones.UnitedStates);
+    }
+
+    // Whether another holds the drain's lock, its file already made: asked for as the drain asks for it and let go.
+    static bool DrainHeld(string dataRoot)
+    {
+        try
+        {
+            using var asked = new FileStream(Path.Combine(dataRoot, WorkerDrainLauncher.CopiesFolder, DrainLock.FileName), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+
+            return false;
+        }
+        catch (IOException)
+        {
+            return true;
+        }
+    }
+
+    [Fact]
+    public async Task TheCopyHoldsTheDrainsLockFromTheMomentItNamesTheCopyUntilItWritesItsRow()
+    {
+        // Nothing holds the store, so the copy takes the drain's lock at once, the lock's file made as a drain leaves
+        // it. The read as the copy starts finds the lock free; the read that names the copy and the read that stamps
+        // its row's end, after the copy is written and read back, find it held; and once the copy has finished it is
+        // free again.
+        using var store = CopyStore();
+        var drains = Path.Combine(store.Root, WorkerDrainLauncher.CopiesFolder);
+
+        Directory.CreateDirectory(drains);
+
+        using (new FileStream(Path.Combine(drains, DrainLock.FileName), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+        {
+        }
+
+        var clock = new DrainProbe(CopyStart, store.Root);
+        var made = await new StoreBackup(clock, store.Root, store.DatabaseFile, Path.Combine(store.Root, "copies"), TimeSpan.FromMinutes(20), (_, _) => Task.CompletedTask)
+            .RunAsync(afterTheLabeller: false);
+
+        Assert.Equal(StoreBackup.Copied, made.Outcome);
+
+        var stamped = Text(store, $"SELECT ended_at FROM run_log WHERE stage = '{StoreCopies.Stage}';");
+        var ended = DateTimeOffset.ParseExact(stamped, "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+
+        Assert.False(clock.Held[CopyStart]);
+        Assert.True(clock.Held[StoreCopies.MadeAt(made.Copy!)!.Value]);
+        Assert.True(clock.Held[ended]);
+        Assert.False(DrainHeld(store.Root));
     }
 }
