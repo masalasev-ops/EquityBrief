@@ -46,7 +46,7 @@ public class NightSourceTests
 
         Assert.True(feeds.ReachesTheNetwork);
 
-        // Every one of the six, and not merely the first. A feed added live and
+        // Every one of the eight, and not merely the first. A feed added live and
         // left out of the check would read as one that cannot, which is what
         // happened: this list said five and the record held six from 4.3 until
         // 6.1, and the calendar was the one missing from both this and the reader.
@@ -56,7 +56,19 @@ public class NightSourceTests
         Assert.IsType<EodhdCorporateActionFeed>(feeds.Corporate);
         Assert.IsType<EodhdEarningsCalendarFeed>(feeds.Calendar);
         Assert.IsType<EodhdNewsFeed>(feeds.News);
+        Assert.IsType<EodhdFundamentalsFeed>(feeds.Fundamentals);
+        Assert.IsType<EodhdMarketSeriesFeed>(feeds.Market);
+
+        // And every role the record composes, read off its own constructor, so a role added to it is one this
+        // asks of: the reported quarters' feed and the market series' each joined the record without joining
+        // this list.
+        Assert.Equal(8, Roles().Count);
+        Assert.All(Roles(), role => Assert.StartsWith("Eodhd", typeof(NightFeeds).GetProperty(role)!.GetValue(feeds)!.GetType().Name, StringComparison.Ordinal));
     }
+
+    // The roles the record composes, by the names its constructor takes them under.
+    static IReadOnlyList<string> Roles() =>
+        [.. typeof(NightFeeds).GetConstructors().Single().GetParameters().Select(role => role.Name!)];
 
     [Fact]
     public void OneLiveFeedAmongCapturesIsASetThatReachesTheNetwork()
@@ -66,24 +78,24 @@ public class NightSourceTests
         // all-or-nothing pair either side of this cannot tell a reader that names
         // five of six from one that names all six: both answer correctly when
         // every feed is the same kind. Constructed rather than resolved, one
-        // member at a time, so a seventh member left out of the reader fails here.
+        // role at a time and every role the record's own constructor takes, so a
+        // role added to the record and left out of the reader fails here, where a
+        // list kept here named six while the record held eight.
         var captures = NightFeeds.FromFixture(Folder());
 
         Assert.False(captures.ReachesTheNetwork);
 
         var live = NightFeeds.Live(null, Key);
+        var constructor = typeof(NightFeeds).GetConstructors().Single();
 
-        NightFeeds[] mixed =
-        [
-            captures with { Membership = live.Membership },
-            captures with { Historical = live.Historical },
-            captures with { Bulk = live.Bulk },
-            captures with { Corporate = live.Corporate },
-            captures with { Calendar = live.Calendar },
-            captures with { News = live.News },
-        ];
+        NightFeeds Mixed(string swapped) =>
+            (NightFeeds)constructor.Invoke(
+            [
+                .. Roles().Select(role => typeof(NightFeeds).GetProperty(role)!.GetValue(role == swapped ? live : captures)),
+            ]);
 
-        Assert.All(mixed, feeds => Assert.True(feeds.ReachesTheNetwork));
+        Assert.Equal(8, Roles().Count);
+        Assert.All(Roles(), role => Assert.True(Mixed(role).ReachesTheNetwork, $"The {role} feed live among captures read as a set that cannot reach the network."));
     }
 
     [Fact]

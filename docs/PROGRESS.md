@@ -36694,3 +36694,31 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             903 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
             roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.10 - correction: the night's network reader shown to fail for every role its record composes, a market switch shown to count its sessions on the store's own, and a series the provider does not answer in time shown to stop nothing, where a mutation of each would have passed   2026-10-03
+
+Corrects:   the market switches' ruling of 2026-10-03 (merged as PR 331), and the 12.2 correction that fetches
+            reported quarters. The tests of the night's feeds named six roles from lists kept beside them while
+            the record held eight, so `NightFeeds.ReachesTheNetwork` with the market series' or the reported
+            quarters' feed left out passed them: the quarters' feed joined the record at 12.2 and the market
+            series' at the ruling, and neither joined the lists. The switched rule's firing test stored the index's
+            closes on exactly the store's sessions, so a calendar read off the series' own days passed it. And no
+            test made the provider time out, so the fetch with its catch for a series not answered in time taken
+            out passed. Missing properties: assertions only, and no shipped code changes.
+Found:      gathering the figures for the sign-off prompt of phases 12 and 13, on 2026-10-03 over 639a062.
+Repaired:   the two feed tests read the roles off the record's own constructor, eight stated, and the mixed set
+            swaps each one live at a time; the firing test takes the index's close out on one of the store's
+            sessions inside the 200, 2026-09-15, and reads the switch closed with its reason; the fetch test makes
+            the VIX time out on every try and reads it named, nothing stored and the stage's row written ok.
+Tests:      1775, unchanged: four tests rewritten.
+Claims:     892, unchanged.
+Pins:       none moves: no shipped file changes.
+Mutated:    the rule, stated before the run: each mutation an assertion here was written for, run over this tree
+            and over main's tests before it, filtered to the tests named and reverted.
+            N1 the market series feed left out of the network reader: red in the mixed-set test.
+            N2 the reported quarters' feed left out of the network reader: red in the mixed-set test.
+            N3 the evaluator's calendar read off the market series' own days: red in the firing test.
+            N4 a series the provider does not answer in time failing the fetch: red in the fetch test.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: N13GATES
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
