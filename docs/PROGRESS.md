@@ -36662,11 +36662,11 @@ Guide:      the reader's guide brought into line with the architecture, which a 
             typical moves above, and its card's order; the three settings the shape clock moves; the breakout's
             and the drift's records shown as their trades decide; the queue and the watch list pages; and the two
             switches registered.
-Tests:      MSWTESTS, from 1769: six added, each switch by hand at its edge and every session read as the ideas'
+Tests:      1775, from 1769: six added, each switch by hand at its edge and every session read as the ideas'
             run reads it, the fetch over a constructed feed, a switched rule firing and not, a family registered
             again, and the night's fetch step; three moved from seven rules a family to eight, and the night's
             weighted total and the claims' pair count the market series.
-Claims:     MSWCLAIMS, from 887: five added, the market series fetcher's catalogue and matrix rows, its store,
+Claims:     892, from 887, with 892 PASS: five added, the market series fetcher's catalogue and matrix rows, its store,
             section 17's market switches and section 18's series not served.
 Pins:       the breakout's evaluator version moves, 65ea06f28fff to a583427328fe, and the drift's, 3309f7f59e9e
             to fc5b0bdd1256, which the remedy registers each family under. No other pin moves: the swing filter's,
@@ -36681,6 +36681,16 @@ Mutated:    the rule, stated before the run: each property the change adds, brok
             S6 a series refused failing the fetch step: red in the fetch test and the night's test.
             S7 the drift's evaluator not reading its switch: red in the firing test.
             S8 a family registered again without retiring its standing rules: red in the family test.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: MSWGATES
+            Results: each red in every test named for it, run filtered to those tests: S1, S2 and S3 in the
+            edge test; S4 in the edge test and the evaluator's test, the switched rule firing on BA, BB and BC
+            over a store holding none of the index's closes; S5 in the fetch test, the revised close written over
+            the first night's; S6 in the fetch test and the night's test, the night stopping at its fetch step;
+            S7 in the firing test; S8 in the family test, each of the eight refused as already standing. Each ran
+            over 6639a45 and was reverted, the tree reading clean after it and the tests named passing over it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 6639a45.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1775 of 1775 tests ran with none failed,
+            migrations 0 to 57 with none pending, schema version 57, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 892 claims, 892 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            903 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
