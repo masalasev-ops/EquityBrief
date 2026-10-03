@@ -37002,3 +37002,40 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed.
 Carried:    the night of 2026-10-05 read against the addendum's item 6 figures, in the entry after that night; the
             fork's ruling, the operator's, before 14.3.
+
+### 14.1 - a family rule's record read by its name from its first registration, guarded by a replay at every registration that registers it again   2026-10-03
+
+Built:      the family replay, run by `register --moved` and `register --family-again` before they write: each family
+            rule they register again is replayed at its settings under the code as it stands over every night the
+            store holds since its record began, through the family evaluator's own inputs, now read as of any night
+            it is handed, the night's shadow and the list the family recorder keeps, now shared with it, and each
+            trade it keeps is compared with the stored one; one row a rule on the run log under a run of its own. A
+            rule's record counts from its first registration where the replay under the version it stands at
+            reproduced every trade, and from its registration otherwise, the run page saying where and why. Two
+            decisions: the replay's, and the market switches' restated with its restart read by the replay, the
+            old moved to Previously decided and every citation repointed.
+Tests:      1787, from 1784: three added, the replay reproducing over a store whose night the evaluator and the
+            recorder ran and to which Monday's bars came after, the replay restarting the live rule over a stored
+            trade differing in its end and result alone, and the run page read back; and the record's reader turned
+            round, a rule registered again read from its first registration where a replay carried it.
+Claims:     903, from 898: the replay's catalogue and matrix rows, section 18's row and the setup families' two
+            parts.
+Pins:       `FamilyEvaluator.cs` sits in every family rule's pin list, so the breakout's evaluator moves from
+            a583427328fe to fd0abd423161 and the drift's from fc5b0bdd1256 to 699aa6c0831f; the candidates' shared
+            evaluation sources, the swing filter's and the rule versions' lists are not touched, so no pullback rule
+            moves. The sixteen family rules are registered again by `tools/remedies/2026-10-03-14.1-the-family-rules-
+            replayed.txt` after the merge and before the night, which replays each first, the replay over the move
+            of 2026-10-03 among them; its lines are copied into the entry after it runs.
+Mutated:    the rule, stated before the run: each property this checkpoint adds broken alone, made by hand over the
+            working tree carrying it before its commit, filtered to the four replay tests and reverted.
+            G1 the comparison ignoring a trade's end and result: red in the restart test alone.
+            G2 a record read from the registration it stands by where its replay reproduced it: red in all four.
+            G3 a night's inputs read with the bars after the night: red in the two replay tests.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 5b50e57, the
+            entry's commit with the market switches' registration test brought to the replay's lines after the
+            first run of `tools/ci.ps1` over 7537b82 failed on it alone. `tools/ci.ps1`: all six steps, 0 warnings,
+            0 errors, 1787 of 1787 tests ran with none failed, migrations 0 to 57 with none pending, schema version
+            57, against `data-ci` and never `data`. `tools/verify-phase.ps1`: 44 tables, 903 claims, 903 PASS, 0
+            FAIL, 0 out of scope, 0 unexamined, 914 placements and verdicts reconciled against a floor of 34, fixture
+            PRESENT, 43 checks on the roster, 43 carried and 43 passed.
+Carried:    the remedy's run and each rule's replay line; the night of 2026-10-05 read; the fork's ruling before 14.3.

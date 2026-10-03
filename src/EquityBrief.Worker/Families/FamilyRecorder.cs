@@ -202,28 +202,14 @@ public sealed class FamilyRecorder : IComponent
             var family = ((FamilyRuleEvaluator)CandidateEvaluators.Find(rule.Evaluator)!).Family;
             var cap = SetupFamilies.Named(family)?.CapSessions ?? 0;
             var held = await HeldAsync(connection, transaction, rule.Candidate, night, cancellation);
-            var listed = 0;
+            var listed = Keep(
+                verdicts.Where(verdict => verdict.Family == family && verdict.Outcome.Candidate == rule.Candidate).Select(verdict => (verdict.Ticker, verdict.Outcome)),
+                held);
 
-            foreach (var fire in verdicts
-                .Where(verdict => verdict.Family == family && verdict.Outcome.Candidate == rule.Candidate && verdict.Outcome.Fired)
-                .OrderByDescending(verdict => Number(verdict.Outcome.Values, FamilyRuleEvaluator.OrderValue) ?? double.MinValue)
-                .ThenByDescending(verdict => Number(verdict.Outcome.Values, FamilyRuleEvaluator.ThenByValue) ?? double.MinValue)
-                .ThenBy(verdict => verdict.Ticker, StringComparer.Ordinal))
+            foreach (var (ticker, place, plan) in listed)
             {
-                if (listed == SetupFamilies.ListedANight)
-                {
-                    break;
-                }
-
-                if (held.Contains(fire.Ticker) || Plan(fire.Outcome.Values) is not { } plan)
-                {
-                    continue;
-                }
-
-                listed++;
-
                 await ExecuteAsync(connection, transaction, Insert, cancellation,
-                    ("$candidate", rule.Candidate), ("$ticker", fire.Ticker), ("$night", Stamp(night)), ("$family", family), ("$place", listed),
+                    ("$candidate", rule.Candidate), ("$ticker", ticker), ("$night", Stamp(night)), ("$family", family), ("$place", place),
                     ("$entry", Money.ToStorage(plan.Entry)), ("$stop", Money.ToStorage(plan.Stop)),
                     ("$target", plan.Target is { } target ? Money.ToStorage(target) : DBNull.Value),
                     ("$risk_moves", plan.RiskMoves is { } risk ? risk : DBNull.Value),
@@ -231,8 +217,8 @@ public sealed class FamilyRecorder : IComponent
                     ("$cap", cap));
             }
 
-            kept += listed;
-            said.Add(FormattableString.Invariant($"'{rule.Candidate}' kept {listed}"));
+            kept += listed.Count;
+            said.Add(FormattableString.Invariant($"'{rule.Candidate}' kept {listed.Count}"));
         }
 
         var detail = FormattableString.Invariant($"for {night:yyyy-MM-dd}: {kept} trade(s) kept by {said.Count} registered family rule(s), {ended} ended and {benchmarked} benchmarked")
@@ -242,6 +228,38 @@ public sealed class FamilyRecorder : IComponent
         await transaction.CommitAsync(cancellation);
 
         return new FamilyRecordsOutcome(night, kept, ended, benchmarked, said.Count);
+    }
+
+    // The trades one rule keeps on a night from its own verdicts: the members it fired on in the family's own
+    // order, the order's figure and then the second figure each largest first and then the ticker, at most five,
+    // none it holds a trade on still open and none whose values place no plan. The night's record keeps its list
+    // by it, and a replay of the rule keeps the list the same way.
+    public static IReadOnlyList<(string Ticker, int Place, (decimal Entry, decimal Stop, decimal? Target, double? RiskMoves, double? RewardToRisk) Plan)> Keep(
+        IEnumerable<(string Ticker, ShadowOutcome Outcome)> verdicts,
+        IReadOnlySet<string> held)
+    {
+        var kept = new List<(string, int, (decimal, decimal, decimal?, double?, double?))>();
+
+        foreach (var fire in verdicts
+            .Where(verdict => verdict.Outcome.Fired)
+            .OrderByDescending(verdict => Number(verdict.Outcome.Values, FamilyRuleEvaluator.OrderValue) ?? double.MinValue)
+            .ThenByDescending(verdict => Number(verdict.Outcome.Values, FamilyRuleEvaluator.ThenByValue) ?? double.MinValue)
+            .ThenBy(verdict => verdict.Ticker, StringComparer.Ordinal))
+        {
+            if (kept.Count == SetupFamilies.ListedANight)
+            {
+                break;
+            }
+
+            if (held.Contains(fire.Ticker) || Plan(fire.Outcome.Values) is not { } plan)
+            {
+                continue;
+            }
+
+            kept.Add((fire.Ticker, kept.Count + 1, plan));
+        }
+
+        return kept;
     }
 
     // The plan a verdict's values state: the buy, the stop, the target where the plan names one, the stop's
@@ -271,19 +289,30 @@ public sealed class FamilyRecorder : IComponent
     // its cap's sessions have passed with the stock's closes run out before it; and still open otherwise. The
     // plan is read at the scale of the closes as they are stored now, so an adjustment since the night moves
     // the buy, the stop and the target together.
-    static (DateOnly On, double? Result)? Walk(Kept trade, IReadOnlyList<(DateOnly Session, double Close)>? series, IReadOnlyList<DateOnly> calendar, IReadOnlyDictionary<DateOnly, int> at)
+    static (DateOnly On, double? Result)? Walk(Kept trade, IReadOnlyList<(DateOnly Session, double Close)>? series, IReadOnlyList<DateOnly> calendar, IReadOnlyDictionary<DateOnly, int> at) =>
+        Walk(trade.Session, trade.Entry, trade.Stop, trade.Target, trade.Cap, series, calendar, at);
+
+    public static (DateOnly On, double? Result)? Walk(
+        DateOnly session,
+        decimal buy,
+        decimal stopAt,
+        decimal? targetAt,
+        int cap,
+        IReadOnlyList<(DateOnly Session, double Close)>? series,
+        IReadOnlyList<DateOnly> calendar,
+        IReadOnlyDictionary<DateOnly, int> at)
     {
-        var index = series is null ? -1 : IndexOf(series, trade.Session);
+        var index = series is null ? -1 : IndexOf(series, session);
 
         if (series is not null && index >= 0)
         {
             var closes = series.Select(bar => bar.Close).ToArray();
-            var scale = closes[index] / Statistic.FromPrice(trade.Entry);
+            var scale = closes[index] / Statistic.FromPrice(buy);
             var entry = closes[index];
-            var stop = Statistic.FromPrice(trade.Stop) * scale;
-            double? result = trade.Target is { } target
-                ? FamilyWalks.Fixed(closes, index, entry, stop, Statistic.FromPrice(target) * scale, trade.Cap, out var sessions)
-                : FamilyWalks.Trailing(closes, index, entry, stop, entry - stop, trade.Cap, out sessions);
+            var stop = Statistic.FromPrice(stopAt) * scale;
+            double? result = targetAt is { } target
+                ? FamilyWalks.Fixed(closes, index, entry, stop, Statistic.FromPrice(target) * scale, cap, out var sessions)
+                : FamilyWalks.Trailing(closes, index, entry, stop, entry - stop, cap, out sessions);
 
             if (result is not null)
             {
@@ -293,8 +322,8 @@ public sealed class FamilyRecorder : IComponent
 
         // The stock's closes ran out before its trade ended: once its cap's sessions have passed it is ended,
         // with no result, and frees the stock from the night after.
-        return SessionsAfter(trade.Session, at, calendar) >= trade.Cap && at.TryGetValue(trade.Session, out var from) && from + trade.Cap < calendar.Count
-            ? (calendar[from + trade.Cap], null)
+        return SessionsAfter(session, at, calendar) >= cap && at.TryGetValue(session, out var from) && from + cap < calendar.Count
+            ? (calendar[from + cap], null)
             : null;
     }
 
@@ -413,7 +442,7 @@ public sealed class FamilyRecorder : IComponent
         return trades;
     }
 
-    static async Task<IReadOnlyList<DateOnly>> SessionsAsync(SqliteConnection connection, DateOnly from, CancellationToken cancellation)
+    internal static async Task<IReadOnlyList<DateOnly>> SessionsAsync(SqliteConnection connection, DateOnly from, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 
@@ -432,7 +461,7 @@ public sealed class FamilyRecorder : IComponent
         return sessions;
     }
 
-    static async Task<IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Close)>>> ClosesAsync(SqliteConnection connection, DateOnly from, CancellationToken cancellation)
+    internal static async Task<IReadOnlyDictionary<string, IReadOnlyList<(DateOnly Session, double Close)>>> ClosesAsync(SqliteConnection connection, DateOnly from, CancellationToken cancellation)
     {
         await using var command = connection.CreateCommand();
 

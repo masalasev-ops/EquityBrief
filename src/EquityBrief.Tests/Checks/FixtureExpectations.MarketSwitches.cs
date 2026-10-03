@@ -20,7 +20,7 @@ namespace EquityBrief.Tests.Checks;
 // read every session as the ideas' run read it, the night's fetch of the two series over a constructed feed, a
 // switched rule firing where its family's rule fires on a night its switch is open and on none where it is closed,
 // and each family registered again whole to add its switched rule.
-// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
 // see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
 public partial class FixtureExpectations
 {
@@ -464,8 +464,14 @@ public partial class FixtureExpectations
         var at1200 = new DateTimeOffset(2026, 10, 3, 12, 0, 0, TimeSpan.Zero);
         var (code, said) = await RegisterVerbAt(store, at1200, RegisterVerb.FamilyAgain, BreakoutRule.Name, "--evidence", "the operator's ruling of 2026-10-03");
 
+        // Before it writes, each of the seven is replayed over the nights the store holds since the freeze registered
+        // it, none here, so each reproduces its no trades and its record carries on; then the registration's line.
+        var lines = said.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
         Assert.Equal(0, code);
-        Assert.StartsWith("register: retired 7 and registered 8 at one instant, family of 8 of 9: retired ", said, StringComparison.Ordinal);
+        Assert.Equal(8, lines.Length);
+        Assert.All(asWritten, rule => Assert.Contains($"replay: '{rule.Candidate}' carries its record on: reproduced its 0 trade(s) over 0 night(s) from 2026-10-02", lines));
+        Assert.StartsWith("register: retired 7 and registered 8 at one instant, family of 8 of 9: retired ", lines[^1], StringComparison.Ordinal);
         Assert.EndsWith("; on the evidence: the operator's ruling of 2026-10-03" + Environment.NewLine, said, StringComparison.Ordinal);
 
         // The seven retired on the evidence and the eight registered at that instant, the seven under their names and
@@ -499,7 +505,7 @@ public partial class FixtureExpectations
         var (leader, leaderSaid) = await RegisterVerbAt(store, at1200.AddMinutes(2), RegisterVerb.FamilyAgain, LeaderRule.Name, "--evidence", "the ruling");
 
         Assert.Equal((0, 1), (again, leader));
-        Assert.StartsWith("register: retired 8 and registered 8 at one instant, family of 8 of 9", againSaid, StringComparison.Ordinal);
+        Assert.StartsWith("register: retired 8 and registered 8 at one instant, family of 8 of 9", againSaid.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)[^1], StringComparison.Ordinal);
         Assert.Contains("no freeze is written for a family named 'leader', so it was not registered again; the families a freeze is written for are breakout, drift.", leaderSaid, StringComparison.Ordinal);
         Assert.Equal(before, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
         Assert.Equal(

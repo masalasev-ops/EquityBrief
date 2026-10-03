@@ -6,7 +6,7 @@ namespace EquityBrief.Core.Candidates;
 // each of them a parameter, and the market switches it states read after the rule's gates. A member fires where
 // every gate passes and no exclusion applies, and its verdict carries the trade the rule places.
 // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
-// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
 public sealed class BreakoutCandidate : FamilyRuleEvaluator
 {
     public const string EvaluatorName = "breakout";
@@ -18,7 +18,7 @@ public sealed class BreakoutCandidate : FamilyRuleEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "a583427328fe";
+    public override string Version => "fd0abd423161";
 
     public override string Family => BreakoutRule.Name;
 

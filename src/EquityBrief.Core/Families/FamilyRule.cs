@@ -18,7 +18,7 @@ public sealed record FamilyMember(BreakoutInputs Breakout, DriftInputs Drift, Ma
 // read it over the history, the index's close against the average of a count of its closes ending on the night,
 // none where any of them is missing, and the VIX's close against its close a count of sessions before, so a
 // variant registered from that run is the rule it measured.
-// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
 public sealed class MarketCloses
 {
     public const string Index = "GSPC";
@@ -105,7 +105,7 @@ public sealed class MarketCloses
 // and the VIX closing under its close that many sessions before. A switch is read after the family's own gates as a
 // gate of its own, so a night it is closed on, or cannot be read on, lists no member under the rule, and a rule
 // stating none answers as its family's rule does.
-// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
 public readonly record struct MarketSwitches(int IndexAverageSessions, int VixLookbackSessions)
 {
     public const string IndexAverageParameter = "indexAverageSessions";

@@ -332,6 +332,7 @@ span[data-last-asked-at]::before{content:none}
 .picks-table .tk{display:block;font-weight:600}
 .picks-table .co{display:block;color:var(--soft);font-size:12px}
 .listed-again{display:block;font:400 12px var(--sans);color:var(--soft);white-space:normal}
+.family-records .record-from,.family-records .record-restarted{display:block;font:400 12px var(--sans);color:var(--soft);white-space:normal}
 .still-open-table td.stands{font-size:13px}
 .still-open-table .co{display:block;color:var(--soft);font-size:12px}
 .picked{margin:0 0 10px;font-size:14.5px}

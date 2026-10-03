@@ -16,7 +16,7 @@ namespace EquityBrief.Worker.Candidates;
 // the freeze. The sector leaders are no family and freeze as the pullback's variant.
 // see: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
 // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
-// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
 public static class TheSetupFamilies
 {
     // How a registered rule's market switches are read, which both families' words end on.

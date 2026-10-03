@@ -59,9 +59,12 @@ public sealed record FamilyRunRow(string Family, string Heading, DateOnly? LiveS
 
 // One registered rule of a new setup family on the run page, read over its own trades: the family's heading,
 // the rule's name and whether it is the live one, the trades it kept, those decided and their edge, the whole
-// blocks against the look they wait for, the level its looks are read at, and the record in words.
+// blocks against the look they wait for, the level its looks are read at, the record in words, the session its
+// record counts from and, where a replay at its registration found a trade it would not have kept the same, why
+// it restarted there.
 // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
-public sealed record FamilyRecordRow(string Family, string Heading, string Rule, bool Live, int Trades, int Decided, double? Edge, int Blocks, int NextLook, double Level, string Record);
+// see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
+public sealed record FamilyRecordRow(string Family, string Heading, string Rule, bool Live, int Trades, int Decided, double? Edge, int Blocks, int NextLook, double Level, string Record, DateOnly? From = null, string? Restarted = null);
 
 public sealed partial class MarkRenderer
 {
@@ -129,9 +132,21 @@ public sealed partial class MarkRenderer
 
         foreach (var row in rows)
         {
-            body.Append(Invariant, $"<tr data-family=\"{Escaped(row.Family)}\" data-rule=\"{Escaped(row.Rule)}\" data-live=\"{Flag(row.Live)}\" data-trades=\"{row.Trades}\" data-decided=\"{row.Decided}\" data-edge=\"{(row.Edge is { } edge ? edge.ToString("0.###", Invariant) : "none")}\" data-blocks=\"{row.Blocks}\" data-look=\"{row.NextLook}\" data-level=\"{row.Level.ToString("0.#####", Invariant)}\">");
+            body.Append(Invariant, $"<tr data-family=\"{Escaped(row.Family)}\" data-rule=\"{Escaped(row.Rule)}\" data-live=\"{Flag(row.Live)}\" data-trades=\"{row.Trades}\" data-decided=\"{row.Decided}\" data-edge=\"{(row.Edge is { } edge ? edge.ToString("0.###", Invariant) : "none")}\" data-blocks=\"{row.Blocks}\" data-look=\"{row.NextLook}\" data-level=\"{row.Level.ToString("0.#####", Invariant)}\" data-from=\"{(row.From is { } from ? DayOf(from) : "none")}\" data-restarted=\"{Flag(row.Restarted is not null)}\">");
             body.Append(Invariant, $"<td class=\"setup\">{Escaped(row.Heading)}</td>");
-            body.Append(Invariant, $"<td>{Escaped(row.Rule)}{(row.Live ? " <b>live</b>" : string.Empty)}</td>");
+            body.Append(Invariant, $"<td>{Escaped(row.Rule)}{(row.Live ? " <b>live</b>" : string.Empty)}");
+
+            if (row.From is { } counted)
+            {
+                body.Append(Invariant, $"<span class=\"record-from\">its record counts from {DayOf(counted)}</span>");
+            }
+
+            if (row.Restarted is { } why)
+            {
+                body.Append(Invariant, $"<span class=\"record-restarted\">it restarted at its registration, since {Escaped(why)}</span>");
+            }
+
+            body.Append("</td>");
             body.Append(Invariant, $"<td class=\"r num\">{row.Trades}</td><td class=\"r num\">{row.Decided}</td>");
             body.Append(Invariant, $"<td class=\"r num\">{(row.Edge is { } shown ? shown.ToString("0.000", Invariant) : "none yet")}</td>");
             body.Append(Invariant, $"<td class=\"r num\">{row.Blocks} of {row.NextLook}</td>");
