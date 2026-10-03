@@ -3004,20 +3004,25 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
-    // Every trade a registered family rule kept up to a night, with its result and its benchmark where written.
-    // The name is not read: a rule's record is over its trades' edges and the sessions they were listed on.
+    // Every trade a registered family rule kept up to a night, with its result where it had ended by the night,
+    // its benchmark where written and the cap its benchmark waits on. The name is not read: a rule's record is
+    // over its trades' edges and the sessions they were listed on.
     const string FamilyTradesUpTo = @"
         SELECT candidate, session_date,
                CASE WHEN ended_on <= $on THEN ended_on END,
                CASE WHEN ended_on <= $on THEN result END,
-               CASE WHEN ended_on <= $on THEN benchmark END
+               CASE WHEN ended_on <= $on THEN benchmark END,
+               cap
         FROM family_trade
         WHERE session_date <= $on
         ORDER BY candidate, session_date;
     ";
 
     // The trades every registered family rule kept up to a night, which each rule's record is read over, a trade
-    // that ended after the night read as still open on it.
+    // that ended after the night read as still open on it. A benchmark is read only once the trade's cap's
+    // sessions after its listing have passed by the night, which is when the recorder writes it, so a trade
+    // stopped out before the night while its cap still ran is not decided on that night's page whatever a later
+    // night wrote.
     // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
     public async Task<IReadOnlyList<EquityBrief.Core.Candidates.FamilyTradeRow>> FamilyTradesAsync(DateOnly on)
     {
@@ -3033,12 +3038,14 @@ public sealed class ReadApi : IComponent
 
         while (await reader.ReadAsync())
         {
+            var listed = DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
             rows.Add(new EquityBrief.Core.Candidates.FamilyTradeRow(
                 reader.GetString(0),
-                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                listed,
                 reader.IsDBNull(2) ? null : DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.IsDBNull(3) ? null : reader.GetDouble(3),
-                reader.IsDBNull(4) ? null : reader.GetDouble(4)));
+                reader.IsDBNull(4) || !EquityBrief.Core.Returns.Blocks.Closed(listed, on, reader.GetInt32(5)) ? null : reader.GetDouble(4)));
         }
 
         return rows;

@@ -10392,3 +10392,10 @@ Was:
 Now:
 > `fixture-expectations`: "... naming each stop on its own row, a retry judged by the first three as a first call is and one they stop not asked, its article left unlabelled, and a run refused before it asked writes its own row and no row of the night's; ..."
 Why: the check reaches what the correction asserts.
+### 2026-10-03 - .claude/rules/checks.md - read-surface reaches a family trade decided on a night only once its cap has passed by it
+Corrects: the run page for an earlier night read a family trade's benchmark a later night wrote; found by the sign-off review of phases 12 and 13 on 2026-10-02.
+Was:
+> `read-surface`: "... worked by hand over constructed trades with an open one and one ended after the night read as open, and a registered family's card reads the day its rule went live off the register, ..."
+Now:
+> `read-surface`: "... worked by hand over constructed trades with an open one and one ended after the night read as open, a trade stopped out before the night whose cap's sessions pass after it read as not decided on it and decided from the night they have passed, worked by hand at the cap's edge, and a registered family's card reads ..."
+Why: the check reaches what the correction asserts.

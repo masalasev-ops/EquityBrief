@@ -36373,3 +36373,33 @@ Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` 
             `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's correction to the last,
             GATETREE, with the figures the last entry states.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.9 - correction: a family trade's benchmark is read on a night only once its cap's sessions after the listing have passed by that night, where the run page for an earlier night counted a trade decided on a benchmark written later   2026-10-03
+
+Corrects:   13.9 (20363f2), whose run page reads each registered family rule's trades up to the night it draws,
+            a trade ended after the night read as open. It read a trade's benchmark wherever the trade had ended
+            by the night, and the recorder writes the benchmark only once the trade's cap's sessions after its
+            listing have passed. A trade stopped out before the night while its cap still ran was read on that
+            night's page with a benchmark a later night wrote, so the decided count and the edge on a page
+            already drawn moved. Blocks, looks and levels did not, a block being whole only once its cap has
+            passed. The review's scratch test, never committed: a breakout listed on 2026-09-28 and stopped out
+            on 2026-09-30, read on the page for 2026-10-02, drew data-decided="1" data-edge="-1.2".
+Found:      by the sign-off review of phases 12 and 13 on 2026-10-02, over 9cfabe8.
+Repaired:   the read takes a trade's benchmark only where its cap's sessions after the listing have passed by
+            the night, counted on the exchange's sessions as the record's blocks are, so a trade is decided on
+            a page from the night the recorder writes its benchmark. The roster's `read-surface` row says so,
+            with its prior text in `CHANGELOG.md`.
+Tests:      1763, from 1762: one added, the review's trade on the run page for 2026-10-02 and the read at the
+            cap's edge worked by hand on the exchange's calendar, Thanksgiving and Christmas closed: 2026-12-24
+            the 62nd session after the listing and 2026-12-28 the 63rd.
+Claims:     887, unchanged.
+Pins:       none moves: the read surface and the blocks sit in no pin list.
+Mutated:    the rule, stated before the run: the property the correction adds, broken alone and at its edge,
+            made on the branch in this checkout, filtered to the family records' tests and reverted.
+            B1 the cap's sessions not read: red in the new test alone.
+            B2 the cap read one session short: red in the new test alone.
+            Results: R139MUT.
+Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` green and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's correction to the last,
+            GATETREE, with the figures the last entry states.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
