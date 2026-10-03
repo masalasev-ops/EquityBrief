@@ -26,7 +26,13 @@ public static class Blocks
 
     // Whether a setup listed on a session has had its whole outcome window by a night.
     public static bool Closed(DateOnly listed, DateOnly asOf) =>
-        SessionsAfter(listed, asOf) >= ForwardReturnSeries.SetupSessionCap;
+        Closed(listed, asOf, ForwardReturnSeries.SetupSessionCap);
+
+    // The same for a trade given a cap of its own, a setup family's, whose benchmark is written once that many
+    // sessions have traded after its listing.
+    // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
+    public static bool Closed(DateOnly listed, DateOnly asOf, int cap) =>
+        SessionsAfter(listed, asOf) >= cap;
 
     // Whether every session a block holds has had its whole outcome window by a night.
     //

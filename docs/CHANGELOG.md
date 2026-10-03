@@ -10378,3 +10378,24 @@ Was:
 Now:
 > `read-surface`: "... from its own row or that none is recorded, a refusal closing the line on its own period and never a second, and counts its nights against twenty ..."
 Why: the run page of the 2026-10-01 night closed the labeller's refusal with two periods.
+### 2026-10-03 - .claude/rules/checks.md - obligation-reconciles reads every phase's report from the tenth on with its amendments
+Corrects: the check read the newest report entry alone and matched its heading on "- the phase N report", so 12.9's report, headed "- phase 12 report", was never read and the six operating rows phase 12 opened after it were never handed over; found by the sign-off review of phases 12 and 13 on 2026-10-02.
+Was:
+> `obligation-reconciles`: "... Every operating row a phase opened is named in that phase's own report entry, read over the newest report entry alone, because an operating row is the one obligation nothing the build discharges and a report that names three of four reads exactly like one that names four; how many each phase opened is stated in advance, a phase that opened none says so in its report, and the reader is shown over phase 10's report to find the four it opened"
+Now:
+> `obligation-reconciles`: "... Every operating row a phase opened is named in that phase's own report, read for every phase from the tenth on with its report and each amendment of it together, whatever report was written after the amendment, and a row's name read across the record's line breaks, because an operating row is the one obligation nothing the build discharges and a report that names three of four reads exactly like one that names four; how many each phase opened is stated in advance, every report from the tenth phase on has a count and every count a report, a phase that opened none says so in its report, and the reader is shown to find a report's heading with or without the word the, to read a name wrapped across two lines as one, to read an amendment written after a later phase's report beside both reports, and to fail a report missing a row"
+Why: the newest report alone missed a report whose heading the reader could not match, and stopped reading a phase's report once another phase's landed; and 12.9's report, once read, wraps both rows it names across two lines.
+### 2026-10-03 - .claude/rules/checks.md - fixture-expectations reaches the labeller's retry judged as a first call is
+Corrects: the labeller judged its time limit, a peak window and its month limit before an article's first call and not before its retry; found by the sign-off review of phases 12 and 13 on 2026-10-02.
+Was:
+> `fixture-expectations`: "... stops before the call that would pass its month limit, at its time limit, inside a peak window, where the cap pauses it and where its model answers nothing, naming each stop on its own row, and a run refused before it asked writes its own row and no row of the night's; ..."
+Now:
+> `fixture-expectations`: "... naming each stop on its own row, a retry judged by the first three as a first call is and one they stop not asked, its article left unlabelled, and a run refused before it asked writes its own row and no row of the night's; ..."
+Why: the check reaches what the correction asserts.
+### 2026-10-03 - .claude/rules/checks.md - read-surface reaches a family trade decided on a night only once its cap has passed by it
+Corrects: the run page for an earlier night read a family trade's benchmark a later night wrote; found by the sign-off review of phases 12 and 13 on 2026-10-02.
+Was:
+> `read-surface`: "... worked by hand over constructed trades with an open one and one ended after the night read as open, and a registered family's card reads the day its rule went live off the register, ..."
+Now:
+> `read-surface`: "... worked by hand over constructed trades with an open one and one ended after the night read as open, a trade stopped out before the night whose cap's sessions pass after it read as not decided on it and decided from the night they have passed, worked by hand at the cap's edge, and a registered family's card reads ..."
+Why: the check reaches what the correction asserts.

@@ -8,9 +8,10 @@ using EquityBrief.Worker.Candidates;
 
 namespace EquityBrief.Tests.Reading;
 
-// read-surface, 13.9: the run page's records of the registered family rules, each read over its own trades,
-// and a registered family's card and row reading the day its rule went live off the register, each read back
-// off the rendered page over a constructed store.
+// read-surface, 13.9: the run page's records of the registered family rules, each read over its own trades, a
+// trade's benchmark read only once its cap's sessions have passed by the night, and a registered family's card
+// and row reading the day its rule went live off the register, each read back off the rendered page over a
+// constructed store.
 // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
 // see: Each setup family's correction for luck counts its own rules alone, at most nine a family
 public partial class ReadSurface
@@ -123,6 +124,44 @@ public partial class ReadSurface
         Assert.Equal(
             ["0.025", "0.025", "0.05"],
             Regex.Matches(Assert.Single(Blocks(again, "<table class=\"list-table family-records\".*?</table>")), "data-level=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
+    }
+
+    // A trade stopped out before the night whose cap's sessions pass after it: its benchmark, which the recorder
+    // writes on the night the cap passes, is not read on the night's page, so the trade is not decided there and
+    // draws no edge, and it is decided from the night its cap's last session closes.
+    [Fact]
+    public async Task ATradeStoppedOutBeforeTheNightIsDecidedOnlyFromTheNightItsCapsSessionsHavePassed()
+    {
+        using var store = await FamilyPagesStore();
+
+        RegisteredRule(store, 101, TheSetupFamilies.Breakouts[0], "2026-09-25T12:00:00Z");
+
+        // The review's trade: listed on 2026-09-28 and stopped out on 2026-09-30 for a loss of one risk, with the
+        // benchmark of 0.2 that the night its cap of 63 sessions passed wrote.
+        Kept(store, LiveBreakout, "breakout", "S1", "2026-09-28", "2026-09-30", -1.0, 0.2);
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var run = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{TheSwitch}"));
+        var records = Assert.Single(Blocks(run, "<table class=\"list-table family-records\".*?</table>"));
+
+        Assert.Contains(
+            $"<tr data-family=\"breakout\" data-rule=\"{LiveBreakout}\" data-live=\"true\" data-trades=\"1\" data-decided=\"0\" data-edge=\"none\"",
+            records,
+            StringComparison.Ordinal);
+
+        // Worked by hand on the exchange's calendar, Thanksgiving and Christmas closed: 2026-12-24 is the 62nd session
+        // after the listing and 2026-12-28 the 63rd, so the benchmark is read on the second and not on the first,
+        // while the result is read from the night the trade ended.
+        static FamilyTradeRow TheTrade(IReadOnlyList<FamilyTradeRow> trades) => Assert.Single(trades, trade => trade.Candidate == LiveBreakout);
+
+        var api = Api(store);
+        var ended = TheTrade(await api.FamilyTradesAsync(new DateOnly(2026, 9, 30)));
+
+        Assert.Equal((-1.0, (double?)null), (ended.Result!.Value, ended.Benchmark));
+        Assert.Null(TheTrade(await api.FamilyTradesAsync(new DateOnly(2026, 12, 24))).Benchmark);
+        Assert.Equal(0.2, TheTrade(await api.FamilyTradesAsync(new DateOnly(2026, 12, 28))).Benchmark);
     }
 
     [Fact]

@@ -36273,3 +36273,206 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
             roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 12.9 - correction: every phase's report from the tenth on is read with its amendments and found with or without the word the, where the newest report alone was read and 12.9's was never found   2026-10-03
+
+Corrects:   12.9 (382b807), whose done condition is that the entry names every operating row the phase opened
+            with its trigger. It named the two that stood when it was written, both opened by the 12.0 planning
+            pass, and the six opened after it by corrections of 12.2 and 12.6 were never handed over.
+            `obligation-reconciles` read the newest report entry alone, its heading matched on "- the phase N
+            report". 12.9's reads "- phase 12 report", so it was never read: the check read 11.9's amendment
+            until 13.10 landed, while phase 12's stated count rose from two to eight against nothing.
+Found:      by the sign-off review of phases 12 and 13 on 2026-10-02, over 9cfabe8.
+Repaired:   the reader finds a report's heading with or without the word the, and reads every phase from the
+            tenth on, a phase's report and each amendment of it together, never the newest alone. Every report
+            from the tenth phase on has a stated count, and every stated count a report found. A row's name is
+            read across the record's line breaks: found once read, 12.9's report wraps both rows it names across
+            two lines, and a plain search refused them. The entry after this one amends 12.9's report with the
+            six and their triggers. The roster's `obligation-reconciles` row says so, with its prior text in
+            `CHANGELOG.md`.
+Tests:      1759, from 1758: one added, the reader over a constructed record and table.
+Claims:     887, unchanged.
+Pins:       none moves: the branch touches no file in the three pin lists.
+Mutated:    the rule, stated before the run: each property the reader adds, broken alone, made on the branch in
+            this checkout, filtered to the check's tests and reverted.
+            O1 the heading matched only with the word the: red in the corpus test, the two rows 12.9's report
+               names unread, and in the constructed test.
+            O2 the newest report entry read alone: red in the corpus test and in the constructed test.
+            O3 a phase's first report entry read and its amendments not: red in the corpus test, phase 11's two
+               rows and phase 12's six unread, and in the constructed test.
+            O4 a report whose phase states no count passed over: red in the constructed test alone.
+            O5 a stated count whose phase has no report passed over: red in the constructed test alone.
+            O6 a report read whatever its phase: red in the corpus test, the reports of phases 0 to 8 stating no
+               count, and in the constructed test.
+            O7 a row's name read with the record's line breaks kept: red in the corpus test, the two rows 12.9's
+               report wraps, and in the constructed test.
+            Results: O1 to O7 each red where stated, over the 16 tests the filter holds: O1, O2, O3, O6 and O7 in
+            the corpus test and the constructed test, O4 and O5 in the constructed test alone. Each ran over
+            0a0e071, which differs from the gated tree, da84b11, in one line of the store copy's test and in
+            nothing these tests read, and was reverted, the tree reading clean after it.
+Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` green and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from this one to the last,
+            da84b11, with the figures the last entry states.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 12.9 - the phase 12 report, amended: the six operating rows phase 12 opened after its report, handed over here with their triggers   2026-10-03
+
+Amends:     the phase 12 report (382b807), which named the two operating rows standing when it was written,
+            both opened by the 12.0 planning pass. Six more were opened after it by corrections of 12.2 and
+            12.6, and a phase's report is where what the phase leaves running is handed over.
+Opened:     eight operating rows stand for phase 12, the two the report names and these six.
+            **The quarters fetch measured on a peak reporting night**, opened by the 12.2 correction of
+            2026-09-27 that fetches a member's reported quarters on the night after it reports. Its trigger is
+            40 or more members asked on the first night after their report on one night, read on the quarters
+            step's line in the run page's operational header.
+            **The two cases' figures on both sides counted over twenty reports**, opened by the 12.6 correction
+            of 2026-09-30 that tells a retry each thing its first draft was refused for. Its trigger is 20
+            research passes written after the two cases were asked to argue each fact on one side, read on the
+            run page's report region.
+            **A document's kind read from the news labeller's label**, opened by the 12.6 correction of
+            2026-09-30 that has report generation ask DeepSeek alone. Its trigger is 1 article the news labeller
+            has labelled, read on the name page's dates and sources.
+            **The news labeller's time limit settled from its first twenty nights**, opened by the 12.6
+            correction of 2026-10-01 that draws the news on the pages. Its trigger is 20 nights the labeller
+            ran, read on the run page's What else is waiting on a count, the median run in minutes beside it.
+            **The news labeller's month limit settled from its first twenty nights**, opened by the same
+            correction. Its trigger is the same 20 nights, the month's spend beside the count.
+            **The share of the labeller's answers refused for a digit read after twenty nights**, opened by the
+            same correction. Its trigger is the same 20 nights, the answers refused for a digit of every answer
+            read beside the count.
+            `obligation-reconciles` states the count, eight, in advance, and reads this entry with the report it
+            amends.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, da84b11,
+            with the figures the last entry of the pull request states.
+
+### 12.6 - correction: the labeller's retry is judged by its time limit, a peak window and its month limit as a first call is, and one they stop leaves its article unlabelled, where the retry was asked unjudged   2026-10-03
+
+Corrects:   the news labeller of the 12.6 correction of 2026-10-01 (5cd3d42). It judged its time limit, a peak
+            window and its month limit before an article's first call and none of them before the retry it asks
+            where the first answer cannot be read, where its own description says it stops before each call. A
+            retry could pass the month limit by a call's ceiling, run a call past the time limit and be asked
+            inside a peak window. The review's scratch test, never committed: calls priced at their 1-cent
+            ceiling, a limit of 1.5 cents and the first answer unreadable made 2 calls and left the month at
+            0.02.
+Found:      by the sign-off review of phases 12 and 13 on 2026-10-02, over 9cfabe8.
+Repaired:   one judgment before every call, the retry's among them: the time limit, a peak window, and the
+            month limit read as the spend so far and the call's own ceiling. A retry it stops is not asked, and
+            the article is left unlabelled for the next night with no row written for it. The roster's
+            `fixture-expectations` row says so, with its prior text in `CHANGELOG.md`.
+Tests:      1762, from 1759: three added, one for each stop, each over a feed priced at its ceiling that moves
+            the clock as it answers and whose first answer cannot be read, the retry refused at the stop's edge
+            and asked just inside it.
+Claims:     887, unchanged.
+Pins:       none moves: the labeller sits in no pin list.
+Mutated:    the rule, stated before the run: the retry left unjudged, and each stop read so that a retry passes
+            it, made on the branch in this checkout, filtered to the labeller's tests and reverted.
+            L1 the retry asked without the judgment: red in the three retry tests.
+            L2 the month limit read without the spend so far: red in the month limit's retry test alone.
+            L3 the time limit passed only once it is exceeded: red in the time limit's retry test and in the
+               first call's stop test.
+            L4 a peak window read at the run's start: red in the peak window's retry test alone.
+            Results: L1 to L4 each red where stated, over the 9 tests the filter holds: L1 in the three retry
+            tests, L2 in the month limit's retry test alone, L3 in the time limit's retry test and the first
+            call's stop test, L4 in the peak window's retry test alone. Each ran over 0a0e071, which differs from
+            the gated tree, da84b11, in one line of the store copy's test and in nothing these tests read, and
+            was reverted, the tree reading clean after it.
+Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` green and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's correction to the last,
+            da84b11, with the figures the last entry states.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.9 - correction: a family trade's benchmark is read on a night only once its cap's sessions after the listing have passed by that night, where the run page for an earlier night counted a trade decided on a benchmark written later   2026-10-03
+
+Corrects:   13.9 (20363f2), whose run page reads each registered family rule's trades up to the night it draws,
+            a trade ended after the night read as open. It read a trade's benchmark wherever the trade had ended
+            by the night, and the recorder writes the benchmark only once the trade's cap's sessions after its
+            listing have passed. A trade stopped out before the night while its cap still ran was read on that
+            night's page with a benchmark a later night wrote, so the decided count and the edge on a page
+            already drawn moved. Blocks, looks and levels did not, a block being whole only once its cap has
+            passed. The review's scratch test, never committed: a breakout listed on 2026-09-28 and stopped out
+            on 2026-09-30, read on the page for 2026-10-02, drew data-decided="1" data-edge="-1.2".
+Found:      by the sign-off review of phases 12 and 13 on 2026-10-02, over 9cfabe8.
+Repaired:   the read takes a trade's benchmark only where its cap's sessions after the listing have passed by
+            the night, counted on the exchange's sessions as the record's blocks are, so a trade is decided on
+            a page from the night the recorder writes its benchmark. The roster's `read-surface` row says so,
+            with its prior text in `CHANGELOG.md`.
+Tests:      1763, from 1762: one added, the review's trade on the run page for 2026-10-02 and the read at the
+            cap's edge worked by hand on the exchange's calendar, Thanksgiving and Christmas closed: 2026-12-24
+            the 62nd session after the listing and 2026-12-28 the 63rd.
+Claims:     887, unchanged.
+Pins:       none moves: the read surface and the blocks sit in no pin list.
+Mutated:    the rule, stated before the run: the property the correction adds, broken alone and at its edge,
+            made on the branch in this checkout, filtered to the family records' tests and reverted.
+            B1 the cap's sessions not read: red in the new test alone.
+            B2 the cap read one session short: red in the new test alone.
+            Results: B1 and B2 each red in the new test alone, over the 6 tests the filter holds, the run page's
+            family record tests and the block window's. Each ran over 0a0e071, which differs from the gated
+            tree, da84b11, in one line of the store copy's test and in nothing these tests read, and was
+            reverted, the tree reading clean after it.
+Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` green and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's correction to the last,
+            da84b11, with the figures the last entry states.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.10 - correction: the best three's read-back through the run page's own query names which three the ninth rule keeps, where it counted three   2026-10-03
+
+Corrects:   the night's best three of the 13.10 ruling (b06bcaa, merged as PR 320). Its test read the ninth
+            rule's record back through the run page's own query and asserted a count of three, so the record
+            read with strength before reward to risk, which keeps three as well, passed the whole suite, 1758
+            of 1758: the review's mutation b. The row carries no ticker, by design. A missing property: an
+            assertion only, and no shipped code changes.
+Found:      by the sign-off review of phases 12 and 13 on 2026-10-02, over 9cfabe8.
+Repaired:   each of the night's four setups carries a stored return of its own, which names it in the rows the
+            query hands back, and the four are set so that the order read by strength, by band strength, by
+            ticker or on the swing plan's reward to risk each keeps a different three from the list's own order.
+            The test names the three the ninth rule keeps and the four the live rule keeps.
+Tests:      1763, unchanged: one test rewritten.
+Claims:     887, unchanged.
+Pins:       none moves: no shipped file changes.
+Mutated:    the rule, stated before the run: the order the query hands the walk, broken in each of the two places
+            it is read, made on the branch in this checkout, filtered to the best three's tests and reverted.
+            N1 the review's mutation b, the record read with strength before reward to risk: red in the
+               read-back test alone.
+            N2 the swing plan's reward to risk read in place of the plan the verdict names: red in the read-back
+               test.
+            Results: N1 and N2 each red in the read-back test alone, over the 4 tests the filter holds, so the
+            review's mutation b, which passed the whole suite before this correction, is now refused. Each ran
+            over 0a0e071, which differs from the gated tree, da84b11, in one line of the store copy's test and in
+            nothing these tests read, and was reverted, the tree reading clean after it.
+Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` green and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's correction to the last,
+            da84b11, with the figures the last entry states.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.10 - correction: the store's copy is shown holding the drain's lock from the moment it names the copy until it writes its row, where only its wait was asserted   2026-10-03
+
+Corrects:   the store's copy of the 13.10 ruling (c6c2240, merged as PR 321). The copy waits for the drain's
+            lock and holds it while it copies, as the roster and the wait test's comment state, and only the wait
+            was asserted: the review's mutation d3, the lock let go before the copy is made, passed the whole
+            suite, 1758 of 1758. A missing property: an assertion only, and no shipped code changes.
+Found:      by the sign-off review of phases 12 and 13 on 2026-10-02, over 9cfabe8.
+Repaired:   a test reads the copy over a clock that steps a second at each read and, at each, asks for the
+            drain's lock as the drain does and lets it go at once. The lock is free as the copy starts, held at
+            the read that names the copy and at the read that stamps its row's end, after the copy is written
+            and read back, and free once the copy has finished.
+Tests:      1764, from 1763: one added.
+Claims:     887, unchanged.
+Pins:       none moves: no shipped file changes.
+Mutated:    the rule, stated before the run: the property the test adds, broken alone, made on the branch in
+            this checkout, filtered to the store copy's tests and reverted.
+            D1 the review's mutation d3, the drain's lock let go before the copy is made: red in the new test
+               alone.
+            Results: D1 red in the new test alone, over the 5 tests the filter holds, run over da84b11 and
+            reverted, the tree reading clean after it. It ran first over 0a0e071, with the same result.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's
+            correction to this one: da84b11.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1764 of 1764 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 887 claims, 887 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
+            The first run of `tools/ci.ps1`, over 0a0e071, stopped in the suite on `clock-usage`: this entry's
+            test parsed its row's end with the culture on a line of its own, which the check reads as a parse
+            against the machine's locale. The commit writes the parse on one line, and the figures above are
+            da84b11's.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.

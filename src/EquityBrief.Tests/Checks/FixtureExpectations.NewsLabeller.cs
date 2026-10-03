@@ -14,8 +14,8 @@ namespace EquityBrief.Tests.Checks;
 // labeller over a constructed store labelling tonight's list in its order, asking once more and keeping an
 // unreadable answer with its cause, sending no article admissibility refused or outside the window, never
 // overwriting a label and writing rows of its own after a switch; its stops before the call that would pass
-// the month limit, at the time limit and inside a peak window; and the counter keeping each member's
-// articles judged as they are stored and dropping them past thirty-one days.
+// the month limit, at the time limit and inside a peak window, a retry judged by each as a first call is; and
+// the counter keeping each member's articles judged as they are stored and dropping them past thirty-one days.
 // see: The news labeller is a process of its own the night starts after the close, and its calls and its spend are its own
 // see: A label's reason is one sentence holding no digit, and an answer code cannot read is asked once more and then kept as unreadable with its cause
 // see: A news article is stored once per member with its admissibility judged, and a label is never overwritten
@@ -184,6 +184,127 @@ public partial class FixtureExpectations
 
         Assert.Equal((0, NewsLabeller.PeakWindowOpened), (peak.Requests, inPeak.Stop));
         Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label;"));
+    }
+
+    // A model priced at its own ceiling, every call the same, that answers each call with the next of its texts and
+    // moves the clock by a step as it answers, so the spend so far and the instant a retry is judged at are the
+    // test's own.
+    sealed class PricedModel(CallClock clock, TimeSpan step, decimal each, params string[] texts) : IResearchModelFeed
+    {
+        readonly ResearchModelSettings settings = Providers.ResearchModelFeedTests.Pinned();
+
+        public int Requests { get; private set; }
+
+        public int Probes => 0;
+
+        public string Identity => settings.Identity;
+
+        public Task<string?> UnreachableAsync(CancellationToken cancellation = default) => Task.FromResult<string?>(null);
+
+        public Task<ResearchAnswer> CompleteAsync(ModelRequest request, CancellationToken cancellation = default)
+        {
+            var text = texts[Requests++];
+
+            clock.Advance(step);
+
+            return Task.FromResult(new ResearchAnswer(settings.Model, text, 100, 0, 100, 50, 0, "stop", clock.UtcNow));
+        }
+
+        public decimal Price(ResearchAnswer answer) => each;
+
+        public decimal Ceiling(ModelRequest request) => each;
+    }
+
+    static readonly DateTimeOffset RetryEvening = new(2026, 9, 8, 23, 0, 0, TimeSpan.Zero);
+
+    // The news store's list labelled from an instant, each call costing a cent and moving the clock by a step, the
+    // first article's first answer unreadable and every answer after it a label.
+    static async Task<(NewsLabelOutcome Outcome, int Calls)> LabelledWithARetryAsync(TemporaryStore store, DateTimeOffset start, TimeSpan step, NewsLimits limits, string runId)
+    {
+        var clock = new CallClock(start);
+        var model = new PricedModel(clock, step, 0.01m, "no json here", Good, Good, Good, Good);
+        var outcome = await Labeller(store, model, limits: limits, clock: clock).RunAsync(new DateOnly(2026, 9, 8), runId);
+
+        return (outcome, model.Requests);
+    }
+
+    [Fact]
+    public async Task ARetryThatWouldPassTheMonthLimitIsNotAskedAndItsArticleIsLeftUnlabelled()
+    {
+        // Worked by hand, a call and its ceiling a cent each. At a limit of a cent and a half the first call is asked,
+        // nothing having been spent, and its retry is not, a cent spent and a cent more passing it: one call, the
+        // month at a cent, and no row for the article.
+        using (var store = await NewsStore())
+        {
+            var (outcome, calls) = await LabelledWithARetryAsync(store, RetryEvening, TimeSpan.Zero, new NewsLimits(0.015m, TimeSpan.FromMinutes(20)), "label-news-retry-month");
+
+            Assert.Equal((1, NewsLabeller.MonthLimitReached, 0.01m, 0, 0), (calls, outcome.Stop, outcome.MonthCost, outcome.Labelled, outcome.UnreadableCount));
+            Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label;"));
+            Assert.Equal(NewsLabeller.MonthLimitReached, LabellerRow(store, "label-news-retry-month").GetProperty("stop").GetString());
+        }
+
+        // At two cents the retry reaches the limit and does not pass it, so it is asked and labels the article, and
+        // the next article's first call is the one refused.
+        using (var store = await NewsStore())
+        {
+            var (outcome, calls) = await LabelledWithARetryAsync(store, RetryEvening, TimeSpan.Zero, new NewsLimits(0.02m, TimeSpan.FromMinutes(20)), "label-news-retry-month-reached");
+
+            Assert.Equal((2, NewsLabeller.MonthLimitReached, 0.02m, 1), (calls, outcome.Stop, outcome.MonthCost, outcome.Labelled));
+            Assert.Equal(["b1"], TextRows(store, "SELECT article_id FROM news_label;"));
+        }
+    }
+
+    [Fact]
+    public async Task ARetryAtTheTimeLimitIsNotAskedAndItsArticleIsLeftUnlabelled()
+    {
+        // Worked by hand over a limit of twenty minutes: a first answer taking twenty minutes cannot be read, and the
+        // retry, judged as the limit is reached, is not asked.
+        using (var store = await NewsStore())
+        {
+            var (outcome, calls) = await LabelledWithARetryAsync(store, RetryEvening, TimeSpan.FromMinutes(20), new NewsLimits(5m, TimeSpan.FromMinutes(20)), "label-news-retry-time");
+
+            Assert.Equal((1, NewsLabeller.TimeLimitPassed, 0, 0), (calls, outcome.Stop, outcome.Labelled, outcome.UnreadableCount));
+            Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label;"));
+            Assert.Equal(NewsLabeller.TimeLimitPassed, LabellerRow(store, "label-news-retry-time").GetProperty("stop").GetString());
+        }
+
+        // One taking a second less leaves the retry its second: it is asked and labels the article, and the next
+        // article is the one the limit stops.
+        using (var store = await NewsStore())
+        {
+            var (outcome, calls) = await LabelledWithARetryAsync(store, RetryEvening, TimeSpan.FromMinutes(20) - TimeSpan.FromSeconds(1), new NewsLimits(5m, TimeSpan.FromMinutes(20)), "label-news-retry-time-inside");
+
+            Assert.Equal((2, NewsLabeller.TimeLimitPassed, 1), (calls, outcome.Stop, outcome.Labelled));
+            Assert.Equal(["b1"], TextRows(store, "SELECT article_id FROM news_label;"));
+        }
+    }
+
+    [Fact]
+    public async Task ARetryInsideAPeakWindowIsNotAskedAndItsArticleIsLeftUnlabelled()
+    {
+        // Worked by hand: the recorded profile's peak window opens at 01:00 UTC on a weekday. A run starting at 00:50
+        // on Wednesday 2026-09-09 asks its first call off peak, the answer arrives at 01:00 and cannot be read, and the
+        // retry, judged inside the window, is not asked.
+        var tenToOne = new DateTimeOffset(2026, 9, 9, 0, 50, 0, TimeSpan.Zero);
+
+        using (var store = await NewsStore())
+        {
+            var (outcome, calls) = await LabelledWithARetryAsync(store, tenToOne, TimeSpan.FromMinutes(10), NewsLimits.Default, "label-news-retry-peak");
+
+            Assert.Equal((1, NewsLabeller.PeakWindowOpened, 0, 0), (calls, outcome.Stop, outcome.Labelled, outcome.UnreadableCount));
+            Assert.Equal(0, Scalar(store, "SELECT COUNT(*) FROM news_label;"));
+            Assert.Equal(NewsLabeller.PeakWindowOpened, LabellerRow(store, "label-news-retry-peak").GetProperty("stop").GetString());
+        }
+
+        // An answer arriving a second before the window leaves the retry off peak: it is asked and labels the article,
+        // and the next article's first call, inside the window, is the one refused.
+        using (var store = await NewsStore())
+        {
+            var (outcome, calls) = await LabelledWithARetryAsync(store, tenToOne, TimeSpan.FromMinutes(10) - TimeSpan.FromSeconds(1), NewsLimits.Default, "label-news-retry-peak-before");
+
+            Assert.Equal((2, NewsLabeller.PeakWindowOpened, 1), (calls, outcome.Stop, outcome.Labelled));
+            Assert.Equal(["b1"], TextRows(store, "SELECT article_id FROM news_label;"));
+        }
     }
 
     // A model that answers once and then nothing: the labeller stops where it is naming the model, the label
