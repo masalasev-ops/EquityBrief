@@ -36986,7 +36986,7 @@ Captured:   22 answers into `fixtures/membership-2026-09-05/` under the prefix `
             them.
 Check:      `rules-choose-the-stocks` joins the roster, 42 to 43: 20 deciding components, 26 folders and 123
             sources read, and a planted read found in a constructed declaration and a constructed source.
-Tests:      FILL, from 1781: three added, the check's.
+Tests:      1784, from 1781: three added, the check's.
 Claims:     898, unchanged: the plan, the decisions and section 1's paragraph sit in no table the harness reads,
             and section 20's row is read by the check that counts the phases.
 Mutated:    the rule, stated before the run: the property the check adds broken where it is held, a deciding
@@ -36994,6 +36994,11 @@ Mutated:    the rule, stated before the run: the property the check adds broken 
             before its commit, filtered to the check's tests and reverted.
             R1 `ShortlistBuilder`'s access given a read of the news labels: red in both of the check's tests over
             the shipped source, the declaration's naming the component and the scan naming its source.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 2036dd7.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1784 of 1784 tests ran with none failed, migrations
+            0 to 57 with none pending, schema version 57, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 898 claims, 898 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 909
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
 Carried:    the night of 2026-10-05 read against the addendum's item 6 figures, in the entry after that night; the
             fork's ruling, the operator's, before 14.3.
