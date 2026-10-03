@@ -36943,10 +36943,10 @@ Repaired:   the drain verb runs its put-back and its queue inside a guard, once 
             "R W" as its catalogue row's Reads cell already named; ARCHITECTURE gains the queue's region, the
             checklist's part and section 18's row, SCHEMA the stop's row, DECISIONS the decision, the guide its
             queue sentence, and `read-surface` reaches it.
-Tests:      FILL, from 1778: three added, the guard over work that throws and work that finishes with the verb's
+Tests:      1781, from 1778: three added, the guard over work that throws and work that finishes with the verb's
             wiring read off its source, the queue page over a constructed run log before and after a pass, and the
             checklist over constructed rows.
-Claims:     FILL, from 892: the queue's region as the four parts its row states, the checklist's part and section
+Claims:     898, from 892: the queue's region as the four parts its row states, the checklist's part and section
             18's row.
 Pins:       none moves: `RequestDrain.cs`, `ReadApi.cs`, `RunScreen.cs` and the drain verb sit in no pin list.
 Mutated:    the rule, stated before the run: each property this correction adds broken alone, made by hand over the
@@ -36959,5 +36959,10 @@ Mutated:    the rule, stated before the run: each property this correction adds 
             D4 the queue page drawing the older of two stops: red in the queue test.
             D5 the stop drawn inside the first of the requests' regions: red in the queue test.
             D6 the queue page reading any failed row as a drain's stop: red in the queue test.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: e019643.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1781 of 1781 tests ran with none failed, migrations
+            0 to 57 with none pending, schema version 57, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 898 claims, 898 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 909
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the roster, 42
+            carried and 42 passed.
 Carried:    nothing.
