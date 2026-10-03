@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.RegularExpressions;
 using EquityBrief.Tests.Harness;
 
@@ -454,7 +455,7 @@ public class ObligationReconciles
         Assert.Equal(1, Reconciled($"### 9.9 A row its checkpoint names\nIt builds it {marker}.\n", row));
     }
 
-    // Every operating row a phase opened, named in that phase's own report entry.
+    // Every operating row a phase opened, named in that phase's own report.
     //
     // A phase's report is where what the phase leaves running is handed over, and an operating row
     // is the only kind of obligation nothing the build does can discharge: it waits on nights. A
@@ -462,15 +463,18 @@ public class ObligationReconciles
     // hole is invisible from inside the entry, because prose about three rows reads exactly like
     // prose about four.
     //
-    // Read over the newest report entry alone, which is the one the phase in hand writes. The
-    // entries before it were written under no such rule and are not reopened by one; from here
-    // every phase report is read this way as it lands.
+    // Read for every phase from the tenth on, whose report was the first written under the rule;
+    // the reports before it were written under no such rule and are not reopened by one. A phase's
+    // report and each amendment of it are read together, since a row opened after the report is
+    // handed over in an amendment, and the amendment is read whatever report was written after it.
+    // A heading is found with or without the word the before the phase.
     //
-    // How many rows each phase opened is stated here in advance rather than read, for every phase
-    // whose report is read this way, so a reader finding none where a phase opened some refuses
-    // rather than passing over the empty set. A phase that opened none says so in its report in
-    // those words, and the reader is shown over phase 10's report, which opened four, to find the
-    // rows a phase did open, so a count of none is a reading and not a reader that finds nothing.
+    // How many rows each phase opened is stated here in advance rather than read, so a reader
+    // finding none where a phase opened some refuses rather than passing over the empty set; every
+    // report from the tenth phase on has a count, and every count a report. A phase that opened none
+    // says so in its report in those words, and the reader is shown over a constructed record to
+    // find the rows a phase did open, so a count of none is a reading and not a reader that finds
+    // nothing.
     static readonly Dictionary<string, int> OperatingRowsOpened = new(StringComparer.Ordinal)
     {
         // Four opened; the candidates' proposed numbers were discharged at 12.5, when phase 10's three
@@ -488,59 +492,141 @@ public class ObligationReconciles
         // trial's reports by the operator's ruling that report generation asks DeepSeek alone, so five
         // stood operating; three more opened by the 12.6 correction of 2026-10-01 drawing the news on the pages,
         // the labeller's time limit, its month limit and the share of its answers refused for a digit, each
-        // settled from its first twenty nights, so eight stand operating.
+        // settled from its first twenty nights, so eight stand operating. The report names the two of 12.0, and
+        // its amendment the six opened after it.
         ["12"] = 8,
         // None: phase 13 opened no carried obligation of either form.
         ["13"] = 0,
     };
 
+    // The first phase whose report is read for the operating rows it opened.
+    const int FirstPhaseRead = 10;
+
     internal const string NoOperatingRowOpened = "opened no operating row";
+
+    // A phase's report found by its heading, with or without the word the, an amendment of it among them.
+    static readonly Regex ReportHeading = new(
+        @"^### (?<phase>\d+)\.\d+[ \t]+-[ \t]+(?:the[ \t]+)?phase[ \t]+(?<named>\d+)[ \t]+report\b",
+        RegexOptions.Multiline | RegexOptions.IgnoreCase);
+
+    // Each phase from the tenth on whose report the record holds, read as its report and every amendment of it
+    // together, in the order the record holds them.
+    internal static IReadOnlyDictionary<string, string> Reports(string progress) =>
+        ReportHeading.Matches(progress)
+            .Where(match => match.Groups["phase"].Value == match.Groups["named"].Value)
+            .Where(match => int.Parse(match.Groups["phase"].Value, CultureInfo.InvariantCulture) >= FirstPhaseRead)
+            .GroupBy(match => match.Groups["phase"].Value, StringComparer.Ordinal)
+            .ToDictionary(
+                phase => phase.Key,
+                phase => string.Concat(phase.Select(match => Body(progress, match.Index))),
+                StringComparer.Ordinal);
+
+    // Named separately from the fact so the proofs below exercise the code the corpus is measured by. Both
+    // directions: a report whose phase states no count, and a stated count whose phase has no report.
+    internal static IReadOnlyList<string> ReportFaults(string progress, IReadOnlyList<Obligation> obligations, IReadOnlyDictionary<string, int> stated)
+    {
+        var reports = Reports(progress);
+        var faults = new List<string>();
+
+        foreach (var phase in reports.Keys.Where(phase => !stated.ContainsKey(phase)))
+        {
+            faults.Add($"Phase {phase}'s report is in the record, and how many operating rows the phase opened is not stated.");
+        }
+
+        foreach (var (phase, count) in stated)
+        {
+            if (!reports.TryGetValue(phase, out var report))
+            {
+                faults.Add($"Phase {phase} is stated to have opened {count} operating row(s), and no report of phase {phase} is found.");
+
+                continue;
+            }
+
+            var opened = obligations
+                .Where(row => row.SaysOperating)
+                .Where(row => row.CreatedAt.TrimStart().StartsWith(phase + ".", StringComparison.Ordinal))
+                .ToArray();
+
+            if (opened.Length != count)
+            {
+                faults.Add($"Phase {phase} is stated to have opened {count} operating row(s), and the table holds {opened.Length}.");
+            }
+
+            // Read with its whitespace collapsed, since the record wraps a row's name across its lines as it wraps
+            // any other words, and 12.9's report wraps both of the rows it names.
+            var words = Regex.Replace(report, @"\s+", " ");
+
+            faults.AddRange(opened
+                .Where(row => !words.Contains(Regex.Replace(row.Name, @"\s+", " "), StringComparison.Ordinal))
+                .Select(row => $"'{row.Name}' was opened by phase {phase}, and neither its report nor an amendment of it names the row."));
+
+            if (count == 0 && !words.Contains(NoOperatingRowOpened, StringComparison.Ordinal))
+            {
+                faults.Add($"Phase {phase} is stated to have opened no operating row, and its report does not say it {NoOperatingRowOpened}.");
+            }
+        }
+
+        return faults;
+    }
 
     [Fact]
     public void EveryOperatingRowThePhaseOpenedIsNamedInItsOwnReportEntry()
     {
         var progress = Corpus.Read("docs/PROGRESS.md");
+        var reports = Reports(progress);
 
-        var reports = Regex
-            .Matches(progress, @"^### (?<phase>\d+)\.(?<checkpoint>\d+) - the phase (?<named>\d+) report", RegexOptions.Multiline)
-            .Where(match => match.Groups["phase"].Value == match.Groups["named"].Value)
-            .ToArray();
+        // Scope, stated in advance: the phases from the tenth on whose reports the record holds, four of them.
+        Assert.True(reports.Count >= 4, $"Read {reports.Count} phase report(s) from phase {FirstPhaseRead} on, expected at least 4.");
 
-        Assert.NotEmpty(reports);
+        Assert.Empty(ReportFaults(progress, All(), OperatingRowsOpened));
+    }
 
-        Obligation[] Opened(string phase) =>
-        [
-            .. All()
-                .Where(row => row.SaysOperating)
-                .Where(row => row.CreatedAt.TrimStart().StartsWith(phase + ".", StringComparison.Ordinal)),
-        ];
+    [Fact]
+    public void TheReportsReaderFindsAHeadingWithoutTheReadsAnAmendmentWrittenAfterALaterReportAndFailsAMissingRow()
+    {
+        var rows = In(
+            Table(
+                "| **A row the report names** | 12.0 | operating | 60 nights, read on the run page, which 12.3 builds |",
+                "| **A row opened after the report** | 12.6 | operating | 20 nights, read on the run page, which 12.6 builds |",
+                "| **A row of the next phase** | 13.1 | operating | 8 blocks, read on the run page, which 13.1 builds |"),
+            floor: 3);
 
-        var report = reports[^1];
-        var phase = report.Groups["phase"].Value;
-        var body = Body(progress, report.Index);
-        var opened = Opened(phase);
+        const string Report = "### 12.9 - phase 12 report: a heading without the word   2026-09-25\nOperating:  **A row the\n            report names**, its name wrapped across two lines.\n";
+        const string Later = "\n### 13.10 - the phase 13 report: the next phase's   2026-10-02\nOperating:  **A row of the next phase**.\n";
+        const string Silent = "\n### 13.10 - the phase 13 report: naming nothing   2026-10-02\nBuilt:      a thing.\n";
+        const string Amendment = "\n### 12.9 - the phase 12 report, amended: the row opened after it   2026-10-03\nOpened:     **A row opened after the report**.\n";
 
-        Assert.True(
-            OperatingRowsOpened.TryGetValue(phase, out var stated),
-            $"Phase {phase}'s report is the newest, and how many operating rows the phase opened is not stated.");
-        Assert.Equal(stated, opened.Length);
+        var stated = new Dictionary<string, int>(StringComparer.Ordinal) { ["12"] = 2, ["13"] = 1 };
 
-        Assert.Empty(opened.Where(row => !body.Contains(row.Name, StringComparison.Ordinal)).Select(row => row.Name));
+        // A heading without the word is found, a name wrapped across the record's lines is read as one, and an
+        // earlier phase's amendment written after a later phase's report is read with its own report while the
+        // later report is read as well.
+        Assert.Equal(["12"], Reports(Report).Keys);
+        Assert.Equal(["12", "13"], Reports(Report + Later + Amendment).Keys.Order(StringComparer.Ordinal));
+        Assert.Empty(ReportFaults(Report + Later + Amendment, rows, stated));
 
-        if (stated == 0)
-        {
-            Assert.Contains(NoOperatingRowOpened, body, StringComparison.Ordinal);
-        }
+        // A report missing a row fails, naming the row: the earlier phase's without its amendment, and the later
+        // phase's naming nothing.
+        Assert.Contains("'A row opened after the report' was opened by phase 12", Assert.Single(ReportFaults(Report + Later, rows, stated)), StringComparison.Ordinal);
+        Assert.Contains("'A row of the next phase' was opened by phase 13", Assert.Single(ReportFaults(Report + Silent + Amendment, rows, stated)), StringComparison.Ordinal);
 
-        // Over phase 10's report, which opened four and names them, three of them still operating.
-        var tenth = Assert.Single(reports, match => match.Groups["phase"].Value == "10");
-        var tenOpened = Opened("10");
+        // Both directions: a report whose phase states no count, and a stated count whose phase has no report.
+        Assert.Contains(
+            "how many operating rows the phase opened is not stated",
+            Assert.Single(ReportFaults(Report + Later + Amendment + "\n### 14.9 - the phase 14 report: a phase not counted   2026-10-09\n", rows, stated)),
+            StringComparison.Ordinal);
+        Assert.Contains("no report of phase 13 is found", Assert.Single(ReportFaults(Report + Amendment, rows, stated)), StringComparison.Ordinal);
 
-        Assert.Equal(OperatingRowsOpened["10"], tenOpened.Length);
-        Assert.Empty(tenOpened.Where(row => !Body(progress, tenth.Index).Contains(row.Name, StringComparison.Ordinal)).Select(row => row.Name));
+        // A phase stated at none says so in its report in those words, and a report of a phase before the
+        // tenth is not read.
+        var none = new Dictionary<string, int>(StringComparer.Ordinal) { ["12"] = 2, ["13"] = 0 };
+        var twelveAlone = In(Table(
+            "| **A row the report names** | 12.0 | operating | 60 nights, read on the run page, which 12.3 builds |",
+            "| **A row opened after the report** | 12.6 | operating | 20 nights, read on the run page, which 12.6 builds |"), floor: 2);
 
-        // The reader is shown to find the fault it exists for: a row the entry does not name.
-        Assert.DoesNotContain("A row no report entry names", body, StringComparison.Ordinal);
+        Assert.Contains("does not say it opened no operating row", Assert.Single(ReportFaults(Report + Silent + Amendment, twelveAlone, none)), StringComparison.Ordinal);
+        Assert.Empty(ReportFaults(Report + "\n### 13.10 - the phase 13 report: none   2026-10-02\nOperating:  phase 13 opened no operating row.\n" + Amendment, twelveAlone, none));
+        Assert.Empty(Reports("### 9.4 - the phase 9 report: before the rule   2026-09-20\n"));
     }
 
     // One entry, from its heading to the next one, which is what a phase's report says and not

@@ -36273,3 +36273,71 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
             roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 12.9 - correction: every phase's report from the tenth on is read with its amendments and found with or without the word the, where the newest report alone was read and 12.9's was never found   2026-10-03
+
+Corrects:   12.9 (382b807), whose done condition is that the entry names every operating row the phase opened
+            with its trigger. It named the two that stood when it was written, both opened by the 12.0 planning
+            pass, and the six opened after it by corrections of 12.2 and 12.6 were never handed over.
+            `obligation-reconciles` read the newest report entry alone, its heading matched on "- the phase N
+            report". 12.9's reads "- phase 12 report", so it was never read: the check read 11.9's amendment
+            until 13.10 landed, while phase 12's stated count rose from two to eight against nothing.
+Found:      by the sign-off review of phases 12 and 13 on 2026-10-02, over 9cfabe8.
+Repaired:   the reader finds a report's heading with or without the word the, and reads every phase from the
+            tenth on, a phase's report and each amendment of it together, never the newest alone. Every report
+            from the tenth phase on has a stated count, and every stated count a report found. A row's name is
+            read across the record's line breaks: found once read, 12.9's report wraps both rows it names across
+            two lines, and a plain search refused them. The entry after this one amends 12.9's report with the
+            six and their triggers. The roster's `obligation-reconciles` row says so, with its prior text in
+            `CHANGELOG.md`.
+Tests:      1759, from 1758: one added, the reader over a constructed record and table.
+Claims:     887, unchanged.
+Pins:       none moves: the branch touches no file in the three pin lists.
+Mutated:    the rule, stated before the run: each property the reader adds, broken alone, made on the branch in
+            this checkout, filtered to the check's tests and reverted.
+            O1 the heading matched only with the word the: red in the corpus test, the two rows 12.9's report
+               names unread, and in the constructed test.
+            O2 the newest report entry read alone: red in the corpus test and in the constructed test.
+            O3 a phase's first report entry read and its amendments not: red in the corpus test, phase 11's two
+               rows and phase 12's six unread, and in the constructed test.
+            O4 a report whose phase states no count passed over: red in the constructed test alone.
+            O5 a stated count whose phase has no report passed over: red in the constructed test alone.
+            O6 a report read whatever its phase: red in the corpus test, the reports of phases 0 to 8 stating no
+               count, and in the constructed test.
+            O7 a row's name read with the record's line breaks kept: red in the corpus test, the two rows 12.9's
+               report wraps, and in the constructed test.
+            Results: R129MUT.
+Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` green and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from this one to the last,
+            GATETREE, with the figures the last entry states.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 12.9 - the phase 12 report, amended: the six operating rows phase 12 opened after its report, handed over here with their triggers   2026-10-03
+
+Amends:     the phase 12 report (382b807), which named the two operating rows standing when it was written,
+            both opened by the 12.0 planning pass. Six more were opened after it by corrections of 12.2 and
+            12.6, and a phase's report is where what the phase leaves running is handed over.
+Opened:     eight operating rows stand for phase 12, the two the report names and these six.
+            **The quarters fetch measured on a peak reporting night**, opened by the 12.2 correction of
+            2026-09-27 that fetches a member's reported quarters on the night after it reports. Its trigger is
+            40 or more members asked on the first night after their report on one night, read on the quarters
+            step's line in the run page's operational header.
+            **The two cases' figures on both sides counted over twenty reports**, opened by the 12.6 correction
+            of 2026-09-30 that tells a retry each thing its first draft was refused for. Its trigger is 20
+            research passes written after the two cases were asked to argue each fact on one side, read on the
+            run page's report region.
+            **A document's kind read from the news labeller's label**, opened by the 12.6 correction of
+            2026-09-30 that has report generation ask DeepSeek alone. Its trigger is 1 article the news labeller
+            has labelled, read on the name page's dates and sources.
+            **The news labeller's time limit settled from its first twenty nights**, opened by the 12.6
+            correction of 2026-10-01 that draws the news on the pages. Its trigger is 20 nights the labeller
+            ran, read on the run page's What else is waiting on a count, the median run in minutes beside it.
+            **The news labeller's month limit settled from its first twenty nights**, opened by the same
+            correction. Its trigger is the same 20 nights, the month's spend beside the count.
+            **The share of the labeller's answers refused for a digit read after twenty nights**, opened by the
+            same correction. Its trigger is the same 20 nights, the answers refused for a digit of every answer
+            read beside the count.
+            `obligation-reconciles` states the count, eight, in advance, and reads this entry with the report it
+            amends.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, GATETREE,
+            with the figures the last entry of the pull request states.
