@@ -36793,8 +36793,10 @@ Signed by the session that signed phase 12 above, on the same terms, over bb76de
             of 2026-10-03, "ok sign off both phases", given after this review had reported the defect below and
             signed nothing: the defect is carried into phase 14's plan as an addendum rather than corrected
             before this entry.
-Verified:   both gates on `main` at bb76de7 as the phase 12 sign-off above states, and `tools/ci.ps1` green
-            over the tree carrying both entries, which are documents alone: GATES.
+Verified:   both gates on `main` at bb76de7 as the phase 12 sign-off above states, `tools/ci.ps1` green and
+            `tools/verify-phase.ps1` green. Over the tree carrying both entries, which are record entries alone,
+            the checks that read the record, the prose checks and the counts ran filtered in place of the full
+            script, on the operator's standing ruling: 138 of 138 tests passing over 160a447.
 Plan:       all eleven checkpoints, 13.0 through 13.10, are in `BUILD_PLAN.md` and recorded above with their
             rulings and corrections, the last the 13.10 correction of PR 332. Phase 13 opened no operating row,
             and its report says so.
