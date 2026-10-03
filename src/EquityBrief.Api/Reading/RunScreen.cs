@@ -1178,7 +1178,7 @@ public static class RunScreen
     // worker's own steps, so a step added to the night without a group fails there.
     public static IReadOnlyList<(string Name, IReadOnlyList<string> Stages)> StepGroups { get; } =
     [
-        ("Prices and calendar", ["migrate", "membership", "backfill", "fetch", "actions", "calendar"]),
+        ("Prices and calendar", ["migrate", "membership", "backfill", "fetch", "market-series", "actions", "calendar"]),
         ("Indicators and levels", ["indicators", "swings", "volume-profile", "levels"]),
         ("Plans and moves", ["ladders", "moves"]),
         ("Readings and the list", ["swing-readings", "fundamental-readings", "listings", "swing-filter", "family-rules", "families", "family-records", "shape-proposal"]),

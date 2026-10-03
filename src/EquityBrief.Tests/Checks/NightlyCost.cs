@@ -900,10 +900,11 @@ public partial class NightlyCost
     static string Steps(IReadOnlyDictionary<string, int> byStep) =>
         string.Join("; ", byStep.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => FormattableString.Invariant($"{pair.Key}={pair.Value}")));
 
-    // The six feeds a night runs on, each wrapped so the requests a call makes are put on the
+    // The feeds a night runs on, each wrapped so the requests a call makes are put on the
     // step it was made on. A step writes its run log row after its requests, so a call is
     // read against how many rows the run holds when it starts: with k rows written, the
-    // requests belong to the step whose row is the next one, row k plus one.
+    // requests belong to the step whose row is the next one, row k plus one. A call that
+    // throws is counted as one that answers, since a refused request was still made.
     sealed class StepAttributedFeeds
     {
         readonly string databaseFile;
@@ -922,7 +923,8 @@ public partial class NightlyCost
                 new Corporate(inner.Corporate, this),
                 new Calendar(inner.Calendar, this),
                 new News(inner.News, this),
-                new Companies(inner.Fundamentals, this));
+                new Companies(inner.Fundamentals, this),
+                new Market(inner.Market, this));
         }
 
         internal NightFeeds Inner { get; }
@@ -971,11 +973,15 @@ public partial class NightlyCost
             }
 
             var before = requests();
-            var result = await call();
 
-            calls.Add((written, requests() - before));
-
-            return result;
+            try
+            {
+                return await call();
+            }
+            finally
+            {
+                calls.Add((written, requests() - before));
+            }
         }
 
         sealed class Membership(IIndexMembershipFeed inner, StepAttributedFeeds counted) : IIndexMembershipFeed
@@ -1036,6 +1042,14 @@ public partial class NightlyCost
 
             public Task<CompanyFundamentals> FundamentalsAsync(string ticker, CancellationToken cancellation = default) =>
                 counted.Counted(() => inner.Requests, () => inner.FundamentalsAsync(ticker, cancellation));
+        }
+
+        sealed class Market(IMarketSeriesFeed inner, StepAttributedFeeds counted) : IMarketSeriesFeed
+        {
+            public int Requests => inner.Requests;
+
+            public Task<IReadOnlyList<ProviderBar>> SeriesAsync(string series, DateOnly from, DateOnly to, CancellationToken cancellationToken = default) =>
+                counted.Counted(() => inner.Requests, () => inner.SeriesAsync(series, from, to, cancellationToken));
         }
     }
 
@@ -1390,6 +1404,10 @@ public partial class NightlyCost
         await feeds.News.ArticlesAsync(new DateOnly(2026, 8, 25), new DateOnly(2026, 9, 8));
         await feeds.Fundamentals.FundamentalsAsync("AAPL");
 
+        // The fixture holds no market series, so the index's is refused as a series the provider does not serve
+        // is, and the request is made all the same.
+        await Assert.ThrowsAsync<ProviderRefusal>(() => feeds.Market.SeriesAsync(MarketSeriesFetcher.Series[0], new DateOnly(2025, 8, 4), new DateOnly(2026, 9, 8)));
+
         // Every role the record composes has been asked, read off the record, so a
         // role added to it is one this total has to ask.
         var asked = typeof(NightFeeds).GetConstructors().Single().GetParameters().ToDictionary(
@@ -1405,8 +1423,9 @@ public partial class NightlyCost
         Assert.Equal(feeds.Requests, asked.Values.Sum());
 
         // One membership, one bulk and two action requests, one calendar window, one
-        // ticker's history, one news request and one member's reported quarters.
-        Assert.Equal(8, feeds.Requests);
+        // ticker's history, one news request, one member's reported quarters and one
+        // market series, which the historical endpoint answers at a ticker's weight.
+        Assert.Equal(9, feeds.Requests);
         Assert.Equal(
             ProviderWeights.Fundamentals
             + ProviderWeights.BulkEndOfDay
@@ -1414,9 +1433,10 @@ public partial class NightlyCost
             + ProviderWeights.EarningsCalendar
             + ProviderWeights.HistoricalPerTicker
             + ProviderWeights.News
-            + ProviderWeights.Fundamentals,
+            + ProviderWeights.Fundamentals
+            + ProviderWeights.HistoricalPerTicker,
             feeds.WeightedCalls);
-        Assert.Equal(327, feeds.WeightedCalls);
+        Assert.Equal(328, feeds.WeightedCalls);
 
         Assert.Equal(
             calendar.GetProperty("cost").GetProperty("weightedCalls").GetInt32(),

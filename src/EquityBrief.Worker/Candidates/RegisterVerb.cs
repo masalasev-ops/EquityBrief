@@ -39,6 +39,11 @@ public static class RegisterVerb
     // see: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
     public const string Family = "--family";
 
+    // The flag that registers a new setup family again whole at one instant, naming the family, on the evidence
+    // given, which is how a rule joins it once its freeze stands.
+    // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+    public const string FamilyAgain = "--family-again";
+
     public static IReadOnlyList<VerbForm> Forms { get; } =
     [
         new("--candidate", ["--candidate", "--rule", "--test", "--evaluator"], ["--parameters"], []),
@@ -48,6 +53,7 @@ public static class RegisterVerb
         new(Moved, ["--evidence"], [], [Moved]),
         new(Family, [Family], [], []),
         new(TheFamilyAgain, ["--evidence"], [], [TheFamilyAgain]),
+        new(FamilyAgain, [FamilyAgain, "--evidence"], [], []),
     ];
 
     // The run id, to the ten-millionth of a second, so two commands a second apart never share one.
@@ -117,6 +123,11 @@ public static class RegisterVerb
         if (form.Flag == TheFamilyAgain)
         {
             return await Said(await registrar.RegisterTheFamilyAgainAsync(Given("--evidence"), runId), output, error);
+        }
+
+        if (form.Flag == FamilyAgain)
+        {
+            return await Said(await registrar.RegisterTheSetupFamilyAgainAsync(Given(FamilyAgain), Given("--evidence"), runId), output, error);
         }
 
         if (form.Flag == TheThree)

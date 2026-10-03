@@ -10427,3 +10427,59 @@ Was:
 Now:
 > "A drain stopped partway leaves its request `writing`, which the queue screen shows as being written until the next drain starts, puts it back as outstanding and takes it in its turn; a pass that ends on an error settles its request as refused with the error, and the drain goes on to the next (see: ...)."
 Why: the operator's ruling of 2026-10-03.
+### 2026-10-03 - CLAUDE.md - the first hard rule names the index's and the VIX's requests
+Authorised by: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+Was:
+> "Bars arrive in one bulk request and news in one feed request, so a night costs the same whether the universe is fifty names or five hundred."
+Now:
+> "Bars arrive in one bulk request, news in one feed request and the index's and the VIX's daily closes in one request a series, read by the market switches of two registered variants on the operator's ruling of 2026-10-03, so a night costs the same whether the universe is fifty names or five hundred." The paragraph's citations end with the decision's.
+Why: the decision that pulled the two series said a switch read on the night would be a request a night and a sentence in this rule, written when it lands; it lands with the two variants.
+### 2026-10-03 - ARCHITECTURE.html - section 14's fetch step asks for the index's and the VIX's series after the bars
+Authorised by: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+Was:
+> "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, ... (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement)."
+Now:
+> "... (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement). Then ask for the index's and the VIX's daily series over the days before the session that section 17 states, one request a series, and store each session no night has stored apart from the bars, a series the provider does not serve storing nothing and stopping nothing (see: ...)."
+Why: the operator's ruling of 2026-10-03; the switches read both series every night the families are evaluated.
+### 2026-10-03 - ARCHITECTURE.html - the family evaluator reads the market series and states each switch
+Authorised by: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+Was:
+> `<td>bar store, indicators, levels, earnings reactions, gate results, family results</td>` and a What it does cell ending "... a missing or moved evaluator failing the stage (see: ...)"
+Now:
+> `<td>bar store, market series, indicators, levels, earnings reactions, gate results, family results</td>` and the cell going on: "; it hands every registered rule the index's and the VIX's closes the fetch step stored, on the store's own sessions to the night, which a rule's market switch reads after its family's gates, and its row states each switch a standing rule holds, open or closed and why (see: ...)"
+Why: the operator's ruling of 2026-10-03.
+### 2026-10-03 - ARCHITECTURE.html - the read API reads every store but the pulled history and the market series
+Authorised by: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+Was:
+> `<td>every store but the pulled history</td>`
+Now:
+> `<td>every store but the pulled history and the market series</td>`
+Why: the market series sit in the bars column of the matrix, which the read API reads, and no page reads them; the family evaluator alone does.
+### 2026-10-03 - ARCHITECTURE.html - the weighted-call budget's example counts a market series
+Authorised by: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+Was:
+> "a request is not a request, so a night counted in requests alone says 8 where the provider says 327, over one request from each feed role and the corporate action feed's second, a member's reported quarters among them."
+Now:
+> "a request is not a request, so a night counted in requests alone says 9 where the provider says 328, over one request from each feed role and the corporate action feed's second, a member's reported quarters and a market series among them."
+Why: the market series feed is a role of the night's feeds, and the example asks each role once.
+### 2026-10-03 - RUNBOOK.md - the night's costs name the market series and the freeze writes the family the code writes now
+Authorised by: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+Was:
+> "one bulk bar request, one news feed request, a handful of calendar and membership calls. No model call", and "A second run is refused whole, its names standing, and a family no freeze is written for is refused by name. From the night after, ..."
+Now:
+> "one bulk bar request, one news feed request, one request each for the index's and the VIX's daily series, a handful of calendar and membership calls. No model call", and "... is refused by name. The commands write the family the code writes now, the live rule switched on the market among its variants since the operator's ruling of 2026-10-03. From the night after, ..."
+Why: the operator's ruling of 2026-10-03 (see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it).
+### 2026-10-03 - .claude/rules/checks.md - fixture-expectations reaches the market switches and a setup family registered again
+Authorised by: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+Was:
+> `fixture-expectations`: "... and gives up after twenty hours with no copy, each wait worked by a clock its own wait moves |"
+Now:
+> `fixture-expectations`: "... each wait worked by a clock its own wait moves; and each market switch is read by hand at its edge over constructed closes on the exchange's sessions, ...; and each setup family registered again retires every standing rule of the family and registers the family the code writes at one instant, refused where none stands and for a family no freeze is written for |"
+Why: the check reaches what the ruling's code asserts.
+### 2026-10-03 - .claude/rules/checks.md - nightly-run reaches the fetch step's market series
+Authorised by: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+Was:
+> `nightly-run`: "... and starts none where it was handed nothing to start one with, saying so on its row |"
+Now:
+> `nightly-run`: "... saying so on its row; and the fetch step asks for the index's and the VIX's daily series once each after the day's bars, writing its own row beside the bars' with the series it stored and the ones it did not, and a series the provider does not serve stops no step |"
+Why: the check reaches what the ruling's code asserts.

@@ -36601,3 +36601,96 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry, which is doc
             `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1769 of 1769 tests ran with none failed,
             migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.10 ruling - the breakout's and the earnings drift's market switches registered as variants, each family registered again whole to add one, the night asking for the index's and the VIX's closes, and the rerun's point-in-time check recorded   2026-10-03
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off. It carries
+the code the operator's ruling of 2026-10-03 calls for, which meets the done conditions a checkpoint's code meets.
+Ruled:      "From the three reports of 2026-10-02 and 03, register two variants through the remedy script, stating
+            what restarts: breakout: only on nights the index closes above its 200-session average (edge 0.082 to
+            0.100, held without the five largest, cut 2022's loss); earnings drift: only on nights the VIX closes
+            under its close ten sessions before (edge 0.121 to 0.221, and 0.159 without the five largest). Both
+            failed only on yearly totals because they sit out nights, which the live record will weigh. Record in
+            PROGRESS that the corrected rerun proposed no starting point and passed its point-in-time check
+            exactly, and that no idea passed on the breakout or the drift."
+Recorded:   the corrected rerun, 20261002T122612Z, proposed no starting point, and its point-in-time check
+            passed exactly: 212 of 212 name-sessions rebuilt with the night's own components, 12 of them the live
+            list's, each compared exactly, no difference, in 12.2 seconds. No idea passed on the breakout, 0 of 11
+            against about 1.5 luck alone passes, or on the earnings drift, 0 of 13 against about 1.7.
+Variants:   the breakout's, 20261003T023040Z's a4: edge 0.100 against the frozen rule's 0.082, and 0.047 against
+            0.031 without the five largest results; 2022's total -12.4 against -39.9; 963 trades against 1,009.
+            It failed on the years, better in 2 of 8 and the same in 5, and on the 1,000 trades the test asks,
+            which the family as frozen clears by 9. The drift's, 20261003T023106Z's a6: edge 0.221 against 0.121,
+            and 0.159 against 0.094 without the five largest; 1,283 trades against 2,243, on 24% of nights
+            against 43%. It failed on its totals, better in 2 of 8 years, and on its plain result a trade, 0.241
+            against 0.278: its edge rose because the benchmark on the nights it kept fell, 0.157 to 0.020.
+Built:      `MarketCloses` reads the index's and the VIX's closes on the store's sessions to the night, the
+            index's close against the average of a count of its closes ending on it, none where one is missing,
+            and the VIX's against its close a count of sessions before, as `SweepIdeas.Switches` reads them;
+            `MarketSwitches` is a registration's two settings, `indexAverageSessions` and `vixLookbackSessions`,
+            nought for none, read after the family's gates as a gate of its own; `BreakoutCandidate` and
+            `DriftCandidate` read both; `TheSetupFamilies` writes eight a family, the eighth the live rule switched
+            at `SweepIdeas.SlowAverage` and at `SweepIdeas.Lookback`; migration 57 creates `market_bar`;
+            `MarketSeriesFetcher` asks for each series once over the 400 days before the night's session in the
+            fetch step after the bars, storing each session no night holds, a refusal named and stopping nothing;
+            `NightFeeds` carries the market series feed as its eighth; the family evaluator hands every member
+            the closes and states each standing switch on its row; and `register --family-again <family>
+            --evidence` retires every standing rule of a new setup family and registers the family the code writes
+            at one instant. Two decisions, and the first hard rule names the two requests.
+Restarts:   both families' records. The merge moves both evaluators, so the fourteen rules the freezes
+            registered are retired and registered again under their names and settings, each now stating no
+            switch, beside the two switched rules. A setup family rule's record counts from the first session on
+            or after the day its standing registration was written, so all sixteen count from 2026-10-05, where
+            the fourteen counted from 2026-10-02, the one night their rules were scored on. The breakout's seven
+            kept no trade that night; two drift variants kept one each, within 5 sessions and on 1.5 times the
+            volume, and both stay stored in `family_trade` and leave their rules' blocks. Each family's rules are
+            tested at 0.05 over eight in place of 0.05 over seven. No pullback rule, filter version or clock
+            moves.
+Remedy:     `tools/remedies/2026-10-03-13.10-the-market-switches.txt`, after the merge and before the night of
+            2026-10-05: `register --family-again breakout --evidence "the operator's ruling of 2026-10-03: the
+            breakout listing only on nights the index closes above its 200-session average registered as a
+            variant, the ideas' run on the frozen breakouts having read it at an edge of 0.100 against 0.082, and
+            of 0.047 against 0.031 without the five largest results"`, then `register --family-again drift
+            --evidence "the operator's ruling of 2026-10-03: the earnings drift listing only on nights the VIX
+            closes under its close ten sessions before registered as a variant, the ideas' run on the frozen drift
+            having read it at an edge of 0.221 against 0.121, and of 0.159 against 0.094 without the five largest
+            results"`.
+Guide:      the reader's guide brought into line with the architecture, which a reading of the two on the
+            operator's question of 2026-10-03 found it behind in seven places: the paid work the night starts,
+            the first six reports and the news labels, where the guide said the night spends nothing; a refused
+            section asked again up to three times, where it said twice; the drift's target at the first band two
+            typical moves above, and its card's order; the three settings the shape clock moves; the breakout's
+            and the drift's records shown as their trades decide; the queue and the watch list pages; and the two
+            switches registered.
+Tests:      1775, from 1769: six added, each switch by hand at its edge and every session read as the ideas'
+            run reads it, the fetch over a constructed feed, a switched rule firing and not, a family registered
+            again, and the night's fetch step; three moved from seven rules a family to eight, and the night's
+            weighted total and the claims' pair count the market series.
+Claims:     892, from 887, with 892 PASS: five added, the market series fetcher's catalogue and matrix rows, its store,
+            section 17's market switches and section 18's series not served.
+Pins:       the breakout's evaluator version moves, 65ea06f28fff to a583427328fe, and the drift's, 3309f7f59e9e
+            to fc5b0bdd1256, which the remedy registers each family under. No other pin moves: the swing filter's,
+            the ladder rules' and every other evaluator's sources are untouched.
+Mutated:    the rule, stated before the run: each property the change adds, broken alone, made on the branch in
+            this checkout, filtered to the tests named and reverted.
+            S1 the index's average read over one close more than its count: red in the edge test.
+            S2 the index switch open at its average: red in the edge test.
+            S3 the VIX read against its close one session nearer than its count: red in the edge test.
+            S4 a switch that cannot be read read as open: red in the edge test and the evaluator's test.
+            S5 the fetch writing a session a night already holds over its row: red in the fetch test.
+            S6 a series refused failing the fetch step: red in the fetch test and the night's test.
+            S7 the drift's evaluator not reading its switch: red in the firing test.
+            S8 a family registered again without retiring its standing rules: red in the family test.
+            Results: each red in every test named for it, run filtered to those tests: S1, S2 and S3 in the
+            edge test; S4 in the edge test and the evaluator's test, the switched rule firing on BA, BB and BC
+            over a store holding none of the index's closes; S5 in the fetch test, the revised close written over
+            the first night's; S6 in the fetch test and the night's test, the night stopping at its fetch step;
+            S7 in the firing test; S8 in the family test, each of the eight refused as already standing. Each ran
+            over 6639a45 and was reverted, the tree reading clean after it and the tests named passing over it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 6639a45.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1775 of 1775 tests ran with none failed,
+            migrations 0 to 57 with none pending, schema version 57, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 892 claims, 892 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            903 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.

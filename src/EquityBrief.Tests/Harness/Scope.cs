@@ -2900,6 +2900,27 @@ internal static class Scope
             Verdict.Pass,
             "a night holding its lock for twenty hours leaves no copy and a failed row naming the night as what still held the store",
             ByExpectations),
+        // The breakout's and the drift's market switches, on the operator's ruling of 2026-10-03.
+        [CheckReach.Key(CatalogueTable, "Market series fetcher")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the bars it reads, the market series it reads and inserts and the run log it writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Market series fetcher")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Market series")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(LimitsTable, "Market switches")] = new Scoped(
+            Verdict.Pass,
+            "each switch read by hand at its edge over constructed closes on the exchange's sessions, a day the VIX is quoted on that is no session passed over and a missing close closing it, every session read as the ideas' run reads it, a switched rule firing where its family's rule fires on a night its switch is open and on none where it is closed, the night's fetch over the window stated, and the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The provider refuses or sends nothing for the index or the VIX on a night")] = new Scoped(
+            Verdict.Pass,
+            "a refused series stores nothing and is named on the fetch's own row, which is written ok, and a series sent without the night's session says so, while a switch whose closes the store does not hold is closed with its reason on the family evaluator's row",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "The labeller fails")] = new Scoped(
             Verdict.Pass,
             "a run refused before it asked anything writes its own row saying why and no row of the night's, and a labeller that stopped partway leaves the night's rows, listings and gate results as they were",
@@ -3449,9 +3470,9 @@ internal static class Scope
             Verdict.Pass,
             "the night runs it after membership, and a second night backfills nothing",
             ByNight),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, a name announced to join included, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's) (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, a name announced to join included, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's) (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement). Then ask for the index's and the VIX's daily series over the days before the session that section 17 states, one request a series, and store each session no night has stored apart from the bars, a series the provider does not serve storing nothing and stopping nothing (see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars).")] = new Scoped(
             Verdict.Pass,
-            "the night runs it after the backfill, in one request on a night that follows one that ran, storing the day for the names that have not left and for no other, an announced joiner and an announced leaver included and a departed name not, and a night after one that did not run fetches the missed session first, one request more, and stores both",
+            "the night runs it after the backfill, in one request on a night that follows one that ran, storing the day for the names that have not left and for no other, an announced joiner and an announced leaver included and a departed name not, and a night after one that did not run fetches the missed session first, one request more, and stores both; then asks for the two market series once each over the stated days, storing only the sessions no night holds, and a series the provider refuses stores nothing and stops no step",
             ByNight),
 
         // The fundamentals item, a 12.2 correction: the fetch after the close, the readings, the state, the
@@ -3697,6 +3718,8 @@ internal static class Scope
         ["Family recorder"] = "13.9",
         // The operator's ruling of 2026-10-02, built after the phase 13 report.
         ["Store backup"] = "13.10",
+        // The operator's ruling of 2026-10-03, the market switches, built after the phase 13 report.
+        ["Market series fetcher"] = "13.10",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -3740,6 +3763,8 @@ internal static class Scope
         ["Family results"] = "13.2",
         // 13.9's, each registered family rule's trades with their results and benchmarks.
         ["Family trades"] = "13.9",
+        // The index's and the VIX's series the night fetches, the operator's ruling of 2026-10-03.
+        ["Market series"] = "13.10",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -4924,6 +4949,8 @@ internal static class Scope
         // The store's copy, the operator's ruling of 2026-10-02.
         ["A store copy that does not open and read"] = "13.10",
         ["The night, its drain or its labeller still holding the store after twenty hours"] = "13.10",
+        // The market switches, the operator's ruling of 2026-10-03.
+        ["The provider refuses or sends nothing for the index or the VIX on a night"] = "13.10",
         // 13.1, the family framework. The row about two families is read on the page once a second family is on it.
         ["A stock a family passes while a trade for it is still open"] = "13.1",
         ["A stock two families pass on one night"] = "13.2",
@@ -5024,6 +5051,8 @@ internal static class Scope
         ["News labeller month limit"] = "12.6",
         // The store's copy, the operator's ruling of 2026-10-02.
         ["Store copies"] = "13.10",
+        // The market switches, the operator's ruling of 2026-10-03.
+        ["Market switches"] = "13.10",
         ["Unreadable answers for a digit"] = "12.6",
         ["News article retention"] = "12.6",
         // The family framework, 13.1.

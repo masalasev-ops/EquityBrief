@@ -38,11 +38,13 @@ internal static class ComponentVocabulary
     // row a member a night, as the swing readings are, and so are the family
     // results, one row a member a night under each setup family but the pullback.
     // From 13.9 the forward returns column holds the family trades beside the
-    // forward returns, each a record of what became of a trade.
+    // forward returns, each a record of what became of a trade, and from the
+    // market switches' ruling the bars column holds the index's and the VIX's
+    // daily series beside the members' bars, each a fetched series of sessions.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
-        ("Bars", [DataStore.Bar]),
+        ("Bars", [DataStore.Bar, DataStore.MarketBar]),
         ("Calendar", [DataStore.Calendar]),
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar]),
         ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult]),
@@ -99,7 +101,7 @@ internal static class ComponentVocabulary
     // splitting them produces fragments that resolve to nothing.
     static readonly Dictionary<string, DataStore[]> WholeCells = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["every store but the pulled history"] = [.. Columns.SelectMany(column => column.Stores).Except([DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar])],
+        ["every store but the pulled history and the market series"] = [.. Columns.SelectMany(column => column.Stores).Except([DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.MarketBar])],
         ["none"] = [],
         ["read API"] = [],
         ["a file the user chooses"] = [],
@@ -181,6 +183,7 @@ internal static class ComponentVocabulary
         ["pulled earnings"] = DataStore.PulledEarnings,
         ["pulled surprises"] = DataStore.PulledSurprise,
         ["pulled market series"] = DataStore.PulledMarketBar,
+        ["market series"] = DataStore.MarketBar,
         ["candidate register"] = DataStore.CandidateRegister,
         ["rule versions"] = DataStore.RuleVersion,
         ["version scores"] = DataStore.VersionScore,

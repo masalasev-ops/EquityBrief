@@ -37,6 +37,9 @@ public class SchemaColumns
             // 13.9, the family recorder's store.
             CheckReach.Key(Scope.StoresTable, "Family trades"),
 
+            // The market switches' ruling of 2026-10-03, the market series fetcher's store.
+            CheckReach.Key(Scope.StoresTable, "Market series"),
+
             // 6.1, the fundamentals store: migration 19's columns and types against
             // SCHEMA's own declaration of them.
             CheckReach.Key(Scope.StoresTable, "Fundamentals"),

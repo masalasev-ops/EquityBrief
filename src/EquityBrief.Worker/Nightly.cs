@@ -188,7 +188,7 @@ public static class Nightly
             return 1;
         }
 
-        var (membership, historical, bulkFeed, corporate, calendar, _, companies) = feeds;
+        var (membership, historical, bulkFeed, corporate, calendar, _, companies, market) = feeds;
 
         // The local model calls the overnight queue made, which the night's last line states apart
         // from the arithmetic's, whose model calls are none.
@@ -232,10 +232,15 @@ public static class Nightly
                 return $"{outcome.RowsWritten} rows written over {outcome.Requests} request(s), " +
                     $"{(outcome.Unserved ?? []).Count} member(s) holding no year after it";
             }),
+            // The day's bars, and after them the index's and the VIX's series, one request a series, which only
+            // the registered family rules' market switches read, so a series not stored stops nothing.
+            // see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
             new("fetch", async () =>
             {
                 var outcome = await new BarFetcher(bulkFeed, clock, store.DatabaseFile)
                     .RunAsync(indexCode, runId, night.Token);
+                var series = await new MarketSeriesFetcher(market, clock, store.DatabaseFile)
+                    .RunAsync(runId, night.Token);
 
                 return $"{outcome.RowsWritten} rows written for {outcome.MembersStored} member(s), " +
                     FormattableString.Invariant($"{outcome.RowsDropped} dropped below {outcome.Oldest:yyyy-MM-dd}, ") +
@@ -245,8 +250,8 @@ public static class Nightly
                     $"{(outcome.CaughtUp ?? []).Count} missed session(s) caught up, " +
                     $"{(outcome.CaughtUpShort ?? new Dictionary<DateOnly, IReadOnlyList<string>>()).Values.Sum(names => names.Count)} " +
                     "member-session(s) a caught-up file carried nothing for, " +
-                    $"{outcome.Requests} request(s)";
-            }),
+                    $"{outcome.Requests} request(s); market series {series.Detail}";
+            }, [BarFetcher.Stage, MarketSeriesFetcher.Stage]),
             new("actions", async () =>
             {
                 var outcome = await new CorporateActionChecker(corporate, historical, clock, store.DatabaseFile)

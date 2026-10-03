@@ -142,7 +142,7 @@
   <div><b>It does not predict prices.</b>It finds prices a stock has respected before and says what to do if it gets there again.</div>
   <div><b>It does not rank companies as investments.</b>It judges setups on the chart. What it says of a business, whether its sales and margins are growing, is read from the company's reported quarters by fixed rules.</div>
   <div><b>It does not size positions.</b>It says where to buy and sell. How much is always your decision.</div>
-  <div><b>It does not spend money unless you ask.</b>The nightly work is free. Only written research costs anything.</div>
+  <div><b>It spends money only where you have said it may.</b>The nightly arithmetic is free. Written research costs money, for the first six stocks the night lists and for any you open, and so does sorting a listed stock's news, each kept inside limits you set.</div>
 </div>
 
 <div class="why">
@@ -158,7 +158,7 @@
     <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker></defs>
     <rect class="zone-n" x="4" y="34" width="560" height="180" rx="8"/>
     <rect class="zone-v" x="582" y="34" width="414" height="180" rx="8"/>
-    <text class="tl" x="18" y="24">Every night, free</text>
+    <text class="tl" x="18" y="24">Every night, the arithmetic</text>
     <text class="tl" x="596" y="24">When you read</text>
 
     <rect class="bx-n" x="20" y="76" width="120" height="92" rx="6"/>
@@ -200,16 +200,16 @@
     <path class="ln" d="M554 122 H594" marker-end="url(#ah1)"/>
     <path class="ln" d="M718 122 H732" marker-end="url(#ah1)"/>
     <path class="ln" d="M856 122 H870" marker-end="url(#ah1)"/>
-    <text class="ts" x="284" y="198" text-anchor="middle">Arithmetic only. No AI model runs at night.</text>
-    <text class="ts" x="790" y="198" text-anchor="middle">Only research costs money.</text>
+    <text class="ts" x="284" y="198" text-anchor="middle">The arithmetic calls no AI model and is free.</text>
+    <text class="ts" x="790" y="198" text-anchor="middle">Research and news labels cost money.</text>
   </svg>
 </figure>
 <div class="key">
-  <p><b>How to read it.</b> Blue is the nightly run, teal is what you see, purple is the one paid step.</p>
-  <p><b>What to take from it.</b> Everything you look at was worked out the night before. Research is the only thing that waits for you.</p>
+  <p><b>How to read it.</b> Blue is the nightly arithmetic, teal is what you see, purple is research, the paid step, which the night also asks for on the first six stocks its page lists.</p>
+  <p><b>What to take from it.</b> Everything you look at was worked out the night before. The first six stocks the night lists have their research written overnight; every other stock's waits for you to open it.</p>
 </div>
 <div class="why">
-  <p><b>Why split it this way.</b> Five hundred stocks every night must be cheap and fast, so the night does arithmetic only. Written analysis is slow and costs money, so it happens only for the stocks you open, and it is kept.</p>
+  <p><b>Why split it this way.</b> Five hundred stocks every night must be cheap and fast, so the night's own work is arithmetic. Written analysis is slow and costs money, so it is written for the few stocks the night lists first and for the ones you open, and it is kept. After its arithmetic the night starts that research and the labelling of the listed stocks' news as work of their own, each paid at the cheaper hours and stopped at its own limits.</p>
 </div>
 <p><b>A copy of the store every night.</b> Once the night, the reports it asked for and the news labelling have all finished, the whole store is copied into a folder of its own. Each copy is opened and read back against the store before it counts, and the newest three are kept, so a damaged night still leaves the two before it. The Run page says when the newest copy was made and where it is. A copy guards against a damaged file; one kept on the same disk does not guard against the disk failing.</p>
 
@@ -454,7 +454,7 @@
 
 <p><b>The breakout.</b> A stock closes above its highest price of the past six months on heavy volume, after its daily ranges narrowed. It is bought at the close with its stop one and a half typical moves below, raised as the price climbs and never lowered, and no target, so a winner is held while it keeps climbing. Its card lists the heaviest volume against its own average first.</p>
 
-<p><b>The earnings drift.</b> A company beats its estimate and the stock closes up at least half a typical day's move on twice its usual volume. It is bought within three sessions of that day while it holds above that day's low, with its stop at that low and its target at the next band above or two and a half times the risk, whichever is nearer.</p>
+<p><b>The earnings drift.</b> A company beats its estimate and the stock closes up at least half a typical day's move on twice its usual volume. It is bought within three sessions of that day while it holds above that day's low, with its stop at that low and its target at the first band at least two typical moves above the buy or two and a half times the risk, whichever is nearer. Its card lists the largest earnings surprise first.</p>
 
 <p><b>Five a setup, and one trade a stock.</b> Each setup lists at most five stocks a night in its own order, and a note counts any past its five. A stock two setups pass is listed once, under the first in the page's order, with a label naming the other. A stock with a trade still open from an earlier night is not listed again under any setup until that trade ends, and the card says so in a note.</p>
 
@@ -556,14 +556,14 @@
 </figure>
 <div class="key">
   <p><b>How to read it.</b> Most opens stop at the top right: nothing has changed, so the stored research is shown and nothing is spent. The lower path runs only when something has actually changed.</p>
-  <p><b>What to take from it.</b> Nothing expires on a timer. Research is rewritten only when a filing, an earnings date, a news spike or you say so.</p>
+  <p><b>What to take from it.</b> Nothing expires on a timer. Research is rewritten only when a filing, an earnings date, a news spike or you say so, and the night says so for the first six stocks its page lists.</p>
 </div>
 
 <div class="why">
-  <p><b>How claims are checked.</b> Every number in the writing must match a number the system computed or read from a filing. Every claim must name a document that was fetched and stored. A section that fails twice is left out rather than guessed.</p>
+  <p><b>How claims are checked.</b> Every number in the writing must match a number the system computed or read from a filing. Every claim must name a document that was fetched and stored. A section that fails is asked for again up to three times, and one still failing is left out rather than guessed.</p>
   <p><b>Why so strict.</b> The failure of automated research is a confident sentence that is wrong. Requiring a stored source for every claim means any sentence can be traced back to the document that supports it, months later.</p>
-  <p><b>Why two models.</b> Sorting and extracting from one document is small work a model on your own machine can do for free. Weighing all the evidence into a view of the company needs a stronger model, and that is the only part that costs money. Overnight, the local model drafts research for tonight's list so it is ready in the morning.</p>
-  <p><b>When a section is refused.</b> A refused section is told each thing the check refused and written once more, and one that repeats a refused thing is left out. Where the short version is left out, the page puts a summary written from the night's own figures in its place, headed as such. Every model is told who the reader is, someone deciding whether to hold a swing trade over the next weeks to months, and is given each document marked as a company filing, a news report or someone's opinion.</p>
+  <p><b>Why two models.</b> Sorting and extracting from one document is small work a model on your own machine can do for free. Weighing all the evidence into a view of the company needs a stronger model, and that, with sorting a listed stock's news, is the part that costs money. Overnight, the local model drafts the sections that rest on no document for every stock whose research is missing or out of date, tonight's list first, so they are ready in the morning.</p>
+  <p><b>When a section is refused.</b> A refused section is told each thing the check refused and asked for again, up to three times, and one still refused at its last try is left out, the page naming each rule it was refused by. Where the short version is left out, the page puts a summary written from the night's own figures in its place, headed as such. Every model is told who the reader is, someone deciding whether to hold a swing trade over the next weeks to months, and is given each document marked as a company filing, a news report or someone's opinion.</p>
   <p><b>Seeing which sections keep failing.</b> The run page lists each report section by section: passed first time, passed on its retry, or left out and why, with what each cost, and each section's rate over the last twenty reports. One setting names the model for each section, so a section that keeps failing can be given to another model. Before that, a trial can ask the other model for the same section beside a few reports, and a command writes the drafts side by side to a file without changing the report or showing them on any page. For now every report is written by DeepSeek: the one report written on Claude cost many times what DeepSeek's did, so no setting names Claude.</p>
 </div>
 
@@ -617,7 +617,7 @@
 </div>
 
 <h3>What the loop can change</h3>
-<p>Only the pullback's filter settings move: how strong a stock's recent return must be, how deep a pullback counts, how quiet the volume must be on the way down, how far away the stop may sit, the minimum reward for the risk, and how healthy the market must be. The breakout's and the drift's settings change only at a new freeze, on your word. The rules for finding levels and building the report's plan do not change through this loop.</p>
+<p>Only the pullback's filter settings move. The shape clock moves three of them: how strong a stock's recent return must be, how quiet the volume must be on the way down, and the minimum reward for the risk. How deep a pullback counts, and whether the market gate applies at all, move only when a variant differing in them is promoted; how far away the stop may sit and how healthy the market must be move only by your ruling. The breakout's and the drift's settings change only at a new freeze, on your word. The rules for finding levels and building the report's plan do not change through this loop.</p>
 
 <h3>Two clocks, answering two different questions</h3>
 <figure>
@@ -657,6 +657,7 @@
 <p>The breakout and the drift each have a sweep of their own, which takes minutes, since a setup's grid holds tens of settings and not millions: its own rule replayed over the history at every setting, five a night with one open trade a stock, each trade read as an edge over the same plan placed on every stock that night. You froze all three setups on 2026-10-02: the pullback at its settings with the minimum reward for the risk raised to 2, and the breakout and the drift at their sweeps' proposals, each first checked against the settings one step away so that neither is a point the history happened to favour. Each was registered with its variants beside it, and only the trades after the freeze count toward its record.</p>
 <p>The ideas' run then tests kinds of idea the sweep's grid does not hold, each added to the pullback alone: switches that keep the list off a weak market, a stop touched during the day, only the night's best three, a trailing stop, a stop no closer than a typical move, and shorter holds. An idea is kept only where it does better than the pullback in at least six of the eight years with two of the last three, and stays better without its largest few results. A market switch is judged on each year's total result instead, since the edge already subtracts what the whole market did on the nights it keeps off. The report says how many ideas were tried and how many luck alone would pass, and nothing it proposes reaches the list until you freeze it.</p>
 <p>The same ideas are read on the breakouts and the earnings drift as each was frozen, one setup a run and by the same test, with the two trailing stops tried on the drift alone, since the breakout's stop already trails. What they show is a report and nothing more: a setup's rule changes only when you freeze it again.</p>
+<p>From those two reports you registered one switch on each setup as a variant on 2026-10-03: the breakout listing only on nights the index closes above its 200-session average, and the drift only on nights the VIX closes under its close ten sessions before. Neither passed the test, each failing on the yearly totals a switch is judged on, since a night it sits out counts nothing, and the breakout's on its count of trades as well, so their own records weigh them from their first night. To read them the night asks for the index's and the VIX's daily closes, one request each, and a night it cannot read a switch on lists nothing under that variant.</p>
 
 <h3>How a result reaches tonight's list</h3>
 <p>The pullback's filter runs every night on a stored settings version, and each setup's rule on the settings it was frozen at. The feedback never edits those settings itself. It prepares a change, the run page tells you it is ready, and the change reaches the list only when you accept it.</p>
@@ -768,7 +769,7 @@
   </svg>
 </figure>
 <div class="key">
-  <p><b>How to read it.</b> Tonight and the universe are for finding stocks. Tonight opens on a line about the market, whether it left the lists open and how many stocks the setups list, then a card for each setup, and beneath the cards one list across the setups of the stocks one gate short of a buy point, there to be watched and never counted as picks. A report is for reading one. The run page is the evidence behind everything else, and Past picks is the record of every trade the list recommended, which you can filter by setup; a breakout's trade has no target and is drawn with its result in multiples of its risk. A stock holds one open trade at a time across every setup: while a trade the list recommended is still open, a night a setup passes the stock again is shown as a note on that setup's card and marked on Past picks rather than counted as a second trade. The run page draws each setup with the day its rule went live, its variants and how far each rule's record has come toward its first checkpoint, and compares tonight's list with what each version of the rules running in the background would have picked: those picks are shown there and nowhere else, and how their trades turn out stays hidden until the version's checkpoint, so no version is kept or dropped on a lucky month. A night that stops partway tries again by itself from the step that stopped, up to three more times fifteen minutes apart, and tonight's page and the run page say whether it is running, waiting to try again or left unfinished, with a button that runs the rest of it.</p>
+  <p><b>How to read it.</b> Tonight and the universe are for finding stocks. Tonight opens on a line about the market, whether it left the lists open and how many stocks the setups list, then a card for each setup, and beneath the cards one list across the setups of the stocks one gate short of a buy point, there to be watched and never counted as picks. A report is for reading one. The run page is the evidence behind everything else, and Past picks is the record of every trade the list recommended, which you can filter by setup; a breakout's trade has no target and is drawn with its result in multiples of its risk. A stock holds one open trade at a time across every setup: while a trade the list recommended is still open, a night a setup passes the stock again is shown as a note on that setup's card and marked on Past picks rather than counted as a second trade. The run page draws each setup with the day its rule went live, its variants and how far each rule's record has come toward its first checkpoint, and compares tonight's list with what each version of the pullback's rule running in the background would have picked: those picks are shown there and nowhere else, and how their trades turn out stays hidden until the version's checkpoint, so no version is kept or dropped on a lucky month. The breakout's and the drift's rules each show their trades and the edge of those already decided as they come in, while what the edge means waits for the checkpoint. The queue page lists every report asked for, the one being written and what came of the rest, with when each will start and end; the watch list holds up to twenty stocks you choose to follow, each as it stands on the newest night. A night that stops partway tries again by itself from the step that stopped, up to three more times fifteen minutes apart, and tonight's page and the run page say whether it is running, waiting to try again or left unfinished, with a button that runs the rest of it.</p>
   <p><b>What to take from it.</b> On every screen, green means a level below the price and orange means a level above it. Nothing else uses those two colours.</p>
 </div>
 

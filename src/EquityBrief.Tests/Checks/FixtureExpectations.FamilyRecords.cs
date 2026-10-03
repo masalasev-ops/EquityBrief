@@ -46,24 +46,25 @@ public partial class FixtureExpectations
 
         var breakoutAt = new DateTimeOffset(2026, 10, 2, 20, 0, 0, TimeSpan.Zero);
 
-        // The breakouts' freeze: the live rule at the proposal and its six variants, the five grid neighbours one
-        // step along one dial and the provisional setting, at one instant, counted in their own family of eight
-        // while the pullback's stands full.
+        // The breakouts' freeze: the live rule at the proposal and its seven variants, the five grid neighbours one
+        // step along one dial, the provisional setting and the live rule listing only on nights the index closes
+        // above its 200-session average, at one instant, counted in their own family while the pullback's stands full.
         var (code, said) = await RegisterVerbAt(store, breakoutAt, RegisterVerb.Family, BreakoutRule.Name);
 
         Assert.Equal(0, code);
-        Assert.Contains("registered 7 at one instant, family of 7 of 9", said, StringComparison.Ordinal);
+        Assert.Contains("registered 8 at one instant, family of 8 of 9", said, StringComparison.Ordinal);
         Assert.Equal(
             [
-                "126|1.5|0.85|1.5",
-                "251|1.5|0.85|1.5",
-                "126|1.25|0.85|1.5",
-                "126|2|0.85|1.5",
-                "126|1.5|1|1.5",
-                "126|1.5|0.85|2",
-                "251|1.5|1|2",
+                "126|1.5|0.85|1.5|0|0",
+                "251|1.5|0.85|1.5|0|0",
+                "126|1.25|0.85|1.5|0|0",
+                "126|2|0.85|1.5|0|0",
+                "126|1.5|1|1.5|0|0",
+                "126|1.5|0.85|2|0|0",
+                "251|1.5|1|2|0|0",
+                "126|1.5|0.85|1.5|200|0",
             ],
-            TheSetupFamilies.Breakouts.Select(one => BreakoutCandidate.SettingsOf(one.Parameters)).Select(settings => FormattableString.Invariant($"{settings.HighSessions}|{settings.VolumeMultiple}|{settings.RangeCeiling}|{settings.StopMoves}")));
+            TheSetupFamilies.Breakouts.Select(one => (Settings: BreakoutCandidate.SettingsOf(one.Parameters), Switches: MarketSwitches.Of(one.Parameters))).Select(rule => FormattableString.Invariant($"{rule.Settings.HighSessions}|{rule.Settings.VolumeMultiple}|{rule.Settings.RangeCeiling}|{rule.Settings.StopMoves}|{rule.Switches.IndexAverageSessions}|{rule.Switches.VixLookbackSessions}")));
         Assert.Equal(
             [.. TheSetupFamilies.Breakouts.Select(one => one.Candidate)],
             TextRows(store, "SELECT candidate FROM candidate_register WHERE evaluator = 'breakout' AND event = 'registered' ORDER BY id;"));
@@ -73,46 +74,52 @@ public partial class FixtureExpectations
             TheSetupFamilies.Breakouts[0].Candidate);
         Assert.Equal(
             "the breakout rule at a 251-session high, 1.5 times the volume, ranges at 1 and the stop 2 typical moves beneath",
+            TheSetupFamilies.Breakouts[^2].Candidate);
+        Assert.Equal(
+            "the breakout rule at a 126-session high, 1.5 times the volume, ranges at 0.85 and the stop 1.5 typical moves beneath, only on nights the index closes above its 200-session average",
             TheSetupFamilies.Breakouts[^1].Candidate);
         Assert.All(
             TextRows(store, "SELECT evaluator_version || '|' || rule || '|' || test FROM candidate_register WHERE evaluator = 'breakout';"),
             row => Assert.Equal(new BreakoutCandidate().Version + "|" + TheSetupFamilies.BreakoutWords + "|" + Worker.Sweep.FamilySweepReport.Test, row));
 
-        // The drift's: the live rule, its five neighbours and the proposal with its stop no closer than a typical
-        // move, in their own family too.
+        // The drift's: the live rule, its five neighbours, the proposal with its stop no closer than a typical
+        // move and the live rule listing only on nights the VIX closes under its close ten sessions before, in
+        // their own family too.
         var (drifted, driftSaid) = await RegisterVerbAt(store, breakoutAt.AddMinutes(1), RegisterVerb.Family, DriftRule.Name);
 
         Assert.Equal(0, drifted);
-        Assert.Contains("registered 7 at one instant, family of 7 of 9", driftSaid, StringComparison.Ordinal);
+        Assert.Contains("registered 8 at one instant, family of 8 of 9", driftSaid, StringComparison.Ordinal);
         Assert.Equal(
             [
-                "3|0.5|2|2.5|0",
-                "5|0.5|2|2.5|0",
-                "3|1|2|2.5|0",
-                "3|0.5|1.5|2.5|0",
-                "3|0.5|2|2|0",
-                "3|0.5|2|3|0",
-                "3|0.5|2|2.5|1",
+                "3|0.5|2|2.5|0|0|0",
+                "5|0.5|2|2.5|0|0|0",
+                "3|1|2|2.5|0|0|0",
+                "3|0.5|1.5|2.5|0|0|0",
+                "3|0.5|2|2|0|0|0",
+                "3|0.5|2|3|0|0|0",
+                "3|0.5|2|2.5|1|0|0",
+                "3|0.5|2|2.5|0|0|10",
             ],
-            TheSetupFamilies.Drifts.Select(one => DriftCandidate.SettingsOf(one.Parameters)).Select(settings => FormattableString.Invariant($"{settings.WindowSessions}|{settings.ReactionMoves}|{settings.VolumeMultiple}|{settings.TargetRiskMultiple}|{settings.StopFloorMoves}")));
-        Assert.EndsWith(", the stop at least 1 typical move beneath", TheSetupFamilies.Drifts[^1].Candidate, StringComparison.Ordinal);
+            TheSetupFamilies.Drifts.Select(one => (Settings: DriftCandidate.SettingsOf(one.Parameters), Switches: MarketSwitches.Of(one.Parameters))).Select(rule => FormattableString.Invariant($"{rule.Settings.WindowSessions}|{rule.Settings.ReactionMoves}|{rule.Settings.VolumeMultiple}|{rule.Settings.TargetRiskMultiple}|{rule.Settings.StopFloorMoves}|{rule.Switches.IndexAverageSessions}|{rule.Switches.VixLookbackSessions}")));
+        Assert.EndsWith(", the stop at least 1 typical move beneath", TheSetupFamilies.Drifts[^2].Candidate, StringComparison.Ordinal);
+        Assert.Equal(
+            "the drift rule within 3 sessions, up 0.5 typical moves on 2 times the volume, the target at 2.5 times the risk, only on nights the VIX closes under its close 10 sessions before",
+            TheSetupFamilies.Drifts[^1].Candidate);
 
-        // Each family's rules counted apart: nine pullbacks, seven breakouts and seven drifts standing at once.
+        // Each family's rules counted apart: nine pullbacks, eight breakouts and eight drifts standing at once.
         var rows = await new CandidateRegistrar(FixedClock.At(breakoutAt.AddHours(1), SessionZones.UnitedStates), store.DatabaseFile).RowsAsync();
         var standing = CandidateFamily.Standing(rows, breakoutAt.AddHours(1));
 
         Assert.Equal(
-            (9, 7, 7),
+            (9, 8, 8),
             (CandidateFamily.In(standing, SetupFamilies.Pullback).Count, CandidateFamily.In(standing, BreakoutRule.Name).Count, CandidateFamily.In(standing, DriftRule.Name).Count));
 
-        // The breakouts take an eighth and a ninth and refuse a tenth, whatever the other families hold.
+        // The breakouts take a ninth and refuse a tenth, whatever the other families hold.
         var registrar = new CandidateRegistrar(FixedClock.At(breakoutAt.AddHours(2), SessionZones.UnitedStates), store.DatabaseFile);
-        var eighth = await registrar.RegisterAsync("a breakout at 1.75 times the volume", "a rule", "a test", BreakoutCandidate.EvaluatorName, BreakoutCandidate.ParametersOf(BreakoutRule.Live with { VolumeMultiple = 1.75 }), "register-eighth");
-        var ninth = await registrar.RegisterAsync("a breakout at 1.6 times the volume", "a rule", "a test", BreakoutCandidate.EvaluatorName, BreakoutCandidate.ParametersOf(BreakoutRule.Live with { VolumeMultiple = 1.6 }), "register-ninth");
-        var tenth = await registrar.RegisterAsync("a breakout at 1.4 times the volume", "a rule", "a test", BreakoutCandidate.EvaluatorName, BreakoutCandidate.ParametersOf(BreakoutRule.Live with { VolumeMultiple = 1.4 }), "register-tenth");
+        var ninth = await registrar.RegisterAsync("a breakout at 1.75 times the volume", "a rule", "a test", BreakoutCandidate.EvaluatorName, BreakoutCandidate.ParametersOf(BreakoutRule.Live with { VolumeMultiple = 1.75 }), "register-ninth");
+        var tenth = await registrar.RegisterAsync("a breakout at 1.6 times the volume", "a rule", "a test", BreakoutCandidate.EvaluatorName, BreakoutCandidate.ParametersOf(BreakoutRule.Live with { VolumeMultiple = 1.6 }), "register-tenth");
 
-        Assert.Equal((CandidateRegistrar.Registered, CandidateRegistrar.Registered, CandidateRegistrar.Refused), (eighth.Outcome, ninth.Outcome, tenth.Outcome));
-        Assert.Contains("family of 8 of 9", eighth.Detail, StringComparison.Ordinal);
+        Assert.Equal((CandidateRegistrar.Registered, CandidateRegistrar.Refused), (ninth.Outcome, tenth.Outcome));
         Assert.Contains("family of 9 of 9", ninth.Detail, StringComparison.Ordinal);
         Assert.Contains("9 candidates of the breakout family already stand registered", tenth.Detail, StringComparison.Ordinal);
 
@@ -123,7 +130,7 @@ public partial class FixtureExpectations
         var (leader, leaderSaid) = await RegisterVerbAt(store, breakoutAt.AddHours(4), RegisterVerb.Family, LeaderRule.Name);
 
         Assert.Equal((1, 1), (again, leader));
-        Assert.Contains("was refused, so none of the 7 was registered", againSaid, StringComparison.Ordinal);
+        Assert.Contains("was refused, so none of the 8 was registered", againSaid, StringComparison.Ordinal);
         Assert.Contains("no freeze is written for a family named 'leader'; the families a freeze is written for are breakout, drift.", leaderSaid, StringComparison.Ordinal);
         Assert.Equal(before, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
     }
@@ -284,8 +291,8 @@ public partial class FixtureExpectations
         var shadow = FamilyRuleShadow.For(await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync(), registeredAt.AddHours(3));
         var outcome = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync("rules-shadow", shadow);
 
-        // Worked by hand: five members read, XG's gap withholding it from all seven, so 35 verdicts and no fault.
-        Assert.Equal((35, 0), (outcome.Evaluated, outcome.Faults!.Count));
+        // Worked by hand: five members read, XG's gap withholding it from all eight, so 40 verdicts and no fault.
+        Assert.Equal((40, 0), (outcome.Evaluated, outcome.Faults!.Count));
 
         IReadOnlyList<ShadowOutcome> VerdictsOn(string ticker, string family = BreakoutRule.Name) =>
             FamilyRuleShadow.Read(Text(store, $"SELECT shadow FROM family_result WHERE ticker = '{ticker}' AND family = '{family}' AND session_date = '{BreakoutNight}';"));
@@ -294,15 +301,17 @@ public partial class FixtureExpectations
             string.Join(",", new[] { "BA", "BB", "BC", "NH", "SH" }.Where(ticker => VerdictsOn(ticker).Single(one => one.Candidate == rule.Candidate).Fired));
 
         // Each rule at its own settings: the volume of 2 times fires on BA alone, at 2,000 shares, and every
-        // other rule on BA, BB and BC; NH closes under its high and SH holds too few sessions for any window.
-        Assert.All(TheSetupFamilies.Breakouts.Where(one => BreakoutCandidate.SettingsOf(one.Parameters).VolumeMultiple != 2.0), rule => Assert.Equal("BA,BB,BC", FiredBy(rule)));
+        // other rule stating no switch on BA, BB and BC; NH closes under its high and SH holds too few sessions for
+        // any window. The rule switched on the index fires on none, since the store holds none of its closes.
+        Assert.All(TheSetupFamilies.Breakouts.Where(one => !MarketSwitches.Of(one.Parameters).Any && BreakoutCandidate.SettingsOf(one.Parameters).VolumeMultiple != 2.0), rule => Assert.Equal("BA,BB,BC", FiredBy(rule)));
         Assert.Equal("BA", FiredBy(BreakoutVariant(settings => settings.VolumeMultiple == 2.0)));
+        Assert.Equal(string.Empty, FiredBy(TheSetupFamilies.Breakouts[^1]));
 
         // The verdict carries the trade its own settings place: the live rule stops BA at 99.75, the provisional
         // setting at 99, each with the night's typical move and the figure the family orders by.
         var onBA = VerdictsOn("BA");
         var liveOnBA = onBA.Single(one => one.Candidate == TheSetupFamilies.Breakouts[0].Candidate).Values;
-        var provisionalOnBA = onBA.Single(one => one.Candidate == TheSetupFamilies.Breakouts[^1].Candidate).Values;
+        var provisionalOnBA = onBA.Single(one => one.Candidate == TheSetupFamilies.Breakouts[^2].Candidate).Values;
 
         Assert.Equal(("102", "99.75", "none", "2", "1.5"), (liveOnBA[FamilyRuleEvaluator.EntryValue], liveOnBA[FamilyRuleEvaluator.StopValue], liveOnBA[FamilyRuleEvaluator.TargetValue], liveOnBA[FamilyRuleEvaluator.OrderValue], liveOnBA[FamilyRuleEvaluator.MoveValue]));
         Assert.Equal("99", provisionalOnBA[FamilyRuleEvaluator.StopValue]);
@@ -312,15 +321,19 @@ public partial class FixtureExpectations
         {
             Assert.Empty(gapped.RootElement.GetProperty("candidates").EnumerateArray());
             Assert.All(gapped.RootElement.GetProperty("skipped").EnumerateArray(), skip => Assert.Equal("the stored series has a gap, so nothing is computed across it", skip.GetProperty("reason").GetString()));
-            Assert.Equal(7, gapped.RootElement.GetProperty("skipped").GetArrayLength());
+            Assert.Equal(8, gapped.RootElement.GetProperty("skipped").GetArrayLength());
         }
 
         Assert.Equal(["0"], FamilyRows(store, $"SELECT COUNT(*) FROM family_result WHERE family = 'drift' AND shadow IS NOT NULL AND session_date = '{BreakoutNight}';"));
         Assert.Equal(["ok"], FamilyRows(store, "SELECT outcome FROM run_log WHERE run_id = 'rules-shadow';"));
-        Assert.EndsWith("; 7 family candidate(s) registered, 35 shadow evaluation(s) written, 7 skipped on a member without the readings: 0 stale, 7 gapped", FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'rules-shadow';").Single(), StringComparison.Ordinal);
+        Assert.EndsWith(
+            "; 8 family candidate(s) registered, 40 shadow evaluation(s) written, 8 skipped on a member without the readings: 0 stale, 8 gapped"
+            + "; the market switches: index over its average closed, the index's stored closes do not hold all 200 sessions to the night",
+            FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'rules-shadow';").Single(),
+            StringComparison.Ordinal);
 
         // A rule registered at a version the code no longer carries is evaluated on no member: the reason stands in
-        // its place on every row, the other seven are evaluated, and the stage is written as failed naming it.
+        // its place on every row, the other eight are evaluated, and the stage is written as failed naming it.
         const string Moved = "a breakout registered at a version the code no longer carries";
 
         store.Execute(
@@ -330,13 +343,13 @@ public partial class FixtureExpectations
         var withMoved = FamilyRuleShadow.For(await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync(), registeredAt.AddHours(3));
         var failed = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync("rules-moved", withMoved);
 
-        Assert.Equal((35, Moved), (failed.Evaluated, Assert.Single(failed.Faults!)));
+        Assert.Equal((40, Moved), (failed.Evaluated, Assert.Single(failed.Faults!)));
         Assert.Equal(["failed"], FamilyRows(store, "SELECT outcome FROM run_log WHERE run_id = 'rules-moved';"));
         Assert.Contains($"FAILURE: 1 registered candidate(s) skipped on every member, the code carrying no evaluator by its name or a moved one: '{Moved}'", FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'rules-moved';").Single(), StringComparison.Ordinal);
 
         using (var moved = JsonDocument.Parse(Text(store, $"SELECT shadow FROM family_result WHERE ticker = 'BA' AND family = 'breakout' AND session_date = '{BreakoutNight}';")))
         {
-            Assert.Equal(7, moved.RootElement.GetProperty("candidates").GetArrayLength());
+            Assert.Equal(8, moved.RootElement.GetProperty("candidates").GetArrayLength());
             Assert.Equal(Moved, Assert.Single(moved.RootElement.GetProperty("skipped").EnumerateArray()).GetProperty("candidate").GetString());
         }
     }

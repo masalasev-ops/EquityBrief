@@ -175,7 +175,8 @@ public partial class ReadSurface
         Assert.Contains("data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\"", FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")), BreakoutRule.Name), StringComparison.Ordinal);
         Assert.DoesNotContain("family-records", WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{TheSwitch}")), StringComparison.Ordinal);
 
-        // The breakouts' freeze written on 2026-10-01 as the command writes it, the live rule and its six variants.
+        // The breakouts' freeze written on 2026-10-01 as the command writes it, the live rule and its seven variants,
+        // the one switched on the index among them.
         for (var at = 0; at < TheSetupFamilies.Breakouts.Count; at++)
         {
             RegisteredRule(store, 200 + at, TheSetupFamilies.Breakouts[at], "2026-10-01T21:00:00Z");
@@ -183,9 +184,9 @@ public partial class ReadSurface
 
         var card = FamilyCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")), BreakoutRule.Name);
 
-        Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-01\" data-variants=\"6\"", card, StringComparison.Ordinal);
+        Assert.Contains("data-state=\"live\" data-live-since=\"2026-10-01\" data-variants=\"7\"", card, StringComparison.Ordinal);
         Assert.DoesNotContain(SetupFamilies.Provisional, card, StringComparison.Ordinal);
-        Assert.Equal(7, Regex.Matches(Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{TheSwitch}")), "<table class=\"list-table family-records\".*?</table>")), "<tr data-family=\"breakout\"").Count);
+        Assert.Equal(8, Regex.Matches(Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{TheSwitch}")), "<table class=\"list-table family-records\".*?</table>")), "<tr data-family=\"breakout\"").Count);
 
         // A freeze written after the night's own end is not read on it: registered a second into the day after,
         // the card stays provisional.
