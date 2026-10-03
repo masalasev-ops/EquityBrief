@@ -3,11 +3,13 @@ using System.Net;
 using System.Text.RegularExpressions;
 using EquityBrief.Api.Passes;
 using EquityBrief.Core.Time;
+using EquityBrief.Data;
 using EquityBrief.Tests.Checks;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Web.App;
 using EquityBrief.Web.Marks;
 using EquityBrief.Worker.Research;
+using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Tests.Reading;
 
@@ -711,5 +713,57 @@ public partial class ReadSurface
         Assert.Equal(
             observed.Where(entry => entry.Value).Select(entry => entry.Key).Order(StringComparer.Ordinal),
             Named(note[..split]).Where(named => observed.ContainsKey(named)).Distinct().Order(StringComparer.Ordinal));
+    }
+
+    // The drain's claim beside a reader: the night starts the labeller and the store's copy in the second it starts the
+    // drain, and both read the store. A claim held to a transaction of its own waits for a read another connection
+    // holds and is then taken, where one whose commit came as its reader was let go failed on the lock.
+    // see: A writer waits up to ten minutes for another, and a pass stores what it fetched in one write
+    [Fact]
+    public async Task AClaimMadeWhileAnotherConnectionHoldsAReadWaitsForItAndIsThenTaken()
+    {
+        using var store = new TemporaryStore().Migrated();
+
+        store.Execute(
+            "INSERT INTO research_request (ticker, asked_at, asked_from, lane, state) " +
+            $"VALUES ('QCOM', '2026-10-03T00:26:14Z', '{RequestDrain.FromNight}', '{ResearchRequests.Paid}', '{ResearchRequests.Outstanding}');");
+
+        using var reading = new SqliteConnection(StoreConnection.For(store.DatabaseFile));
+
+        reading.Open();
+
+        using var held = reading.BeginTransaction(deferred: true);
+
+        using (var read = reading.CreateCommand())
+        {
+            read.Transaction = held;
+            read.CommandText = "SELECT COUNT(*) FROM research_request;";
+
+            Assert.Equal(1L, read.ExecuteScalar());
+        }
+
+        var claim = Task.Run(async () =>
+        {
+            await using var claiming = new SqliteConnection(StoreConnection.For(store.DatabaseFile));
+
+            await claiming.OpenAsync();
+
+            return await RequestDrain.ClaimAsync(claiming, new DateTimeOffset(2026, 10, 3, 0, 26, 15, TimeSpan.Zero));
+        });
+
+        await Task.Delay(TimeSpan.FromSeconds(1));
+
+        Assert.False(
+            claim.IsCompleted,
+            claim.IsFaulted
+                ? $"The claim ended while the read was held: {claim.Exception!.GetBaseException().Message}"
+                : "The claim did not wait for the read another connection held.");
+
+        held.Commit();
+
+        var request = Assert.IsType<TakenRequest>(await claim);
+
+        Assert.Equal(("QCOM", "2026-10-03T00:26:14Z"), (request.Ticker, request.AskedAt));
+        Assert.Equal(ResearchRequests.Writing, Assert.Single(Rows(store, "SELECT state FROM research_request;"))[0]);
     }
 }

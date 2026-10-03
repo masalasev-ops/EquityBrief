@@ -36476,3 +36476,32 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             against the machine's locale. The commit writes the parse on one line, and the figures above are
             da84b11's.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 9.2 - correction: the drain's claim takes the store's write lock as it begins and commits as a statement of its own, so it waits for a read another connection holds, where the drain the night started beside the labeller and the store's copy failed its claim   2026-10-03
+
+Corrects:   9.2 (6f4c471), whose drain claims the oldest outstanding request with one statement that marks it
+            and returns it. Run alone, that statement's commit comes as its reader is let go, after the row is
+            read, and the driver's wait on another writer reaches a statement's steps and not that release. The
+            night of 2026-10-02 started the drain, the labeller and the store's copy in one second, 00:26:15
+            UTC. The labeller and the copy were reading the store, the claim's commit found it held, and the
+            drain ended at 00:26:16 on SQLite's "database is locked", unhandled, its claim rolled back. QCOM's
+            request, which the night asked for, stands outstanding with no pass written, and the queue page
+            reads it as starting now. The next drain takes it.
+Found:      by this session reading the night of 2026-10-02 read-only, the drain's end in the machine's
+            application log.
+Repaired:   the claim runs inside a transaction of its own that takes the write lock as it begins and commits as
+            a statement, so the wait reaches both, as it reaches every other statement the drain makes. No other
+            statement in the shipped source returns rows from a write. The roster's `read-surface` row says so,
+            with its prior text in `CHANGELOG.md`.
+Tests:      1765, from 1764: one added, a claim made while another connection holds a read of the store open,
+            still waiting a second in and taking the request once the read ends.
+Claims:     887, unchanged.
+Pins:       none moves: the drain sits in no pin list.
+Mutated:    the rule, stated before the run: the property the correction adds, broken alone, made on the branch in
+            this checkout, filtered to the tests of the four files that claim or drain and reverted.
+            C1 the claim run alone, as it was: red in the new test alone, the claim ending on "database is
+               locked" while the read is held.
+            Results: FILLED IN AFTER THE SWEEP.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: GATETREE.
+            The run's figures are filled in after it.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.

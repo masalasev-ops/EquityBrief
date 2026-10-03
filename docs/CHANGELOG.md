@@ -10399,3 +10399,10 @@ Was:
 Now:
 > `read-surface`: "... worked by hand over constructed trades with an open one and one ended after the night read as open, a trade stopped out before the night whose cap's sessions pass after it read as not decided on it and decided from the night they have passed, worked by hand at the cap's edge, and a registered family's card reads ..."
 Why: the check reaches what the correction asserts.
+### 2026-10-03 - .claude/rules/checks.md - read-surface reaches the drain's claim made beside a read another connection holds
+Corrects: the drain's claim committed as its reader was let go, where no wait reaches, and the drain the night of 2026-10-02 started beside the labeller and the store's copy ended there on "database is locked"; found reading that night's end in the machine's application log.
+Was:
+> `read-surface`: "... and a second drain started while one runs claims nothing the first holds, and the run page counts the paid calls answered inside a peak window; ..."
+Now:
+> `read-surface`: "... and a second drain started while one runs claims nothing the first holds, and a claim made while another connection holds a read of the store open waits for the read to end and is then taken, and the run page counts the paid calls answered inside a peak window; ..."
+Why: the check reaches what the correction asserts.
