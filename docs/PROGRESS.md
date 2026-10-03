@@ -36737,6 +36737,13 @@ Mutated:    the rule, stated before the run: each mutation an assertion here was
             N7 the switches' clause written where no rule states one: red in the family evaluator's first test.
             N8 a rule's record counted from the first registration of its name: red in the restart test.
             N9 the fetch asking to the clock's session in place of the newest stored bar's: red in the fetch test.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: N13GATES
+            Results: each red alone in the test named for it, filtered to it, and the nine together left main's
+            seventeen tests of these files green, so each passed before this correction. Each ran over 4c2d9a2
+            and was reverted, the tree reading clean after it and the seven tests named passing over it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 4c2d9a2.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1776 of 1776 tests ran with none failed,
+            migrations 0 to 57 with none pending, schema version 57, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 892 claims, 892 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            903 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
