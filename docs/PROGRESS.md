@@ -36403,3 +36403,30 @@ Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` 
             `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's correction to the last,
             GATETREE, with the figures the last entry states.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.10 - correction: the best three's read-back through the run page's own query names which three the ninth rule keeps, where it counted three   2026-10-03
+
+Corrects:   the night's best three of the 13.10 ruling (b06bcaa, merged as PR 320). Its test read the ninth
+            rule's record back through the run page's own query and asserted a count of three, so the record
+            read with strength before reward to risk, which keeps three as well, passed the whole suite, 1758
+            of 1758: the review's mutation b. The row carries no ticker, by design. A missing property: an
+            assertion only, and no shipped code changes.
+Found:      by the sign-off review of phases 12 and 13 on 2026-10-02, over 9cfabe8.
+Repaired:   each of the night's four setups carries a stored return of its own, which names it in the rows the
+            query hands back, and the four are set so that the order read by strength, by band strength, by
+            ticker or on the swing plan's reward to risk each keeps a different three from the list's own order.
+            The test names the three the ninth rule keeps and the four the live rule keeps.
+Tests:      1763, unchanged: one test rewritten.
+Claims:     887, unchanged.
+Pins:       none moves: no shipped file changes.
+Mutated:    the rule, stated before the run: the order the query hands the walk, broken in each of the two places
+            it is read, made on the branch in this checkout, filtered to the best three's tests and reverted.
+            N1 the review's mutation b, the record read with strength before reward to risk: red in the
+               read-back test alone.
+            N2 the swing plan's reward to risk read in place of the plan the verdict names: red in the read-back
+               test.
+            Results: R1310NMUT.
+Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` green and
+            `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's correction to the last,
+            GATETREE, with the figures the last entry states.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.

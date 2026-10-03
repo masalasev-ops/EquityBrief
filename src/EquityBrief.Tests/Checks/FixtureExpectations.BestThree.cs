@@ -10,9 +10,9 @@ namespace EquityBrief.Tests.Checks;
 
 // fixture-expectations, the operator's ruling of 2026-10-02: the night's best three as the pullback's ninth
 // rule. Its record keeps the night's first three in the list's own order once its own open trades have kept a
-// stock off, worked by hand over three nights and read back through the run page's own query; and the family
-// is registered again whole at one instant under the open version, the eight the freeze wrote retired and the
-// nine registered, with a tenth refused.
+// stock off, worked by hand over three nights and read back through the run page's own query, naming the three
+// it keeps; and the family is registered again whole at one instant under the open version, the eight the
+// freeze wrote retired and the nine registered, with a tenth refused.
 // see: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
 public partial class FixtureExpectations
 {
@@ -104,9 +104,12 @@ public partial class FixtureExpectations
         var best = TheSwingFamily.Variant(TheSwingFamily.BestThreeName, "1");
 
         // One night on which four members pass and both rules fire, each verdict naming section 10's plan, whose
-        // reward to risk the row stores: P at 4, Q at 3, R and S at 2 with R the stronger. The best three keep
-        // P, Q and R, and the live rule all four.
-        foreach (var (ticker, rewardToRisk, strength) in new[] { ("S", 2.0, 0.6), ("R", 2.0, 0.7), ("Q", 3.0, 0.5), ("P", 4.0, 0.5) })
+        // reward to risk the row stores: S at 4, R at 3, and Q and P at 2 with Q the stronger and P on the stronger
+        // band. The best three keep S, R and Q in the list's own order, and the live rule all four. Read with
+        // strength first they would be Q, P and S, with band strength first P, Q and R, by ticker P, Q and R, and
+        // on the swing plan's reward to risk, 9 for all four, Q, P and R. The rows the query hands back carry no
+        // ticker, so each setup's stored return names it: P 0.1, Q 0.2, R 0.3 and S 0.4.
+        foreach (var (ticker, rewardToRisk, strength, band, returned) in new[] { ("P", 2.0, 0.6, 9, 0.1), ("Q", 2.0, 0.7, 3, 0.2), ("R", 3.0, 0.5, 2, 0.3), ("S", 4.0, 0.5, 1, 0.4) })
         {
             var shadow = JsonSerializer.Serialize(new
             {
@@ -121,13 +124,16 @@ public partial class FixtureExpectations
 
             store.Execute(
                 "INSERT INTO gate_result (ticker, session_date, version, code, market, trend, setup, trigger_pass, trade, swing_stop, swing_target, exclusions, passed, gates, shadow, clear_reward_to_risk, strength, band_strength, swing_reward_to_risk) " +
-                $"VALUES ('{ticker}', '2026-09-14', '1', 'code', 1, 1, 1, 1, 1, '95', '110', '[]', 1, '{{\"gates\":[],\"notes\":[]}}', '{shadow}', {rewardToRisk.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {strength.ToString(System.Globalization.CultureInfo.InvariantCulture)}, 3, 9);");
+                $"VALUES ('{ticker}', '2026-09-14', '1', 'code', 1, 1, 1, 1, 1, '95', '110', '[]', 1, '{{\"gates\":[],\"notes\":[]}}', '{shadow}', {rewardToRisk.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {strength.ToString(System.Globalization.CultureInfo.InvariantCulture)}, {band}, 9);");
+            store.Execute(
+                "INSERT INTO forward_return (ticker, session_date, horizon, outcome, resolved_on, return_pct, base_rate, break_even) " +
+                $"VALUES ('{ticker}', '2026-09-14', '{ForwardReturnSeries.Clear}', NULL, NULL, {returned.ToString(System.Globalization.CultureInfo.InvariantCulture)}, NULL, NULL);");
         }
 
         var setups = await new ReadApi(store.DatabaseFile, FixedClock.At(new DateTimeOffset(2026, 9, 15, 2, 0, 0, TimeSpan.Zero), SessionZones.UnitedStates)).CandidateSetupsAsync();
 
-        Assert.Equal(4, setups.Count(row => row.Candidate == live));
-        Assert.Equal(3, setups.Count(row => row.Candidate == best));
+        Assert.Equal([0.1, 0.2, 0.3, 0.4], setups.Where(row => row.Candidate == live).Select(row => row.ReturnPct!.Value).Order());
+        Assert.Equal([0.2, 0.3, 0.4], setups.Where(row => row.Candidate == best).Select(row => row.ReturnPct!.Value).Order());
     }
 
     [Fact]
