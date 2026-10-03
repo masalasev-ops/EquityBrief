@@ -329,6 +329,9 @@ public partial class FixtureExpectations
         var row = FamilyRows(store, "SELECT stage, outcome, rows_written, model_calls, network_requests, detail FROM run_log WHERE run_id = 'rules-first';").Single();
 
         Assert.StartsWith(FormattableString.Invariant($"family-rules|ok|{6 * SetupFamilies.Evaluated.Count}|0|0|for 2026-10-02: the breakout family passed 3 of 6 members, 2 one gate short"), row, StringComparison.Ordinal);
+
+        // With no registered rule standing, none states a market switch and the row reads none.
+        Assert.DoesNotContain("market switches", row, StringComparison.Ordinal);
         Assert.Equal(6 * SetupFamilies.Evaluated.Count, outcome.RowsWritten);
 
         // The stored gates are the rule's own, in order, with the market gate the filter stored.

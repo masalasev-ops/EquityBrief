@@ -332,13 +332,23 @@ public partial class FixtureExpectations
             FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'rules-shadow';").Single(),
             StringComparison.Ordinal);
 
-        // A rule registered at a version the code no longer carries is evaluated on no member: the reason stands in
-        // its place on every row, the other eight are evaluated, and the stage is written as failed naming it.
+        // A rule registered at a version the code no longer carries, with the four settings the freeze wrote before
+        // a registration stated a market switch, is evaluated on no member: the reason stands in its place on every
+        // row, the other eight are evaluated, the switches the standing rules state are still read, and the stage is
+        // written as failed naming it.
         const string Moved = "a breakout registered at a version the code no longer carries";
+
+        var asFrozen = CandidateEvaluator.Write(new Dictionary<string, double>
+        {
+            [BreakoutCandidate.HighSessionsParameter] = BreakoutRule.Live.HighSessions,
+            [BreakoutCandidate.VolumeMultipleParameter] = BreakoutRule.Live.VolumeMultiple,
+            [BreakoutCandidate.RangeCeilingParameter] = BreakoutRule.Live.RangeCeiling,
+            [BreakoutCandidate.StopMovesParameter] = BreakoutRule.Live.StopMoves,
+        });
 
         store.Execute(
             "INSERT INTO candidate_register (id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence) " +
-            $"SELECT MAX(id) + 1, '{Moved}', 'a rule', 'a test', 'breakout', '{CandidateEvaluator.Write(BreakoutCandidate.ParametersOf(BreakoutRule.Live))}', '000000000001', 'registered', NULL, '2026-10-02T20:00:00Z', NULL FROM candidate_register;");
+            $"SELECT MAX(id) + 1, '{Moved}', 'a rule', 'a test', 'breakout', '{asFrozen}', '000000000001', 'registered', NULL, '2026-10-02T20:00:00Z', NULL FROM candidate_register;");
 
         var withMoved = FamilyRuleShadow.For(await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync(), registeredAt.AddHours(3));
         var failed = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync("rules-moved", withMoved);
@@ -346,6 +356,7 @@ public partial class FixtureExpectations
         Assert.Equal((40, Moved), (failed.Evaluated, Assert.Single(failed.Faults!)));
         Assert.Equal(["failed"], FamilyRows(store, "SELECT outcome FROM run_log WHERE run_id = 'rules-moved';"));
         Assert.Contains($"FAILURE: 1 registered candidate(s) skipped on every member, the code carrying no evaluator by its name or a moved one: '{Moved}'", FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'rules-moved';").Single(), StringComparison.Ordinal);
+        Assert.EndsWith("; the market switches: index over its average closed, the index's stored closes do not hold all 200 sessions to the night", FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'rules-moved';").Single(), StringComparison.Ordinal);
 
         using (var moved = JsonDocument.Parse(Text(store, $"SELECT shadow FROM family_result WHERE ticker = 'BA' AND family = 'breakout' AND session_date = '{BreakoutNight}';")))
         {

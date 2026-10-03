@@ -36702,15 +36702,26 @@ Corrects:   the market switches' ruling of 2026-10-03 (merged as PR 331), and th
             the record held eight, so `NightFeeds.ReachesTheNetwork` with the market series' or the reported
             quarters' feed left out passed them: the quarters' feed joined the record at 12.2 and the market
             series' at the ruling, and neither joined the lists. The switched rule's firing test stored the index's
-            closes on exactly the store's sessions, so a calendar read off the series' own days passed it. And no
-            test made the provider time out, so the fetch with its catch for a series not answered in time taken
-            out passed. Missing properties: assertions only, and no shipped code changes.
+            closes on exactly the store's sessions, so a calendar read off the series' own days passed it. No
+            test made the provider time out or answer with no session, so the fetch with its catch for a series
+            not answered in time taken out, or with the line naming one sent empty dropped, passed. The
+            evaluator's tests never read its row where no rule states a switch, nor beside a moved rule whose
+            registration predates the switches, which the live store's fourteen were until the remedy ran. And
+            nothing read a rule registered again on the run page, so a record counted from the name's first
+            registration, which the runbook says it is not, passed. Missing properties: assertions only, and no
+            shipped code changes.
 Found:      gathering the figures for the sign-off prompt of phases 12 and 13, on 2026-10-03 over 639a062.
 Repaired:   the two feed tests read the roles off the record's own constructor, eight stated, and the mixed set
             swaps each one live at a time; the firing test takes the index's close out on one of the store's
             sessions inside the 200, 2026-09-15, and reads the switch closed with its reason; the fetch test makes
-            the VIX time out on every try and reads it named, nothing stored and the stage's row written ok.
-Tests:      1775, unchanged: four tests rewritten.
+            the VIX time out on every try and then answer with no session, and reads each named, nothing stored
+            and the stage's row written ok; the evaluator's row with no rule standing reads no switch, and its
+            moved rule carries the four settings the freeze wrote, skipped while the standing switch is still
+            read; a read-surface test reads the live breakout registered once and registered again through the
+            run page's own reader, the second counting from the session of its new registration with its trade
+            among its trades and in none of its blocks; and the read-surface tests name the provisional setting by
+            its place, the switched rule now being last.
+Tests:      1776, from 1775: one added, a rule registered again restarting its record; six rewritten.
 Claims:     892, unchanged.
 Pins:       none moves: no shipped file changes.
 Mutated:    the rule, stated before the run: each mutation an assertion here was written for, run over this tree
@@ -36719,6 +36730,10 @@ Mutated:    the rule, stated before the run: each mutation an assertion here was
             N2 the reported quarters' feed left out of the network reader: red in the mixed-set test.
             N3 the evaluator's calendar read off the market series' own days: red in the firing test.
             N4 a series the provider does not answer in time failing the fetch: red in the fetch test.
+            N5 a series answered with no session not named: red in the fetch test.
+            N6 the switches read off a moved rule's registration that states none: red in the evaluator's test.
+            N7 the switches' clause written where no rule states one: red in the family evaluator's first test.
+            N8 a rule's record counted from the first registration of its name: red in the restart test.
             Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: N13GATES
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.

@@ -266,6 +266,12 @@ public partial class FixtureExpectations
         Assert.Contains("VIX: the provider did not answer in time on any try, so nothing was stored for it", slow.Detail, StringComparison.Ordinal);
         Assert.Equal(["market-series|ok"], FamilyRows(store, "SELECT stage, outcome FROM run_log WHERE run_id = 'night-four';"));
 
+        // And one it answers with no session stores nothing and is named as sending none.
+        var sentNone = await new MarketSeriesFetcher(new ConstructedMarket(new() { [MarketCloses.Index] = index }, []), clock, store.DatabaseFile).RunAsync("night-five");
+
+        Assert.Single(sentNone.Refused);
+        Assert.Contains("VIX: the provider sent no session, so nothing was stored for it", sentNone.Detail, StringComparison.Ordinal);
+
         using var empty = new TemporaryStore().Migrated();
 
         var nothing = new ConstructedMarket([], []);
