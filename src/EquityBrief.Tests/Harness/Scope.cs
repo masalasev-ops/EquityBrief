@@ -962,6 +962,23 @@ internal static class Scope
             Verdict.Pass,
             "every request drawn carries when its pass starts or started and ends or ended, read back off the page against a computation of the test's own: now, the end of a peak window, and after the requests ahead of it on the median of the finished passes, which names how many, with a store holding none saying it cannot estimate, in New York's time with its offset on both sides of the change of 2026-11-01 and UTC beside it",
             ByReadSurface),
+        // The 9.2 correction of 2026-10-03, a drain that stops on an error, as the four parts its row states.
+        [CheckReach.Key("15.15 Queue", "A drain that stopped, the newest drain that stopped on an error outside a pass")] = new Scoped(
+            Verdict.Pass,
+            "of two drains that stopped after the newest pass, the newer drawn and the older not, and a failed row of another stage newer than both drawing nothing, read back off the queue page over a constructed run log",
+            ByReadSurface),
+        [CheckReach.Key("15.15 Queue", "A drain that stopped, the time it started in New York's time and UTC and the error it stopped on")] = new Scoped(
+            Verdict.Pass,
+            "the instant the drain started stated in New York's time with its offset and in UTC, and the error's type and words, read back off the queue page against the row",
+            ByReadSurface),
+        [CheckReach.Key("15.15 Queue", "A drain that stopped, stated above the requests until a pass starts after it")] = new Scoped(
+            Verdict.Pass,
+            "drawn above the requests' regions while no pass's row starts after it, and not drawn once a pass of a later drain started, read back off the queue page",
+            ByReadSurface),
+        [CheckReach.Key("15.15 Queue", "A drain that stopped, nothing where no drain stopped")] = new Scoped(
+            Verdict.Pass,
+            "a store whose drains never stopped, holding a pass that ended on an error, draws nothing of it, read back off the queue page",
+            ByReadSurface),
         [CheckReach.Key("15.15 Queue", "Which lane would write one")] = new Scoped(
             Verdict.Pass,
             "the head of the page states the lane in the operator's two words and carries no model's name, the local choice is drawn with no control on it at all, and what it waits on is stated on the screen a reader decides on rather than on the element alone",
@@ -1629,6 +1646,9 @@ internal static class Scope
             Verdict.Pass, "a profile thirty days before its date named with its job and date, one thirty-one days before and one whose provider publishes none not named, worked by hand over constructed profiles", ByReadSurface),
         [CheckReach.Key("15.10 Run", "Anything to worry about, no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost")] = new Scoped(
             Verdict.Pass, "a pass whose calls sum to a cent over the amount named with its stock and cost, and one summing to the amount exactly not named, worked by hand over constructed rows", ByReadSurface),
+        // The 9.2 correction of 2026-10-03, a drain that stops on an error, an item of the checklist.
+        [CheckReach.Key("15.10 Run", "Anything to worry about, no drain stopped on an error, and where one did the time it started named with its error")] = new Scoped(
+            Verdict.Pass, "a drain's stop on the night's run log failing the item with the time it started and its error, a failed row of another stage and a night holding no stop holding it, worked by hand over constructed rows", ByReadSurface),
         [CheckReach.Key("15.5 The mark vocabulary", "Trades ring")] = new Scoped(
             Verdict.Pass, "the ring's arc and its dashed track below the minimum read off the rendered mark", ByReadSurface),
         [CheckReach.Key("15.5 The mark vocabulary", "Freshness bars")] = new Scoped(
@@ -2921,6 +2941,10 @@ internal static class Scope
             Verdict.Pass,
             "a refused series stores nothing and is named on the fetch's own row, which is written ok, and a series sent without the night's session says so, while a switch whose closes the store does not hold is closed with its reason on the family evaluator's row",
             ByExpectations),
+        [CheckReach.Key(FailureTable, "The drain stops on an error outside a pass")] = new Scoped(
+            Verdict.Pass,
+            "the guard over a drain's work that throws writes one row under a run of its own named for the drain's start, its stage, its outcome and the error with no path a machine roots, says so in the line the verb prints, and over work that finishes writes none; the queue page and the run page's checklist read the row back",
+            ByReadSurface),
         [CheckReach.Key(FailureTable, "The labeller fails")] = new Scoped(
             Verdict.Pass,
             "a run refused before it asked anything writes its own row saying why and no row of the night's, and a labeller that stopped partway leaves the night's rows, listings and gate results as they were",
@@ -4010,6 +4034,8 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "Anything to worry about, no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost")] = "12.6",
         // The store's copy, the operator's ruling of 2026-10-02.
         [CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopyLine)] = "13.10",
+        // The 9.2 correction of 2026-10-03, a drain that stops on an error.
+        [CheckReach.Key("15.10 Run", "Anything to worry about, no drain stopped on an error, and where one did the time it started named with its error")] = "9.2",
         [CheckReach.Key("15.5 The mark vocabulary", "Trades ring")] = "12.3",
         [CheckReach.Key("15.5 The mark vocabulary", "Freshness bars")] = "12.3",
         [CheckReach.Key("15.5 The mark vocabulary", "Research bars")] = "12.3",
@@ -4145,6 +4171,10 @@ internal static class Scope
         [CheckReach.Key("15.17 Past picks", "Every trade, the state its reported quarters gave it on the night it was listed, or not read that night")] = "12.2",
         [CheckReach.Key("15.15 Queue", "Which lane would write one")] = "9.4",
         [CheckReach.Key("15.15 Queue", "When each will be written")] = "11.2",
+        [CheckReach.Key("15.15 Queue", "A drain that stopped, the newest drain that stopped on an error outside a pass")] = "9.2",
+        [CheckReach.Key("15.15 Queue", "A drain that stopped, the time it started in New York's time and UTC and the error it stopped on")] = "9.2",
+        [CheckReach.Key("15.15 Queue", "A drain that stopped, stated above the requests until a pass starts after it")] = "9.2",
+        [CheckReach.Key("15.15 Queue", "A drain that stopped, nothing where no drain stopped")] = "9.2",
         [CheckReach.Key("15.7 Tonight", "The report's state")] = "11.3",
         [CheckReach.Key("15.8 Universe", "Filters")] = "5.1",
 
@@ -4355,6 +4385,9 @@ internal static class Scope
             ["in the order it was added", "its company", "its close and the day's change", "its trend in a word", "the reward to risk of its trade", "the day it was added and a link to its page", "drawn for the newest night whether or not the list holds it"],
         [CheckReach.Key("15.16 Watch list", "What the swing filter said of it")] =
             ["listed and its number", "the first gate that stopped it with that gate's reason", "what excluded it", "that no answer is stored for the night"],
+        // The 9.2 correction of 2026-10-03: the queue page's drain that stopped, as the four parts its row states.
+        [CheckReach.Key("15.15 Queue", "A drain that stopped")] =
+            ["the newest drain that stopped on an error outside a pass", "the time it started in New York's time and UTC and the error it stopped on", "stated above the requests until a pass starts after it", "nothing where no drain stopped"],
         // The 12.2 correction's Past picks screen, each row's clauses as the row states them.
         // The 12.2 correction that reads one open trade per stock on the pages: Still open, as the nine parts its
         // row enumerates and states.
@@ -4565,7 +4598,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "How each report did")] =
             ["one row per report over the seven nights with its stock and day and what it cost", "a cell per section saying whether it passed first time or on retry or was left out with why or was not warranted, with what its own calls cost and none of a trial's", "the two cases' cell marked where a draft of the pass carried a figure on both sides, with how many of the newest twenty reports' two cases did", "each section's share passed first time and its share left out over the newest twenty reports that warranted it"],
         [CheckReach.Key("15.10 Run", "Anything to worry about")] =
-            ["a checklist of plain items each turning red with its reason where it fails", "every stock holding the night's prices and every step of the night finished", "no research document refused and no section fallen back", "every company awaiting a quarter asked on schedule", "no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date", "no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost", "the four harness counts beneath", "the store's newest copy beneath them with the time it was made and its folder and the copies kept and the newest attempt that made none with why"],
+            ["a checklist of plain items each turning red with its reason where it fails", "every stock holding the night's prices and every step of the night finished", "no research document refused and no section fallen back", "every company awaiting a quarter asked on schedule", "no paid model a job uses within thirty days of its retirement date, and where one is its profile named with its job and date", "no report whose pass ran on the night's session costing more than section 17 names, and where one did its stock named with its cost", "no drain stopped on an error, and where one did the time it started named with its error", "the four harness counts beneath", "the store's newest copy beneath them with the time it was made and its folder and the copies kept and the newest attempt that made none with why"],
         // 12.2. The name page's gates and the run page's funnel, each read as the parts its row enumerates.
         [CheckReach.Key("15.9 Name", "Gates")] =
             ["each of the five gates with whether it passed and why", "the setup's family and whether the trigger's event happened", "the trade read from the ladder's first tranche and from the one swing plan that night's live rule used with that plan marked and no candidate's plan drawn whichever filter version the night ran under", "the exclusions with a key saying how to read it"],
@@ -4951,6 +4984,8 @@ internal static class Scope
         ["The night, its drain or its labeller still holding the store after twenty hours"] = "13.10",
         // The market switches, the operator's ruling of 2026-10-03.
         ["The provider refuses or sends nothing for the index or the VIX on a night"] = "13.10",
+        // The 9.2 correction of 2026-10-03, a drain that stops on an error.
+        ["The drain stops on an error outside a pass"] = "9.2",
         // 13.1, the family framework. The row about two families is read on the page once a second family is on it.
         ["A stock a family passes while a trade for it is still open"] = "13.1",
         ["A stock two families pass on one night"] = "13.2",

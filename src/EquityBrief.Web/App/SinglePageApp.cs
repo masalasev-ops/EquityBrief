@@ -42,6 +42,10 @@ public sealed record QueuedTime(string Basis, string? Starts, string? Ends, stri
 // holds, and their median in whole minutes where it holds any.
 public sealed record QueueEstimate(int Passes, string? Minutes, string? LongestMinutes = null);
 
+// A drain that stopped on an error and no pass has started since: the instant it started as the store spells one,
+// the words the page states that instant in, and the error it stopped on.
+public sealed record QueueStop(string StartedAt, string Words, string Error);
+
 // The shell the browser loads once, and the routes it answers.
 //
 // Section 15.4 puts the shell and the marks on the server and the routing in
@@ -1283,7 +1287,7 @@ public sealed class SinglePageApp : IComponent
     // here starts a pass: the press that wrote a request started the worker's drain, and a
     // drain that could not be started leaves a request outstanding rather than losing it.
     // see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
-    public string QueueRegion(IReadOnlyList<QueuedCell> rows, QueueEstimate? estimate = null)
+    public string QueueRegion(IReadOnlyList<QueuedCell> rows, QueueEstimate? estimate = null, QueueStop? stopped = null)
     {
         var outstanding = rows.Where(row => row.State == Outstanding).ToArray();
         var writing = rows.Where(row => row.State == Writing).ToArray();
@@ -1300,6 +1304,13 @@ public sealed class SinglePageApp : IComponent
         // Which lane would write what is queued here, stated where a reader is deciding
         // whether to ask for one, and what the choice they cannot make waits on.
         body.Append(Invariant($"<p class=\"lane-waits\" data-waits=\"local\">Report generation is set to the paid lane, and {LaneWaitsOn}.</p>"));
+
+        // A drain that stopped on an error, said until a pass starts after it.
+        // see: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it
+        if (stopped is not null)
+        {
+            body.Append(Invariant($"<p class=\"drain-stopped\" data-started-at=\"{Escaped(stopped.StartedAt)}\">The drain that started at {Escaped(stopped.Words)} stopped on an error: {Escaped(stopped.Error)}; what is queued waits for the next drain, which a press or the next night starts.</p>"));
+        }
 
         // What every time on the page rests on, stated once above them.
         if (estimate is not null)

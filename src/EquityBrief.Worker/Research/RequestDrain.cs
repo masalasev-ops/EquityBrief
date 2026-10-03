@@ -1,4 +1,5 @@
 using System.Globalization;
+using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Quarters;
@@ -6,6 +7,7 @@ using EquityBrief.Core.Research;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using EquityBrief.Worker.Families;
+using EquityBrief.Worker.Nights;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Research;
@@ -23,8 +25,24 @@ public sealed record TakenRequest(string Ticker, string AskedAt, string Lane, Da
 // two writers and no operation has two. Nothing here writes research: the pass does that,
 // and this moves the request beside it.
 // see: A press writes a request and starts the worker's drain as a process of its own, and every pass waits for the off-peak hours
-public static class RequestDrain
+public sealed class RequestDrain : IComponent
 {
+    public static ComponentAccess Access => new(
+        Stores:
+        [
+            new StoreTouch(Store.FamilyNight, Touch.Read),
+            new StoreTouch(Store.FamilyPick, Touch.Read),
+            new StoreTouch(Store.GateResult, Touch.Read),
+            new StoreTouch(Store.FundamentalReading, Touch.Read),
+            new StoreTouch(Store.ResearchRequest, Touch.Read | Touch.Insert | Touch.Update),
+            new StoreTouch(Store.RunLog, Touch.Read | Touch.Insert),
+        ],
+        Feeds: []);
+
+    RequestDrain()
+    {
+    }
+
     const string Instant = "yyyy-MM-ddTHH:mm:ssZ";
 
     // The oldest request nobody has started, which is the order a reader is shown and the
@@ -286,6 +304,74 @@ public static class RequestDrain
         command.CommandText = PutBack;
 
         return await command.ExecuteNonQueryAsync(cancellation);
+    }
+
+    const string AppendStop = @"
+        INSERT INTO run_log (
+            run_id, stage, started_at, ended_at, outcome,
+            rows_written, model_calls, network_requests, spend, detail)
+        VALUES (
+            $run_id, $stage, $started_at, $ended_at, $outcome,
+            0, 0, 0, '0', $detail);
+    ";
+
+    // A drain's own work, its put-back and its queue, run so that an error escaping either is written before the
+    // drain ends: one row under a run of its own named for the instant the drain started, with the stage `drain`, the
+    // outcome `failed` and the error's type and words, no path a machine roots among them. Without it a drain that
+    // ended on an error left no row a page reads, and what it had queued waited unseen for the next drain. The line
+    // the verb prints comes back where the work stopped, and none where it finished.
+    // see: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it
+    public static async Task<string?> GuardAsync(string databaseFile, string dataRoot, IClock clock, Func<Task> work)
+    {
+        var startedAt = clock.UtcNow;
+
+        try
+        {
+            await work();
+
+            return null;
+        }
+        catch (Exception failure)
+        {
+            var said = $"{failure.GetType().Name}: {failure.Message}";
+
+            try
+            {
+                await RecordStopAsync(databaseFile, dataRoot, startedAt, clock.UtcNow, said);
+            }
+            catch (Exception unwritten) when (unwritten is SqliteException or IOException)
+            {
+                return $"stopped on an error: {said}; its row could not be written either: {unwritten.Message}";
+            }
+
+            return $"stopped on an error: {said}";
+        }
+    }
+
+    // The stop's one row, which the queue page states while it is newer than every pass and the run page's checklist
+    // names for the night it fell on.
+    public static async Task RecordStopAsync(
+        string databaseFile,
+        string dataRoot,
+        DateTimeOffset startedAt,
+        DateTimeOffset endedAt,
+        string error,
+        CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+
+        await connection.OpenAsync(cancellation);
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = AppendStop;
+        command.Parameters.AddWithValue("$run_id", DrainStops.RunFor(startedAt));
+        command.Parameters.AddWithValue("$stage", DrainStops.Stage);
+        command.Parameters.AddWithValue("$started_at", Stamped(startedAt));
+        command.Parameters.AddWithValue("$ended_at", Stamped(endedAt));
+        command.Parameters.AddWithValue("$outcome", DrainStops.Failed);
+        command.Parameters.AddWithValue("$detail", NightClose.Portable(error, dataRoot));
+
+        await command.ExecuteNonQueryAsync(cancellation);
     }
 
     // The queue, worked through oldest first until nothing is outstanding. The pass is

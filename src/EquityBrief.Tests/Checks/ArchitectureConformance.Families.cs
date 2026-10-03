@@ -68,9 +68,9 @@ public partial class ArchitectureConformance
         report.Claims.Count(claim => claim.Verdict == Verdict.OutOfScope && PhaseThirteenRows.Contains(CheckReach.Key(claim.Table, claim.Subject)));
 
     // The rows the document gained after phase 13, each named where it was added: the ideas' run, a 12.5
-    // correction built once the phase was finished, the store's copy, the operator's ruling of 2026-10-02, and
-    // the market switches, the operator's ruling of 2026-10-03.
-    internal static readonly string[] AfterPhaseThirteen = [.. FixtureExpectations.IdeasClaims, .. FixtureExpectations.StoreCopyRows, .. FixtureExpectations.MarketSwitchRows];
+    // correction built once the phase was finished, the store's copy, the operator's ruling of 2026-10-02, the
+    // market switches, the operator's ruling of 2026-10-03, and a drain's stop, the 9.2 correction of 2026-10-03.
+    internal static readonly string[] AfterPhaseThirteen = [.. FixtureExpectations.IdeasClaims, .. FixtureExpectations.StoreCopyRows, .. FixtureExpectations.MarketSwitchRows, .. Reading.ReadSurface.DrainStopRows];
 
     // Where a checkpoint landed more claims than the plan counted for it, the rows it landed more of and how
     // many of them the plan's count held, as the entry that landed them says: at 13.2 section 17's rows for the
@@ -141,7 +141,7 @@ public partial class ArchitectureConformance
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 892),
+            (789, 853, 6, 4, 855, 876, 898),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

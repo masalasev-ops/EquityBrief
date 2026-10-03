@@ -86,6 +86,10 @@ public partial class ReadSurface
             // The store's copy, on the operator's ruling of 2026-10-02: the worry region's line beneath its items.
             CheckReach.Key("15.10 Run", Checks.FixtureExpectations.StoreCopyLine),
 
+            // The 9.2 correction of 2026-10-03, a drain that stops on an error: the queue page's region, the checklist's
+            // item and section 18's row.
+            .. DrainStopRows,
+
             // 12.6's correction drawing how each report did: the two regions' parts and section 17's window.
             .. ReportClaims,
 

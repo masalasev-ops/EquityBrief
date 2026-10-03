@@ -145,7 +145,7 @@ public partial class ReadSurface
 
         var held = Read([], finished, 0, 0, Quarters("3 of 3 member(s) due asked: 3 reporting, 0 waiting, 0 joining, 0 filled; 3 stored, 0 not yet posted, 0 returning nothing, 0 refused; 36 quarter row(s), 33 weighted call(s); 0 member(s) of the fill still owed"));
 
-        Assert.Equal(7, held.Count);
+        Assert.Equal(8, held.Count);
         Assert.All(held, item => Assert.Equal((WorryItem.Held, (string?)null), (item.State, item.Why)));
 
         var failed = Read(["P", "TAP"], RunScreen.Night(FinishedNight, TenthOfSeptember, DateTimeOffset.Parse("2026-09-11T01:00:00Z", CultureInfo.InvariantCulture), FifteenMinutes), 1, 1, Quarters("3 of 3 member(s) due asked: 3 reporting, 0 waiting, 0 joining, 0 filled; 1 stored, 0 not yet posted, 0 returning nothing, 2 refused; 12 quarter row(s), 33 weighted call(s); 0 member(s) of the fill still owed"));
