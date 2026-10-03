@@ -36893,3 +36893,26 @@ Mutated:    the rule, stated before the run: the widened catch narrowed back to 
             older fetch test green.
 Verified:   FILL.
 Carried:    the night of 2026-10-05 read against the addendum's item 6 figures, recorded in the next entry.
+
+### 12.5 - correction: the history pull's market series names an answer it cannot read or a timeout and stores the other series, where either ended the pull   2026-10-03
+
+Corrects:   the 12.5 correction of 2026-10-02 that pulls the index's and the VIX's daily series. `PullMarketAsync`
+            caught a refusal and a `FormatException` alone, though its comment named a payload that cannot be read:
+            a page or an array of anything but sessions threw out of the reader, and a request not answered in time
+            threw its cancellation, either ending the pull verb with nothing stored and no row, where a refused
+            series is named and the other stored. A verb run by hand, so no night stopped.
+Found:      by the phase 13 sign-off's review as the night fetch's sibling, its addendum's item 1.
+Repaired:   the per-series try reads a timeout as a series not answered in time and every other failure but the
+            run's own cancellation as one not served, each named with its cause, the other series stored and the
+            pull's row partial.
+Tests:      in the figure the 13.10 correction above states: one added here, a page and an array of strings read
+            through the recorded feed's own reader and a timeout on every try, each named while the index is
+            stored.
+Claims:     unchanged by this correction.
+Pins:       none moves: `HistoryPull.cs` sits in no pin list.
+Mutated:    the rule, stated before the run: each failure the try now reads taken back out alone, made by hand over
+            the working tree carrying this correction before its commit, filtered to the pull's tests and reverted.
+            M2 the catch narrowed back to a refusal or a format error: red in the new pull test.
+            M3 the timeout's catch taken out: red in the new pull test.
+Verified:   with the 13.10 correction above, over the same tree.
+Carried:    nothing.

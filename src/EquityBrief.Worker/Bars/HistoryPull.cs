@@ -555,9 +555,9 @@ public sealed class HistoryPull(
     }
 
     // Pulls the index's and the VIX's daily series from a date to tonight, one request a series, and stores each
-    // session the provider sent marked by the pull. A series the provider refuses, sends no session for or sends
-    // a payload that cannot be read stores nothing and is named, and the pull's row says partial. A date on or
-    // after tonight's session is refused before any request.
+    // session the provider sent marked by the pull. A series the provider refuses, does not answer in time, sends no
+    // session for or sends a payload that cannot be read stores nothing and is named, the other is stored, and the
+    // pull's row says partial. A date on or after tonight's session is refused before any request.
     // see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
     public static async Task<HistoryMarketOutcome> PullMarketAsync(
         IMarketSeriesFeed market,
@@ -596,9 +596,15 @@ public sealed class HistoryPull(
                     answered.Add((series, bars));
                 }
             }
-            catch (Exception failure) when (failure is ProviderRefusal or FormatException)
+            catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
             {
-                refused.Add($"{series}: {failure.Message}");
+                refused.Add($"{series}: the provider did not answer in time on any try");
+            }
+            catch (Exception failure) when (failure is not OperationCanceledException)
+            {
+                refused.Add(failure is ProviderRefusal or FormatException
+                    ? $"{series}: {failure.Message}"
+                    : $"{series}: its answer could not be read: {failure.Message}");
             }
         }
 
