@@ -36747,3 +36747,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             903 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
             roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### Phase 12 sign-off                                                        2026-10-03
+Signed by a session that has committed no code to this repository. Its only commits are this entry and the
+            phase 13 sign-off below, which are documents, so the fresh session rule permits it. This is the
+            second review of phases 12 and 13. The first, over 9cfabe8, signed nothing and handed back five
+            findings, which PR 327 corrected. This review read 9cfabe8..bb76de7, PRs 327 to 332, and signs over
+            bb76de7.
+Verified:   by re-running both gates on `main` at bb76de7 before this entry: `tools/ci.ps1` green end to end,
+            0 warnings, 0 errors, 1776 of 1776 tests passing inside it, migrations 0 to 57 applied against
+            `data-ci/` and then none pending at schema version 57, exit 0; `tools/verify-phase.ps1` green at 44
+            tables, 892 claims, 892 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 903 placements and verdicts
+            reconciled against a floor of 34, fixture PRESENT with 1 captured over 6 constituents and 4 names,
+            42 checks on the roster and 42 carried, 42 ran and passed, the suite 1776 of 1776. Both ran in
+            Windows PowerShell on the operator's Windows machine. The run over the tree carrying both entries
+            is recorded in the phase 13 sign-off below.
+Matrix:     jobs enumerated rather than run conclusions read: every job of both events on each head commit of
+            PRs 228 to 332, every attempt. Of the 103 merged, 97 carry 4 jobs, `macos` and `case-sensitivity`
+            on push and on pull_request, and 6 carry 6 from a second run on one commit: 235, 236, 268, 280,
+            295 and 310. Every job's last attempt is a success; PR 291's push `case-sensitivity` job failed at
+            attempt 1 on the deadline test's timer race, which PR 292 fixed, and passed at attempt 2. Six
+            merged before every job had finished, each finishing green: 235, 280, 312, 326, 329 and 330. PRs
+            300 and 309 closed unmerged, each titled as not for merging. `.github/workflows/ci.yml` carries
+            zero `if:` and zero `continue-on-error:` keys.
+Plan:       all ten checkpoints, 12.0 through 12.9, are in `BUILD_PLAN.md` and recorded above with their
+            rulings and corrections, 12.9's report amended by PR 327 to name the six operating rows opened
+            after it, over 449 entry headings before these two. No open pull request. The carried obligations
+            table holds 100 rows: 81 discharged, 19 operating and 0 open, phase 12 having opened 8 of the
+            operating rows, each named in its report or its amendment. All 42 expectation files state
+            `derivation: derived`. `DECISIONS.md` holds 414 decision names, none twice.
+Store:      the operator store under `data/` was read read-only and never copied, and neither gate nor this
+            review wrote to it; its newest row is the read surface's start at 04:44:59 UTC on 2026-10-03.
+            Schema 57, filter version 5 open since 2026-10-02 11:35:34 UTC. The night of 2026-10-02, built
+            from 9cfabe8, ran every step ok from build at 23:30:13 to backup at 00:26:15, and its copy,
+            629,493,760 bytes, was made after the labeller and the night; QCOM's report, which the night asked
+            for, was written at 02:51:02; no request is outstanding or being written.
+Swept:      in the phase 13 sign-off below. Phase 12's two mutations there, (g) and (h), each put back a finding
+            of the first review that PR 327 corrected, the labeller's retry judged by the month limit alone and
+            the report reader reading the newest report alone, and each went red.
+Carried:    the 8 operating rows phase 12 opened, each with its trigger and the surface it is read on. This
+            review found no defect in phase 12's work.
