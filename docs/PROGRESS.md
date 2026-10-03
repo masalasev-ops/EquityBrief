@@ -36597,5 +36597,7 @@ Read:       the breakout as frozen makes 1,009 trades over 2019 to 2026 and list
             frozen makes 2,243 trades on 43% of nights at an edge of 0.121, and its ideas fail on the years.
 Frozen:     nothing, and nothing is registered. Each report is the full account in its run's folder and on the
             sweep's page.
-Verified:   `tools/ci.ps1` green over the tree carrying this entry, which is documents alone: FILLED AFTER THE RUN.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, which is documents alone: b041547.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1769 of 1769 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
