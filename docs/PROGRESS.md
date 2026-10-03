@@ -36787,3 +36787,72 @@ Swept:      in the phase 13 sign-off below. Phase 12's two mutations there, (g) 
             the report reader reading the newest report alone, and each went red.
 Carried:    the 8 operating rows phase 12 opened, each with its trigger and the surface it is read on. This
             review found no defect in phase 12's work.
+
+### Phase 13 sign-off                                                        2026-10-03
+Signed by the session that signed phase 12 above, on the same terms, over bb76de7, on the operator's ruling
+            of 2026-10-03, "ok sign off both phases", given after this review had reported the defect below and
+            signed nothing: the defect is carried into phase 14's plan as an addendum rather than corrected
+            before this entry.
+Verified:   both gates on `main` at bb76de7 as the phase 12 sign-off above states, and `tools/ci.ps1` green
+            over the tree carrying both entries, which are documents alone: GATES.
+Plan:       all eleven checkpoints, 13.0 through 13.10, are in `BUILD_PLAN.md` and recorded above with their
+            rulings and corrections, the last the 13.10 correction of PR 332. Phase 13 opened no operating row,
+            and its report says so.
+Store:      read-only as above. `candidate_register` holds 137 rows, 25 standing: the pullback's 9 at
+            b1148c77cd8c, the breakout's 8 at a583427328fe and the drift's 8 at fc5b0bdd1256. The market
+            switches' remedy wrote the breakout's 7 retirements and 8 registrations at 04:44:31 UTC and the
+            drift's at 04:44:32 UTC, each switched variant stating its switch, `indexAverageSessions` 200 and
+            `vixLookbackSessions` 10. `family_trade` holds the drift's 2 trades of 2026-10-02 and `market_bar`
+            no row, the night of 2026-10-05 being the first to fetch the series. Read on the store's own
+            sessions over the pulled closes, both switches can be read: on 2026-10-01 the index closed 7,666.45
+            above its 200-session average of 7,221.29, and the VIX 16.39 against 15.44 ten sessions before.
+Read:       the diffs of PRs 327 to 332. The live surface on 5152, the Release build made at 04:44:54 UTC after
+            PR 331 merged, answered 200 on eleven routes, the run page and tonight's page for 2026-10-02 among
+            them; that run page draws each family's rules as the register stood that night, 7 a family at a
+            level of 0.0071, with the drift's two trades.
+Swept:      over the whole suite each time and never a filter, in this checkout on this branch, each mutation
+            made through the editor, predicted before its run and reverted with git before the next. The nine
+            the handoff named, each at the one site stating its rule:
+            (a) the index's average read over the 200 sessions before the night: red, 1772 of 1776, the edge
+            test, the every-session test against the ideas' run, the firing test and the evaluators' pin.
+            (b) the family evaluator handing every member no market closes: red, 1774 of 1776, the firing test
+            and the pin.
+            (c) the drain's put-back also returning a refused request to outstanding: red, 1775 of 1776,
+            `ARequestADrainLeftBeingWrittenIsPutBackByTheNextDrainAndTakenInItsTurn`.
+            (d) the drain's claim begun as a deferred transaction: green, 1776 of 1776, as predicted, and
+            equivalent: the claim's transaction runs one statement, its write, so a deferred begin takes the
+            write lock at that statement as an immediate one takes it at its begin. A scratch test pitting the
+            claim against a writer holding the lock, the writer committing under a 5-second wait, passed over
+            the tree and under (d).
+            (e) the news window cut at each calendar month's end: red, 1773 of 1776, the month test and two
+            other tests of the name news feed.
+            (f) `Blocks.Closed` read one session short of the cap at its shared body: red, 1773 of 1776, two
+            block tests and the 13.9 benchmark test.
+            (g) the labeller's retry judged by the month limit alone: red, 1774 of 1776, the time limit and
+            peak window retry tests.
+            (h) the report reader reading the newest report alone: red, 1774 of 1776, both of its tests.
+            (i) the breakout's switch registered at the 50-session average: red, 1770 of 1776, the
+            every-session test, the firing test, the family registered again, the family command, the family
+            evaluator and section 17's pinned figures.
+            And three of this review's own: (f2) the 13.9 read at the read surface's call alone, red, 1775 of
+            1776, `ATradeStoppedOutBeforeTheNightIsDecidedOnlyFromTheNightItsCapsSessionsHavePassed`; (r4) the
+            first review's F4 put back by reading the best three strength first, red, 1775 of 1776,
+            `TheBestThreeAreReadBackThroughTheRunPagesOwnQueryOverAConstructedStore`; (r5) its F5 put back by
+            the copy letting go of the drain's lock before it copies, red, 1775 of 1776,
+            `TheCopyHoldsTheDrainsLockFromTheMomentItNamesTheCopyUntilItWritesItsRow`.
+Found:      one defect and one wording gap, both carried by the operator's ruling above.
+            1. 13.10 (PR 331): `MarketSeriesFetcher` catches a refusal, a `FormatException` and a timeout
+            around each series. A series the provider answers 200 with a body that is not JSON throws a
+            `JsonReaderException` out of the parser, and one answered with an array of anything but objects an
+            `InvalidOperationException` out of the bar reader, both shown by a scratch test over bb76de7.
+            Either fails the fetch step after the bars are stored, so the night stops there and tries again,
+            where the decision on the night's two series and section 18's row give holding back every list and
+            record as the reason a series stops nothing. Owed as a 13.10 correction. `HistoryPull` carries the
+            same catch, where an escape ends the pull verb and no night.
+            2. The reader's guide's paragraph on the switches gives fewer reasons for the drift's failed test
+            than the decision, leaving out its plain result a trade falling from 0.278 to 0.241.
+Carried:    the two found above, into phase 14's plan; the invariant (d)'s equivalence rests on, which nothing
+            states; a drain that ends on an error outside a pass writing no row a page reads, phase 9's
+            behaviour, whose two known causes PRs 328 and 329 removed; the operator's question whether a family
+            rule registered again should keep restarting its record, where the pullback's rules are read by
+            name from their first night; and the switched rules' first scored night, 2026-10-05.
