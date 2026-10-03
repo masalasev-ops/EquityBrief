@@ -36578,3 +36578,26 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
             roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 13.10 ruling - the twelve-hour rerun and the ideas read on the frozen breakouts and earnings drift recorded: the rerun proposes no starting point and no idea passes either family   2026-10-03
+
+Not a checkpoint entry. It lands nothing, builds no checkpoint of any phase, and signs nothing off. It records the
+two runs the operator's rulings of 2026-10-02 asked for, the rerun let finish and item 8's run after it.
+Rerun:      20261002T122612Z, from main's Release build, paused for the night of 2026-10-02 from 22:55 to 00:29
+            UTC and ended at 02:24 UTC. It proposes no starting point: no setting of the designs stage 2 carried
+            sits on its design's plateau, meets the four floors and holds the live rule's edge in each of the last
+            three years, and none of the seven conditions survives. The live rule over the same history, 2019-01-02
+            to 2026-10-01, scores 2,764 trades at an edge of 0.067, and its design ranks 3,973 of 46,656.
+Ideas:      from main at 9531ec1, after the rerun ended. The breakout, 20261003T023040Z: 11 ideas tried and 0
+            passed, where luck alone passes about 1.5 of 11. The earnings drift, 20261003T023106Z: 13 tried and 0
+            passed, where luck alone passes about 1.7 of 13.
+Read:       the breakout as frozen makes 1,009 trades over 2019 to 2026 and lists on 27% of nights, so an idea
+            that filters it falls under the 1,000 trades the pullback's test asks, and every idea but a market
+            switch under its 40% of nights: on this family the test cannot pass an idea as written. The drift as
+            frozen makes 2,243 trades on 43% of nights at an edge of 0.121, and its ideas fail on the years.
+Frozen:     nothing, and nothing is registered. Each report is the full account in its run's folder and on the
+            sweep's page.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry, which is documents alone: b041547.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1769 of 1769 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
