@@ -10518,3 +10518,38 @@ Was:
 Now:
 > `nightly-run`: "... and a series the provider does not serve, an answer it cannot read among them, stops no step |"
 Why: the check reaches what the correction's test asserts.
+### 2026-10-03 - ARCHITECTURE.html - the request drain's catalogue row says an error escaping it stops it on a row of its own
+Authorised by: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it
+Was:
+> "... and none on a night the page lists no stock (see: The night asks for a report on the first six names its page draws). It writes no research itself ..."
+Now:
+> "... and none on a night the page lists no stock (see: ...). An error escaping its put-back or its queue stops it on one row of its own, saying so, and it exits failing (see: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it). It writes no research itself ..."
+Why: the operator's ruling of 2026-10-03 joining the drain's own stop to phase 14 as a 9.2 correction.
+### 2026-10-03 - ARCHITECTURE.html - the request drain's matrix row reads the run log as well as writing it
+Authorised by: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it
+Was:
+> the Run log cell of the Request drain row: "W"
+Now:
+> the Run log cell of the Request drain row: "R W"
+Why: the drain reads its pass's own run to settle a request, which its catalogue row's Reads cell already named; with the drain declaring its access, the matrix is held to that declaration cell by cell.
+### 2026-10-03 - ARCHITECTURE.html - the queue page reads the newest drain that stopped and states it
+Authorised by: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it
+Was:
+> "Reads: the request store, and the run log for the pass a claimed request is being written under."
+Now:
+> "Reads: the request store, and the run log for the pass a claimed request is being written under and for the newest drain that stopped on an error." A row "A drain that stopped" is added to the region table, and section 18 gains a row for a drain that stops on an error outside a pass.
+Why: the operator's ruling of 2026-10-03 joining the drain's own stop to phase 14 as a 9.2 correction.
+### 2026-10-03 - ARCHITECTURE.html - the run page's checklist names a drain that stopped on an error
+Authorised by: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it
+Was:
+> "... and where one did its stock named with its cost (see: A report costing more than two dollars is named on the run page the morning after it was written); the four harness counts beneath; ..."
+Now:
+> "... and where one did its stock named with its cost (see: ...); no drain stopped on an error, and where one did the time it started named with its error (see: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it); the four harness counts beneath; ..."
+Why: the operator's ruling of 2026-10-03 joining the drain's own stop to phase 14 as a 9.2 correction.
+### 2026-10-03 - .claude/rules/checks.md - read-surface reaches a drain that stops on an error
+Authorised by: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it
+Was:
+> `read-surface`: "... a drain started while another holds the queue waits for it to end; and each row of tonight's list ..."
+Now:
+> `read-surface`: "... a drain started while another holds the queue waits for it to end; and an error escaping a drain's put-back or its queue writes one row of its own under a run named for the drain's start with no path a machine roots, work that finishes writing none, the queue page states the newest such row with the time it started and its error while no pass has started after it, and the run page's checklist names it on the night its row fell on, each worked by hand over constructed rows; and each row of tonight's list ..."
+Why: the check reaches what the correction's tests assert.

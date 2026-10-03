@@ -4859,6 +4859,38 @@ public sealed class ReadApi : IComponent
         return rows;
     }
 
+    // The newest drain that stopped on an error, while no pass has started since it stopped: a pass started after it is
+    // a later drain at work, and the stop is no longer what the queue waits on.
+    // see: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it
+    const string NewestDrainStop = @"
+        SELECT s.started_at, s.ended_at, IFNULL(s.detail, '') FROM run_log s
+        WHERE s.run_id LIKE $stops AND s.stage = $stage AND s.outcome = $failed
+          AND NOT EXISTS (SELECT 1 FROM run_log p WHERE p.run_id LIKE $passes AND p.started_at > s.ended_at)
+        ORDER BY s.ended_at DESC, s.rowid DESC
+        LIMIT 1;
+    ";
+
+    public async Task<DrainStop?> DrainStoppedAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = NewestDrainStop;
+        command.Parameters.AddWithValue("$stops", DrainStops.Prefix + "%");
+        command.Parameters.AddWithValue("$stage", DrainStops.Stage);
+        command.Parameters.AddWithValue("$failed", DrainStops.Failed);
+        command.Parameters.AddWithValue("$passes", PassRun.Prefix + "%");
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        return await reader.ReadAsync()
+            ? new DrainStop(
+                DateTimeOffset.Parse(reader.GetString(0), CultureInfo.InvariantCulture),
+                DateTimeOffset.Parse(reader.GetString(1), CultureInfo.InvariantCulture),
+                reader.GetString(2))
+            : null;
+    }
+
     public static DateTimeOffset RequestedAt(string stored) =>
         DateTimeOffset.ParseExact(
             stored,

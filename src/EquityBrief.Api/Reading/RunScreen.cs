@@ -2058,6 +2058,13 @@ public static class RunScreen
             .Where(run => run.Spent > SpendCaps.ReportNamedAbove)
             .ToArray();
 
+        // A drain that stopped on an error outside a pass, on the night its row fell on.
+        // see: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it
+        var stops = log
+            .Where(row => DrainStops.IsStop(row.RunId, row.Stage, row.Outcome))
+            .OrderBy(row => row.StartedAt)
+            .ToArray();
+
         return
         [
             Item("Every stock has the night's prices", stale.Count == 0, FormattableString.Invariant($"{stale.Count} carry an earlier session's bars: {string.Join(", ", stale)}")),
@@ -2095,6 +2102,10 @@ public static class RunScreen
                 "No report cost more than " + SpendVerdict.Money(SpendCaps.ReportNamedAbove),
                 dear.Length == 0,
                 string.Join("; ", dear.Select(run => $"{run.Ticker}'s report cost {SpendVerdict.Money(run.Spent)}"))),
+            Item(
+                "No drain stopped on an error",
+                stops.Length == 0,
+                string.Join("; ", stops.Select(stop => FormattableString.Invariant($"the drain that started at {stop.StartedAt.UtcDateTime:HH:mm} UTC stopped on an error: {stop.Detail}")))),
         ];
     }
 

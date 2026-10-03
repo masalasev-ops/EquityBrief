@@ -36923,3 +36923,41 @@ Mutated:    the rule, stated before the run: each failure the try now reads take
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
             13.10 correction above states.
 Carried:    nothing.
+
+### 9.2 - correction: a drain that stops on an error writes a row of its own, the queue page states it until a pass starts after it and the run page's checklist names it, where it ended writing nothing a page reads   2026-10-03
+
+Corrects:   9.2, the worker's half of the request store. The drain verb ran its put-back and its queue with nothing
+            around them, so an error escaping either ended the process and wrote no row any page reads: the night's
+            drain of 2026-10-02 ended at 00:26:16 on "database is locked", found in the machine's application log,
+            and the queue page read QCOM's request as starting now. PRs 328 and 329 removed both causes known then,
+            and the next drain puts back a request a drain left being written, but a drain ending on any other
+            error still left nothing on a page until another drain ran.
+Found:      by the phase 13 sign-off's review, carried into phase 14's plan as its addendum's item 4, and joined to
+            phase 14 as a 9.2 correction on the operator's ruling of 2026-10-03.
+Repaired:   the drain verb runs its put-back and its queue inside a guard, once it holds the lock, which writes one
+            run log row where an error escapes either: run `drain-` and the drain's start, stage `drain`, outcome
+            `failed`, the error's type and words with no path a machine roots; the verb then exits failing. The
+            queue page states the newest such row, the time the drain started in New York's time and UTC and the
+            error, while no row of a pass's run starts after it; the run page's checklist names it on the night its
+            row fell on. `RequestDrain` now declares its access as a component, the matrix's run log cell reading
+            "R W" as its catalogue row's Reads cell already named; ARCHITECTURE gains the queue's region, the
+            checklist's part and section 18's row, SCHEMA the stop's row, DECISIONS the decision, the guide its
+            queue sentence, and `read-surface` reaches it.
+Tests:      FILL, from 1778: three added, the guard over work that throws and work that finishes with the verb's
+            wiring read off its source, the queue page over a constructed run log before and after a pass, and the
+            checklist over constructed rows.
+Claims:     FILL, from 892: the queue's region as the four parts its row states, the checklist's part and section
+            18's row.
+Pins:       none moves: `RequestDrain.cs`, `ReadApi.cs`, `RunScreen.cs` and the drain verb sit in no pin list.
+Mutated:    the rule, stated before the run: each property this correction adds broken alone, made by hand over the
+            working tree carrying it before its commit, filtered to the three new tests and reverted. Not mutated:
+            the time and error words, which the queue test holds by its literal, and the verb's wiring, read off
+            its source.
+            D1 the queue page drawing a drain's stop a pass started after: red in the queue test.
+            D2 the guard writing no row: red in the guard test.
+            D3 the checklist reading any failed row as a drain's stop: red in the checklist test.
+            D4 the queue page drawing the older of two stops: red in the queue test.
+            D5 the stop drawn inside the first of the requests' regions: red in the queue test.
+            D6 the queue page reading any failed row as a drain's stop: red in the queue test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILL.
+Carried:    nothing.

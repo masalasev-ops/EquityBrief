@@ -1252,6 +1252,7 @@ app.MapGet("/screens/researched", async (ReadApi read, SinglePageApp page) =>
 app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page, IClock clock) =>
 {
     var (rows, times, estimate) = await QueueRead(read, clock);
+    var stop = await read.DrainStoppedAsync();
 
     return Results.Content(
         page.QueueRegion(
@@ -1274,7 +1275,13 @@ app.MapGet("/screens/queue", async (ReadApi read, SinglePageApp page, IClock clo
         new QueueEstimate(
             estimate.Count,
             estimate.Median is { } median ? QueueTimes.Minutes(median) : null,
-            estimate.Longest is { } longest ? QueueTimes.Minutes(longest) : null)),
+            estimate.Longest is { } longest ? QueueTimes.Minutes(longest) : null),
+        stop is null
+            ? null
+            : new QueueStop(
+                stop.StartedAt.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture),
+                QueueTimes.Stated(stop.StartedAt, clock.SessionZone),
+                stop.Error)),
         "text/html; charset=utf-8");
 });
 

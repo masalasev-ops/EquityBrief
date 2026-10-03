@@ -688,32 +688,44 @@ static async Task<int> Drain()
         return Task.Delay(TimeSpan.FromSeconds(5));
     });
 
-    // A request a drain left being written when it ended is put back first, which only a drain holding the lock may do.
-    var putBack = await RequestDrain.PutBackAsync(store.DatabaseFile);
-
-    if (putBack > 0)
+    // An error escaping the put-back or the queue stops the drain on a row of its own, so a page says it stopped.
+    // see: A drain that stops on an error writes a row of its own, and the queue page states it until a pass starts after it
+    var stopped = await RequestDrain.GuardAsync(store.DatabaseFile, store.DataRoot, clock, async () =>
     {
-        Console.WriteLine(FormattableString.Invariant($"drain: {putBack} request(s) a drain left being written when it ended put back as outstanding"));
-    }
+        // A request a drain left being written when it ended is put back first, which only a drain holding the lock may do.
+        var putBack = await RequestDrain.PutBackAsync(store.DatabaseFile);
 
-    var (taken, written) = await RequestDrain.DrainAsync(
-        store.DatabaseFile,
-        clock,
-        ResearchPass,
-        pricings,
-        until =>
+        if (putBack > 0)
         {
-            Console.WriteLine(
-                "drain: a peak window is open, so the next pass waits until "
-                + until.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
+            Console.WriteLine(FormattableString.Invariant($"drain: {putBack} request(s) a drain left being written when it ended put back as outstanding"));
+        }
 
-            var wait = until - clock.UtcNow;
+        var (taken, written) = await RequestDrain.DrainAsync(
+            store.DatabaseFile,
+            clock,
+            ResearchPass,
+            pricings,
+            until =>
+            {
+                Console.WriteLine(
+                    "drain: a peak window is open, so the next pass waits until "
+                    + until.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
 
-            return wait > TimeSpan.Zero ? Task.Delay(wait) : Task.CompletedTask;
-        });
+                var wait = until - clock.UtcNow;
 
-    Console.WriteLine(FormattableString.Invariant(
-        $"drain: {taken} request(s) taken, {written} written and {taken - written} refused"));
+                return wait > TimeSpan.Zero ? Task.Delay(wait) : Task.CompletedTask;
+            });
+
+        Console.WriteLine(FormattableString.Invariant(
+            $"drain: {taken} request(s) taken, {written} written and {taken - written} refused"));
+    });
+
+    if (stopped is not null)
+    {
+        Console.Error.WriteLine("drain: " + stopped);
+
+        return 1;
+    }
 
     return 0;
 }

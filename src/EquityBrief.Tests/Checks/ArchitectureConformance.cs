@@ -1398,7 +1398,8 @@ public partial class ArchitectureConformance
         // 125 at 13.5, the pages around the setup families: tonight's market line and its shared list of
         // stocks close to a buy point, the name page's setup, the run page's setup families, and Past picks'
         // setup filter, setup label, trailing trade and provisional trades.
-        Assert.Equal(125, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 126 at the 9.2 correction of 2026-10-03: the queue page's drain that stopped.
+        Assert.Equal(126, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1498,7 +1499,9 @@ public partial class ArchitectureConformance
         // the pages around the setup families: the eighteen parts their eight rows state. 434 at 13.9, the
         // run page's records of the registered family rules as the six parts its setup families row adds. 435
         // from the operator's ruling of 2026-10-02, the store's newest copy beneath anything to worry about.
-        Assert.Equal(435, inDocument.Length);
+        // 440 at the 9.2 correction of 2026-10-03: the checklist's drain that stopped on an error and the queue
+        // page's drain that stopped as the four parts its row states.
+        Assert.Equal(440, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1589,7 +1592,9 @@ public partial class ArchitectureConformance
         // 403 at 13.5, the pages around the setup families: the eighteen parts their eight rows state.
         // 409 at 13.9, the run page's records of the registered family rules: the six parts its row adds.
         // 410 from the operator's ruling of 2026-10-02: the store's newest copy beneath anything to worry about.
-        Assert.Equal(410, checkedElements);
+        // 415 at the 9.2 correction of 2026-10-03: the checklist's drain that stopped on an error and the queue
+        // page's four parts stating it.
+        Assert.Equal(415, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

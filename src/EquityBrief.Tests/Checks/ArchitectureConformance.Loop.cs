@@ -1582,8 +1582,8 @@ public partial class ArchitectureConformance
 
         // Phase 13's rows came after the phase this pair is about, each named where it was added, and
         // the ones its record does not yet reach are out of scope, beside this pair's figures; and the store's
-        // copy's and the market switches' after phase 13's report.
-        var now = actual + PhaseThirteenRows.Length + FixtureExpectations.StoreCopyRows.Length + FixtureExpectations.MarketSwitchRows.Length;
+        // copy's, the market switches' and a drain's stop's after phase 13's report.
+        var now = actual + PhaseThirteenRows.Length + FixtureExpectations.StoreCopyRows.Length + FixtureExpectations.MarketSwitchRows.Length + Reading.ReadSurface.DrainStopRows.Length;
         var pending = PhaseThirteenPending(report);
 
         Assert.All(PhaseThirteenRows, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
@@ -1719,6 +1719,7 @@ public partial class ArchitectureConformance
         .. PhaseThirteenRows,
         .. FixtureExpectations.StoreCopyRows,
         .. FixtureExpectations.MarketSwitchRows,
+        .. Reading.ReadSurface.DrainStopRows,
     ];
 
 
@@ -1788,8 +1789,8 @@ public partial class ArchitectureConformance
         // Phase 12's rows came after the phase this pair is about, each named where it was added, and
         // the rows it took out are named too, 11.9's region among them.
         // And phase 13's after phase 12's, the ones its record does not yet reach out of scope, and the store's
-        // copy's and the market switches' after phase 13's report.
-        var now = expected + PhaseTwelveRows.Length - PhaseTwelveRemoved.Length - TakenOutAfterPhaseTwelve.Length + PhaseThirteenRows.Length + FixtureExpectations.StoreCopyRows.Length + FixtureExpectations.MarketSwitchRows.Length;
+        // copy's, the market switches' and a drain's stop's after phase 13's report.
+        var now = expected + PhaseTwelveRows.Length - PhaseTwelveRemoved.Length - TakenOutAfterPhaseTwelve.Length + PhaseThirteenRows.Length + FixtureExpectations.StoreCopyRows.Length + FixtureExpectations.MarketSwitchRows.Length + Reading.ReadSurface.DrainStopRows.Length;
         var pending = PhaseThirteenPending(report);
 
         Assert.All(PhaseTwelveRemoved, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
