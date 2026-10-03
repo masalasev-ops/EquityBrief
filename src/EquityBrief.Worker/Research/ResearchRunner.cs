@@ -419,6 +419,10 @@ public sealed class ResearchRunner(
             {
                 unread.Add("filings archive: " + refused.Message);
             }
+            catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
+            {
+                unread.Add("filings archive: the archive did not answer in time on any try");
+            }
         }
         else
         {
@@ -426,9 +430,10 @@ public sealed class ResearchRunner(
         }
 
         // The news inside each stored move and since the filing, overlapping spans once, and
-        // never the stored year: a window the provider has more of than a query reads is named
-        // as unread and the others are still read.
+        // never the stored year: a window the provider has more of than a query reads, or does
+        // not answer in time on any try, is named as unread and the others are still read.
         // see: A research pass reads a name's news from the last three months alone, inside each stored move and since the company's own filing, and hands each section the documents code picks from it
+        // see: A name's news is asked of the provider a month at a time, and a window it does not answer in time is read as unread
         var seen = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var (windowFrom, windowTo) in NewsWindows.For(MoveWindows.In(facts), filing?.Document.PublishedOn, asOf))
@@ -448,6 +453,10 @@ public sealed class ResearchRunner(
             catch (ProviderRefusal refused)
             {
                 unread.Add("news: " + refused.Message);
+            }
+            catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
+            {
+                unread.Add(FormattableString.Invariant($"news: the provider did not answer for {windowFrom:yyyy-MM-dd} to {windowTo:yyyy-MM-dd} in time on any try"));
             }
         }
 

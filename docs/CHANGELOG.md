@@ -10406,3 +10406,24 @@ Was:
 Now:
 > `read-surface`: "... and a second drain started while one runs claims nothing the first holds, and a claim made while another connection holds a read of the store open waits for the read to end and is then taken, and the run page counts the paid calls answered inside a peak window; ..."
 Why: the check reaches what the correction asserts.
+### 2026-10-03 - .claude/rules/checks.md - read-surface reaches a pass that ends on an error and a request a drain left being written
+Authorised by: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused
+Was:
+> `read-surface`: "... and a claim made while another connection holds a read of the store open waits for the read to end and is then taken, and the run page counts the paid calls answered inside a peak window; ..."
+Now:
+> `read-surface`: "... waits for the read to end and is then taken, a pass that ends on an error settles its request as refused with the error while the drain goes on, and a request a drain left being written is put back as outstanding by the next drain and taken in its turn, and the run page counts the paid calls answered inside a peak window; ..."
+Why: the operator's ruling of 2026-10-03, after a drain run by hand ended on a pass's error and left QCOM's request being written.
+### 2026-10-03 - SCHEMA.md - the drain puts back a request a drain left being written
+Authorised by: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused
+Was:
+> "RequestDrain belongs to the worker and moves the same row through `writing` and then `written` or `refused`, and after the night's overnight queue it inserts the night's own requests, ..."
+Now:
+> "RequestDrain belongs to the worker and moves the same row through `writing` and then `written` or `refused`, puts a row a drain left `writing` when it ended back to `outstanding` (see: ...), and after the night's overnight queue it inserts the night's own requests, ..."
+Why: the operator's ruling of 2026-10-03; the drain is the table's one writer of that move.
+### 2026-10-03 - RUNBOOK.md - a request a stopped drain left is put back by the next
+Authorised by: A request a drain left being written is put back as outstanding by the next drain, and a pass that fails settles its request as refused
+Was:
+> "A drain stopped partway leaves its request `writing`, which the queue screen goes on showing as being written."
+Now:
+> "A drain stopped partway leaves its request `writing`, which the queue screen shows as being written until the next drain starts, puts it back as outstanding and takes it in its turn; a pass that ends on an error settles its request as refused with the error, and the drain goes on to the next (see: ...)."
+Why: the operator's ruling of 2026-10-03.

@@ -36511,3 +36511,70 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
             roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 6.11 - correction: a name's news is asked of the provider a month at a time and a window it does not answer in time is read as unread, where QCOM's pass of 2026-10-03 ended on a news window that timed out   2026-10-03
+
+Corrects:   6.11 (9653cb1), whose pass reads a name's news a window at a time and catches a window the provider
+            refuses, and not one it does not answer in time on any try. The drain run by hand at 01:29 UTC took
+            QCOM's request and wrote its industry section with DeepSeek, then asked for QCOM's news since its
+            filing and got no answer inside a request's limit on any try; nothing caught the timeout, and the
+            drain ended on it with QCOM's request left being written. Asked again at 01:55 UTC, the provider
+            answered QCOM's quarter, 862 articles and 5.2 MB, after 27.5 seconds, and a week of it, 33 articles,
+            after 2.1 seconds: its time to answer grows with what a window holds.
+Found:      by the operator running the drain by hand on 2026-10-03, its error pasted into the conversation.
+Ruled:      by the operator on 2026-10-03: a name's news is asked a month at a time, over a longer limit for this
+            fetch and over catching the timeout alone.
+Repaired:   the feed asks a window a month at a time, each piece from its first day to the day before the same
+            date a month on, and pages each piece as it paged the window. A window that still times out on every
+            try is named unread on the pass's row with its dates, as a refused window is, the filings archive's
+            fetch the same, and the sections are written from the rest. The decision is in `DECISIONS.md`.
+Tests:      1767, from 1765: two added, the pieces worked by hand and asked in turn, and a window timing out
+            named unread while the pass writes from the rest; and the feed's paging test read over one month, the
+            most a piece holds.
+Claims:     887, unchanged.
+Pins:       none moves: the feed and the pass sit in no pin list.
+Mutated:    the rule, stated before the run: each property added, broken alone, made on the branch in this
+            checkout, filtered to the feed's tests, the pass's window tests and the drain's and reverted.
+            M1 the window asked whole: red in the pieces test alone.
+            M2 the timeout not caught: red in the timeout test alone.
+            Results: M1 and M2 each red where stated, over the 42 tests the filter holds. Each ran over 450a1bd,
+            the gated tree, and was reverted, the tree reading clean after it.
+Verified:   with the 9.2 correction after it, in one pull request: `tools/ci.ps1` green and
+            `tools/verify-phase.ps1` green over the tree carrying both entries, 450a1bd, with the figures the
+            entry after this one states.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
+
+### 9.2 - correction: a pass that ends on an error settles its request as refused while the drain goes on, and a request a drain left being written is put back as outstanding by the next drain   2026-10-03
+
+Corrects:   9.2 (6f4c471), whose drain ran each pass with nothing around it, so a pass that ended on an error it
+            wrote no run for ended the drain, its request left being written. No drain takes a request being
+            written, and a name holding one is asked for neither by a press nor by the night, so QCOM's request,
+            which the night of 2026-10-02 asked for, has stood being written since 01:29 UTC with no drain to
+            finish it.
+Found:      by the operator running the drain by hand on 2026-10-03.
+Ruled:      by the operator on 2026-10-03: a request a drain left being written is put back as outstanding, over
+            settling it as refused; and this follows the claim's correction, merged first as PR 328.
+Repaired:   a pass that ends on an error is settled as refused with the error, and the drain goes on to the next.
+            The drain verb, once it holds the drain's lock, puts every request left being written back as
+            outstanding before it claims: one drain runs at a time, so such a request was left by a drain that
+            ended. The decision is in `DECISIONS.md`; `SCHEMA.md`, `RUNBOOK.md` and the roster's `read-surface` row
+            say so, with the prior text of each in `CHANGELOG.md`.
+Tests:      1769, from 1767: two added, a pass ending on an error with the drain going on to the next, and a
+            request left being written put back with no other state moved and taken first, the verb read to put
+            back after it takes the lock and before it drains.
+Claims:     887, unchanged.
+Pins:       none moves: the drain sits in no pin list.
+Mutated:    the rule, stated before the run: each property added, broken alone, made on the branch in this
+            checkout, filtered as the correction before it and reverted.
+            D1 a pass's error let through the drain: red in the error test alone.
+            D2 the put back taking no request: red in the put back test alone.
+            Results: D1 and D2 each red where stated, over the 42 tests the filter holds, D1 written as the
+            error's filter naming another exception after a filter naming none did not compile. Each ran over
+            450a1bd and was reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 450a1bd.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1769 of 1769 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 887 claims, 887 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
+Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.

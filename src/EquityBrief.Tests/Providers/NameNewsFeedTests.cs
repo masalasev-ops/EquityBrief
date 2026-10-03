@@ -18,7 +18,8 @@ public class NameNewsFeedTests
     const string Key = "demo-key-not-a-real-one";
     const string Base = "https://eodhd.example/api/";
 
-    static readonly DateOnly From = new(2025, 9, 8);
+    // One month, the most the feed asks in one piece, so a window is paged on its own.
+    static readonly DateOnly From = new(2026, 8, 9);
     static readonly DateOnly To = new(2026, 9, 8);
 
     sealed class Answering(Func<Uri, HttpResponseMessage> answer) : HttpMessageHandler
@@ -67,7 +68,7 @@ public class NameNewsFeedTests
 
         Assert.Equal("/api/news", first.AbsolutePath);
         Assert.Contains("s=KEYS.US", first.Query, StringComparison.Ordinal);
-        Assert.Contains("from=2025-09-08", first.Query, StringComparison.Ordinal);
+        Assert.Contains("from=2026-08-09", first.Query, StringComparison.Ordinal);
         Assert.Contains("to=2026-09-08", first.Query, StringComparison.Ordinal);
         Assert.Contains(FormattableString.Invariant($"limit={EodhdNewsFeed.Limit}"), first.Query, StringComparison.Ordinal);
         Assert.Contains("offset=0", first.Query, StringComparison.Ordinal);
@@ -82,6 +83,33 @@ public class NameNewsFeedTests
         Assert.Contains("still had more", refused.Message, StringComparison.Ordinal);
         Assert.False(refused.Transient);
         Assert.Equal(EodhdNewsFeed.MostPages, endless.Asked.Count);
+    }
+
+    // A window asked a month at a time, since the provider's time to answer grows with the articles a window holds.
+    // see: A name's news is asked of the provider a month at a time, and a window it does not answer in time is read as unread
+    [Fact]
+    public async Task AWindowIsAskedAMonthAtATimeEachPieceFromItsFirstDayToTheDayBeforeTheSameDateAMonthOn()
+    {
+        // Worked by hand. QCOM's window since its filing, 2026-07-29 to 2026-10-02, is three pieces; a piece starting on
+        // the last day of a long month ends the day before the same date a month on in a short one; and a week is one.
+        Assert.Equal(
+            [(new DateOnly(2026, 7, 29), new DateOnly(2026, 8, 28)), (new DateOnly(2026, 8, 29), new DateOnly(2026, 9, 28)), (new DateOnly(2026, 9, 29), new DateOnly(2026, 10, 2))],
+            EodhdNameNewsFeed.Months(new DateOnly(2026, 7, 29), new DateOnly(2026, 10, 2)));
+        Assert.Equal(
+            [(new DateOnly(2026, 1, 31), new DateOnly(2026, 2, 27)), (new DateOnly(2026, 2, 28), new DateOnly(2026, 3, 1))],
+            EodhdNameNewsFeed.Months(new DateOnly(2026, 1, 31), new DateOnly(2026, 3, 1)));
+        Assert.Equal([(new DateOnly(2026, 9, 26), new DateOnly(2026, 10, 2))], EodhdNameNewsFeed.Months(new DateOnly(2026, 9, 26), new DateOnly(2026, 10, 2)));
+
+        // The feed asks for each piece in turn, its dates in the query, and keeps each piece's articles inside it: the
+        // three dated 2026-09-01 the provider answers every piece with are kept by the second piece alone.
+        var handler = new Answering(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(Page(3, "QCOM.US")) });
+        var articles = await Live(handler).ArticlesAsync("QCOM", new DateOnly(2026, 7, 29), new DateOnly(2026, 10, 2));
+
+        Assert.Equal(3, handler.Asked.Count);
+        Assert.Contains("from=2026-07-29&to=2026-08-28", handler.Asked[0].Query, StringComparison.Ordinal);
+        Assert.Contains("from=2026-08-29&to=2026-09-28", handler.Asked[1].Query, StringComparison.Ordinal);
+        Assert.Contains("from=2026-09-29&to=2026-10-02", handler.Asked[2].Query, StringComparison.Ordinal);
+        Assert.Equal(3, articles.Count);
     }
 
     [Fact]

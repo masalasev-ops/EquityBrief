@@ -688,6 +688,14 @@ static async Task<int> Drain()
         return Task.Delay(TimeSpan.FromSeconds(5));
     });
 
+    // A request a drain left being written when it ended is put back first, which only a drain holding the lock may do.
+    var putBack = await RequestDrain.PutBackAsync(store.DatabaseFile);
+
+    if (putBack > 0)
+    {
+        Console.WriteLine(FormattableString.Invariant($"drain: {putBack} request(s) a drain left being written when it ended put back as outstanding"));
+    }
+
     var (taken, written) = await RequestDrain.DrainAsync(
         store.DatabaseFile,
         clock,
