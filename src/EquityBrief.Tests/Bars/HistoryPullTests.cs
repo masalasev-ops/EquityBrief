@@ -713,6 +713,57 @@ public class HistoryPullTests
         Assert.Equal(["VIX: the provider sent no session"], outcome.Refused);
     }
 
+    // A series answered in a form that cannot be read, a page or an array of anything but sessions read by the
+    // feeds' own reader, or not answered in time on any try, is named and stores nothing, the other series is
+    // stored and the pull returns with its row partial, where any of the three ended the pull.
+    // see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+    [Fact]
+    public async Task ASeriesAnsweredInAFormThatCannotBeReadOrNotInTimeIsNamedAndTheOtherSeriesStored()
+    {
+        const string Served = """
+            [
+              {"date":"2026-09-02","open":6040,"high":6042,"low":6038,"close":6041,"adjusted_close":6041,"volume":0},
+              {"date":"2026-09-03","open":6041,"high":6043,"low":6039,"close":6042,"adjusted_close":6042,"volume":0},
+              {"date":"2026-09-04","open":6042,"high":6044,"low":6040,"close":6043,"adjusted_close":6043,"volume":0}
+            ]
+            """;
+
+        var feeds = new (IMarketSeriesFeed Feed, string Said, string Run)[]
+        {
+            (new RecordedMarketSeriesFeed(new Dictionary<string, string> { ["GSPC"] = Served, ["VIX"] = "<html><body>Service busy</body></html>" }), "VIX: its answer could not be read: ", "history-pull-market-page"),
+            (new RecordedMarketSeriesFeed(new Dictionary<string, string> { ["GSPC"] = Served, ["VIX"] = "[\"busy\"]" }), "VIX: its answer could not be read: ", "history-pull-market-array"),
+            (new TimingOut("VIX", new RecordedMarketSeriesFeed(new Dictionary<string, string> { ["GSPC"] = Served })), "VIX: the provider did not answer in time on any try", "history-pull-market-slow"),
+        };
+
+        foreach (var (feed, said, run) in feeds)
+        {
+            using var store = Seeded();
+
+            var outcome = await HistoryPull.PullMarketAsync(feed, Clock(), store.DatabaseFile, From, run);
+
+            Assert.StartsWith(said, Assert.Single(outcome.Refused), StringComparison.Ordinal);
+            Assert.Equal((2, 3), (outcome.Requests, outcome.Written));
+            Assert.Equal(["GSPC|3"], Rows(store, "SELECT series, COUNT(*) FROM pulled_market_bar GROUP BY series;"));
+            Assert.Equal(["history-pull-market|partial|3|2"], Rows(store, $"SELECT stage, outcome, rows_written, network_requests FROM run_log WHERE run_id = '{run}';"));
+        }
+    }
+
+    // A market series feed timing out on every try for one series, as the provider's request does once its time
+    // limit passes, and answering the others from the feed it is handed.
+    sealed class TimingOut(string slow, IMarketSeriesFeed served) : IMarketSeriesFeed
+    {
+        public int Requests { get; private set; }
+
+        public Task<IReadOnlyList<ProviderBar>> SeriesAsync(string name, DateOnly from, DateOnly to, CancellationToken cancellationToken = default)
+        {
+            Requests++;
+
+            return name == slow
+                ? throw new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout.")
+                : served.SeriesAsync(name, from, to, cancellationToken);
+        }
+    }
+
     // A market series feed answering from constructed sessions, the index around 6,000 and the VIX around 15,
     // each price saying which session it is, refusing the series it is told to and recording each series asked
     // for with its span, in the order asked.

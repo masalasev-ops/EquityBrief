@@ -1261,6 +1261,22 @@ public partial class NightlyRun
         Assert.Equal(2, series.Requests);
         Assert.Equal(6L, Count(served, "SELECT COUNT(*) FROM market_bar WHERE run_id = 'night-market-served';"));
         Assert.Equal(6502L, Count(served, "SELECT CAST(close AS INTEGER) FROM market_bar WHERE series = 'GSPC' AND session_date = '2026-09-08';"));
+
+        // Answered with a page that cannot be read as sessions for the index, the night names it, stores the VIX
+        // and still runs every step after the fetch to its close.
+        using var unread = new TemporaryStore();
+
+        var page = new RecordedMarketSeriesFeed(new Dictionary<string, string> { ["GSPC"] = "<html><body>Service busy</body></html>", ["VIX"] = Sessions(15m) });
+        var (unreadCode, _, unreadError) = await NightAsync(unread, NightFeeds.FromFixture(FixtureFolder()) with { Market = page }, "night-market-unread", FixedClock.At(Night, SessionZones.UnitedStates));
+        var unreadStages = RunLog(unread, "night-market-unread");
+        var unreadMarket = unreadStages.Single(row => row.Stage == MarketSeriesFetcher.Stage);
+
+        Assert.True(unreadCode == 0, unreadError);
+        Assert.Equal("ok", unreadMarket.Outcome);
+        Assert.Contains("GSPC: nothing was stored for it, its answer could not be read: ", unreadMarket.Detail, StringComparison.Ordinal);
+        Assert.Contains(unreadStages, row => row.Stage == NightClose.Stage);
+        Assert.Equal(3L, Count(unread, "SELECT COUNT(*) FROM market_bar WHERE series = 'VIX' AND run_id = 'night-market-unread';"));
+        Assert.Equal(0L, Count(unread, "SELECT COUNT(*) FROM market_bar WHERE series = 'GSPC';"));
     }
 
     static long Count(TemporaryStore store, string sql)

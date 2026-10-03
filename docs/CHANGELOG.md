@@ -10483,3 +10483,38 @@ Was:
 Now:
 > `nightly-run`: "... saying so on its row; and the fetch step asks for the index's and the VIX's daily series once each after the day's bars, writing its own row beside the bars' with the series it stored and the ones it did not, and a series the provider does not serve stops no step |"
 Why: the check reaches what the ruling's code asserts.
+### 2026-10-03 - DECISIONS.md - the night's market series names an answer that cannot be read among the cases that stop nothing
+Authorised by: the operator's ruling of 2026-10-03 on the phase 12 and 13 sign-off's carried defect, naming the fourth case in the decision's sentence (see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars)
+Was:
+> "A series the provider refuses, does not answer in time or sends nothing for stores nothing, is named on the stage's own row and stops nothing:"
+Now:
+> "A series the provider refuses, does not answer in time, sends nothing for or answers in a form that cannot be read stores nothing, is named on the stage's own row and stops nothing:"
+Why: an answer sent with a 200 that the reader cannot read as sessions threw out of the fetch step and stopped the night; the decision's reason, that nothing this request does stops the night, already covered it.
+### 2026-10-03 - ARCHITECTURE.html - section 18's market series row names an answer that cannot be read
+Authorised by: the operator's ruling of 2026-10-03 on the phase 12 and 13 sign-off's carried defect, naming the fourth case in the row's later cells, its first cell kept word for word (see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars)
+Was:
+> "that series stores nothing that night and the night goes on; a market switch reading it" and "the fetch step's market series row names the series and why, and the family evaluator's row states each switch closed and why"
+Now:
+> "that series stores nothing that night and the night goes on, as it does where the provider does not answer in time or answers in a form that cannot be read; a market switch reading it" and "the fetch step's market series row names the series and why, an answer that cannot be read with the reader's own words, and the family evaluator's row states each switch closed and why"
+Why: the row stated two of the four cases the fetch reads as a series not served.
+### 2026-10-03 - ARCHITECTURE.html - the market series fetcher's catalogue row names an answer that cannot be read
+Authorised by: the operator's ruling of 2026-10-03 on the phase 12 and 13 sign-off's carried defect (see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars)
+Was:
+> "a series the provider refuses, does not answer in time or sends nothing for stores nothing, is named on its own row and stops nothing"
+Now:
+> "a series the provider refuses, does not answer in time, sends nothing for or answers in a form that cannot be read stores nothing, is named on its own row and stops nothing"
+Why: the catalogue states what the component does, and it stated three of the four cases the decision now names.
+### 2026-10-03 - .claude/rules/checks.md - fixture-expectations reaches a market series answered in a form that cannot be read
+Authorised by: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+Was:
+> `fixture-expectations`: "... stores each session no night holds and keeps a stored one as first written, and names a series refused or sent without the night; a switched rule fires ..."
+Now:
+> `fixture-expectations`: "... stores each session no night holds and keeps a stored one as first written, and names a series refused, sent without the night or answered in a form that cannot be read, storing nothing for it and returning; a switched rule fires ..."
+Why: the check reaches what the correction's test asserts.
+### 2026-10-03 - .claude/rules/checks.md - nightly-run reaches a market series answered in a form that cannot be read
+Authorised by: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+Was:
+> `nightly-run`: "... and a series the provider does not serve stops no step |"
+Now:
+> `nightly-run`: "... and a series the provider does not serve, an answer it cannot read among them, stops no step |"
+Why: the check reaches what the correction's test asserts.

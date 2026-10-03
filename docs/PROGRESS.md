@@ -36858,3 +36858,68 @@ Carried:    the two found above, into phase 14's plan; the invariant (d)'s equiv
             behaviour, whose two known causes PRs 328 and 329 removed; the operator's question whether a family
             rule registered again should keep restarting its record, where the pullback's rules are read by
             name from their first night; and the switched rules' first scored night, 2026-10-05.
+
+### 13.10 - correction: the night's market series fetch reads an answer it cannot read as a series not served, where it stopped the night   2026-10-03
+
+Corrects:   the market switches' ruling of 2026-10-03, merged as PR 331. `MarketSeriesFetcher` caught a refusal,
+            a `FormatException` and a timeout around each series, so a series answered 200 with a body that is not
+            JSON threw a `JsonReaderException` out of the shared parser, and one answered with an array of anything
+            but sessions an `InvalidOperationException` out of the bar reader. Either escaped `RunAsync` after the
+            bars were stored, the fetch step failed and the night stopped there and tried again, where the decision
+            on the night's two series gives holding back every list and record as the reason a series stops
+            nothing. A wrong result on a live surface from the night of 2026-10-05, the first to run the stage.
+Found:      by the phase 13 sign-off's review over bb76de7, and carried into phase 14's plan as its addendum's item 1
+            on the operator's ruling of 2026-10-03. The review's probe, copied in as a scratch file and deleted
+            after, was red over bca4b68 on both shapes before this correction and green after it.
+Repaired:   inside `RunAsync`'s per-series try, every failure of the series request but the night's own
+            cancellation is read as a series not served: named on the stage's row with the reader's own words,
+            nothing stored for it, the row ok and the other series stored. In the fetcher and not the shared
+            parser, which the backfill and the bar feeds rely on to fail. The decision's sentence, section 18's
+            row's later cells and the component's catalogue row name the fourth case, an answer that cannot be
+            read, the row's first cell word for word, and `fixture-expectations` and `nightly-run` reach it. In the
+            same pull request as commits of their own: the history pull's sibling catch, as the 12.5 correction
+            below; the reader's guide giving the drift's plain result a trade falling from 0.278 to 0.241 among its
+            switch's failures, the addendum's item 2; and the drain's claim stating in its comment why a deferred
+            begin is equivalent to the immediate one only while the claim runs one statement, its item 5.
+Tests:      1778, from 1776: two added, this correction's and the 12.5 correction's below. Here, the fetcher over the
+            live market series feed, the VIX answered 200 with a page and then with an array of strings while the
+            index is served; and the night's fetch test extended with a night whose index answer is a page, run to
+            its close with the VIX stored.
+Claims:     892, unchanged: the two rows changed keep their first cells, which the claims are keyed on.
+Pins:       none moves: `MarketSeriesFetcher.cs` and `RequestDrain.cs` sit in no pin list.
+Mutated:    the rule, stated before the run: the widened catch narrowed back to a refusal or a format error, the one
+            property this correction adds, made by hand over the working tree carrying it before its commit,
+            filtered to the three fetch tests and reverted, the source reading as committed after it.
+            M1 the fetcher's catch narrowed back: red in the new fetcher test and in the night's fetch test, the
+            older fetch test green.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry and the 12.5
+            correction's below: 3791192. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1778 of 1778 tests
+            ran with none failed, migrations 0 to 57 with none pending, schema version 57, against `data-ci` and
+            never `data`. `tools/verify-phase.ps1`: 44 tables, 892 claims, 892 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 903 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks
+            on the roster, 42 carried and 42 passed.
+Carried:    the night of 2026-10-05 read against the addendum's item 6 figures, recorded in the next entry.
+
+### 12.5 - correction: the history pull's market series names an answer it cannot read or a timeout and stores the other series, where either ended the pull   2026-10-03
+
+Corrects:   the 12.5 correction of 2026-10-02 that pulls the index's and the VIX's daily series. `PullMarketAsync`
+            caught a refusal and a `FormatException` alone, though its comment named a payload that cannot be read:
+            a page or an array of anything but sessions threw out of the reader, and a request not answered in time
+            threw its cancellation, either ending the pull verb with nothing stored and no row, where a refused
+            series is named and the other stored. A verb run by hand, so no night stopped.
+Found:      by the phase 13 sign-off's review as the night fetch's sibling, its addendum's item 1.
+Repaired:   the per-series try reads a timeout as a series not answered in time and every other failure but the
+            run's own cancellation as one not served, each named with its cause, the other series stored and the
+            pull's row partial.
+Tests:      in the figure the 13.10 correction above states: one added here, a page and an array of strings read
+            through the recorded feed's own reader and a timeout on every try, each named while the index is
+            stored.
+Claims:     892, unchanged by this correction.
+Pins:       none moves: `HistoryPull.cs` sits in no pin list.
+Mutated:    the rule, stated before the run: each failure the try now reads taken back out alone, made by hand over
+            the working tree carrying this correction before its commit, filtered to the pull's tests and reverted.
+            M2 the catch narrowed back to a refusal or a format error: red in the new pull test.
+            M3 the timeout's catch taken out: red in the new pull test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            13.10 correction above states.
+Carried:    nothing.
