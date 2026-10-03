@@ -36306,10 +36306,13 @@ Mutated:    the rule, stated before the run: each property the reader adds, brok
                count, and in the constructed test.
             O7 a row's name read with the record's line breaks kept: red in the corpus test, the two rows 12.9's
                report wraps, and in the constructed test.
-            Results: R129MUT.
+            Results: O1 to O7 each red where stated, over the 16 tests the filter holds: O1, O2, O3, O6 and O7 in
+            the corpus test and the constructed test, O4 and O5 in the constructed test alone. Each ran over
+            0a0e071, which differs from the gated tree, da84b11, in one line of the store copy's test and in
+            nothing these tests read, and was reverted, the tree reading clean after it.
 Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` green and
             `tools/verify-phase.ps1` green over the tree carrying every entry from this one to the last,
-            GATETREE, with the figures the last entry states.
+            da84b11, with the figures the last entry states.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
 
 ### 12.9 - the phase 12 report, amended: the six operating rows phase 12 opened after its report, handed over here with their triggers   2026-10-03
@@ -36339,7 +36342,7 @@ Opened:     eight operating rows stand for phase 12, the two the report names an
             read beside the count.
             `obligation-reconciles` states the count, eight, in advance, and reads this entry with the report it
             amends.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, GATETREE,
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, da84b11,
             with the figures the last entry of the pull request states.
 
 ### 12.6 - correction: the labeller's retry is judged by its time limit, a peak window and its month limit as a first call is, and one they stop leaves its article unlabelled, where the retry was asked unjudged   2026-10-03
@@ -36368,10 +36371,14 @@ Mutated:    the rule, stated before the run: the retry left unjudged, and each s
             L3 the time limit passed only once it is exceeded: red in the time limit's retry test and in the
                first call's stop test.
             L4 a peak window read at the run's start: red in the peak window's retry test alone.
-            Results: R126MUT.
+            Results: L1 to L4 each red where stated, over the 9 tests the filter holds: L1 in the three retry
+            tests, L2 in the month limit's retry test alone, L3 in the time limit's retry test and the first
+            call's stop test, L4 in the peak window's retry test alone. Each ran over 0a0e071, which differs from
+            the gated tree, da84b11, in one line of the store copy's test and in nothing these tests read, and
+            was reverted, the tree reading clean after it.
 Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` green and
             `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's correction to the last,
-            GATETREE, with the figures the last entry states.
+            da84b11, with the figures the last entry states.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
 
 ### 13.9 - correction: a family trade's benchmark is read on a night only once its cap's sessions after the listing have passed by that night, where the run page for an earlier night counted a trade decided on a benchmark written later   2026-10-03
@@ -36398,10 +36405,13 @@ Mutated:    the rule, stated before the run: the property the correction adds, b
             made on the branch in this checkout, filtered to the family records' tests and reverted.
             B1 the cap's sessions not read: red in the new test alone.
             B2 the cap read one session short: red in the new test alone.
-            Results: R139MUT.
+            Results: B1 and B2 each red in the new test alone, over the 6 tests the filter holds, the run page's
+            family record tests and the block window's. Each ran over 0a0e071, which differs from the gated
+            tree, da84b11, in one line of the store copy's test and in nothing these tests read, and was
+            reverted, the tree reading clean after it.
 Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` green and
             `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's correction to the last,
-            GATETREE, with the figures the last entry states.
+            da84b11, with the figures the last entry states.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
 
 ### 13.10 - correction: the best three's read-back through the run page's own query names which three the ninth rule keeps, where it counted three   2026-10-03
@@ -36425,10 +36435,13 @@ Mutated:    the rule, stated before the run: the order the query hands the walk,
                read-back test alone.
             N2 the swing plan's reward to risk read in place of the plan the verdict names: red in the read-back
                test.
-            Results: R1310NMUT.
+            Results: N1 and N2 each red in the read-back test alone, over the 4 tests the filter holds, so the
+            review's mutation b, which passed the whole suite before this correction, is now refused. Each ran
+            over 0a0e071, which differs from the gated tree, da84b11, in one line of the store copy's test and in
+            nothing these tests read, and was reverted, the tree reading clean after it.
 Verified:   with the corrections beside it, in one pull request: `tools/ci.ps1` green and
             `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's correction to the last,
-            GATETREE, with the figures the last entry states.
+            da84b11, with the figures the last entry states.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
 
 ### 13.10 - correction: the store's copy is shown holding the drain's lock from the moment it names the copy until it writes its row, where only its wait was asserted   2026-10-03
@@ -36449,8 +36462,17 @@ Mutated:    the rule, stated before the run: the property the test adds, broken 
             this checkout, filtered to the store copy's tests and reverted.
             D1 the review's mutation d3, the drain's lock let go before the copy is made: red in the new test
                alone.
-            Results: FILLED IN AFTER THE SWEEP.
+            Results: D1 red in the new test alone, over the 5 tests the filter holds, run over da84b11 and
+            reverted, the tree reading clean after it. It ran first over 0a0e071, with the same result.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying every entry from 12.9's
-            correction to this one: GATETREE.
-            The run's figures are filled in after it.
+            correction to this one: da84b11.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1764 of 1764 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 887 claims, 887 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
+            The first run of `tools/ci.ps1`, over 0a0e071, stopped in the suite on `clock-usage`: this entry's
+            test parsed its row's end with the culture on a line of its own, which the check reads as a parse
+            against the machine's locale. The commit writes the parse on one line, and the figures above are
+            da84b11's.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
