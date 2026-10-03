@@ -27,7 +27,7 @@ public partial class ReadSurface
     ];
 
     static readonly string LiveBreakout = TheSetupFamilies.Breakouts[0].Candidate;
-    static readonly string ProvisionalBreakout = TheSetupFamilies.Breakouts[^1].Candidate;
+    static readonly string ProvisionalBreakout = TheSetupFamilies.Breakouts[^2].Candidate;
     static readonly string NeighbourBreakout = TheSetupFamilies.Breakouts[1].Candidate;
     static readonly string LiveDrift = TheSetupFamilies.Drifts[0].Candidate;
 
@@ -56,7 +56,7 @@ public partial class ReadSurface
         using var store = await FamilyPagesStore();
 
         RegisteredRule(store, 101, TheSetupFamilies.Breakouts[0], "2026-01-02T12:00:00Z");
-        RegisteredRule(store, 102, TheSetupFamilies.Breakouts[^1], "2026-01-02T12:00:00Z");
+        RegisteredRule(store, 102, TheSetupFamilies.Breakouts[^2], "2026-01-02T12:00:00Z");
         RegisteredRule(store, 103, TheSetupFamilies.Breakouts[1], "2026-01-02T12:00:00Z");
         RegisteredRule(store, 104, TheSetupFamilies.Breakouts[1], "2026-01-03T12:00:00Z", retires: NeighbourBreakout);
         RegisteredRule(store, 105, TheSetupFamilies.Drifts[0], "2026-01-02T12:00:00Z");
@@ -162,6 +162,41 @@ public partial class ReadSurface
         Assert.Equal((-1.0, (double?)null), (ended.Result!.Value, ended.Benchmark));
         Assert.Null(TheTrade(await api.FamilyTradesAsync(new DateOnly(2026, 12, 24))).Benchmark);
         Assert.Equal(0.2, TheTrade(await api.FamilyTradesAsync(new DateOnly(2026, 12, 28))).Benchmark);
+    }
+
+    // A setup family rule registered again under its name, as a code change that moves its family's evaluator
+    // registers every rule of the family again, counts its record from the first session of the registration it
+    // stands by: the market switches' remedy of 2026-10-03 restarted the breakouts' and the drift's records so.
+    // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+    [Fact]
+    public void ARuleRegisteredAgainCountsItsRecordFromTheRegistrationItStandsBy()
+    {
+        // The breakouts' live rule registered on Friday 2026-01-02 with one trade, kept on 2026-01-05 and decided in
+        // its first block of 63 sessions, which is whole by 2026-09-30. Registered once, the trade is in that block.
+        var night = new DateOnly(2026, 9, 30);
+        var first = new DateTimeOffset(2026, 1, 2, 12, 0, 0, TimeSpan.Zero);
+        var again = new DateTimeOffset(2026, 4, 15, 12, 0, 0, TimeSpan.Zero);
+        FamilyTradeRow[] trades = [new(LiveBreakout, new DateOnly(2026, 1, 5), new DateOnly(2026, 1, 20), 1.5, 0.5)];
+
+        EquityBrief.Api.Reading.CandidateRow Registered(long id, DateTimeOffset at) => new(id, LiveBreakout, BreakoutCandidate.EvaluatorName, CandidateFamily.Registered, null, at);
+
+        FamilyRecordView Read(IReadOnlyList<EquityBrief.Api.Reading.CandidateRow> register) =>
+            Assert.Single(EquityBrief.Api.Reading.TonightScreen.FamilyRecordViews(register, trades, night), view => view.View.Candidate == LiveBreakout).View;
+
+        var once = Read([Registered(1, first)]);
+
+        Assert.Equal((new DateOnly(2026, 1, 2), 1, 1, 1), (once.First, once.Trades, once.Decided, once.Blocks));
+
+        // Retired and registered again under its name on Wednesday 2026-04-15: its record counts from that session,
+        // so the trade stays among its trades and its decided ones and leaves its blocks.
+        var restarted = Read(
+        [
+            Registered(1, first),
+            new(2, LiveBreakout, BreakoutCandidate.EvaluatorName, CandidateFamily.Retired, LiveBreakout, again, Evidence: "a code change moved its evaluator"),
+            Registered(3, again),
+        ]);
+
+        Assert.Equal((new DateOnly(2026, 4, 15), 1, 1, 0), (restarted.First, restarted.Trades, restarted.Decided, restarted.Blocks));
     }
 
     [Fact]

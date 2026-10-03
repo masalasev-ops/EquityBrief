@@ -179,9 +179,10 @@ public partial class FixtureExpectations
         Assert.Equal((0, SweepIdeas.Lookback), (TheSetupFamilies.DriftSwitch.IndexAverageSessions, TheSetupFamilies.DriftSwitch.VixLookbackSessions));
     }
 
-    // A market series feed answering from constructed closes, refusing the series it is told to, and recording
-    // what it was asked for in the order asked.
-    sealed class ConstructedMarket(Dictionary<string, Dictionary<DateOnly, decimal>> series, HashSet<string> refused) : IMarketSeriesFeed
+    // A market series feed answering from constructed closes, refusing the series it is told to, timing out on the
+    // ones it is told to as the provider's request does once its last try has passed, and recording what it was
+    // asked for in the order asked.
+    sealed class ConstructedMarket(Dictionary<string, Dictionary<DateOnly, decimal>> series, HashSet<string> refused, HashSet<string>? timesOut = null) : IMarketSeriesFeed
     {
         public int Requests { get; private set; }
 
@@ -195,6 +196,11 @@ public partial class FixtureExpectations
             if (refused.Contains(name))
             {
                 throw new ProviderRefusal("the provider answered 404", transient: false);
+            }
+
+            if (timesOut?.Contains(name) == true)
+            {
+                throw new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout.");
             }
 
             return Task.FromResult<IReadOnlyList<ProviderBar>>(
@@ -252,6 +258,28 @@ public partial class FixtureExpectations
 
         Assert.Contains("GSPC: 0 new of the 2 session(s) sent, 3 held, the newest sent 2026-10-01 and none for the night", shortOfTheNight.Detail, StringComparison.Ordinal);
 
+        // A series the provider does not answer in time on any try stores nothing and is named, and the stage still
+        // writes its row and returns, so the night goes on.
+        var slow = await new MarketSeriesFetcher(new ConstructedMarket(new() { [MarketCloses.Index] = index }, [], [MarketCloses.Vix]), clock, store.DatabaseFile).RunAsync("night-four");
+
+        Assert.Equal((1, 2), (slow.Refused.Count, slow.Requests));
+        Assert.Contains("VIX: the provider did not answer in time on any try, so nothing was stored for it", slow.Detail, StringComparison.Ordinal);
+        Assert.Equal(["market-series|ok"], FamilyRows(store, "SELECT stage, outcome FROM run_log WHERE run_id = 'night-four';"));
+
+        // And one it answers with no session stores nothing and is named as sending none.
+        var sentNone = await new MarketSeriesFetcher(new ConstructedMarket(new() { [MarketCloses.Index] = index }, []), clock, store.DatabaseFile).RunAsync("night-five");
+
+        Assert.Single(sentNone.Refused);
+        Assert.Contains("VIX: the provider sent no session, so nothing was stored for it", sentNone.Detail, StringComparison.Ordinal);
+
+        // The night's session is the newest the bars hold and not the clock's: a run on Wednesday 2026-10-07 over bars
+        // ending on 2026-10-02, as a night run again for an earlier session is, asks for each series to 2026-10-02.
+        var later = new ConstructedMarket(new() { [MarketCloses.Index] = index, [MarketCloses.Vix] = vix }, []);
+
+        await new MarketSeriesFetcher(later, FixedClock.At(new DateTimeOffset(2026, 10, 7, 23, 35, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile).RunAsync("night-six");
+
+        Assert.Equal(["GSPC 2025-08-28 2026-10-02", "VIX 2025-08-28 2026-10-02"], later.Asked);
+
         using var empty = new TemporaryStore().Migrated();
 
         var nothing = new ConstructedMarket([], []);
@@ -305,6 +333,22 @@ public partial class FixtureExpectations
         Assert.EndsWith(
             "; the market switches: index over its average closed, the index closed 98 at or below the average of its 200 closes to the night, 99.99",
             FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'switch-closed';").Single(),
+            StringComparison.Ordinal);
+
+        // The switch's sessions are the store's own: back at 102 on the night but with the series missing its close on
+        // one of the store's sessions inside the 200, the average is unread and the switch closed, where counted on the
+        // series' own days the 200 would step over the hole and read open.
+        store.Execute($"UPDATE market_bar SET close = '102' WHERE series = 'GSPC' AND session_date = '{BreakoutNight}';");
+        store.Execute("DELETE FROM market_bar WHERE series = 'GSPC' AND session_date = '2026-09-15';");
+
+        Assert.Contains("2026-09-15", sessions);
+
+        await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync("switch-holed", shadow);
+
+        Assert.Equal((string.Empty, "BA,BB,BC"), (FiredBy(switched), FiredBy(TheSetupFamilies.Breakouts[0])));
+        Assert.EndsWith(
+            "; the market switches: index over its average closed, the index's stored closes do not hold all 200 sessions to the night",
+            FamilyRows(store, "SELECT detail FROM run_log WHERE run_id = 'switch-holed';").Single(),
             StringComparison.Ordinal);
 
         // Each family's evaluator reads its own switch: the breakout's member and the drift's member each fire
