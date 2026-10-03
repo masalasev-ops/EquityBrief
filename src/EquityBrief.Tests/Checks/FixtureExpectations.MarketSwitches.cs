@@ -272,6 +272,14 @@ public partial class FixtureExpectations
         Assert.Single(sentNone.Refused);
         Assert.Contains("VIX: the provider sent no session, so nothing was stored for it", sentNone.Detail, StringComparison.Ordinal);
 
+        // The night's session is the newest the bars hold and not the clock's: a run on Wednesday 2026-10-07 over bars
+        // ending on 2026-10-02, as a night run again for an earlier session is, asks for each series to 2026-10-02.
+        var later = new ConstructedMarket(new() { [MarketCloses.Index] = index, [MarketCloses.Vix] = vix }, []);
+
+        await new MarketSeriesFetcher(later, FixedClock.At(new DateTimeOffset(2026, 10, 7, 23, 35, 0, TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile).RunAsync("night-six");
+
+        Assert.Equal(["GSPC 2025-08-28 2026-10-02", "VIX 2025-08-28 2026-10-02"], later.Asked);
+
         using var empty = new TemporaryStore().Migrated();
 
         var nothing = new ConstructedMarket([], []);

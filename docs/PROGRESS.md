@@ -36703,8 +36703,9 @@ Corrects:   the market switches' ruling of 2026-10-03 (merged as PR 331), and th
             quarters' feed left out passed them: the quarters' feed joined the record at 12.2 and the market
             series' at the ruling, and neither joined the lists. The switched rule's firing test stored the index's
             closes on exactly the store's sessions, so a calendar read off the series' own days passed it. No
-            test made the provider time out or answer with no session, so the fetch with its catch for a series
-            not answered in time taken out, or with the line naming one sent empty dropped, passed. The
+            test made the provider time out or answer with no session, or ran the fetch on a day later than the
+            newest stored bar, so the fetch with its catch for a series not answered in time taken out, with the
+            line naming one sent empty dropped, or asking to the clock's session, passed. The
             evaluator's tests never read its row where no rule states a switch, nor beside a moved rule whose
             registration predates the switches, which the live store's fourteen were until the remedy ran. And
             nothing read a rule registered again on the run page, so a record counted from the name's first
@@ -36715,7 +36716,8 @@ Repaired:   the two feed tests read the roles off the record's own constructor, 
             swaps each one live at a time; the firing test takes the index's close out on one of the store's
             sessions inside the 200, 2026-09-15, and reads the switch closed with its reason; the fetch test makes
             the VIX time out on every try and then answer with no session, and reads each named, nothing stored
-            and the stage's row written ok; the evaluator's row with no rule standing reads no switch, and its
+            and the stage's row written ok, and runs on 2026-10-07 over bars ending 2026-10-02 and reads each
+            series asked to 2026-10-02; the evaluator's row with no rule standing reads no switch, and its
             moved rule carries the four settings the freeze wrote, skipped while the standing switch is still
             read; a read-surface test reads the live breakout registered once and registered again through the
             run page's own reader, the second counting from the session of its new registration with its trade
@@ -36734,6 +36736,7 @@ Mutated:    the rule, stated before the run: each mutation an assertion here was
             N6 the switches read off a moved rule's registration that states none: red in the evaluator's test.
             N7 the switches' clause written where no rule states one: red in the family evaluator's first test.
             N8 a rule's record counted from the first registration of its name: red in the restart test.
+            N9 the fetch asking to the clock's session in place of the newest stored bar's: red in the fetch test.
             Results: FILLED IN AFTER THE SWEEP.
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: N13GATES
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
