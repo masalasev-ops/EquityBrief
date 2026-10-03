@@ -1021,6 +1021,160 @@
       "query": "POST http://127.0.0.1:1234/v1/chat/completions for The short version on KEYS in the local lane, a retry, told each thing the draft before it was refused for, handed 7 document(s): the request SectionPrompt builds under the instructions of 2026-09-30, keyed d9ab7be8ac3bbed0278394f32891dac2, at temperature 0 with a budget of 1024 tokens and reasoning_effort none",
       "fetchedAt": "2026-09-30T16:39:09Z",
       "trimmedTo": "nothing. The whole response to one section call, 19516 prompt tokens and 689 completion tokens, named for the request's key so a replay asking the same request reads it."
+    },
+    {
+      "file": "phase14-shares-AAPL.json",
+      "endpoint": "fundamentals/AAPL.US",
+      "query": "fundamentals/AAPL.US?filter=outstandingShares::quarterly,Financials::Balance_Sheet::quarterly",
+      "fetchedAt": "2026-10-03T21:04:41Z",
+      "trimmedTo": "the newest row and the first of 2019 of each series: 2 of the 164 share counts and 2 of the 164 quarterly balance sheets, every key, nesting and type the provider's. Kept as a company split since (4 for 1 in 2020): its 2019 counts are filed on today's basis, four times the count then. A balance sheet carries the date it was filed and a share count does not, so the value a session reads is the newest sheet filed before it."
+    },
+    {
+      "file": "phase14-shares-ATVI.json",
+      "endpoint": "fundamentals/ATVI.US",
+      "query": "fundamentals/ATVI.US?filter=outstandingShares::quarterly,Financials::Balance_Sheet::quarterly",
+      "fetchedAt": "2026-10-03T21:04:42Z",
+      "trimmedTo": "the newest row and the first of 2019 of each series: 2 of the 125 share counts and 2 of the 125 quarterly balance sheets, every key, nesting and type the provider's. Kept as a company delisted on 2023-10-13 after its takeover and still served, its last balance sheet the newest row kept. A balance sheet carries the date it was filed and a share count does not, so the value a session reads is the newest sheet filed before it."
+    },
+    {
+      "file": "phase14-shares-NVDA.json",
+      "endpoint": "fundamentals/NVDA.US",
+      "query": "fundamentals/NVDA.US?filter=outstandingShares::quarterly,Financials::Balance_Sheet::quarterly",
+      "fetchedAt": "2026-10-03T21:04:43Z",
+      "trimmedTo": "the newest row and the first of 2019 of each series: 2 of the 110 share counts and 2 of the 110 quarterly balance sheets, every key, nesting and type the provider's. Kept as a company split twice since (4 for 1 in 2021, 10 for 1 in 2024): its 2019 counts are forty times the count then. A balance sheet carries the date it was filed and a share count does not, so the value a session reads is the newest sheet filed before it."
+    },
+    {
+      "file": "phase14-shares-BRK-B.json",
+      "endpoint": "fundamentals/BRK-B.US",
+      "query": "fundamentals/BRK-B.US?filter=outstandingShares::quarterly,Financials::Balance_Sheet::quarterly",
+      "fetchedAt": "2026-10-03T21:04:43Z",
+      "trimmedTo": "the newest row and the first of 2019 of each series: 2 of the 154 share counts and 2 of the 154 quarterly balance sheets, every key, nesting and type the provider's. Kept as a company with two classes whose count is filed in B-share equivalents. A balance sheet carries the date it was filed and a share count does not, so the value a session reads is the newest sheet filed before it."
+    },
+    {
+      "file": "phase14-shares-GOOGL.json",
+      "endpoint": "fundamentals/GOOGL.US",
+      "query": "fundamentals/GOOGL.US?filter=outstandingShares::quarterly,Financials::Balance_Sheet::quarterly",
+      "fetchedAt": "2026-10-03T21:04:44Z",
+      "trimmedTo": "the newest row and the first of 2019 of each series: 2 of the 98 share counts and 2 of the 98 quarterly balance sheets, every key, nesting and type the provider's. Kept as one class of a company the other class shares a CIK with, each filed with the count of every class. A balance sheet carries the date it was filed and a share count does not, so the value a session reads is the newest sheet filed before it."
+    },
+    {
+      "file": "phase14-shares-GOOG.json",
+      "endpoint": "fundamentals/GOOG.US",
+      "query": "fundamentals/GOOG.US?filter=outstandingShares::quarterly,Financials::Balance_Sheet::quarterly",
+      "fetchedAt": "2026-10-03T21:04:45Z",
+      "trimmedTo": "the newest row and the first of 2019 of each series: 2 of the 98 share counts and 2 of the 98 quarterly balance sheets, every key, nesting and type the provider's. Kept as the other class of the same company, its counts the same as GOOGL's, though one figure of its 2019 balance sheet differs from the one GOOGL's answer carries. A balance sheet carries the date it was filed and a share count does not, so the value a session reads is the newest sheet filed before it."
+    },
+    {
+      "file": "phase14-market-cap-AAPL.json",
+      "endpoint": "historical-market-cap/AAPL.US",
+      "query": "historical-market-cap/AAPL.US?from=2018-01-01&fmt=json",
+      "fetchedAt": "2026-10-03T21:04:45Z",
+      "trimmedTo": "the first five and the last five of 262 weekly rows. Asked from 2018-01-01, the first row is 2021-09-03: a value a week from late 2021 cannot rank a company on a session before it, which is why the value is computed from filed counts."
+    },
+    {
+      "file": "phase14-general-V.json",
+      "endpoint": "fundamentals/V.US",
+      "query": "fundamentals/V.US?filter=General",
+      "fetchedAt": "2026-10-03T21:04:46Z",
+      "trimmedTo": "nothing. The company's General block, whose GICS sector is today's alone: Visa reads Financials, where it sat in Information Technology until GICS moved it after the close of 2023-03-17, which is why a session reads a sector through a committed table of that day's moves."
+    },
+    {
+      "file": "phase14-general-SCG.json",
+      "endpoint": "fundamentals/SCG.US",
+      "query": "fundamentals/SCG.US?filter=General",
+      "fetchedAt": "2026-10-03T21:04:46Z",
+      "trimmedTo": "nothing. A company that left the index on 2019-01-02 still answers with its GICS sector, its filer and the date it was delisted."
+    },
+    {
+      "file": "phase14-eod-XLC.json",
+      "endpoint": "eod/XLC.US",
+      "query": "eod/XLC.US?from=2018-01-01&to=2026-10-02&period=d&fmt=json",
+      "fetchedAt": "2026-10-03T21:04:46Z",
+      "trimmedTo": "the first five and the last five of 2084 sessions, 2018-06-19 to 2026-10-02: the Communication Services fund, launched 2018-06-19, so a look-back of 251 sessions reads nothing for its sector until late June 2019."
+    },
+    {
+      "file": "phase14-eod-XLK.json",
+      "endpoint": "eod/XLK.US",
+      "query": "eod/XLK.US?from=2018-01-01&to=2026-10-02&period=d&fmt=json",
+      "fetchedAt": "2026-10-03T21:04:47Z",
+      "trimmedTo": "the first five and the last five of 2200 sessions, 2018-01-02 to 2026-10-02: the Information Technology fund, served from the first session asked."
+    },
+    {
+      "file": "phase14-trend-AAPL.json",
+      "endpoint": "fundamentals/AAPL.US",
+      "query": "fundamentals/AAPL.US?filter=Earnings::Trend",
+      "fetchedAt": "2026-10-03T21:04:48Z",
+      "trimmedTo": "the newest of 40 periods and the first of 2019. Each period holds one estimate with no date it was made on, so a revenue beat's size cannot be read as it stood before a report."
+    },
+    {
+      "file": "phase14-mid-cap-history.json",
+      "endpoint": "fundamentals/MID.INDX",
+      "query": "fundamentals/MID.INDX?filter=HistoricalTickerComponents",
+      "fetchedAt": "2026-10-03T21:04:48Z",
+      "trimmedTo": "nothing. The S&P 400's answer to the spans of membership the S&P 500's answer carries: none."
+    },
+    {
+      "file": "phase14-mid-cap-general.json",
+      "endpoint": "fundamentals/MID.INDX",
+      "query": "fundamentals/MID.INDX?filter=General",
+      "fetchedAt": "2026-10-03T21:04:49Z",
+      "trimmedTo": "nothing. The S&P 400's own description, naming the index the spans were asked of."
+    },
+    {
+      "file": "phase14-news-MHK-2019-05.json",
+      "endpoint": "news",
+      "query": "news?s=MHK.US&from=2019-05-01&to=2019-05-31&limit=1000&fmt=json",
+      "fetchedAt": "2026-10-03T21:04:49Z",
+      "trimmedTo": "nothing. The one article a member's whole May of 2019 returned, against 12 in May 2023, with the sentiment it carries."
+    },
+    {
+      "file": "phase14-news-MHK-2023-05.json",
+      "endpoint": "news",
+      "query": "news?s=MHK.US&from=2023-05-01&to=2023-05-31&limit=1000&fmt=json",
+      "fetchedAt": "2026-10-03T21:04:50Z",
+      "trimmedTo": "two of the 12 articles the month returned, in the provider's order, each with the sentiment it carries; the month of 2019 beside it returned one. The two are one release in French and in German, scored a polarity of 0.671 and -0.998. Licensed text is not this repository's to hold beyond what shows the shape."
+    },
+    {
+      "file": "phase14-eod-PRTY.json",
+      "endpoint": "eod/PRTY.US",
+      "query": "eod/PRTY.US?from=2023-01-01&to=2026-10-02&period=d&fmt=json",
+      "fetchedAt": "2026-10-03T21:04:50Z",
+      "trimmedTo": "the first five and the last five of 54 sessions, 2023-01-03 to 2023-03-21: a small company whose shares stopped trading on its exchange in 2023 after its bankruptcy, still served."
+    },
+    {
+      "file": "phase14-eod-BBBY.json",
+      "endpoint": "eod/BBBY.US",
+      "query": "eod/BBBY.US?from=2018-01-01&to=2026-10-02&period=d&fmt=json",
+      "fetchedAt": "2026-10-03T21:04:51Z",
+      "trimmedTo": "the first five, the session of 2023-01-03 and the last five of 2181 sessions, 2018-01-02 to 2026-09-04: the series served under BBBY today runs unbroken from 2018 and is another company's: on 2023-01-03 it closed at 18.88, where the bankrupt retailer's own series under BBBYQ closed at 2.31."
+    },
+    {
+      "file": "phase14-eod-BBBYQ.json",
+      "endpoint": "eod/BBBYQ.US",
+      "query": "eod/BBBYQ.US?from=2023-01-01&to=2026-10-02&period=d&fmt=json",
+      "fetchedAt": "2026-10-03T21:04:51Z",
+      "trimmedTo": "the first five and the last five of 187 sessions, 2023-01-03 to 2023-09-29: the bankrupt retailer's own series, served under the ticker it took in 2023."
+    },
+    {
+      "file": "phase14-splits-NVDA.json",
+      "endpoint": "splits/NVDA.US",
+      "query": "splits/NVDA.US?from=2000-01-01&fmt=json",
+      "fetchedAt": "2026-10-03T21:04:51Z",
+      "trimmedTo": "nothing. Every split the provider holds for the company, each a ratio in a string; the two since 2019 are why its 2019 counts are filed at forty times the count then."
+    },
+    {
+      "file": "phase14-marketplace-constituents-403.txt",
+      "endpoint": "mp/unicornbay/spglobal/comp/MID.INDX",
+      "query": "mp/unicornbay/spglobal/comp/MID.INDX?fmt=json",
+      "fetchedAt": "2026-10-03T21:04:52Z",
+      "trimmedTo": "nothing. The provider's answer, with status 403, when this key asks the add-on that holds the S&P 400's and 600's changes of membership."
+    },
+    {
+      "file": "phase14-sec-facts-ATVI.json",
+      "endpoint": "api/xbrl/companyfacts/CIK0000718877.json",
+      "query": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000718877.json",
+      "fetchedAt": "2026-10-03T21:04:52Z",
+      "trimmedTo": "2 of the 454 us-gaap concepts, the two the company filed revenue under, and of each the facts filed in 2018 and 2019, the years it moved its revenue from the first to the second, from a payload of 2.9 megabytes; the dei and invest concepts left out. Every key and nesting level kept is the archive's. A company delisted in 2023 still answers, each fact with the date it was filed and its form, a quarter's figure filed again as a comparative in later filings beside the filing that first stated it."
     }
   ]
 }
