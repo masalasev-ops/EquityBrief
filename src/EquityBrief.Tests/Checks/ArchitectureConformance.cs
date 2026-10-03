@@ -1500,8 +1500,9 @@ public partial class ArchitectureConformance
         // run page's records of the registered family rules as the six parts its setup families row adds. 435
         // from the operator's ruling of 2026-10-02, the store's newest copy beneath anything to worry about.
         // 440 at the 9.2 correction of 2026-10-03: the checklist's drain that stopped on an error and the queue
-        // page's drain that stopped as the four parts its row states.
-        Assert.Equal(440, inDocument.Length);
+        // page's drain that stopped as the four parts its row states. 442 at 14.1: the setup families' row stating
+        // where each rule's record counts from and why one restarted.
+        Assert.Equal(442, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1593,8 +1594,8 @@ public partial class ArchitectureConformance
         // 409 at 13.9, the run page's records of the registered family rules: the six parts its row adds.
         // 410 from the operator's ruling of 2026-10-02: the store's newest copy beneath anything to worry about.
         // 415 at the 9.2 correction of 2026-10-03: the checklist's drain that stopped on an error and the queue
-        // page's four parts stating it.
-        Assert.Equal(415, checkedElements);
+        // page's four parts stating it. 417 at 14.1: the setup families' two parts on where a rule's record counts from.
+        Assert.Equal(417, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

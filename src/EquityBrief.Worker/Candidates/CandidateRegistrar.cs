@@ -388,7 +388,7 @@ public sealed class CandidateRegistrar : IComponent
     // At one instant for the reason a family registers at one, since each rule's level is divided across the rules
     // the first night evaluated beside it. Refused where the code writes no family by the name given, and where no
     // rule of the family stands, since there is then no family to register again and its freeze registers it.
-    // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+    // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
     public async Task<RegistrationOutcome> RegisterTheSetupFamilyAgainAsync(string family, string evidence, string runId, CancellationToken cancellation = default)
     {
         var startedAt = clock.UtcNow;

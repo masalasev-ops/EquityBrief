@@ -16,6 +16,13 @@ public sealed record FamilyEvaluation(string Family, int Members, int Passed, in
 
 public sealed record FamilyEvaluatorOutcome(DateOnly? Night, int RowsWritten, IReadOnlyList<FamilyEvaluation> Families, int Evaluated = 0, IReadOnlyList<string>? Faults = null);
 
+// One member's inputs on a night as the stage reads them, and why the shadow is handed no verdict for it where it
+// is handed none.
+public sealed record FamilyNightMember(string Ticker, FamilyMember Inputs, NameWithheld? Withheld);
+
+// Every member's inputs on a night as the stage reads them, and the index's and the VIX's closes to that night.
+public sealed record FamilyNightInputs(IReadOnlyList<FamilyNightMember> Members, MarketCloses Closes);
+
 // The family evaluator. Evaluates every member the swing filter evaluated on the night under each setup
 // family but the pullback, whose answers are the filter's own rows, and stores every answer with the
 // values that decided it.
@@ -32,7 +39,7 @@ public sealed record FamilyEvaluatorOutcome(DateOnly? Night, int RowsWritten, IR
 // step stored, on the store's own sessions to the night, which a rule's market switch reads. It makes no request
 // and calls no model.
 // see: The nightly run is arithmetic only
-// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
 // see: The market check closes every family's list together
 // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
 // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
@@ -67,10 +74,11 @@ public sealed class FamilyEvaluator : IComponent
         ORDER BY g.ticker;
     ";
 
-    // Every session the store keeps, a name at a time and oldest first.
-    const string EveryBar = @"
+    // Every session the store keeps to the night, a name at a time and oldest first.
+    const string EveryBarTo = @"
         SELECT ticker, session_date, high, low, close, volume
         FROM bar
+        WHERE session_date <= $night
         ORDER BY ticker, session_date;
     ";
 
@@ -159,64 +167,19 @@ public sealed class FamilyEvaluator : IComponent
             return new FamilyEvaluatorOutcome(null, 0, []);
         }
 
-        var (members, market) = await FilterRowsAsync(connection, session, cancellation);
-
-        if (members.Count == 0)
+        if (await InputsAsync(connection, session, shadow.DriftWindowReach, cancellation) is not { } inputs)
         {
             await AppendAsync(connection, null, runId, startedAt, 0, FormattableString.Invariant($"the swing filter stored no result for {Stamp(session)}, so no family was evaluated"), false, cancellation);
 
             return new FamilyEvaluatorOutcome(null, 0, []);
         }
 
-        var bars = await BarsAsync(connection, session, cancellation);
-
-        // The indicators are read from the oldest session a reaction inside the widest drift window a standing
-        // rule admits can follow.
-        var from = bars.Values
-            .Select(held => held[Math.Max(0, held.Count - 1 - shadow.DriftWindowReach)].Session)
-            .DefaultIfEmpty(session)
-            .Min();
-        var indicators = await IndicatorsAsync(connection, from, session, cancellation);
-        var prints = await PrintsAsync(connection, session, cancellation);
-        var bands = await BandsAsync(connection, session, cancellation);
-        var closes = await MarketAsync(connection, session, cancellation);
-
         var results = new List<(FamilyResult Result, string? Shadow)>();
 
-        foreach (var member in members)
+        foreach (var member in inputs.Members)
         {
-            var held = bars.GetValueOrDefault(member.Ticker) ?? [];
-            var typical = Indicator(indicators, member.Ticker, session, IndicatorSeries.Atr14);
-
-            // The reaction's own session among the member's bars, which the two readings beside it are stored for.
-            var print = prints.GetValueOrDefault(member.Ticker);
-            var at = print is null ? -1 : held.Select((bar, index) => (bar, index)).Where(pair => pair.bar.Session == print.ReactionSession).Select(pair => pair.index).DefaultIfEmpty(-1).First();
-
-            var inputs = new FamilyMember(
-                new BreakoutInputs(
-                    member.Ticker,
-                    market,
-                    held,
-                    Indicator(indicators, member.Ticker, session, IndicatorSeries.VolAvg50),
-                    typical,
-                    member.Exclusions),
-                new DriftInputs(
-                    member.Ticker,
-                    market,
-                    held,
-                    print,
-                    at >= 1 ? Indicator(indicators, member.Ticker, held[at - 1].Session, IndicatorSeries.Atr14) : null,
-                    at >= 0 ? Indicator(indicators, member.Ticker, held[at].Session, IndicatorSeries.VolAvg50) : null,
-                    typical,
-                    bands.GetValueOrDefault(member.Ticker) ?? [],
-                    member.Exclusions),
-                closes);
-
-            // A member the night holds no bar for, or holds across a gap, is a counted skip of every family candidate.
-            var withheld = FamilyRuleShadow.Withheld(held.Count == 0, member.Exclusions.Contains(SwingGates.GapExclusion, StringComparer.Ordinal));
-
-            results.Add((BreakoutRule.Evaluate(inputs.Breakout), shadow.Evaluate(BreakoutRule.Name, inputs, withheld)));
-            results.Add((DriftRule.Evaluate(inputs.Drift), shadow.Evaluate(DriftRule.Name, inputs, withheld)));
+            results.Add((BreakoutRule.Evaluate(member.Inputs.Breakout), shadow.Evaluate(BreakoutRule.Name, member.Inputs, member.Withheld)));
+            results.Add((DriftRule.Evaluate(member.Inputs.Drift), shadow.Evaluate(DriftRule.Name, member.Inputs, member.Withheld)));
         }
 
         var places = SetupFamilies.Evaluated
@@ -271,10 +234,76 @@ public sealed class FamilyEvaluator : IComponent
             .ToArray();
         var outcome = new FamilyEvaluatorOutcome(session, results.Count, families, shadow.Evaluated, shadow.Faults);
 
-        await AppendAsync(connection, transaction, runId, startedAt, results.Count, Detail(outcome) + shadow.Said + Switches(shadow, closes),shadow.Faults.Count > 0, cancellation);
+        await AppendAsync(connection, transaction, runId, startedAt, results.Count, Detail(outcome) + shadow.Said + Switches(shadow, inputs.Closes),shadow.Faults.Count > 0, cancellation);
         await transaction.CommitAsync(cancellation);
 
         return outcome;
+    }
+
+    // Every member the swing filter evaluated on a night with the inputs the stage reads for it on that night, its
+    // bars and readings to the night and none after it, and none where the filter stored no result for the night.
+    // The night's own run reads its night through it, and a replay of a rule reads an earlier night the same way.
+    // see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
+    public static async Task<FamilyNightInputs?> InputsAsync(SqliteConnection connection, DateOnly night, int driftWindowReach, CancellationToken cancellation = default)
+    {
+        var (members, market) = await FilterRowsAsync(connection, night, cancellation);
+
+        if (members.Count == 0)
+        {
+            return null;
+        }
+
+        var bars = await BarsAsync(connection, night, cancellation);
+
+        // The indicators are read from the oldest session a reaction inside the widest drift window a standing
+        // rule admits can follow.
+        var from = bars.Values
+            .Select(held => held[Math.Max(0, held.Count - 1 - driftWindowReach)].Session)
+            .DefaultIfEmpty(night)
+            .Min();
+        var indicators = await IndicatorsAsync(connection, from, night, cancellation);
+        var prints = await PrintsAsync(connection, night, cancellation);
+        var bands = await BandsAsync(connection, night, cancellation);
+        var closes = await MarketAsync(connection, night, cancellation);
+        var read = new List<FamilyNightMember>();
+
+        foreach (var member in members)
+        {
+            var held = bars.GetValueOrDefault(member.Ticker) ?? [];
+            var typical = Indicator(indicators, member.Ticker, night, IndicatorSeries.Atr14);
+
+            // The reaction's own session among the member's bars, which the two readings beside it are stored for.
+            var print = prints.GetValueOrDefault(member.Ticker);
+            var at = print is null ? -1 : held.Select((bar, index) => (bar, index)).Where(pair => pair.bar.Session == print.ReactionSession).Select(pair => pair.index).DefaultIfEmpty(-1).First();
+
+            var inputs = new FamilyMember(
+                new BreakoutInputs(
+                    member.Ticker,
+                    market,
+                    held,
+                    Indicator(indicators, member.Ticker, night, IndicatorSeries.VolAvg50),
+                    typical,
+                    member.Exclusions),
+                new DriftInputs(
+                    member.Ticker,
+                    market,
+                    held,
+                    print,
+                    at >= 1 ? Indicator(indicators, member.Ticker, held[at - 1].Session, IndicatorSeries.Atr14) : null,
+                    at >= 0 ? Indicator(indicators, member.Ticker, held[at].Session, IndicatorSeries.VolAvg50) : null,
+                    typical,
+                    bands.GetValueOrDefault(member.Ticker) ?? [],
+                    member.Exclusions),
+                closes);
+
+            // A member the night holds no bar for, or holds across a gap, is a counted skip of every family candidate.
+            read.Add(new FamilyNightMember(
+                member.Ticker,
+                inputs,
+                FamilyRuleShadow.Withheld(held.Count == 0, member.Exclusions.Contains(SwingGates.GapExclusion, StringComparer.Ordinal))));
+        }
+
+        return new FamilyNightInputs(read, closes);
     }
 
     // What the stage's row says: for each family, the members it passed of the ones it evaluated and the
@@ -320,7 +349,8 @@ public sealed class FamilyEvaluator : IComponent
     {
         await using var command = connection.CreateCommand();
 
-        command.CommandText = EveryBar;
+        command.CommandText = EveryBarTo;
+        command.Parameters.AddWithValue("$night", Stamp(night));
 
         var bars = new Dictionary<string, List<FamilyBar>>(StringComparer.Ordinal);
 

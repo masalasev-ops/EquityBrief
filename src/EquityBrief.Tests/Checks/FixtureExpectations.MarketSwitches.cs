@@ -20,7 +20,7 @@ namespace EquityBrief.Tests.Checks;
 // read every session as the ideas' run read it, the night's fetch of the two series over a constructed feed, a
 // switched rule firing where its family's rule fires on a night its switch is open and on none where it is closed,
 // and each family registered again whole to add its switched rule.
-// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
 // see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
 public partial class FixtureExpectations
 {

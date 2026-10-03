@@ -2033,6 +2033,11 @@ internal static class Scope
             Verdict.Pass, "the whole blocks worked by hand from the first session on or after the registration, a block whose cap has not passed left out, against the first look's eight", ByReadSurface),
         [CheckReach.Key("15.10 Run", "The setup families, the level its looks are read at")] = new Scoped(
             Verdict.Pass, "the level read off each row as 0.05 over the setup's own distinct trials, and no other setup's rule moving it", ByReadSurface),
+        // 14.1, a family rule's record guarded by a replay.
+        [CheckReach.Key("15.10 Run", "The setup families, beside each rule the session its record counts from")] = new Scoped(
+            Verdict.Pass, "the session read off each rule's row, its first registration's where a replay under the version it stands at reproduced every trade and its registration's where that replay found one differing or none was run, worked by hand over constructed registrations and replays and read back off the page", ByReadSurface),
+        [CheckReach.Key("15.10 Run", "The setup families, where a replay at its registration found a trade differing, that it restarted there and why")] = new Scoped(
+            Verdict.Pass, "a rule whose replay row found a trade differing read back off the page saying it restarted at its registration with what the replay found, and a rule whose replay reproduced its trades saying nothing of a restart", ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "The setup filter, one chip a setup with its trades and the counts following the setup chosen")] = new Scoped(
             Verdict.Pass, "the chips and their counts read off the page, the filter keeping exactly the setup's trades against the store's listed rows, and the status chips keeping the setup chosen", ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "The setup a trade was listed under, a label on its row")] = new Scoped(
@@ -2945,6 +2950,19 @@ internal static class Scope
             Verdict.Pass,
             "the guard over a drain's work that throws writes one row under a run of its own named for the drain's start, its stage, its outcome and the error with no path a machine roots, says so in the line the verb prints, and over work that finishes writes none; the queue page and the run page's checklist read the row back",
             ByReadSurface),
+        // 14.1, a family rule's record read by its name and guarded by a replay.
+        [CheckReach.Key(CatalogueTable, "Family replay")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the bars, the market series, the indicators, the levels, the earnings reactions, the gate results, the family results, the family trades and the candidate register it reads and the run log it reads and writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Family replay")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(FailureTable, "A replay at a family rule's registration finds a trade the rule would keep differently")] = new Scoped(
+            Verdict.Pass,
+            "over a store whose night the evaluator and the recorder ran, a stored trade whose end and result alone differ from the replay's restarts its rule at the registration with that trade named on its row and in the line the verb prints, while every rule the replay reproduced carries its record on from its first registration",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "The labeller fails")] = new Scoped(
             Verdict.Pass,
             "a run refused before it asked anything writes its own row saying why and no row of the night's, and a labeller that stopped partway leaves the night's rows, listings and gate results as they were",
@@ -3744,6 +3762,8 @@ internal static class Scope
         ["Store backup"] = "13.10",
         // The operator's ruling of 2026-10-03, the market switches, built after the phase 13 report.
         ["Market series fetcher"] = "13.10",
+        // 14.1, a family rule's record guarded by a replay.
+        ["Family replay"] = "14.1",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -4117,6 +4137,8 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "The setup families, those decided with their edge over their benchmark in multiples of the risk")] = "13.9",
         [CheckReach.Key("15.10 Run", "The setup families, its whole blocks against the look they wait for")] = "13.9",
         [CheckReach.Key("15.10 Run", "The setup families, the level its looks are read at")] = "13.9",
+        [CheckReach.Key("15.10 Run", "The setup families, beside each rule the session its record counts from")] = "14.1",
+        [CheckReach.Key("15.10 Run", "The setup families, where a replay at its registration found a trade differing, that it restarted there and why")] = "14.1",
         [CheckReach.Key("15.17 Past picks", "The setup filter, one chip a setup with its trades and the counts following the setup chosen")] = "13.5",
         [CheckReach.Key("15.17 Past picks", "The setup a trade was listed under, a label on its row")] = "13.5",
         [CheckReach.Key("15.17 Past picks", "A trailing trade, drawn with no target and its result in multiples of its risk")] = "13.5",
@@ -4456,6 +4478,8 @@ internal static class Scope
             "those decided with their edge over their benchmark in multiples of the risk",
             "its whole blocks against the look they wait for",
             "the level its looks are read at",
+            "beside each rule the session its record counts from",
+            "where a replay at its registration found a trade differing, that it restarted there and why",
         ],
         [CheckReach.Key("15.17 Past picks", "The setup filter")] =
         [
@@ -4986,6 +5010,8 @@ internal static class Scope
         ["The provider refuses or sends nothing for the index or the VIX on a night"] = "13.10",
         // The 9.2 correction of 2026-10-03, a drain that stops on an error.
         ["The drain stops on an error outside a pass"] = "9.2",
+        // 14.1, a family rule's record guarded by a replay.
+        ["A replay at a family rule's registration finds a trade the rule would keep differently"] = "14.1",
         // 13.1, the family framework. The row about two families is read on the page once a second family is on it.
         ["A stock a family passes while a trade for it is still open"] = "13.1",
         ["A stock two families pass on one night"] = "13.2",

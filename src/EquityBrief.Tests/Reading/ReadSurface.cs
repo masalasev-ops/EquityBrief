@@ -90,6 +90,9 @@ public partial class ReadSurface
             // item and section 18's row.
             .. DrainStopRows,
 
+            // 14.1, a family rule's record guarded by a replay: where each rule's record counts from, and why one restarted.
+            .. FamilyReplayPageClaims,
+
             // 12.6's correction drawing how each report did: the two regions' parts and section 17's window.
             .. ReportClaims,
 

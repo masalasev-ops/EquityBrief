@@ -453,9 +453,10 @@ public static partial class TonightScreen
         IReadOnlyList<FamilyPickRow> picksTonight,
         IReadOnlyList<PickCell> trades,
         IReadOnlyList<CandidateRow> register,
-        IReadOnlyList<FamilyTradeRow>? familyTrades = null)
+        IReadOnlyList<FamilyTradeRow>? familyTrades = null,
+        IReadOnlyList<FamilyReplayRow>? replays = null)
     {
-        var records = FamilyRecordViews(register, familyTrades ?? [], night);
+        var records = FamilyRecordViews(register, familyTrades ?? [], night, replays);
 
         return
         [
@@ -484,21 +485,23 @@ public static partial class TonightScreen
         ];
     }
 
-    // Each registered rule of each new family standing at the night's end, read over its own trades, its
-    // correction the family's own.
+    // Each registered rule of each new family standing at the night's end, read over its own trades from where its
+    // record counts, its correction the family's own.
     // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
     // see: Each setup family's correction for luck counts its own rules alone, at most nine a family
+    // see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
     public static IReadOnlyList<(string Family, FamilyRecordView View)> FamilyRecordViews(
         IReadOnlyList<CandidateRow> register,
         IReadOnlyList<FamilyTradeRow> trades,
-        DateOnly night)
+        DateOnly night,
+        IReadOnlyList<FamilyReplayRow>? replays = null)
     {
         var at = new DateTimeOffset(night.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         RegisterRow[] rows =
         [
             .. register.Select(row => new RegisterRow(
                 row.Id, row.Candidate, string.Empty, string.Empty, row.Evaluator,
-                row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
+                row.Parameters, row.EvaluatorVersion, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
         ];
         var standing = CandidateFamily.Standing(rows, at);
 
@@ -509,7 +512,7 @@ public static partial class TonightScreen
                 var rules = CandidateFamily.In(standing, family.Name);
                 var trials = CandidateFamily.Trials(CandidateFamily.In(rows, family.Name), rules.Select(rule => rule.Candidate));
 
-                return FamilyRecords.Family(rules, trades, night, family.CapSessions, trials).Select(view => (family.Name, view));
+                return FamilyRecords.Family(rules, trades, night, family.CapSessions, trials, replays).Select(view => (family.Name, view));
             }),
         ];
     }
@@ -518,9 +521,10 @@ public static partial class TonightScreen
     public static IReadOnlyList<FamilyRecordRow> FamilyRecordRows(
         IReadOnlyList<CandidateRow> register,
         IReadOnlyList<FamilyTradeRow> trades,
-        DateOnly night) =>
+        DateOnly night,
+        IReadOnlyList<FamilyReplayRow>? replays = null) =>
     [
-        .. FamilyRecordViews(register, trades, night)
+        .. FamilyRecordViews(register, trades, night, replays)
             .OrderBy(record => SetupFamilies.PlaceOf(record.Family))
             .ThenBy(record => record.View.Live ? 0 : 1)
             .ThenBy(record => record.View.Candidate, StringComparer.Ordinal)
@@ -535,7 +539,9 @@ public static partial class TonightScreen
                 record.View.Blocks,
                 record.View.NextLook,
                 record.View.Level,
-                RecordWords(record.View))),
+                RecordWords(record.View),
+                record.View.First,
+                record.View.Restarted)),
     ];
 
     // A registered rule's record in words: its trades, the decided ones and their edge, and the whole blocks

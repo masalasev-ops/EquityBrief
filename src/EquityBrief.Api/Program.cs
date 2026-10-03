@@ -1462,8 +1462,9 @@ app.MapGet("/screens/run/{night?}", async (
                     await read.FamilyPicksAsync(dated),
                     PicksScreen.Cells(await read.PicksAsync(dated), dated),
                     await read.RegisteredCandidatesAsync(),
-                    await read.FamilyTradesAsync(dated)),
-            familyRecords: TonightScreen.FamilyRecordRows(await read.RegisteredCandidatesAsync(), await read.FamilyTradesAsync(dated), dated),
+                    await read.FamilyTradesAsync(dated),
+                    await read.FamilyReplaysAsync()),
+            familyRecords: TonightScreen.FamilyRecordRows(await read.RegisteredCandidatesAsync(), await read.FamilyTradesAsync(dated), dated, await read.FamilyReplaysAsync()),
             storeCopy: RunScreen.StoreCopy(await read.StoreBackupsAsync(), store.DataRoot)),
         "text/html; charset=utf-8");
 });

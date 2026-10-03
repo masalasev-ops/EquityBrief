@@ -1,0 +1,9 @@
+# The remedy of 14.1 (a family rule's record read by its name and guarded by a replay), as its PROGRESS entry prints
+# it: the merge moves the breakout's and the drift's evaluator versions, the family evaluator now reading a night's
+# inputs as of any night it is handed, so the sixteen rules the market switches' registration of 2026-10-03 wrote
+# would be skipped and named as failures on the night until they are registered again. Registering the moved rules
+# again first replays each over every night the store holds since its first registration, 2026-10-02, and prints a
+# line a rule: where every trade the replay keeps is the one its record stored, the rule's record carries on from
+# 2026-10-02; where one is not, it restarts from this registration and the line names the first trade that differed.
+# No pullback rule and no filter version moves. Run after the merge and before the night, when no night is running.
+register --moved --evidence "14.1: the family evaluator reads a night's inputs as of any night it is handed, which moves the breakout's and the drift's evaluators; each rule is replayed over the nights since its first registration before it is registered again"

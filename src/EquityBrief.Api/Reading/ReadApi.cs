@@ -245,7 +245,8 @@ public sealed record CandidateRow(
     string? Retires,
     DateTimeOffset RegisteredAt,
     string Parameters = "{}",
-    string? Evidence = null);
+    string? Evidence = null,
+    string EvaluatorVersion = "");
 
 // One name-night a candidate fired on, with what its setup came to.
 //
@@ -1506,10 +1507,13 @@ public sealed class ReadApi : IComponent
     // The candidate register, for the run page's count and its divisor. The
     // columns the region draws from and no others.
     const string RegisteredCandidates = @"
-        SELECT id, candidate, evaluator, event, retires, registered_at, parameters, evidence
+        SELECT id, candidate, evaluator, event, retires, registered_at, parameters, evidence, evaluator_version
         FROM candidate_register
         ORDER BY id;
     ";
+
+    // Every replay of a family rule, oldest first, which where each rule's record counts from is read off.
+    const string FamilyReplays = "SELECT outcome, detail, started_at FROM run_log WHERE stage LIKE $stages ORDER BY rowid;";
 
     // Every name-night a candidate fired on, with what the setup listed that night came to, the
     // bar its own plan set and the bar the calibration set for it.
@@ -4309,7 +4313,35 @@ public sealed class ReadApi : IComponent
                     CultureInfo.InvariantCulture,
                     DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal),
                 reader.IsDBNull(6) ? "{}" : reader.GetString(6),
-                reader.IsDBNull(7) ? null : reader.GetString(7)));
+                reader.IsDBNull(7) ? null : reader.GetString(7),
+                reader.GetString(8)));
+        }
+
+        return rows;
+    }
+
+    // Every replay of a family rule the run log holds, each read back as where the rule's record counts from.
+    // see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
+    public async Task<IReadOnlyList<EquityBrief.Core.Candidates.FamilyReplayRow>> FamilyReplaysAsync()
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = FamilyReplays;
+        command.Parameters.AddWithValue("$stages", EquityBrief.Core.Candidates.FamilyRecords.ReplayStages);
+
+        var rows = new List<EquityBrief.Core.Candidates.FamilyReplayRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            var at = DateTimeOffset.ParseExact(reader.GetString(2), "yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal);
+
+            if (EquityBrief.Core.Candidates.FamilyRecords.ReplayOf(reader.GetString(0), reader.IsDBNull(1) ? null : reader.GetString(1), at) is { } row)
+            {
+                rows.Add(row);
+            }
         }
 
         return rows;

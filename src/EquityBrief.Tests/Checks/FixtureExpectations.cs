@@ -82,6 +82,8 @@ public partial class FixtureExpectations
             .. StoreCopyClaims,
             // The market switches, on the operator's ruling of 2026-10-03: section 17's row and section 18's.
             .. MarketSwitchClaims,
+            // 14.1, a family rule's record guarded by a replay: section 18's row for a replay finding a trade differing.
+            .. FamilyReplayClaims,
 
             // 12.6's correction, the model profiles: section 17's profiles over the shipped settings and the
             // fixture's own models file, and the half of section 18's row about a key the secrets file does not

@@ -1,4 +1,5 @@
 using EquityBrief.Core.Time;
+using EquityBrief.Worker.Families;
 using Microsoft.Data.Sqlite;
 
 namespace EquityBrief.Worker.Candidates;
@@ -41,7 +42,7 @@ public static class RegisterVerb
 
     // The flag that registers a new setup family again whole at one instant, naming the family, on the evidence
     // given, which is how a rule joins it once its freeze stands.
-    // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+    // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
     public const string FamilyAgain = "--family-again";
 
     public static IReadOnlyList<VerbForm> Forms { get; } =
@@ -74,11 +75,12 @@ public static class RegisterVerb
         }
 
         var registrar = new CandidateRegistrar(clock, databaseFile);
+        var replay = new FamilyReplay(clock, databaseFile);
         var runId = RunIdAt(clock.UtcNow);
 
         try
         {
-            return await FormAsync(args, registrar, runId, output, error);
+            return await FormAsync(args, registrar, replay, runId, output, error);
         }
         catch (SqliteException collided) when (collided.SqliteErrorCode == 19 && collided.Message.Contains("run_log", StringComparison.Ordinal))
         {
@@ -92,6 +94,7 @@ public static class RegisterVerb
     static async Task<int> FormAsync(
         string[] args,
         CandidateRegistrar registrar,
+        FamilyReplay replay,
         string runId,
         TextWriter output,
         TextWriter error)
@@ -115,8 +118,12 @@ public static class RegisterVerb
             return await Said(await registrar.RegisterTheFamilyAsync(runId), output, error);
         }
 
+        // A family rule registered again is replayed first, so its record carries on where every trade is reproduced.
+        // see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
         if (form.Flag == Moved)
         {
+            await ReplayedAsync(await replay.MovedAsync(), output);
+
             return await Said(await registrar.RegisterMovedAgainAsync(Given("--evidence"), runId), output, error);
         }
 
@@ -127,6 +134,8 @@ public static class RegisterVerb
 
         if (form.Flag == FamilyAgain)
         {
+            await ReplayedAsync(await replay.FamilyAsync(Given(FamilyAgain)), output);
+
             return await Said(await registrar.RegisterTheSetupFamilyAgainAsync(Given(FamilyAgain), Given("--evidence"), runId), output, error);
         }
 
@@ -157,6 +166,17 @@ public static class RegisterVerb
             await registrar.RegisterAsync(Given("--candidate"), Given("--rule"), Given("--test"), Given("--evaluator"), parameters, runId),
             output,
             error);
+    }
+
+    // What each replayed rule's record does, a line a rule.
+    static async Task ReplayedAsync(IReadOnlyList<FamilyReplayed> replayed, TextWriter output)
+    {
+        foreach (var one in replayed)
+        {
+            await output.WriteLineAsync(one.Reproduced
+                ? $"replay: '{one.Candidate}' carries its record on: {one.Said}"
+                : $"replay: '{one.Candidate}' restarts its record at this registration: {one.Said}");
+        }
     }
 
     static async Task<int> RefusedAsync(CandidateRegistrar registrar, string runId, string refusal, TextWriter error)

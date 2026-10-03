@@ -26,6 +26,13 @@ public partial class ReadSurface
         CheckReach.Key("15.10 Run", "The setup families, the level its looks are read at"),
     ];
 
+    // 14.1's parts of the region: where each rule's record counts from, and why one restarted.
+    internal static readonly string[] FamilyReplayPageClaims =
+    [
+        CheckReach.Key("15.10 Run", "The setup families, beside each rule the session its record counts from"),
+        CheckReach.Key("15.10 Run", "The setup families, where a replay at its registration found a trade differing, that it restarted there and why"),
+    ];
+
     static readonly string LiveBreakout = TheSetupFamilies.Breakouts[0].Candidate;
     static readonly string ProvisionalBreakout = TheSetupFamilies.Breakouts[^2].Candidate;
     static readonly string NeighbourBreakout = TheSetupFamilies.Breakouts[1].Candidate;
@@ -89,17 +96,18 @@ public partial class ReadSurface
         // breakouts' two, the neighbour retired unread counted in none, and the drift's one.
         Assert.Equal(
             [
-                $"<tr data-family=\"breakout\" data-rule=\"{LiveBreakout}\" data-live=\"true\" data-trades=\"5\" data-decided=\"2\" data-edge=\"0.1\" data-blocks=\"1\" data-look=\"8\" data-level=\"0.025\">",
-                $"<tr data-family=\"breakout\" data-rule=\"{ProvisionalBreakout}\" data-live=\"false\" data-trades=\"2\" data-decided=\"1\" data-edge=\"0.5\" data-blocks=\"1\" data-look=\"8\" data-level=\"0.025\">",
-                $"<tr data-family=\"drift\" data-rule=\"{LiveDrift}\" data-live=\"true\" data-trades=\"0\" data-decided=\"0\" data-edge=\"none\" data-blocks=\"0\" data-look=\"8\" data-level=\"0.05\">",
+                $"<tr data-family=\"breakout\" data-rule=\"{LiveBreakout}\" data-live=\"true\" data-trades=\"5\" data-decided=\"2\" data-edge=\"0.1\" data-blocks=\"1\" data-look=\"8\" data-level=\"0.025\" data-from=\"2026-01-02\" data-restarted=\"false\">",
+                $"<tr data-family=\"breakout\" data-rule=\"{ProvisionalBreakout}\" data-live=\"false\" data-trades=\"2\" data-decided=\"1\" data-edge=\"0.5\" data-blocks=\"1\" data-look=\"8\" data-level=\"0.025\" data-from=\"2026-01-02\" data-restarted=\"false\">",
+                $"<tr data-family=\"drift\" data-rule=\"{LiveDrift}\" data-live=\"true\" data-trades=\"0\" data-decided=\"0\" data-edge=\"none\" data-blocks=\"0\" data-look=\"8\" data-level=\"0.05\" data-from=\"2026-01-02\" data-restarted=\"false\">",
             ],
             rows.Select(row => row[..(row.IndexOf('>') + 1)]));
         Assert.DoesNotContain(NeighbourBreakout, records, StringComparison.Ordinal);
 
-        // The cells a reader reads: the rule named and marked live, the trades, the decided ones, the edge to
-        // the thousandth, the whole blocks against the eight the first look reads, and the level.
+        // The cells a reader reads: the rule named and marked live with the session its record counts from, the
+        // trades, the decided ones, the edge to the thousandth, the whole blocks against the eight the first look
+        // reads, and the level.
         Assert.Contains(
-            $"<td>{LiveBreakout} <b>live</b></td><td class=\"r num\">5</td><td class=\"r num\">2</td><td class=\"r num\">0.100</td><td class=\"r num\">1 of 8</td><td class=\"r num\">0.025</td>",
+            $"<td>{LiveBreakout} <b>live</b><span class=\"record-from\">its record counts from 2026-01-02</span></td><td class=\"r num\">5</td><td class=\"r num\">2</td><td class=\"r num\">0.100</td><td class=\"r num\">1 of 8</td><td class=\"r num\">0.025</td>",
             rows[0],
             StringComparison.Ordinal);
         Assert.Contains("<td class=\"r num\">none yet</td><td class=\"r num\">0 of 8</td><td class=\"r num\">0.05</td>", rows[2], StringComparison.Ordinal);
@@ -165,11 +173,13 @@ public partial class ReadSurface
     }
 
     // A setup family rule registered again under its name, as a code change that moves its family's evaluator
-    // registers every rule of the family again, counts its record from the first session of the registration it
-    // stands by: the market switches' remedy of 2026-10-03 restarted the breakouts' and the drift's records so.
-    // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+    // registers every rule of the family again, counts its record from its first registration where the replay run
+    // under the version it stands at reproduced every trade, and from the registration it stands by where that
+    // replay found a trade that differs or where none was run under its version, saying why it restarted.
+    // see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
+    // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
     [Fact]
-    public void ARuleRegisteredAgainCountsItsRecordFromTheRegistrationItStandsBy()
+    public void ARuleRegisteredAgainCountsItsRecordFromItsFirstRegistrationWhereAReplayCarriedItAndFromItsRegistrationOtherwise()
     {
         // The breakouts' live rule registered on Friday 2026-01-02 with one trade, kept on 2026-01-05 and decided in
         // its first block of 63 sessions, which is whole by 2026-09-30. Registered once, the trade is in that block.
@@ -178,25 +188,90 @@ public partial class ReadSurface
         var again = new DateTimeOffset(2026, 4, 15, 12, 0, 0, TimeSpan.Zero);
         FamilyTradeRow[] trades = [new(LiveBreakout, new DateOnly(2026, 1, 5), new DateOnly(2026, 1, 20), 1.5, 0.5)];
 
-        EquityBrief.Api.Reading.CandidateRow Registered(long id, DateTimeOffset at) => new(id, LiveBreakout, BreakoutCandidate.EvaluatorName, CandidateFamily.Registered, null, at);
+        EquityBrief.Api.Reading.CandidateRow Registered(long id, DateTimeOffset at, string version) =>
+            new(id, LiveBreakout, BreakoutCandidate.EvaluatorName, CandidateFamily.Registered, null, at, EvaluatorVersion: version);
 
-        FamilyRecordView Read(IReadOnlyList<EquityBrief.Api.Reading.CandidateRow> register) =>
-            Assert.Single(EquityBrief.Api.Reading.TonightScreen.FamilyRecordViews(register, trades, night), view => view.View.Candidate == LiveBreakout).View;
+        FamilyRecordView Read(IReadOnlyList<EquityBrief.Api.Reading.CandidateRow> register, params FamilyReplayRow[] replays) =>
+            Assert.Single(EquityBrief.Api.Reading.TonightScreen.FamilyRecordViews(register, trades, night, replays), view => view.View.Candidate == LiveBreakout).View;
 
-        var once = Read([Registered(1, first)]);
-
-        Assert.Equal((new DateOnly(2026, 1, 2), 1, 1, 1), (once.First, once.Trades, once.Decided, once.Blocks));
-
-        // Retired and registered again under its name on Wednesday 2026-04-15: its record counts from that session,
-        // so the trade stays among its trades and its decided ones and leaves its blocks.
-        var restarted = Read(
+        EquityBrief.Api.Reading.CandidateRow[] registeredAgain =
         [
-            Registered(1, first),
+            Registered(1, first, "v1"),
             new(2, LiveBreakout, BreakoutCandidate.EvaluatorName, CandidateFamily.Retired, LiveBreakout, again, Evidence: "a code change moved its evaluator"),
-            Registered(3, again),
-        ]);
+            Registered(3, again, "v2"),
+        ];
 
-        Assert.Equal((new DateOnly(2026, 4, 15), 1, 1, 0), (restarted.First, restarted.Trades, restarted.Decided, restarted.Blocks));
+        var once = Read([Registered(1, first, "v1")]);
+
+        Assert.Equal((new DateOnly(2026, 1, 2), 1, 1, 1, (string?)null), (once.First, once.Trades, once.Decided, once.Blocks, once.Restarted));
+
+        // Retired and registered again under its name on Wednesday 2026-04-15 with no replay under its version: its
+        // record counts from that session, so the trade stays among its trades and its decided ones and leaves its
+        // blocks. A replay under the version it was first registered at is not read.
+        var unreplayed = Read(registeredAgain, new FamilyReplayRow(LiveBreakout, "v1", new DateOnly(2026, 1, 2), true, "reproduced", first.AddDays(1)));
+
+        Assert.Equal((new DateOnly(2026, 4, 15), 1, 1, 0, (string?)null), (unreplayed.First, unreplayed.Trades, unreplayed.Decided, unreplayed.Blocks, unreplayed.Restarted));
+
+        // A replay under the version it stands at that reproduced every trade carries the record on from where the
+        // replay found it counting, its first registration's session, and the trade is back in its block.
+        var carried = Read(registeredAgain, new FamilyReplayRow(LiveBreakout, "v2", new DateOnly(2026, 1, 2), true, "reproduced its 1 trade(s) over 70 night(s) from 2026-01-02", again.AddMinutes(-1)));
+
+        Assert.Equal((new DateOnly(2026, 1, 2), 1, 1, 1, (string?)null), (carried.First, carried.Trades, carried.Decided, carried.Blocks, carried.Restarted));
+
+        // One that found a trade differing restarts it from the registration, with what differed first.
+        const string Differed = "T1 on 2026-01-05 ends on 2026-01-21 at 1.400 in the replay and on 2026-01-20 at 1.500 in the record";
+
+        var restarted = Read(registeredAgain, new FamilyReplayRow(LiveBreakout, "v2", new DateOnly(2026, 1, 2), false, Differed, again.AddMinutes(-1)));
+
+        Assert.Equal((new DateOnly(2026, 4, 15), 1, 1, 0, Differed), (restarted.First, restarted.Trades, restarted.Decided, restarted.Blocks, restarted.Restarted));
+    }
+
+    // The run page states, beside each registered rule, the session its record counts from, and for a rule whose
+    // replay at its registration found a trade differing, that it restarted there and why, read back off the page
+    // over a constructed store holding the replay's own rows on the run log.
+    // see: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
+    [Fact]
+    public async Task TheRunPageStatesWhereEachRulesRecordCountsFromAndWhyOneRestarted()
+    {
+        using var store = await FamilyPagesStore();
+
+        // The live breakout and its provisional variant first registered on Friday 2026-01-02, and both registered
+        // again on Wednesday 2026-04-15, as a change of code registers its family again.
+        RegisteredRule(store, 101, TheSetupFamilies.Breakouts[0], "2026-01-02T12:00:00Z");
+        RegisteredRule(store, 102, TheSetupFamilies.Breakouts[^2], "2026-01-02T12:00:00Z");
+        RegisteredRule(store, 103, TheSetupFamilies.Breakouts[0], "2026-04-15T12:00:00Z", retires: LiveBreakout);
+        RegisteredRule(store, 104, TheSetupFamilies.Breakouts[^2], "2026-04-15T12:00:00Z", retires: ProvisionalBreakout);
+        RegisteredRule(store, 105, TheSetupFamilies.Breakouts[0], "2026-04-15T12:00:00Z");
+        RegisteredRule(store, 106, TheSetupFamilies.Breakouts[^2], "2026-04-15T12:00:00Z");
+
+        // The replay that registration ran, as the replay writes its rows: the live rule reproduced its trades, the
+        // variant kept one the record had not.
+        void Replayed(string candidate, string outcome, string said) =>
+            store.Execute(
+                "INSERT INTO run_log (run_id, stage, started_at, ended_at, outcome, rows_written, model_calls, network_requests, spend, detail) VALUES " +
+                $"('replay-20260415T115900.0000000Z', '{FamilyRecords.ReplayStageOf(candidate)}', '2026-04-15T11:59:00Z', '2026-04-15T11:59:30Z', '{outcome}', 0, 0, 0, '0', " +
+                $"'{FamilyRecords.ReplayDetail(candidate, "v", new DateOnly(2026, 1, 2), 70, 1, 1, said).Replace("'", "''", StringComparison.Ordinal)}');");
+
+        Replayed(LiveBreakout, FamilyRecords.ReplayReproduced, "reproduced its 1 trade(s) over 70 night(s) from 2026-01-02");
+        Replayed(ProvisionalBreakout, FamilyRecords.ReplayDiffers, "the replay keeps T7 on 2026-03-02 where the record keeps none");
+
+        using var host = new Host(store.Root);
+        using var client = host.CreateClient();
+
+        var records = Assert.Single(Blocks(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/run/{TheSwitch}")), "<table class=\"list-table family-records\".*?</table>"));
+        var live = Regex.Match(records, $"<tr data-family=\"breakout\" data-rule=\"{Regex.Escape(LiveBreakout)}\".*?</tr>", RegexOptions.Singleline).Value;
+        var variant = Regex.Match(records, $"<tr data-family=\"breakout\" data-rule=\"{Regex.Escape(ProvisionalBreakout)}\".*?</tr>", RegexOptions.Singleline).Value;
+
+        // The live rule's record carries on from its first registration; the variant's counts from the Wednesday
+        // it was registered again, with the trade the replay kept that the record did not.
+        Assert.Contains("data-from=\"2026-01-02\" data-restarted=\"false\">", live, StringComparison.Ordinal);
+        Assert.Contains("<span class=\"record-from\">its record counts from 2026-01-02</span>", live, StringComparison.Ordinal);
+        Assert.DoesNotContain("record-restarted", live, StringComparison.Ordinal);
+        Assert.Contains("data-from=\"2026-04-15\" data-restarted=\"true\">", variant, StringComparison.Ordinal);
+        Assert.Contains(
+            "<span class=\"record-from\">its record counts from 2026-04-15</span><span class=\"record-restarted\">it restarted at its registration, since the replay keeps T7 on 2026-03-02 where the record keeps none</span>",
+            variant,
+            StringComparison.Ordinal);
     }
 
     [Fact]

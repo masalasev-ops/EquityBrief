@@ -10553,3 +10553,45 @@ Was:
 Now:
 > `read-surface`: "... a drain started while another holds the queue waits for it to end; and an error escaping a drain's put-back or its queue writes one row of its own under a run named for the drain's start with no path a machine roots, work that finishes writing none, the queue page states the newest such row with the time it started and its error while no pass has started after it, and the run page's checklist names it on the night its row fell on, each worked by hand over constructed rows; and each row of tonight's list ..."
 Why: the check reaches what the correction's tests assert.
+### 2026-10-03 - ARCHITECTURE.html - the market switches' decision is cited by the name superseding it
+Authorised by: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
+Was:
+> "(see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it)", in the family evaluator's catalogue row, section 13's paragraph on the ideas' run's market switches and section 17's row for the market switches
+Now:
+> "(see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed)" in each of the three
+Why: 14.1 supersedes the decision with one whose records are read by the replay, and a citation of a superseded name is refused by `no-superseded-citation`.
+### 2026-10-03 - ARCHITECTURE.html - a family registered again reads its rules' records by the replay
+Authorised by: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
+Was:
+> "Adding it moves both families' evaluators, so each family is registered again whole at one instant, its seven rules under their names and settings and the switched variant beside them, and each rule's record counts from the first session after that registration."
+Now:
+> "Adding it moves both families' evaluators, so each family is registered again whole at one instant, its seven rules under their names and settings and the switched variant beside them. Where each rule's record counts from is read by the replay a registration runs before it writes: where the replay reproduces every trade the rule's record stored, its record carries on from where it began, and otherwise it counts from the first session after the registration (see: ...)."
+Why: the operator's ruling of 2026-10-03 on the phase 12 and 13 sign-off's addendum item 3, a family rule's record read by its name with a replay guarding it.
+### 2026-10-03 - ARCHITECTURE.html - the family replay's catalogue and matrix rows, the run page's parts and section 18's row
+Authorised by: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
+Was:
+> the setup families' row ended "... and the level its looks are read at; that level is its setup's own share over its own rules (see: ...) (see: ...)"; no catalogue or matrix row named a family replay, and section 18 had no row for a replay finding a trade differing
+Now:
+> the row adds "; beside each rule the session its record counts from; where a replay at its registration found a trade differing, that it restarted there and why (see: ...)"; the catalogue and the matrix gain a row for the family replay, and section 18 a row "A replay at a family rule's registration finds a trade the rule would keep differently"
+Why: the replay is a component of its own, and what it decides is drawn beside each rule and its failure behaviour stated.
+### 2026-10-03 - RUNBOOK.md - a family registered again replays its rules before it writes
+Authorised by: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
+Was:
+> "A setup family rule's record counts from the first session on or after the day its standing registration was written, so a rule registered again starts its record on the first session after the command; the trades it kept before stay stored, and the PROGRESS entry that owes the command states what that restarts." and "A candidate registered again this way starts its record again, as any new registration does."; the market switches' decision cited by its superseded name
+Now:
+> the command replays each standing rule of the family first and prints a line a rule saying whether its record carries on or restarts and why, a rule that carries on counting from where it began, each replay one row a rule under a run of its own named `replay-`; `register --moved` replays a setup family rule among the candidates it registers again the same way; the decision cited by the name superseding it
+Why: the operator's ruling of 2026-10-03 on the addendum's item 3.
+### 2026-10-03 - SCHEMA.md - the run log holds a replay's rows
+Authorised by: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
+Was:
+> no paragraph on a replay's rows
+Now:
+> "**A replay of a family rule is one row a rule under a run of its own.** ..." naming the run's prefix, the stage `family-replay:` with the rule's name, the two outcomes and the detail's fields
+Why: the run page reads where each rule's record counts from off these rows.
+### 2026-10-03 - .claude/rules/checks.md - fixture-expectations and read-surface reach the replay
+Authorised by: A family rule registered again keeps its record from its first registration where a replay of its stored nights reproduces every trade, and restarts at the change otherwise
+Was:
+> `fixture-expectations`: "... refused where none stands and for a family no freeze is written for |"; `read-surface`: "... and that none is recorded where no copy's row is |"
+Now:
+> `fixture-expectations` adds the replay over a store whose night the evaluator and the recorder ran and to which a later session's bars came after, reproducing, restarting with the trade named, and a rule registered once read from its registration; `read-surface` adds the run page stating beside each rule where its record counts from and why one restarted
+Why: the checks reach what 14.1's tests assert.
