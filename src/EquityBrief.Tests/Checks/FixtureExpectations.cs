@@ -80,6 +80,8 @@ public partial class FixtureExpectations
             .. IdeasClaims,
             // The store's copy, on the operator's ruling of 2026-10-02: section 17's row and section 18's two.
             .. StoreCopyClaims,
+            // The market switches, on the operator's ruling of 2026-10-03: section 17's row and section 18's.
+            .. MarketSwitchClaims,
 
             // 12.6's correction, the model profiles: section 17's profiles over the shipped settings and the
             // fixture's own models file, and the half of section 18's row about a key the secrets file does not

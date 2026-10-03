@@ -34,6 +34,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 |---|---|---|---|
 | `membership` | MembershipLoader | MembershipLoader | none |
 | `bar` | Backfill, BarFetcher, CorporateActionChecker | none | BarFetcher, CorporateActionChecker |
+| `market_bar` | MarketSeriesFetcher | none | none |
 | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
 | `pulled_bar` | HistoryPull | none | HistoryPull |
 | `pulled_earnings` | HistoryPull | none | HistoryPull |
@@ -166,6 +167,20 @@ Primary key: `ticker`, `session_date`.
 It sits last because migration 4 adds it to a table migration 3 created, and `bar-append-only` forbids a migration dropping a bar table to reorder its columns.
 
 One year retained. The fetcher drops sessions older than the retention window on the night they fall out of it, and is declared above as a deleter of this table because it does.
+
+### market_bar
+Grain: one row per series per session a night stored.
+
+| Column | Type | Notes |
+|---|---|---|
+| `series` | TEXT | `GSPC`, the index itself, or `VIX` |
+| `session_date` | TEXT | date |
+| `open`, `high`, `low`, `close` | TEXT | decimal in code, as the provider sent them on the night that stored the session |
+| `run_id` | TEXT | the run id of the night that first stored the row |
+
+Primary key: `series`, `session_date`.
+
+**The index's and the VIX's daily series as the night fetches them, read by the family evaluator alone** (see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars). The fetch step asks the provider once a series over the 400 days before the night's session, under its index exchange rather than a listing, and inserts each session no night has stored; a session held keeps its first row, so the table is insert only and kept whole, two rows a session. A series the provider refuses or sends nothing for stores nothing that night and stops nothing. The family evaluator reads both series' closes on the store's own sessions to the night for the registered rules whose market switch reads them, and nothing else reads the table: it is apart from `bar` because neither series is a member's, and apart from `pulled_market_bar` because a night reads it.
 
 ### calendar
 Grain: one row per ticker, event date and kind.

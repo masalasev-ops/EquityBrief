@@ -8,20 +8,30 @@ namespace EquityBrief.Worker.Candidates;
 // The new families' freezes, written down rather than typed at the command line: the breakouts' and the
 // earnings drift's live rule at the starting point its sweep proposed and the operator approved, the
 // proposal's one-step neighbours on its sweep's grid as its variants, read off the grid so they are the ones
-// its report listed, and the two variants the operator added, the breakout's provisional setting and the
-// drift's proposal with its stop no closer than one typical move. Each is judged by the test its sweep's
-// report fixed before the freeze. The sector leaders are no family and freeze as the pullback's variant.
+// its report listed, the two variants the operator added, the breakout's provisional setting and the
+// drift's proposal with its stop no closer than one typical move, and the market switch the operator added to
+// each from the ideas' run on the frozen families, the breakout listing only on nights the index closes above its
+// 200-session average and the drift only on nights the VIX closes under its close ten sessions before, each the
+// live rule with that switch and nothing else moved. Each is judged by the test its sweep's report fixed before
+// the freeze. The sector leaders are no family and freeze as the pullback's variant.
 // see: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
 // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
+// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
 public static class TheSetupFamilies
 {
+    // How a registered rule's market switches are read, which both families' words end on.
+    const string SwitchWords =
+        "; where a market switch is stated, only on nights the index closes above the average of the stated count of " +
+        "its closes ending on the night, or the VIX closes under its close the stated count of sessions before, each " +
+        "read on the store's sessions and closed on a night it cannot be read";
+
     public const string BreakoutWords =
         "the breakout family's gates at every setting stated: a close above the highest high of the stated sessions before " +
         "it, volume at least the stated multiple of its fifty-session average, the mean daily range of the twenty sessions " +
         "before tonight no wider than the stated share of the twenty before them, and the stop the stated typical moves " +
         "beneath the close, trailing the highest close since and never lowered, with no target and the family's cap; a " +
         "member firing where every gate passes and no exclusion applies, the rule's own list at most five a night by " +
-        "volume against its average, with one open trade a stock";
+        "volume against its average, with one open trade a stock" + SwitchWords;
 
     public const string DriftWords =
         "the earnings drift family's gates at every setting stated: a print reacting inside the stated sessions, a surprise " +
@@ -30,7 +40,13 @@ public static class TheSetupFamilies
         "stated floor's typical moves beneath where one is stated and the low sits nearer, and the target the nearer of the " +
         "lowest band two typical moves above and the stated multiple of the risk, with the family's cap; a member firing " +
         "where every gate passes and no exclusion applies, the rule's own list at most five a night by the surprise, with " +
-        "one open trade a stock";
+        "one open trade a stock" + SwitchWords;
+
+    // The switch each family's last variant holds, the setting the ideas' run read it at: the index's 200-session
+    // average for the breakout, and the VIX's close ten sessions before for the drift.
+    public static MarketSwitches BreakoutSwitch { get; } = new(SweepIdeas.SlowAverage, 0);
+
+    public static MarketSwitches DriftSwitch { get; } = new(0, SweepIdeas.Lookback);
 
     public static IReadOnlyList<string> Names { get; } = [Core.Families.BreakoutRule.Name, Core.Families.DriftRule.Name];
 
@@ -54,10 +70,10 @@ public static class TheSetupFamilies
             .Select(values => new BreakoutSettings((int)values[0], values[1], values[2], values[3]))
             .Append(Core.Families.BreakoutRule.Provisional);
 
-        Registration Of(BreakoutSettings settings, bool isLive) =>
-            new(Named(isLive, Words(settings)), BreakoutWords, FamilySweepReport.Test, BreakoutCandidate.EvaluatorName, BreakoutCandidate.ParametersOf(settings));
+        Registration Of(BreakoutSettings settings, bool isLive, MarketSwitches switches) =>
+            new(Named(isLive, Words(settings) + switches.Words), BreakoutWords, FamilySweepReport.Test, BreakoutCandidate.EvaluatorName, BreakoutCandidate.ParametersOf(settings, switches));
 
-        return [Of(live, true), .. variants.Select(settings => Of(settings, false))];
+        return [Of(live, true, MarketSwitches.None), .. variants.Select(settings => Of(settings, false, MarketSwitches.None)), Of(live, false, BreakoutSwitch)];
     }
 
     static IReadOnlyList<Registration> DriftsAtTheFreeze()
@@ -68,10 +84,10 @@ public static class TheSetupFamilies
             .Select(values => new DriftSettings((int)values[0], values[1], values[2], values[3]))
             .Append(live with { StopFloorMoves = Core.Families.DriftRule.VariantStopFloorMoves });
 
-        Registration Of(DriftSettings settings, bool isLive) =>
-            new(Named(isLive, Words(settings)), DriftWords, FamilySweepReport.Test, DriftCandidate.EvaluatorName, DriftCandidate.ParametersOf(settings));
+        Registration Of(DriftSettings settings, bool isLive, MarketSwitches switches) =>
+            new(Named(isLive, Words(settings) + switches.Words), DriftWords, FamilySweepReport.Test, DriftCandidate.EvaluatorName, DriftCandidate.ParametersOf(settings, switches));
 
-        return [Of(live, true), .. variants.Select(settings => Of(settings, false))];
+        return [Of(live, true, MarketSwitches.None), .. variants.Select(settings => Of(settings, false, MarketSwitches.None)), Of(live, false, DriftSwitch)];
     }
 
     // The grid's settings one step along one dial from the live values, each as its dials' values, the live

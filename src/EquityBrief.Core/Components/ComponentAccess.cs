@@ -25,6 +25,7 @@ public enum Store
 {
     Membership,
     Bar,
+    MarketBar,
     Calendar,
     PulledBar,
     PulledEarnings,

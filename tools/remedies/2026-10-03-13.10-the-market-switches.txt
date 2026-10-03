@@ -1,0 +1,12 @@
+# The remedy of the 13.10 ruling of 2026-10-03 (the breakout's and the earnings drift's market switches), as its
+# PROGRESS entry prints it: the merge moves the breakout's and the drift's evaluator versions, so the fourteen rules
+# the freezes registered would be skipped and named as failures on the night until they are registered again.
+# Registering each family again whole retires its seven and registers eight at one instant: the seven under their
+# names and settings, each stating no switch, and the eighth the live rule listing only on nights its switch is open.
+# What restarts: each rule's record counts from the first session after this registration, 2026-10-05, in place of
+# 2026-10-02, so the one night the freezes' rules were scored on leaves their blocks; the breakout's seven kept no
+# trade on it, and two of the drift's seven kept one each, which stay stored and leave their rules' blocks. Each
+# family's rules are tested at 0.05 over eight in place of 0.05 over seven. No pullback rule and no filter version
+# moves. Run after the merge and before the night, when no night is running.
+register --family-again breakout --evidence "the operator's ruling of 2026-10-03: the breakout listing only on nights the index closes above its 200-session average registered as a variant, the ideas' run on the frozen breakouts having read it at an edge of 0.100 against 0.082, and of 0.047 against 0.031 without the five largest results"
+register --family-again drift --evidence "the operator's ruling of 2026-10-03: the earnings drift listing only on nights the VIX closes under its close ten sessions before registered as a variant, the ideas' run on the frozen drift having read it at an edge of 0.221 against 0.121, and of 0.159 against 0.094 without the five largest results"

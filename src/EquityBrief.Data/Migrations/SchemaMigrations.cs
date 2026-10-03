@@ -677,6 +677,7 @@ public static class SchemaMigrations
         new Migration(54, "create family_result", CreateFamilyResult),
         new Migration(55, "create pulled_market_bar", CreatePulledMarketBar),
         new Migration(56, "add family_result.shadow and create family_trade", AddFamilyShadowAndTrades),
+        new Migration(57, "create market_bar", CreateMarketBar),
     ];
 
     // One member's answer under one setup family on one night, for every family but the pullback, whose
@@ -1217,6 +1218,23 @@ public static class SchemaMigrations
             low          TEXT NOT NULL,
             close        TEXT NOT NULL,
             pull         TEXT NOT NULL,
+            PRIMARY KEY (series, session_date)
+        ) STRICT;
+    ";
+
+    // The index's and the VIX's daily series as the night fetches them, one row a series and session, the prices
+    // as the provider sent them, kept as text, and the night that first stored the row. Insert only: a session a
+    // night already holds keeps that night's row, and the table is kept whole.
+    // see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+    const string CreateMarketBar = @"
+        CREATE TABLE market_bar (
+            series       TEXT NOT NULL,
+            session_date TEXT NOT NULL,
+            open         TEXT NOT NULL,
+            high         TEXT NOT NULL,
+            low          TEXT NOT NULL,
+            close        TEXT NOT NULL,
+            run_id       TEXT NOT NULL,
             PRIMARY KEY (series, session_date)
         ) STRICT;
     ";

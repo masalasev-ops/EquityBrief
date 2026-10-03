@@ -21,6 +21,10 @@ namespace EquityBrief.Worker;
 // because the night reaches it, so its count is the night's and the allowance it is stopped at is the
 // night's own.
 // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+//
+// The eighth is the index's and the VIX's daily series, one request a series a night whatever the index's size,
+// which the registered family rules' market switches read.
+// see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
 public sealed record NightFeeds(
     IIndexMembershipFeed Membership,
     IHistoricalBarFeed Historical,
@@ -28,13 +32,14 @@ public sealed record NightFeeds(
     ICorporateActionFeed Corporate,
     IEarningsCalendarFeed Calendar,
     INewsFeed News,
-    IFundamentalsFeed Fundamentals)
+    IFundamentalsFeed Fundamentals,
+    IMarketSeriesFeed Market)
 {
     // What the night cost, read off the feeds rather than stated by the caller.
     // A caller that wrote the figure would be recording its own intention.
     public int Requests =>
         Membership.Requests + Historical.Requests + Bulk.Requests + Corporate.Requests
-        + Calendar.Requests + News.Requests + Fundamentals.Requests;
+        + Calendar.Requests + News.Requests + Fundamentals.Requests + Market.Requests;
 
     // The same night in the units the provider bills in, which is the unit
     // `RUNBOOK.md` states the allowance in. Composed from the roles rather than
@@ -47,7 +52,8 @@ public sealed record NightFeeds(
         + (Corporate.Requests * ProviderWeights.BulkEndOfDay)
         + (Calendar.Requests * ProviderWeights.EarningsCalendar)
         + (News.Requests * ProviderWeights.News)
-        + (Fundamentals.Requests * ProviderWeights.Fundamentals);
+        + (Fundamentals.Requests * ProviderWeights.Fundamentals)
+        + (Market.Requests * ProviderWeights.HistoricalPerTicker);
 
     public const string ConstituentsFile = "index-constituents.json";
 
@@ -59,7 +65,8 @@ public sealed record NightFeeds(
             RecordedCorporateActionFeed.FromFolder(folder),
             RecordedEarningsCalendarFeed.FromFolder(folder),
             RecordedNewsFeed.FromFolder(folder),
-            RecordedFundamentalsFeed.FromFolder(folder));
+            RecordedFundamentalsFeed.FromFolder(folder),
+            RecordedMarketSeriesFeed.FromFolder(folder));
 
     // The live bulk feed, from the two settings, or a refusal naming the one
     // that is missing.
@@ -86,7 +93,8 @@ public sealed record NightFeeds(
             EodhdCorporateActionFeed.Live(address, key),
             EodhdEarningsCalendarFeed.Live(address, key),
             EodhdNewsFeed.Live(address, key),
-            EodhdFundamentalsFeed.Live(address, key));
+            EodhdFundamentalsFeed.Live(address, key),
+            EodhdMarketSeriesFeed.Live(address, key));
     }
 
     // A blank base address falls back and a blank key does not. The address has
@@ -155,5 +163,6 @@ public sealed record NightFeeds(
         || Corporate is not RecordedCorporateActionFeed
         || Calendar is not RecordedEarningsCalendarFeed
         || News is not RecordedNewsFeed
-        || Fundamentals is not RecordedFundamentalsFeed;
+        || Fundamentals is not RecordedFundamentalsFeed
+        || Market is not RecordedMarketSeriesFeed;
 }

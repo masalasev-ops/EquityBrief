@@ -383,6 +383,100 @@ public sealed class CandidateRegistrar : IComponent
         return await CorrectTheFamilyAsync(TheSwingFamily.For(held.Version, held.Settings), evidence, (_, _, _) => Task.CompletedTask, runId, cancellation);
     }
 
+    // A new setup family registered again whole at one instant: every standing rule of the family retired on the
+    // evidence given and the family the code writes for it registered, a rule added to it among them, or none of it.
+    // At one instant for the reason a family registers at one, since each rule's level is divided across the rules
+    // the first night evaluated beside it. Refused where the code writes no family by the name given, and where no
+    // rule of the family stands, since there is then no family to register again and its freeze registers it.
+    // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
+    public async Task<RegistrationOutcome> RegisterTheSetupFamilyAgainAsync(string family, string evidence, string runId, CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellation);
+
+        async Task<RegistrationOutcome> RefuseAsync(string said)
+        {
+            await transaction.RollbackAsync(cancellation);
+            await RecordAsync(connection, runId, startedAt, Refused, 0, said, cancellation);
+
+            return new RegistrationOutcome(Refused, null, said);
+        }
+
+        if (TheSetupFamilies.For(family) is not { } written)
+        {
+            return await RefuseAsync(
+                $"no freeze is written for a family named '{family}', so it was not registered again; the families a freeze is written for are {string.Join(", ", TheSetupFamilies.Names)}.");
+        }
+
+        var rows = await RowsAsync(connection, cancellation);
+        var standing = CandidateFamily.In(CandidateFamily.Standing(rows, startedAt), family).ToArray();
+
+        if (standing.Length == 0)
+        {
+            return await RefuseAsync($"no rule of the {family} family stands registered, so there is no family to register again and none was written; its freeze registers it.");
+        }
+
+        var taken = rows.ToList();
+
+        foreach (var row in standing)
+        {
+            if (RetirementRefusal(taken, row.Candidate, evidence, startedAt, ShortlistSeries.Reasons) is { } refusal)
+            {
+                return await RefuseAsync($"'{row.Candidate}' was refused, so none of the {standing.Length + written.Count} was written: {refusal}");
+            }
+
+            taken.Add(row with { Id = taken.Max(one => one.Id) + 1, Event = Retired, Retires = row.Candidate, RegisteredAt = startedAt, Evidence = evidence });
+        }
+
+        foreach (var one in written)
+        {
+            if ((Unstated(one.Rule, one.Test) ?? Refusal(taken, one.Candidate, one.Evaluator, one.Parameters, startedAt)) is { } refusal)
+            {
+                return await RefuseAsync($"'{one.Candidate}' was refused, so none of the {standing.Length + written.Count} was written: {refusal}");
+            }
+
+            taken.Add(new RegisterRow(
+                taken.Max(row => row.Id) + 1,
+                one.Candidate,
+                one.Rule,
+                one.Test,
+                one.Evaluator,
+                CandidateEvaluator.Write(one.Parameters),
+                CandidateEvaluators.Find(one.Evaluator)!.Version,
+                Registered,
+                null,
+                startedAt,
+                null));
+        }
+
+        var appended = rows;
+
+        foreach (var row in taken.Skip(rows.Count))
+        {
+            var id = await AppendAsync(
+                connection, appended, row.Candidate, row.Rule, row.Test, row.Evaluator, row.Parameters,
+                row.EvaluatorVersion, row.Event, row.Retires, startedAt, row.Evidence, cancellation);
+
+            appended = [.. appended, row with { Id = id }];
+        }
+
+        var detail = FormattableString.Invariant(
+            $"retired {standing.Length} and registered {written.Count} at one instant, family of {CandidateFamily.In(CandidateFamily.Standing(appended, startedAt), family).Count} of {CandidateFamily.Maximum}: retired ")
+            + string.Join("; ", standing.Select(row => $"'{row.Candidate}'"))
+            + "; registered "
+            + string.Join("; ", written.Select(one => $"'{one.Candidate}'"))
+            + $"; on the evidence: {evidence}";
+
+        await RecordAsync(connection, runId, startedAt, Registered, taken.Count - rows.Count, detail, cancellation);
+        await transaction.CommitAsync(cancellation);
+
+        return new RegistrationOutcome(Registered, null, detail);
+    }
+
     // Every standing candidate whose evaluator the code no longer carries at the version it was
     // registered with, retired on the evidence given and registered again unchanged at the version the
     // code carries now, all at one instant or none. Unchanged because nothing about the candidate was

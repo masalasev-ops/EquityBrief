@@ -5,6 +5,7 @@ using EquityBrief.Core.Components;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Filter;
 using EquityBrief.Core.Indicators;
+using EquityBrief.Core.Prices;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
@@ -27,8 +28,11 @@ public sealed record FamilyEvaluatorOutcome(DateOnly? Night, int RowsWritten, IR
 // evaluated over the same inputs at its own settings, by the shadow the night hands in, and its verdict
 // stored on the member's row of its family, a missing or moved evaluator failing the stage. It replaces its
 // own rows for the night where the night is run again, and drops a row that did not pass once its session is
-// older than the bars the store keeps. It makes no request and calls no model.
+// older than the bars the store keeps. It hands every registered rule the index's and the VIX's closes the fetch
+// step stored, on the store's own sessions to the night, which a rule's market switch reads. It makes no request
+// and calls no model.
 // see: The nightly run is arithmetic only
+// see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, and each family is registered again whole to add it
 // see: The market check closes every family's list together
 // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
 // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
@@ -40,6 +44,7 @@ public sealed class FamilyEvaluator : IComponent
         Stores:
         [
             new StoreTouch(Store.Bar, Touch.Read),
+            new StoreTouch(Store.MarketBar, Touch.Read),
             new StoreTouch(Store.Indicator, Touch.Read),
             new StoreTouch(Store.Level, Touch.Read),
             new StoreTouch(Store.EarningsReaction, Touch.Read),
@@ -88,6 +93,16 @@ public sealed class FamilyEvaluator : IComponent
 
     // The low edge of every band the night stored.
     const string BandsOn = "SELECT ticker, low_edge FROM level WHERE as_of = $night;";
+
+    // The store's sessions to the night, oldest first, which a market switch counts its sessions on.
+    const string SessionsTo = "SELECT DISTINCT session_date FROM bar WHERE session_date <= $night ORDER BY session_date;";
+
+    // The index's and the VIX's closes the fetch step stored to the night.
+    const string MarketClosesTo = @"
+        SELECT series, session_date, close
+        FROM market_bar
+        WHERE session_date <= $night AND series IN ($index, $vix);
+    ";
 
     // A night run again replaces its own rows whole, and a row that did not pass goes once its session is
     // older than every bar the store keeps: nothing reads a near miss whose bars are gone, and a row that
@@ -164,6 +179,7 @@ public sealed class FamilyEvaluator : IComponent
         var indicators = await IndicatorsAsync(connection, from, session, cancellation);
         var prints = await PrintsAsync(connection, session, cancellation);
         var bands = await BandsAsync(connection, session, cancellation);
+        var closes = await MarketAsync(connection, session, cancellation);
 
         var results = new List<(FamilyResult Result, string? Shadow)>();
 
@@ -193,7 +209,8 @@ public sealed class FamilyEvaluator : IComponent
                     at >= 0 ? Indicator(indicators, member.Ticker, held[at].Session, IndicatorSeries.VolAvg50) : null,
                     typical,
                     bands.GetValueOrDefault(member.Ticker) ?? [],
-                    member.Exclusions));
+                    member.Exclusions),
+                closes);
 
             // A member the night holds no bar for, or holds across a gap, is a counted skip of every family candidate.
             var withheld = FamilyRuleShadow.Withheld(held.Count == 0, member.Exclusions.Contains(SwingGates.GapExclusion, StringComparer.Ordinal));
@@ -254,7 +271,7 @@ public sealed class FamilyEvaluator : IComponent
             .ToArray();
         var outcome = new FamilyEvaluatorOutcome(session, results.Count, families, shadow.Evaluated, shadow.Faults);
 
-        await AppendAsync(connection, transaction, runId, startedAt, results.Count, Detail(outcome) + shadow.Said, shadow.Faults.Count > 0, cancellation);
+        await AppendAsync(connection, transaction, runId, startedAt, results.Count, Detail(outcome) + shadow.Said + Switches(shadow, closes),shadow.Faults.Count > 0, cancellation);
         await transaction.CommitAsync(cancellation);
 
         return outcome;
@@ -404,6 +421,64 @@ public sealed class FamilyEvaluator : IComponent
         }
 
         return bands.ToDictionary(entry => entry.Key, entry => (IReadOnlyList<decimal>)entry.Value, StringComparer.Ordinal);
+    }
+
+    // The index's and the VIX's closes on the store's sessions to the night, the night last.
+    static async Task<MarketCloses> MarketAsync(SqliteConnection connection, DateOnly night, CancellationToken cancellation)
+    {
+        var sessions = new List<DateOnly>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = SessionsTo;
+            command.Parameters.AddWithValue("$night", Stamp(night));
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                sessions.Add(Date(reader.GetString(0)));
+            }
+        }
+
+        var index = new Dictionary<DateOnly, double>();
+        var vix = new Dictionary<DateOnly, double>();
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = MarketClosesTo;
+            command.Parameters.AddWithValue("$night", Stamp(night));
+            command.Parameters.AddWithValue("$index", MarketCloses.Index);
+            command.Parameters.AddWithValue("$vix", MarketCloses.Vix);
+
+            await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                var held = reader.GetString(0) == MarketCloses.Index ? index : vix;
+
+                held[Date(reader.GetString(1))] = Statistic.FromPrice(Money.FromStorage(reader.GetString(2)));
+            }
+        }
+
+        return MarketCloses.On(sessions, index, vix);
+    }
+
+    // What the night's market switches read, once for each switch a standing registration states, so the stage's
+    // row says why a switched rule listed nothing; nothing where no standing registration states one.
+    static string Switches(FamilyRuleShadow shadow, MarketCloses market)
+    {
+        var gates = shadow.Standing
+            .Select(row => CandidateEvaluator.Read(row.Parameters))
+            .Where(parameters => parameters.ContainsKey(MarketSwitches.IndexAverageParameter) && parameters.ContainsKey(MarketSwitches.VixLookbackParameter))
+            .Select(MarketSwitches.Of)
+            .Distinct()
+            .SelectMany(switches => switches.GatesOn(market))
+            .Select(gate => $"{gate.Name} {(gate.Passed ? "open" : "closed")}, {gate.Reason}")
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        return gates.Length == 0 ? string.Empty : "; the market switches: " + string.Join("; ", gates);
     }
 
     static async Task<DateOnly?> NewestAsync(SqliteConnection connection, CancellationToken cancellation)

@@ -82,7 +82,7 @@ public partial class NightlyRun
 
             CheckReach.Key(NightlyRunSteps.Heading, "Load index membership and record any joins and leaves."),
             CheckReach.Key(NightlyRunSteps.Heading, "Backfill one year for any member with no stored history, which on the first run is every name and afterwards is only a new joiner."),
-            CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, a name announced to join included, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's) (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement)."),
+            CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, a name announced to join included, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's) (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement). Then ask for the index's and the VIX's daily series over the days before the session that section 17 states, one request a series, and store each session no night has stored apart from the bars, a series the provider does not serve storing nothing and stopping nothing (see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Fetch the index's dated events for the horizon, one request, and store what the provider files (see: A calendar event is fetched once for the whole index, and the calendar holds provider events only)."),
             CheckReach.Key(NightlyRunSteps.Heading, "Compute the indicators for every name."),
             CheckReach.Key(NightlyRunSteps.Heading, "Mark the swings for every name."),
@@ -1219,6 +1219,59 @@ public partial class NightlyRun
         Assert.StartsWith("Backfill one year", steps[1], StringComparison.Ordinal);
         Assert.StartsWith("Fetch the day", steps[2], StringComparison.Ordinal);
         Assert.StartsWith("Check splits and dividends", steps[3], StringComparison.Ordinal);
+    }
+
+    // The fetch step's second half: the index's and the VIX's series asked for once each after the day's bars, each
+    // session to the night stored once under the night's own run, and a series the provider does not serve stopping
+    // no step.
+    // see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+    [Fact]
+    public async Task TheFetchStepAsksForTheIndexAndTheVixOnceEachAfterTheBarsAndASeriesNotServedStopsNoStep()
+    {
+        // The fixture holds no market series, so both are refused: nothing is stored, the stage's own row after the
+        // bars' names both, and the night runs every step after it to its close.
+        using var store = new TemporaryStore();
+
+        var (code, output, error) = await NightAsync(store, runId: "night-market");
+
+        Assert.True(code == 0, error);
+
+        var stages = RunLog(store, "night-market");
+        var bars = stages.ToList().FindIndex(row => row.Stage == BarFetcher.Stage);
+        var market = stages[bars + 1];
+
+        Assert.Equal((MarketSeriesFetcher.Stage, "ok"), (market.Stage, market.Outcome));
+        Assert.Contains("GSPC: nothing was stored for it, No captured response for the GSPC series.", market.Detail, StringComparison.Ordinal);
+        Assert.Contains("VIX: nothing was stored for it, No captured response for the VIX series.", market.Detail, StringComparison.Ordinal);
+        Assert.Contains("; market series through 2026-09-08: ", output, StringComparison.Ordinal);
+        Assert.Contains(stages, row => row.Stage == NightClose.Stage);
+        Assert.Equal(0L, Count(store, "SELECT COUNT(*) FROM market_bar;"));
+
+        // Served both, the night asks each once and stores each session the provider sent to the night.
+        static string Sessions(decimal from) =>
+            "[" + string.Join(", ", new[] { "2026-09-03", "2026-09-04", "2026-09-08" }.Select((day, at) =>
+                FormattableString.Invariant($"{{\"date\": \"{day}\", \"open\": {from + at}, \"high\": {from + at + 1}, \"low\": {from + at - 1}, \"close\": {from + at}, \"adjusted_close\": {from + at}, \"volume\": 0}}"))) + "]";
+
+        using var served = new TemporaryStore();
+
+        var series = new RecordedMarketSeriesFeed(new Dictionary<string, string> { ["GSPC"] = Sessions(6500m), ["VIX"] = Sessions(15m) });
+        var (servedCode, _, servedError) = await NightAsync(served, NightFeeds.FromFixture(FixtureFolder()) with { Market = series }, "night-market-served", FixedClock.At(Night, SessionZones.UnitedStates));
+
+        Assert.True(servedCode == 0, servedError);
+        Assert.Equal(2, series.Requests);
+        Assert.Equal(6L, Count(served, "SELECT COUNT(*) FROM market_bar WHERE run_id = 'night-market-served';"));
+        Assert.Equal(6502L, Count(served, "SELECT CAST(close AS INTEGER) FROM market_bar WHERE series = 'GSPC' AND session_date = '2026-09-08';"));
+    }
+
+    static long Count(TemporaryStore store, string sql)
+    {
+        using var connection = new SqliteConnection($"Data Source={store.DatabaseFile}");
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+
+        return Convert.ToInt64(command.ExecuteScalar(), System.Globalization.CultureInfo.InvariantCulture);
     }
 
     [Fact]
