@@ -399,6 +399,11 @@ public static class RequestDrain
     // so the claim waits for another connection as every statement here does. Run alone, the claim's commit comes
     // as its reader is let go, after its row is read, where the driver's wait does not reach, and it fails on a
     // read another connection holds at that moment.
+    //
+    // The transaction runs one statement, its write, so a deferred begin would take the write lock at that
+    // statement in one step, as the immediate begin takes it at the begin, and the two are equivalent only while
+    // that holds. A read placed before the write would take a shared lock first and then need to raise it, which
+    // is the wait the driver does not cover, so the begin stays immediate.
     // see: A writer waits up to ten minutes for another, and a pass stores what it fetched in one write
     public static async Task<TakenRequest?> ClaimAsync(SqliteConnection connection, DateTimeOffset at, CancellationToken cancellation = default)
     {
