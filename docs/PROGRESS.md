@@ -36501,7 +36501,13 @@ Mutated:    the rule, stated before the run: the property the correction adds, b
             this checkout, filtered to the tests of the four files that claim or drain and reverted.
             C1 the claim run alone, as it was: red in the new test alone, the claim ending on "database is
                locked" while the read is held.
-            Results: FILLED IN AFTER THE SWEEP.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: GATETREE.
-            The run's figures are filled in after it.
+            Results: C1 red in the new test alone, over the 32 tests the filter holds, the claim ending on
+            "SQLite Error 5: 'database is locked'" while the read was held, the night's own error. It ran over
+            bc43cd8 and was reverted, the tree reading clean after it.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: bc43cd8.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1765 of 1765 tests ran with none failed,
+            migrations 0 to 56 with none pending, schema version 56, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 887 claims, 887 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            898 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 42 checks on the
+            roster, 42 carried and 42 passed.
 Carried:    the sign-offs of phases 12 and 13, each owed by a session that committed none of its code.
