@@ -37152,15 +37152,20 @@ Measured:   of the 80 plain splits, the 76 with counts on both sides: the provid
             for the pullbacks, 0.273 against 0.113 for the breakouts and 0.275 against 0.220 for the drifts, and 83
             of 479 heavyweight entries held back; under B 66 stocks on two cards at once on 1,235 of the 1,949
             sessions, 2,223 stock-sessions in all and at most 6 on one.
-Tests:      (unfilled), from 1798: one added, each kind of plain split read as one and the adjustments as none, and
+Tests:      1799, from 1798: one added, each kind of plain split read as one and the adjustments as none, and
             three widened, the captured facts of Activision read for its two concepts, a concept held as an empty set
             of dollars, and the revenue pull asking each filer once.
-Claims:     (unfilled), from 912: section 18's row for a spin-off or a merger the provider files as a split.
+Claims:     913, from 912: section 18's row for a spin-off or a merger the provider files as a split.
 Mutated:    the rule, stated before the run: each property the correction adds broken alone, made by hand over the
             working tree carrying it before its commit, filtered to the checkpoint's tests and reverted.
             P7 every filed split applied whatever its ratio: red in the plain split test.
             P8 a concept held as an empty set of dollars refused: red in the captured answers' test.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: (unfilled).
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 245493a, the
+            entry's commit, over fec1617, the remedy run's. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1799
+            of 1799 tests ran with none failed, migrations 0 to 58 with none pending, schema version 58, against
+            `data-ci` and never `data`. `tools/verify-phase.ps1`: 44 tables, 913 claims, 913 PASS, 0 FAIL, 0 out of
+            scope, 0 unexamined, 924 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43
+            checks on the roster, 43 carried and 43 passed.
 Carried:    after the merge, `tools/remedies/2026-10-04-14.2-the-revenue-again.txt`, the first revenue pull removed
             whole and made again from each filer's facts, then an entry with the revenue by concept and the check of
             30 sampled releases; the night of 2026-10-05 read; the fork's ruling before 14.3, the figures above
