@@ -37243,3 +37243,20 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-04-14.3-the-companies.txt`, then an
             entry with the members answered and those filing no sector, no count or no CIK; the night of 2026-10-05
             read, the book's first rebalance in it; the fork's ruling.
+
+### 14.3 - the remedy run: migration 59 and every member's company, 503 of 504 answered with their counts   2026-10-04
+
+Ran:        `tools/migrate.ps1` from main at 0e75935, 58 to 59, then `tools/remedy.ps1 tools/remedies/2026-10-04-14.3-
+            the-companies.txt` from 04:32 to 04:41 UTC with no night, drain or labeller running and no night lock:
+            the first line asked all 504 members inside the step's limit, and the other two asked none.
+Companies:  503 of 504 answered, one fetch each, storing 503 companies and 6,020 quarter rows, every row carrying its
+            share count; VYLR answered nothing. Every sector holds companies, Industrials 82 down to Energy 21. VMRK
+            files no sector, and 11 file no CIK (BNY, ECHO, FDXF, FISV, HONA, MRSH, P, PSKY, Q, SNDK, VMRK), each
+            ranked as a company of its own.
+Weighted:   5,543 calls of the day's 100,000.
+Read back:  read-only over 2026-10-02's closes, each sector's five largest by value: Information Technology NVDA,
+            AAPL, MSFT, AVGO and MU; Communication Services GOOGL, holding Alphabet's one place, META, NFLX, VZ and
+            DIS; Financials BRK-B, valued in B shares, JPM, V, MA and BAC.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            14.4 entry below states.
+Carried:    the night of 2026-10-05 read, the book's first rebalance in it; the fork's ruling.
