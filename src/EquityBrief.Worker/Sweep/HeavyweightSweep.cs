@@ -1,7 +1,5 @@
 using System.Globalization;
-using EquityBrief.Core.Bars;
 using EquityBrief.Core.Families;
-using EquityBrief.Core.Indicators;
 using EquityBrief.Core.Prices;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Worker.Families;
@@ -326,24 +324,15 @@ public static class HeavyweightSweep
 
             Array.Fill(at, -1);
 
-            if (series.Length > 0)
-            {
-                var points = IndicatorSeries.For([.. series.Select(bar => new SeriesBar(bar.Session, Statistic.FromPrice(bar.High), Statistic.FromPrice(bar.Low), Statistic.FromPrice(bar.Close), Statistic.FromVolume(bar.Volume)))]);
-
-                foreach (var point in points)
-                {
-                    if (point.Value is { } value && (point.Name == IndicatorSeries.Sma50 || point.Name == IndicatorSeries.Sma200))
-                    {
-                        (point.Name == IndicatorSeries.Sma50 ? fifty : twoHundred)[sessionAt[point.SessionDate]] = value;
-                    }
-                }
-            }
+            var (byBar50, byBar200) = SweepColumns.Averages(series);
 
             for (var bar = 0; bar < series.Length; bar++)
             {
                 var session = sessionAt[series[bar].Session];
 
                 closes[session] = Statistic.FromPrice(series[bar].Close);
+                fifty[session] = byBar50[bar];
+                twoHundred[session] = byBar200[bar];
                 at[session] = bar;
             }
 
@@ -387,7 +376,7 @@ public static class HeavyweightSweep
                 decimal? value = series[bar].RawClose > 0m && history.Counts.TryGetValue(ticker, out var counts)
                     ? CompanyValue.On(new SessionClose(day, series[bar].Close, series[bar].RawClose), counts, history.Splits.GetValueOrDefault(ticker) ?? [])
                     : null;
-                var returns = LookBacks.Select(lookBack => bar >= lookBack && series[bar - lookBack].Close > 0m ? Statistic.FromRatio(series[bar].Close / series[bar - lookBack].Close) - 1.0 : (double?)null).ToArray();
+                var returns = LookBacks.Select<int, double?>(lookBack => bar >= lookBack && series[bar - lookBack].Close > 0m ? Statistic.FromRatio(series[bar].Close / series[bar - lookBack].Close) - 1.0 : null).ToArray();
 
                 candidates.Add(new HeavyweightCandidate(
                     name,
@@ -405,11 +394,11 @@ public static class HeavyweightSweep
                     returns));
             }
 
-            var fundReturns = LookBacks.Select(lookBack => (IReadOnlyDictionary<string, double?>)GicsSectors.Eleven.ToDictionary(
+            var fundReturns = LookBacks.Select<int, IReadOnlyDictionary<string, double?>>(lookBack => GicsSectors.Eleven.ToDictionary<string, string, double?>(
                 sector => sector,
                 sector => funds.TryGetValue(sector, out var fund) && fundAt[sector].TryGetValue(day, out var at) && at >= lookBack && fund.Closes[at - lookBack].Close > 0
                     ? fund.Closes[at].Close / fund.Closes[at - lookBack].Close - 1.0
-                    : (double?)null,
+                    : null,
                 StringComparer.Ordinal)).ToArray();
 
             sessions[session] = new HeavyweightSession(session, candidates, fundReturns);
@@ -658,7 +647,7 @@ public static class HeavyweightSweep
             error = Math.Sqrt(done.Sum(trade => Math.Pow(trade.Edge!.Value - mean, 2)) / (done.Length - 1) / done.Length);
         }
 
-        var held = done.Select(trade => (double)(trade.End!.Value - trade.Entry)).Order().ToArray();
+        var held = done.Select(trade => trade.End!.Value - trade.Entry).Order().ToArray();
         var withIndex = done.Where(trade => trade.Index is not null).ToArray();
         var withEvery = done.Where(trade => trade.EveryMember is not null).ToArray();
 
@@ -677,7 +666,7 @@ public static class HeavyweightSweep
             recent.Length > 0 ? recent.Average(trade => trade.Edge!.Value) : null,
             trimmed.Length > 0 ? trimmed.Average(trade => trade.Edge!.Value) : null,
             error,
-            held.Length > 0 ? (held.Length % 2 == 1 ? held[held.Length / 2] : (held[(held.Length / 2) - 1] + held[held.Length / 2]) / 2) : null,
+            held.Length > 0 ? (held.Length % 2 == 1 ? held[held.Length / 2] : (held[(held.Length / 2) - 1] + held[held.Length / 2]) / 2.0) : null,
             held.Length > 0 ? held.Average() : null);
     }
 
