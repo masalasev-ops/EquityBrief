@@ -3134,6 +3134,20 @@ internal static class Scope
             Verdict.Pass,
             "a session holding no RSI and a high not found each read no fall, and a name reading none is kept after every name reading one in the list's own order, over a constructed night",
             ByExpectations),
+
+        // 14.5, the heavyweights' sweep: section 17's row and section 18's two.
+        [CheckReach.Key(LimitsTable, "Heavyweights' sweep grid")] = new Scoped(
+            Verdict.Pass,
+            "every combination of the dials read once with the provisional setting among them, each setting's neighbours one dial a step away, the rebalances of each period, a beta by hand and a fund's return in the members' mean's place, the walk by hand under each exit and a constructed history's report read back set aside; the levels read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A rebalance the night's book stored that the heavyweights' replay reads differently")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store the replay at the provisional setting reads a rebalance the night's book stored as stored, and read at another look-back names each sector it reads differently, a stored session the history does not hold named too",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A heavyweight still held at the history's end")] = new Scoped(
+            Verdict.Pass,
+            "holdings bought on the last rebalance of a constructed walk carry no result, count in no year and stand in the count of those still held",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "The labeller fails")] = new Scoped(
             Verdict.Pass,
             "a run refused before it asked anything writes its own row saying why and no row of the night's, and a labeller that stopped partway leaves the night's rows, listings and gate results as they were",
@@ -5266,6 +5280,9 @@ internal static class Scope
         // 14.4, the context checks over the history.
         ["A drift print whose filer states no quarter the reading finds"] = "14.4",
         ["A pullback whose high session or night holds no RSI"] = "14.4",
+        // 14.5, the heavyweights' sweep.
+        ["A rebalance the night's book stored that the heavyweights' replay reads differently"] = "14.5",
+        ["A heavyweight still held at the history's end"] = "14.5",
         // 13.1, the family framework. The row about two families is read on the page once a second family is on it.
         ["A stock a family passes while a trade for it is still open"] = "13.1",
         ["A stock two families pass on one night"] = "13.2",
@@ -5411,6 +5428,8 @@ internal static class Scope
         ["A print's revenue quarter"] = "14.4",
         ["Context ideas' test"] = "14.4",
         ["RSI fall order"] = "14.4",
+        // The heavyweights' sweep, 14.5.
+        ["Heavyweights' sweep grid"] = "14.5",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",

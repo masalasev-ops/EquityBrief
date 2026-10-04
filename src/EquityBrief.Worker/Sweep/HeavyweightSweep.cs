@@ -468,16 +468,51 @@ public static class HeavyweightSweep
         return HeavyweightRule.Beta(closes);
     }
 
-    // A session's reading at a setting: each sector's leaders and its size cut, read by the night's own rule over the
-    // members as they stood with their return at the setting's look-back, a fund's return handed in for the sector's
-    // where the setting reads it.
-    public static HeavyweightRebalance Read(HeavyweightSession session, HeavyweightSetting setting, IReadOnlyDictionary<string, int> names)
+    // A session's sectors at a setting, read by the night's own rule over the members as they stood with their return
+    // at the setting's look-back, a fund's return handed in for the sector's where the setting reads it.
+    public static IReadOnlyList<HeavyweightSector> Sectors(HeavyweightSession session, HeavyweightSetting setting)
     {
         var at = LookBacks.IndexOf(setting.LookBack);
         var members = session.Members.Select(candidate => candidate.Member with { Return = candidate.Returns[at] }).ToArray();
-        var sectors = HeavyweightRule.Read(members, setting.Reading, setting.Sector == HeavyweightSectorReturn.Fund ? session.FundReturns[at] : null);
 
-        return new HeavyweightRebalance([.. sectors.Select(sector => (sector.Sector, sector.Leaders.Select(leader => names[leader]).ToArray(), sector.Largest.Select(ranked => names[ranked.Ticker]).ToArray()))]);
+        return HeavyweightRule.Read(members, setting.Reading, setting.Sector == HeavyweightSectorReturn.Fund ? session.FundReturns[at] : null);
+    }
+
+    // A session's reading at a setting as the walk reads it: each sector's leaders and its size cut, by name.
+    public static HeavyweightRebalance Read(HeavyweightSession session, HeavyweightSetting setting, IReadOnlyDictionary<string, int> names) =>
+        new([.. Sectors(session, setting).Select(sector => (sector.Sector, sector.Leaders.Select(leader => names[leader]).ToArray(), sector.Largest.Select(ranked => names[ranked.Ticker]).ToArray()))]);
+
+    // Every setting walked over the history laid out: each reading's rebalances read once over every session either
+    // period reads, then walked at each period and each exit, every member's return over a holding's sessions read
+    // once for each span.
+    public static IReadOnlyList<(HeavyweightSetting Setting, HeavyweightFigures Figures)> ReadAll(
+        HeavyweightTape tape,
+        IReadOnlyDictionary<int, HeavyweightSession> sessions,
+        IReadOnlyList<int> months,
+        IReadOnlyList<int> weeks)
+    {
+        var names = tape.Tickers.Select((ticker, at) => (ticker, at)).ToDictionary(pair => pair.ticker, pair => pair.at, StringComparer.Ordinal);
+        var everyMember = new System.Collections.Concurrent.ConcurrentDictionary<(int From, int To), double?>();
+        var byKey = new System.Collections.Concurrent.ConcurrentDictionary<string, HeavyweightFigures>(StringComparer.Ordinal);
+        var read = months.Concat(weeks).Distinct().ToArray();
+
+        double? EveryMemberOnce(int from, int to) => everyMember.GetOrAdd((from, to), span => EveryMember(tape, span.From, span.To));
+
+        Parallel.ForEach(
+            Settings.GroupBy(setting => (setting.Largest, setting.LookBack, setting.Leaders, setting.Sector, setting.HighBeta)),
+            group =>
+            {
+                var rebalances = read.ToDictionary(session => session, session => Read(sessions[session], group.First(), names));
+
+                foreach (var setting in group)
+                {
+                    var period = setting.Period == HeavyweightPeriod.Month ? months : weeks;
+
+                    byKey[setting.Key] = Figures(setting.Key, Walk(tape, period.ToDictionary(session => session, session => rebalances[session]), setting.Exit, EveryMemberOnce));
+                }
+            });
+
+        return [.. Settings.Select(setting => (setting, byKey[setting.Key]))];
     }
 
     // Walks one setting's holdings session by session from the first scored, as the night's book walks them: each

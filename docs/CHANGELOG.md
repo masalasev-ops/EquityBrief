@@ -10756,3 +10756,24 @@ Was:
 Now:
 > the row goes on with what 14.4's tests assert: the revenue growth worked by hand at each edge and read as first filed, the drift's filter and order, the replay's read of each listing's print and its count of trades whose quarter was first filed after their buy, the RSI fall and its first three, the drift's test with no floor of nights, the history's revenue read through each filer, and the report's tries against luck
 Why: the roster states what each check asserts.
+### 2026-10-04 - ARCHITECTURE.html - the heavyweights' sweep in the sweep history's rows, sections 13.9, 17 and 18
+Authorised by: The heavyweights' sweep replays the book over the pulled history across its settings and proposes the best edge among those meeting the family sweeps' floors
+Was:
+> the sweep history's catalogue row reading "membership, bar store, pulled bars, pulled earnings, pulled surprises, pulled market series, pulled companies, pulled revenue, calendar, gate results" and saying "... its stored bars through the newest session the store held when the run started, its earnings dates, ... which the context run reads, and the name-sessions the live list listed, ..."; and its matrix row blank under listings
+Now:
+> the row reads "pulled share counts, pulled splits" after the pulled companies and "heavyweight nights" after the gate results, and says "... when the run started, each with its unadjusted close, its earnings dates, ... which the context run reads, each name's company, its share counts filed by the history's end and its splits, each sector fund's closes and every rebalance the night's book stored, which the heavyweights' sweep reads, and the name-sessions the live list listed, ..."; its matrix row reads R under listings; and 13.9 gains the heavyweights' sweep's paragraph, 17 the heavyweights' sweep grid and 18 the rows for a rebalance the night's book stored that the replay reads differently and a heavyweight still held at the history's end
+Why: 14.5's sweep of the sector heavyweights over the pulled history.
+### 2026-10-04 - RUNBOOK.md - the sector heavyweights' sweep
+Authorised by: The heavyweights' sweep replays the book over the pulled history across its settings and proposes the best edge among those meeting the family sweeps' floors
+Was:
+> the family sweep's section naming `sweep-family --family breakout`, `drift` and `leader`, and its paragraph ending "... The leaders' report states how many of the history's names carry a sector, which the membership files as it stands today."
+Now:
+> the section names `sweep-family --family heavyweight` as well, and the paragraph goes on with what the heavyweights' sweep reads, how long it takes and that it holds its replay to the rebalances the night's book stored
+Why: the sweep is started by hand from main's Release build, and the operator needs the command.
+### 2026-10-04 - .claude/rules/checks.md - fixture-expectations reaches the heavyweights' sweep
+Authorised by: The heavyweights' sweep replays the book over the pulled history across its settings and proposes the best edge among those meeting the family sweeps' floors
+Was:
+> `fixture-expectations` ending "... and the context run's report states each family's tries against what luck alone passes"
+Now:
+> the row goes on with what 14.5's tests assert: the grid and its neighbours, the rebalances of each period, a beta by hand and its floor, a fund's return, the walk by hand under each exit, the replay held to a rebalance the night's book stored, and a constructed history's report
+Why: the roster states what each check asserts.
