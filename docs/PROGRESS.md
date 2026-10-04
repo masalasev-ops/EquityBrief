@@ -37603,8 +37603,12 @@ Mutated:    the rule, stated before the run: each property this checkpoint adds,
             T3 phase 14 stated as opening one operating row: red in the operating rows test alone.
             Results: T1 to T3 each red where stated, the other test green each time, each reverted and the two
             tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 8c7cf54, the
+            entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1832 of 1832 tests ran with none
+            failed, migrations 0 to 60 with none pending, schema version 60, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 970 claims, 970 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 981
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
 Carried:    14.8, Part C's first test on today's members, and its rule's answer brought to the operator; phase
             14's sign-off, owed on the phase as a whole by a session that committed none of its code, after 14.8;
             the night of 2026-10-05 read.
