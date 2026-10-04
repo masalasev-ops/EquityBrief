@@ -101,7 +101,101 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.HeavyweightRecordPageClaims,
     ];
 
-    internal static readonly string[] AfterPhaseThirteen = [.. FixtureExpectations.IdeasClaims, .. FixtureExpectations.StoreCopyRows, .. FixtureExpectations.MarketSwitchRows, .. Reading.ReadSurface.DrainStopRows, .. FixtureExpectations.FamilyReplayRows, .. FixtureExpectations.CompanyPullRows, .. HeavyweightRows, .. FixtureExpectations.ContextClaims, .. FixtureExpectations.HeavyweightSweepClaims, .. RegistrationRows];
+    internal static readonly string[] AfterPhaseThirteen = [.. FixtureExpectations.IdeasClaims, .. FixtureExpectations.StoreCopyRows, .. FixtureExpectations.MarketSwitchRows, .. Reading.ReadSurface.DrainStopRows, .. FixtureExpectations.FamilyReplayRows, .. FixtureExpectations.CompanyPullRows, .. HeavyweightRows, .. FixtureExpectations.ContextClaims, .. FixtureExpectations.HeavyweightSweepClaims, .. RegistrationRows, .. AfterPhaseFourteen];
+
+    // The rows of phase 14 each checkpoint landed, in the plan's order, read on each use since the lists that hold them
+    // stand in other files of this class.
+    static (string Checkpoint, string[] Rows)[] PhaseFourteenLanded =>
+    [
+        ("14.1", FixtureExpectations.FamilyReplayRows),
+        ("14.2", FixtureExpectations.CompanyPullRows),
+        ("14.3", HeavyweightRows),
+        ("14.4", FixtureExpectations.ContextClaims),
+        ("14.5", FixtureExpectations.HeavyweightSweepClaims),
+        ("14.6", RegistrationRows),
+    ];
+
+    // Where a checkpoint landed more or fewer claims than the plan counted for it, the rows its count did not name and
+    // how many of them the count held, as the entry that landed them says. At 14.1 the replay's catalogue and matrix
+    // rows and the setup families' two parts, four where the command's row and the run page's line held two. At 14.2
+    // every row: the four pulled stores joined section 16's pulled history row and took none of their own, and section
+    // 17's five rows and section 18's five landed, the fifth at the correction, ten where about eight held the stores
+    // and the readings. At 14.3 the members' companies' store, the fixture's row, a name's line and Past picks' eleven
+    // parts, fourteen the plan's sentence did not name, of which its about thirty-two held seven. At 14.4 every row,
+    // section 17's three and section 18's two, five where about six counted a row an idea. And at 14.6 Part B's rows,
+    // section 17's estimates raised, section 18's estimates not served, the estimates fetcher's catalogue and matrix rows
+    // and the estimate readings, five the plan's sentence did not name, of which its about eight held three.
+    static (string Checkpoint, string[] Rows, int Counted)[] PhaseFourteenMoved =>
+    [
+        ("14.1", [CheckReach.Key(Scope.CatalogueTable, "Family replay"), CheckReach.Key(Scope.MatrixTable, "Family replay"), .. Reading.ReadSurface.FamilyReplayPageClaims], 2),
+        ("14.2", FixtureExpectations.CompanyPullRows, 8),
+        ("14.3",
+        [
+            CheckReach.Key(Scope.StoresTable, "Member companies"),
+            CheckReach.Key(Scope.FixtureTable, "member companies"),
+            CheckReach.Key("15.9 Name", "Held by the sector heavyweights"),
+            .. Reading.ReadSurface.HeavyweightPageClaims.Where(key => key.StartsWith(CheckReach.Key("15.17 Past picks", ""), StringComparison.Ordinal)),
+        ], 7),
+        ("14.4", FixtureExpectations.ContextClaims, 6),
+        ("14.6",
+        [
+            CheckReach.Key(Scope.LimitsTable, "Estimates raised"),
+            CheckReach.Key(Scope.FailureTable, "The provider does not serve a member's estimates on the night"),
+            CheckReach.Key(Scope.CatalogueTable, "Estimates fetcher"),
+            CheckReach.Key(Scope.MatrixTable, "Estimates fetcher"),
+            CheckReach.Key(Scope.StoresTable, "Estimate readings"),
+        ], 3),
+    ];
+
+    // The rows the document gains after phase 14's report, 14.8's among them, named beside the pair and never counted in
+    // it. None yet.
+    internal static string[] AfterPhaseFourteen => [];
+
+    [Fact]
+    public void ThePhaseFourteenPairIsCheckedAgainstTheActualWithEveryClaimThatMovedNamed()
+    {
+        // The pair and each checkpoint's count read off the plan, so the figures checked are the ones it carries.
+        const string pair = @"(\d+) claims and \1 PASS before it\. After 14\.6 the pair is (\d+) and \2, within (\d+) to (\d+): none at 14\.0, [^;]*; about (\d+) at 14\.1, [^;]*; about (\d+) at 14\.2, [^;]*; about (\d+) at 14\.3, [^;]*; about (\d+) at 14\.4, [^;]*; about (\d+) at 14\.5, [^;]*; and about (\d+) at 14\.6,";
+        var stated = Regex.Match(Corpus.Read("docs/BUILD_PLAN.md"), pair.Replace(" ", @"\s+", StringComparison.Ordinal));
+
+        Assert.True(stated.Success, "The plan states no pair for phase 14.");
+
+        int Figure(int group) => int.Parse(stated.Groups[group].Value, CultureInfo.InvariantCulture);
+
+        var (before, predicted, low, high) = (Figure(1), Figure(2), Figure(3), Figure(4));
+        int[] counted = [Figure(5), Figure(6), Figure(7), Figure(8), Figure(9), Figure(10)];
+
+        Assert.Equal(predicted, before + counted.Sum());
+
+        // What 14.1 to 14.6 landed: each checkpoint's count in the plan and the rows beyond it named above, each of them
+        // a row its checkpoint landed.
+        var landed = PhaseFourteenLanded;
+        var moved = PhaseFourteenMoved.ToDictionary(row => row.Checkpoint, row => row.Rows.Length - row.Counted, StringComparer.Ordinal);
+
+        Assert.All(PhaseFourteenMoved, row => Assert.All(row.Rows, key => Assert.Contains(key, landed.Single(checkpoint => checkpoint.Checkpoint == row.Checkpoint).Rows)));
+        Assert.Equal(
+            counted.Select((count, at) => count + moved.GetValueOrDefault(landed[at].Checkpoint)),
+            landed.Select(checkpoint => checkpoint.Rows.Length));
+
+        var rows = landed.SelectMany(checkpoint => checkpoint.Rows).ToArray();
+        var actual = before + rows.Length;
+
+        Assert.InRange(actual, low, high);
+
+        // Every row the phase added reached once and passing, and the report holding the phase's rows over what stood
+        // before it and the rows after it, none out of scope and none unexamined.
+        var report = Report();
+        var total = actual + AfterPhaseFourteen.Length;
+
+        Assert.Equal(rows.Length, rows.Distinct(StringComparer.Ordinal).Count());
+        Assert.All(rows, key => Assert.Equal(Verdict.Pass, Assert.Single(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key).Verdict));
+        Assert.Equal(
+            (total, 0, 0, total),
+            (report.Claims.Count, report.Count(Verdict.OutOfScope), report.Count(Verdict.Unexamined), report.Count(Verdict.Pass)));
+
+        // Stated, so a claim added or lost without being named here moves this rather than the sum.
+        Assert.Equal((898, 958, 940, 975, 72, 970), (before, predicted, low, high, rows.Length, actual));
+    }
 
     // Where a checkpoint landed more claims than the plan counted for it, the rows it landed more of and how
     // many of them the plan's count held, as the entry that landed them says: at 13.2 section 17's rows for the

@@ -497,6 +497,8 @@ public class ObligationReconciles
         ["12"] = 8,
         // None: phase 13 opened no carried obligation of either form.
         ["13"] = 0,
+        // None: phase 14 opened no carried obligation of either form.
+        ["14"] = 0,
     };
 
     // The first phase whose report is read for the operating rows it opened.
