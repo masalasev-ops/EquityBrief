@@ -37477,7 +37477,11 @@ Mutated:    the rule, stated before the run: each property 14.6's done condition
             The pin test reddens on M2, M3, M4, M6 and M8 besides, as on any edit to a pinned file.
             Not mutated: the card's live day and variants, a fund asked as a listing, and the night's row naming each
             heavyweights rule's book.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 33dece5, the
+            entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1831 of 1831 tests ran with none
+            failed, migrations 0 to 60 with none pending, schema version 60, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 970 claims, 970 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 981
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
 Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-04-14.6-the-freezes.txt`, then an entry
             with each rule's replay and registration; the night of 2026-10-05 read, the books' first rebalance in it.
