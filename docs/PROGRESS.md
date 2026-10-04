@@ -37685,6 +37685,8 @@ Luck:       3 tries, where luck alone passes about 0.40; 0 passed.
 Answer:     no family's edge improves even on survivors, so on the operator's rule the widening is dropped and
             recorded as not adopted (see: The wider universe is not adopted, since no swing family's edge improves
             on it even on survivors).
-Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: a67d06e, the entry's commit, all six steps, 0
+            warnings, 0 errors, 1837 of 1837 tests ran with none failed, migrations 0 to 61 with none pending, schema
+            version 61, against `data-ci` and never `data`.
 Carried:    phase 14's sign-off, owed on the phase as a whole by a session that committed none of its code; the
             night of 2026-10-05 read.
