@@ -44,6 +44,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "sweep-ideas" => await SweepIdeasRun(),
     "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
     "sweep-context" => await SweepContextRun(),
+    "sweep-wider" => await SweepWiderRun(),
     "label-news" => await LabelNews(args),
     "news-fill" => await NewsFill(args),
     "backup" => await BackupRun(args),
@@ -53,7 +54,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 21 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 22 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -82,7 +83,8 @@ static int NoVerb()
         "surprises the calendar files over the span instead, '--market' the index's and the VIX's daily series, " +
         "'--sector-etfs' the eleven sector funds' daily series, '--companies' each name's filer, GICS sector and quarterly " +
         "share counts with the days they were filed, '--splits' each name's splits, 'history-pull --revenue' each pulled " +
-        "company's revenue as its filer filed it, and " +
+        "company's revenue as its filer filed it, 'history-pull --members --index <MID or SML>' the S&P 400's or 600's " +
+        "members today, survivors alone, which '--index' then gives every other pull its names from, and " +
         "'--purge <pull>' removes a pull whole, and " +
         "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill, " +
         "'quarters --companies' asks instead every member no fetch has stored a company for, storing its filer, GICS " +
@@ -101,6 +103,9 @@ static int NoVerb()
         "'sweep-context' adds the earnings drift's revenue growth, as a filter and as an order, and the pullback's order " +
         "by its RSI's fall to their rules as frozen, one at a time over the stored history and each filer's revenue as " +
         "filed, reading the store and writing nothing to it, and writes its report in a run folder of its own, " +
+        "'sweep-wider' replays each swing family at its frozen settings on the S&P 1500, today's 400 and 600 members " +
+        "beside the S&P 500's history, against the 500 alone, every 1,500 figure saying it holds survivors only, reading " +
+        "the store and writing nothing to it, and writes its report in a run folder of its own, " +
         "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
         "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
         "report in a run folder of its own, " +
@@ -242,10 +247,19 @@ static async Task<int> HistoryPullRun(string[] args)
             fixture,
             _ => throw new InvalidOperationException(NoCapture("revenue")),
             () => SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty)),
-            "a revenue pull"));
+            "a revenue pull"),
+        () => FeedSource.Resolve<IIndexComponentsFeed>(
+            source,
+            fixture,
+            _ => throw new InvalidOperationException(NoCapture("members")),
+            () => EodhdIndexComponentsFeed.Live(
+                string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address,
+                new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty)),
+            "a members pull"));
 
-    // The companies, splits and revenue pulls ask the provider alone: the fixture holds the answers their readers were
-    // written against and no replay of a pull, so a pull over the fixture is refused rather than answered with nothing.
+    // The companies, splits, revenue and members pulls ask the provider alone: the fixture holds the answers their
+    // readers were written against and no replay of a pull, so a pull over the fixture is refused rather than answered
+    // with nothing.
     static string NoCapture(string what) =>
         $"The {what} pull asks the provider live and has no recorded answers to replay. Run it with '--live' or the source set to live.";
 }
@@ -359,6 +373,23 @@ static async Task<int> SweepFamilyIdeasRun(string[] args)
         store.DataRoot,
         configuration[EquityBrief.Core.Sweep.SweepFolder.Key],
         Console.Out).RunAsync(VerbArguments.Value(args, "--family") ?? string.Empty);
+}
+
+// The wider universe's first test, by hand: each swing family at its frozen settings on the S&P 1500, today's 400 and
+// 600 members beside the S&P 500's history, against the 500 alone, read-only, its report written into a run folder of
+// its own. The work is in `WiderUniverseRunner`.
+// see: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood
+static async Task<int> SweepWiderRun()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await new EquityBrief.Worker.Sweep.WiderUniverseRunner(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        store.DataRoot,
+        configuration[EquityBrief.Core.Sweep.SweepFolder.Key],
+        Console.Out).RunAsync();
 }
 
 // The context run, by hand: the drift's revenue growth and the pullback's RSI order, each added alone to its family as

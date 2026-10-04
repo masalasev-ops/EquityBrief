@@ -32,6 +32,10 @@ namespace EquityBrief.Worker.Bars;
 // a name; and for the revenue, every figure each pulled company's filer stated under each revenue concept,
 // with the day it was filed, one request a filer for its whole facts, each into a table of its own marked and
 // removed the same way.
+//
+// Asked for a wider index's members, the S&P 400's or the S&P 600's, it stores the members its answer lists today,
+// one request an index, marked and removed the same way; every other pull asked for that index reads its names from
+// them, survivors alone, since the answer carries no span of membership.
 // see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
 // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
 public sealed class HistoryPull(
@@ -52,9 +56,10 @@ public sealed class HistoryPull(
             new StoreTouch(Store.PulledShares, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.PulledSplit, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.PulledRevenue, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.PulledMember, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
-        Feeds: [Feed.HistoricalPrice, Feed.EarningsCalendar, Feed.CompanyFinancials, Feed.SplitsAndDividends, Feed.FilingsArchive]);
+        Feeds: [Feed.IndexMembership, Feed.HistoricalPrice, Feed.EarningsCalendar, Feed.CompanyFinancials, Feed.SplitsAndDividends, Feed.FilingsArchive]);
 
     public const string Stage = "history-pull";
     public const string PurgeStage = "history-purge";
@@ -77,6 +82,14 @@ public sealed class HistoryPull(
 
     // The funds a sector funds pull asks for, in the order of their tickers.
     public static IReadOnlyList<string> SectorFunds { get; } = [.. GicsSectors.Funds.Values.Order(StringComparer.Ordinal)];
+
+    // The members pull's own stage, since it asks one index's components and stores one table.
+    public const string MembersStage = "history-pull-members";
+
+    // The indices beside the night's own whose members today a members pull stores, the S&P 400 and the S&P 600, and
+    // which every other pull reads its names from, in place of the night's membership.
+    // see: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood
+    public static IReadOnlyList<string> WiderIndices { get; } = ["MID", "SML"];
 
     // The requests a second the archive's fair access asks a caller to stay within, which the revenue pull keeps
     // by waiting a tenth of a second after each.
@@ -155,6 +168,17 @@ public sealed class HistoryPull(
         ON CONFLICT (cik, concept, period_start, period_end, accession) DO NOTHING;
     ";
 
+    // A member of a wider index today as its answer lists it, insert only, so a member an earlier pull holds keeps that
+    // pull's row.
+    const string InsertMember = @"
+        INSERT INTO pulled_member (index_code, ticker, exchange, name, sector, industry, pull)
+        VALUES ($index_code, $ticker, $exchange, $name, $sector, $industry, $pull)
+        ON CONFLICT (index_code, ticker) DO NOTHING;
+    ";
+
+    // The names a pull asks for on a wider index: its members today, as a members pull stored them.
+    const string MembersHeld = "SELECT ticker FROM pulled_member WHERE index_code = $index ORDER BY ticker;";
+
     // The filers the revenue pull asks for: every CIK the pulled companies carry, and the tickers carrying none.
     const string PulledFilers = "SELECT DISTINCT cik FROM pulled_company WHERE cik IS NOT NULL ORDER BY cik;";
     const string PulledWithoutAFiler = "SELECT ticker FROM pulled_company WHERE cik IS NULL ORDER BY ticker;";
@@ -167,6 +191,7 @@ public sealed class HistoryPull(
     const string SharesCount = "SELECT COUNT(*) FROM pulled_shares;";
     const string SplitCount = "SELECT COUNT(*) FROM pulled_split;";
     const string RevenueCount = "SELECT COUNT(*) FROM pulled_revenue;";
+    const string MemberCount = "SELECT COUNT(*) FROM pulled_member WHERE index_code = $index;";
 
     const string BarsOfPull = "SELECT COUNT(*) FROM pulled_bar WHERE pull = $pull;";
     const string EarningsOfPull = "SELECT COUNT(*) FROM pulled_earnings WHERE pull = $pull;";
@@ -176,6 +201,7 @@ public sealed class HistoryPull(
     const string SharesOfPull = "SELECT COUNT(*) FROM pulled_shares WHERE pull = $pull;";
     const string SplitsOfPull = "SELECT COUNT(*) FROM pulled_split WHERE pull = $pull;";
     const string RevenueOfPull = "SELECT COUNT(*) FROM pulled_revenue WHERE pull = $pull;";
+    const string MembersOfPull = "SELECT COUNT(*) FROM pulled_member WHERE pull = $pull;";
 
     // The removal, which takes a pull's rows whole and nothing else.
     const string DeleteBarsOfPull = "DELETE FROM pulled_bar WHERE pull = $pull;";
@@ -186,6 +212,7 @@ public sealed class HistoryPull(
     const string DeleteSharesOfPull = "DELETE FROM pulled_shares WHERE pull = $pull;";
     const string DeleteSplitsOfPull = "DELETE FROM pulled_split WHERE pull = $pull;";
     const string DeleteRevenueOfPull = "DELETE FROM pulled_revenue WHERE pull = $pull;";
+    const string DeleteMembersOfPull = "DELETE FROM pulled_member WHERE pull = $pull;";
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -201,8 +228,10 @@ public sealed class HistoryPull(
     // The verb a person runs: `history-pull --from <yyyy-MM-dd>`, the same with `--surprises` for the earnings
     // surprises alone, `--market` for the index's and the VIX's series alone, `--sector-etfs` for the sector funds'
     // series, `--companies` for each name's company and share counts or `--splits` for each name's splits,
-    // `history-pull --revenue` for each pulled company's revenue as its filer filed it, or `history-pull --purge
-    // <pull>`. The feeds are asked for only by a pull, so removing one needs no key and reaches no provider.
+    // `history-pull --revenue` for each pulled company's revenue as its filer filed it, `history-pull --members
+    // --index <MID or SML>` for a wider index's members today, or `history-pull --purge <pull>`. Every pull but the
+    // revenue's and the market series' takes `--index`, a wider index's names being its members today as a members
+    // pull stored them. The feeds are asked for only by a pull, so removing one needs no key and reaches no provider.
     public static async Task<int> RunAsync(
         string[] args,
         Func<NightFeeds> feeds,
@@ -213,7 +242,8 @@ public sealed class HistoryPull(
         Func<IMarketSeriesFeed>? market = null,
         Func<ICompanyFeed>? companies = null,
         Func<ISplitHistoryFeed>? splits = null,
-        Func<IFiledRevenueFeed>? revenue = null)
+        Func<IFiledRevenueFeed>? revenue = null,
+        Func<IIndexComponentsFeed>? members = null)
     {
         if (VerbArguments.Value(args, "--purge") is { } pull)
         {
@@ -221,7 +251,7 @@ public sealed class HistoryPull(
             {
                 var purged = await PurgeAsync(clock, databaseFile, pull, RunIdAt(PurgePrefix, clock.UtcNow));
 
-                output.WriteLine(FormattableString.Invariant($"removed the pull {purged.Pull}: {purged.Bars} bar(s), {purged.Earnings} earnings print(s), {purged.Surprises} surprise(s), {purged.MarketBars} market session(s), {purged.Companies} compan(ies), {purged.Shares} share count(s), {purged.Splits} split(s) and {purged.Revenue} revenue figure(s)"));
+                output.WriteLine(FormattableString.Invariant($"removed the pull {purged.Pull}: {purged.Bars} bar(s), {purged.Earnings} earnings print(s), {purged.Surprises} surprise(s), {purged.MarketBars} market session(s), {purged.Companies} compan(ies), {purged.Shares} share count(s), {purged.Splits} split(s), {purged.Revenue} revenue figure(s) and {purged.Members} member(s)"));
 
                 return 0;
             }
@@ -236,6 +266,11 @@ public sealed class HistoryPull(
         if (VerbArguments.Has(args, "--revenue"))
         {
             return await RevenueAsync(revenue, clock, databaseFile, output, error);
+        }
+
+        if (VerbArguments.Has(args, "--members"))
+        {
+            return await MembersAsync(VerbArguments.Value(args, "--index"), members, clock, databaseFile, output, error);
         }
 
         if (VerbArguments.Value(args, "--from") is not { } given
@@ -874,6 +909,127 @@ public sealed class HistoryPull(
         }
     }
 
+    // The verb's members branch, which asks one wider index's components and so needs no date. An index outside the wider
+    // ones is refused before any request, and an answer that cannot be read or lists nobody ends the command badly with
+    // its row saying why.
+    static async Task<int> MembersAsync(
+        string? indexCode,
+        Func<IIndexComponentsFeed>? members,
+        IClock clock,
+        string databaseFile,
+        TextWriter output,
+        TextWriter error)
+    {
+        if (indexCode is null || !WiderIndices.Contains(indexCode, StringComparer.Ordinal))
+        {
+            error.WriteLine($"history-pull: name a wider index to pull the members of with '--index', one of {string.Join(", ", WiderIndices)}; the night keeps the S&P 500's own.");
+
+            return 2;
+        }
+
+        if (Resolved(members, "members", error) is not { } feed)
+        {
+            return 1;
+        }
+
+        var runId = RunIdAt(RunPrefix, clock.UtcNow);
+        var pulled = await PullMembersAsync(feed, clock, databaseFile, indexCode, runId);
+
+        output.WriteLine("pull " + runId);
+        output.WriteLine(Detail(pulled));
+
+        return pulled.Refused is null ? 0 : 1;
+    }
+
+    // Pulls a wider index's members today, one request: each component the index's answer lists, stored with its
+    // exchange, name, sector and industry and marked by the pull. An answer the provider refuses, does not send in time
+    // or that cannot be read stores nothing and says why on the pull's row. The members are survivors alone, since the
+    // answer carries no span of membership, and the row says so.
+    // see: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood
+    public static async Task<HistoryMemberOutcome> PullMembersAsync(
+        IIndexComponentsFeed feed,
+        IClock clock,
+        string databaseFile,
+        string indexCode,
+        string runId,
+        CancellationToken cancellation = default)
+    {
+        if (!WiderIndices.Contains(indexCode, StringComparer.Ordinal))
+        {
+            throw new ArgumentException($"A members pull asks for a wider index, one of {string.Join(", ", WiderIndices)}, and {indexCode} is not one.", nameof(indexCode));
+        }
+
+        var startedAt = clock.UtcNow;
+        var requestsBefore = feed.Requests;
+        IReadOnlyList<IndexComponent> listed = [];
+        string? refused = null;
+
+        try
+        {
+            listed = await feed.ComponentsAsync(indexCode, cancellation);
+        }
+        catch (Exception failure) when (failure is not OperationCanceledException || !cancellation.IsCancellationRequested)
+        {
+            refused = failure.Message;
+        }
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var before = await MembersCountAsync(connection, indexCode, cancellation);
+
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var member in listed)
+        {
+            await using var insert = connection.CreateCommand();
+            insert.CommandText = InsertMember;
+            insert.Parameters.AddWithValue("$index_code", indexCode);
+            insert.Parameters.AddWithValue("$ticker", member.Ticker);
+            insert.Parameters.AddWithValue("$exchange", member.Exchange);
+            insert.Parameters.AddWithValue("$name", (object?)member.Name ?? DBNull.Value);
+            insert.Parameters.AddWithValue("$sector", (object?)member.Sector ?? DBNull.Value);
+            insert.Parameters.AddWithValue("$industry", (object?)member.Industry ?? DBNull.Value);
+            insert.Parameters.AddWithValue("$pull", runId);
+
+            await insert.ExecuteNonQueryAsync(cancellation);
+        }
+
+        var held = await MembersCountAsync(connection, indexCode, cancellation);
+        var outcome = new HistoryMemberOutcome(indexCode, listed.Count, held - before, held, refused, feed.Requests - requestsBefore);
+
+        await AppendAsync(
+            connection,
+            runId,
+            MembersStage,
+            startedAt,
+            clock.UtcNow,
+            refused is null ? "ok" : "refused",
+            outcome.Written,
+            outcome.Requests,
+            Detail(outcome),
+            cancellation);
+
+        await transaction.CommitAsync(cancellation);
+
+        return outcome;
+    }
+
+    static async Task<int> MembersCountAsync(SqliteConnection connection, string indexCode, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = MemberCount;
+        command.Parameters.AddWithValue("$index", indexCode);
+
+        return Convert.ToInt32(await command.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture);
+    }
+
+    // A members pull in words, as its row and the command state it.
+    public static string Detail(HistoryMemberOutcome outcome) =>
+        outcome.Refused is { } why
+            ? FormattableString.Invariant($"{outcome.Index}: nothing was stored, {why}; {outcome.Requests} request(s)")
+            : FormattableString.Invariant($"{outcome.Index}: {outcome.Listed} member(s) today, {outcome.Written} new and {outcome.Held} held, survivors alone since the answer carries no span of membership; {outcome.Requests} request(s)");
+
     // A feed a branch was handed, resolved, or the refusal written and none.
     static T? Resolved<T>(Func<T>? feed, string what, TextWriter error)
         where T : class
@@ -1430,7 +1586,7 @@ public sealed class HistoryPull(
             ? percent
             : null;
 
-    // Removes one pull's rows from the eight tables and says so on the run log. A pull no row carries is
+    // Removes one pull's rows from the nine tables and says so on the run log. A pull no row carries is
     // refused and nothing is written, so a mistyped id cannot record a removal that removed nothing.
     public static async Task<HistoryPurgeOutcome> PurgeAsync(
         IClock clock,
@@ -1452,8 +1608,9 @@ public sealed class HistoryPull(
         var sharesHeld = await CountAsync(connection, SharesOfPull, pull, cancellation);
         var splitsHeld = await CountAsync(connection, SplitsOfPull, pull, cancellation);
         var revenueHeld = await CountAsync(connection, RevenueOfPull, pull, cancellation);
+        var membersHeld = await CountAsync(connection, MembersOfPull, pull, cancellation);
 
-        if (barsHeld + earningsHeld + surprisesHeld + marketHeld + companiesHeld + sharesHeld + splitsHeld + revenueHeld == 0)
+        if (barsHeld + earningsHeld + surprisesHeld + marketHeld + companiesHeld + sharesHeld + splitsHeld + revenueHeld + membersHeld == 0)
         {
             throw new ArgumentException($"No pulled row carries the pull '{pull}', so there is nothing to remove.", nameof(pull));
         }
@@ -1463,7 +1620,7 @@ public sealed class HistoryPull(
         foreach (var removal in new[]
         {
             DeleteBarsOfPull, DeleteEarningsOfPull, DeleteSurprisesOfPull, DeleteMarketBarsOfPull,
-            DeleteCompaniesOfPull, DeleteSharesOfPull, DeleteSplitsOfPull, DeleteRevenueOfPull,
+            DeleteCompaniesOfPull, DeleteSharesOfPull, DeleteSplitsOfPull, DeleteRevenueOfPull, DeleteMembersOfPull,
         })
         {
             await using var delete = connection.CreateCommand();
@@ -1493,12 +1650,13 @@ public sealed class HistoryPull(
                 counts = sharesHeld,
                 splits = splitsHeld,
                 revenue = revenueHeld,
+                members = membersHeld,
             }),
             cancellation);
 
         await transaction.CommitAsync(cancellation);
 
-        return new HistoryPurgeOutcome(pull, barsHeld, earningsHeld, surprisesHeld, marketHeld, companiesHeld, sharesHeld, splitsHeld, revenueHeld);
+        return new HistoryPurgeOutcome(pull, barsHeld, earningsHeld, surprisesHeld, marketHeld, companiesHeld, sharesHeld, splitsHeld, revenueHeld, membersHeld);
     }
 
     // The windows the earnings calendar is asked for: each calendar month the span touches, cut to
@@ -1642,13 +1800,21 @@ public sealed class HistoryPull(
         return values;
     }
 
+    // The names a pull asks for: every name the index held over the span, or, for a wider index, its members today as a
+    // members pull stored them, which holds no span to read the dates against.
     static async Task<IReadOnlyList<string>> NamesAsync(SqliteConnection connection, string indexCode, DateOnly from, DateOnly through, CancellationToken cancellation)
     {
+        var wider = WiderIndices.Contains(indexCode, StringComparer.Ordinal);
+
         await using var command = connection.CreateCommand();
-        command.CommandText = NamesHeld;
+        command.CommandText = wider ? MembersHeld : NamesHeld;
         command.Parameters.AddWithValue("$index", indexCode);
-        command.Parameters.AddWithValue("$from", Text(from));
-        command.Parameters.AddWithValue("$through", Text(through));
+
+        if (!wider)
+        {
+            command.Parameters.AddWithValue("$from", Text(from));
+            command.Parameters.AddWithValue("$through", Text(through));
+        }
 
         var names = new List<string>();
 
@@ -1820,4 +1986,15 @@ public sealed record HistoryPurgeOutcome(
     int Companies = 0,
     int Shares = 0,
     int Splits = 0,
-    int Revenue = 0);
+    int Revenue = 0,
+    int Members = 0);
+
+// What one members pull did: the wider index asked, the members its answer listed today, those new to the store and
+// those it holds, why nothing was stored where the answer was refused or could not be read, and the requests made.
+public sealed record HistoryMemberOutcome(
+    string Index,
+    int Listed,
+    int Written,
+    int Held,
+    string? Refused,
+    int Requests);

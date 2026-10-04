@@ -12,14 +12,17 @@ namespace EquityBrief.Worker.Sweep;
 public sealed record SweepSurprise(DateOnly EventDate, bool After, double Percent);
 
 // One member of the index on any session of the history, with its series, the spans the index held it for, the
-// earnings dates on file for it, the sector it carries as filed today, and its surprises as filed.
+// earnings dates on file for it, the sector it carries as filed today, and its surprises as filed. A survivor is a name
+// the wider universe adds from today's S&P 400 and 600 members alone, read as a member on every session since nothing
+// says when it joined, which flatters the wider universe.
 public sealed record SweepName(
     string Ticker,
     SweepBar[] Bars,
     IReadOnlyList<(DateOnly? Joined, DateOnly? Left)> Spans,
     DateOnly[] Prints,
     string? Sector = null,
-    IReadOnlyList<SweepSurprise>? SurprisesFiled = null)
+    IReadOnlyList<SweepSurprise>? SurprisesFiled = null,
+    bool Survivor = false)
 {
     public IReadOnlyList<SweepSurprise> Surprises => SurprisesFiled ?? [];
 
@@ -43,7 +46,9 @@ public sealed record SweepHistoryInputs(
     string SurpriseSource = SweepHistory.NoSurprises,
     int Surprises = 0,
     int NamesWithoutASector = 0,
-    IReadOnlyList<(string Ticker, DateOnly Session)>? LiveListedNameSessions = null)
+    IReadOnlyList<(string Ticker, DateOnly Session)>? LiveListedNameSessions = null,
+    int Survivors = 0,
+    int WiderMembers = 0)
 {
     // The name-sessions the live list listed through the history's end, which the point-in-time check adds to
     // its sample.
@@ -103,6 +108,7 @@ public sealed class SweepHistory : IComponent
             new StoreTouch(Store.PulledShares, Touch.Read),
             new StoreTouch(Store.PulledSplit, Touch.Read),
             new StoreTouch(Store.PulledRevenue, Touch.Read),
+            new StoreTouch(Store.PulledMember, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.HeavyweightNight, Touch.Read),
@@ -143,7 +149,11 @@ public sealed class SweepHistory : IComponent
         return Date((string)(await command.ExecuteScalarAsync(cancellation))!);
     }
 
-    public async Task<SweepHistoryInputs> ReadAsync(DateOnly through, Action<string>? progress = null, CancellationToken cancellation = default)
+    // The history the sweep replays: the S&P 500's own, and with the wider universe asked for, today's members of the S&P
+    // 400 and 600 as a members pull stored them beside it, each read as a member on every session, a name the S&P 500
+    // held at some point read over its spans and every session besides, and one it never held marked a survivor.
+    // see: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood
+    public async Task<SweepHistoryInputs> ReadAsync(DateOnly through, Action<string>? progress = null, CancellationToken cancellation = default, bool wider = false)
     {
         await using var connection = new SqliteConnection(ConnectionString(databaseFile));
         await connection.OpenAsync(cancellation);
@@ -160,6 +170,27 @@ public sealed class SweepHistory : IComponent
             }
 
             held.Add((row.IsDBNull(1) ? null : Date(row.GetString(1)), row.IsDBNull(2) ? null : Date(row.GetString(2))));
+        }
+
+        var survivors = new HashSet<string>(StringComparer.Ordinal);
+        var widerMembers = 0;
+
+        if (wider && await TableHeldAsync(connection, "pulled_member", cancellation))
+        {
+            await foreach (var row in RowsAsync(connection, "SELECT DISTINCT ticker FROM pulled_member ORDER BY ticker;", [], cancellation))
+            {
+                var ticker = row.GetString(0);
+
+                widerMembers++;
+
+                if (!spans.TryGetValue(ticker, out var held))
+                {
+                    spans[ticker] = held = [];
+                    survivors.Add(ticker);
+                }
+
+                held.Add((null, null));
+            }
         }
 
         var prints = new Dictionary<string, SortedSet<DateOnly>>(StringComparer.Ordinal);
@@ -217,7 +248,8 @@ public sealed class SweepHistory : IComponent
                 held,
                 [.. (prints.GetValueOrDefault(ticker) ?? [])],
                 sectors.GetValueOrDefault(ticker),
-                [.. (surprises.GetValueOrDefault(ticker) ?? []).OrderBy(surprise => surprise.EventDate)]));
+                [.. (surprises.GetValueOrDefault(ticker) ?? []).OrderBy(surprise => surprise.EventDate)],
+                survivors.Contains(ticker)));
 
             if (++read % 100 == 0)
             {
@@ -239,8 +271,21 @@ public sealed class SweepHistory : IComponent
             Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(fingerprint.ToString())))[..16].ToLowerInvariant(),
             surpriseSource,
             surprises.Sum(pair => pair.Value.Count),
-            names.Count(name => name.Sector is null && name.Spans.Count > 0),
-            liveListed);
+            names.Count(name => name.Sector is null && name.Spans.Count > 0 && !name.Survivor),
+            liveListed,
+            survivors.Count,
+            widerMembers);
+    }
+
+    // Whether the store holds a table, so a store migrated before it read none rather than failing.
+    static async Task<bool> TableHeldAsync(SqliteConnection connection, string table, CancellationToken cancellation)
+    {
+        await foreach (var _ in RowsAsync(connection, "SELECT name FROM sqlite_master WHERE type = 'table' AND name = $table;", [("$table", table)], cancellation))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     // The market series the ideas' run reads, each series' closes through the history's end with the pull that

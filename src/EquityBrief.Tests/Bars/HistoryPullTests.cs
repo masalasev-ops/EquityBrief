@@ -313,7 +313,7 @@ public class HistoryPullTests
         Assert.Equal(["AAA|2026-07-30|history-pull-b", "BBB|2026-08-05|history-pull-b"], Rows(store, "SELECT ticker, event_date, pull FROM pulled_earnings ORDER BY ticker, event_date;"));
         Assert.Equal(barsBefore, Rows(store, "SELECT * FROM bar ORDER BY ticker, session_date;"));
         Assert.Equal(
-            ["history-purge|ok|0|0|{\"pull\":\"history-pull-a\",\"bars\":30,\"earnings\":1,\"surprises\":0,\"market\":0,\"companies\":0,\"counts\":0,\"splits\":0,\"revenue\":0}"],
+            ["history-purge|ok|0|0|{\"pull\":\"history-pull-a\",\"bars\":30,\"earnings\":1,\"surprises\":0,\"market\":0,\"companies\":0,\"counts\":0,\"splits\":0,\"revenue\":0,\"members\":0}"],
             Rows(store, "SELECT stage, outcome, rows_written, network_requests, detail FROM run_log WHERE run_id = 'history-purge-a';"));
 
         // A pull no row carries any longer is refused, and the refusal writes nothing.
@@ -443,7 +443,10 @@ public class HistoryPullTests
                     VALUES ('{ticker}', '2026-09-01', '100', '1', 'history-pull-hostile');
 
                     INSERT INTO pulled_revenue (cik, concept, period_start, period_end, accession, dollars, filed, form, pull)
-                    VALUES ('9999999999', 'Revenues', '2026-04-01', '2026-06-30', 'hostile-{ticker}', '1', '2026-07-31', '10-Q', 'history-pull-hostile');");
+                    VALUES ('9999999999', 'Revenues', '2026-04-01', '2026-06-30', 'hostile-{ticker}', '1', '2026-07-31', '10-Q', 'history-pull-hostile');
+
+                    INSERT INTO pulled_member (index_code, ticker, exchange, name, sector, industry, pull)
+                    VALUES ('MID', '{ticker}', 'US', 'Hostile', 'Utilities', 'Water Utilities', 'history-pull-hostile');");
             }
 
             store.Execute(@"
@@ -470,11 +473,11 @@ public class HistoryPullTests
 
             var tables = Rows(plain, "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'pulled\\_%' ESCAPE '\\' AND name NOT IN ('run_log', 'sqlite_sequence') ORDER BY name;");
 
-            // Every one of the eight pulled tables holds hostile rows, so no night can read one and compute the same.
+            // Every one of the nine pulled tables holds hostile rows, so no night can read one and compute the same.
             Assert.All(
-                ["pulled_bar", "pulled_earnings", "pulled_surprise", "pulled_market_bar", "pulled_company", "pulled_shares", "pulled_split", "pulled_revenue"],
+                ["pulled_bar", "pulled_earnings", "pulled_surprise", "pulled_market_bar", "pulled_company", "pulled_shares", "pulled_split", "pulled_revenue", "pulled_member"],
                 table => Assert.True(int.Parse(Rows(pulled, $"SELECT COUNT(*) FROM {table};")[0], CultureInfo.InvariantCulture) > 0, $"The hostile store holds no row in {table}."));
-            Assert.Equal(8, Rows(pulled, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name LIKE 'pulled\\_%' ESCAPE '\\';").Select(count => int.Parse(count, CultureInfo.InvariantCulture)).Single());
+            Assert.Equal(9, Rows(pulled, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name LIKE 'pulled\\_%' ESCAPE '\\';").Select(count => int.Parse(count, CultureInfo.InvariantCulture)).Single());
 
             Assert.True(tables.Count >= 30, $"Compared {tables.Count} tables, expected at least 30.");
             Assert.True(
@@ -520,7 +523,7 @@ public class HistoryPullTests
     [Fact]
     public void NoShippedSourceButThePullAndItsMigrationNamesThePulledTables()
     {
-        var naming = new System.Text.RegularExpressions.Regex(@"pulled_(bar|earnings|surprise|market_bar|company|shares|split|revenue)\b|Store\.Pulled(Bar|Earnings|Surprise|MarketBar|Company|Shares|Split|Revenue)\b");
+        var naming = new System.Text.RegularExpressions.Regex(@"pulled_(bar|earnings|surprise|market_bar|company|shares|split|revenue|member)\b|Store\.Pulled(Bar|Earnings|Surprise|MarketBar|Company|Shares|Split|Revenue|Member)\b");
 
         var files = Repository.SourceFiles()
             .Where(file => !file.Contains(Path.DirectorySeparatorChar + "EquityBrief.Tests" + Path.DirectorySeparatorChar, StringComparison.Ordinal))
@@ -548,6 +551,8 @@ public class HistoryPullTests
         Assert.Matches(naming, "SELECT new_shares FROM pulled_split;");
         Assert.Matches(naming, "SELECT dollars FROM pulled_revenue WHERE cik = $cik;");
         Assert.Matches(naming, "new StoreTouch(Store.PulledRevenue, Touch.Read)");
+        Assert.Matches(naming, "SELECT DISTINCT ticker FROM pulled_member ORDER BY ticker;");
+        Assert.Matches(naming, "new StoreTouch(Store.PulledMember, Touch.Read)");
         Assert.DoesNotMatch(naming, "var pulled_barrier = 1; Store.PulledBarrier");
         Assert.DoesNotMatch(naming, "var pulled_companyish = 1; Store.PulledSharesOut");
     }
@@ -671,7 +676,7 @@ public class HistoryPullTests
         Assert.Empty(Rows(store, "SELECT * FROM pulled_market_bar;"));
         Assert.Equal(barsKept, Rows(store, "SELECT ticker, session_date, pull FROM pulled_bar ORDER BY ticker, session_date;"));
         Assert.Equal(
-            [$"history-purge|ok|{{\"pull\":\"history-pull-market\",\"bars\":0,\"earnings\":0,\"surprises\":0,\"market\":{2 * SessionsInTheSpan},\"companies\":0,\"counts\":0,\"splits\":0,\"revenue\":0}}"],
+            [$"history-purge|ok|{{\"pull\":\"history-pull-market\",\"bars\":0,\"earnings\":0,\"surprises\":0,\"market\":{2 * SessionsInTheSpan},\"companies\":0,\"counts\":0,\"splits\":0,\"revenue\":0,\"members\":0}}"],
             Rows(store, "SELECT stage, outcome, detail FROM run_log WHERE run_id = 'history-purge-market';"));
 
         // And a purge of the bars' pull leaves the market series it did not write.

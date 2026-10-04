@@ -510,13 +510,28 @@ dotnet run --project src/EquityBrief.Worker -- history-pull --revenue --live
 
 The companies pull asks the fundamentals endpoint once for every name the index held over the span, about seven hundred names at its weight of ten, so about seven thousand weighted calls, and stores each answered name's filer, GICS sector and delisting in `pulled_company` and its quarterly share counts with the days their balance sheets were filed in `pulled_shares`. It prints the names it could not get with why, the companies filing no sector, no count with its date or no CIK, and how many of the fourteen members GICS moved after the close of 2023-03-17 the provider files in the sector they moved to, naming any it does not. The splits pull asks each of the same names for its splits, about seven hundred requests at a weight of one, into `pulled_split`, and prints how many of the splits are plain and how many a spin-off's or a merger's adjustment the provider files as a split. The sector funds pull asks for the eleven funds' daily series, eleven requests, into `pulled_market_bar` beside the index's and the VIX's, and exits with a failure where a fund is refused, as the market pull does. The revenue pull reads the filers the companies pull stored, so it is run after it and takes no date, and asks the SEC's archive once a filer for its whole facts, about seven hundred requests that cost nothing against the allowance, a tenth of a second apart, which took six and a half minutes for 670 filers on 2026-10-04; it prints each concept's filers and figures and names the filers stating under none of them. The archive asks for a contact in the request, which the worker reads from `EquityBrief:Providers:SecEdgar:Contact` as a research pass does. A name, fund or filer not served is named and the rest stored. Run them when no night is running.
 
+Today's members of the S&P 400 and the S&P 600, which the wider universe's first test reads, are pulled by the same verb, one index a command, and every other pull given that index asks for those members' names (see: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood):
+
+```
+dotnet run --project src/EquityBrief.Worker -- history-pull --members --index MID --live
+dotnet run --project src/EquityBrief.Worker -- history-pull --members --index SML --live
+dotnet run --project src/EquityBrief.Worker -- history-pull --from 2018-01-01 --index MID --live
+dotnet run --project src/EquityBrief.Worker -- history-pull --from 2018-01-01 --index SML --live
+dotnet run --project src/EquityBrief.Worker -- history-pull --surprises --from 2018-01-01 --index MID --live
+dotnet run --project src/EquityBrief.Worker -- history-pull --surprises --from 2018-01-01 --index SML --live
+dotnet run --project src/EquityBrief.Worker -- history-pull --splits --from 2018-01-01 --index MID --live
+dotnet run --project src/EquityBrief.Worker -- history-pull --splits --from 2018-01-01 --index SML --live
+```
+
+A members pull asks the index's fundamentals once, at a weight of ten, and stores each member its answer lists today in `pulled_member`; the answer carries no span of membership, so these are survivors alone, and an answer it cannot read stores nothing and fails the command with its row saying why. The bars pull then asks each member once at a weight of one, about a thousand requests for the two, and the calendar once a calendar month of the span, as it does for the S&P 500's names, the surprises pull asks the calendar the same way and the splits pull each member once, so the eight lines cost about two thousand five hundred weighted calls of the day's hundred thousand. A name already pulled for the S&P 500's history keeps the rows that pull wrote. A name not served is named and the rest stored. Run them when no night is running.
+
 Remove a pull whole by its run id:
 
 ```
 dotnet run --project src/EquityBrief.Worker -- history-pull --purge <the pull's run id>
 ```
 
-A purge removes every row that pull wrote from the eight tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull`, `history-pull-surprises`, `history-pull-market`, `history-pull-sector-funds`, `history-pull-companies`, `history-pull-splits`, `history-pull-revenue` and `history-purge`, and the run page draws each as run by hand.
+A purge removes every row that pull wrote from the nine tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull`, `history-pull-surprises`, `history-pull-market`, `history-pull-sector-funds`, `history-pull-companies`, `history-pull-splits`, `history-pull-revenue`, `history-pull-members` and `history-purge`, and the run page draws each as run by hand.
 
 ### Sweeping the swing filter over the stored history
 
@@ -569,6 +584,16 @@ dotnet run --project src/EquityBrief.Worker -c Release -- sweep-context
 ```
 
 It reads the live store read-only, the revenue the revenue pull stored among it, writes nothing to it, and writes its report and its figures into a run folder of its own under the sweep's folder, served at `http://localhost:5152/sweep` as the newest run. Its report states each family's tries, two on the drift and one on the pullback, against what luck alone passes, how many of the drift's listings read a revenue growth, and how many of each revenue idea's trades read a quarter first filed after their buy. It waits for the night as the ideas' run does and is started the same way, from `main`'s Release build. Nothing it shows is frozen or registered; a check joins a family only as a variant registered on your go.
+
+### The S&P 1500 on today's members
+
+Once today's members of the S&P 400 and 600 and their history are pulled, each swing family's rule as frozen is replayed over the 1,500 and over the 500 alone in one run (see: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood):
+
+```
+dotnet run --project src/EquityBrief.Worker -c Release -- sweep-wider
+```
+
+It reads the history twice from the live store, read-only, the S&P 500's alone and the 1,500 with the pulled members read as members on every session, writes nothing to the store, and writes its report and its figures into a run folder of its own under the sweep's folder, served at `http://localhost:5152/sweep` as the newest run. It replays the pullback's base, the breakout and the earnings drift over each and judges the 1,500 against the 500 by the ideas' run's test on the edge, stating what luck alone passes over the three tries. Every figure it states for the 1,500 says it holds survivors only, since a history of today's members misses every company that left either index or failed. Its answer is the operator's rule: where no family improves, the widening is dropped and recorded as not adopted; where one does, nothing is adopted until the result holds on membership as it stood. It refuses to start before a members pull has stored either index, and waits for the night as the ideas' run does, allowing itself two hours before the night's window. Start it from `main`'s Release build. Nothing it shows is adopted, frozen or registered.
 
 ### Registering a candidate and versioning a ladder rule
 

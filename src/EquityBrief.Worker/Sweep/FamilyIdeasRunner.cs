@@ -100,6 +100,30 @@ public sealed class FamilyIdeasRunner(IClock clock, string databaseFile, string 
     // listings the rule as frozen makes.
     public static (FamilyIdeasRead Read, int Listings) Read(string family, SweepHistoryInputs inputs, IReadOnlyList<SweepMarketSeries> market, Action<string>? progress = null)
     {
+        var (replay, adapter, frozen) = Replay(family, inputs, market, progress);
+        var leftOut = SweepIdeas.LeftOut(market);
+        var asFrozen = replay.Evaluate("as frozen", null);
+        var readings = FamilyIdeas.For(family)
+            .Where(idea => !leftOut.Contains(idea.Key))
+            .Select(idea =>
+            {
+                var figures = replay.Evaluate(idea.Key, idea);
+
+                return new FamilyIdeaReading(idea, figures, SweepIdeas.Test(figures, asFrozen, idea.Market));
+            })
+            .ToArray();
+
+        return (new FamilyIdeasRead(family, adapter.Grid.Key(frozen), asFrozen, readings), replay.Listings);
+    }
+
+    // The family's rule as frozen alone over the history and the market series, with no idea read on it.
+    public static IdeaFigures AsFrozen(string family, SweepHistoryInputs inputs, IReadOnlyList<SweepMarketSeries> market, Action<string>? progress = null) =>
+        Replay(family, inputs, market, progress).Replay.Evaluate("as frozen", null);
+
+    // The replay every reading of a frozen family runs through: each name's series, the members, the family's own
+    // listings at its frozen setting and the market switches on each session.
+    static (FamilyIdeaReplay Replay, FamilySweepRunner.Adapter Adapter, int[] Frozen) Replay(string family, SweepHistoryInputs inputs, IReadOnlyList<SweepMarketSeries> market, Action<string>? progress)
+    {
         var calendar = inputs.Sessions;
         var sessionAt = calendar.Select((session, index) => (session, index)).ToDictionary(pair => pair.session, pair => pair.index);
         var firstScored = Array.FindIndex(calendar, session => session >= SweepColumns.FirstScored);
@@ -123,18 +147,7 @@ public sealed class FamilyIdeasRunner(IClock clock, string databaseFile, string 
         var vix = SweepIdeas.OnCalendar(market.FirstOrDefault(one => one.Series == "VIX"), calendar);
         var switches = SweepIdeas.Switches(breadth, highs, lows, index, vix);
         var replay = new FamilyIdeaReplay(adapter, frozen, series, members, switches, YearOf, nights);
-        var leftOut = SweepIdeas.LeftOut(market);
-        var asFrozen = replay.Evaluate("as frozen", null);
-        var readings = FamilyIdeas.For(family)
-            .Where(idea => !leftOut.Contains(idea.Key))
-            .Select(idea =>
-            {
-                var figures = replay.Evaluate(idea.Key, idea);
 
-                return new FamilyIdeaReading(idea, figures, SweepIdeas.Test(figures, asFrozen, idea.Market));
-            })
-            .ToArray();
-
-        return (new FamilyIdeasRead(family, adapter.Grid.Key(frozen), asFrozen, readings), replay.Listings);
+        return (replay, adapter, frozen);
     }
 }

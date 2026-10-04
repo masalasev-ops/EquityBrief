@@ -1114,6 +1114,20 @@
       "trimmedTo": "nothing. The S&P 400's answer to the spans of membership the S&P 500's answer carries: none."
     },
     {
+      "file": "phase14-mid-cap-components.json",
+      "endpoint": "fundamentals/MID.INDX",
+      "query": "fundamentals/MID.INDX?historical=1&fmt=json",
+      "fetchedAt": "2026-10-04T16:46:39Z",
+      "trimmedTo": "nothing. The S&P 400's whole answer asked with historical=1 on the operator's instruction of 2026-10-04: General and its 400 Components today, and no HistoricalTickerComponents."
+    },
+    {
+      "file": "phase14-small-cap-components.json",
+      "endpoint": "fundamentals/SML.INDX",
+      "query": "fundamentals/SML.INDX?historical=1&fmt=json",
+      "fetchedAt": "2026-10-04T16:46:39Z",
+      "trimmedTo": "every component but VSCO, the 547th listed, whose company name carries a word the credential scan refuses: 602 of the 603 Components today beside General, and no HistoricalTickerComponents, the S&P 600's whole answer asked with historical=1 on the operator's instruction of 2026-10-04."
+    },
+    {
       "file": "phase14-mid-cap-general.json",
       "endpoint": "fundamentals/MID.INDX",
       "query": "fundamentals/MID.INDX?filter=General",

@@ -44,6 +44,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `pulled_shares` | HistoryPull | none | HistoryPull |
 | `pulled_split` | HistoryPull | none | HistoryPull |
 | `pulled_revenue` | HistoryPull | none | HistoryPull |
+| `pulled_member` | HistoryPull | none | HistoryPull |
 | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
 | `swing` | SwingFinder | SwingFinder | SwingFinder |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
@@ -352,6 +353,23 @@ Grain: one row per filer per revenue concept per period per filing stating it.
 Primary key: `cik`, `concept`, `period_start`, `period_end`, `accession`.
 
 **Every revenue figure each pulled company's filer stated, with the day it was filed, read by no night** (see: A quarter's revenue is read as first filed, a fiscal fourth quarter being the year less its first nine months). The operator's `history-pull --revenue` asks the archive once a filer for its whole facts, for the filers `pulled_company` carries, and stores every figure stated for a period under each revenue concept, a figure stated for an instant being no revenue. Keyed on the filer rather than the ticker, since two listings of one company share a filer, and on the filing, since a quarter a later filing states again as its year-earlier column or restates is a row of its own beside the one that first stated it, which is what lets a quarter be read as first filed. A concept a filer never filed under stores nothing and fails nothing. Removed whole with its pull, and a second pull adds only the figures no earlier pull holds.
+
+### pulled_member
+Grain: one row per wider index per member its answer listed today.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `MID` for the S&P 400 or `SML` for the S&P 600 |
+| `ticker` | TEXT | the listing's code as the answer files it |
+| `exchange` | TEXT | the listing's exchange as the answer files it |
+| `name` | TEXT | the company's name as filed, null where none is |
+| `sector` | TEXT | the sector as filed, null where none is |
+| `industry` | TEXT | the industry as filed, null where none is |
+| `pull` | TEXT | the run id of the pull that wrote the row |
+
+Primary key: `index_code`, `ticker`.
+
+**Today's members of the S&P 400 and 600, survivors alone, read by no night** (see: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood). The operator's `history-pull --members --index <MID or SML>` asks that index's fundamentals once and stores each member its answer lists today. The answer carries no span of membership, so a row says only that the name is a member today, and a company that left either index before today is in neither. Every other pull given that index reads its names from these rows. The sweep history reads them as members on every session when the wider universe is asked for. Removed whole with its pull, and a second pull adds only the members no earlier pull holds.
 
 ### indicator
 Grain: one row per ticker, session and indicator name.

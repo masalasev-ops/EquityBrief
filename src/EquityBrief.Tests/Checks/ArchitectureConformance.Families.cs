@@ -147,9 +147,9 @@ public partial class ArchitectureConformance
         ], 3),
     ];
 
-    // The rows the document gains after phase 14's report, 14.8's among them, named beside the pair and never counted in
-    // it. None yet.
-    internal static string[] AfterPhaseFourteen => [];
+    // The rows the document gains after phase 14's report, named beside the pair and never counted in it: 14.8's,
+    // section 17's row for the wider universe's test and section 18's two.
+    internal static string[] AfterPhaseFourteen => [.. FixtureExpectations.WiderUniverseClaims];
 
     [Fact]
     public void ThePhaseFourteenPairIsCheckedAgainstTheActualWithEveryClaimThatMovedNamed()
@@ -266,7 +266,7 @@ public partial class ArchitectureConformance
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 970),
+            (789, 853, 6, 4, 855, 876, 973),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }
