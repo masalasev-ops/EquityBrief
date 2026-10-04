@@ -491,13 +491,24 @@ dotnet run --project src/EquityBrief.Worker -- history-pull --market --from 2018
 
 It asks the provider's historical endpoint once for each, `GSPC` and `VIX` under its index exchange, two requests at a weight of one whatever the span, and stores every session sent in `pulled_market_bar`, every row carrying the pull's run id. It prints each series' sessions with the first and the last. A series the provider refuses stores nothing, is named, and the command exits with a failure. Run it when no night is running.
 
+Each company of the history, its splits, the sector funds and each filer's revenue as first filed, which the sector heavyweights and the context checks are measured over, are pulled apart by the same verb, in this order (see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night):
+
+```
+dotnet run --project src/EquityBrief.Worker -- history-pull --companies --from 2018-01-01 --live
+dotnet run --project src/EquityBrief.Worker -- history-pull --splits --from 2018-01-01 --live
+dotnet run --project src/EquityBrief.Worker -- history-pull --sector-etfs --from 2018-01-01 --live
+dotnet run --project src/EquityBrief.Worker -- history-pull --revenue --live
+```
+
+The companies pull asks the fundamentals endpoint once for every name the index held over the span, about seven hundred names at its weight of ten, so about seven thousand weighted calls, and stores each answered name's filer, GICS sector and delisting in `pulled_company` and its quarterly share counts with the days their balance sheets were filed in `pulled_shares`. It prints the names it could not get with why, the companies filing no sector, no count with its date or no CIK, and how many of the fourteen members GICS moved after the close of 2023-03-17 the provider files in the sector they moved to, naming any it does not. The splits pull asks each of the same names for its splits, about seven hundred requests at a weight of one, into `pulled_split`. The sector funds pull asks for the eleven funds' daily series, eleven requests, into `pulled_market_bar` beside the index's and the VIX's, and exits with a failure where a fund is refused, as the market pull does. The revenue pull reads the filers the companies pull stored, so it is run after it and takes no date, and asks the SEC's archive once a filer and revenue concept, about four thousand requests that cost nothing against the allowance, a tenth of a second apart, which takes about fifteen minutes; it prints each concept's filers and figures and names the filers stating under none of them. The archive asks for a contact in the request, which the worker reads from `EquityBrief:Providers:SecEdgar:Contact` as a research pass does. A name, fund or filer not served is named and the rest stored. Run them when no night is running.
+
 Remove a pull whole by its run id:
 
 ```
 dotnet run --project src/EquityBrief.Worker -- history-pull --purge <the pull's run id>
 ```
 
-A purge removes every row that pull wrote from the four tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull`, `history-pull-surprises`, `history-pull-market` and `history-purge`, and the run page draws each as run by hand.
+A purge removes every row that pull wrote from the eight tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull`, `history-pull-surprises`, `history-pull-market`, `history-pull-sector-funds`, `history-pull-companies`, `history-pull-splits`, `history-pull-revenue` and `history-purge`, and the run page draws each as run by hand.
 
 ### Sweeping the swing filter over the stored history
 

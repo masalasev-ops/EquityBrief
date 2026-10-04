@@ -37039,3 +37039,64 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             FAIL, 0 out of scope, 0 unexamined, 914 placements and verdicts reconciled against a floor of 34, fixture
             PRESENT, 43 checks on the roster, 43 carried and 43 passed.
 Carried:    the remedy's run and each rule's replay line; the night of 2026-10-05 read; the fork's ruling before 14.3.
+
+### 14.1 - the remedy run: the sixteen family rules registered again, each replayed first, all carrying their records on   2026-10-03
+
+Ran:        `tools/remedy.ps1 tools/remedies/2026-10-03-14.1-the-family-rules-replayed.txt` from main at eb6dcbb, at
+            about 23:36 UTC with no night, drain or labeller running and no night lock: `register --moved` replayed
+            each of the sixteen standing family rules and registered all sixteen again at one instant, the breakout's
+            from a583427328fe to fd0abd423161 and the drift's from fc5b0bdd1256 to 699aa6c0831f.
+Replayed:   the fourteen the freezes registered on 2026-10-02 each over that one night, the one the store's family
+            results hold since: the breakout's seven reproduced their no trade and the drift's seven their trades,
+            one each for the variants within 3 sessions on 1.5 times the volume and within 5 sessions, none for the
+            other five. So each counts from 2026-10-02 again, where the market switches' registration of 2026-10-03
+            had restarted it from 2026-10-05. The two switched variants, first registered on 2026-10-03, replayed no
+            night and count from 2026-10-05. The run page for 2026-10-02 drew its fourteen rows each counting from
+            2026-10-02, none restarted, from main's Release build on 5152.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            14.2 entry below states.
+Carried:    the night of 2026-10-05 read; the fork's ruling before 14.3.
+
+### 14.2 - the pulls behind the sector heavyweights and the context checks, and the readings over them   2026-10-04
+
+Built:      `history-pull` gains four pulls, each into a table of its own marked by its pull, removed whole by it
+            and read by no night, each naming a name, fund or filer not served while it stores the rest:
+            `--companies`, each history name's filer, GICS classification, delisting and quarterly share counts
+            with their filing days, one fundamentals request a name with a filter, into `pulled_company` and
+            `pulled_shares`; `--splits`, one request a name, into `pulled_split`; `--sector-etfs`, the eleven funds'
+            series into `pulled_market_bar`; and `--revenue`, every figure each pulled filer stated under six revenue
+            concepts with its filing day, one archive request a filer and concept a tenth of a second apart, into
+            `pulled_revenue`. Migration 58. The requests sit on the existing fundamentals, corporate action and
+            archive feeds behind three interfaces, read by parsers written against four new captures. Four
+            readings in the core, each a decision: a company's value on a session, its sector on a session with the
+            fourteen moves of 2023-03-17 from a committed table the companies pull reads against the sectors and
+            filers filed, the rank by company, and a quarter's revenue as first filed. A fifth decision for the
+            pulls. 14.2's own text amends "the provider's sub-industries" to the sectors and filers filed, since the
+            provider files Corpay under Diversified Financial Services.
+Tests:      1798, from 1787: eleven added, the four readings by hand, the captured answers read, and each pull,
+            the moves' check and the verb over constructed answers; the night over a store holding pulled history
+            now holds hostile rows in all eight tables, and the scan of the shipped source names the four new ones.
+Claims:     912, from 903: section 17's five rows and section 18's four, against about eight the plan counted.
+Pins:       none moved. The family rules' lists, the candidates' shared evaluation sources, the swing filter's and
+            the rule versions' lists were read and no file on any is touched; the readings' files call nothing the
+            evaluation path's reader finds.
+Mutated:    the rule, stated before the run: each property the readings and the pulls add broken alone, made by
+            hand over the working tree carrying them before its commit, filtered to the tests of this checkpoint
+            and reverted.
+            P1 a rank from today's counts, the count read whatever its filing day: red in the value test and the
+            rank test.
+            P2 a balance sheet filed on the session read on it: red in the value test.
+            P3 revenue read from the newest filing stating it: red in the revenue test and the captured answers'.
+            P4 the fourteen moves of 2023-03-17 not applied: red in the sector test.
+            P5 the value read off the dividend-adjusted close: red in the value test.
+            P6 the companies pull's try a name catching a refusal alone: red in the companies pull's test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: eca290d, the
+            entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1798 of 1798 tests ran with none
+            failed, migrations 0 to 58 with none pending, schema version 58, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 912 claims, 912 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 923
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
+Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-04-14.2-the-pulls.txt`, then an entry
+            with the names answered, those lacking a sector, a count or a CIK, the splits, the revenue figures by
+            concept, the fourteen moves' line, the check of 30 sampled releases and the fork's figures over the
+            pulled data; the night of 2026-10-05 read; the fork's ruling before 14.3.

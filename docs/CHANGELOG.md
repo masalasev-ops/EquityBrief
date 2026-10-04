@@ -10595,3 +10595,52 @@ Was:
 Now:
 > `fixture-expectations` adds the replay over a store whose night the evaluator and the recorder ran and to which a later session's bars came after, reproducing, restarting with the trade named, and a rule registered once read from its registration; `read-surface` adds the run page stating beside each rule where its record counts from and why one restarted
 Why: the checks reach what 14.1's tests assert.
+### 2026-10-04 - ARCHITECTURE.html - the history pull's catalogue row names the sector funds, companies, splits and revenue pulls
+Authorised by: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+Was:
+> Reads "historical price feed, earnings calendar feed, membership, pulled bars, pulled earnings, pulled surprises, pulled market series"; Writes "pulled bars, pulled earnings, pulled surprises, pulled market series"; the description ending "... a series the provider refuses storing nothing and failing the pull (see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night)"
+Now:
+> Reads adds "company financials feed, splits and dividends feed, filings archive" and "pulled companies, pulled share counts, pulled splits, pulled revenue", Writes the four tables; the description adds the sector funds pull, the companies pull, the splits pull and the revenue pull at no more than ten requests a second, each naming what is not served, the companies pull naming the companies filing no sector, no dated count or no CIK and reading the fourteen moves of 2023-03-17 against the sectors filed (see: ...)
+Why: 14.2 builds the four pulls the sector heavyweights and the context checks are measured over.
+### 2026-10-04 - ARCHITECTURE.html - section 16's pulled history row holds the eight tables
+Authorised by: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+Was:
+> "... and, from a market pull, one row per series and session holding the index's or the VIX's open, high, low and close as the provider sent them, each row carrying the run id of the pull that wrote it" and "until the operator removes the pull, whole, by that id; no night reads any of the four tables, ..."
+Now:
+> adds each sector fund's series, a company's filer, classification and delisting, its quarterly counts with their filing days and basis, its splits, and each revenue figure with its filing; "no night reads any of the eight tables", citing the decision beside the three it cited
+Why: the four tables are pulled history, removed whole with their pull and read by no night.
+### 2026-10-04 - ARCHITECTURE.html - section 17 gains the readings over the pulls and the archive's rate, and section 18 the pulls' four failures
+Authorised by: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+Was:
+> no row for a company's value, its sector on a session, the rank by company, revenue as first filed or the archive's rate, and no row for a name or filer a pull is not served, a company filing no sector, count or CIK, one of the fourteen moves filed elsewhere or a filer stating no revenue
+Now:
+> section 17's rows "Company value", "Sector on a session", "Rank by company", "Revenue as first filed" and "Archive requests", each citing its decision; section 18's rows "A name or a filer a companies, splits or revenue pull asks for is not served", "A company filing no sector, no count with its date or no CIK", "One of the fourteen moves of 2023-03-17 filed in another sector or under another filer" and "A filer stating its revenue under none of the concepts"
+Why: each reading is ruled with its reasons (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis) (see: A company's sector on a session is the GICS sector the provider files, with the fourteen moves of 2023-03-17 read by date) (see: Companies are ranked by CIK with one listing held, the class that traded the more dollars over fifty sessions) (see: A quarter's revenue is read as first filed, a fiscal fourth quarter being the year less its first nine months), and each figure is held by the code.
+### 2026-10-04 - SCHEMA.md - the pulled market series holds the sector funds, and four pulled tables
+Authorised by: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+Was:
+> "Grain: one row per series per session a market pull reached." and "`GSPC`, the index itself, or `VIX`"
+Now:
+> "Grain: one row per series per session a market pull or a sector funds pull reached." and "`GSPC`, the index itself, `VIX`, or the ticker of one of the eleven sector funds", with a paragraph on the funds; the ownership table and four sections for `pulled_company`, `pulled_shares`, `pulled_split` and `pulled_revenue`, the history pull their one writer and deleter
+Why: migration 58 creates the four tables, and the funds' series sit beside the index's and the VIX's.
+### 2026-10-04 - RUNBOOK.md - the four pulls, and a purge reaching the eight tables
+Authorised by: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+Was:
+> "A purge removes every row that pull wrote from the four tables and nothing else, and a run id no row carries is refused with nothing written. Each pull and each purge is one row on the run log, under `history-pull`, `history-pull-surprises`, `history-pull-market` and `history-purge`, and the run page draws each as run by hand."
+Now:
+> a paragraph and the four commands for the companies, splits, sector funds and revenue pulls in their order, with their costs, what each prints and the archive's contact; "... from the eight tables ...", the run log naming `history-pull-sector-funds`, `history-pull-companies`, `history-pull-splits` and `history-pull-revenue` beside the four it named
+Why: the operator runs the pulls through the remedy after the merge and by hand after it.
+### 2026-10-04 - .claude/rules/checks.md - fixture-expectations reaches the pulls and the readings over them
+Authorised by: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+Was:
+> `fixture-expectations`: "... and a rule registered once is read from its registration |"
+Now:
+> adds a company's value on a session, the rank by company, the sector on a session with the fourteen moves, revenue as first filed, the captured company, splits and concept answers, and the four pulls over constructed answers with a purge reaching the eight tables
+Why: the check reaches what 14.2's tests assert.
+### 2026-10-04 - BUILD_PLAN.md - 14.2's table of moves is read against the sectors and filers the provider files
+Corrects: 14.2's text had the pull check the fourteen moves of 2023-03-17 against the provider's sub-industries, and the provider files Corpay, one of the fourteen, under Diversified Financial Services rather than the sub-industry GICS moved it to, so a check by sub-industry would count 13 of a list two published sources agree on. Found while building 14.2 against the companies the 14.0 data check read.
+Was:
+> "from a committed table the pull checks against the provider's sub-industries, refusing to land where it does not count 14;"
+Now:
+> "from a committed table the companies pull reads against the sectors and filers the provider files, refusing to land where it does not count 14;"
+Why: the sector and the filer are what the reading and the rank read, and the provider files each of the fourteen in the sector it moved to.

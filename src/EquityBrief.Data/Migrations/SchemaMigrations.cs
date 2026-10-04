@@ -678,6 +678,7 @@ public static class SchemaMigrations
         new Migration(55, "create pulled_market_bar", CreatePulledMarketBar),
         new Migration(56, "add family_result.shadow and create family_trade", AddFamilyShadowAndTrades),
         new Migration(57, "create market_bar", CreateMarketBar),
+        new Migration(58, "create pulled_company, pulled_shares, pulled_split and pulled_revenue", CreatePulledCompanies),
     ];
 
     // One member's answer under one setup family on one night, for every family but the pullback, whose
@@ -1236,6 +1237,58 @@ public static class SchemaMigrations
             close        TEXT NOT NULL,
             run_id       TEXT NOT NULL,
             PRIMARY KEY (series, session_date)
+        ) STRICT;
+    ";
+
+    // Each company of the history the pulls stored, read by no night: its filer, its GICS classification and the day it
+    // was delisted, one row a ticker; its quarterly share counts with the day each balance sheet was filed and the
+    // session whose split basis the provider restated them to; its splits; and each figure its filer stated under a
+    // revenue concept, one row a filing and period, with the day it was filed. Counts, ratios and dollars are text,
+    // the form an exact figure takes. Every row carries the pull that wrote it, which removes the pull whole.
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    const string CreatePulledCompanies = @"
+        CREATE TABLE pulled_company (
+            ticker          TEXT NOT NULL,
+            cik             TEXT,
+            sector          TEXT,
+            industry_group  TEXT,
+            industry        TEXT,
+            sub_industry    TEXT,
+            delisted_on     TEXT,
+            pull            TEXT NOT NULL,
+            PRIMARY KEY (ticker)
+        ) STRICT;
+
+        CREATE TABLE pulled_shares (
+            ticker         TEXT NOT NULL,
+            period_end     TEXT NOT NULL,
+            filing_date    TEXT NOT NULL,
+            shares         TEXT NOT NULL,
+            basis_session  TEXT NOT NULL,
+            pull           TEXT NOT NULL,
+            PRIMARY KEY (ticker, period_end)
+        ) STRICT;
+
+        CREATE TABLE pulled_split (
+            ticker      TEXT NOT NULL,
+            ex_date     TEXT NOT NULL,
+            new_shares  TEXT NOT NULL,
+            old_shares  TEXT NOT NULL,
+            pull        TEXT NOT NULL,
+            PRIMARY KEY (ticker, ex_date)
+        ) STRICT;
+
+        CREATE TABLE pulled_revenue (
+            cik           TEXT NOT NULL,
+            concept       TEXT NOT NULL,
+            period_start  TEXT NOT NULL,
+            period_end    TEXT NOT NULL,
+            accession     TEXT NOT NULL,
+            dollars       TEXT NOT NULL,
+            filed         TEXT NOT NULL,
+            form          TEXT NOT NULL,
+            pull          TEXT NOT NULL,
+            PRIMARY KEY (cik, concept, period_start, period_end, accession)
         ) STRICT;
     ";
 

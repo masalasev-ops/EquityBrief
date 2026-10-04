@@ -15,12 +15,17 @@ namespace EquityBrief.Core.Providers;
 // 1.6 that a split's value is a ratio in a string and that this endpoint calls
 // the exchange `exchange` where the price file calls it `exchange_short_name`.
 // One reader for both would have silently dropped every row of one of them.
+//
+// The history pull asks the per-name splits endpoint through the same feed, one
+// request a name and never from a night, read by `SplitAnswers.Parse`.
 public sealed class EodhdCorporateActionFeed(
     HttpClient client,
     ProviderCredentials credentials,
-    ProviderRequest? request = null) : ICorporateActionFeed
+    ProviderRequest? request = null) : ICorporateActionFeed, ISplitHistoryFeed
 {
     public const string Endpoint = "eod-bulk-last-day";
+
+    public const string SplitsEndpoint = "splits";
 
     readonly ProviderRequest request = request ?? new ProviderRequest(RetryPolicy.Standard);
 
@@ -67,6 +72,46 @@ public sealed class EodhdCorporateActionFeed(
         }
 
         return [.. actions.OrderBy(action => action.Ticker, StringComparer.Ordinal).ThenBy(action => action.Kind)];
+    }
+
+    public async Task<IReadOnlyList<SplitAnswer>> SplitsAsync(
+        string ticker,
+        DateOnly from,
+        CancellationToken cancellation = default)
+    {
+        Requests++;
+
+        var body = await request
+            .SendAsync(token => FetchSplitsAsync(ticker, from, token), cancellation)
+            .ConfigureAwait(false);
+
+        return SplitAnswers.Parse(body, ticker);
+    }
+
+    async Task<string> FetchSplitsAsync(string ticker, DateOnly from, CancellationToken cancellation)
+    {
+        try
+        {
+            using var response = await client
+                .GetAsync(
+                    EodhdQuery.WithKey(
+                        FormattableString.Invariant($"{SplitsEndpoint}/{ticker}{EodhdHistoricalBarFeed.ExchangeSuffix}?from={from:yyyy-MM-dd}&fmt=json"),
+                        credentials),
+                    cancellation)
+                .ConfigureAwait(false);
+
+            return response.IsSuccessStatusCode
+                ? await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false)
+                : throw EodhdQuery.Refused((int)response.StatusCode, $"splits history feed for {ticker}");
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception failure) when (failure is not ProviderRefusal)
+        {
+            throw EodhdQuery.Unreachable($"splits history feed for {ticker}", failure, credentials);
+        }
     }
 
     // The provider's own name for each kind, which is not the enum's. Written

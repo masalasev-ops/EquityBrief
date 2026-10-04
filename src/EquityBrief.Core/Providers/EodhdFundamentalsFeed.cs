@@ -15,10 +15,14 @@ namespace EquityBrief.Core.Providers;
 //
 // The parser is `RecordedFundamentalsFeed.Parse`, shared, and it was written
 // against four captured responses at 6.1 before this existed.
+//
+// The history pull asks the same endpoint for a company's classification and
+// counts with a filter, one request a name at the same weight, which is read by
+// `CompanyAnswers.Parse` because a filtered answer is shaped as no other is.
 public sealed class EodhdFundamentalsFeed(
     HttpClient client,
     ProviderCredentials credentials,
-    ProviderRequest? request = null) : IFundamentalsFeed
+    ProviderRequest? request = null) : IFundamentalsFeed, ICompanyFeed
 {
     public const string Endpoint = "fundamentals";
 
@@ -54,25 +58,36 @@ public sealed class EodhdFundamentalsFeed(
         Requests++;
 
         var body = await request
-            .SendAsync(token => FetchAsync(ticker, token), cancellation)
+            .SendAsync(token => FetchAsync($"{Endpoint}/{ticker}{ExchangeSuffix}?fmt=json", "company fundamentals", token), cancellation)
             .ConfigureAwait(false);
 
         return RecordedFundamentalsFeed.Parse(body, ticker);
     }
 
-    async Task<string> FetchAsync(string ticker, CancellationToken cancellation)
+    public async Task<CompanyAnswer> CompanyAsync(
+        string ticker,
+        CancellationToken cancellation = default)
+    {
+        Requests++;
+
+        var body = await request
+            .SendAsync(token => FetchAsync($"{Endpoint}/{ticker}{ExchangeSuffix}?filter={string.Join(',', CompanyAnswers.Filter)}", "company classification", token), cancellation)
+            .ConfigureAwait(false);
+
+        return CompanyAnswers.Parse(body, ticker);
+    }
+
+    async Task<string> FetchAsync(string path, string what, CancellationToken cancellation)
     {
         try
         {
             using var response = await client
-                .GetAsync(
-                    EodhdQuery.WithKey($"{Endpoint}/{ticker}{ExchangeSuffix}?fmt=json", credentials),
-                    cancellation)
+                .GetAsync(EodhdQuery.WithKey(path, credentials), cancellation)
                 .ConfigureAwait(false);
 
             return response.IsSuccessStatusCode
                 ? await response.Content.ReadAsStringAsync(cancellation).ConfigureAwait(false)
-                : throw EodhdQuery.Refused((int)response.StatusCode, "company fundamentals");
+                : throw EodhdQuery.Refused((int)response.StatusCode, what);
         }
         catch (OperationCanceledException)
         {
@@ -80,7 +95,7 @@ public sealed class EodhdFundamentalsFeed(
         }
         catch (Exception failure) when (failure is not ProviderRefusal)
         {
-            throw EodhdQuery.Unreachable("company fundamentals", failure, credentials);
+            throw EodhdQuery.Unreachable(what, failure, credentials);
         }
     }
 }

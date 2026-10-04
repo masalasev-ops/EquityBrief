@@ -40,6 +40,10 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `pulled_earnings` | HistoryPull | none | HistoryPull |
 | `pulled_surprise` | HistoryPull | none | HistoryPull |
 | `pulled_market_bar` | HistoryPull | none | HistoryPull |
+| `pulled_company` | HistoryPull | none | HistoryPull |
+| `pulled_shares` | HistoryPull | none | HistoryPull |
+| `pulled_split` | HistoryPull | none | HistoryPull |
+| `pulled_revenue` | HistoryPull | none | HistoryPull |
 | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
 | `swing` | SwingFinder | SwingFinder | SwingFinder |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
@@ -260,11 +264,11 @@ Primary key: `ticker`, `event_date`.
 **The surprises of the names a surprise pull asked for over its span, read by no night** (see: The surprises pulled before the store's year sit beside the pulled prints and are read by no night). The operator's `history-pull --surprises` asks the earnings calendar once a calendar month of the span, as the bars' pull asks it, and stores each print of a name the index held over the span with the figures as filed and the provider's surprise, which is the one figure the sweep's fifth condition reads. Kept apart from `calendar` and from `pulled_earnings` because it carries figures those do not and is removed whole with its pull, and a second pull inserts only the prints no earlier pull holds. The sweep reads it by hand where a pull stored any print carrying a surprise, and the calendar's own year otherwise.
 
 ### pulled_market_bar
-Grain: one row per series per session a market pull reached.
+Grain: one row per series per session a market pull or a sector funds pull reached.
 
 | Column | Type | Notes |
 |---|---|---|
-| `series` | TEXT | `GSPC`, the index itself, or `VIX` |
+| `series` | TEXT | `GSPC`, the index itself, `VIX`, or the ticker of one of the eleven sector funds |
 | `session_date` | TEXT | date |
 | `open`, `high`, `low`, `close` | TEXT | decimal in code, as the provider sent them on the pull's day |
 | `pull` | TEXT | the run id of the pull that wrote the row |
@@ -272,6 +276,76 @@ Grain: one row per series per session a market pull reached.
 Primary key: `series`, `session_date`.
 
 **The index's and the VIX's daily series, read by no night** (see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night). The operator's `history-pull --market` asks the provider once a series for the whole span, under its index exchange rather than a listing, and stores every session it sends. Kept apart from `bar` and `pulled_bar` because neither series is a member's, and removed whole with its pull as they are; a second pull inserts only the sessions no earlier pull holds. A series the provider refuses stores nothing and the pull fails, so nothing reads a series that is not there. The ideas' run reads both series through the sweep history, by hand and never on a night.
+
+**The eleven sector funds' series sit in the same table, from `history-pull --sector-etfs`** (see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night). The pull asks the historical endpoint once a fund, under the stock exchange the funds list on, and stores every session sent in the adjusted form a member's bars take, so a fund's return over a span is read as a member's is; a fund refused stores nothing, the others are stored and the pull fails. A fund's series is read by measurements alone, as the index's and the VIX's are.
+
+### pulled_company
+Grain: one row per ticker a companies pull answered.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | the ticker the index holds the name under, which the pull asked for |
+| `cik` | TEXT | the filer's CIK padded to ten digits, null where the provider files none |
+| `sector` | TEXT | the GICS sector the provider files as of its last update, null where it files none |
+| `industry_group` | TEXT | the GICS industry group, null where none is filed |
+| `industry` | TEXT | the GICS industry, null where none is filed |
+| `sub_industry` | TEXT | the GICS sub-industry, null where none is filed |
+| `delisted_on` | TEXT | the day a delisted company left its exchange, null for a company still listed |
+| `pull` | TEXT | the run id of the pull that wrote the row |
+
+Primary key: `ticker`.
+
+**Each company the history holds, as the provider files it today, read by no night** (see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night). The operator's `history-pull --companies --from <date>` asks the fundamentals endpoint once for every name the index held on any session of the span, departed members among them, with a filter naming these fields, and stores one row a name it answered; a name not served stores nothing and is named on the pull's row. The sector is GICS's, which no other table holds: `membership.sector` is the index snapshot's scheme. It has no date, so a session reads it through the fourteen moves of 2023-03-17 (see: A company's sector on a session is the GICS sector the provider files, with the fourteen moves of 2023-03-17 read by date), and two listings carrying one CIK are one company (see: Companies are ranked by CIK with one listing held, the class that traded the more dollars over fifty sessions). Removed whole with its pull, and a second pull adds only the tickers no earlier pull holds.
+
+### pulled_shares
+Grain: one row per ticker per quarter a companies pull answered with a count and the day its balance sheet was filed.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `period_end` | TEXT | the last day of the quarter the balance sheet closes |
+| `filing_date` | TEXT | the day the balance sheet was filed |
+| `shares` | TEXT | decimal in code, the shares outstanding as the provider files them, restated to the split basis of `basis_session` |
+| `basis_session` | TEXT | the session the pull ran on, whose split basis the provider restates every count to |
+| `pull` | TEXT | the run id of the pull that wrote the row |
+
+Primary key: `ticker`, `period_end`.
+
+**The counts a company's value on a session is read from, read by no night** (see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis). A session reads the count of the latest quarter among the sheets filed before it, times the session's unadjusted close divided by every split in `pulled_split` after the session and on or before `basis_session`. A balance sheet carrying no count or no filing date cannot be read as it stood and stores no row; the pull counts them on its row. Removed whole with its pull, and a second pull adds only the quarters no earlier pull holds.
+
+### pulled_split
+Grain: one row per ticker per split a splits pull answered over its span.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `ex_date` | TEXT | the first session trading on the new basis |
+| `new_shares` | TEXT | decimal in code, the shares one block of old shares became |
+| `old_shares` | TEXT | decimal in code, the old shares in that block |
+| `pull` | TEXT | the run id of the pull that wrote the row |
+
+Primary key: `ticker`, `ex_date`.
+
+**The splits a session's close is put on a count's basis by, read by no night.** The operator's `history-pull --splits --from <date>` asks the per-name splits endpoint once for every name the index held over the span and stores each split from the date to the night it ran, a ratio kept as its two numbers rather than as their quotient, which a split of one for three would round. Removed whole with its pull, and a second pull adds only the splits no earlier pull holds.
+
+### pulled_revenue
+Grain: one row per filer per revenue concept per period per filing stating it.
+
+| Column | Type | Notes |
+|---|---|---|
+| `cik` | TEXT | the filer's CIK padded to ten digits, as `pulled_company` carries it |
+| `concept` | TEXT | the archive's concept the figure was filed under |
+| `period_start` | TEXT | the first day of the period the figure covers |
+| `period_end` | TEXT | the last day of the period |
+| `accession` | TEXT | the accession number of the filing that stated it |
+| `dollars` | TEXT | decimal in code, the revenue stated |
+| `filed` | TEXT | the day the filing was made |
+| `form` | TEXT | the filing's form, as the archive names it |
+| `pull` | TEXT | the run id of the pull that wrote the row |
+
+Primary key: `cik`, `concept`, `period_start`, `period_end`, `accession`.
+
+**Every revenue figure each pulled company's filer stated, with the day it was filed, read by no night** (see: A quarter's revenue is read as first filed, a fiscal fourth quarter being the year less its first nine months). The operator's `history-pull --revenue` asks the archive once a filer and revenue concept for the filers `pulled_company` carries, and stores every figure stated for a period, a figure stated for an instant being no revenue. Keyed on the filer rather than the ticker, since two listings of one company share a filer, and on the filing, since a quarter a later filing states again as its year-earlier column or restates is a row of its own beside the one that first stated it, which is what lets a quarter be read as first filed. A concept a filer never filed under stores nothing and fails nothing. Removed whole with its pull, and a second pull adds only the figures no earlier pull holds.
 
 ### indicator
 Grain: one row per ticker, session and indicator name.

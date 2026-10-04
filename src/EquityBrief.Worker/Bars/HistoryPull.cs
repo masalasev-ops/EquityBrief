@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using EquityBrief.Core.Bars;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Providers;
 using EquityBrief.Core.Time;
 using EquityBrief.Data;
@@ -23,8 +24,16 @@ namespace EquityBrief.Worker.Bars;
 // removed where a stored bar may not be.
 //
 // Asked for the market series, it pulls the index's and the VIX's daily series instead, one request a
-// series, into a table of their own marked and removed the same way.
+// series, into a table of their own marked and removed the same way, and asked for the sector funds, the
+// eleven funds' series into the same table.
+//
+// Asked for the companies, it pulls each name's filer, GICS classification, delisting and quarterly share
+// counts with the day each was filed, one request a name; for the splits, each name's splits, one request
+// a name; and for the revenue, every figure each pulled company's filer stated under each revenue concept,
+// with the day it was filed, one request a filer and concept, each into a table of its own marked and
+// removed the same way.
 // see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
+// see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
 public sealed class HistoryPull(
     IHistoricalBarFeed bars,
     IEarningsCalendarFeed earnings,
@@ -39,9 +48,13 @@ public sealed class HistoryPull(
             new StoreTouch(Store.PulledEarnings, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.PulledSurprise, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.PulledMarketBar, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.PulledCompany, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.PulledShares, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.PulledSplit, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.PulledRevenue, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
-        Feeds: [Feed.HistoricalPrice, Feed.EarningsCalendar]);
+        Feeds: [Feed.HistoricalPrice, Feed.EarningsCalendar, Feed.CompanyFinancials, Feed.SplitsAndDividends, Feed.FilingsArchive]);
 
     public const string Stage = "history-pull";
     public const string PurgeStage = "history-purge";
@@ -55,6 +68,19 @@ public sealed class HistoryPull(
     // The series a market pull asks for, in this order: the index itself and the VIX.
     // see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
     public static IReadOnlyList<string> MarketSeries { get; } = ["GSPC", "VIX"];
+
+    // The four pulls of a company's history, each its own stage since each asks one feed and stores one table.
+    public const string CompaniesStage = "history-pull-companies";
+    public const string SplitsStage = "history-pull-splits";
+    public const string SectorFundsStage = "history-pull-sector-funds";
+    public const string RevenueStage = "history-pull-revenue";
+
+    // The funds a sector funds pull asks for, in the order of their tickers.
+    public static IReadOnlyList<string> SectorFunds { get; } = [.. GicsSectors.Funds.Values.Order(StringComparer.Ordinal)];
+
+    // The requests a second the archive's fair access asks a caller to stay within, which the revenue pull keeps
+    // by waiting a tenth of a second after each.
+    public const int ArchiveRequestsASecond = 10;
 
     // The run ids a pull and a purge are written under, which the run page reads as runs by hand.
     public const string RunPrefix = "history-pull-";
@@ -102,21 +128,64 @@ public sealed class HistoryPull(
         ON CONFLICT (series, session_date) DO NOTHING;
     ";
 
+    // A company as the provider files it today, insert only, so a ticker an earlier pull holds keeps that pull's row.
+    const string InsertCompany = @"
+        INSERT INTO pulled_company (ticker, cik, sector, industry_group, industry, sub_industry, delisted_on, pull)
+        VALUES ($ticker, $cik, $sector, $industry_group, $industry, $sub_industry, $delisted_on, $pull)
+        ON CONFLICT (ticker) DO NOTHING;
+    ";
+
+    // A quarter's share count with the day its balance sheet was filed and the session whose split basis it is on.
+    const string InsertShares = @"
+        INSERT INTO pulled_shares (ticker, period_end, filing_date, shares, basis_session, pull)
+        VALUES ($ticker, $period_end, $filing_date, $shares, $basis_session, $pull)
+        ON CONFLICT (ticker, period_end) DO NOTHING;
+    ";
+
+    const string InsertSplit = @"
+        INSERT INTO pulled_split (ticker, ex_date, new_shares, old_shares, pull)
+        VALUES ($ticker, $ex_date, $new_shares, $old_shares, $pull)
+        ON CONFLICT (ticker, ex_date) DO NOTHING;
+    ";
+
+    // One figure one filing stated under one concept, insert only, so a figure an earlier pull holds keeps that pull's row.
+    const string InsertRevenue = @"
+        INSERT INTO pulled_revenue (cik, concept, period_start, period_end, accession, dollars, filed, form, pull)
+        VALUES ($cik, $concept, $period_start, $period_end, $accession, $dollars, $filed, $form, $pull)
+        ON CONFLICT (cik, concept, period_start, period_end, accession) DO NOTHING;
+    ";
+
+    // The filers the revenue pull asks for: every CIK the pulled companies carry, and the tickers carrying none.
+    const string PulledFilers = "SELECT DISTINCT cik FROM pulled_company WHERE cik IS NOT NULL ORDER BY cik;";
+    const string PulledWithoutAFiler = "SELECT ticker FROM pulled_company WHERE cik IS NULL ORDER BY ticker;";
+
     const string BarCount = "SELECT COUNT(*) FROM pulled_bar;";
     const string EarningsCount = "SELECT COUNT(*) FROM pulled_earnings;";
     const string SurpriseCount = "SELECT COUNT(*) FROM pulled_surprise;";
     const string MarketBarCount = "SELECT COUNT(*) FROM pulled_market_bar;";
+    const string CompanyCount = "SELECT COUNT(*) FROM pulled_company;";
+    const string SharesCount = "SELECT COUNT(*) FROM pulled_shares;";
+    const string SplitCount = "SELECT COUNT(*) FROM pulled_split;";
+    const string RevenueCount = "SELECT COUNT(*) FROM pulled_revenue;";
 
     const string BarsOfPull = "SELECT COUNT(*) FROM pulled_bar WHERE pull = $pull;";
     const string EarningsOfPull = "SELECT COUNT(*) FROM pulled_earnings WHERE pull = $pull;";
     const string SurprisesOfPull = "SELECT COUNT(*) FROM pulled_surprise WHERE pull = $pull;";
     const string MarketBarsOfPull = "SELECT COUNT(*) FROM pulled_market_bar WHERE pull = $pull;";
+    const string CompaniesOfPull = "SELECT COUNT(*) FROM pulled_company WHERE pull = $pull;";
+    const string SharesOfPull = "SELECT COUNT(*) FROM pulled_shares WHERE pull = $pull;";
+    const string SplitsOfPull = "SELECT COUNT(*) FROM pulled_split WHERE pull = $pull;";
+    const string RevenueOfPull = "SELECT COUNT(*) FROM pulled_revenue WHERE pull = $pull;";
 
     // The removal, which takes a pull's rows whole and nothing else.
     const string DeleteBarsOfPull = "DELETE FROM pulled_bar WHERE pull = $pull;";
     const string DeleteEarningsOfPull = "DELETE FROM pulled_earnings WHERE pull = $pull;";
     const string DeleteSurprisesOfPull = "DELETE FROM pulled_surprise WHERE pull = $pull;";
     const string DeleteMarketBarsOfPull = "DELETE FROM pulled_market_bar WHERE pull = $pull;";
+    const string DeleteCompaniesOfPull = "DELETE FROM pulled_company WHERE pull = $pull;";
+    const string DeleteSharesOfPull = "DELETE FROM pulled_shares WHERE pull = $pull;";
+    const string DeleteSplitsOfPull = "DELETE FROM pulled_split WHERE pull = $pull;";
+    const string DeleteRevenueOfPull = "DELETE FROM pulled_revenue WHERE pull = $pull;";
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -130,8 +199,10 @@ public sealed class HistoryPull(
     public static string RunIdAt(string prefix, DateTimeOffset at) => FormattableString.Invariant($"{prefix}{at:yyyyMMddTHHmmss.fffffffZ}");
 
     // The verb a person runs: `history-pull --from <yyyy-MM-dd>`, the same with `--surprises` for the earnings
-    // surprises alone or `--market` for the index's and the VIX's series alone, or `history-pull --purge <pull>`.
-    // The feeds are asked for only by a pull, so removing one needs no key and reaches no provider.
+    // surprises alone, `--market` for the index's and the VIX's series alone, `--sector-etfs` for the sector funds'
+    // series, `--companies` for each name's company and share counts or `--splits` for each name's splits,
+    // `history-pull --revenue` for each pulled company's revenue as its filer filed it, or `history-pull --purge
+    // <pull>`. The feeds are asked for only by a pull, so removing one needs no key and reaches no provider.
     public static async Task<int> RunAsync(
         string[] args,
         Func<NightFeeds> feeds,
@@ -139,7 +210,10 @@ public sealed class HistoryPull(
         string databaseFile,
         TextWriter output,
         TextWriter error,
-        Func<IMarketSeriesFeed>? market = null)
+        Func<IMarketSeriesFeed>? market = null,
+        Func<ICompanyFeed>? companies = null,
+        Func<ISplitHistoryFeed>? splits = null,
+        Func<IFiledRevenueFeed>? revenue = null)
     {
         if (VerbArguments.Value(args, "--purge") is { } pull)
         {
@@ -147,7 +221,7 @@ public sealed class HistoryPull(
             {
                 var purged = await PurgeAsync(clock, databaseFile, pull, RunIdAt(PurgePrefix, clock.UtcNow));
 
-                output.WriteLine(FormattableString.Invariant($"removed the pull {purged.Pull}: {purged.Bars} bar(s), {purged.Earnings} earnings print(s), {purged.Surprises} surprise(s) and {purged.MarketBars} market session(s)"));
+                output.WriteLine(FormattableString.Invariant($"removed the pull {purged.Pull}: {purged.Bars} bar(s), {purged.Earnings} earnings print(s), {purged.Surprises} surprise(s), {purged.MarketBars} market session(s), {purged.Companies} compan(ies), {purged.Shares} share count(s), {purged.Splits} split(s) and {purged.Revenue} revenue figure(s)"));
 
                 return 0;
             }
@@ -157,6 +231,11 @@ public sealed class HistoryPull(
 
                 return 1;
             }
+        }
+
+        if (VerbArguments.Has(args, "--revenue"))
+        {
+            return await RevenueAsync(revenue, clock, databaseFile, output, error);
         }
 
         if (VerbArguments.Value(args, "--from") is not { } given
@@ -170,6 +249,16 @@ public sealed class HistoryPull(
         if (VerbArguments.Has(args, "--market"))
         {
             return await MarketAsync(from, market, clock, databaseFile, output, error);
+        }
+
+        if (VerbArguments.Has(args, "--companies"))
+        {
+            return await CompaniesAsync(from, VerbArguments.Value(args, "--index") ?? "GSPC", companies, clock, databaseFile, output, error);
+        }
+
+        if (VerbArguments.Has(args, "--splits"))
+        {
+            return await SplitsAsync(from, VerbArguments.Value(args, "--index") ?? "GSPC", splits, clock, databaseFile, output, error);
         }
 
         NightFeeds resolved;
@@ -186,6 +275,25 @@ public sealed class HistoryPull(
         }
 
         var runId = RunIdAt(RunPrefix, clock.UtcNow);
+
+        if (VerbArguments.Has(args, "--sector-etfs"))
+        {
+            try
+            {
+                var funds = await PullSectorFundsAsync(resolved.Historical, clock, databaseFile, from, runId);
+
+                output.WriteLine("pull " + runId);
+                output.WriteLine(Detail(funds));
+
+                return funds.Refused.Count == 0 ? 0 : 1;
+            }
+            catch (ArgumentException refusal)
+            {
+                error.WriteLine("history-pull: " + refusal.Message);
+
+                return 1;
+            }
+        }
 
         try
         {
@@ -665,6 +773,654 @@ public sealed class HistoryPull(
         return outcome;
     }
 
+    // The verb's companies branch. A name the provider does not serve is named on the pull's row and stores nothing,
+    // and the pull goes on, so the command ends well with names unanswered and says which.
+    static async Task<int> CompaniesAsync(
+        DateOnly from,
+        string indexCode,
+        Func<ICompanyFeed>? companies,
+        IClock clock,
+        string databaseFile,
+        TextWriter output,
+        TextWriter error)
+    {
+        if (Resolved(companies, "company", error) is not { } feed)
+        {
+            return 1;
+        }
+
+        var runId = RunIdAt(RunPrefix, clock.UtcNow);
+
+        try
+        {
+            var pulled = await PullCompaniesAsync(feed, clock, databaseFile, indexCode, from, runId, error.WriteLine);
+
+            output.WriteLine("pull " + runId);
+            output.WriteLine(Detail(pulled));
+
+            return 0;
+        }
+        catch (ArgumentException refusal)
+        {
+            error.WriteLine("history-pull: " + refusal.Message);
+
+            return 1;
+        }
+    }
+
+    // The verb's splits branch, ending well with names unanswered as the companies branch does.
+    static async Task<int> SplitsAsync(
+        DateOnly from,
+        string indexCode,
+        Func<ISplitHistoryFeed>? splits,
+        IClock clock,
+        string databaseFile,
+        TextWriter output,
+        TextWriter error)
+    {
+        if (Resolved(splits, "splits", error) is not { } feed)
+        {
+            return 1;
+        }
+
+        var runId = RunIdAt(RunPrefix, clock.UtcNow);
+
+        try
+        {
+            var pulled = await PullSplitsAsync(feed, clock, databaseFile, indexCode, from, runId, error.WriteLine);
+
+            output.WriteLine("pull " + runId);
+            output.WriteLine(Detail(pulled));
+
+            return 0;
+        }
+        catch (ArgumentException refusal)
+        {
+            error.WriteLine("history-pull: " + refusal.Message);
+
+            return 1;
+        }
+    }
+
+    // The verb's revenue branch, which asks for the filers the companies pull stored and so needs no date.
+    static async Task<int> RevenueAsync(
+        Func<IFiledRevenueFeed>? revenue,
+        IClock clock,
+        string databaseFile,
+        TextWriter output,
+        TextWriter error)
+    {
+        if (Resolved(revenue, "revenue", error) is not { } feed)
+        {
+            return 1;
+        }
+
+        var runId = RunIdAt(RunPrefix, clock.UtcNow);
+
+        try
+        {
+            var pulled = await PullRevenueAsync(feed, clock, databaseFile, runId, progress: error.WriteLine);
+
+            output.WriteLine("pull " + runId);
+            output.WriteLine(Detail(pulled));
+
+            return 0;
+        }
+        catch (ArgumentException refusal)
+        {
+            error.WriteLine("history-pull: " + refusal.Message);
+
+            return 1;
+        }
+    }
+
+    // A feed a branch was handed, resolved, or the refusal written and none.
+    static T? Resolved<T>(Func<T>? feed, string what, TextWriter error)
+        where T : class
+    {
+        if (feed is null)
+        {
+            error.WriteLine($"history-pull: this command was handed no {what} feed to ask.");
+
+            return null;
+        }
+
+        try
+        {
+            return feed();
+        }
+        catch (Exception refusal) when (refusal is InvalidOperationException or DirectoryNotFoundException)
+        {
+            error.WriteLine("history-pull: " + refusal.Message);
+
+            return null;
+        }
+    }
+
+    // Pulls the company of every name the index held from a date to tonight, one request a name: its filer, its GICS
+    // classification, the day it was delisted, and each quarterly share count carrying the day its balance sheet was
+    // filed, on the split basis of tonight's session. A name the provider does not serve, does not answer in time or
+    // answers in a form that cannot be read stores nothing and is named, and the others are stored. The pull states
+    // the names filing no sector, no count or no CIK, and reads each of the fourteen GICS moved after the close of
+    // 2023-03-17 against the sector the provider files for it. A date on or after tonight's session is refused before
+    // any request.
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    public static async Task<HistoryCompanyOutcome> PullCompaniesAsync(
+        ICompanyFeed companies,
+        IClock clock,
+        string databaseFile,
+        string indexCode,
+        DateOnly from,
+        string runId,
+        Action<string>? progress = null,
+        CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        var through = clock.SessionDateAt(startedAt);
+
+        Refuse(from, through);
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var names = await NamesAsync(connection, indexCode, from, through, cancellation);
+        var requestsBefore = companies.Requests;
+        var answered = new List<CompanyAnswer>();
+        var unanswered = new List<string>();
+
+        foreach (var ticker in names)
+        {
+            try
+            {
+                answered.Add(await companies.CompanyAsync(ticker, cancellation));
+            }
+            catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
+            {
+                unanswered.Add($"{ticker}: the provider did not answer in time on any try");
+            }
+            catch (Exception failure) when (failure is not OperationCanceledException)
+            {
+                unanswered.Add(NotServed(ticker, failure));
+            }
+
+            if ((answered.Count + unanswered.Count) % 50 == 0)
+            {
+                progress?.Invoke(FormattableString.Invariant($"{answered.Count + unanswered.Count} of {names.Count} name(s) asked"));
+            }
+        }
+
+        var companiesBefore = await CountAsync(connection, CompanyCount, null, cancellation);
+        var sharesBefore = await CountAsync(connection, SharesCount, null, cancellation);
+
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var company in answered)
+        {
+            await using (var insert = connection.CreateCommand())
+            {
+                insert.CommandText = InsertCompany;
+                insert.Parameters.AddWithValue("$ticker", company.Ticker);
+                insert.Parameters.AddWithValue("$cik", (object?)company.Cik ?? DBNull.Value);
+                insert.Parameters.AddWithValue("$sector", (object?)company.Sector ?? DBNull.Value);
+                insert.Parameters.AddWithValue("$industry_group", (object?)company.IndustryGroup ?? DBNull.Value);
+                insert.Parameters.AddWithValue("$industry", (object?)company.Industry ?? DBNull.Value);
+                insert.Parameters.AddWithValue("$sub_industry", (object?)company.SubIndustry ?? DBNull.Value);
+                insert.Parameters.AddWithValue("$delisted_on", company.DelistedOn is { } delisted ? Text(delisted) : DBNull.Value);
+                insert.Parameters.AddWithValue("$pull", runId);
+
+                await insert.ExecuteNonQueryAsync(cancellation);
+            }
+
+            foreach (var count in company.Counts)
+            {
+                await using var insert = connection.CreateCommand();
+                insert.CommandText = InsertShares;
+                insert.Parameters.AddWithValue("$ticker", company.Ticker);
+                insert.Parameters.AddWithValue("$period_end", Text(count.PeriodEnd));
+                insert.Parameters.AddWithValue("$filing_date", Text(count.FilingDate));
+                Money.Bind(insert, "$shares", count.Shares);
+                insert.Parameters.AddWithValue("$basis_session", Text(through));
+                insert.Parameters.AddWithValue("$pull", runId);
+
+                await insert.ExecuteNonQueryAsync(cancellation);
+            }
+        }
+
+        var companiesWritten = await CountAsync(connection, CompanyCount, null, cancellation) - companiesBefore;
+        var sharesWritten = await CountAsync(connection, SharesCount, null, cancellation) - sharesBefore;
+        var requests = companies.Requests - requestsBefore;
+        var (movesFiled, movesNot) = MovesAgainst(answered);
+        var outcome = new HistoryCompanyOutcome(
+            from,
+            through,
+            names.Count,
+            answered.Count,
+            unanswered,
+            companiesWritten,
+            sharesWritten,
+            [.. answered.Where(company => company.Sector is null).Select(company => company.Ticker)],
+            [.. answered.Where(company => company.Counts.Count == 0).Select(company => company.Ticker)],
+            [.. answered.Where(company => company.Cik is null).Select(company => company.Ticker)],
+            answered.Sum(company => company.SheetsUncounted),
+            movesFiled,
+            movesNot,
+            requests);
+
+        await AppendAsync(
+            connection,
+            runId,
+            CompaniesStage,
+            startedAt,
+            clock.UtcNow,
+            unanswered.Count == 0 ? "ok" : Partial,
+            companiesWritten + sharesWritten,
+            requests,
+            JsonSerializer.Serialize(new
+            {
+                from = Text(from),
+                through = Text(through),
+                names = names.Count,
+                answered = answered.Count,
+                companies = companiesWritten,
+                counts = sharesWritten,
+                unanswered,
+                noSector = outcome.NoSector,
+                noCount = outcome.NoCount,
+                noCik = outcome.NoCik,
+                sheetsUncounted = outcome.SheetsUncounted,
+                moves = FormattableString.Invariant($"{movesFiled} of {GicsSectors.Moves.Count} filed in the sector they moved to"),
+                movesNot,
+            }),
+            cancellation);
+
+        await transaction.CommitAsync(cancellation);
+
+        return outcome;
+    }
+
+    // The fourteen moves of 2023-03-17 read against the answers: how many are filed in the sector they moved to under
+    // the filer the table names, and each that is not, unanswered among them.
+    public static (int Filed, IReadOnlyList<string> Not) MovesAgainst(IReadOnlyList<CompanyAnswer> answered)
+    {
+        var filed = 0;
+        var not = new List<string>();
+
+        foreach (var move in GicsSectors.Moves)
+        {
+            var company = answered.FirstOrDefault(answer => string.Equals(answer.Ticker, move.Ticker, StringComparison.Ordinal));
+
+            if (company is null)
+            {
+                not.Add($"{move.Ticker}: not answered");
+            }
+            else if (!string.Equals(company.Sector, move.To, StringComparison.Ordinal))
+            {
+                not.Add($"{move.Ticker}: filed in {company.Sector ?? "no sector"}, not {move.To}");
+            }
+            else if (company.Cik is { } cik && !string.Equals(cik, move.Cik, StringComparison.Ordinal))
+            {
+                not.Add($"{move.Ticker}: filed under CIK {cik}, not {move.Cik}");
+            }
+            else
+            {
+                filed++;
+            }
+        }
+
+        return (filed, not);
+    }
+
+    // Pulls the splits of every name the index held from a date to tonight, one request a name, each split from the
+    // date on. A name not served is named and the others stored, as the companies pull does.
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    public static async Task<HistorySplitOutcome> PullSplitsAsync(
+        ISplitHistoryFeed splits,
+        IClock clock,
+        string databaseFile,
+        string indexCode,
+        DateOnly from,
+        string runId,
+        Action<string>? progress = null,
+        CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        var through = clock.SessionDateAt(startedAt);
+
+        Refuse(from, through);
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var names = await NamesAsync(connection, indexCode, from, through, cancellation);
+        var requestsBefore = splits.Requests;
+        var answered = new List<(string Ticker, IReadOnlyList<SplitAnswer> Splits)>();
+        var unanswered = new List<string>();
+
+        foreach (var ticker in names)
+        {
+            try
+            {
+                answered.Add((ticker, [.. (await splits.SplitsAsync(ticker, from, cancellation)).Where(split => split.ExDate >= from && split.ExDate <= through)]));
+            }
+            catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
+            {
+                unanswered.Add($"{ticker}: the provider did not answer in time on any try");
+            }
+            catch (Exception failure) when (failure is not OperationCanceledException)
+            {
+                unanswered.Add(NotServed(ticker, failure));
+            }
+
+            if ((answered.Count + unanswered.Count) % 50 == 0)
+            {
+                progress?.Invoke(FormattableString.Invariant($"{answered.Count + unanswered.Count} of {names.Count} name(s) asked"));
+            }
+        }
+
+        var before = await CountAsync(connection, SplitCount, null, cancellation);
+
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var (ticker, held) in answered)
+        {
+            foreach (var split in held)
+            {
+                await using var insert = connection.CreateCommand();
+                insert.CommandText = InsertSplit;
+                insert.Parameters.AddWithValue("$ticker", ticker);
+                insert.Parameters.AddWithValue("$ex_date", Text(split.ExDate));
+                Money.Bind(insert, "$new_shares", split.NewShares);
+                Money.Bind(insert, "$old_shares", split.OldShares);
+                insert.Parameters.AddWithValue("$pull", runId);
+
+                await insert.ExecuteNonQueryAsync(cancellation);
+            }
+        }
+
+        var written = await CountAsync(connection, SplitCount, null, cancellation) - before;
+        var requests = splits.Requests - requestsBefore;
+        var outcome = new HistorySplitOutcome(
+            from,
+            through,
+            names.Count,
+            answered.Count,
+            unanswered,
+            answered.Count(entry => entry.Splits.Count > 0),
+            written,
+            requests);
+
+        await AppendAsync(
+            connection,
+            runId,
+            SplitsStage,
+            startedAt,
+            clock.UtcNow,
+            unanswered.Count == 0 ? "ok" : Partial,
+            written,
+            requests,
+            JsonSerializer.Serialize(new
+            {
+                from = Text(from),
+                through = Text(through),
+                names = names.Count,
+                answered = answered.Count,
+                withASplit = outcome.WithASplit,
+                splits = written,
+                unanswered,
+            }),
+            cancellation);
+
+        await transaction.CommitAsync(cancellation);
+
+        return outcome;
+    }
+
+    // Pulls the eleven sector funds' daily series from a date to tonight, one request a fund, into the pulled market
+    // series beside the index's and the VIX's, each in the adjusted form a member's bars take. A fund not served stores
+    // nothing and is named, the others are stored, and the pull's row says partial.
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    public static async Task<HistorySectorFundOutcome> PullSectorFundsAsync(
+        IHistoricalBarFeed bars,
+        IClock clock,
+        string databaseFile,
+        DateOnly from,
+        string runId,
+        CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        var through = clock.SessionDateAt(startedAt);
+
+        Refuse(from, through);
+
+        var requestsBefore = bars.Requests;
+        var answered = new List<(string Fund, IReadOnlyList<ProviderBar> Bars)>();
+        var refused = new List<string>();
+
+        foreach (var fund in SectorFunds)
+        {
+            try
+            {
+                var series = await bars.BarsAsync(fund, from, through, cancellation);
+
+                if (series.Count == 0)
+                {
+                    refused.Add(FormattableString.Invariant($"{fund}: the provider sent no session"));
+                }
+                else
+                {
+                    answered.Add((fund, series));
+                }
+            }
+            catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
+            {
+                refused.Add($"{fund}: the provider did not answer in time on any try");
+            }
+            catch (Exception failure) when (failure is not OperationCanceledException)
+            {
+                refused.Add(NotServed(fund, failure));
+            }
+        }
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var before = await CountAsync(connection, MarketBarCount, null, cancellation);
+
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var (fund, series) in answered)
+        {
+            foreach (var bar in series)
+            {
+                await using var insert = connection.CreateCommand();
+                insert.CommandText = InsertMarketBar;
+                insert.Parameters.AddWithValue("$series", fund);
+                insert.Parameters.AddWithValue("$session_date", Text(bar.SessionDate));
+                Money.Bind(insert, "$open", bar.Open);
+                Money.Bind(insert, "$high", bar.High);
+                Money.Bind(insert, "$low", bar.Low);
+                Money.Bind(insert, "$close", bar.Close);
+                insert.Parameters.AddWithValue("$pull", runId);
+
+                await insert.ExecuteNonQueryAsync(cancellation);
+            }
+        }
+
+        var written = await CountAsync(connection, MarketBarCount, null, cancellation) - before;
+        var requests = bars.Requests - requestsBefore;
+        IReadOnlyList<MarketSeriesStored> stored =
+        [
+            .. answered.Select(entry => new MarketSeriesStored(entry.Fund, entry.Bars.Count, entry.Bars.Min(bar => bar.SessionDate), entry.Bars.Max(bar => bar.SessionDate))),
+        ];
+        var outcome = new HistorySectorFundOutcome(from, through, stored, refused, written, requests);
+
+        await AppendAsync(
+            connection,
+            runId,
+            SectorFundsStage,
+            startedAt,
+            clock.UtcNow,
+            refused.Count == 0 ? "ok" : Partial,
+            written,
+            requests,
+            JsonSerializer.Serialize(new
+            {
+                from = Text(from),
+                through = Text(through),
+                series = stored.Select(Described).ToArray(),
+                refused,
+                stored = written,
+            }),
+            cancellation);
+
+        await transaction.CommitAsync(cancellation);
+
+        return outcome;
+    }
+
+    // Pulls, for every filer the pulled companies carry, every figure it stated under each revenue concept with the
+    // day each filing was made, one request a filer and concept, waiting a tenth of a second after each. A concept a
+    // filer never filed under is no figure and no failure; a request not served is named and the rest stored. Refused
+    // where no pulled company carries a filer, since the companies pull is what names them.
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    public static async Task<HistoryRevenueOutcome> PullRevenueAsync(
+        IFiledRevenueFeed revenue,
+        IClock clock,
+        string databaseFile,
+        string runId,
+        Func<TimeSpan, CancellationToken, Task>? wait = null,
+        Action<string>? progress = null,
+        CancellationToken cancellation = default)
+    {
+        var startedAt = clock.UtcNow;
+        var pause = wait ?? Task.Delay;
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var filers = await ColumnAsync(connection, PulledFilers, cancellation);
+        var withoutAFiler = await ColumnAsync(connection, PulledWithoutAFiler, cancellation);
+
+        if (filers.Count == 0)
+        {
+            throw new ArgumentException(
+                "No pulled company carries a CIK, so there is no filer to ask. The companies pull names them, and is run before this one.",
+                nameof(databaseFile));
+        }
+
+        var requestsBefore = revenue.Requests;
+        var answered = new List<(string Cik, string Concept, IReadOnlyList<ConceptFact> Facts)>();
+        var unanswered = new List<string>();
+        var asked = 0;
+
+        foreach (var cik in filers)
+        {
+            foreach (var concept in FirstFiledRevenue.Concepts)
+            {
+                try
+                {
+                    answered.Add((cik, concept, await revenue.ConceptAsync(cik, concept, cancellation)));
+                }
+                catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
+                {
+                    unanswered.Add($"CIK {cik} under {concept}: the archive did not answer in time on any try");
+                }
+                catch (Exception failure) when (failure is not OperationCanceledException)
+                {
+                    unanswered.Add(NotServed($"CIK {cik} under {concept}", failure));
+                }
+
+                await pause(TimeSpan.FromSeconds(1.0 / ArchiveRequestsASecond), cancellation);
+            }
+
+            if (++asked % 50 == 0)
+            {
+                progress?.Invoke(FormattableString.Invariant($"{asked} of {filers.Count} filer(s) asked"));
+            }
+        }
+
+        var before = await CountAsync(connection, RevenueCount, null, cancellation);
+
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
+        foreach (var (cik, concept, facts) in answered)
+        {
+            foreach (var fact in facts)
+            {
+                await using var insert = connection.CreateCommand();
+                insert.CommandText = InsertRevenue;
+                insert.Parameters.AddWithValue("$cik", cik);
+                insert.Parameters.AddWithValue("$concept", concept);
+                insert.Parameters.AddWithValue("$period_start", Text(fact.Start));
+                insert.Parameters.AddWithValue("$period_end", Text(fact.End));
+                insert.Parameters.AddWithValue("$accession", fact.Accession);
+                Money.Bind(insert, "$dollars", fact.Value);
+                insert.Parameters.AddWithValue("$filed", Text(fact.Filed));
+                insert.Parameters.AddWithValue("$form", fact.Form);
+                insert.Parameters.AddWithValue("$pull", runId);
+
+                await insert.ExecuteNonQueryAsync(cancellation);
+            }
+        }
+
+        var written = await CountAsync(connection, RevenueCount, null, cancellation) - before;
+        var requests = revenue.Requests - requestsBefore;
+        IReadOnlyList<RevenueConceptFiled> byConcept =
+        [
+            .. FirstFiledRevenue.Concepts.Select(concept => new RevenueConceptFiled(
+                concept,
+                answered.Count(entry => entry.Concept == concept && entry.Facts.Count > 0),
+                answered.Where(entry => entry.Concept == concept).Sum(entry => entry.Facts.Count))),
+        ];
+        var noRevenue = answered
+            .GroupBy(entry => entry.Cik, StringComparer.Ordinal)
+            .Where(filer => filer.All(entry => entry.Facts.Count == 0))
+            .Select(filer => filer.Key)
+            .ToArray();
+        var outcome = new HistoryRevenueOutcome(filers.Count, withoutAFiler, byConcept, noRevenue, unanswered, written, requests);
+
+        await AppendAsync(
+            connection,
+            runId,
+            RevenueStage,
+            startedAt,
+            clock.UtcNow,
+            unanswered.Count == 0 ? "ok" : Partial,
+            written,
+            requests,
+            JsonSerializer.Serialize(new
+            {
+                filers = filers.Count,
+                withoutAFiler,
+                concepts = byConcept.Select(Described).ToArray(),
+                noRevenue,
+                unanswered,
+                figures = written,
+            }),
+            cancellation);
+
+        await transaction.CommitAsync(cancellation);
+
+        return outcome;
+    }
+
+    // A name, fund or filer the provider did not serve, with why: a refusal or a payload the reader refused in its own
+    // words, anything else as an answer that could not be read.
+    static string NotServed(string what, Exception failure) =>
+        failure is ProviderRefusal or FormatException
+            ? $"{what}: {failure.Message}"
+            : $"{what}: its answer could not be read: {failure.Message}";
+
+    static void Refuse(DateOnly from, DateOnly through)
+    {
+        if (from >= through)
+        {
+            throw new ArgumentException(
+                FormattableString.Invariant($"A pull reaches from a date before tonight's session, {through:yyyy-MM-dd}, and {from:yyyy-MM-dd} is not before it."),
+                nameof(from));
+        }
+    }
+
     // The provider's surprise in per cent, a statistic, read from the text the feed kept; none where the print
     // carries no estimate, no actual or no surprise, since a surprise against nothing is not one.
     public static double? SurprisePercent(CalendarEvent print) =>
@@ -673,7 +1429,7 @@ public sealed class HistoryPull(
             ? percent
             : null;
 
-    // Removes one pull's rows from the four tables and says so on the run log. A pull no row carries is
+    // Removes one pull's rows from the eight tables and says so on the run log. A pull no row carries is
     // refused and nothing is written, so a mistyped id cannot record a removal that removed nothing.
     public static async Task<HistoryPurgeOutcome> PurgeAsync(
         IClock clock,
@@ -691,15 +1447,23 @@ public sealed class HistoryPull(
         var earningsHeld = await CountAsync(connection, EarningsOfPull, pull, cancellation);
         var surprisesHeld = await CountAsync(connection, SurprisesOfPull, pull, cancellation);
         var marketHeld = await CountAsync(connection, MarketBarsOfPull, pull, cancellation);
+        var companiesHeld = await CountAsync(connection, CompaniesOfPull, pull, cancellation);
+        var sharesHeld = await CountAsync(connection, SharesOfPull, pull, cancellation);
+        var splitsHeld = await CountAsync(connection, SplitsOfPull, pull, cancellation);
+        var revenueHeld = await CountAsync(connection, RevenueOfPull, pull, cancellation);
 
-        if (barsHeld == 0 && earningsHeld == 0 && surprisesHeld == 0 && marketHeld == 0)
+        if (barsHeld + earningsHeld + surprisesHeld + marketHeld + companiesHeld + sharesHeld + splitsHeld + revenueHeld == 0)
         {
             throw new ArgumentException($"No pulled row carries the pull '{pull}', so there is nothing to remove.", nameof(pull));
         }
 
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
 
-        foreach (var removal in new[] { DeleteBarsOfPull, DeleteEarningsOfPull, DeleteSurprisesOfPull, DeleteMarketBarsOfPull })
+        foreach (var removal in new[]
+        {
+            DeleteBarsOfPull, DeleteEarningsOfPull, DeleteSurprisesOfPull, DeleteMarketBarsOfPull,
+            DeleteCompaniesOfPull, DeleteSharesOfPull, DeleteSplitsOfPull, DeleteRevenueOfPull,
+        })
         {
             await using var delete = connection.CreateCommand();
             delete.CommandText = removal;
@@ -717,12 +1481,23 @@ public sealed class HistoryPull(
             "ok",
             0,
             0,
-            JsonSerializer.Serialize(new { pull, bars = barsHeld, earnings = earningsHeld, surprises = surprisesHeld, market = marketHeld }),
+            JsonSerializer.Serialize(new
+            {
+                pull,
+                bars = barsHeld,
+                earnings = earningsHeld,
+                surprises = surprisesHeld,
+                market = marketHeld,
+                companies = companiesHeld,
+                counts = sharesHeld,
+                splits = splitsHeld,
+                revenue = revenueHeld,
+            }),
             cancellation);
 
         await transaction.CommitAsync(cancellation);
 
-        return new HistoryPurgeOutcome(pull, barsHeld, earningsHeld, surprisesHeld, marketHeld);
+        return new HistoryPurgeOutcome(pull, barsHeld, earningsHeld, surprisesHeld, marketHeld, companiesHeld, sharesHeld, splitsHeld, revenueHeld);
     }
 
     // The windows the earnings calendar is asked for: each calendar month the span touches, cut to
@@ -816,6 +1591,55 @@ public sealed class HistoryPull(
     // One stored series as the pull's row and its printed lines say it: how many sessions, the first and the last.
     static string Described(MarketSeriesStored series) =>
         FormattableString.Invariant($"{series.Series}: {series.Sessions} session(s), {series.First:yyyy-MM-dd} to {series.Last:yyyy-MM-dd}");
+
+    public static string Detail(HistoryCompanyOutcome outcome) =>
+        FormattableString.Invariant($"pulled the companies {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Answered} of {outcome.Names} name(s) answered, {outcome.CompaniesWritten} compan(ies) and {outcome.CountsWritten} share count(s) stored, {outcome.NoSector.Count} filing no sector, {outcome.NoCount.Count} filing no count with its date, {outcome.NoCik.Count} filing no CIK, {outcome.SheetsUncounted} balance sheet(s) carrying no count or no filing date, the moves of 2023-03-17: {outcome.MovesFiled} of {GicsSectors.Moves.Count} filed in the sector they moved to, {outcome.Requests} request(s)")
+        + string.Concat(outcome.Unanswered.Select(line => Environment.NewLine + "  unanswered: " + line))
+        + Listed("no sector", outcome.NoSector)
+        + Listed("no count", outcome.NoCount)
+        + Listed("no CIK", outcome.NoCik)
+        + string.Concat(outcome.MovesNot.Select(line => Environment.NewLine + "  move not filed: " + line));
+
+    public static string Detail(HistorySplitOutcome outcome) =>
+        FormattableString.Invariant($"pulled the splits {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Answered} of {outcome.Names} name(s) answered, {outcome.WithASplit} with a split, {outcome.Written} split(s) stored, {outcome.Requests} request(s)")
+        + string.Concat(outcome.Unanswered.Select(line => Environment.NewLine + "  unanswered: " + line));
+
+    public static string Detail(HistorySectorFundOutcome outcome) =>
+        FormattableString.Invariant($"pulled the sector funds {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Stored.Count} of {SectorFunds.Count} fund(s) answered, {outcome.Written} session(s) stored, {outcome.Requests} request(s)")
+        + string.Concat(outcome.Stored.Select(series => Environment.NewLine + "  " + Described(series)))
+        + string.Concat(outcome.Refused.Select(line => Environment.NewLine + "  refused: " + line));
+
+    public static string Detail(HistoryRevenueOutcome outcome) =>
+        FormattableString.Invariant($"pulled the revenue of {outcome.Filers} filer(s): {outcome.Written} figure(s) stored, {outcome.NoRevenue.Count} filer(s) filing under none of the {FirstFiledRevenue.Concepts.Count} concepts, {outcome.WithoutAFiler.Count} pulled compan(ies) filing no CIK, {outcome.Requests} request(s)")
+        + string.Concat(outcome.ByConcept.Select(concept => Environment.NewLine + "  " + Described(concept)))
+        + string.Concat(outcome.Unanswered.Select(line => Environment.NewLine + "  unanswered: " + line))
+        + Listed("filing under no concept", outcome.NoRevenue)
+        + Listed("no CIK", outcome.WithoutAFiler);
+
+    // One concept as the revenue pull's row and its printed lines say it: the filers stating any figure under it and
+    // the figures they stated.
+    static string Described(RevenueConceptFiled concept) =>
+        FormattableString.Invariant($"{concept.Concept}: {concept.Filers} filer(s), {concept.Figures} figure(s)");
+
+    static string Listed(string what, IReadOnlyList<string> names) =>
+        names.Count == 0 ? string.Empty : Environment.NewLine + "  " + what + ": " + string.Join(", ", names);
+
+    static async Task<IReadOnlyList<string>> ColumnAsync(SqliteConnection connection, string sql, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = sql;
+
+        var values = new List<string>();
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            values.Add(reader.GetString(0));
+        }
+
+        return values;
+    }
 
     static async Task<IReadOnlyList<string>> NamesAsync(SqliteConnection connection, string indexCode, DateOnly from, DateOnly through, CancellationToken cancellation)
     {
@@ -926,5 +1750,71 @@ public sealed record HistoryMarketOutcome(
 // One series a market pull stored: the sessions the provider sent, the first and the last.
 public sealed record MarketSeriesStored(string Series, int Sessions, DateOnly First, DateOnly Last);
 
+// What one companies pull did: the span, the names held over it and how many answered, each name not served and
+// why, the companies and counts stored, the names filing no sector, no dated count or no CIK, the balance sheets
+// carrying no count or no filing date, how many of the fourteen moves of 2023-03-17 are filed where they moved and
+// each that is not, and the requests made.
+public sealed record HistoryCompanyOutcome(
+    DateOnly From,
+    DateOnly Through,
+    int Names,
+    int Answered,
+    IReadOnlyList<string> Unanswered,
+    int CompaniesWritten,
+    int CountsWritten,
+    IReadOnlyList<string> NoSector,
+    IReadOnlyList<string> NoCount,
+    IReadOnlyList<string> NoCik,
+    int SheetsUncounted,
+    int MovesFiled,
+    IReadOnlyList<string> MovesNot,
+    int Requests);
+
+// What one splits pull did: the span, the names held over it and how many answered, each name not served and why,
+// the names with a split in the span, the splits stored and the requests made.
+public sealed record HistorySplitOutcome(
+    DateOnly From,
+    DateOnly Through,
+    int Names,
+    int Answered,
+    IReadOnlyList<string> Unanswered,
+    int WithASplit,
+    int Written,
+    int Requests);
+
+// What one sector funds pull did: the span, each fund stored with its sessions, each fund refused and why, the rows
+// stored and the requests made.
+public sealed record HistorySectorFundOutcome(
+    DateOnly From,
+    DateOnly Through,
+    IReadOnlyList<MarketSeriesStored> Stored,
+    IReadOnlyList<string> Refused,
+    int Written,
+    int Requests);
+
+// What one revenue pull did: the filers asked, the pulled companies filing no CIK, each concept's filers and figures,
+// the filers filing under none of the concepts, each request not served and why, the figures stored and the requests
+// made.
+public sealed record HistoryRevenueOutcome(
+    int Filers,
+    IReadOnlyList<string> WithoutAFiler,
+    IReadOnlyList<RevenueConceptFiled> ByConcept,
+    IReadOnlyList<string> NoRevenue,
+    IReadOnlyList<string> Unanswered,
+    int Written,
+    int Requests);
+
+// One revenue concept as a revenue pull found it: how many filers stated a figure under it and how many figures.
+public sealed record RevenueConceptFiled(string Concept, int Filers, int Figures);
+
 // What one purge removed.
-public sealed record HistoryPurgeOutcome(string Pull, int Bars, int Earnings, int Surprises = 0, int MarketBars = 0);
+public sealed record HistoryPurgeOutcome(
+    string Pull,
+    int Bars,
+    int Earnings,
+    int Surprises = 0,
+    int MarketBars = 0,
+    int Companies = 0,
+    int Shares = 0,
+    int Splits = 0,
+    int Revenue = 0);

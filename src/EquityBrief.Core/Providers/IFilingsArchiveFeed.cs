@@ -29,6 +29,10 @@ public enum ArchiveDocument
     // Every figure the archive holds for the company, under the concept each was
     // filed against.
     CompanyFacts,
+
+    // Every figure the company filed under one concept, which the history pull
+    // asks for each revenue concept and no read of a name does.
+    CompanyConcept,
 }
 
 // One document the archive is asked for.

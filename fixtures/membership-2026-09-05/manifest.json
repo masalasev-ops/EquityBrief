@@ -1175,6 +1175,34 @@
       "query": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000718877.json",
       "fetchedAt": "2026-10-03T21:04:52Z",
       "trimmedTo": "2 of the 454 us-gaap concepts, the two the company filed revenue under, and of each the facts filed in 2018 and 2019, the years it moved its revenue from the first to the second, from a payload of 2.9 megabytes; the dei and invest concepts left out. Every key and nesting level kept is the archive's. A company delisted in 2023 still answers, each fact with the date it was filed and its form, a quarter's figure filed again as a comparative in later filings beside the filing that first stated it."
+    },
+    {
+      "file": "phase14-company-AAPL.json",
+      "endpoint": "fundamentals/AAPL.US",
+      "query": "fundamentals/AAPL.US?filter=General::Code,General::CIK,General::GicSector,General::GicGroup,General::GicIndustry,General::GicSubIndustry,General::IsDelisted,General::DelistedDate,Financials::Balance_Sheet::quarterly",
+      "fetchedAt": "2026-10-03T23:35:54Z",
+      "trimmedTo": "the eight General fields whole and 2 of the 164 quarterly balance sheets, the newest and the first of 2019, every key, nesting and type the provider's. The answer to the one request the companies pull sends a name, every path of its filter a key of one flat object; kept as a company in the index, its counts filed on today's split basis."
+    },
+    {
+      "file": "phase14-company-ATVI.json",
+      "endpoint": "fundamentals/ATVI.US",
+      "query": "fundamentals/ATVI.US?filter=General::Code,General::CIK,General::GicSector,General::GicGroup,General::GicIndustry,General::GicSubIndustry,General::IsDelisted,General::DelistedDate,Financials::Balance_Sheet::quarterly",
+      "fetchedAt": "2026-10-03T23:35:55Z",
+      "trimmedTo": "the eight General fields whole and 2 of the 125 quarterly balance sheets, the newest and the first of 2019, every key, nesting and type the provider's. The answer to the one request the companies pull sends a name, every path of its filter a key of one flat object; kept as a company delisted on 2023-10-13, its General fields saying so and its last balance sheet the newest kept."
+    },
+    {
+      "file": "phase14-concept-AAPL.json",
+      "endpoint": "api/xbrl/companyconcept/CIK0000320193/us-gaap/RevenueFromContractWithCustomerExcludingAssessedTax.json",
+      "query": "https://data.sec.gov/api/xbrl/companyconcept/CIK0000320193/us-gaap/RevenueFromContractWithCustomerExcludingAssessedTax.json",
+      "fetchedAt": "2026-10-03T23:35:55Z",
+      "trimmedTo": "the 21 of the 117 facts filed in 2019, every key and nesting level the archive's: a filer whose revenue is stated under the concept most filers use, with its quarters, its nine months and its year. Each fact carries the date it was filed and its form, and a quarter a filing states again as a comparative is a fact of its own beside the one that first stated it."
+    },
+    {
+      "file": "phase14-concept-JPM.json",
+      "endpoint": "api/xbrl/companyconcept/CIK0000019617/us-gaap/RevenuesNetOfInterestExpense.json",
+      "query": "https://data.sec.gov/api/xbrl/companyconcept/CIK0000019617/us-gaap/RevenuesNetOfInterestExpense.json",
+      "fetchedAt": "2026-10-03T23:35:56Z",
+      "trimmedTo": "the 13 of the 149 facts filed in 2019, every key and nesting level the archive's: a bank, which files its revenue under a concept of its own. Each fact carries the date it was filed and its form, and a quarter a filing states again as a comparative is a fact of its own beside the one that first stated it."
     }
   ]
 }

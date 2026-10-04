@@ -1,0 +1,12 @@
+# The remedy of 14.2 (the pulls behind the sector heavyweights and the context checks), as its PROGRESS entry prints
+# it: run tools/migrate.ps1 first, which creates migration 58's four tables, then these four pulls in order, each
+# storing into tables of its own that no night reads. The companies pull asks every name the index held from 2018 for
+# its filer, its GICS sector and its quarterly share counts, about seven thousand weighted calls of the day's hundred
+# thousand; the splits pull asks each the same names for its splits, about seven hundred; the sector funds pull asks
+# for the eleven funds' series, eleven; and the revenue pull asks the SEC's archive for each pulled filer's revenue
+# under six concepts, which bills nothing and takes about a quarter of an hour. Nothing a night, a listing, a score
+# or a page reads moves. Run after the merge, when no night is running.
+history-pull --companies --from 2018-01-01 --live
+history-pull --splits --from 2018-01-01 --live
+history-pull --sector-etfs --from 2018-01-01 --live
+history-pull --revenue --live
