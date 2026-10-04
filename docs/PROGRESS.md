@@ -37646,8 +37646,13 @@ Mutated:    the rule, stated before the run: each property 14.8's done condition
             W6 a refused index's members pull recorded as ok: red in the members pull test.
             Results: W1 to W6 each red where stated once W3's test was extended, each reverted, and the five tests
             green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 90df4aa, over
+            b8d0a96, the entry's commit, whose first run stopped at the suite on the stated count of live feeds,
+            fourteen where the wider indices' components made fifteen. `tools/ci.ps1`: all six steps, 0 warnings, 0
+            errors, 1837 of 1837 tests ran with none failed, migrations 0 to 61 with none pending, schema version 61,
+            against `data-ci` and never `data`. `tools/verify-phase.ps1`: 44 tables, 973 claims, 973 PASS, 0 FAIL, 0
+            out of scope, 0 unexamined, 984 placements and verdicts reconciled against a floor of 34, fixture PRESENT,
+            43 checks on the roster, 43 carried and 43 passed.
 Carried:    after the merge, `tools/migrate.ps1`, `tools/remedies/2026-10-04-14.8-the-wider-pulls.txt` and
             `sweep-wider` from main's Release build, then an entry with each family's edge on both universes, its
             test, the luck figure and the rule's answer, brought to the operator; phase 14's sign-off; the night of
