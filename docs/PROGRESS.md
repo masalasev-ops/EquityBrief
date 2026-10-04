@@ -37413,4 +37413,6 @@ Part B:     "Yes, both": the pullback's sector leaders' rule retired, and the an
 Fork:       "B, each card its own (Recommended)": each card keeps its own one trade a stock, as 14.3 built it and
             the decision it wrote states (see: A stock holds one trade across every swing family, and one qualifying
             under two is listed once under the first in the page's order).
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            14.6 entry states.
 Carried:    14.6 built on these; the night of 2026-10-05 read.
