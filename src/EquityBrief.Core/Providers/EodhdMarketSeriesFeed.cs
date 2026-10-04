@@ -2,20 +2,29 @@ using System.Net.Http;
 
 namespace EquityBrief.Core.Providers;
 
-// The index's and the VIX's daily series, over the network.
+// The index's, the VIX's and the sector funds' daily series, over the network.
 //
-// The provider files both under its index exchange rather than under a listing, so the suffix is the
-// index one and never the stock one: a series asked for as a stock is a ticker the provider does not
-// list, refused rather than answered with the index. The endpoint is the historical one the backfill
-// asks, one request a series over the whole span at its weight of one.
+// The provider files the index and the VIX under its index exchange rather than under a listing, so their suffix is
+// the index one and never the stock one: a series asked for as a stock is a ticker the provider does not list,
+// refused rather than answered with the index. A sector fund is a listing, filed under the exchange a member's bars
+// are. The endpoint is the historical one the backfill asks, one request a series over the whole span at its weight of
+// one.
 // see: The index's and the VIX's daily series are pulled beside the pulled bars, marked by their pull and read by no night
+// see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars
 public sealed class EodhdMarketSeriesFeed(
     HttpClient client,
     ProviderCredentials credentials,
     ProviderRequest? request = null) : IMarketSeriesFeed
 {
-    // The exchange the provider files an index under.
+    // The exchange the provider files an index under, and the one it files a listing under.
     public const string IndexSuffix = ".INDX";
+
+    public const string ListingSuffix = ".US";
+
+    // The suffix a series is asked for under: the index exchange's for the index and the VIX, and a listing's for a
+    // sector fund.
+    public static string SuffixOf(string series) =>
+        series is Families.MarketCloses.Index or Families.MarketCloses.Vix ? IndexSuffix : ListingSuffix;
 
     readonly ProviderRequest request = request ?? new ProviderRequest(RetryPolicy.Standard);
 
@@ -67,7 +76,7 @@ public sealed class EodhdMarketSeriesFeed(
             using var response = await client
                 .GetAsync(
                     EodhdQuery.WithKey(
-                        FormattableString.Invariant($"{EodhdHistoricalBarFeed.Endpoint}/{series}{IndexSuffix}?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}") +
+                        FormattableString.Invariant($"{EodhdHistoricalBarFeed.Endpoint}/{series}{SuffixOf(series)}?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}") +
                         "&period=d&fmt=json",
                         credentials),
                     cancellation)

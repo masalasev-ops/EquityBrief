@@ -19,10 +19,11 @@ public sealed record SwingFilterOutcome(int Members, int RowsWritten, IReadOnlyL
 // removed can be counted, and a gate's near misses read later from rows nothing rewrites.
 //
 // It runs after the listings, so the ladder's first tranche it reads is the one tonight's listing
-// kept, and it changes nothing the listings wrote. It makes no request and calls no model. Each
-// standing swing family candidate is evaluated in its shadow over the same inputs by the shadow the
+// kept, and it changes nothing the listings wrote. It makes no request of its own and calls no model.
+// Each standing swing family candidate is evaluated in its shadow over the same inputs by the shadow the
 // night hands in, and stored on the member's row, a missing or moved evaluator failing the stage as it
-// fails the listings.
+// fails the listings; the analysts' estimates a candidate reading them needs are read first, through the
+// source the night hands in, for the members that candidate passes on everything else.
 // see: The nightly run is arithmetic only
 // see: The swing filter's starting settings are ruled from shape counts before tonight's list switches to it
 public sealed class SwingFilter : IComponent
@@ -57,7 +58,7 @@ public sealed class SwingFilter : IComponent
     // the list from the compiled code and holds this to it.
     public const string CodeVersionDeclaration = "public const string CodeVersion =";
 
-    public const string CodeVersion = "6791a58a062a";
+    public const string CodeVersion = "462efb8dec4a";
 
     public static IReadOnlyList<string> CodeVersionSources { get; } =
     [
@@ -195,8 +196,10 @@ public sealed class SwingFilter : IComponent
     }
 
     // The family's shadow is the night's, read off the register as it stood when the night started, and
-    // none where no night handed one.
-    public async Task<SwingFilterOutcome> RunAsync(string indexCode, string runId, IMemberShadow? family = null, CancellationToken cancellation = default)
+    // none where no night handed one; the estimates are read through the source the night hands in, for the
+    // members a rule reading them passes on everything else, and read as none where it handed none.
+    // see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night
+    public async Task<SwingFilterOutcome> RunAsync(string indexCode, string runId, IMemberShadow? family = null, CancellationToken cancellation = default, IEstimateSource? estimates = null)
     {
         var startedAt = clock.UtcNow;
 
@@ -242,6 +245,7 @@ public sealed class SwingFilter : IComponent
 
         var results = new List<GateResult>();
         var shadows = new Dictionary<string, string>(StringComparer.Ordinal);
+        var evaluated = new List<(string Ticker, GateInputs Inputs, bool Stale, DateOnly? Gap)>();
 
         foreach (var ticker in members)
         {
@@ -282,12 +286,23 @@ public sealed class SwingFilter : IComponent
                     standings.GetValueOrDefault(ticker));
 
             results.Add(SwingGates.Evaluate(inputs, settings));
+            evaluated.Add((ticker, inputs, tonight is null, SwingReader.GapIn(read?.Note)));
+        }
 
-            // A member with no bar for the night, or one held across a gap, is skipped by every candidate
-            // with the reason, as the listings stage skips it, rather than scored over nothing.
-            if (family is not null)
+        // The members a rule reading analysts' estimates passes on everything else, whose estimates are read before any
+        // verdict is written, so the rule's verdict on each is taken over the answer the night asked for.
+        string[] asked = family is null ? [] : [.. evaluated.Where(one => family.AsksForEstimates(one.Inputs, one.Stale, one.Gap)).Select(one => one.Ticker)];
+        var estimated = asked.Length > 0 && estimates is not null
+            ? await estimates.ReadAsync(night, asked, runId, cancellation)
+            : new Dictionary<string, Core.Quarters.EstimateReading>(StringComparer.Ordinal);
+
+        // A member with no bar for the night, or one held across a gap, is skipped by every candidate
+        // with the reason, as the listings stage skips it, rather than scored over nothing.
+        if (family is not null)
+        {
+            foreach (var (ticker, inputs, stale, gap) in evaluated)
             {
-                shadows[ticker] = family.Evaluate(inputs, tonight is null, SwingReader.GapIn(read?.Note));
+                shadows[ticker] = family.Evaluate(estimated.TryGetValue(ticker, out var estimate) ? inputs with { Estimates = estimate } : inputs, stale, gap);
             }
         }
 
@@ -324,7 +339,7 @@ public sealed class SwingFilter : IComponent
             command.Parameters.AddWithValue("$ended_at", clock.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture));
             command.Parameters.AddWithValue("$rows_written", results.Count);
             command.Parameters.AddWithValue("$outcome", family is { Faults.Count: > 0 } ? "failed" : "ok");
-            command.Parameters.AddWithValue("$detail", SwingFunnel.Line(funnel, excluded, ranked.Count, version) + (family?.Said ?? string.Empty));
+            command.Parameters.AddWithValue("$detail", SwingFunnel.Line(funnel, excluded, ranked.Count, version) + (family?.Said ?? string.Empty) + EstimatesSaid(asked, estimates));
 
             await command.ExecuteNonQueryAsync(cancellation);
         }
@@ -333,6 +348,15 @@ public sealed class SwingFilter : IComponent
 
         return new SwingFilterOutcome(members.Count, results.Count, funnel, excluded, ranked.Count, version, family?.Evaluated ?? 0, family?.Faults ?? []);
     }
+
+    // What the stage's row says of the estimates a rule reading them asked for: nothing where none was asked, the
+    // members asked about and the source's own sentence, or that the night handed nothing to ask with.
+    static string EstimatesSaid(IReadOnlyList<string> asked, IEstimateSource? estimates) =>
+        asked.Count == 0
+            ? string.Empty
+            : FormattableString.Invariant($"; estimates read for {asked.Count} member(s) a rule reading them passed on everything else, ")
+                + string.Join(", ", asked)
+                + (estimates is null ? ": none asked for, since the night handed nothing to ask with" : estimates.Said);
 
     // The five gates' answers, their reasons and values, and the notes, as the row stores them.
     public static string GatesJson(GateResult result) =>

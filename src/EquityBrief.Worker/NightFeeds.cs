@@ -19,12 +19,14 @@ namespace EquityBrief.Worker;
 // The seventh is one member's reported quarters, which the night asks for on the nights after a
 // member reports and on no other, the fourth carve-out the nightly rule names. It is on this record
 // because the night reaches it, so its count is the night's and the allowance it is stopped at is the
-// night's own.
+// night's own. The same feed answers the night's ask for the estimates of each member a rule reading
+// them passes on everything else, the sixth carve-out.
 // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+// see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night
 //
-// The eighth is the index's and the VIX's daily series, one request a series a night whatever the index's size,
-// which the registered family rules' market switches read.
-// see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+// The eighth is the index's, the VIX's and the sector funds' daily series, one request a series a night whatever
+// the index's size, which the registered family rules' market switches and the sector heavyweights read.
+// see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars
 public sealed record NightFeeds(
     IIndexMembershipFeed Membership,
     IHistoricalBarFeed Historical,

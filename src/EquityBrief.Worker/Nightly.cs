@@ -234,7 +234,7 @@ public static class Nightly
             }),
             // The day's bars, and after them the index's and the VIX's series, one request a series, which only
             // the registered family rules' market switches read, so a series not stored stops nothing.
-            // see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+            // see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars
             new("fetch", async () =>
             {
                 var outcome = await new BarFetcher(bulkFeed, clock, store.DatabaseFile)
@@ -392,18 +392,24 @@ public static class Nightly
             // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
             new("swing-filter", async () =>
             {
-                // The swing family standing when the night started, evaluated in the filter's shadow, and every
-                // other family's registered rules, evaluated in the family evaluator's.
+                // The swing family standing when the night started, evaluated in the filter's shadow, every other
+                // family's registered rules, evaluated in the family evaluator's, and the sector heavyweights' registered
+                // rules, each kept in a book of its own. The analysts' estimates a swing rule reading them needs are
+                // asked for through the fetcher, and a night run again for an earlier session asks for none, the sixth
+                // carve-out of the nightly rule.
+                // see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night
                 var register = await new CandidateRegistrar(clock, store.DatabaseFile).RowsAsync(night.Token);
                 var family = FamilyShadow.For(register, nightStartedAt);
                 var rules = FamilyRuleShadow.For(register, nightStartedAt);
+                var estimates = new EstimatesFetcher(askForTheFirstName ? companies : null, () => feeds.WeightedCalls, clock, store.DatabaseFile);
                 var outcome = await new SwingFilter(clock, store.DatabaseFile)
-                    .RunAsync(indexCode, runId, family, night.Token);
+                    .RunAsync(indexCode, runId, family, night.Token, estimates);
+                await estimates.RecordAsync(runId, night.Token);
                 var recorded = await NightClose.RecordRuleAsync(store.DatabaseFile, night.Token);
                 var evaluated = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync(runId, rules, night.Token);
                 var listed = await new FamilyLister(clock, store.DatabaseFile).RunAsync(runId, night.Token);
                 var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token);
-                var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token);
+                var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token, HeavyweightBook.Standing(register, nightStartedAt));
 
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
                     $"{outcome.Excluded} excluded, version {outcome.Version}" +
@@ -411,8 +417,9 @@ public static class Nightly
                     $"; {evaluated.Families.Sum(family => family.Passed)} passed by the other setup families" +
                     $"; {listed.Listed} on the page's list" +
                     $"; {kept.Kept} kept by the registered family rules" +
-                    $"; {held.Held} held by the sector heavyweights";
-            }, [SwingFilter.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage]),
+                    $"; {held.Held} held by the sector heavyweights" +
+                    $"; {(held.Rules ?? []).Count(rule => rule.Fault is null)} heavyweights rule(s) kept in books of their own";
+            }, [SwingFilter.Stage, EstimatesFetcher.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage]),
             // Section 14's step 16. The shape proposer, after the swing filter, since it counts the
             // gate results the filter has just stored. It writes a proposal once the open version's
             // ordinary nights reach the trigger, and never a version: an acceptance is the operator's.

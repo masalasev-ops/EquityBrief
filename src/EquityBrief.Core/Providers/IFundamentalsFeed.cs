@@ -155,6 +155,11 @@ public sealed record CompanyFundamentals(
 {
     // The company's GICS classification, none where the answer files no `General` levels for it.
     public CompanyClassification? Classification { get; init; }
+
+    // The analysts' estimate for the company's current fiscal year as the answer's earnings trend files it, none where
+    // the answer carries no earnings object at all.
+    // see: A member's estimates are raised where its current fiscal year's consensus earnings estimate stands above its level 30 days before
+    public Quarters.EstimateReading? Estimates { get; init; }
 }
 
 // One name's fundamentals, in one request.

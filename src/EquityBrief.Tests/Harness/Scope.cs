@@ -665,7 +665,7 @@ internal static class Scope
             Verdict.Pass,
             "each gate reading an absent value fails with the reason it is absent and none passes on an absence, over constructed members and the fixture's member the night read nothing for",
             ByExpectations),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are the pullback family's, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it); then evaluate every member under each other setup family, on the market check the filter stored, storing every answer with the values that decided it (see: The market check closes every swing family's list together, and the sector heavyweights read none); then draw the page's list from what each setup family passed, the families in the page's order and each family's names in its own, at most five a family, a stock once and none whose trade from any family is still open, and record the session as one the families drew (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order); then end each registered family rule's earlier trades whose closes reached their stop, their target or their cap, write the benchmark of each whose cap's sessions have passed, and list tonight's for each rule, at most five, none it holds a trade on still open (see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end); then carry each sector heavyweight held to tonight's close, sell one whose stock left the index at its last close as a member and one closing under its 200-day average, and on the first night of a month read each sector's largest companies by their values as they stood, sell each holding the rule would no longer buy and buy each leader it does not hold, reading no market check (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are the pullback family's, the estimates of each member a registered rule reading them passes on everything else asked for once a member before any verdict is written (see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night), and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it); then evaluate every member under each other setup family, on the market check the filter stored, storing every answer with the values that decided it (see: The market check closes every swing family's list together, and the sector heavyweights read none); then draw the page's list from what each setup family passed, the families in the page's order and each family's names in its own, at most five a family, a stock once and none whose trade from any family is still open, and record the session as one the families drew (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order); then end each registered family rule's earlier trades whose closes reached their stop, their target or their cap, write the benchmark of each whose cap's sessions have passed, and list tonight's for each rule, at most five, none it holds a trade on still open (see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end); then carry each sector heavyweight held to tonight's close, in the page's book and in each registered rule's own, sell one whose stock left the index at its last close as a member and, where the setting reads it, one closing under its 200-day average, and on the first night of a month read each sector's largest companies by their values as they stood, their returns against the sector's and their betas, sell each holding the rule would no longer buy and buy each leader it does not hold, reading no market check and waiting for a night the store holds the closes a rebalance reads (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month) (see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut).")] = new Scoped(
             Verdict.Pass,
             "the night runs the step after the listings and before the facts, writes a row for every member, and records its session as listed by the swing filter",
             ByNight),
@@ -2033,6 +2033,9 @@ internal static class Scope
             Verdict.Pass, "the whole blocks worked by hand from the first session on or after the registration, a block whose cap has not passed left out, against the first look's eight", ByReadSurface),
         [CheckReach.Key("15.10 Run", "The setup families, the level its looks are read at")] = new Scoped(
             Verdict.Pass, "the level read off each row as 0.05 over the setup's own distinct trials, and no other setup's rule moving it", ByReadSurface),
+        // 14.6, the sector heavyweights' registered rules.
+        [CheckReach.Key("15.10 Run", "The setup families, the sector heavyweights' registered rules among them, each holding's edge its percent return less its size cut's and counted in the block of the session it ended on")] = new Scoped(
+            Verdict.Pass, "a registered heavyweights rule's row read back off the run page over constructed holdings in a book of its own, its decided holdings, its edge in points and its whole blocks worked by hand by the session each ended on, an open holding and one ended after the night read as open, the live rule first and the family's level its own", ByReadSurface),
         // 14.1, a family rule's record guarded by a replay.
         [CheckReach.Key("15.10 Run", "The setup families, beside each rule the session its record counts from")] = new Scoped(
             Verdict.Pass, "the session read off each rule's row, its first registration's where a replay under the version it stands at reproduced every trade and its registration's where that replay found one differing or none was run, worked by hand over constructed registrations and replays and read back off the page", ByReadSurface),
@@ -3066,8 +3069,8 @@ internal static class Scope
             ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, after the setup families' cards on a night they drew the page's list, whatever the market check read")] = new Scoped(
             Verdict.Pass, "the card read off the page after the last family's card, and drawn with its holdings on a night the market check closed every swing list", ByReadSurface),
-        [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, the family's rule in a sentence and the words saying it is provisional")] = new Scoped(
-            Verdict.Pass, "the card's heading, its rule's sentence and the provisional words read off the page against the family's own", ByReadSurface),
+        [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, the family's rule in a sentence and the day its live rule registered with the variants kept beside it or the words saying it is provisional where no freeze registered it")] = new Scoped(
+            Verdict.Pass, "the card's heading and its rule's sentence read off the page against the family's own, the day its live rule registered and its three variants over a register holding the freeze, and the provisional words over one holding none", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, one row a holding at the night's close")] = new Scoped(
             Verdict.Pass, "the rows read off the card against the holdings the store holds open at the night's close in both directions, one sold after the night among them and one bought after it and two sold by it not", ByReadSurface),
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, the sectors in order")] = new Scoped(
@@ -3108,8 +3111,8 @@ internal static class Scope
             Verdict.Pass, "a gain and a loss read off the table in percent against the stored results", ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "The sector heavyweights' holdings, its size cut's return over the same sessions and the difference between them")] = new Scoped(
             Verdict.Pass, "each sold row's size cut in percent and its difference in points read off the table, worked by hand from the stored figures, and none on a held row", ByReadSurface),
-        [CheckReach.Key("15.17 Past picks", "The sector heavyweights' holdings, the words saying it is provisional")] = new Scoped(
-            Verdict.Pass, "the provisional line read off the card", ByReadSurface),
+        [CheckReach.Key("15.17 Past picks", "The sector heavyweights' holdings, the words saying these are the page's own book and each registered rule's record is its own")] = new Scoped(
+            Verdict.Pass, "the line read off the card", ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "The sector heavyweights' holdings, nothing where the book has bought none")] = new Scoped(
             Verdict.Pass, "a store whose book bought nothing draws no table of it", ByReadSurface),
 
@@ -3148,6 +3151,45 @@ internal static class Scope
             Verdict.Pass,
             "holdings bought on the last rebalance of a constructed walk carry no result, count in no year and stand in the count of those still held",
             ByExpectations),
+
+        // 14.6, the freezes and registrations: section 17's two rows, section 18's two, the estimates fetcher's
+        // catalogue and matrix rows, and the three stores.
+        [CheckReach.Key(LimitsTable, "Heavyweights' registrations")] = new Scoped(
+            Verdict.Pass,
+            "the freeze writes the live rule and its three variants at one instant, refused whole by a second freeze and by a store holding one of the four, and over two constructed nights each variant is worked by hand beside the live rule on both sides of the setting it moves, each rule's book its own; the count read off the document against the code; and `read-surface` reads each rule's record back off the run page over constructed holdings",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Estimates raised")] = new Scoped(
+            Verdict.Pass,
+            "the current year's estimate read off the fixture's captured answer and off constructed trends at the newest current year, a level estimate not raised and one raised by a cent, and the revisions variant firing where the base fires on a raised estimate and on no other; the days read off the document against the constant",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A sector fund or the index holds no close for a heavyweights' rebalance night")] = new Scoped(
+            Verdict.Pass,
+            "over a constructed store whose night holds no close for one fund, every book reading the funds waits and stores nothing while the variant reading none rebalances, the row naming the fund, and the night after reads the rebalance",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "The provider does not serve a member's estimates on the night")] = new Scoped(
+            Verdict.Pass,
+            "a member the constructed feed refuses is read as not raised, named on the fetcher's row and stores nothing, and a night run again asks for it again and for no member it holds",
+            ByExpectations),
+        [CheckReach.Key(CatalogueTable, "Estimates fetcher")] = new Scoped(
+            Verdict.Pass,
+            "the class declares the company financials feed it asks and the estimate readings it reads and writes, and the declaration matches this row, its matrix row, SCHEMA's ownership and the statements in its own source",
+            ByAccess),
+        [CheckReach.Key(MatrixTable, "Estimates fetcher")] = new Scoped(
+            Verdict.Pass,
+            "every cell of the row is asserted against the declaration, the blanks included",
+            ByAccess),
+        [CheckReach.Key(StoresTable, "Heavyweight rule nights")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Heavyweight rule holdings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
+        [CheckReach.Key(StoresTable, "Estimate readings")] = new Scoped(
+            Verdict.Pass,
+            "the table's columns and types are asserted against SCHEMA.md",
+            ByMigration),
         [CheckReach.Key(FailureTable, "The labeller fails")] = new Scoped(
             Verdict.Pass,
             "a run refused before it asked anything writes its own row saying why and no row of the night's, and a labeller that stopped partway leaves the night's rows, listings and gate results as they were",
@@ -3697,7 +3739,7 @@ internal static class Scope
             Verdict.Pass,
             "the night runs it after membership, and a second night backfills nothing",
             ByNight),
-        [CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, a name announced to join included, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's) (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement). Then ask for the index's and the VIX's daily series over the days before the session that section 17 states, one request a series, and store each session no night has stored apart from the bars, a series the provider does not serve storing nothing and stopping nothing (see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars).")] = new Scoped(
+        [CheckReach.Key(NightlyRunSteps.Heading, "Fetch the day's bulk bar file, one request, and store the bars for every name that has not left the index by the session, a name announced to join included, first fetching in bulk, one request each, any session the store is missing since the last night that ran (see: A session the night finds missing is fetched in bulk before tonight's) (see: An announced index change takes effect on its effective date, and a joining name is stored from the announcement). Then ask for the index's, the VIX's and the eleven sector funds' daily series over the days before the session that section 17 states, one request a series, and store each session no night has stored apart from the bars, a fund's held session written again where the answer restates its close, a series the provider does not serve storing nothing and stopping nothing (see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars).")] = new Scoped(
             Verdict.Pass,
             "the night runs it after the backfill, in one request on a night that follows one that ran, storing the day for the names that have not left and for no other, an announced joiner and an announced leaver included and a departed name not, and a night after one that did not run fetches the missed session first, one request more, and stores both; then asks for the two market series once each over the stated days, storing only the sessions no night holds, and a series the provider refuses stores nothing and stops no step",
             ByNight),
@@ -3955,6 +3997,8 @@ internal static class Scope
         ["Family replay"] = "14.1",
         // 14.3's book, which the plan describes by what it keeps rather than by the component's name.
         ["Heavyweight book"] = "14.3",
+        // 14.6's fetcher, which the plan describes by the variant reading what it asks for.
+        ["Estimates fetcher"] = "14.6",
     };
 
     static readonly Dictionary<string, string> Stores = new(StringComparer.Ordinal)
@@ -4004,6 +4048,10 @@ internal static class Scope
         ["Heavyweight nights"] = "14.3",
         ["Heavyweight holdings"] = "14.3",
         ["Member companies"] = "14.3",
+        // 14.6's three, each registered heavyweights rule's two and the estimates the night asked for.
+        ["Heavyweight rule nights"] = "14.6",
+        ["Heavyweight rule holdings"] = "14.6",
+        ["Estimate readings"] = "14.6",
     };
 
     // Where a screen row is complete, not where its first pixel appears. Naming
@@ -4332,6 +4380,7 @@ internal static class Scope
         [CheckReach.Key("15.10 Run", "The setup families, those decided with their edge over their benchmark in multiples of the risk")] = "13.9",
         [CheckReach.Key("15.10 Run", "The setup families, its whole blocks against the look they wait for")] = "13.9",
         [CheckReach.Key("15.10 Run", "The setup families, the level its looks are read at")] = "13.9",
+        [CheckReach.Key("15.10 Run", "The setup families, the sector heavyweights' registered rules among them, each holding's edge its percent return less its size cut's and counted in the block of the session it ended on")] = "14.6",
         [CheckReach.Key("15.10 Run", "The setup families, beside each rule the session its record counts from")] = "14.1",
         [CheckReach.Key("15.10 Run", "The setup families, where a replay at its registration found a trade differing, that it restarted there and why")] = "14.1",
         [CheckReach.Key("15.17 Past picks", "The setup filter, one chip a setup with its trades and the counts following the setup chosen")] = "13.5",
@@ -4340,7 +4389,7 @@ internal static class Scope
         [CheckReach.Key("15.17 Past picks", "A provisional setup's trades, marked and counted in no share")] = "13.5",
         // 14.3, the sector heavyweights on the pages.
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, after the setup families' cards on a night they drew the page's list, whatever the market check read")] = "14.3",
-        [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, the family's rule in a sentence and the words saying it is provisional")] = "14.3",
+        [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, the family's rule in a sentence and the day its live rule registered with the variants kept beside it or the words saying it is provisional where no freeze registered it")] = "14.3",
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, one row a holding at the night's close")] = "14.3",
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, the sectors in order")] = "14.3",
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card, each with its sector")] = "14.3",
@@ -4362,7 +4411,7 @@ internal static class Scope
         [CheckReach.Key("15.17 Past picks", "The sector heavyweights' holdings, why it ended")] = "14.3",
         [CheckReach.Key("15.17 Past picks", "The sector heavyweights' holdings, its result in percent of the buy")] = "14.3",
         [CheckReach.Key("15.17 Past picks", "The sector heavyweights' holdings, its size cut's return over the same sessions and the difference between them")] = "14.3",
-        [CheckReach.Key("15.17 Past picks", "The sector heavyweights' holdings, the words saying it is provisional")] = "14.3",
+        [CheckReach.Key("15.17 Past picks", "The sector heavyweights' holdings, the words saying these are the page's own book and each registered rule's record is its own")] = "14.3",
         [CheckReach.Key("15.17 Past picks", "The sector heavyweights' holdings, nothing where the book has bought none")] = "14.3",
         [CheckReach.Key("15.7 Tonight", "Still open, one row per stock that passed every gate on the night with nothing excluding it but an open trade while a trade the live list recommended for it on an earlier night is still open on this one")] = "12.2",
         [CheckReach.Key("15.7 Tonight", "Still open, the night that trade was listed on")] = "12.2",
@@ -4672,7 +4721,7 @@ internal static class Scope
         [CheckReach.Key("15.7 Tonight", "The sector heavyweights' card")] =
         [
             "after the setup families' cards on a night they drew the page's list, whatever the market check read",
-            "the family's rule in a sentence and the words saying it is provisional",
+            "the family's rule in a sentence and the day its live rule registered with the variants kept beside it or the words saying it is provisional where no freeze registered it",
             "one row a holding at the night's close",
             "the sectors in order",
             "each with its sector",
@@ -4696,7 +4745,7 @@ internal static class Scope
             "why it ended",
             "its result in percent of the buy",
             "its size cut's return over the same sessions and the difference between them",
-            "the words saying it is provisional",
+            "the words saying these are the page's own book and each registered rule's record is its own",
             "nothing where the book has bought none",
         ],
         // 13.5. The pages around the setup families, each row as the parts it enumerates and states.
@@ -4731,6 +4780,7 @@ internal static class Scope
             "those decided with their edge over their benchmark in multiples of the risk",
             "its whole blocks against the look they wait for",
             "the level its looks are read at",
+            "the sector heavyweights' registered rules among them, each holding's edge its percent return less its size cut's and counted in the block of the session it ended on",
             "beside each rule the session its record counts from",
             "where a replay at its registration found a trade differing, that it restarted there and why",
         ],
@@ -5283,6 +5333,9 @@ internal static class Scope
         // 14.5, the heavyweights' sweep.
         ["A rebalance the night's book stored that the heavyweights' replay reads differently"] = "14.5",
         ["A heavyweight still held at the history's end"] = "14.5",
+        // 14.6, the freezes and registrations.
+        ["A sector fund or the index holds no close for a heavyweights' rebalance night"] = "14.6",
+        ["The provider does not serve a member's estimates on the night"] = "14.6",
         // 13.1, the family framework. The row about two families is read on the page once a second family is on it.
         ["A stock a family passes while a trade for it is still open"] = "13.1",
         ["A stock two families pass on one night"] = "13.2",
@@ -5419,11 +5472,13 @@ internal static class Scope
         // by the plan's own text and derive from it.
         ["Company value"] = "14.2",
         ["Archive requests"] = "14.2",
-        // The sector heavyweights' provisional settings, 14.3.
+        // The sector heavyweights' settings, 14.3, frozen at 14.6 with their registrations, and the analysts' revisions.
         ["Heavyweights' size cut"] = "14.3",
         ["Heavyweights' look-back"] = "14.3",
         ["Heavyweights' leaders"] = "14.3",
         ["Heavyweights' rebalance and exits"] = "14.3",
+        ["Heavyweights' registrations"] = "14.6",
+        ["Estimates raised"] = "14.6",
         // The context checks, 14.4.
         ["A print's revenue quarter"] = "14.4",
         ["Context ideas' test"] = "14.4",

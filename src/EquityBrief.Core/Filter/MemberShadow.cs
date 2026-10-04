@@ -15,6 +15,10 @@ public interface IMemberShadow
     // holds it across a gap.
     string Evaluate(GateInputs inputs, bool stale, DateOnly? gap);
 
+    // Whether a standing candidate reading analysts' estimates passes the member on everything else, so the
+    // night asks the provider for its estimates before the verdicts are written; never for a member skipped.
+    bool AsksForEstimates(GateInputs inputs, bool stale, DateOnly? gap);
+
     // How many verdicts were written.
     int Evaluated { get; }
 

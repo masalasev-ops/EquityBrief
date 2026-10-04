@@ -56,7 +56,7 @@ public sealed class HeavyweightSweepRunner(IClock clock, string databaseFile, Te
         var proposal = HeavyweightSweep.Propose(settings);
         var comparison = HeavyweightSweep.Compare(
             pulled.Stored,
-            day => sessionAt.TryGetValue(day, out var session) && sessions.TryGetValue(session, out var one) ? HeavyweightSweep.Sectors(one, HeavyweightSweep.Provisional) : null);
+            day => sessionAt.TryGetValue(day, out var session) && sessions.TryGetValue(session, out var one) ? HeavyweightSweep.Sectors(one, HeavyweightSweep.Frozen) : null);
         var run = new HeavyweightSweepRun(
             calendar[first],
             through,

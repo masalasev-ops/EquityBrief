@@ -1582,7 +1582,7 @@ public sealed class SinglePageApp : IComponent
                     Invariant($"Rotation · {heavyweights.Eyebrow}"),
                     marks.HeavyweightCard(heavyweights) + Cards.Key(
                         "How to read the card.",
-                        "Each row is a stock the sector heavyweights hold at tonight's close, bought at a month's first close as the leader of its sector's largest companies. It has no stop and no target: it is held while it leads, and sold at a month's first close where the rule would no longer buy it, at any close under its 200-day average, or at its last close as a member of the index. Its lead is how far its return over the look-back ran ahead of the average of its sector's members at the rebalance that read it.",
+                        "Each row is a stock the sector heavyweights hold at tonight's close, bought at a month's first close as one of the two leaders of its sector's largest companies. It has no stop and no target: it is held while it leads, and sold at a month's first close where the rule would no longer buy it, or at its last close as a member of the index. Its lead is how far its return over the look-back ran ahead of its sector fund's at the rebalance that read it.",
                         "A month-long holding and not a swing trade, so the market check that closes the swing setups' lists does not close this card, and a stock held here can be listed by a swing setup too: each card keeps its own one trade a stock."),
                     title: Escaped(heavyweights.Heading),
                     lede: Escaped(heavyweights.Rule),
@@ -2330,12 +2330,12 @@ public sealed class SinglePageApp : IComponent
         return Cards.Computed(
             "Past picks",
             Invariant($"<p class=\"list-count\" data-holdings=\"{holdings.Count}\" data-ended=\"{ended}\">{holdings.Count} holding{(holdings.Count == 1 ? string.Empty : "s")}, {ended} sold and {holdings.Count - ended} held</p>")
-                + Invariant($"<p class=\"provisional-count\"><b class=\"provisional\">{Escaped(EquityBrief.Core.Families.SetupFamilies.Provisional)}</b>: followed like any other, and in no record until its freeze.</p>")
+                + "<p class=\"provisional-count heavyweight-book\">The page's own book, at the setting the family froze at: each registered rule's record is read off a book of its own, on the run page.</p>"
                 + marks.HeavyweightPicks(holdings)
                 + Cards.Key(
                     "How to read it.",
-                    "A holding is bought at a month's first close and sold at a later month's first close where it no longer leads its sector, at a close under its 200-day average, or at its last close as a member of the index. Its result is what it made from its buy to its sale in percent, dividends counted, beside what the sector's largest companies it was chosen from made over the same sessions, each in equal part.",
-                    "The difference is what leading its sector was worth over being merely large, which is what this setup's record will ask; a holding still held has neither yet."),
+                    "A holding is bought at a month's first close and sold at a later month's first close where it no longer leads its sector, or at its last close as a member of the index. Its result is what it made from its buy to its sale in percent, dividends counted, beside what the sector's largest companies it was chosen from made over the same sessions, each in equal part.",
+                    "The difference is what leading its sector was worth over being merely large, which is what each rule's record asks; a holding still held has neither yet."),
             title: "Sector heavyweights, newest first",
             lede: "Held while leading: a result in percent rather than in multiples of a risk, since a holding has no stop.",
             stamp: Cards.Night(night),

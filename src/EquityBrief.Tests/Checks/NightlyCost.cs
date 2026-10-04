@@ -539,13 +539,16 @@ public partial class NightlyCost
         Feed.LocalModel,
     ];
 
-    // A company's financials, reached by the night through the quarter fetcher and no other
-    // component: the fourth carve-out, carved by name, whose asks follow the reporting calendar
-    // and stop at the step's own limit and the day's allowance.
+    // A company's financials, reached by the night through the quarter fetcher and the estimates
+    // fetcher and no other component: the fourth carve-out, carved by name, whose asks follow the
+    // reporting calendar and stop at the step's own limit and the day's allowance, and the sixth,
+    // whose asks follow the members a rule reading the estimates passes and stop at the allowance.
     // see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted
+    // see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night
     internal static readonly (string Component, Feed Feed)[] CarvedByName =
     [
         (nameof(QuarterFetcher), Feed.CompanyFinancials),
+        (nameof(EquityBrief.Worker.Filter.EstimatesFetcher), Feed.CompanyFinancials),
     ];
 
     static string NightSource() =>
@@ -1115,7 +1118,8 @@ public partial class NightlyCost
 
         var limits = Corpus.Read("docs/ARCHITECTURE.html");
 
-        // Four carve-outs now. The quarters fetch is the fourth and is counted night by night
+        // The per-name carve-outs. The estimates are the newest and are counted over constructed
+        // nights in the freeze's own expectations. The quarters fetch is the fourth and is counted night by night
         // over constructed nights below. The night's own request is the third and is asserted
         // under `nightly-run`, which reads its own row's calls and requests. The refetch is the
         // second and was found at 1.6: it makes one request per name whose adjusted
@@ -1124,7 +1128,7 @@ public partial class NightlyCost
         // and of the retry nights before it rather than by the universe. It is
         // carved rather than the rule loosened, because a night that refetched
         // every name would satisfy a loosened rule.
-        Assert.Contains("the backfill, the corporate action refetch, the quarters fetch after the close and the night's own requests carved out of it", limits, StringComparison.Ordinal);
+        Assert.Contains("the backfill, the corporate action refetch, the quarters fetch after the close, the night's own requests and the estimates of each member a rule reading them passes on everything else carved out of it", limits, StringComparison.Ordinal);
         Assert.Contains($"bounded by the actions of the day and of the {CorporateActionChecker.RetryNights} nights before it, and by one request every {CorporateActionChecker.WeeklyRetryDays} days for each name whose retries are spent, rather than by the universe", limits, StringComparison.Ordinal);
         Assert.Contains($"A name it stored nothing for is asked for again on each of the {Backfill.RetryNights} nights after the first and then every {Backfill.WeeklyRetryDays} days until one stores its year or the name leaves the index", limits, StringComparison.Ordinal);
     }

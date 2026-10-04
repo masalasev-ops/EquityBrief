@@ -28,7 +28,7 @@ public sealed record CandidateVerdict(bool Fired, IReadOnlyDictionary<string, st
 //
 // The version is the pin of the evaluator's own source and every source its evaluation runs through,
 // and `register-append-only` fails where the pin and the constant disagree.
-// see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through
+// see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through but the catalogue
 // see: Candidate conditions are registered before they are scored, and a candidate's picks are shown on the Run page while its outcomes wait for a look
 public abstract class CandidateEvaluator
 {
@@ -50,7 +50,8 @@ public abstract class CandidateEvaluator
 
     // The sources besides its own and the shared evaluation sources that this evaluator's evaluation runs
     // through, from the repository root, which its version pins between the two: a family rule's own files,
-    // which no other evaluator reads, so a change to one family's rule moves that family's version alone.
+    // which no other evaluator reads, so a change to one family's rule moves that family's version alone. A book's
+    // evaluator lists every file its book's evaluation runs through and pins no shared source.
     public virtual IReadOnlyList<string> OwnSources => [];
 
     public abstract CandidateVerdict Evaluate(CandidateNight night, IReadOnlyDictionary<string, double> parameters);
@@ -72,10 +73,13 @@ public abstract class CandidateEvaluator
     // the bands and the plan those two write, so a change to either moves what a
     // registered condition would have fired on. The swing reader's and the swing
     // filter's files are in it because the swing family is evaluated through the
-    // filter's gates over the readings the reader stores, and the sector standings' file because the
-    // pullback's variant in the top sectors reads the standings it computes. That is what makes a registration
+    // filter's gates over the readings the reader stores, the sector standings' file because the
+    // pullback's variant in the top sectors reads the standings it computes, and the estimates' reading because the
+    // revisions variant fires on whether it reads an estimate as raised. That is what makes a registration
     // stall rather than drift: an evaluation under a rule the register does not
-    // name is evidence about a different condition.
+    // name is evidence about a different condition. The catalogue listing the evaluators is not in it: it hands
+    // each name to the class carrying it, whose own source the pin covers, so a family added to it moves no other
+    // family's version.
     public static IReadOnlyList<string> EvaluationSources { get; } =
     [
         "src/EquityBrief.Data/Money.cs",
@@ -90,7 +94,6 @@ public abstract class CandidateEvaluator
         "src/EquityBrief.Core/Candidates/NightValues.cs",
         "src/EquityBrief.Core/Candidates/NightReading.cs",
         "src/EquityBrief.Core/Candidates/ShadowColumn.cs",
-        "src/EquityBrief.Core/Candidates/CandidateEvaluators.cs",
         "src/EquityBrief.Core/Candidates/CandidateEvaluator.cs",
         "src/EquityBrief.Core/Filter/FilterSettings.cs",
         "src/EquityBrief.Core/Filter/SwingGates.cs",
@@ -100,6 +103,7 @@ public abstract class CandidateEvaluator
         "src/EquityBrief.Worker/Filter/SwingFilter.cs",
         "src/EquityBrief.Core/Candidates/FamilyShadow.cs",
         "src/EquityBrief.Core/Families/LeaderRule.cs",
+        "src/EquityBrief.Core/Quarters/EstimateReading.cs",
     ];
 
     // The pin, over an evaluator's own source first and then the evaluation sources in the order listed.
@@ -243,4 +247,27 @@ public abstract class FamilyRuleEvaluator : CandidateEvaluator
     public const string OrderValue = "order";
     public const string ThenByValue = "then by";
     public const string MoveValue = "typical move";
+}
+
+// A candidate evaluated in the sector heavyweights' book's own stage over a rebalance's members: a registered rule of
+// the heavyweights at the registration's settings, its holdings kept in a book of its own. The listings stage, the
+// filter's and the family evaluator's leave it to the book. Its version pins its own source and the files its book's
+// evaluation runs through, which it lists as its own, and none of the shared evaluation sources, which no book reads:
+// a book is never replayed, so a version moved by a source it does not read would restart its record for nothing.
+// see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut
+// see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through but the catalogue
+public abstract class BookEvaluator : CandidateEvaluator
+{
+    // Read nothing off a listings night, which never evaluates one.
+    public override IReadOnlyList<string> Reads => [];
+
+    public override CandidateVerdict Evaluate(CandidateNight night, IReadOnlyDictionary<string, double> parameters) =>
+        throw new InvalidOperationException(
+            $"{Name} is evaluated in the sector heavyweights' book over a rebalance's members, and never over a listings night.");
+
+    // The family the rule belongs to, by the word the store keeps it under.
+    public abstract string Family { get; }
+
+    // The settings a registration's parameters state, which the book holds the rule's own holdings at.
+    public abstract Families.HeavyweightSettings SettingsOf(IReadOnlyDictionary<string, double> parameters);
 }

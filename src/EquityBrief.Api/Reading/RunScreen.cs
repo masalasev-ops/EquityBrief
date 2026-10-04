@@ -1181,7 +1181,7 @@ public static class RunScreen
         ("Prices and calendar", ["migrate", "membership", "backfill", "fetch", "market-series", "actions", "calendar"]),
         ("Indicators and levels", ["indicators", "swings", "volume-profile", "levels"]),
         ("Plans and moves", ["ladders", "moves"]),
-        ("Readings and the list", ["swing-readings", "fundamental-readings", "listings", "swing-filter", "family-rules", "families", "family-records", "heavyweights", "shape-proposal"]),
+        ("Readings and the list", ["swing-readings", "fundamental-readings", "listings", "swing-filter", "estimates", "family-rules", "families", "family-records", "heavyweights", "shape-proposal"]),
         ("Records", ["facts", "changes", "forward-returns", "news-pulse", "rule-versions", "close"]),
         ("After the close", ["quarters", QueueStage, "report", "label-news", "backup"]),
     ];
@@ -1755,8 +1755,11 @@ public static class RunScreen
         // A registration that states no count a night keeps every name it passes, as one stating none does.
         static double BestOf(IReadOnlyDictionary<string, double> settings) => settings.TryGetValue("bestOf", out var count) ? count : 0;
 
+        // A registration written before the estimates were a setting reads none, as one stating nought does.
+        static double RaisedEstimates(IReadOnlyDictionary<string, double> settings) => settings.TryGetValue("raisedEstimates", out var reads) ? reads : 0;
+
         var said = new List<string>();
-        var named = new HashSet<string>(StringComparer.Ordinal) { "marketGate", "strengthFloor", "depthLow", "depthHigh", "arrivalSessions", "trade", "rewardToRiskFloor", "skipDeteriorating", "leaderSectors", "leaderShareOf", "bestOf" };
+        var named = new HashSet<string>(StringComparer.Ordinal) { "marketGate", "strengthFloor", "depthLow", "depthHigh", "arrivalSessions", "trade", "rewardToRiskFloor", "skipDeteriorating", "leaderSectors", "leaderShareOf", "bestOf", "raisedEstimates" };
 
         if (Moved("marketGate"))
         {
@@ -1779,6 +1782,15 @@ public static class RunScreen
             said.Add(Of(version, "leaderSectors") > 0 && Of(version, "leaderShareOf") > 0
                 ? FormattableString.Invariant($"only the top {Share(Of(version, "leaderShareOf"))} of one of the {Of(version, "leaderSectors"):0} strongest sectors, in place of an uptrend's strength")
                 : "an uptrend's strength in place of sector leadership");
+        }
+
+        // The analysts' revisions, which lists only a member whose estimates were raised.
+        // see: The pullback's sector leaders' rule is retired and the analysts' revisions variant registered in its place
+        if (!RaisedEstimates(version).Equals(RaisedEstimates(live)))
+        {
+            said.Add(RaisedEstimates(version) == 1
+                ? "only a stock whose analysts raised their estimate for its year over the last 30 days, which the live list does not ask"
+                : "whatever its analysts' estimates did, where the live list asks that they were raised over the last 30 days");
         }
 
         // The ninth, which keeps the night's first few in the list's own order.

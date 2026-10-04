@@ -96,6 +96,9 @@ public partial class ReadSurface
             // 14.3, the sector heavyweights on the pages: tonight's card, a name's line and Past picks' holdings.
             .. HeavyweightPageClaims,
 
+            // 14.6, the sector heavyweights' registered rules' records on the run page.
+            .. HeavyweightRecordPageClaims,
+
             // 12.6's correction drawing how each report did: the two regions' parts and section 17's window.
             .. ReportClaims,
 
@@ -147,6 +150,9 @@ public partial class ReadSurface
             CheckReach.Key("15.10 Run", "The shape proposal, every gate no value in its range brings inside its band named as a finding"),
             CheckReach.Key("15.10 Run", "The shape proposal, beside it the non-empty blocks accepting it would restart"),
             CheckReach.Key(Scope.LimitsTable, "Shape acceptance bound"),
+
+            // 14.6, a registered heavyweights rule's record read off the run page, beside the freeze's verdict.
+            CheckReach.Key(Scope.LimitsTable, "Heavyweights' registrations"),
 
             // 12.2, the name's gates and the run page's funnel.
             CheckReach.Key("15.9 Name", "Gates, each of the five gates with whether it passed and why"),
@@ -517,10 +523,12 @@ public partial class ReadSurface
         ])
     {
         // Section 17's acceptance bound, whose verdict is fixture-expectations': the count a later
-        // acceptance states is the one read off the page here.
+        // acceptance states is the one read off the page here. And the heavyweights' registrations,
+        // whose record over each rule's own book is read off the run page here.
         Held = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             [CheckReach.Key(Scope.LimitsTable, "Shape acceptance bound")] = nameof(ALaterAcceptanceWhileTheListIsLiveIsHeldToTheBlocksThePageDrawsBesideTheProposal),
+            [CheckReach.Key(Scope.LimitsTable, "Heavyweights' registrations")] = nameof(EachRegisteredHeavyweightsRuleIsReadOnTheRunPageOverItsOwnBookByTheSessionEachHoldingEnded),
         },
     };
 

@@ -668,6 +668,9 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.FamilyTrade, Touch.Read),
             new StoreTouch(Store.HeavyweightNight, Touch.Read),
             new StoreTouch(Store.HeavyweightHolding, Touch.Read),
+            new StoreTouch(Store.HeavyweightRuleNight, Touch.Read),
+            new StoreTouch(Store.HeavyweightRuleHolding, Touch.Read),
+            new StoreTouch(Store.EstimateReading, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
             new StoreTouch(Store.Fundamentals, Touch.Read),
@@ -3047,8 +3050,11 @@ public sealed class ReadApi : IComponent
     }
 
     // Every trade a registered family rule kept up to a night, with its result where it had ended by the night,
-    // its benchmark where written and the cap its benchmark waits on. The name is not read: a rule's record is
-    // over its trades' edges and the sessions they were listed on.
+    // its benchmark where written and the cap its benchmark waits on; and every holding a registered sector
+    // heavyweights rule kept, read at the session it ended where it ended by the night, since its holding counts in
+    // the block it ends in, and at its buy while open, with its size cut's return as its benchmark and no cap. The
+    // name is not read: a rule's record is over its trades' edges and the sessions they count on.
+    // see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut
     const string FamilyTradesUpTo = @"
         SELECT candidate, session_date,
                CASE WHEN ended_on <= $on THEN ended_on END,
@@ -3057,7 +3063,15 @@ public sealed class ReadApi : IComponent
                cap
         FROM family_trade
         WHERE session_date <= $on
-        ORDER BY candidate, session_date;
+        UNION ALL
+        SELECT candidate, CASE WHEN ended_on <= $on THEN ended_on ELSE entered_on END,
+               CASE WHEN ended_on <= $on THEN ended_on END,
+               CASE WHEN ended_on <= $on THEN result END,
+               CASE WHEN ended_on <= $on THEN cut_return END,
+               0
+        FROM heavyweight_rule_holding
+        WHERE entered_on <= $on
+        ORDER BY 1, 2;
     ";
 
     // The trades every registered family rule kept up to a night, which each rule's record is read over, a trade

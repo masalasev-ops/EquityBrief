@@ -22,7 +22,8 @@ public sealed record HeavyweightEndedCell(string Ticker, DateOnly EndedOn, strin
 
 // The sector heavyweights' card on a night: the family's words, the sessions its returns are read over, its last
 // rebalance on or before the night and the next one, the holdings open at the night's close in sector order, what the
-// last rebalance bought, what ended at it or since, and why it holds nothing where it holds nothing.
+// last rebalance bought, what ended at it or since, why it holds nothing where it holds nothing, and the day its live
+// rule registered with the variants standing beside it, none where no freeze has registered it.
 public sealed record HeavyweightCardView(
     string Heading,
     string Eyebrow,
@@ -33,7 +34,9 @@ public sealed record HeavyweightCardView(
     IReadOnlyList<HeavyweightHoldingCell> Holdings,
     IReadOnlyList<string> Entered,
     IReadOnlyList<HeavyweightEndedCell> Ended,
-    string? Empty);
+    string? Empty,
+    DateOnly? LiveSince = null,
+    int Variants = 0);
 
 // One holding on Past picks as of a night: the stock, its sector, its buy and its sale with their closes, why it
 // ended, its return, its size cut's over the same sessions and the difference, each in percent and none while open.
@@ -58,9 +61,9 @@ public sealed partial class MarkRenderer
         ("Stock", "The ticker opens the stock's page, with the company beneath."),
         ("Sector", "The sector the stock was bought as the leader of."),
         ("Held since", "The session the book bought it on, at that session's close."),
-        ("Lead over its sector", "Its return over the look-back less the average of every member's of its sector, in percentage points, at the last rebalance that read it."),
-        ("Close against its 200-day", "Tonight's close beside its 200-day average. A close under the average sells it at that close."),
-        ("Plan", "Held while it leads: no stop and no target. It is sold at a month's first close where it no longer leads, at a close under its 200-day average, or at its last close as a member."),
+        ("Lead over its sector", "Its return over the look-back less its sector fund's over the same sessions, in percentage points, at the last rebalance that read it."),
+        ("Close against its 200-day", "Tonight's close beside its 200-day average, which the trend gate read at the rebalance. A close under it sells nothing on its own."),
+        ("Plan", "Held while it leads: no stop and no target. It is sold at a month's first close where it no longer leads, or at its last close as a member."),
     ];
 
     // The sector heavyweights' card: its standing and the night's count in a line, the holdings one to a row, what
@@ -71,12 +74,17 @@ public sealed partial class MarkRenderer
     {
         var body = new StringBuilder();
 
-        body.Append(Invariant, $"<section class=\"family-card heavyweight-card\" data-family=\"{EquityBrief.Core.Families.HeavyweightRule.Name}\" data-holdings=\"{card.Holdings.Count}\" data-state=\"provisional\" ");
+        body.Append(Invariant, $"<section class=\"family-card heavyweight-card\" data-family=\"{EquityBrief.Core.Families.HeavyweightRule.Name}\" data-holdings=\"{card.Holdings.Count}\" data-state=\"{(card.LiveSince is null ? "provisional" : "live")}\" ");
+        body.Append(Invariant, $"data-live-since=\"{(card.LiveSince is { } since ? DayOf(since) : "none")}\" data-variants=\"{card.Variants}\" ");
         body.Append(Invariant, $"data-last-rebalance=\"{(card.LastRebalance is { } last ? DayOf(last) : "none")}\" data-next-rebalance=\"{(card.NextRebalance is { } next ? DayOf(next) : "none")}\" data-look-back=\"{card.LookBack}\">");
 
+        // The rule's standing, the night's count and the variants kept in books of their own, in one line.
         body.Append("<p class=\"family-state\">");
-        body.Append(Invariant, $"<b class=\"provisional\">{Escaped(EquityBrief.Core.Families.SetupFamilies.Provisional)}</b>");
+        body.Append(card.LiveSince is { } live
+            ? Formatted($"Live rule since <b>{DayOf(live)}</b>")
+            : $"<b class=\"provisional\">{Escaped(EquityBrief.Core.Families.SetupFamilies.Provisional)}</b>");
         body.Append(Invariant, $" · {Count(card.Holdings.Count, "holding")} tonight · held while leading");
+        body.Append(card.LiveSince is null ? string.Empty : Formatted($" · {Count(card.Variants, "variant")} kept in books of their own"));
         body.Append(card.LastRebalance is { } read ? Formatted($" · last rebalance {DayOf(read)}") : " · no rebalance read yet");
         body.Append(card.NextRebalance is { } coming ? Formatted($" · next rebalance <b class=\"next-rebalance\">{DayOf(coming)}</b>") : " · next rebalance past the exchange calendar's table");
         body.Append("</p>");
@@ -158,7 +166,7 @@ public sealed partial class MarkRenderer
         ("Sector", "The sector the stock was bought as the leader of."),
         ("Bought", "The session it was bought on and that session's close."),
         ("Sold", "The session it was sold on and that session's close, or held while it is still held."),
-        ("Why it ended", "No longer the leader at a rebalance, a close under its 200-day average, or its stock leaving the index."),
+        ("Why it ended", "No longer the leader at a rebalance, or its stock leaving the index; a close under its 200-day average under the provisional rule, which sold on one."),
         ("Result", "What the holding made from its buy to its sale, in percent of the buy, dividends counted."),
         ("Its sector's largest", "What the sector's largest companies it was chosen from made over the same sessions, each in equal part, in percent."),
         ("Difference", "The result less what the sector's largest made, in percentage points: what leading its sector was worth."),

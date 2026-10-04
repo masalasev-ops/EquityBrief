@@ -30,6 +30,16 @@ public sealed class FamilyShadow : IMemberShadow
 
     public IReadOnlyList<string> Faults => [.. faults.Keys];
 
+    // A standing rule reading analysts' estimates at the version it was registered under that passes the member on
+    // everything else, and none for a member the night holds no bar for or holds across a gap, which every rule skips.
+    // see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night
+    public bool AsksForEstimates(GateInputs inputs, bool stale, DateOnly? gap) =>
+        !stale
+        && gap is null
+        && standing.Any(row => CandidateEvaluators.Find(row.Evaluator) is SwingFilterRule rule
+            && rule.Version == row.EvaluatorVersion
+            && SwingFilterRule.AsksForEstimates(inputs, CandidateEvaluator.Read(row.Parameters)));
+
     public string Evaluate(GateInputs inputs, bool stale, DateOnly? gap)
     {
         var withheld = stale

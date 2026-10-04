@@ -13,15 +13,19 @@ public static partial class TonightScreen
 {
     // The card on a night: the holdings open at its close in the order of their sectors, each with its lead at the last
     // rebalance on or before the night and its close there against its 200-session average; what that rebalance
-    // bought; what ended at it or since; and the next rebalance on the exchange's calendar.
+    // bought; what ended at it or since; the next rebalance on the exchange's calendar; and the day the family's live
+    // rule registered with the variants standing beside it, read off the register as it stood at the night's end.
+    // see: The sector heavyweights freeze at their sweep's proposal, the proposal's three passing neighbours registered beside them as variants
     public static HeavyweightCardView Heavyweights(
         DateOnly night,
         IReadOnlyList<HeavyweightHoldingRow> holdings,
         IReadOnlyList<HeavyweightReadRow> read,
         IReadOnlyList<HeavyweightCloseRow> closes,
-        IReadOnlyDictionary<string, UniverseCell> cellByTicker)
+        IReadOnlyDictionary<string, UniverseCell> cellByTicker,
+        IReadOnlyList<CandidateRow>? register = null)
     {
         var words = SetupFamilies.SectorHeavyweights;
+        var (liveSince, variants) = Standing(HeavyweightRule.Name, register ?? [], night);
         DateOnly? last = read.Count > 0 ? read[0].Session : null;
         var closeOf = closes.ToDictionary(close => close.Ticker, StringComparer.Ordinal);
         var open = holdings
@@ -65,12 +69,12 @@ public static partial class TonightScreen
         var empty = cells.Length > 0
             ? null
             : last is not { } rebalance
-                ? "No rebalance has been read yet. The book reads its first on the first night every member's company and share count are stored, which the quarters fetch writes from the answer it already asks for."
+                ? "No rebalance has been read yet. The book reads its first on the first night every member's company and share count are stored, which the quarters fetch writes from the answer it already asks for, and the store holds the night's closes of the index and of each sector's fund."
                 : entered.Length == 0
-                    ? FormattableString.Invariant($"No sector's largest company led its sector above nothing while passing the trend gate at the rebalance of {rebalance:yyyy-MM-dd}, so the book holds nothing until the next.")
+                    ? FormattableString.Invariant($"No sector's largest companies led their sector's fund above nothing while passing the trend gate with a beta of at least one at the rebalance of {rebalance:yyyy-MM-dd}, so the book holds nothing until the next.")
                     : FormattableString.Invariant($"Every holding the rebalance of {rebalance:yyyy-MM-dd} bought has been sold since, as the notes beneath say.");
 
-        return new HeavyweightCardView(words.Heading, words.Eyebrow, words.Rule, HeavyweightRule.LookBack, last, HeavyweightRule.NextRebalance(night), cells, entered, ended, empty);
+        return new HeavyweightCardView(words.Heading, words.Eyebrow, words.Rule, HeavyweightRule.Live.LookBack, last, HeavyweightRule.NextRebalance(night), cells, entered, ended, empty, liveSince, variants);
     }
 
     // What a name's page says where the sector heavyweights hold the name at its night's close, and nothing where

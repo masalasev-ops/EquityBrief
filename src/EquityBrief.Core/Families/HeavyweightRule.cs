@@ -19,9 +19,19 @@ public sealed record HeavyweightMember(
     double? Beta = null);
 
 // The settings the heavyweights are read at: how many of a sector's largest companies its leaders are chosen
-// among, the sessions a return is read over, how many leaders a sector holds, and whether a leader needs a beta of
-// at least one, which the sweep reads as a variant.
-public sealed record HeavyweightSettings(int Largest, int LookBack, int Leaders, bool HighBeta = false);
+// among, every one at the most an int holds, the sessions a return is read over, how many leaders a sector holds,
+// whether a leader needs a beta of at least one, whether a sector's return is its fund's rather than its members'
+// mean, whether the book rebalances weekly rather than monthly, and what ends a holding besides its stock leaving
+// the index: no longer leading at a rebalance, a close under its 200-session average, or either.
+public sealed record HeavyweightSettings(
+    int Largest,
+    int LookBack,
+    int Leaders,
+    bool HighBeta = false,
+    bool FundReturn = false,
+    bool Weekly = false,
+    bool SoldOnLeading = true,
+    bool SoldUnderAverage = true);
 
 // One of a sector's largest companies on a rebalance session, by the listing held: its place by value, its value,
 // its return and its lead over the sector's, whether it passes the trend gate, and whether it is a leader bought.
@@ -32,26 +42,39 @@ public sealed record HeavyweightRanked(int Place, string Ticker, string Company,
 public sealed record HeavyweightSector(string Sector, double? Return, int Counted, IReadOnlyList<HeavyweightRanked> Largest, IReadOnlyList<string> Leaders);
 
 // The sector heavyweights: on the first session of each month, the largest companies of each sector by value, one
-// listing a company, and among them the one leading its sector by most over the look-back, its sector's return the
-// mean of its members' own, bought where that lead is above nothing and the stock passes the trend gate. A holding
-// ends at a month's first session where the rule would not buy it, at any close under its 200-session average, and
-// at its last session as a member. The settings are provisional until the family's sweep proposes the ones its
-// freeze registers.
+// listing a company, and among them the ones leading their sector by most over the look-back, bought where that lead
+// is above nothing, the stock passes the trend gate and, where the settings ask, its beta is at least one. A holding
+// ends at a month's first session where the rule would not buy it, at a close under its 200-session average where
+// the settings read one, and at its last session as a member. The night holds at the settings the family's freeze
+// registered, the sweep's proposal: the ten largest, twelve months against the sector's fund, two leaders a sector, a
+// beta of at least one, and sold on no longer leading.
 // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
 // see: A heavyweight is bought where it leads its sector above nothing and passes the trend gate, and sold where the rule would not buy it
 // see: A sector's return is the mean of its members' own returns over the look-back
+// see: The sector heavyweights freeze at their sweep's proposal, the proposal's three passing neighbours registered beside them as variants
 public static class HeavyweightRule
 {
     public const string Name = "heavyweight";
 
     // The largest companies of a sector the leaders are chosen among.
-    public const int Largest = 5;
+    public const int Largest = 10;
 
-    // The sessions a return is read over, half a year of them.
-    public const int LookBack = 126;
+    // The sessions a return is read over, twelve months of them.
+    public const int LookBack = 251;
 
     // The leaders a sector holds.
-    public const int Leaders = 1;
+    public const int Leaders = 2;
+
+    // The size cut that reads every company of a sector.
+    public const int EveryCompany = int.MaxValue;
+
+    // The provisional setting the freeze replaced: the five largest, six months against the members' mean, one leader,
+    // sold on either exit.
+    public const int ProvisionalLargest = 5;
+
+    public const int ProvisionalLookBack = 126;
+
+    public const int ProvisionalLeaders = 1;
 
     // A beta's floor where a setting reads one, and the daily returns it is read over, the most the year of bars the
     // store keeps holds.
@@ -60,26 +83,34 @@ public static class HeavyweightRule
 
     public const int BetaReturns = 251;
 
-    public static HeavyweightSettings Provisional { get; } = new(Largest, LookBack, Leaders);
+    // The settings the night holds at, and the provisional ones the freeze replaced.
+    public static HeavyweightSettings Live { get; } = new(Largest, LookBack, Leaders, HighBeta: true, FundReturn: true, SoldUnderAverage: false);
 
-    // A session rebalances where no rebalance was read before it in its month: the first session of each month, the
-    // first session read where none was read before, so the book holds from its first night, and the session after a
-    // month's first that the night did not run on, so a month is never passed over.
-    public static bool Rebalances(DateOnly session, DateOnly? lastRebalance) =>
-        lastRebalance is not { } last || last.Year != session.Year || last.Month != session.Month;
+    public static HeavyweightSettings Provisional { get; } = new(ProvisionalLargest, ProvisionalLookBack, ProvisionalLeaders);
 
-    // The session the book next rebalances on after a night, the first session of the month after the night's on the
-    // exchange's own calendar, and none past the end of the calendar's table.
-    public static DateOnly? NextRebalance(DateOnly night)
+    // A session rebalances where no rebalance was read before it in its month, or its week from its Monday where the
+    // settings rebalance weekly: the first session of each period, the first session read where none was read before,
+    // so the book holds from its first night, and the session after a period's first that the night did not run on, so
+    // a period is never passed over.
+    public static bool Rebalances(DateOnly session, DateOnly? lastRebalance, bool weekly = false) =>
+        lastRebalance is not { } last
+        || (weekly ? MondayOf(last) != MondayOf(session) : last.Year != session.Year || last.Month != session.Month);
+
+    static DateOnly MondayOf(DateOnly day) => day.AddDays(-(((int)day.DayOfWeek + 6) % 7));
+
+    // The session the book next rebalances on after a night, the first session of the month after the night's, or of
+    // the week after it, on the exchange's own calendar, and none past the end of the calendar's table.
+    public static DateOnly? NextRebalance(DateOnly night, bool weekly = false)
     {
-        var first = new DateOnly(night.Year, night.Month, 1).AddMonths(1);
+        var first = weekly ? MondayOf(night).AddDays(7) : new DateOnly(night.Year, night.Month, 1).AddMonths(1);
+        var end = weekly ? first.AddDays(7) : first.AddMonths(1);
 
         if (night < ExchangeClosures.CoveredFrom || first > ExchangeClosures.CoveredThrough)
         {
             return null;
         }
 
-        for (var day = first; day.Month == first.Month; day = day.AddDays(1))
+        for (var day = first; day < end && day <= ExchangeClosures.CoveredThrough; day = day.AddDays(1))
         {
             if (ExchangeClosures.IsSession(day))
             {

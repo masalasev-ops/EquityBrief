@@ -24,6 +24,7 @@ public static class CandidateEvaluators
         new SwingFilterRule(),
         new BreakoutCandidate(),
         new DriftCandidate(),
+        new SectorHeavyweightCandidate(),
     ];
 
     public static CandidateEvaluator? Find(string name) =>

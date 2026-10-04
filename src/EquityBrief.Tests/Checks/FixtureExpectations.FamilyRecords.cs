@@ -131,7 +131,7 @@ public partial class FixtureExpectations
 
         Assert.Equal((1, 1), (again, leader));
         Assert.Contains("was refused, so none of the 8 was registered", againSaid, StringComparison.Ordinal);
-        Assert.Contains("no freeze is written for a family named 'leader'; the families a freeze is written for are breakout, drift.", leaderSaid, StringComparison.Ordinal);
+        Assert.Contains("no freeze is written for a family named 'leader'; the families a freeze is written for are breakout, drift, heavyweight.", leaderSaid, StringComparison.Ordinal);
         Assert.Equal(before, Scalar(store, "SELECT COUNT(*) FROM candidate_register;"));
     }
 

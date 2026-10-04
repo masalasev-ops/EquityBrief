@@ -67,9 +67,9 @@ public static class ShadowColumn
         var outcomes = new List<ShadowOutcome>();
         var skipped = new List<ShadowSkip>();
 
-        // The candidates the swing filter's stage and the family evaluator's evaluate are left to them, and
-        // named in their shadows rather than here.
-        foreach (var row in standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is not (GateEvaluator or FamilyRuleEvaluator)))
+        // The candidates the swing filter's stage, the family evaluator's and the heavyweights' book evaluate are
+        // left to them, and named in their own rows rather than here.
+        foreach (var row in standing.Where(row => CandidateEvaluators.Find(row.Evaluator) is not (GateEvaluator or FamilyRuleEvaluator or BookEvaluator)))
         {
             var evaluator = CandidateEvaluators.Find(row.Evaluator);
 
@@ -89,7 +89,7 @@ public static class ShadowColumn
             // register does not name is worse than no score: it reads as evidence
             // about the registered condition and is evidence about a different
             // one.
-            // see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through
+            // see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through but the catalogue
             if (evaluator.Version != row.EvaluatorVersion)
             {
                 skipped.Add(new ShadowSkip(

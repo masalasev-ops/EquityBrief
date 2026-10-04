@@ -6,11 +6,12 @@ namespace EquityBrief.Core.Candidates;
 
 // The swing filter as a registered candidate: every threshold of the filter as a parameter, the trade
 // gate's input as 0 for the ladder's first tranche, 1 for the swing trade at the nearest bands and 2 for
-// the swing trade clear of the noise, whether the market gate is read, 1 or 0, and whether a member whose
-// reported quarters read deteriorating is left off, 1 or 0. A member fires where every gate read passes
-// and no exclusion applies, and, where the registration leaves a deteriorating business off, where its
-// state reads anything else or nothing; its verdict names the plan its trade gate read, which is the
-// plan its setup is scored on, and the state it read.
+// the swing trade clear of the noise, whether the market gate is read, 1 or 0, whether a member whose
+// reported quarters read deteriorating is left off, 1 or 0, and whether a member's analysts' estimates have
+// to have been raised, 1 or 0. A member fires where every gate read passes and no exclusion applies, where
+// the registration leaves a deteriorating business off, where its state reads anything else or nothing, and
+// where the registration reads estimates, where the night read them raised; its verdict names the plan its
+// trade gate read, which is the plan its setup is scored on, the state it read and the estimate it read.
 //
 // One evaluator for the whole family. The live filter and each variant are registrations of it with
 // every threshold stated, so a variant is a whole rule and runs on unchanged when the live settings move.
@@ -43,6 +44,16 @@ public sealed class SwingFilterRule : GateEvaluator
     // see: The pullback's ninth rule keeps the night's best three in the list's own order, and the family is registered again whole to add it
     public const string BestOfParameter = "bestOf";
 
+    // Whether a member fires only where its analysts raised their estimate for its current fiscal year over the
+    // thirty days before the night, 1 or 0, read off the answer the night asks for a member the rule passes on
+    // everything else.
+    // see: The pullback's sector leaders' rule is retired and the analysts' revisions variant registered in its place
+    // see: A member's estimates are raised where its current fiscal year's consensus earnings estimate stands above its level 30 days before
+    public const string RaisedEstimatesParameter = "raisedEstimates";
+
+    // The verdict's value naming the estimate the rule read, where it reads one.
+    public const string EstimatesValue = "estimates";
+
     // The verdict's value naming where the member stood in its sector, where the rule reads leadership.
     public const string LeadershipValue = "leadership";
 
@@ -56,10 +67,10 @@ public sealed class SwingFilterRule : GateEvaluator
 
     public override string Name => EvaluatorName;
 
-    public override string Version => "b1148c77cd8c";
+    public override string Version => "b4425b7cbb05";
 
     // The settings' own names as a version stores them, then the trade gate's input, the market gate, the
-    // deteriorating business, sector leadership and the most a night the list keeps.
+    // deteriorating business, sector leadership, the most a night the list keeps and the raised estimates.
     public override IReadOnlyList<string> Parameters { get; } =
     [
         "breadthFloor",
@@ -78,12 +89,13 @@ public sealed class SwingFilterRule : GateEvaluator
         LeaderSectorsParameter,
         LeaderShareOfParameter,
         BestOfParameter,
+        RaisedEstimatesParameter,
     ];
 
     // The parameters a registration states for settings, the market gate read or not, a deteriorating
-    // business left off or not, sector leadership read in place of the trend and strength gate or not, and
-    // the most a night its list keeps, nought for every member it fires on.
-    public static IReadOnlyDictionary<string, double> ParametersOf(FilterSettings settings, bool marketGate = true, bool skipDeteriorating = false, Families.LeaderSettings? leadership = null, int bestOf = 0) =>
+    // business left off or not, sector leadership read in place of the trend and strength gate or not, the
+    // most a night its list keeps, nought for every member it fires on, and raised estimates read or not.
+    public static IReadOnlyDictionary<string, double> ParametersOf(FilterSettings settings, bool marketGate = true, bool skipDeteriorating = false, Families.LeaderSettings? leadership = null, int bestOf = 0, bool raisedEstimates = false) =>
         new Dictionary<string, double>(StringComparer.Ordinal)
         {
             ["breadthFloor"] = settings.BreadthFloor,
@@ -107,6 +119,7 @@ public sealed class SwingFilterRule : GateEvaluator
             [LeaderSectorsParameter] = leadership?.TopSectors ?? 0,
             [LeaderShareOfParameter] = leadership?.ShareOf ?? 0,
             [BestOfParameter] = bestOf,
+            [RaisedEstimatesParameter] = raisedEstimates ? 1 : 0,
         };
 
     // The settings a registration's parameters state.
@@ -141,18 +154,14 @@ public sealed class SwingFilterRule : GateEvaluator
         var leaderSectors = (int)parameters.GetValueOrDefault(LeaderSectorsParameter);
         var leaderShareOf = (int)parameters.GetValueOrDefault(LeaderShareOfParameter);
         var readsLeadership = leaderSectors > 0 && leaderShareOf > 0;
-
-        // Every gate read passing and no exclusion: the market gate is left out where the rule does not read it,
-        // the trend and strength gate where it reads sector leadership in its place, and a member whose state
-        // reads deteriorating is left off where the rule leaves one off, every other state and none firing as
-        // the gates say.
-        var read = result.Gates
-            .Where(gate => marketRead || gate.Name != SwingGates.Market)
-            .Where(gate => !readsLeadership || gate.Name != SwingGates.Trend)
-            .ToArray();
+        var readsEstimates = parameters.GetValueOrDefault(RaisedEstimatesParameter) == 1;
         var deteriorating = string.Equals(inputs.FundamentalState, FundamentalState.Deteriorating, StringComparison.Ordinal);
         var leads = !readsLeadership || Leads(inputs.Leadership, leaderSectors, leaderShareOf);
-        var fired = read.All(gate => gate.Passed) && result.Exclusions.Count == 0 && !(skipsDeteriorating && deteriorating) && leads;
+
+        // Every gate read passing and no exclusion, then the estimates where the rule reads them, a member whose
+        // estimate the night did not read firing on none, as a gate fails on an absent value.
+        var fired = FiresBeforeEstimates(result, marketRead, readsLeadership, skipsDeteriorating && deteriorating, leads)
+            && (!readsEstimates || inputs.Estimates?.Raised == true);
 
         var values = result.Gates.ToDictionary(gate => gate.Name, gate => gate.Passed ? "passed" : "failed", StringComparer.Ordinal);
 
@@ -170,8 +179,55 @@ public sealed class SwingFilterRule : GateEvaluator
                 : "not ranked";
         }
 
+        if (readsEstimates)
+        {
+            values[EstimatesValue] = Words(inputs.Estimates);
+        }
+
         return new CandidateVerdict(fired, values);
     }
+
+    // Every gate a rule reads passing, no exclusion, no deteriorating business it leaves off and its sector's lead
+    // where it reads one: what a member has to pass before the estimates a rule reads are asked for.
+    static bool FiresBeforeEstimates(GateResult result, bool marketRead, bool readsLeadership, bool leftOff, bool leads) =>
+        result.Gates
+            .Where(gate => marketRead || gate.Name != SwingGates.Market)
+            .Where(gate => !readsLeadership || gate.Name != SwingGates.Trend)
+            .All(gate => gate.Passed)
+        && result.Exclusions.Count == 0
+        && !leftOff
+        && leads;
+
+    // Whether a rule reading analysts' estimates passes a member on everything else, which is the member the night asks
+    // the provider's estimates for; no rule reading none asks for any.
+    // see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night
+    public static bool AsksForEstimates(GateInputs inputs, IReadOnlyDictionary<string, double> parameters)
+    {
+        if (parameters.GetValueOrDefault(RaisedEstimatesParameter) != 1)
+        {
+            return false;
+        }
+
+        var leaderSectors = (int)parameters.GetValueOrDefault(LeaderSectorsParameter);
+        var leaderShareOf = (int)parameters.GetValueOrDefault(LeaderShareOfParameter);
+        var readsLeadership = leaderSectors > 0 && leaderShareOf > 0;
+
+        return FiresBeforeEstimates(
+            SwingGates.Evaluate(inputs, SettingsOf(parameters)),
+            parameters[MarketGateParameter] == 1,
+            readsLeadership,
+            parameters.GetValueOrDefault(SkipDeterioratingParameter) == 1 && string.Equals(inputs.FundamentalState, FundamentalState.Deteriorating, StringComparison.Ordinal),
+            !readsLeadership || Leads(inputs.Leadership, leaderSectors, leaderShareOf));
+    }
+
+    // The estimate a verdict records: raised or not with both figures and the fiscal year, or why none was read.
+    public static string Words(EstimateReading? estimates) => estimates switch
+    {
+        null => "not read: the night asked for none",
+        { Raised: { } raised, Current: { } now, DaysAgo: { } then } => FormattableString.Invariant(
+            $"{(raised ? "raised" : "not raised")}: {now} now against {then} {EstimateReading.Days} days before, for the year to {estimates.YearEnd:yyyy-MM-dd}"),
+        _ => "not read: " + (estimates.NotRead ?? "the answer files no figure"),
+    };
 
     // A member inside the top sectors and the share of its own the rule reads, by the night's standings; a
     // member in no ranked sector or holding no place leads none.

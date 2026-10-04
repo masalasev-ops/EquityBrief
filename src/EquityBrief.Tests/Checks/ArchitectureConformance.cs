@@ -1504,7 +1504,8 @@ public partial class ArchitectureConformance
         // page's drain that stopped as the four parts its row states. 442 at 14.1: the setup families' row stating
         // where each rule's record counts from and why one restarted. 467 at 14.3: the sector heavyweights' card as
         // the thirteen parts its row states, the name page's line, and their holdings on Past picks as eleven parts.
-        Assert.Equal(467, inDocument.Length);
+        // 468 at 14.6: the setup families' row stating the sector heavyweights' registered rules among its records.
+        Assert.Equal(468, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1598,7 +1599,8 @@ public partial class ArchitectureConformance
         // 415 at the 9.2 correction of 2026-10-03: the checklist's drain that stopped on an error and the queue
         // page's four parts stating it. 417 at 14.1: the setup families' two parts on where a rule's record counts from.
         // 441 at 14.3: the thirteen parts the sector heavyweights' card states and the eleven of their holdings.
-        Assert.Equal(441, checkedElements);
+        // 442 at 14.6: the setup families' part on the sector heavyweights' registered rules.
+        Assert.Equal(442, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

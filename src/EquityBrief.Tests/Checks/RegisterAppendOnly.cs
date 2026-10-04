@@ -18,6 +18,7 @@ using EquityBrief.Core.Shortlist;
 using EquityBrief.Core.Time;
 using EquityBrief.Tests.Harness;
 using EquityBrief.Worker.Candidates;
+using EquityBrief.Worker.Families;
 using EquityBrief.Worker.Filter;
 using Microsoft.Data.Sqlite;
 
@@ -514,8 +515,12 @@ public class RegisterAppendOnly
         // Fourteen until 12.5, and twenty-one from it, when the swing family's evaluation through the filter's
         // gates over the readings the reader stores added the reader's and the filter's six files and the
         // family's shadow. Twenty-two from 13.9, when the pullback's variant in the top sectors added the
-        // sector standings' file.
+        // sector standings' file, and twenty-two still from 14.6, when the catalogue listing the evaluators left
+        // them in the move that added the sector heavyweights' evaluator and the estimates' reading the revisions
+        // variant fires on joined them.
         Assert.Equal(22, CandidateEvaluator.EvaluationSources.Count);
+        Assert.Contains("src/EquityBrief.Core/Quarters/EstimateReading.cs", CandidateEvaluator.EvaluationSources);
+        Assert.DoesNotContain("src/EquityBrief.Core/Candidates/CandidateEvaluators.cs", CandidateEvaluator.EvaluationSources);
 
         var shared = CandidateEvaluator.EvaluationSources
             .Select(path => File.ReadAllText(Path.Combine(Repository.Root, path)))
@@ -526,13 +531,15 @@ public class RegisterAppendOnly
         var faults = new List<string>();
 
         // An evaluator's own sources besides its file, a family rule's own files, read between its file and the
-        // shared ones.
+        // shared ones; and the shared ones, which a book's evaluator does not pin.
         static string[] OwnOf(CandidateEvaluator evaluator) =>
             [.. evaluator.OwnSources.Select(path => File.ReadAllText(Path.Combine(Repository.Root, path)))];
 
+        string[] SharedOf(CandidateEvaluator evaluator) => evaluator is BookEvaluator ? [] : shared;
+
         foreach (var evaluator in evaluators)
         {
-            var pin = CandidateEvaluator.Pin([SourceOf(evaluator), .. OwnOf(evaluator), .. shared]);
+            var pin = CandidateEvaluator.Pin([SourceOf(evaluator), .. OwnOf(evaluator), .. SharedOf(evaluator)]);
 
             if (pin != evaluator.Version)
             {
@@ -550,12 +557,40 @@ public class RegisterAppendOnly
         // rule moves that family's version and no other evaluator's.
         // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end
         var families = evaluators.OfType<FamilyRuleEvaluator>().ToArray();
+        var books = evaluators.OfType<BookEvaluator>().ToArray();
 
         Assert.Equal(["breakout", "drift"], families.Select(family => family.Family).Order(StringComparer.Ordinal));
         Assert.All(families, family => Assert.Equal(4, family.OwnSources.Count));
-        Assert.All(evaluators.Where(evaluator => evaluator is not FamilyRuleEvaluator), evaluator => Assert.Empty(evaluator.OwnSources));
+        Assert.Equal(["heavyweight"], books.Select(book => book.Family));
+        Assert.All(evaluators.Where(evaluator => evaluator is not (FamilyRuleEvaluator or BookEvaluator)), evaluator => Assert.Empty(evaluator.OwnSources));
 
-        foreach (var family in families)
+        // The heavyweights' evaluator pins its rule's file first and every file its book's evaluation runs through,
+        // read off the compiled code with the catalogue left out, and the indicator arithmetic whose averages its
+        // trend gate reads off the store, and none of the shared sources, which no book reads: a book is never
+        // replayed, so a change to the swing filter or the levels moves no heavyweights version.
+        // see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut
+        // see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through but the catalogue
+        var book = Assert.Single(books);
+        var bookRuns = SourcesReached.From(
+            [
+                typeof(HeavyweightBook).GetMethod(nameof(HeavyweightBook.RunAsync))!,
+                book.GetType().GetMethod(nameof(BookEvaluator.SettingsOf))!,
+            ])
+            .Where(path => path is not "src/EquityBrief.Core/Candidates/CandidateEvaluators.cs" && !path.EndsWith($"/{book.GetType().Name}.cs", StringComparison.Ordinal))
+            .Concat(["src/EquityBrief.Core/Indicators/IndicatorSeries.cs", "src/EquityBrief.Worker/Indicators/IndicatorEngine.cs"]);
+
+        Assert.Equal("src/EquityBrief.Core/Families/HeavyweightRule.cs", book.OwnSources[0]);
+        Assert.Contains("src/EquityBrief.Worker/Families/HeavyweightBook.cs", book.OwnSources);
+        Assert.Equal(bookRuns.Order(StringComparer.Ordinal), book.OwnSources.Order(StringComparer.Ordinal));
+        Assert.DoesNotContain("src/EquityBrief.Worker/Filter/SwingFilter.cs", book.OwnSources);
+
+        var movedShared = shared.ToArray();
+        movedShared[Array.IndexOf([.. CandidateEvaluator.EvaluationSources], "src/EquityBrief.Worker/Filter/SwingFilter.cs")] += "\ninternal static class ChangesTheFilter { }\n";
+
+        Assert.Equal(book.Version, CandidateEvaluator.Pin([SourceOf(book), .. OwnOf(book)]));
+        Assert.All(evaluators.Where(evaluator => evaluator is not BookEvaluator), evaluator => Assert.NotEqual(evaluator.Version, CandidateEvaluator.Pin([SourceOf(evaluator), .. OwnOf(evaluator), .. movedShared])));
+
+        foreach (var family in families.Cast<CandidateEvaluator>().Concat(books))
         {
             var rule = family.OwnSources[0];
             var movedRule = OwnOf(family);
@@ -563,17 +598,27 @@ public class RegisterAppendOnly
             movedRule[0] += "\ninternal static class ChangesWhatThisRuleDoes { }\n";
 
             Assert.EndsWith("Rule.cs", rule, StringComparison.Ordinal);
-            Assert.NotEqual(family.Version, CandidateEvaluator.Pin([SourceOf(family), .. movedRule, .. shared]));
+            Assert.NotEqual(family.Version, CandidateEvaluator.Pin([SourceOf(family), .. movedRule, .. SharedOf(family)]));
 
             foreach (var other in evaluators.Where(other => !other.OwnSources.Contains(rule, StringComparer.Ordinal)))
             {
-                Assert.Equal(other.Version, CandidateEvaluator.Pin([SourceOf(other), .. OwnOf(other), .. shared]));
+                Assert.Equal(other.Version, CandidateEvaluator.Pin([SourceOf(other), .. OwnOf(other), .. SharedOf(other)]));
             }
         }
 
+        // And the catalogue is no source any evaluator pins: a family added to it moves no other family's version.
+        // see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through but the catalogue
+        var catalogue = File.ReadAllText(Path.Combine(Repository.Root, "src/EquityBrief.Core/Candidates/CandidateEvaluators.cs"));
+
+        Assert.All(evaluators, evaluator => Assert.Equal(
+            evaluator.Version,
+            CandidateEvaluator.Pin([SourceOf(evaluator), .. OwnOf(evaluator), .. SharedOf(evaluator)])));
+        Assert.DoesNotContain(evaluators, evaluator => evaluator.OwnSources.Contains("src/EquityBrief.Core/Candidates/CandidateEvaluators.cs", StringComparer.Ordinal));
+        Assert.Contains("new SectorHeavyweightCandidate()", catalogue, StringComparison.Ordinal);
+
         foreach (var evaluator in evaluators)
         {
-            string[] sources = [SourceOf(evaluator), .. OwnOf(evaluator), .. shared];
+            string[] sources = [SourceOf(evaluator), .. OwnOf(evaluator), .. SharedOf(evaluator)];
 
             // Every source moves the pin, the evaluator's own and each it runs through.
             for (var at = 0; at < sources.Length; at++)
@@ -653,7 +698,6 @@ public class RegisterAppendOnly
             typeof(NightValues),
             typeof(NightReading),
             typeof(ShadowColumn),
-            typeof(CandidateEvaluators),
             typeof(CandidateEvaluator),
             typeof(FilterSettings),
             typeof(SwingGates),
@@ -663,6 +707,7 @@ public class RegisterAppendOnly
             typeof(SwingFilter),
             typeof(FamilyShadow),
             typeof(EquityBrief.Core.Families.LeaderRule),
+            typeof(EquityBrief.Core.Quarters.EstimateReading),
         ];
 
         Assert.Equal(CandidateEvaluator.EvaluationSources, called.Select(FileOf));

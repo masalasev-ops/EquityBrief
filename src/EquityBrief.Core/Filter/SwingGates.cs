@@ -48,7 +48,11 @@ public sealed record GateInputs(
     // return and its own place inside it, which the sector leaders' variant reads and no gate does; null
     // where the night handed in none.
     // see: The sector leaders are a variant of the pullback's starting point and not a family of their own
-    Families.LeaderStanding? Leadership = null);
+    Families.LeaderStanding? Leadership = null,
+    // The member's analysts' estimate for its current fiscal year as the night asked for it, which the revisions
+    // variant reads and no gate does; null where the night asked for none.
+    // see: A member's estimates are raised where its current fiscal year's consensus earnings estimate stands above its level 30 days before
+    Quarters.EstimateReading? Estimates = null);
 
 // One gate's answer: whether it passed, the sentence saying why, and the values that decided it.
 public sealed record Gate(string Name, bool Passed, string Reason, IReadOnlyDictionary<string, string> Values);

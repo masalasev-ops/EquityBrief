@@ -982,7 +982,7 @@ app.MapGet("/screens/tonight/{night?}", async (
     // see: The market check closes every swing family's list together, and the sector heavyweights read none
     var heavyweights = cards is null
         ? null
-        : TonightScreen.Heavyweights(dated, await read.HeavyweightHoldingsAsync(dated), await read.HeavyweightReadAsync(dated), await read.HeavyweightClosesAsync(dated), cells);
+        : TonightScreen.Heavyweights(dated, await read.HeavyweightHoldingsAsync(dated), await read.HeavyweightReadAsync(dated), await read.HeavyweightClosesAsync(dated), cells, await read.RegisteredCandidatesAsync());
     var line = cards is null
         ? null
         : TonightScreen.Line(

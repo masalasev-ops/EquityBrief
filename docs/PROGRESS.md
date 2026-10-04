@@ -37416,3 +37416,72 @@ Fork:       "B, each card its own (Recommended)": each card keeps its own one tr
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
             14.6 entry states.
 Carried:    14.6 built on these; the night of 2026-10-05 read.
+
+### 14.6 - the sector heavyweights frozen with three variants each keeping its own book, and the analysts' revisions in the sector leaders' place   2026-10-04
+
+Built:      on the operator's rulings of 2026-10-04. `register --family heavyweight` writes the live sector
+            heavyweights rule, the 10 largest of a sector, 251 sessions against its fund, 2 leaders, a beta of at
+            least one, monthly, sold on no longer leading, and its three variants, either exit, the members' mean and
+            every company, at one instant or none. Each registered rule keeps a book of its own in two tables beside
+            the page's, which reads at the live setting; its holdings are scored in percent against their size cut,
+            and the run page reads its record over blocks of 63 sessions by the session each ended on. The night asks
+            for the eleven sector funds' closes beside the index's and the VIX's, writing a fund's held session again
+            where the answer states another close, and the book stores each stock's beta; a book reading the funds or
+            the betas waits for a night holding every fund's close and the index's. The pullback's sector leaders'
+            rule gives its place to the revisions variant, the base where a member's current fiscal year's consensus
+            estimate stands above its level 30 days before, asked by the estimates fetcher once a member a night for
+            each member a rule reading it passes on everything else, the hard rule's sixth carve-out.
+            `CandidateEvaluators.cs` leaves the shared evaluation sources and the estimates' reading joins them, 22
+            still; the heavyweights' evaluator pins only the files its book runs through, read off the compiled code,
+            so a change to the swing filter restarts no heavyweights record. Migration 60. Five decisions; the
+            registration's version and the market series' superseded, the two they replace moved to Previously
+            decided; sections 7, 11.4, 13.9, 14, 15, 16, 17 and 18, the catalogue and the matrix, SCHEMA, the runbook
+            and the guide.
+Tests:      1831, from 1823: eight added, the freeze at one instant or none, each variant by hand on both sides of
+            its setting, the beta's floor and a lead of nothing, a rebalance waiting for a fund's close, a
+            heavyweights rule registered again named as not replayed, the estimates read off a trend, the estimates
+            asked for, stored and read back, and each rule's record read back off the run page.
+Claims:     970, from 960: section 17's two rows and section 18's two, the fetcher's catalogue and matrix rows, the
+            three stores and the run page's part for the heavyweights' records, against about eight the plan counted.
+Pins:       moved, on the operator's go. Every candidate evaluator's version: the catalogue left the shared
+            evaluation sources, the estimates' reading joined them, and five of them were edited,
+            `CandidateEvaluator.cs`, `ShadowColumn.cs`, `FamilyShadow.cs`, `SwingGates.cs` and `SwingFilter.cs`, with
+            `SwingFilterRule.cs` reading the estimates. The swing filter's code version from 6791a58a062a to 462efb8dec4a, `SwingGates.cs`
+            and `SwingFilter.cs` among its seventeen. The heavyweights' evaluator new at dc6589c2124b over its twelve,
+            `HeavyweightRule.cs`, `HeavyweightBook.cs`, `CandidateEvaluator.cs` and `CandidateFamily.cs` the edited
+            ones among them. Not moved: the family rules' own three files and the rule versions' twelve. The remedy:
+            `tools/remedies/2026-10-04-14.6-the-freezes.txt`.
+Mutated:    the rule, stated before the run: each property 14.6's done condition names broken alone, and each other
+            property a 14.6 test reaches, made by hand over the working tree, filtered to the eleven tests reaching
+            them and reverted.
+            M1 each of the freeze's rows written at an instant of its own: red in the freeze test.
+            M2 the members' mean read as the fund's: red in the variants test.
+            M3 every company's size cut read as ten: red in the variants test and the freeze test.
+            M4 the variant selling on either exit holding through a close under its average: red in the variants
+            test.
+            M5 a rule's holding counted in the block of the session it was bought on: survived first, a missing
+            property, no constructed holding ending in a later block than its buy's; the run page test extended with
+            the either-exit variant's holding bought in the first block and sold in the second, then red in it.
+            M6 a rebalance reading a fund the night holds no close for made all the same: red in the wait test.
+            M7 an estimate standing level read as raised: red in the estimates test and the swing family's verdicts
+            test, and green in the pin test, which showed the estimates' reading pinned by no evaluator though the
+            revisions variant fires on it; it joined the shared sources, and M7 made again is red in the pin test
+            too.
+            M8 the estimates asked for every member the night holds a bar for: red in the swing family's verdicts
+            test.
+            M9 a fund's held session kept at its first close: red in the market series fetch test.
+            M10 the estimates fetcher asking again for a member it holds a reading of: red in the estimates fetcher's
+            test.
+            M11 the heavyweights' evaluator pinning the swing filter's source: red in the pin test at the list of its
+            book's files, its version raised to the mutated pin so the list alone could fail.
+            The pin test reddens on M2, M3, M4, M6 and M8 besides, as on any edit to a pinned file.
+            Not mutated: the card's live day and variants, a fund asked as a listing, and the night's row naming each
+            heavyweights rule's book.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 33dece5, the
+            entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1831 of 1831 tests ran with none
+            failed, migrations 0 to 60 with none pending, schema version 60, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 970 claims, 970 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 981
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
+Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-04-14.6-the-freezes.txt`, then an entry
+            with each rule's replay and registration; the night of 2026-10-05 read, the books' first rebalance in it.

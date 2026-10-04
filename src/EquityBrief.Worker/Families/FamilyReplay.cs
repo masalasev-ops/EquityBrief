@@ -114,15 +114,28 @@ public sealed class FamilyReplay : IComponent
 
         var register = await RegisterAsync(connection, cancellation);
         var replays = await ReplaysAsync(connection, cancellation);
-        var rules = CandidateFamily.Standing(register, startedAt)
-            .Where(rule => CandidateEvaluators.Find(rule.Evaluator) is FamilyRuleEvaluator && which(rule))
-            .ToArray();
+        var standing = CandidateFamily.Standing(register, startedAt).Where(which).ToArray();
+        var rules = standing.Where(rule => CandidateEvaluators.Find(rule.Evaluator) is FamilyRuleEvaluator).ToArray();
         var found = new List<FamilyReplayed>();
 
         foreach (var family in rules.GroupBy(FamilyOf))
         {
             found.AddRange(await FamilyAsync(connection, family.Key, [.. family], register, replays, cancellation));
         }
+
+        // A rule the heavyweights' book keeps is not replayed, so its record restarts at the registration and its row says so.
+        // see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut
+        found.AddRange(standing
+            .Where(rule => CandidateEvaluators.Find(rule.Evaluator) is BookEvaluator)
+            .Select(rule => new FamilyReplayed(
+                rule.Candidate,
+                CandidateEvaluators.Find(rule.Evaluator)!.Version,
+                FamilyRecords.ReplayFrom(register, rule, replays),
+                0,
+                0,
+                0,
+                false,
+                NotReplayed)));
 
         foreach (var one in found)
         {
@@ -298,7 +311,15 @@ public sealed class FamilyReplay : IComponent
                 ? FormattableString.Invariant($"on {Stamp(on)} at {made:0.000}")
                 : FormattableString.Invariant($"on {Stamp(on)} with no result");
 
-    static string FamilyOf(RegisterRow rule) => CandidateEvaluators.Find(rule.Evaluator) is FamilyRuleEvaluator evaluator ? evaluator.Family : string.Empty;
+    static string FamilyOf(RegisterRow rule) => CandidateEvaluators.Find(rule.Evaluator) switch
+    {
+        FamilyRuleEvaluator evaluator => evaluator.Family,
+        BookEvaluator book => book.Family,
+        _ => string.Empty,
+    };
+
+    // What a heavyweights rule's row says, which the run page states beside it.
+    public const string NotReplayed = "the sector heavyweights' books are not replayed, so its record restarts at this registration";
 
     static async Task<IReadOnlyList<RegisterRow>> RegisterAsync(SqliteConnection connection, CancellationToken cancellation)
     {

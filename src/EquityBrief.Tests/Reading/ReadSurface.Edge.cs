@@ -27,7 +27,7 @@ public partial class ReadSurface
         TheSwingFamily.Variant(TheSwingFamily.StrengthName, "1"),
         TheSwingFamily.Variant(TheSwingFamily.ArrivalName, "1"),
         TheSwingFamily.Variant(TheSwingFamily.DeterioratingName, "1"),
-        TheSwingFamily.Variant(TheSwingFamily.LeadersName, "1"),
+        TheSwingFamily.Variant(TheSwingFamily.RevisionsName, "1"),
         TheSwingFamily.Variant(TheSwingFamily.BestThreeName, "1"),
     ];
 
