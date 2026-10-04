@@ -680,7 +680,66 @@ public static class SchemaMigrations
         new Migration(57, "create market_bar", CreateMarketBar),
         new Migration(58, "create pulled_company, pulled_shares, pulled_split and pulled_revenue", CreatePulledCompanies),
         new Migration(59, "add reported_quarter.shares, create company, heavyweight_night and heavyweight_holding", CreateHeavyweights),
+        new Migration(60, "add heavyweight_night.beta, create heavyweight_rule_night, heavyweight_rule_holding and estimate_reading", CreateRuleBooks),
     ];
+
+    // Each registered sector heavyweights rule's own book, read and held as the page's book is, the rule it belongs to
+    // first in each key: every sector's largest companies at each of the rule's rebalances, and each holding the rule
+    // kept, with its growth and its size cut's carried each night and, once it ends, its result and the cut's return.
+    // Every book reads each ranked company's beta where the night could read one, a statistic. And each member's
+    // analysts' estimate for its current fiscal year as the night asked for it, a member a rule reading them passed on
+    // everything else, one row a member a night, its estimates money per share as text.
+    // see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut
+    // see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night
+    const string CreateRuleBooks = @"
+        ALTER TABLE heavyweight_night ADD COLUMN beta REAL;
+
+        CREATE TABLE heavyweight_rule_night (
+            candidate      TEXT    NOT NULL,
+            session_date   TEXT    NOT NULL,
+            sector         TEXT    NOT NULL,
+            place          INTEGER NOT NULL,
+            ticker         TEXT    NOT NULL,
+            company        TEXT    NOT NULL,
+            company_value  TEXT    NOT NULL,
+            look_back      REAL,
+            sector_return  REAL,
+            lead           REAL,
+            trend          INTEGER NOT NULL,
+            leader         INTEGER NOT NULL,
+            beta           REAL,
+            PRIMARY KEY (candidate, session_date, sector, place)
+        ) STRICT;
+
+        CREATE TABLE heavyweight_rule_holding (
+            candidate    TEXT NOT NULL,
+            ticker       TEXT NOT NULL,
+            entered_on   TEXT NOT NULL,
+            sector       TEXT NOT NULL,
+            company      TEXT NOT NULL,
+            entry_close  TEXT NOT NULL,
+            growth       REAL NOT NULL,
+            cut          TEXT NOT NULL,
+            through      TEXT NOT NULL,
+            ended_on     TEXT,
+            exit_close   TEXT,
+            reason       TEXT,
+            result       REAL,
+            cut_return   REAL,
+            PRIMARY KEY (candidate, ticker, entered_on)
+        ) STRICT;
+
+        CREATE TABLE estimate_reading (
+            ticker             TEXT NOT NULL,
+            session_date       TEXT NOT NULL,
+            year_end           TEXT,
+            current_estimate   TEXT,
+            days_ago_estimate  TEXT,
+            not_read           TEXT,
+            run_id             TEXT NOT NULL,
+            PRIMARY KEY (ticker, session_date)
+        ) STRICT;
+    ";
 
     // One member's answer under one setup family on one night, for every family but the pullback, whose
     // answers are the swing filter's own rows. `gates` is the family's gates in order with their reasons
@@ -1227,7 +1286,7 @@ public static class SchemaMigrations
     // The index's and the VIX's daily series as the night fetches them, one row a series and session, the prices
     // as the provider sent them, kept as text, and the night that first stored the row. Insert only: a session a
     // night already holds keeps that night's row, and the table is kept whole.
-    // see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+    // see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars
     const string CreateMarketBar = @"
         CREATE TABLE market_bar (
             series       TEXT NOT NULL,

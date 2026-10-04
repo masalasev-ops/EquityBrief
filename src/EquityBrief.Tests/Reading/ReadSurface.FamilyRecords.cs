@@ -38,12 +38,14 @@ public partial class ReadSurface
     static readonly string NeighbourBreakout = TheSetupFamilies.Breakouts[1].Candidate;
     static readonly string LiveDrift = TheSetupFamilies.Drifts[0].Candidate;
 
-    // One registration row, written as the registrar writes it.
+    // One registration row, written as the registrar writes it, a name holding an apostrophe quoted as SQL quotes one.
     static void RegisteredRule(TemporaryStore store, long id, Registration registration, string at, string? retires = null) =>
         store.Execute(
             "INSERT INTO candidate_register (id, candidate, rule, test, evaluator, parameters, evaluator_version, event, retires, registered_at, evidence) VALUES " +
-            $"({id}, '{registration.Candidate}', 'rule', 'test', '{registration.Evaluator}', '{CandidateEvaluator.Write(registration.Parameters)}', 'v', " +
-            $"'{(retires is null ? CandidateFamily.Registered : CandidateFamily.Retired)}', {(retires is null ? "NULL" : $"'{retires}'")}, '{at}', {(retires is null ? "NULL" : "'constructed'")});");
+            $"({id}, '{Doubled(registration.Candidate)}', 'rule', 'test', '{registration.Evaluator}', '{CandidateEvaluator.Write(registration.Parameters)}', 'v', " +
+            $"'{(retires is null ? CandidateFamily.Registered : CandidateFamily.Retired)}', {(retires is null ? "NULL" : $"'{Doubled(retires)}'")}, '{at}', {(retires is null ? "NULL" : "'constructed'")});");
+
+    static string Doubled(string text) => text.Replace("'", "''", StringComparison.Ordinal);
 
     // One trade a rule kept, ended or not, with its result and benchmark where written.
     static void Kept(TemporaryStore store, string candidate, string family, string ticker, string session, string? endedOn, double? result, double? benchmark) =>

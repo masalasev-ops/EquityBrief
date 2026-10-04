@@ -20,33 +20,37 @@ public sealed record MarketSeriesOutcome(DateOnly? Through, IReadOnlyList<string
                 + FormattableString.Invariant($"; {RowsWritten} session(s) stored, {Requests} request(s)");
 }
 
-// The market series fetcher. Asks the provider for the index's and the VIX's daily series over the days before the
-// night's session that the market switches read back over, one request a series whatever the index's size, and
-// stores each session no night has stored yet, apart from the members' bars. Insert only: a session already held
-// keeps the row the night that first stored it wrote. A series the provider refuses, does not answer in time, sends
-// nothing for or answers in a form that cannot be read stores nothing and is named on the stage's own row, and it
-// stops nothing, since only the switches read it and each reads a night it holds no close for as closed. It runs in
-// the fetch step after the bar fetcher, reading the night's session off the bars that step stored, and calls no
-// model.
-// see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars
+// The market series fetcher. Asks the provider for the index's, the VIX's and the eleven sector funds' daily series
+// over the days before the night's session that the market switches and the sector heavyweights read back over, one
+// request a series whatever the index's size, and stores each session no night has stored yet, apart from the
+// members' bars. A session already held keeps the row the night that first stored it wrote, but a fund's: the
+// provider adjusts a fund's closes for each dividend it pays, so a fund's held session the answer states at another
+// price is written again from the answer, and every fund's return is read over closes on one basis. A series the
+// provider refuses, does not answer in time, sends nothing for or answers in a form that cannot be read stores nothing
+// and is named on the stage's own row, and it stops nothing, since a switch reads a night it holds no close for as
+// closed and a heavyweights' rebalance waits for a night the store holds one. It runs in the fetch step after the bar
+// fetcher, reading the night's session off the bars that step stored, and calls no model.
+// see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars
 public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, string databaseFile) : IComponent
 {
     public static ComponentAccess Access => new(
         Stores:
         [
             new StoreTouch(Store.Bar, Touch.Read),
-            new StoreTouch(Store.MarketBar, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.MarketBar, Touch.Read | Touch.Insert | Touch.Update),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.HistoricalPrice]);
 
     public const string Stage = "market-series";
 
-    // The series it asks for, in this order: the index itself and the VIX.
-    public static IReadOnlyList<string> Series { get; } = [MarketCloses.Index, MarketCloses.Vix];
+    // The series it asks for, in this order: the index itself, the VIX, and each sector's fund by its sector's name.
+    public static IReadOnlyList<string> Series { get; } =
+        [MarketCloses.Index, MarketCloses.Vix, .. GicsSectors.Eleven.Select(sector => GicsSectors.Funds[sector])];
 
     // The calendar days before the night's session it asks for: more than a year, so the 200 sessions the
-    // index's average reads and the ten the VIX is read back over are held with the exchange's holidays among them.
+    // index's average reads, the ten the VIX is read back over and the 252 a fund's year and a beta read are held with
+    // the exchange's holidays among them.
     public const int WindowDays = 400;
 
     const string NewestSession = "SELECT MAX(session_date) FROM bar;";
@@ -56,6 +60,18 @@ public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, st
         VALUES ($series, $session_date, $open, $high, $low, $close, $run_id)
         ON CONFLICT (series, session_date) DO NOTHING;
     ";
+
+    // A fund's session held at another price than the answer states, written again from the answer.
+    const string Restate = @"
+        UPDATE market_bar
+        SET open = $open, high = $high, low = $low, close = $close, run_id = $run_id
+        WHERE series = $series AND session_date = $session_date;
+    ";
+
+    const string HeldCloses = "SELECT session_date, close FROM market_bar WHERE series = $series;";
+
+    // Whether a series is a sector's fund, whose held sessions the answer may state again.
+    public static bool IsFund(string series) => GicsSectors.Funds.Values.Contains(series, StringComparer.Ordinal);
 
     const string HeldOf = "SELECT COUNT(*) FROM market_bar WHERE series = $series;";
 
@@ -127,22 +143,53 @@ public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, st
         foreach (var (series, bars) in answered)
         {
             var added = 0;
+            var restated = 0;
+            var closesHeld = new Dictionary<string, decimal>(StringComparer.Ordinal);
+
+            if (IsFund(series))
+            {
+                await using var closes = connection.CreateCommand();
+
+                closes.Transaction = transaction;
+                closes.CommandText = HeldCloses;
+                closes.Parameters.AddWithValue("$series", series);
+
+                await using var reader = await closes.ExecuteReaderAsync(cancellation);
+
+                while (await reader.ReadAsync(cancellation))
+                {
+                    closesHeld[reader.GetString(0)] = Money.FromStorage(reader.GetString(1));
+                }
+            }
 
             foreach (var bar in bars)
             {
-                await using var insert = connection.CreateCommand();
+                // A fund's held session the answer states at another close is written again; any other held session
+                // keeps its first row.
+                var again = closesHeld.TryGetValue(Stamp(bar.SessionDate), out var close) && close != bar.Close;
 
-                insert.Transaction = transaction;
-                insert.CommandText = Insert;
-                insert.Parameters.AddWithValue("$series", series);
-                insert.Parameters.AddWithValue("$session_date", Stamp(bar.SessionDate));
-                Money.Bind(insert, "$open", bar.Open);
-                Money.Bind(insert, "$high", bar.High);
-                Money.Bind(insert, "$low", bar.Low);
-                Money.Bind(insert, "$close", bar.Close);
-                insert.Parameters.AddWithValue("$run_id", runId);
+                await using var write = connection.CreateCommand();
 
-                added += await insert.ExecuteNonQueryAsync(cancellation);
+                write.Transaction = transaction;
+                write.CommandText = again ? Restate : Insert;
+                write.Parameters.AddWithValue("$series", series);
+                write.Parameters.AddWithValue("$session_date", Stamp(bar.SessionDate));
+                Money.Bind(write, "$open", bar.Open);
+                Money.Bind(write, "$high", bar.High);
+                Money.Bind(write, "$low", bar.Low);
+                Money.Bind(write, "$close", bar.Close);
+                write.Parameters.AddWithValue("$run_id", runId);
+
+                var changed = await write.ExecuteNonQueryAsync(cancellation);
+
+                if (again)
+                {
+                    restated += changed;
+                }
+                else
+                {
+                    added += changed;
+                }
             }
 
             await using var held = connection.CreateCommand();
@@ -154,9 +201,10 @@ public sealed class MarketSeriesFetcher(IMarketSeriesFeed feed, IClock clock, st
             var holds = Convert.ToInt64(await held.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture);
             var newest = bars.Max(bar => bar.SessionDate);
 
-            written += added;
+            written += added + restated;
             stored.Add(
                 FormattableString.Invariant($"{series}: {added} new of the {bars.Count} session(s) sent, {holds} held")
+                + (restated > 0 ? FormattableString.Invariant($", {restated} held session(s) written again at the closes the answer states") : string.Empty)
                 + (newest < through ? FormattableString.Invariant($", the newest sent {newest:yyyy-MM-dd} and none for the night") : string.Empty));
         }
 

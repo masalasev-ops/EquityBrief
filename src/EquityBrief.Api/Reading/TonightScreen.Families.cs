@@ -302,7 +302,12 @@ public static partial class TonightScreen
     // settings and reads no day.
     // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
     // see: The new families freeze at their sweeps' proposals, the breakout's provisional setting and the drift's wider stop registered beside them as variants
-    static (DateOnly? LiveSince, int Variants) Standing(SetupFamily family, IReadOnlyList<CandidateRow> register, DateOnly night)
+    static (DateOnly? LiveSince, int Variants) Standing(SetupFamily family, IReadOnlyList<CandidateRow> register, DateOnly night) =>
+        Standing(family.Name, register, night);
+
+    // A family's standing by its name, the sector heavyweights' among them: the day its live rule registered, and
+    // the variants standing beside it.
+    static (DateOnly? LiveSince, int Variants) Standing(string name, IReadOnlyList<CandidateRow> register, DateOnly night)
     {
         var at = new DateTimeOffset(night.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var standing = CandidateFamily.In(
@@ -313,11 +318,11 @@ public static partial class TonightScreen
                             row.Parameters, string.Empty, row.Event, row.Retires, row.RegisteredAt, row.Evidence)),
                     ],
                     at),
-                family.Name)
-            .Where(row => family.Name != SetupFamilies.Pullback || row.Evaluator == SwingFilterRule.EvaluatorName)
+                name)
+            .Where(row => name != SetupFamilies.Pullback || row.Evaluator == SwingFilterRule.EvaluatorName)
             .ToArray();
 
-        bool IsLive(string candidate) => family.Name == SetupFamilies.Pullback ? SwingFamily.IsLive(candidate) : FamilyRecords.IsLive(candidate);
+        bool IsLive(string candidate) => name == SetupFamilies.Pullback ? SwingFamily.IsLive(candidate) : FamilyRecords.IsLive(candidate);
 
         var live = standing.LastOrDefault(row => IsLive(row.Candidate));
 
@@ -505,15 +510,20 @@ public static partial class TonightScreen
         ];
         var standing = CandidateFamily.Standing(rows, at);
 
+        // Each new swing family under its own cap, and the sector heavyweights under none, a holding counting in the
+        // block it ends in.
+        // see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut
         return
         [
-            .. SetupFamilies.Evaluated.SelectMany(family =>
-            {
-                var rules = CandidateFamily.In(standing, family.Name);
-                var trials = CandidateFamily.Trials(CandidateFamily.In(rows, family.Name), rules.Select(rule => rule.Candidate));
+            .. SetupFamilies.Evaluated.Select(family => (family.Name, Cap: family.CapSessions))
+                .Append((HeavyweightRule.Name, Cap: 0))
+                .SelectMany(family =>
+                {
+                    var rules = CandidateFamily.In(standing, family.Name);
+                    var trials = CandidateFamily.Trials(CandidateFamily.In(rows, family.Name), rules.Select(rule => rule.Candidate));
 
-                return FamilyRecords.Family(rules, trades, night, family.CapSessions, trials, replays).Select(view => (family.Name, view));
-            }),
+                    return FamilyRecords.Family(rules, trades, night, family.Cap, trials, replays).Select(view => (family.Name, view));
+                }),
         ];
     }
 
@@ -530,7 +540,7 @@ public static partial class TonightScreen
             .ThenBy(record => record.View.Candidate, StringComparer.Ordinal)
             .Select(record => new FamilyRecordRow(
                 record.Family,
-                SetupFamilies.Named(record.Family)?.Heading ?? record.Family,
+                SetupFamilies.Named(record.Family)?.Heading ?? (record.Family == HeavyweightRule.Name ? SetupFamilies.SectorHeavyweights.Heading : record.Family),
                 record.View.Candidate,
                 record.View.Live,
                 record.View.Trades,

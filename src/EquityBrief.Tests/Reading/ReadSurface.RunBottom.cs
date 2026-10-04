@@ -274,11 +274,16 @@ public partial class ReadSurface
             Assert.Single(rows, row => row.Contains($"data-version=\"{RunScreen.Slug(TheSwingFamily.Variant(TheSwingFamily.DeterioratingName, "1"))}\"", StringComparison.Ordinal)),
             StringComparison.Ordinal);
 
-        // The eighth's: it reads sector leadership in place of the trend and strength gate.
+        // The eighth's: it lists only a stock whose analysts raised their estimate.
         Assert.Contains(
-            "Only the top quarter of one of the 3 strongest sectors, in place of an uptrend's strength",
-            Assert.Single(rows, row => row.Contains($"data-version=\"{RunScreen.Slug(TheSwingFamily.Variant(TheSwingFamily.LeadersName, "1"))}\"", StringComparison.Ordinal)),
+            "Only a stock whose analysts raised their estimate for its year over the last 30 days, which the live list does not ask",
+            Assert.Single(rows, row => row.Contains($"data-version=\"{RunScreen.Slug(TheSwingFamily.Variant(TheSwingFamily.RevisionsName, "1"))}\"", StringComparison.Ordinal)),
             StringComparison.Ordinal);
+
+        // The rule it took the place of keeps its words, read off its own registration.
+        Assert.Equal(
+            "Only the top quarter of one of the 3 strongest sectors, in place of an uptrend's strength",
+            RunScreen.Changes(TheSwingFamily.Leaders("1", FilterSettings.Proposed).Parameters, TheSwingFamily.For("1", FilterSettings.Proposed)[0].Parameters));
 
         // The ninth's: it keeps the night's first three in the list's own order.
         Assert.Contains(

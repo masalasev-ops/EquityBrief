@@ -365,8 +365,9 @@ public partial class FixtureExpectations
             transaction.Commit();
         }
 
-        // The night's book reads its first night as a rebalance and stores each sector's largest.
-        var book = await new HeavyweightBook(FixedClock.At(new DateTimeOffset(SweepNight.ToDateTime(new TimeOnly(23, 40)), TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile).RunAsync("GSPC", "night-sweep");
+        // The night's book, held at the provisional setting, reads its first night as a rebalance and stores each sector's
+        // largest; the comparison reads whatever setting it is handed, the runner handing it the frozen one.
+        var book = await new HeavyweightBook(FixedClock.At(new DateTimeOffset(SweepNight.ToDateTime(new TimeOnly(23, 40)), TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile, Core.Families.HeavyweightRule.Provisional).RunAsync("GSPC", "night-sweep");
 
         Assert.True(book.Rebalanced);
         Assert.Equal(["H1", "T1"], book.Entered);

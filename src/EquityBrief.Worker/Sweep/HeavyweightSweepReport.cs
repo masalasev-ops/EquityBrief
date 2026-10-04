@@ -44,7 +44,7 @@ public static class HeavyweightSweepReport
         page.Append("<h2>The replay against the night's book</h2>");
         page.Append(comparison.Sessions == 0
             ? "<p class=\"compared\" data-sessions=\"0\">The night's book has stored no rebalance through the history's end, so no session is compared yet.</p>"
-            : Invariant($"<p class=\"compared\" data-sessions=\"{comparison.Sessions}\" data-sectors=\"{comparison.Sectors}\" data-matched=\"{comparison.Matched}\">Over the {comparison.Sessions} rebalance(s) the night's book stored through the history's end, the replay at the provisional setting read {comparison.Matched} of the {comparison.Sectors} sector(s) as stored: the same largest companies in the same places, each lead within a billionth and the same leaders.</p>"));
+            : Invariant($"<p class=\"compared\" data-sessions=\"{comparison.Sessions}\" data-sectors=\"{comparison.Sectors}\" data-matched=\"{comparison.Matched}\">Over the {comparison.Sessions} rebalance(s) the night's book stored through the history's end, the replay at the setting the family froze at, which the book holds at, read {comparison.Matched} of the {comparison.Sectors} sector(s) as stored: the same largest companies in the same places, each lead within a billionth and the same leaders.</p>"));
 
         if (comparison.Differences.Count > 0)
         {

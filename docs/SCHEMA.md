@@ -34,7 +34,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 |---|---|---|---|
 | `membership` | MembershipLoader | MembershipLoader | none |
 | `bar` | Backfill, BarFetcher, CorporateActionChecker | none | BarFetcher, CorporateActionChecker |
-| `market_bar` | MarketSeriesFetcher | none | none |
+| `market_bar` | MarketSeriesFetcher | MarketSeriesFetcher | none |
 | `calendar` | CalendarFetcher | CalendarFetcher | CalendarFetcher |
 | `pulled_bar` | HistoryPull | none | HistoryPull |
 | `pulled_earnings` | HistoryPull | none | HistoryPull |
@@ -65,6 +65,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `family_trade` | FamilyRecorder | FamilyRecorder | FamilyRecorder |
 | `heavyweight_night` | HeavyweightBook | none | HeavyweightBook |
 | `heavyweight_holding` | HeavyweightBook | HeavyweightBook | HeavyweightBook |
+| `heavyweight_rule_night` | HeavyweightBook | none | HeavyweightBook |
+| `heavyweight_rule_holding` | HeavyweightBook | HeavyweightBook | HeavyweightBook |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
 | `fundamentals` | FundamentalsFetcher | none | none |
@@ -73,6 +75,7 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `quarter_ask` | QuarterFetcher | none | none |
 | `company` | QuarterFetcher | none | none |
 | `fundamental_reading` | FundamentalReader | none | FundamentalReader |
+| `estimate_reading` | EstimatesFetcher | none | none |
 | `news_pulse` | NewsPulseCounter | none | NewsPulseCounter |
 | `news_article` | NewsPulseCounter | none | NewsPulseCounter |
 | `news_label` | NewsLabeller | none | NewsLabeller |
@@ -180,14 +183,14 @@ Grain: one row per series per session a night stored.
 
 | Column | Type | Notes |
 |---|---|---|
-| `series` | TEXT | `GSPC`, the index itself, or `VIX` |
+| `series` | TEXT | `GSPC`, the index itself, `VIX`, or one of the eleven sector funds, `XLB` to `XLY` |
 | `session_date` | TEXT | date |
-| `open`, `high`, `low`, `close` | TEXT | decimal in code, as the provider sent them on the night that stored the session |
-| `run_id` | TEXT | the run id of the night that first stored the row |
+| `open`, `high`, `low`, `close` | TEXT | decimal in code, as the provider sent them on the night that wrote the row |
+| `run_id` | TEXT | the run id of the night that wrote the row |
 
 Primary key: `series`, `session_date`.
 
-**The index's and the VIX's daily series as the night fetches them, read by the family evaluator alone** (see: The night asks for the index's and the VIX's daily closes once a series, and keeps them apart from the members' bars). The fetch step asks the provider once a series over the 400 days before the night's session, under its index exchange rather than a listing, and inserts each session no night has stored; a session held keeps its first row, so the table is insert only and kept whole, two rows a session. A series the provider refuses or sends nothing for stores nothing that night and stops nothing. The family evaluator reads both series' closes on the store's own sessions to the night for the registered rules whose market switch reads them, and nothing else reads the table: it is apart from `bar` because neither series is a member's, and apart from `pulled_market_bar` because a night reads it.
+**The index's, the VIX's and the sector funds' daily series as the night fetches them, read by the family evaluator and the heavyweight book** (see: The night asks for the market series' daily closes once a series, and keeps them apart from the members' bars). The fetch step asks the provider once a series over the 400 days before the night's session, the index and the VIX under its index exchange and each fund as a listing, and inserts each session no night has stored. A session held keeps its first row, but a fund's: the provider adjusts a fund's closes for each dividend it pays, so the fetcher writes a fund's held session again from an answer stating it at another close, the one update this table takes, and a fund's return over a year is read over closes on one basis. The table is kept whole, thirteen rows a session. A series the provider refuses or sends nothing for stores nothing that night and stops nothing. The family evaluator reads the index's and the VIX's closes on the store's own sessions to the night for the registered rules whose market switch reads them, and the heavyweight book reads the index's closes for each stock's beta and each fund's for its sector's return; nothing else reads the table: it is apart from `bar` because no series is a member's, and apart from `pulled_market_bar` because a night reads it.
 
 ### calendar
 Grain: one row per ticker, event date and kind.
@@ -734,19 +737,20 @@ Grain: one row per rebalance session, sector and place among the sector's larges
 |---|---|---|
 | `session_date` | TEXT | the rebalance session |
 | `sector` | TEXT | the GICS sector, as read on the session |
-| `place` | INTEGER | the company's place by value in its sector, counted from one, at most five at the provisional setting |
+| `place` | INTEGER | the company's place by value in its sector, counted from one, at most ten at the setting the freeze registered |
 | `ticker` | TEXT | the listing held for the company, the class that traded the more dollars over the fifty sessions to the session |
 | `company` | TEXT | the company the listing belongs to: `CIK` and its filer where the provider files one, and `ticker` and the stock where not |
 | `company_value` | TEXT | decimal in code, the company's value on the session, the newest count filed before it times the session's close on the count's split basis |
 | `look_back` | REAL | the stock's return over the look-back to the session, null where it holds too few closes |
-| `sector_return` | REAL | the mean of the sector's members' own returns over the look-back, null where no member holds one |
+| `sector_return` | REAL | the sector's return over the look-back, its fund's at the setting the freeze registered and its members' mean where a setting reads that, null where none is read |
 | `lead` | REAL | the stock's return less the sector's, null where either is |
 | `trend` | INTEGER | 1 where the session's close is above its 50-day average and that above its 200-day, 0 otherwise |
 | `leader` | INTEGER | 1 where the rule bought the stock as its sector's leader on the session, 0 otherwise |
+| `beta` | REAL | the stock's beta over 251 daily returns against the index to the session, null where it or the index holds too few closes; null on a row written before 14.6 |
 
 Primary key: `session_date`, `sector`, `place`.
 
-**The heavyweight book writes it in the swing filter's step on each rebalance and is its own deleter** (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month) (see: A heavyweight is bought where it leads its sector above nothing and passes the trend gate, and sold where the rule would not buy it). On the first night of a month it runs, and on its first night, it reads every member's company and its newest count, values each, ranks each sector's companies once a company and stores the largest with their returns, leads and trend gate and which it bought; a member with no sector filed stands in no sector and one with no value in no rank, its return still in its sector's mean (see: A sector's return is the mean of its members' own returns over the look-back). A night run again replaces its own session's rows and touches no other. Kept forever otherwise, the record of what each rebalance read, which the family's sweep is read against on sampled sessions.
+**The heavyweight book writes it in the swing filter's step on each rebalance and is its own deleter** (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month) (see: A heavyweight is bought where it leads its sector above nothing and passes the trend gate, and sold where the rule would not buy it). The page's book, at the setting the family's freeze registered (see: The sector heavyweights freeze at their sweep's proposal, the proposal's three passing neighbours registered beside them as variants). On the first night of a month it runs, and on its first night, it reads every member's company and its newest count, values each, ranks each sector's companies once a company and stores the largest with their returns, leads, trend gate and beta and which it bought; a member with no sector filed stands in no sector and one with no value in no rank, its return still in its sector's mean where the setting reads that (see: A sector's return is the mean of its members' own returns over the look-back). A rebalance reading the funds or the betas waits for the first night the store holds the night's close of every fund and of the index, and writes nothing until then. A night run again replaces its own session's rows and touches no other. Kept forever otherwise, the record of what each rebalance read, which the family's sweep is read against on sampled sessions.
 
 ### heavyweight_holding
 Grain: one row per stock and the session the sector heavyweights bought it on.
@@ -769,7 +773,54 @@ Grain: one row per stock and the session the sector heavyweights bought it on.
 
 Primary key: `ticker`, `entered_on`.
 
-**The heavyweight book writes it in the swing filter's step, after the family recorder, and is its own deleter** (see: A heavyweight's result is the product of its daily close ratios since its buy, carried each night) (see: A heavyweight leaving the index is sold at its last session's close as a member). Every night it carries each holding's growth, and its size cut's, by tonight's closes over the closes of the session each was last carried to, both read as the store holds them tonight, ends one whose stock is no longer a member at the session it was last carried to and one closing under its 200-day average tonight, and on a rebalance ends each the rule would not buy and buys each leader it does not hold, with the sector's largest as its size cut. It reads no market check and holds no stock back for a trade a swing family holds, nor any swing family's for it (see: The market check closes every swing family's list together, and the sector heavyweights read none) (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order). A night run again deletes what it bought that night, opens again what it ended that night, and writes the night again; a night for a session earlier than one it has read is read for nothing. The rows are never deleted otherwise: they are the record the family's checkpoints will read once its freeze registers it, and Past picks draws each in percent beside its size cut's return (see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from).
+**The heavyweight book writes it in the swing filter's step, after the family recorder, and is its own deleter** (see: A heavyweight's result is the product of its daily close ratios since its buy, carried each night) (see: A heavyweight leaving the index is sold at its last session's close as a member). Every night it carries each holding's growth, and its size cut's, by tonight's closes over the closes of the session each was last carried to, both read as the store holds them tonight, ends one whose stock is no longer a member at the session it was last carried to and, where the setting reads it, one closing under its 200-day average tonight, and on a rebalance ends each the rule would not buy where the setting sells on that and buys each leader it does not hold, with the sector's largest as its size cut. It reads no market check and holds no stock back for a trade a swing family holds, nor any swing family's for it (see: The market check closes every swing family's list together, and the sector heavyweights read none) (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order). A night run again deletes what it bought that night, opens again what it ended that night, and writes the night again; a night for a session earlier than one it has read is read for nothing. The rows are never deleted otherwise: tonight's card and Past picks draw each in percent beside its size cut's return (see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from), and each registered rule's record is read off its own book.
+
+### heavyweight_rule_night
+Grain: one row per registered heavyweights rule, rebalance session, sector and place among the sector's largest companies.
+
+| Column | Type | Notes |
+|---|---|---|
+| `candidate` | TEXT | the registered rule whose book read the rebalance, by its name in the register |
+| `session_date` | TEXT | the rebalance session |
+| `sector` | TEXT | the GICS sector, as read on the session |
+| `place` | INTEGER | the company's place by value in its sector, counted from one, at most the rule's size cut |
+| `ticker` | TEXT | the listing held for the company |
+| `company` | TEXT | the company the listing belongs to, as `heavyweight_night` names it |
+| `company_value` | TEXT | decimal in code, the company's value on the session |
+| `look_back` | REAL | the stock's return over the rule's look-back to the session, null where it holds too few closes |
+| `sector_return` | REAL | the sector's return over the rule's look-back, its fund's or its members' mean as the rule reads it, null where none is read |
+| `lead` | REAL | the stock's return less the sector's, null where either is |
+| `trend` | INTEGER | 1 where the session's close is above its 50-day average and that above its 200-day, 0 otherwise |
+| `leader` | INTEGER | 1 where the rule bought the stock as one of its sector's leaders on the session, 0 otherwise |
+| `beta` | REAL | the stock's beta over 251 daily returns against the index to the session, null where it or the index holds too few closes |
+
+Primary key: `candidate`, `session_date`, `sector`, `place`.
+
+**The heavyweight book writes it for each registered rule's own book, in the swing filter's step on each of the rule's rebalances, and is its own deleter** (see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut). Each heavyweights rule standing registered when the night started is read as the page's book is, at its own registration's settings: its first night and each first night of its period it reads every sector's largest companies and stores them with which it bought, and a rebalance reading the funds or the betas waits for a night the store holds their closes. A night run again replaces its own session's rows for every rule and touches no other. Kept forever otherwise, the record of what each rule's rebalances read.
+
+### heavyweight_rule_holding
+Grain: one row per registered heavyweights rule, stock and the session the rule bought it on.
+
+| Column | Type | Notes |
+|---|---|---|
+| `candidate` | TEXT | the registered rule whose book holds it, by its name in the register |
+| `ticker` | TEXT | |
+| `entered_on` | TEXT | the rebalance session it was bought on, at that close |
+| `sector` | TEXT | the sector it was bought as a leader of |
+| `company` | TEXT | the company the listing belongs to, as `heavyweight_night` names it |
+| `entry_close` | TEXT | decimal in code, the close it was bought at |
+| `growth` | REAL | its close carried over its buy's, the product of each night's close over the close of the session it was last carried to |
+| `cut` | TEXT | JSON: each of the size cut it was chosen from, its ticker, its growth carried the same way and the session it was carried to |
+| `through` | TEXT | the session the holding's own growth was last carried to |
+| `ended_on` | TEXT | the session it was sold on, null while it is held |
+| `exit_close` | TEXT | decimal in code, the close it was sold at, null while held |
+| `reason` | TEXT | `no longer the leader`, `a close under its 200-day average` or `left the index`, null while held |
+| `result` | REAL | its growth less one at the sale, its return in percent of the buy as a fraction, null while held |
+| `cut_return` | REAL | the mean of the size cut's growths less one at the sale, null while held |
+
+Primary key: `candidate`, `ticker`, `entered_on`.
+
+**The heavyweight book writes it for each registered rule's own book, in the swing filter's step, and is its own deleter** (see: Each registered sector heavyweights rule keeps a book of its own beside the page's, its holdings scored in percent against their size cut). Each night it carries each of a rule's holdings and its size cut, ends the holdings the rule's exits end and buys the rule's leaders it does not hold, as `heavyweight_holding` is kept for the page's book, one holding a stock in each rule's book and none held back for another's. A night run again deletes what each rule bought that night, opens again what each ended that night, and writes the night again. The rows are never deleted otherwise: they are each rule's record, its holdings' edge, the result less the size cut's return, read over blocks of 63 sessions by the session each ended on, which the run page draws beside the swing families' rules'.
 
 ### forward_return
 Grain: one row per listing per horizon, and one per swing filter row carrying a plan per swing horizon.
@@ -949,6 +1000,23 @@ Primary key: `ticker`, `session_date`.
 
 Kept forever: Past picks draws the state a trade carried on its listing night, and the order a night's list was drawn in is read from that night's rows. A night reads only the quarters fetched on the nights before it, so a night run again later never reads a quarter from its future. The reader's delete removes one night's set, the night it is writing, so a night run again replaces its own rows whole and a member no longer in the index keeps none on it (see: Four readings of a member's reported quarters are worked out every night by rules the measured split settled, and its state is read from sales and operating margin alone).
 
+### estimate_reading
+Grain: one row per ticker per night the night asked for its estimates.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | a member a standing rule reading analysts' estimates passed on everything else |
+| `session_date` | TEXT | the night's session |
+| `year_end` | TEXT | the end of the current fiscal year the answer files the estimate for, null where it files none |
+| `current_estimate` | TEXT | decimal in code, the consensus estimate of the year's earnings a share as the answer files it, null where it files none |
+| `days_ago_estimate` | TEXT | decimal in code, the same estimate 30 days before, null where the answer files none |
+| `not_read` | TEXT | why the answer reads no estimate, null where it reads both |
+| `run_id` | TEXT | the run id of the night that asked |
+
+Primary key: `ticker`, `session_date`.
+
+Kept forever, never updated and never deleted, the only history of the estimates the revisions variant read, since the provider keeps none (see: The night asks for the estimates of each member a rule reading them passes on everything else, once a member a night). The estimates fetcher writes a row for each member it asks the provider for, in the swing filter's step before any verdict is written, and a night run again reads its row back and asks nothing; a member the provider does not serve stores nothing, so a run of the rest of the night asks for it again. The swing filter hands each reading to the verdicts of the rules reading it, which read it as raised where the current estimate stands above the one 30 days before (see: A member's estimates are raised where its current fiscal year's consensus earnings estimate stands above its level 30 days before).
+
 ### news_pulse
 Grain: one row per ticker per date.
 
@@ -1096,7 +1164,7 @@ Primary key: `id`.
 
 No update, no delete and no replace, each refused by the table. A correction is a new row.
 
-**The three evaluator columns are what make the row a registration rather than a description.** A candidate naming its rule in prose alone is a row a later session has to re-implement from words, and what it implements is then whatever it read the words to mean, which is the thing pre-registration exists to stop. `evaluator` names code that exists, `parameters` carries the values it is run with, and `evaluator_version` is the pin of that evaluator's source and every source its evaluation runs through, with line endings normalised to LF and any leading byte order mark removed, so the same code pins the same on both platforms and on a runner that checked the tree out with either ending (see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through). A changed evaluation is a new registration retiring the old one, never an edited row, and `register-append-only` fails a standing candidate whose evaluation's sources have moved away from the version its row names.
+**The three evaluator columns are what make the row a registration rather than a description.** A candidate naming its rule in prose alone is a row a later session has to re-implement from words, and what it implements is then whatever it read the words to mean, which is the thing pre-registration exists to stop. `evaluator` names code that exists, `parameters` carries the values it is run with, and `evaluator_version` is the pin of that evaluator's source and every source its evaluation runs through but the catalogue listing every evaluator, with line endings normalised to LF and any leading byte order mark removed, so the same code pins the same on both platforms and on a runner that checked the tree out with either ending (see: A registration names an evaluator the code carries, and its version is the pin of every source its evaluation runs through but the catalogue). A changed evaluation is a new registration retiring the old one, never an edited row, and `register-append-only` fails a standing candidate whose evaluation's sources have moved away from the version its row names.
 
 ### rule_version
 Grain: one row per rule per version. Append only but for the close.

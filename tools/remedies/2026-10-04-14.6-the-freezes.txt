@@ -1,0 +1,16 @@
+# The remedy of 14.6 (the sector heavyweights frozen with three variants, and the analysts' revisions in the sector
+# leaders' place), as its PROGRESS entry prints it: run tools/migrate.ps1 first, which adds migration 60's beta to the
+# heavyweights' nights and creates each registered heavyweights rule's two tables and the estimates' table. The merge
+# moves every candidate evaluator's version, the catalogue leaving the sources each pins and the swing filter's own
+# source moving, so every standing rule would be skipped and named as a failure on the night until it is registered
+# again. The swing family goes first, since its rules gain the estimates' setting and cannot be registered again
+# unchanged: registered again whole under filter version 5, still open, the sector leaders' rule retired and the
+# analysts' revisions variant registered in its place, the other eight under their names, so their records go on by
+# name. Then the breakout's and the drift's sixteen rules, each replayed first over the nights since its record began
+# and carrying its record on where the replay reproduces every trade, a line printed for each. Last the heavyweights'
+# freeze registers its live rule and three variants, each keeping a book of its own from the night after, the first
+# of them a rebalance. No provider call and no model call. Run after the merge and before the night, when no night is
+# running.
+register --the-family-again --evidence "the operator's rulings of 2026-10-04: the pullback's sector leaders' rule retired and the analysts' revisions variant registered in its place, with the catalogue leaving the evaluation sources, which moved every evaluator's version"
+register --moved --evidence "14.6: the catalogue listing the evaluators left the sources every evaluator pins and the swing filter's own source moved, which moved every evaluator's version; each family rule is replayed over the nights since its first registration before it is registered again"
+register --family heavyweight

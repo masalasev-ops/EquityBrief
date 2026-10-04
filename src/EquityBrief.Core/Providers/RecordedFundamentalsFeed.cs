@@ -171,6 +171,9 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
             Dividend(root))
         {
             Classification = new CompanyClassification(Level("GicSector"), Level("GicGroup"), Level("GicIndustry"), Level("GicSubIndustry")),
+            Estimates = root.TryGetProperty("Earnings", out var earnings) && earnings.ValueKind == JsonValueKind.Object
+                ? Quarters.EstimateReading.FromTrend(earnings.TryGetProperty("Trend", out var trend) ? trend : default)
+                : null,
         };
     }
 

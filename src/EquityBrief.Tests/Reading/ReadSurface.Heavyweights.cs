@@ -20,7 +20,7 @@ public partial class ReadSurface
     internal static readonly string[] HeavyweightCardParts =
     [
         "after the setup families' cards on a night they drew the page's list, whatever the market check read",
-        "the family's rule in a sentence and the words saying it is provisional",
+        "the family's rule in a sentence and the day its live rule registered with the variants kept beside it or the words saying it is provisional where no freeze registered it",
         "one row a holding at the night's close",
         "the sectors in order",
         "each with its sector",
@@ -45,7 +45,7 @@ public partial class ReadSurface
         "why it ended",
         "its result in percent of the buy",
         "its size cut's return over the same sessions and the difference between them",
-        "the words saying it is provisional",
+        "the words saying these are the page's own book and each registered rule's record is its own",
         "nothing where the book has bought none",
     ];
 
@@ -100,11 +100,12 @@ public partial class ReadSurface
         var page = WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}"));
         var card = HeavyweightCardOf(page);
 
-        // After every family's card, under its own heading and rule, provisional, its last rebalance 2026-10-01 and its
-        // next November's first session, Monday the 2nd.
+        // After every family's card, under its own heading and rule, provisional since no freeze stands in this store, its
+        // last rebalance 2026-10-01 and its next November's first session, Monday the 2nd, its leads read over the twelve
+        // months the freeze set.
         Assert.True(page.IndexOf("heavyweight-card", StringComparison.Ordinal) > page.LastIndexOf("data-card=\"family\"", StringComparison.Ordinal));
         Assert.StartsWith(
-            "<section class=\"family-card heavyweight-card\" data-family=\"heavyweight\" data-holdings=\"3\" data-state=\"provisional\" data-last-rebalance=\"2026-10-01\" data-next-rebalance=\"2026-11-02\" data-look-back=\"126\">",
+            "<section class=\"family-card heavyweight-card\" data-family=\"heavyweight\" data-holdings=\"3\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-last-rebalance=\"2026-10-01\" data-next-rebalance=\"2026-11-02\" data-look-back=\"251\">",
             card,
             StringComparison.Ordinal);
         Assert.Contains($"<div class=\"lbl\">Rotation · {SetupFamilies.SectorHeavyweights.Eyebrow}</div><h2>{SetupFamilies.SectorHeavyweights.Heading}</h2>", page, StringComparison.Ordinal);
@@ -128,13 +129,13 @@ public partial class ReadSurface
 
         Assert.StartsWith("<tr data-ticker=\"F1\" data-sector=\"Energy\" data-held-since=\"2026-10-01\" data-lead=\"0.123\" data-close=\"100\" data-average=\"90.5\">", f1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"setup\">Energy</td><td>2026-10-01</td>", f1, StringComparison.Ordinal);
-        Assert.Contains("<td class=\"r num heavyweight-lead\">+12.3 points over 126 sessions, at 2026-10-01</td>", f1, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num heavyweight-lead\">+12.3 points over 251 sessions, at 2026-10-01</td>", f1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"heavyweight-average\" data-under=\"false\">100.00, at or above its 200-day average of 90.50</td>", f1, StringComparison.Ordinal);
         Assert.Contains("<td class=\"heavyweight-plan\">held while leading</td>", f1, StringComparison.Ordinal);
 
         // X3 closes under its average, and Y3, whose rebalance stored no row for it and which stores no bar tonight, says
         // so in both cells.
-        Assert.Contains("<td class=\"r num heavyweight-lead\">+5.0 points over 126 sessions, at 2026-10-01</td><td class=\"heavyweight-average\" data-under=\"true\">30.00, under its 200-day average of 35.25</td>", card, StringComparison.Ordinal);
+        Assert.Contains("<td class=\"r num heavyweight-lead\">+5.0 points over 251 sessions, at 2026-10-01</td><td class=\"heavyweight-average\" data-under=\"true\">30.00, under its 200-day average of 35.25</td>", card, StringComparison.Ordinal);
         Assert.Contains("data-ticker=\"Y3\" data-sector=\"Financials\" data-held-since=\"2026-09-01\" data-lead=\"none\" data-close=\"none\" data-average=\"none\">", card, StringComparison.Ordinal);
         Assert.Contains("<span class=\"degraded\">not read</span></td><td class=\"heavyweight-average\"><span class=\"degraded\">no close or average stored tonight</span></td>", card, StringComparison.Ordinal);
 
@@ -185,8 +186,8 @@ public partial class ReadSurface
 
         var none = HeavyweightCardOf(WebUtility.HtmlDecode(await emptyClient.GetStringAsync($"/screens/tonight/{TheSwitch}")));
 
-        Assert.Contains("data-holdings=\"0\" data-state=\"provisional\" data-last-rebalance=\"none\"", none, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"degraded family-empty\" data-holdings=\"0\">No rebalance has been read yet. The book reads its first on the first night every member's company and share count are stored, which the quarters fetch writes from the answer it already asks for.</p>", none, StringComparison.Ordinal);
+        Assert.Contains("data-holdings=\"0\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-last-rebalance=\"none\"", none, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded family-empty\" data-holdings=\"0\">No rebalance has been read yet. The book reads its first on the first night every member's company and share count are stored, which the quarters fetch writes from the answer it already asks for, and the store holds the night's closes of the index and of each sector's fund.</p>", none, StringComparison.Ordinal);
         Assert.DoesNotContain("heavyweight-table", none, StringComparison.Ordinal);
     }
 
@@ -212,7 +213,7 @@ public partial class ReadSurface
             Strings(store, $"SELECT ticker FROM heavyweight_holding WHERE entered_on <= '{TheSwitch}' ORDER BY entered_on DESC, sector, ticker;"),
             Regex.Matches(table, "<tr data-ticker=\"([^\"]+)\"").Select(match => match.Groups[1].Value));
         Assert.Contains("<p class=\"list-count\" data-holdings=\"5\" data-ended=\"2\">5 holdings, 2 sold and 3 held</p>", picks, StringComparison.Ordinal);
-        Assert.Contains($"<b class=\"provisional\">{SetupFamilies.Provisional}</b>: followed like any other, and in no record until its freeze.", picks, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"provisional-count heavyweight-book\">The page's own book, at the setting the family froze at: each registered rule's record is read off a book of its own, on the run page.</p>", picks, StringComparison.Ordinal);
 
         Assert.Contains("<td>2026-09-01 at 40.00</td><td>2026-10-01 at 42.00</td><td>no longer the leader</td><td class=\"r num\">+5.0%</td><td class=\"r num\">+2.0%</td><td class=\"r num\">+3.0 points</td>", table, StringComparison.Ordinal);
         Assert.Contains("<td>2026-09-01 at 50.00</td><td>2026-10-02 at 48.00</td><td>a close under its 200-day average</td><td class=\"r num\">-4.0%</td><td class=\"r num\">+1.0%</td><td class=\"r num\">-5.0 points</td>", table, StringComparison.Ordinal);

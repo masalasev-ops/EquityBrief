@@ -232,6 +232,8 @@ public class PinnedConstants
             new("Leader share", "4", Core.Families.LeaderRule.QuarterOf, "LeaderRule.QuarterOf"),
             new("Sector ranking floor", "5", Core.Families.LeaderRule.SectorFloor, "LeaderRule.SectorFloor"),
             new("Pullback base", "2", (decimal)Worker.Filter.ShapeCommand.FreezeRewardToRiskFloor, "ShapeCommand.FreezeRewardToRiskFloor"),
+            // The analysts' revisions, 14.6.
+            new("Estimates raised", "30", Core.Quarters.EstimateReading.Days, "EstimateReading.Days"),
             new("A family rule's list", "5", Core.Families.SetupFamilies.ListedANight, "SetupFamilies.ListedANight"),
             new("Market switches", "200", Worker.Candidates.TheSetupFamilies.BreakoutSwitch.IndexAverageSessions, "TheSetupFamilies.BreakoutSwitch.IndexAverageSessions"),
             new("Market switches", "10", Worker.Candidates.TheSetupFamilies.DriftSwitch.VixLookbackSessions, "TheSetupFamilies.DriftSwitch.VixLookbackSessions"),
@@ -472,10 +474,14 @@ public class PinnedConstants
             new("Revenue as first filed", "285", Core.Families.FirstFiledRevenue.NineMonthsMost, "FirstFiledRevenue.NineMonthsMost"),
             new("Revenue as first filed", "6", Core.Families.FirstFiledRevenue.Concepts.Count, "FirstFiledRevenue.Concepts"),
             new("Archive requests", "10", HistoryPull.ArchiveRequestsASecond, "HistoryPull.ArchiveRequestsASecond"),
-            // The sector heavyweights' provisional settings, 14.3.
-            new("Heavyweights' size cut", "5", Core.Families.HeavyweightRule.Largest, "HeavyweightRule.Largest"),
-            new("Heavyweights' look-back", "126", Core.Families.HeavyweightRule.LookBack, "HeavyweightRule.LookBack"),
-            new("Heavyweights' leaders", "1", Core.Families.HeavyweightRule.Leaders, "HeavyweightRule.Leaders"),
+            // The sector heavyweights' settings, 14.3, at the freeze of 14.6, and the registrations it wrote.
+            new("Heavyweights' size cut", "10", Core.Families.HeavyweightRule.Largest, "HeavyweightRule.Largest"),
+            new("Heavyweights' look-back", "251", Core.Families.HeavyweightRule.LookBack, "HeavyweightRule.LookBack"),
+            new("Heavyweights' leaders", "2", Core.Families.HeavyweightRule.Leaders, "HeavyweightRule.Leaders"),
+            new("Heavyweights' leaders", "1", (decimal)Core.Families.HeavyweightRule.BetaFloor, "HeavyweightRule.BetaFloor"),
+            new("Heavyweights' leaders", "251", Core.Families.HeavyweightRule.BetaReturns, "HeavyweightRule.BetaReturns"),
+            new("Heavyweights' registrations", "3", Worker.Candidates.TheSetupFamilies.Heavyweights.Count - 1, "TheSetupFamilies.Heavyweights' variants"),
+            new("Heavyweights' registrations", "63", Core.Returns.Blocks.Sessions, "Blocks.Sessions"),
             // The context checks, 14.4.
             new("A print's revenue quarter", "100", Core.Families.RevenueGrowth.ReportedWithin, "RevenueGrowth.ReportedWithin"),
             new("A print's revenue quarter", "7", Core.Families.RevenueGrowth.YearBeforeWithin, "RevenueGrowth.YearBeforeWithin"),

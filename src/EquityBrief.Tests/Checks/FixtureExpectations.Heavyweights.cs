@@ -348,8 +348,11 @@ public partial class FixtureExpectations
         transaction.Commit();
     }
 
+    // The book over the four constructed nights at the provisional setting, which reads the members' mean and sells on
+    // either exit, the mechanics every setting shares; the frozen setting's fund, beta and single exit are worked by hand
+    // in the freeze's own expectations.
     static async Task<HeavyweightBookOutcome> BookOn(TemporaryStore store, DateOnly night, string runId) =>
-        await new HeavyweightBook(FixedClock.At(new DateTimeOffset(night.ToDateTime(new TimeOnly(23, 40)), TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile)
+        await new HeavyweightBook(FixedClock.At(new DateTimeOffset(night.ToDateTime(new TimeOnly(23, 40)), TimeSpan.Zero), SessionZones.UnitedStates), store.DatabaseFile, HeavyweightRule.Provisional)
             .RunAsync("GSPC", runId);
 
     static IReadOnlyList<string> Holdings(TemporaryStore store) =>

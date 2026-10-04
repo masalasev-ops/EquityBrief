@@ -178,22 +178,33 @@ public sealed record HeavyweightRebalance(IReadOnlyList<(string Sector, int[] Le
 public static class HeavyweightSweep
 {
     // The size cut that reads every company of a sector.
-    public const int EveryCompany = int.MaxValue;
+    public const int EveryCompany = HeavyweightRule.EveryCompany;
 
-    public static IReadOnlyList<int> Sizes { get; } = [HeavyweightRule.Largest, 10, EveryCompany];
+    public static IReadOnlyList<int> Sizes { get; } = [HeavyweightRule.ProvisionalLargest, HeavyweightRule.Largest, EveryCompany];
 
-    public static IReadOnlyList<int> LookBacks { get; } = [63, HeavyweightRule.LookBack, 251];
+    public static IReadOnlyList<int> LookBacks { get; } = [63, HeavyweightRule.ProvisionalLookBack, HeavyweightRule.LookBack];
 
-    public static IReadOnlyList<int> LeaderCounts { get; } = [HeavyweightRule.Leaders, 2];
+    public static IReadOnlyList<int> LeaderCounts { get; } = [HeavyweightRule.ProvisionalLeaders, HeavyweightRule.Leaders];
 
     public static HeavyweightSetting Provisional { get; } = new(
-        HeavyweightRule.Largest,
-        HeavyweightRule.LookBack,
-        HeavyweightRule.Leaders,
+        HeavyweightRule.ProvisionalLargest,
+        HeavyweightRule.ProvisionalLookBack,
+        HeavyweightRule.ProvisionalLeaders,
         HeavyweightSectorReturn.Members,
         false,
         HeavyweightPeriod.Month,
         HeavyweightExit.Both);
+
+    // The setting the family froze at, which the night's book holds at.
+    // see: The sector heavyweights freeze at their sweep's proposal, the proposal's three passing neighbours registered beside them as variants
+    public static HeavyweightSetting Frozen { get; } = new(
+        HeavyweightRule.Largest,
+        HeavyweightRule.LookBack,
+        HeavyweightRule.Leaders,
+        HeavyweightSectorReturn.Fund,
+        true,
+        HeavyweightPeriod.Month,
+        HeavyweightExit.Drop);
 
     // Every combination of the dials.
     public static IReadOnlyList<HeavyweightSetting> Settings { get; } =

@@ -118,10 +118,10 @@ public sealed partial class MarkRenderer
         {
             ("Setup", "The setup family the rule belongs to."),
             ("Rule", "The registered rule, its live one first, each a variant otherwise."),
-            ("Trades", "The trades its own list kept, five a night at most with one open a stock."),
-            ("Decided", "Its trades ended with a result and the benchmark of the same plan on every member that night."),
-            ("Edge", "The average of each decided trade's result less its benchmark, in multiples of its risk."),
-            ("Whole blocks", "Blocks of 63 sessions whose trades have all had their cap, against the look they wait for."),
+            ("Trades", "The trades its own list kept, five a night at most with one open a stock; a sector heavyweights rule's, the holdings its own book kept."),
+            ("Decided", "Its trades ended with a result and the benchmark of the same plan on every member that night; a heavyweights rule's, its holdings sold, with its size cut's return over the same sessions."),
+            ("Edge", "The average of each decided trade's result less its benchmark, in multiples of its risk; a heavyweights rule's in percentage points of the buy, its result less its size cut's return."),
+            ("Whole blocks", "Blocks of 63 sessions whose trades have all had their cap, against the look they wait for; a heavyweights rule's holding counted in the block of the session it ended on."),
             ("Level", "The level its looks are read at, the setup's own share of 0.05 over its own rules."),
         })
         {
@@ -148,7 +148,7 @@ public sealed partial class MarkRenderer
 
             body.Append("</td>");
             body.Append(Invariant, $"<td class=\"r num\">{row.Trades}</td><td class=\"r num\">{row.Decided}</td>");
-            body.Append(Invariant, $"<td class=\"r num\">{(row.Edge is { } shown ? shown.ToString("0.000", Invariant) : "none yet")}</td>");
+            body.Append(Invariant, $"<td class=\"r num\">{(row.Edge is not { } shown ? "none yet" : row.Family == EquityBrief.Core.Families.HeavyweightRule.Name ? Formatted($"{shown * 100:+0.0;-0.0;0.0} points") : shown.ToString("0.000", Invariant))}</td>");
             body.Append(Invariant, $"<td class=\"r num\">{row.Blocks} of {row.NextLook}</td>");
             body.Append(Invariant, $"<td class=\"r num\">{row.Level.ToString("0.####", Invariant)}</td></tr>");
         }

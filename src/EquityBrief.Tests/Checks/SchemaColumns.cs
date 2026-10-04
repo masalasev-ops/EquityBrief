@@ -45,6 +45,11 @@ public class SchemaColumns
             CheckReach.Key(Scope.StoresTable, "Heavyweight holdings"),
             CheckReach.Key(Scope.StoresTable, "Member companies"),
 
+            // 14.6, each registered heavyweights rule's two stores and the estimates the night asked for.
+            CheckReach.Key(Scope.StoresTable, "Heavyweight rule nights"),
+            CheckReach.Key(Scope.StoresTable, "Heavyweight rule holdings"),
+            CheckReach.Key(Scope.StoresTable, "Estimate readings"),
+
             // 6.1, the fundamentals store: migration 19's columns and types against
             // SCHEMA's own declaration of them.
             CheckReach.Key(Scope.StoresTable, "Fundamentals"),
