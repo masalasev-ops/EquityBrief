@@ -43,6 +43,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
     "sweep-family" => await SweepFamilyRun(args),
     "sweep-ideas" => await SweepIdeasRun(),
     "sweep-family-ideas" => await SweepFamilyIdeasRun(args),
+    "sweep-context" => await SweepContextRun(),
     "label-news" => await LabelNews(args),
     "news-fill" => await NewsFill(args),
     "backup" => await BackupRun(args),
@@ -52,7 +53,7 @@ return (args.Length > 0 ? args[0] : string.Empty) switch
 static int NoVerb()
 {
     Console.Error.WriteLine(
-        "EquityBrief.Worker: no verb given. 20 are built: 'migrate' applies pending migrations, " +
+        "EquityBrief.Worker: no verb given. 21 are built: 'migrate' applies pending migrations, " +
         "'nightly --fixture <folder>' runs the night's steps in order, with '--resume' running the rest of the newest " +
         "night from the first step its tries have not finished, " +
         "'fundamentals --ticker <TICKER>' fetches one name's quarters and balance sheet, " +
@@ -96,6 +97,9 @@ static int NoVerb()
         "'sweep-family-ideas --family <name>' adds each of the pullback's ideas that fits the breakout or the earnings " +
         "drift to its rule as frozen, one at a time over the stored history and the market series, reading the store " +
         "and writing nothing to it, and writes its report in a run folder of its own, " +
+        "'sweep-context' adds the earnings drift's revenue growth, as a filter and as an order, and the pullback's order " +
+        "by its RSI's fall to their rules as frozen, one at a time over the stored history and each filer's revenue as " +
+        "filed, reading the store and writing nothing to it, and writes its report in a run folder of its own, " +
         "'sweep-ideas' adds each new idea to the base, today's rule with its reward-to-risk floor at 2, one at a time " +
         "over the stored history and the market series, reading the store and writing nothing to it, and writes its " +
         "report in a run folder of its own, " +
@@ -354,6 +358,23 @@ static async Task<int> SweepFamilyIdeasRun(string[] args)
         store.DataRoot,
         configuration[EquityBrief.Core.Sweep.SweepFolder.Key],
         Console.Out).RunAsync(VerbArguments.Value(args, "--family") ?? string.Empty);
+}
+
+// The context run, by hand: the drift's revenue growth and the pullback's RSI order, each added alone to its family as
+// frozen over the stored history, read-only, its report written into a run folder of its own. The work is in
+// `ContextIdeasRunner`.
+// see: The context checks are read on the frozen families one at a time, and nothing they show is frozen or registered
+static async Task<int> SweepContextRun()
+{
+    var configuration = Configuration();
+    var store = new StoreLocation(configuration[StoreLocation.DataRootKey] ?? string.Empty);
+
+    return await new EquityBrief.Worker.Sweep.ContextIdeasRunner(
+        SystemClock.ForUnitedStatesSessions(),
+        store.DatabaseFile,
+        store.DataRoot,
+        configuration[EquityBrief.Core.Sweep.SweepFolder.Key],
+        Console.Out).RunAsync();
 }
 
 // The ideas' run, by hand: each new idea added to the base one at a time over the stored history, read-only, its

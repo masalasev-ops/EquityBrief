@@ -3112,6 +3112,28 @@ internal static class Scope
             Verdict.Pass, "the provisional line read off the card", ByReadSurface),
         [CheckReach.Key("15.17 Past picks", "The sector heavyweights' holdings, nothing where the book has bought none")] = new Scoped(
             Verdict.Pass, "a store whose book bought nothing draws no table of it", ByReadSurface),
+
+        // 14.4, the context checks over the history: section 17's three rows and section 18's two.
+        [CheckReach.Key(LimitsTable, "A print's revenue quarter")] = new Scoped(
+            Verdict.Pass,
+            "over constructed quarters a print reads its quarter as first filed and not as a later filing states it, against the same quarter a year before, at the span's last day and the day after, with a fiscal fourth quarter read as the year less its nine months on both sides and a year before a day off read where one eight days off and one of nothing are not, by hand; the spans read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Context ideas' test")] = new Scoped(
+            Verdict.Pass,
+            "an idea better than its rule in every year and listing on too few nights passes the test the drift's run reads and fails the one the pullback's reads, one listing on most nights passing both, and every drift idea reads the revenue",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "RSI fall order")] = new Scoped(
+            Verdict.Pass,
+            "the fall worked by hand from the high's session to the night, a night's first names kept by the fall over constructed listings and by the list's own order without it, and the rule the run reads being the pullback's base by the fall; the figures read off the document against the constants",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A drift print whose filer states no quarter the reading finds")] = new Scoped(
+            Verdict.Pass,
+            "a listing before its name's print and one of a name with no filer read no growth over a constructed history, the replay counting the listings reading one against all, and a listing reading none is left off by the filter and kept after every listing reading one by the order, in the drift's own order, over a constructed night",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A pullback whose high session or night holds no RSI")] = new Scoped(
+            Verdict.Pass,
+            "a session holding no RSI and a high not found each read no fall, and a name reading none is kept after every name reading one in the list's own order, over a constructed night",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "The labeller fails")] = new Scoped(
             Verdict.Pass,
             "a run refused before it asked anything writes its own row saying why and no row of the night's, and a labeller that stopped partway leaves the night's rows, listings and gate results as they were",
@@ -5241,6 +5263,9 @@ internal static class Scope
         ["A member whose newest fetch files no share count"] = "14.3",
         ["A sector holding fewer companies than the size cut"] = "14.3",
         ["A stock holding too few sessions for its averages or its look-back"] = "14.3",
+        // 14.4, the context checks over the history.
+        ["A drift print whose filer states no quarter the reading finds"] = "14.4",
+        ["A pullback whose high session or night holds no RSI"] = "14.4",
         // 13.1, the family framework. The row about two families is read on the page once a second family is on it.
         ["A stock a family passes while a trade for it is still open"] = "13.1",
         ["A stock two families pass on one night"] = "13.2",
@@ -5382,6 +5407,10 @@ internal static class Scope
         ["Heavyweights' look-back"] = "14.3",
         ["Heavyweights' leaders"] = "14.3",
         ["Heavyweights' rebalance and exits"] = "14.3",
+        // The context checks, 14.4.
+        ["A print's revenue quarter"] = "14.4",
+        ["Context ideas' test"] = "14.4",
+        ["RSI fall order"] = "14.4",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",

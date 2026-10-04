@@ -36,9 +36,17 @@ public enum IdeaKind
     Selection,
 }
 
+// The order a night's listings are kept in: the list's own, the reward to risk first, or the pullback's RSI fall,
+// the furthest Wilder's RSI fell from the pullback's high session to the night first.
+public enum IdeaOrder
+{
+    List,
+    RsiFall,
+}
+
 // One rule the ideas' run walks: the live design at a setting of its dials, an exit, the most a night keeps,
-// and the market switches a night must pass.
-public sealed record IdeaRule(DialSetting Setting, IdeaExit Exit, int PerNight, IReadOnlyList<MarketSwitch> Switches)
+// the market switches a night must pass, and the order a night's listings are kept in.
+public sealed record IdeaRule(DialSetting Setting, IdeaExit Exit, int PerNight, IReadOnlyList<MarketSwitch> Switches, IdeaOrder Order = IdeaOrder.List)
 {
     public bool HasSwitch => Switches.Count > 0;
 
@@ -47,7 +55,8 @@ public sealed record IdeaRule(DialSetting Setting, IdeaExit Exit, int PerNight, 
         Setting.ToString(),
         Exit.ToString(),
         PerNight == int.MaxValue ? "every" : PerNight.ToString(System.Globalization.CultureInfo.InvariantCulture),
-        string.Join("+", Switches.Order()));
+        string.Join("+", Switches.Order()))
+        + (Order == IdeaOrder.List ? string.Empty : "|" + Order.ToString());
 }
 
 // One idea: its key, its rule in words, the published evidence on it as looked up on 2026-10-01, what it
@@ -58,8 +67,9 @@ public sealed record Idea(string Key, string Rule, string Evidence, IdeaKind Kin
 }
 
 // One listing a rule could keep: the pick it is, the stock and its bar, the session and its scored year, the
-// list's order keys, the plan's stop in typical moves, and the plan's outcomes under the base's exits.
-public readonly record struct IdeaListing(int Pick, int Name, int Bar, int Session, int Year, double RewardToRisk, double Strength, int Band, double StopMoves, SweepPlanOutcomes Plan);
+// list's order keys, the plan's stop in typical moves, the plan's outcomes under the base's exits, and how far the
+// RSI fell from the pullback's high session to the night, none where either session holds no RSI.
+public readonly record struct IdeaListing(int Pick, int Name, int Bar, int Session, int Year, double RewardToRisk, double Strength, int Band, double StopMoves, SweepPlanOutcomes Plan, double RsiFall = double.NaN);
 
 // One listing the walk kept: what its trade came to in multiples of its risk, none where the history has not
 // reached its end, and the same plan entered at the same close on every member that night.
@@ -180,6 +190,14 @@ public static class SweepIdeas
     // The best three a night, and the trailing stops' distances in typical moves.
     public const int BestOf = 3;
 
+    // How far Wilder's RSI fell from the pullback's high session to the night: the RSI on the high's session less the
+    // night's, none where no high is found or either session holds no RSI.
+    // see: The pullback's RSI-fall order keeps the night's first three by how far its RSI fell from its high session
+    public static double RsiFall(IReadOnlyList<double> rsi, int bar, int sinceHigh) =>
+        sinceHigh >= 0 && bar - sinceHigh >= 0 && bar < rsi.Count && !double.IsNaN(rsi[bar - sinceHigh]) && !double.IsNaN(rsi[bar])
+            ? rsi[bar - sinceHigh] - rsi[bar]
+            : double.NaN;
+
     public const double TrailTwoMoves = 2;
 
     public const double TrailThreeMoves = 3;
@@ -266,7 +284,8 @@ public static class SweepIdeas
         IEnumerable<IdeaListing> listings,
         IReadOnlyList<string> tickers,
         int perNight,
-        Func<IdeaListing, (double? Result, int Sessions, double Benchmark)> exit)
+        Func<IdeaListing, (double? Result, int Sessions, double Benchmark)> exit,
+        IdeaOrder order = IdeaOrder.List)
     {
         var kept = new List<IdeaTrade>();
         var openUntil = new Dictionary<int, int>();
@@ -275,8 +294,11 @@ public static class SweepIdeas
         {
             var taken = 0;
 
+            // The RSI's fall first where the rule orders by it, a listing holding none after every one holding one,
+            // and the list's own order within each.
             foreach (var listing in night
-                .OrderByDescending(one => one.RewardToRisk)
+                .OrderByDescending(one => order == IdeaOrder.RsiFall ? (double.IsNaN(one.RsiFall) ? double.NegativeInfinity : one.RsiFall) : 0.0)
+                .ThenByDescending(one => one.RewardToRisk)
                 .ThenByDescending(one => one.Strength)
                 .ThenByDescending(one => one.Band)
                 .ThenBy(one => tickers[one.Name], StringComparer.Ordinal))
@@ -355,8 +377,10 @@ public static class SweepIdeas
     static double EdgeOf(IdeaTrade trade) => trade.Result!.Value - trade.Benchmark;
 
     // An idea's figures against the rule it was added to: on the edge, or on the year's total for a market
-    // switch, which must also raise the plain result a trade and is held to no floor of nights.
-    public static IdeaTest Test(IdeaFigures idea, IdeaFigures against, bool onTotals)
+    // switch, which must also raise the plain result a trade and is held to no floor of nights. An idea read with
+    // no floor of nights, as the drift's context ideas are, is held to none either.
+    // see: The drift's context ideas are judged by the year tests, the test without the five largest and a thousand trades with no floor of nights
+    public static IdeaTest Test(IdeaFigures idea, IdeaFigures against, bool onTotals, bool nightFloor = true)
     {
         var better = 0;
         var recent = 0;
@@ -381,7 +405,7 @@ public static class SweepIdeas
             onTotals ? idea.RecentTotal >= against.RecentTotal : idea.RecentEdge is { } edge && against.RecentEdge is { } theirsRecent && edge >= theirsRecent,
             onTotals ? idea.TotalWithoutLargest > against.TotalWithoutLargest : idea.EdgeWithoutLargest is { } trimmed && against.EdgeWithoutLargest is { } theirsTrimmed && trimmed > theirsTrimmed,
             idea.Trades >= TradeFloor,
-            onTotals || idea.NightShare >= NightFloor,
+            onTotals || !nightFloor || idea.NightShare >= NightFloor,
             !onTotals || (idea.Result is { } result && against.Result is { } theirsResult && result > theirsResult));
     }
 
@@ -765,22 +789,27 @@ public sealed class IdeaReplay
             }
 
             var candidate = candidates[pick.Index];
+            var bar = Array.BinarySearch(series[pick.Name].SessionAt, pick.Session);
 
             listings.Add(new IdeaListing(
                 pick.Index,
                 pick.Name,
-                Array.BinarySearch(series[pick.Name].SessionAt, pick.Session),
+                bar,
                 pick.Session,
                 pick.Year,
                 pick.Plan.RewardToRisk,
                 candidate.Strength[(int)SweepDesign.Live.Strength],
                 candidate.Band[(int)SweepDesign.Live.Support],
                 pick.Plan.StopMoves,
-                pick.Plan));
+                pick.Plan,
+                SweepIdeas.RsiFall(series[pick.Name].Rsi, bar, candidate.PullbackSessions[LiveHigh])));
         }
 
-        return SweepIdeas.Walk(listings, tickers, rule.PerNight, listing => Exit(listing, rule.Exit));
+        return SweepIdeas.Walk(listings, tickers, rule.PerNight, listing => Exit(listing, rule.Exit), rule.Order);
     }
+
+    // The place of the live design's reference high among the highs a candidate's readings are kept for.
+    static readonly int LiveHigh = SweepAxes.ReferenceHighs.ToList().IndexOf(SweepDesign.Live.ReferenceHigh);
 
     (double? Result, int Sessions, double Benchmark) Exit(IdeaListing listing, IdeaExit exit)
     {

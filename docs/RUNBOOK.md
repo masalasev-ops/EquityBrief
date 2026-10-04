@@ -561,6 +561,14 @@ dotnet run --project src/EquityBrief.Worker -c Release -- sweep-family-ideas --f
 
 It reads the live store read-only and writes nothing to it, and writes its report and its figures into a run folder of its own under the sweep's folder, served at `http://localhost:5152/sweep` as the newest run with the earlier runs linked. It takes minutes. It reads the breakout with eleven ideas and the drift with thirteen, the two trailing stops among the drift's, and its report states the tries, the passes and what luck alone passes of that many. It does not start while the night holds the store or when the night's window would come before an hour has passed, and a switch reading a series the store holds none of is left out and named. Named with no family, it says which it reads. Start it on `main` from this checkout's Release build, so the Debug builds a branch's gates make never stop it, or from a Release build written to a folder of its own while the sweep runs from the checkout's. Nothing it shows is frozen or registered.
 
+The context checks of phase 14 are read in one run, the earnings drift's revenue growth as a filter and as an order and the pullback's order by its RSI's fall, each added alone to its family as frozen (see: The context checks are read on the frozen families one at a time, and nothing they show is frozen or registered):
+
+```
+dotnet run --project src/EquityBrief.Worker -c Release -- sweep-context
+```
+
+It reads the live store read-only, the revenue the revenue pull stored among it, writes nothing to it, and writes its report and its figures into a run folder of its own under the sweep's folder, served at `http://localhost:5152/sweep` as the newest run. Its report states each family's tries, two on the drift and one on the pullback, against what luck alone passes, how many of the drift's listings read a revenue growth, and how many of each revenue idea's trades read a quarter first filed after their buy. It waits for the night as the ideas' run does and is started the same way, from `main`'s Release build. Nothing it shows is frozen or registered; a check joins a family only as a variant registered on your go.
+
 ### Registering a candidate and versioning a ladder rule
 
 Both are decisions a person takes, from the repository root, and a night never takes either. Nothing is registered and no window is open until someone runs one of these.

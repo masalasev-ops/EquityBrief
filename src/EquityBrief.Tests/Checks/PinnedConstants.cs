@@ -468,6 +468,11 @@ public class PinnedConstants
             new("Heavyweights' size cut", "5", Core.Families.HeavyweightRule.Largest, "HeavyweightRule.Largest"),
             new("Heavyweights' look-back", "126", Core.Families.HeavyweightRule.LookBack, "HeavyweightRule.LookBack"),
             new("Heavyweights' leaders", "1", Core.Families.HeavyweightRule.Leaders, "HeavyweightRule.Leaders"),
+            // The context checks, 14.4.
+            new("A print's revenue quarter", "100", Core.Families.RevenueGrowth.ReportedWithin, "RevenueGrowth.ReportedWithin"),
+            new("A print's revenue quarter", "7", Core.Families.RevenueGrowth.YearBeforeWithin, "RevenueGrowth.YearBeforeWithin"),
+            new("RSI fall order", "14", Core.Indicators.IndicatorSeries.Wilder, "IndicatorSeries.Wilder"),
+            new("RSI fall order", "3", Worker.Sweep.SweepIdeas.BestOf, "SweepIdeas.BestOf"),
         ];
     }
 

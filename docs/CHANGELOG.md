@@ -10735,3 +10735,24 @@ Was:
 Now:
 > each adds what its 14.3 tests assert: the rebalance, the gates, the calendar, the night's value and the book over four nights; the report asked for a stock the heavyweights bought that night and none they carried; and the card, Past picks and the name page's line read back
 Why: the roster states what each check asserts.
+### 2026-10-04 - ARCHITECTURE.html - the context checks in the sweep history's row, sections 13.9, 17, 18 and 23
+Authorised by: The context checks are read on the frozen families one at a time, and nothing they show is frozen or registered
+Was:
+> the sweep history's catalogue row reading "membership, bar store, pulled bars, pulled earnings, pulled surprises, pulled market series, calendar, gate results" and saying "... the index's and the VIX's closes the market pull stored, which the ideas' run reads, and the name-sessions the live list listed, ..."
+Now:
+> the row reads "pulled companies, pulled revenue" after the pulled market series and says "... which the ideas' run reads, each name's revenue as its filer filed it by the history's end, found through the filer the companies pull names, which the context run reads, and the name-sessions the live list listed, ..."; and 13.9 gains the context checks' paragraph with its evidence and judgement, 17 the rows for a print's revenue quarter, the context ideas' test and the RSI fall order, 18 the rows for a drift print whose filer states no quarter the reading finds and a pullback whose high session or night holds no RSI, and 23 Jegadeesh and Livnat (2006) and Sloan (1996)
+Why: 14.4's context checks over the history, read in one run by hand and judged against the frozen families.
+### 2026-10-04 - RUNBOOK.md - the context run
+Authorised by: The context checks are read on the frozen families one at a time, and nothing they show is frozen or registered
+Was:
+> the sweep's section going from the frozen families' ideas to what follows them with no context run
+Now:
+> the section gains `sweep-context`, what it reads and writes, what its report states, and that nothing it shows is frozen or registered
+Why: the context run is started by hand from main's Release build, and the operator needs the command.
+### 2026-10-04 - .claude/rules/checks.md - fixture-expectations reaches the context checks
+Authorised by: A drift print's revenue growth is its quarter's revenue as first filed against the same quarter a year before
+Was:
+> `fixture-expectations` ending "... a night run again writing what it wrote and an earlier session read for nothing"
+Now:
+> the row goes on with what 14.4's tests assert: the revenue growth worked by hand at each edge and read as first filed, the drift's filter and order, the replay's read of each listing's print and its count of trades whose quarter was first filed after their buy, the RSI fall and its first three, the drift's test with no floor of nights, the history's revenue read through each filer, and the report's tries against luck
+Why: the roster states what each check asserts.
