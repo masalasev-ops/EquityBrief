@@ -37567,6 +37567,8 @@ Ruled:      by the operator on 2026-10-04 at about 16:55 UTC, after the re-probe
 Plan:       `BUILD_PLAN.md` gains 14.8 after the report, the test and its rule, with its done condition; Part C's
             paragraph states the re-probe and the first test; the add-on waits on the test; 14.8's rows are named
             beside phase 14's pair and never counted in it; section 20's row names the test and 14.0 to 14.8.
-Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: c6e169d, the entry's commit, all six steps, 0
+            warnings, 0 errors, 1831 of 1831 tests ran with none failed, migrations 0 to 60 with none pending, schema
+            version 60, against `data-ci` and never `data`.
 Carried:    14.7, the phase report; then 14.8, the pull and the replay, and the rule's answer brought to the
             operator; the night of 2026-10-05 read.
