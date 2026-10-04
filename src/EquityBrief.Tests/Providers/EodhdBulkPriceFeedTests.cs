@@ -322,8 +322,9 @@ public class EodhdBulkPriceFeedTests
         // first that reaches the open web, twelve until 12.6 added Claude's own
         // messages interface, the second format a paid model answers in, and
         // thirteen until 12.5 added the index's and the VIX's daily series, the
-        // first that only the history pull asks.
-        Assert.Equal(14, Checks.NightlyCost.MayHoldAClient.Length);
+        // first that only the history pull asks, and fourteen until 14.8 added the
+        // wider indices' components, which only the history pull asks too.
+        Assert.Equal(15, Checks.NightlyCost.MayHoldAClient.Length);
         Assert.All(
             Checks.NightlyCost.MayHoldAClient,
             file => Assert.EndsWith("Feed.cs", file, StringComparison.Ordinal));
