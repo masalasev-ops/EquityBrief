@@ -1187,9 +1187,9 @@ One command a family writes its registrations at one instant, the family's live 
 
 **What is the operator's.** The fork's ruling, before 14.3 builds the page's rule. The heavyweights' freeze and the registrations of Part B at 14.6, each on the operator's go. The add-on of Part C, decided after this phase's report. No paid model call is made by any step of this phase without the operator's word.
 
-**The operator's ruling on a name.** On 2026-10-03: "Any drain naming convention has to change to ReportQueueProcessor or something similar. Drain makes no sense. You can finish all the stages and do this at the end at convenience. Its a queue not a drain". It is 14.7, after every other checkpoint and before the report.
+**The operator's ruling on a name.** On 2026-10-03 the operator asked for the request queue's worker to be named for what it is, last of all before the report, and on 2026-10-04, before any of it was written, withdrew it: "you can skip the renaming". The worker keeps its names, and no checkpoint of this phase renames it.
 
-**The claims phase 14 predicts.** 898 claims and 898 PASS before it. After 14.7 the pair is 958 and 958, within 940 to 975: none at 14.0, whose decisions and section 1's paragraph no table reads; about 3 at 14.1, the run page's line, the command's row and section 18's row for a replay that differs; about 8 at 14.2, the four pulled stores' rows and the readings each pull adds; about 32 at 14.3, the family's rule, its settings, its two stores, its component's two rows, section 18's four rows and the card's parts; about 6 at 14.4, each idea's row; about 3 at 14.5, the sweep's report; about 8 at 14.6, the freeze's rows and the record's parts; and none at 14.7, the names moving no count.
+**The claims phase 14 predicts.** 898 claims and 898 PASS before it. After 14.6 the pair is 958 and 958, within 940 to 975: none at 14.0, whose decisions and section 1's paragraph no table reads; about 3 at 14.1, the run page's line, the command's row and section 18's row for a replay that differs; about 8 at 14.2, the four pulled stores' rows and the readings each pull adds; about 32 at 14.3, the family's rule, its settings, its two stores, its component's two rows, section 18's four rows and the card's parts; about 6 at 14.4, each idea's row; about 3 at 14.5, the sweep's report; and about 8 at 14.6, the freeze's rows and the record's parts.
 
 ### 14.0 Planning
 Writes this section, the decisions the phase rests on that describe no running code, the standing decision and the check that holds it, section 1's paragraph stating it, section 20's row for phase 14, and the captures the data checks read into the fixture with their manifest entries. Builds none of the phase.
@@ -1226,12 +1226,7 @@ On the operator's go: the heavyweights' rule and up to eight variants registered
 
 **Done when** the command writes its rows at one instant or none; each variant is worked by hand on both sides of the setting it moves; a registered rule's record is read back off the run page over constructed trades; and the entry names every pinned file it edited and the remedy it issued.
 
-### 14.7 The queue's names
-On the operator's ruling of 2026-10-03, the worker that works the request queue is named for what it is, a process that works through the report queue, everywhere it is named: its component, its classes and its verb, the run ids and stages it writes, the words the queue page and the run page draw, the decisions naming it, the scripts and the runbook. A stored row written under the old names reads as it did. Writes the decisions renaming it, each superseding the one it renames with the old moved to Previously decided, and every document naming it.
-
-**Done when** no shipped source, script, page or document names the queue's worker by the old word, a check refusing its return; every stored row written under the old names is read the same afterwards; and the night, the press and the remedy files start it by its new name.
-
-### 14.8 Phase 14 report
+### 14.7 Phase 14 report
 `tools/verify-phase` reaches every claim this phase added, and the pair predicted above is checked against the actual with every claim that moved named; the add-on of Part C is put to the operator.
 
 **Done when** the phase report is green with no claim unexamined and the pair is checked against the actual.

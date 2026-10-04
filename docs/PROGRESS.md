@@ -37511,3 +37511,16 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             next code entry states.
 Carried:    the night of 2026-10-05 read, the books' first rebalance and the first estimates asked in it; 14.7 the
             queue's names.
+
+### 14.7 ruling - the queue's worker keeps its names, the rename withdrawn before any of it was written, and the phase report back at 14.7   2026-10-04
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-04 at about 16:23 UTC, after 14.6's remedy run had merged and while the
+            rename was being scoped with nothing of it written: "you can skip the renaming". It withdraws the ruling
+            of 2026-10-03 the plan built as 14.7; the words are kept in `prompts/`.
+Plan:       `BUILD_PLAN.md` drops the checkpoint that renamed the request queue's worker, and the phase report is
+            14.7 again, as the approved plan numbered it, the pair read after 14.6 at the same figures; section 20's
+            row names 14.0 to 14.7. The worker, its verb, its run ids and stages, its decisions and its pages keep
+            their names.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Carried:    14.7, the phase report, with Part C's add-on put to the operator after it; the night of 2026-10-05 read.
