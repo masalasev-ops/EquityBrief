@@ -37170,3 +37170,27 @@ Carried:    after the merge, `tools/remedies/2026-10-04-14.2-the-revenue-again.t
             whole and made again from each filer's facts, then an entry with the revenue by concept and the check of
             30 sampled releases; the night of 2026-10-05 read; the fork's ruling before 14.3, the figures above
             leaving the recommendation of B where it stood.
+
+### 14.2 - the correction's remedy run: the revenue pulled again from each filer's facts, and 29 of 29 sampled releases stating the revenue as first filed   2026-10-04
+
+Ran:        `tools/remedy.ps1 tools/remedies/2026-10-04-14.2-the-revenue-again.txt` from main at 5d9f71f, from 02:31
+            to 02:38 UTC with no night, drain or labeller running and no night lock: the purge removed the first
+            revenue pull's 163,341 figures, and the pull asked each of the 670 filers once, 670 requests, in six
+            and a half minutes.
+Revenue:    169,329 figures, none unanswered: revenue net of interest expense 13 filers and 1,628 figures, revenue
+            528 and 77,905, revenue from contracts excluding the tax assessed 471 and 43,668, including it 121 and
+            5,779, a utility's operating revenue 11 and 1,780, and the concept retired in 2018 297 and 38,569. 11
+            filers state revenue under none of the six: three banks filing interest income alone, TFC, PBCT and SYF,
+            and eight with no facts at the archive or none since 2019, ANDV, RAL_old, TT, DOC, FRC, SBNY, LLL and MON.
+            16 companies file no CIK and are asked nothing.
+Releases:   30 quarters drawn over 2019 to 2026, four a year and two of 2026, distinct companies, a fixed seed,
+            each with its report date from the pulled earnings prints. The results announcement filed around the
+            report date was found for 29, and each of the 29 releases states the revenue as first filed, in
+            millions, thousands or billions, the 9 fourth quarters worked out as the year less nine months among
+            them; OGN's quarter to 2026-06-30 had no results filing in the window. The revenue was first filed on or
+            before the report day for 12, 1 to 5 days after for 6, 6 to 20 for 7 and later for 5, REZI's quarter to
+            2019-09-28 a year after it, its own quarterly filing stating it under other dates or another concept.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            14.3 entry below states.
+Carried:    the night of 2026-10-05 read; 14.3 built on the fork's option B, the page's rule each card's own, unless
+            the operator rules A.
