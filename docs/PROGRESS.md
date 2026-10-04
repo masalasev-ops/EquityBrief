@@ -37212,10 +37212,10 @@ Built:      the fourth family on its provisional settings. The quarters step sto
             the family and its readings; the market check's and one trade a stock's narrowed to the swing families,
             the two they replace moved to Previously decided. The fixture gains `companies.json`, derived by hand
             from the four captured answers.
-Tests:      (unfilled), from 1799: ten added, the rebalance, the gates, the calendar and the night's value by hand,
-            the book over four constructed nights, the fixture's companies, the night's request, and the card, Past
+Tests:      1809, from 1799: ten added, the rebalance, the gates, the calendar and the night's value by hand, the
+            book over four constructed nights, the fixture's companies, the night's request, and the card, Past
             picks and a name's line read back.
-Claims:     (unfilled), from 913: section 17's four rows and section 18's four, the fixture's row, the book's catalogue and
+Claims:     952, from 913: section 17's four rows and section 18's four, the fixture's row, the book's catalogue and
             matrix rows, its two stores and the members' companies, the card's thirteen parts, a name's line and
             Past picks' eleven parts, against about thirty-two the plan counted; section 14's two steps moved, the
             swing filter's gaining the book and the report's naming the heavyweights.
@@ -37234,7 +37234,12 @@ Mutated:    the rule, stated before the run: each property the plan names for 14
             H4 the rebalance read on a month's last session: red in the calendar test.
             H5 a holding carried from an earlier month asked a report: red in the night's request test.
             Not mutated: the card's rows in both directions, Past picks' percent and a name's line.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: (unfilled).
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 918e64c, over
+            dc234c8, the entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1809 of 1809 tests ran
+            with none failed, migrations 0 to 59 with none pending, schema version 59, against `data-ci` and never
+            `data`. `tools/verify-phase.ps1`: 44 tables, 952 claims, 952 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            963 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster,
+            43 carried and 43 passed.
 Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-04-14.3-the-companies.txt`, then an
             entry with the members answered and those filing no sector, no count or no CIK; the night of 2026-10-05
             read, the book's first rebalance in it; the fork's ruling.
