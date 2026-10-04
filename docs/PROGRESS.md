@@ -37522,5 +37522,7 @@ Plan:       `BUILD_PLAN.md` drops the checkpoint that renamed the request queue'
             14.7 again, as the approved plan numbered it, the pair read after 14.6 at the same figures; section 20's
             row names 14.0 to 14.7. The worker, its verb, its run ids and stages, its decisions and its pages keep
             their names.
-Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: 4c688bb, the entry's commit, all six steps, 0
+            warnings, 0 errors, 1831 of 1831 tests ran with none failed, migrations 0 to 60 with none pending, schema
+            version 60, against `data-ci` and never `data`.
 Carried:    14.7, the phase report, with Part C's add-on put to the operator after it; the night of 2026-10-05 read.
