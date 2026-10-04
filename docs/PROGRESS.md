@@ -37716,7 +37716,11 @@ Mutated:    the rule, stated before the run: each property the correction adds b
             September book.
             N4 the empty card's line back to its old words: red in the empty card's test alone.
             Results: N1 to N4 each red where stated, each reverted, and the four tests green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: f825b12, the
+            entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1838 of 1838 tests ran with none
+            failed, migrations 0 to 61 with none pending, schema version 61, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 973 claims, 973 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 984
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
 Carried:    5152 restarted from main's Release build after the merge; the night of 2026-10-05 read, the books' first
             rebalance in it; phase 14's sign-off.
