@@ -37073,10 +37073,10 @@ Built:      `history-pull` gains four pulls, each into a table of its own marked
             filers filed, the rank by company, and a quarter's revenue as first filed. A fifth decision for the
             pulls. 14.2's own text amends "the provider's sub-industries" to the sectors and filers filed, since the
             provider files Corpay under Diversified Financial Services.
-Tests:      0 of 0, from 1787: eleven added, the four readings by hand, the captured answers read, and each pull,
+Tests:      1798, from 1787: eleven added, the four readings by hand, the captured answers read, and each pull,
             the moves' check and the verb over constructed answers; the night over a store holding pulled history
             now holds hostile rows in all eight tables, and the scan of the shipped source names the four new ones.
-Claims:     0, from 903: section 17's five rows and section 18's four, against about eight the plan counted.
+Claims:     912, from 903: section 17's five rows and section 18's four, against about eight the plan counted.
 Pins:       none moved. The family rules' lists, the candidates' shared evaluation sources, the swing filter's and
             the rule versions' lists were read and no file on any is touched; the readings' files call nothing the
             evaluation path's reader finds.
@@ -37090,7 +37090,12 @@ Mutated:    the rule, stated before the run: each property the readings and the 
             P4 the fourteen moves of 2023-03-17 not applied: red in the sector test.
             P5 the value read off the dividend-adjusted close: red in the value test.
             P6 the companies pull's try a name catching a refusal alone: red in the companies pull's test.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: (unfilled).
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: eca290d, the
+            entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1798 of 1798 tests ran with none
+            failed, migrations 0 to 58 with none pending, schema version 58, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 912 claims, 912 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 923
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
 Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-04-14.2-the-pulls.txt`, then an entry
             with the names answered, those lacking a sector, a count or a CIK, the splits, the revenue figures by
             concept, the fourteen moves' line, the check of 30 sampled releases and the fork's figures over the
