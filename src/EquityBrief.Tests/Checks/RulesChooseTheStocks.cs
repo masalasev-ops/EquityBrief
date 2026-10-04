@@ -42,6 +42,7 @@ public class RulesChooseTheStocks
         (nameof(FamilyEvaluator), FamilyEvaluator.Access),
         (nameof(FamilyLister), FamilyLister.Access),
         (nameof(FamilyRecorder), FamilyRecorder.Access),
+        (nameof(HeavyweightBook), HeavyweightBook.Access),
         (nameof(ForwardReturnFiller), ForwardReturnFiller.Access),
         (nameof(RuleVersionScorer), RuleVersionScorer.Access),
         (nameof(CandidateRegistrar), CandidateRegistrar.Access),

@@ -23,7 +23,7 @@ public sealed record FamilyPick(
 // listed again, and the row that lists it carries the other family's label. A family lists at most five,
 // and a name past its five may still be listed by a later family it qualified under. A pure function of
 // what it is handed, so the night and a test read one answer.
-// see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
+// see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order
 // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
 public static class FamilyList
 {

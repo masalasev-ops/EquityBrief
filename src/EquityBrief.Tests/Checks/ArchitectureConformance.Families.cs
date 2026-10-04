@@ -71,7 +71,21 @@ public partial class ArchitectureConformance
     // correction built once the phase was finished, the store's copy, the operator's ruling of 2026-10-02, the
     // market switches, the operator's ruling of 2026-10-03, a drain's stop, the 9.2 correction of 2026-10-03,
     // 14.1's replay guarding a family rule's record, and 14.2's pulls and the readings over them.
-    internal static readonly string[] AfterPhaseThirteen = [.. FixtureExpectations.IdeasClaims, .. FixtureExpectations.StoreCopyRows, .. FixtureExpectations.MarketSwitchRows, .. Reading.ReadSurface.DrainStopRows, .. FixtureExpectations.FamilyReplayRows, .. FixtureExpectations.CompanyPullRows];
+    // 14.3's rows, whichever check reaches each: section 17's four, section 18's four and the fixture's row for the
+    // members' companies, the book's catalogue and matrix rows, its two stores and each member's company, and the
+    // pages' parts. Read on each use, since the lists that sum it stand in other files of this class.
+    internal static string[] HeavyweightRows =>
+    [
+        .. FixtureExpectations.HeavyweightClaims,
+        CheckReach.Key(Scope.CatalogueTable, "Heavyweight book"),
+        CheckReach.Key(Scope.MatrixTable, "Heavyweight book"),
+        CheckReach.Key(Scope.StoresTable, "Heavyweight nights"),
+        CheckReach.Key(Scope.StoresTable, "Heavyweight holdings"),
+        CheckReach.Key(Scope.StoresTable, "Member companies"),
+        .. Reading.ReadSurface.HeavyweightPageClaims,
+    ];
+
+    internal static readonly string[] AfterPhaseThirteen = [.. FixtureExpectations.IdeasClaims, .. FixtureExpectations.StoreCopyRows, .. FixtureExpectations.MarketSwitchRows, .. Reading.ReadSurface.DrainStopRows, .. FixtureExpectations.FamilyReplayRows, .. FixtureExpectations.CompanyPullRows, .. HeavyweightRows];
 
     // Where a checkpoint landed more claims than the plan counted for it, the rows it landed more of and how
     // many of them the plan's count held, as the entry that landed them says: at 13.2 section 17's rows for the
@@ -142,7 +156,7 @@ public partial class ArchitectureConformance
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 913),
+            (789, 853, 6, 4, 855, 876, 952),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

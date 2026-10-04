@@ -125,6 +125,10 @@ public partial class ComponentAccess
             CheckReach.Key(Scope.CatalogueTable, "Family recorder"),
             CheckReach.Key(Scope.MatrixTable, "Family recorder"),
 
+            // 14.3, the heavyweight book.
+            CheckReach.Key(Scope.CatalogueTable, "Heavyweight book"),
+            CheckReach.Key(Scope.MatrixTable, "Heavyweight book"),
+
             // The market switches' ruling of 2026-10-03, the market series fetcher.
             CheckReach.Key(Scope.CatalogueTable, "Market series fetcher"),
             CheckReach.Key(Scope.MatrixTable, "Market series fetcher"),

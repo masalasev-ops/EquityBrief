@@ -46,6 +46,7 @@ public sealed class QuarterFetcher : IComponent
             new StoreTouch(Store.Membership, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read | Touch.Insert),
+            new StoreTouch(Store.Company, Touch.Read | Touch.Insert),
             new StoreTouch(Store.QuarterAsk, Touch.Read | Touch.Insert),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
@@ -126,14 +127,24 @@ public sealed class QuarterFetcher : IComponent
             ticker, fetched_at, session_date, period_end, filing_date, report_date,
             revenue, operating_income, net_income, operating_cash_flow, eps_actual, eps_estimate,
             eps_trailing, sales_growth, sales_growth_before, operating_margin, margin_year_earlier,
-            close_after, close_after_session, basis_session, basis_close)
+            close_after, close_after_session, basis_session, basis_close, shares)
         VALUES (
             $ticker, $fetched_at, $session_date, $period_end, $filing_date, $report_date,
             $revenue, $operating_income, $net_income, $operating_cash_flow, $eps_actual, $eps_estimate,
             $eps_trailing, $sales_growth, $sales_growth_before, $operating_margin, $margin_year_earlier,
-            $close_after, $close_after_session, $basis_session, $basis_close)
+            $close_after, $close_after_session, $basis_session, $basis_close, $shares)
         ON CONFLICT (ticker, fetched_at, period_end) DO NOTHING;
     ";
+
+    // The company one storing fetch answered for: its filer and its GICS classification, beside the quarters.
+    const string InsertCompany = @"
+        INSERT INTO company (ticker, fetched_at, cik, sector, industry_group, industry, sub_industry)
+        VALUES ($ticker, $fetched_at, $cik, $sector, $industry_group, $industry, $sub_industry)
+        ON CONFLICT (ticker, fetched_at) DO NOTHING;
+    ";
+
+    // The members a fetch has stored a company for; the verb's companies run asks every other member.
+    const string WithACompany = "SELECT DISTINCT ticker FROM company;";
 
     // One ask a member a night: a night run again keeps the ask it made rather than asking twice.
     const string InsertAsk = @"
@@ -183,6 +194,8 @@ public sealed class QuarterFetcher : IComponent
     // store, its asks dated by the session the clock falls on. Run again on the same session it asks no
     // member that session already asked and takes the next of the fill, so a fill the night spreads over
     // two nights can be taken in one sitting; each run keeps the step's own limit and the day's allowance.
+    // With `--companies` it asks instead every member no fetch has stored a company for, as a fill, storing
+    // whatever quarters the answer carries, which gives each member its sector, filer and counts at once.
     public static async Task<int> RunAsync(
         string[] args,
         Func<NightFeeds> feeds,
@@ -207,14 +220,15 @@ public sealed class QuarterFetcher : IComponent
         var outcome = await new QuarterFetcher(resolved.Fundamentals, resolved.Historical, () => resolved.WeightedCalls, clock, databaseFile)
             .RunAsync(
                 VerbArguments.Value(args, "--index") ?? "GSPC",
-                FormattableString.Invariant($"{ByHandPrefix}{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}"));
+                FormattableString.Invariant($"{ByHandPrefix}{clock.UtcNow:yyyyMMddTHHmmss.fffffffZ}"),
+                companies: VerbArguments.Has(args, "--companies"));
 
         output.WriteLine("quarters: " + Detail(outcome));
 
         return 0;
     }
 
-    public async Task<QuartersOutcome> RunAsync(string indexCode, string runId, CancellationToken cancellation = default)
+    public async Task<QuartersOutcome> RunAsync(string indexCode, string runId, CancellationToken cancellation = default, bool companies = false)
     {
         var startedAt = clock.UtcNow;
         var session = clock.SessionDateAt(startedAt);
@@ -227,18 +241,23 @@ public sealed class QuarterFetcher : IComponent
         var asks = await AsksAsync(connection, session, cancellation);
         var reports = await ReportsAsync(connection, session, cancellation);
         var first = await FirstNightAsync(connection, cancellation) ?? session;
+        IReadOnlySet<string> withACompany = companies ? await TickersAsync(connection, WithACompany, cancellation) : new HashSet<string>(StringComparer.Ordinal);
 
-        var due = members
-            .Select(member => Due(member.Ticker, member.Joined, held, asks, reports, session, first))
-            .OfType<Owed>()
-            .ToArray();
+        var due = companies
+            ? [.. members
+                .Where(member => !withACompany.Contains(member.Ticker) && !(asks.GetValueOrDefault(member.Ticker) ?? []).Any(ask => ask.Session == session))
+                .Select(member => new Owed(member.Ticker, Fill, null, null, Company: true))]
+            : members
+                .Select(member => Due(member.Ticker, member.Joined, held, asks, reports, session, first))
+                .OfType<Owed>()
+                .ToArray();
 
         var owedFill = due.Where(owed => owed.Reason == Fill).ToArray();
 
         var ordered = due
             .Where(owed => owed.Reason != Fill)
             .OrderBy(owed => owed.Ticker, StringComparer.Ordinal)
-            .Concat(owedFill.OrderBy(owed => owed.Ticker, StringComparer.Ordinal).Take(FillPerNight))
+            .Concat(owedFill.OrderBy(owed => owed.Ticker, StringComparer.Ordinal).Take(companies ? owedFill.Length : FillPerNight))
             .ToArray();
 
         var asked = new List<QuarterAsked>();
@@ -281,9 +300,9 @@ public sealed class QuarterFetcher : IComponent
     int Weighted() =>
         (fundamentals.Requests * ProviderWeights.Fundamentals) + (prices.Requests * ProviderWeights.HistoricalPerTicker);
 
-    // A member owed an ask tonight, why, the quarter awaited where one is, and the nights it was asked on
-    // for that quarter before tonight.
-    sealed record Owed(string Ticker, string Reason, DateOnly? Awaited, DateOnly? ReportedOn, int AskedBefore = 0);
+    // A member owed an ask tonight, why, the quarter awaited where one is, the nights it was asked on for
+    // that quarter before tonight, and whether it is asked for its company, whatever quarters it holds.
+    sealed record Owed(string Ticker, string Reason, DateOnly? Awaited, DateOnly? ReportedOn, int AskedBefore = 0, bool Company = false);
 
     // Whether a member is owed an ask tonight.
     //
@@ -388,7 +407,7 @@ public sealed class QuarterFetcher : IComponent
                     detail = "no closes: " + refusal.Message;
                 }
 
-                stored = await StoreAsync(connection, owed.Ticker, askedAt, session, QuarterFetch.From(fetched, closes), cancellation);
+                stored = await StoreAsync(connection, owed.Ticker, askedAt, session, QuarterFetch.From(fetched, closes), fetched, cancellation);
                 outcome = Stored;
             }
         }
@@ -436,6 +455,12 @@ public sealed class QuarterFetcher : IComponent
     // and for a fill, a joiner or a member marked absent, any quarter at all.
     static bool Carries(CompanyFundamentals fetched, Owed owed, IReadOnlyList<HeldQuarter>? quarters)
     {
+        // A member asked for its company is stored whatever quarters the answer carries.
+        if (owed.Company)
+        {
+            return true;
+        }
+
         if (owed.Awaited is { } awaited)
         {
             return fetched.Filed.Any(quarter => Math.Abs(quarter.PeriodEnd.DayNumber - awaited.DayNumber) <= QuarterFetch.NearDays);
@@ -444,8 +469,8 @@ public sealed class QuarterFetcher : IComponent
         return quarters is not { Count: > 0 } || fetched.Filed.Max(quarter => quarter.PeriodEnd) > quarters.Max(quarter => quarter.PeriodEnd);
     }
 
-    // One fetch's quarters, written at the instant it was made, all or none.
-    static async Task<int> StoreAsync(SqliteConnection connection, string ticker, DateTimeOffset fetchedAt, DateOnly session, QuarterFetch fetch, CancellationToken cancellation)
+    // One fetch's quarters and the company it answered for, written at the instant it was made, all or none.
+    static async Task<int> StoreAsync(SqliteConnection connection, string ticker, DateTimeOffset fetchedAt, DateOnly session, QuarterFetch fetch, CompanyFundamentals fetched, CancellationToken cancellation)
     {
         await using var transaction = await connection.BeginTransactionAsync(cancellation);
         var written = 0;
@@ -477,8 +502,24 @@ public sealed class QuarterFetcher : IComponent
             command.Parameters.AddWithValue("$close_after_session", Date(quarter.CloseAfterSession));
             command.Parameters.AddWithValue("$basis_session", Date(fetch.BasisSession));
             command.Parameters.AddWithValue("$basis_close", Figure(fetch.BasisClose));
+            command.Parameters.AddWithValue("$shares", Figure(quarter.Shares));
 
             written += await command.ExecuteNonQueryAsync(cancellation);
+        }
+
+        await using (var company = connection.CreateCommand())
+        {
+            company.Transaction = (SqliteTransaction)transaction;
+            company.CommandText = InsertCompany;
+            company.Parameters.AddWithValue("$ticker", ticker);
+            company.Parameters.AddWithValue("$fetched_at", Instant(fetchedAt));
+            company.Parameters.AddWithValue("$cik", Filer(fetched.Cik) is { } cik ? cik : DBNull.Value);
+            company.Parameters.AddWithValue("$sector", (object?)fetched.Classification?.Sector ?? DBNull.Value);
+            company.Parameters.AddWithValue("$industry_group", (object?)fetched.Classification?.IndustryGroup ?? DBNull.Value);
+            company.Parameters.AddWithValue("$industry", (object?)fetched.Classification?.Industry ?? DBNull.Value);
+            company.Parameters.AddWithValue("$sub_industry", (object?)fetched.Classification?.SubIndustry ?? DBNull.Value);
+
+            await company.ExecuteNonQueryAsync(cancellation);
         }
 
         await transaction.CommitAsync(cancellation);
@@ -486,8 +527,34 @@ public sealed class QuarterFetcher : IComponent
         return written;
     }
 
+    // The CIK padded to the ten digits the archive and the pulled companies carry it in, none where none is filed.
+    static string? Filer(string? cik)
+    {
+        var digits = new string([.. (cik ?? string.Empty).Where(char.IsAsciiDigit)]).TrimStart('0');
+
+        return digits.Length == 0 ? null : digits.PadLeft(10, '0');
+    }
+
     // A quarter held, as the ask reads it: its end and the date it was reported on.
     sealed record HeldQuarter(DateOnly PeriodEnd, DateOnly? ReportDate);
+
+    static async Task<IReadOnlySet<string>> TickersAsync(SqliteConnection connection, string sql, CancellationToken cancellation)
+    {
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = sql;
+
+        var tickers = new HashSet<string>(StringComparer.Ordinal);
+
+        await using var reader = await command.ExecuteReaderAsync(cancellation);
+
+        while (await reader.ReadAsync(cancellation))
+        {
+            tickers.Add(reader.GetString(0));
+        }
+
+        return tickers;
+    }
 
     static async Task<IReadOnlyList<(string Ticker, DateOnly? Joined)>> MembersAsync(SqliteConnection connection, string indexCode, DateOnly session, CancellationToken cancellation)
     {

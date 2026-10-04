@@ -8,6 +8,9 @@ namespace EquityBrief.Core.Families;
 // filter stored it, which is scored on the swing filter's row and under the horizon that row's plan names.
 public sealed record SetupFamily(string Name, string Label, string Heading, string Eyebrow, string Rule, string Horizon, int CapSessions, bool Trails = false, bool OnThePullbacksPlan = false);
 
+// A family's words alone, for the one family no horizon, cap or list of the night's buy points describes.
+public sealed record FamilyWords(string Name, string Label, string Heading, string Eyebrow, string Rule);
+
 // The setup families tonight's page is drawn from, in the page's order, and the numbers they share.
 //
 // A family is a rule of its own: it reads every member every night, lists the names it passes in its own
@@ -78,6 +81,19 @@ public static class SetupFamilies
     // The page's order, which is the order a stock qualifying under two families is listed in and the
     // order the night's reports are asked for in.
     public static IReadOnlyList<SetupFamily> InPageOrder { get; } = [Pullbacks, Breakouts, EarningsDrift];
+
+    // The sector heavyweights, the page's fourth card: a rotation held while it leads, with a book of its own in place
+    // of a list of the night's buy points, so it is drawn after the swing families and stands in none of their
+    // orders, horizons or caps. A stock it holds is free for any swing family, each card keeping its own one trade a
+    // stock, and the night asks for a report on what it buys after the swing families' picks.
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+    // see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order
+    public static FamilyWords SectorHeavyweights { get; } = new(
+        HeavyweightRule.Name,
+        "Sector heavyweight",
+        "Sector heavyweights",
+        "Largest companies leading their sectors",
+        "On each month's first session, among each sector's five largest companies, the one whose six-month return beats the average of its sector's members by the most, where it beats it at all and its close is above its 50-day average and that above its 200-day, bought at that close. Held while it leads: sold at a month's first close where the rule would no longer buy it, or at any close under its 200-day average.");
 
     // The families the page drew once and draws no longer, kept so a pick one listed is still named and scored.
     public static IReadOnlyList<SetupFamily> Former { get; } = [SectorLeaders];

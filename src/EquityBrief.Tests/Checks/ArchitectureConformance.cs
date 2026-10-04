@@ -1399,7 +1399,8 @@ public partial class ArchitectureConformance
         // stocks close to a buy point, the name page's setup, the run page's setup families, and Past picks'
         // setup filter, setup label, trailing trade and provisional trades.
         // 126 at the 9.2 correction of 2026-10-03: the queue page's drain that stopped.
-        Assert.Equal(126, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
+        // 129 at 14.3, the sector heavyweights: tonight's card, the name page's line and Past picks' holdings.
+        Assert.Equal(129, screensTables.Sum(table => table.Body.Count(row => row.Count > 0)));
 
         // 110 from 104 at 6.1, which decomposed the name screen's fact strip into
         // the seven parts its row enumerates. The row's own subject goes with the
@@ -1501,8 +1502,9 @@ public partial class ArchitectureConformance
         // from the operator's ruling of 2026-10-02, the store's newest copy beneath anything to worry about.
         // 440 at the 9.2 correction of 2026-10-03: the checklist's drain that stopped on an error and the queue
         // page's drain that stopped as the four parts its row states. 442 at 14.1: the setup families' row stating
-        // where each rule's record counts from and why one restarted.
-        Assert.Equal(442, inDocument.Length);
+        // where each rule's record counts from and why one restarted. 467 at 14.3: the sector heavyweights' card as
+        // the thirteen parts its row states, the name page's line, and their holdings on Past picks as eleven parts.
+        Assert.Equal(467, inDocument.Length);
 
         var written = Scope.ScreensKeys();
 
@@ -1595,7 +1597,8 @@ public partial class ArchitectureConformance
         // 410 from the operator's ruling of 2026-10-02: the store's newest copy beneath anything to worry about.
         // 415 at the 9.2 correction of 2026-10-03: the checklist's drain that stopped on an error and the queue
         // page's four parts stating it. 417 at 14.1: the setup families' two parts on where a rule's record counts from.
-        Assert.Equal(417, checkedElements);
+        // 441 at 14.3: the thirteen parts the sector heavyweights' card states and the eleven of their holdings.
+        Assert.Equal(441, checkedElements);
     }
 
     // Every part a row enumerates, read off the row rather than chosen by the

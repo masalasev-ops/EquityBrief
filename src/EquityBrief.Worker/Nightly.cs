@@ -403,14 +403,16 @@ public static class Nightly
                 var evaluated = await new FamilyEvaluator(clock, store.DatabaseFile).RunAsync(runId, rules, night.Token);
                 var listed = await new FamilyLister(clock, store.DatabaseFile).RunAsync(runId, night.Token);
                 var kept = await new FamilyRecorder(clock, store.DatabaseFile).RunAsync(indexCode, runId, rules.Standing, night.Token);
+                var held = await new HeavyweightBook(clock, store.DatabaseFile).RunAsync(indexCode, runId, night.Token);
 
                 return $"{outcome.RowsWritten} row(s) for {outcome.Members} member(s), {outcome.Passing} passing, " +
                     $"{outcome.Excluded} excluded, version {outcome.Version}" +
                     (recorded ? ", listed by the swing filter" : ", no session stored for the list's rule") +
                     $"; {evaluated.Families.Sum(family => family.Passed)} passed by the other setup families" +
                     $"; {listed.Listed} on the page's list" +
-                    $"; {kept.Kept} kept by the registered family rules";
-            }, [SwingFilter.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage]),
+                    $"; {kept.Kept} kept by the registered family rules" +
+                    $"; {held.Held} held by the sector heavyweights";
+            }, [SwingFilter.Stage, FamilyEvaluator.Stage, FamilyLister.Stage, FamilyRecorder.Stage, HeavyweightBook.Stage]),
             // Section 14's step 16. The shape proposer, after the swing filter, since it counts the
             // gate results the filter has just stored. It writes a proposal once the open version's
             // ordinary nights reach the trigger, and never a version: an acceptance is the operator's.

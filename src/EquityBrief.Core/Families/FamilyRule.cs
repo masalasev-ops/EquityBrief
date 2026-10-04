@@ -202,7 +202,7 @@ public sealed record FamilyResult(
 
 // What every family's rule shares: the market gate as the night's swing filter stored it, the exclusions a
 // series that cannot be read carries, the order of the names passing, and the words a value is stored in.
-// see: The market check closes every family's list together
+// see: The market check closes every swing family's list together, and the sector heavyweights read none
 public static class FamilyRule
 {
     public const string Market = SwingGates.Market;

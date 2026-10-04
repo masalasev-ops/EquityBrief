@@ -43,6 +43,10 @@ internal static class ComponentVocabulary
     // forward returns, each a record of what became of a trade, and from the
     // market switches' ruling the bars column holds the index's and the VIX's
     // daily series beside the members' bars, each a fetched series of sessions.
+    // From 14.3 the fundamentals column holds each member's company as a fetch
+    // answered it, the listings column the sector heavyweights' reading of each
+    // rebalance beside the families' lists, and the forward returns column the
+    // heavyweights' holdings, each a record of what became of one.
     internal static readonly (string Column, DataStore[] Stores)[] Columns =
     [
         ("Membership", [DataStore.Membership]),
@@ -50,10 +54,10 @@ internal static class ComponentVocabulary
         ("Calendar", [DataStore.Calendar]),
         ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue]),
         ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult]),
-        ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick]),
-        ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade]),
+        ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight]),
+        ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding]),
         ("Facts", [DataStore.Facts]),
-        ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk]),
+        ("Fundamentals", [DataStore.Fundamentals, DataStore.FundamentalsSnapshot, DataStore.ReportedQuarter, DataStore.QuarterAsk, DataStore.Company]),
         ("News", [DataStore.NewsPulse, DataStore.NewsArticle, DataStore.NewsLabel]),
         ("Research and theme", [DataStore.ResearchSection, DataStore.ThemeSection]),
         ("Sources", [DataStore.SourceDocument]),
@@ -178,6 +182,9 @@ internal static class ComponentVocabulary
         ["fundamentals snapshots"] = DataStore.FundamentalsSnapshot,
         ["reported quarters"] = DataStore.ReportedQuarter,
         ["quarter asks"] = DataStore.QuarterAsk,
+        ["companies"] = DataStore.Company,
+        ["heavyweight nights"] = DataStore.HeavyweightNight,
+        ["heavyweight holdings"] = DataStore.HeavyweightHolding,
         ["fundamental readings"] = DataStore.FundamentalReading,
         ["membership"] = DataStore.Membership,
         ["calendar"] = DataStore.Calendar,

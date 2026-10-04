@@ -40,6 +40,11 @@ public class SchemaColumns
             // The market switches' ruling of 2026-10-03, the market series fetcher's store.
             CheckReach.Key(Scope.StoresTable, "Market series"),
 
+            // 14.3, the heavyweight book's two stores and each member's company.
+            CheckReach.Key(Scope.StoresTable, "Heavyweight nights"),
+            CheckReach.Key(Scope.StoresTable, "Heavyweight holdings"),
+            CheckReach.Key(Scope.StoresTable, "Member companies"),
+
             // 6.1, the fundamentals store: migration 19's columns and types against
             // SCHEMA's own declaration of them.
             CheckReach.Key(Scope.StoresTable, "Fundamentals"),

@@ -411,7 +411,9 @@ static async Task<(string Region, DateOnly? AsOf)> NameAsync(ReadApi read, MarkR
             ? NewsScreen.Build(ticker, storied, await read.NewsAsync(ticker, storied), gate is not null && gate.SessionDate == storied && gate.Passed, NewsScreen.RunFor(await read.LabellerRunsAsync(), storied))
             : null,
         // The name's rows on the page's list for the night, where the setup families drew it.
-        familyPicks: night is { } drawnOn ? await read.FamilyPicksAsync(drawnOn) : null);
+        familyPicks: night is { } drawnOn ? await read.FamilyPicksAsync(drawnOn) : null,
+        // The sector heavyweights' holdings as of the night, which say whether they hold the name.
+        heavyweights: night is { } heldOn ? await read.HeavyweightHoldingsAsync(heldOn) : null);
 
     return (region, bars.Count > 0 ? bars[^1].SessionDate : null);
 }
@@ -974,6 +976,13 @@ app.MapGet("/screens/tonight/{night?}", async (
         ? null
         : TonightScreen.Families(dated, onThePage, familyPicks, rows, gates, await read.RegisteredCandidatesAsync(), ruleView, familyResults);
     var closeAcross = cards is null ? null : TonightScreen.CloseAcross(onThePage!, nearRows, familyResults, cells);
+
+    // The sector heavyweights' card, drawn after the swing families' on a night they drew the page, whatever the
+    // market check read.
+    // see: The market check closes every swing family's list together, and the sector heavyweights read none
+    var heavyweights = cards is null
+        ? null
+        : TonightScreen.Heavyweights(dated, await read.HeavyweightHoldingsAsync(dated), await read.HeavyweightReadAsync(dated), await read.HeavyweightClosesAsync(dated), cells);
     var line = cards is null
         ? null
         : TonightScreen.Line(
@@ -1008,7 +1017,8 @@ app.MapGet("/screens/tonight/{night?}", async (
             stillOpen: gates is null ? null : TonightScreen.StillOpen(dated, gates, picks),
             families: cards,
             line: line,
-            closeAcross: closeAcross),
+            closeAcross: closeAcross,
+            heavyweights: heavyweights),
         "text/html; charset=utf-8");
 });
 
@@ -1191,8 +1201,12 @@ app.MapGet("/screens/picks", async (HttpRequest request, ReadApi read, MarkRende
     var under = PicksScreen.OfSetup(cells, setup);
     var setups = PicksScreen.Setups(cells);
 
+    // The sector heavyweights' holdings, in percent, beneath the swing trades.
+    // see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from
+    var heavyweights = night is { } held ? PicksScreen.Heavyweights(await read.HeavyweightHoldingsAsync(held)) : [];
+
     return Results.Content(
-        page.PicksRegion(marks, night, PicksScreen.Summary(under), PicksScreen.Filtered(under, status), status, setup, setups),
+        page.PicksRegion(marks, night, PicksScreen.Summary(under), PicksScreen.Filtered(under, status), status, setup, setups, heavyweights),
         "text/html; charset=utf-8");
 });
 

@@ -14,7 +14,7 @@ namespace EquityBrief.Tests.Checks;
 // by the page where the families drew it and by the rule that drew it before. Each worked by hand over
 // constructed families and constructed nights.
 // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
-// see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
+// see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order
 public partial class FixtureExpectations
 {
     static IReadOnlyList<string> FamilyRows(TemporaryStore store, string sql)

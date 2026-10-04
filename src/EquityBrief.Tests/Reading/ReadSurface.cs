@@ -93,6 +93,9 @@ public partial class ReadSurface
             // 14.1, a family rule's record guarded by a replay: where each rule's record counts from, and why one restarted.
             .. FamilyReplayPageClaims,
 
+            // 14.3, the sector heavyweights on the pages: tonight's card, a name's line and Past picks' holdings.
+            .. HeavyweightPageClaims,
+
             // 12.6's correction drawing how each report did: the two regions' parts and section 17's window.
             .. ReportClaims,
 

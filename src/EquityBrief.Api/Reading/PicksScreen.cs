@@ -62,6 +62,28 @@ public static class PicksScreen
             .Where(setup => setup.Item3 > 0),
     ];
 
+    // The sector heavyweights' holdings as of a night, newest buy first and its sectors in order, each ended one with
+    // its result, its size cut's return and the edge between them as the rule reads it, an open one with none.
+    // see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from
+    public static IReadOnlyList<HeavyweightPickCell> Heavyweights(IReadOnlyList<HeavyweightHoldingRow> holdings) =>
+    [
+        .. holdings
+            .OrderByDescending(holding => holding.EnteredOn)
+            .ThenBy(holding => holding.Sector, StringComparer.Ordinal)
+            .ThenBy(holding => holding.Ticker, StringComparer.Ordinal)
+            .Select(holding => new HeavyweightPickCell(
+                holding.Ticker,
+                holding.Sector,
+                holding.EnteredOn,
+                holding.EntryClose,
+                holding.EndedOn,
+                holding.ExitClose,
+                holding.Reason,
+                holding.Result,
+                holding.CutReturn,
+                HeavyweightRule.Edge(holding.Result, holding.CutReturn))),
+    ];
+
     // A name's trades listed before the night its page draws, which is what "On the list before" states:
     // the night's own listing is the page's subject rather than one before it.
     public static IReadOnlyList<PickCell> Before(IReadOnlyList<PickRow> rows, DateOnly night) =>

@@ -1038,7 +1038,7 @@ public partial class ArchitectureConformance
         CheckReach.Key("15.7 Tonight", "The report's state"),
 
         // 11.4, section 14's step writing the night's own request and section 17's count of one.
-        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first six names the page draws, in the page's order across every family, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first six names the page draws, in the page's order across every family, a sector heavyweight on the night it is bought and never on a night it is carried, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws)."),
         CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
 
         // 11.5, section 17's floor for a name's industry to be its group.
@@ -1074,7 +1074,7 @@ public partial class ArchitectureConformance
     [
         CheckReach.Key("15.15 Queue", "When each will be written"),
         CheckReach.Key("15.7 Tonight", "The report's state"),
-        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first six names the page draws, in the page's order across every family, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Ask for a report on the first six names the page draws, in the page's order across every family, a sector heavyweight on the night it is bought and never on a night it is carried, one request a name marked as asked by the night unless that name has one outstanding or being written and none on a night the page lists no stock, and start the drain as a press does, whose passes are its own runs at the off-peak rate with their calls and their requests on their own rows (see: The night asks for a report on the first six names its page draws)."),
         CheckReach.Key(Scope.LimitsTable, "Reports the night asks for"),
         CheckReach.Key("15.9 Name", "Each move beside its group"),
         CheckReach.Key(Scope.LimitsTable, "Group floor"),
@@ -1304,7 +1304,7 @@ public partial class ArchitectureConformance
         CheckReach.Key(Scope.MatrixTable, "Filter counts"),
         CheckReach.Key(Scope.StoresTable, "Gate results"),
         CheckReach.Key(Scope.StoresTable, "Filter versions"),
-        CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are the pullback family's, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it); then evaluate every member under each other setup family, on the market check the filter stored, storing every answer with the values that decided it (see: The market check closes every family's list together); then draw the page's list from what each setup family passed, the families in the page's order and each family's names in its own, at most five a family, a stock once and none whose trade from any family is still open, and record the session as one the families drew (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order); then end each registered family rule's earlier trades whose closes reached their stop, their target or their cap, write the benchmark of each whose cap's sessions have passed, and list tonight's for each rule, at most five, none it holds a trade on still open (see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end)."),
+        CheckReach.Key(NightlyRunSteps.Heading, "Evaluate every member through the swing filter: the market gate on the night's breadth, the trend and strength gate, the pullback, the trigger where it first fired within the arrival window, the trade read from the ladder's first tranche, from the swing trade at the nearest bands and from section 10's plan for it, and the exclusions, storing every answer with the values that decided it and ranking the names passing, which are the pullback family's, and record the night's session as listed by the swing filter once the rows are stored (see: Tonight's list is the swing filter's with improving businesses drawn first, and an evening is listed and ordered by the rule that listed it); then evaluate every member under each other setup family, on the market check the filter stored, storing every answer with the values that decided it (see: The market check closes every swing family's list together, and the sector heavyweights read none); then draw the page's list from what each setup family passed, the families in the page's order and each family's names in its own, at most five a family, a stock once and none whose trade from any family is still open, and record the session as one the families drew (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order); then end each registered family rule's earlier trades whose closes reached their stop, their target or their cap, write the benchmark of each whose cap's sessions have passed, and list tonight's for each rule, at most five, none it holds a trade on still open (see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end); then carry each sector heavyweight held to tonight's close, sell one whose stock left the index at its last close as a member and one closing under its 200-day average, and on the first night of a month read each sector's largest companies by their values as they stood, sell each holding the rule would no longer buy and buy each leader it does not hold, reading no market check (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month)."),
         CheckReach.Key(Scope.LimitsTable, "Market gate"),
         CheckReach.Key(Scope.LimitsTable, "Strength gate"),
         CheckReach.Key(Scope.LimitsTable, "Pullback depth"),
@@ -1582,8 +1582,9 @@ public partial class ArchitectureConformance
 
         // Phase 13's rows came after the phase this pair is about, each named where it was added, and
         // the ones its record does not yet reach are out of scope, beside this pair's figures; and the store's
-        // copy's, the market switches', a drain's stop's, 14.1's replay's and 14.2's pulls' after phase 13's report.
-        var now = actual + PhaseThirteenRows.Length + FixtureExpectations.StoreCopyRows.Length + FixtureExpectations.MarketSwitchRows.Length + Reading.ReadSurface.DrainStopRows.Length + FixtureExpectations.FamilyReplayRows.Length + FixtureExpectations.CompanyPullRows.Length;
+        // copy's, the market switches', a drain's stop's, 14.1's replay's, 14.2's pulls' and 14.3's heavyweights' after
+        // phase 13's report.
+        var now = actual + PhaseThirteenRows.Length + FixtureExpectations.StoreCopyRows.Length + FixtureExpectations.MarketSwitchRows.Length + Reading.ReadSurface.DrainStopRows.Length + FixtureExpectations.FamilyReplayRows.Length + FixtureExpectations.CompanyPullRows.Length + HeavyweightRows.Length;
         var pending = PhaseThirteenPending(report);
 
         Assert.All(PhaseThirteenRows, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
@@ -1722,6 +1723,7 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.DrainStopRows,
         .. FixtureExpectations.FamilyReplayRows,
         .. FixtureExpectations.CompanyPullRows,
+        .. HeavyweightRows,
     ];
 
 
@@ -1791,8 +1793,9 @@ public partial class ArchitectureConformance
         // Phase 12's rows came after the phase this pair is about, each named where it was added, and
         // the rows it took out are named too, 11.9's region among them.
         // And phase 13's after phase 12's, the ones its record does not yet reach out of scope, and the store's
-        // copy's, the market switches', a drain's stop's and 14.1's replay's after phase 13's report.
-        var now = expected + PhaseTwelveRows.Length - PhaseTwelveRemoved.Length - TakenOutAfterPhaseTwelve.Length + PhaseThirteenRows.Length + FixtureExpectations.StoreCopyRows.Length + FixtureExpectations.MarketSwitchRows.Length + Reading.ReadSurface.DrainStopRows.Length + FixtureExpectations.FamilyReplayRows.Length + FixtureExpectations.CompanyPullRows.Length;
+        // copy's, the market switches', a drain's stop's, 14.1's replay's, 14.2's pulls' and 14.3's heavyweights' after
+        // phase 13's report.
+        var now = expected + PhaseTwelveRows.Length - PhaseTwelveRemoved.Length - TakenOutAfterPhaseTwelve.Length + PhaseThirteenRows.Length + FixtureExpectations.StoreCopyRows.Length + FixtureExpectations.MarketSwitchRows.Length + Reading.ReadSurface.DrainStopRows.Length + FixtureExpectations.FamilyReplayRows.Length + FixtureExpectations.CompanyPullRows.Length + HeavyweightRows.Length;
         var pending = PhaseThirteenPending(report);
 
         Assert.All(PhaseTwelveRemoved, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));

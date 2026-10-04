@@ -37170,3 +37170,76 @@ Carried:    after the merge, `tools/remedies/2026-10-04-14.2-the-revenue-again.t
             whole and made again from each filer's facts, then an entry with the revenue by concept and the check of
             30 sampled releases; the night of 2026-10-05 read; the fork's ruling before 14.3, the figures above
             leaving the recommendation of B where it stood.
+
+### 14.2 - the correction's remedy run: the revenue pulled again from each filer's facts, and 29 of 29 sampled releases stating the revenue as first filed   2026-10-04
+
+Ran:        `tools/remedy.ps1 tools/remedies/2026-10-04-14.2-the-revenue-again.txt` from main at 5d9f71f, from 02:31
+            to 02:38 UTC with no night, drain or labeller running and no night lock: the purge removed the first
+            revenue pull's 163,341 figures, and the pull asked each of the 670 filers once, 670 requests, in six
+            and a half minutes.
+Revenue:    169,329 figures, none unanswered: revenue net of interest expense 13 filers and 1,628 figures, revenue
+            528 and 77,905, revenue from contracts excluding the tax assessed 471 and 43,668, including it 121 and
+            5,779, a utility's operating revenue 11 and 1,780, and the concept retired in 2018 297 and 38,569. 11
+            filers state revenue under none of the six: three banks filing interest income alone, TFC, PBCT and SYF,
+            and eight with no facts at the archive or none since 2019, ANDV, RAL_old, TT, DOC, FRC, SBNY, LLL and MON.
+            16 companies file no CIK and are asked nothing.
+Releases:   30 quarters drawn over 2019 to 2026, four a year and two of 2026, distinct companies, a fixed seed,
+            each with its report date from the pulled earnings prints. The results announcement filed around the
+            report date was found for 29, and each of the 29 releases states the revenue as first filed, in
+            millions, thousands or billions, the 9 fourth quarters worked out as the year less nine months among
+            them; OGN's quarter to 2026-06-30 had no results filing in the window. The revenue was first filed on or
+            before the report day for 12, 1 to 5 days after for 6, 6 to 20 for 7 and later for 5, REZI's quarter to
+            2019-09-28 a year after it, its own quarterly filing stating it under other dates or another concept.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            14.3 entry below states.
+Carried:    the night of 2026-10-05 read; 14.3 built on the fork's option B, the page's rule each card's own, unless
+            the operator rules A.
+
+### 14.3 - the sector heavyweights on screen, provisional   2026-10-04
+
+Built:      the fourth family on its provisional settings. The quarters step stores each quarter's share count and
+            the member's company, its filer and GICS classification, from the answer it already asks for, with no
+            request of its own, and `quarters --companies` fills every member once; migration 59. The rule, in the
+            core for the night and the sweep: on the first night of a month the book reads, each sector's five
+            largest companies by value as they stood, one listing a company, the one leading its sector's mean
+            return over 126 sessions by the most bought where that lead is above nothing in its trend; a holding sold
+            where the rule would no longer buy it, at any close under its 200-day average and at its last session as
+            a member. The heavyweight book, after the family recorder, keeps each rebalance's reading and each
+            holding, its growth and its size cut's carried night by night. Tonight's fourth card, Past picks'
+            holdings in percent and a name's line. The night asks a report for what a rebalance buys after the swing
+            families' picks, and none for a holding carried. No market check reads it, and option B of the fork is
+            built, each card its own one trade a stock, while the operator's ruling is awaited. Seven decisions for
+            the family and its readings; the market check's and one trade a stock's narrowed to the swing families,
+            the two they replace moved to Previously decided. The fixture gains `companies.json`, derived by hand
+            from the four captured answers.
+Tests:      1809, from 1799: ten added, the rebalance, the gates, the calendar and the night's value by hand, the
+            book over four constructed nights, the fixture's companies, the night's request, and the card, Past
+            picks and a name's line read back.
+Claims:     952, from 913: section 17's four rows and section 18's four, the fixture's row, the book's catalogue and
+            matrix rows, its two stores and the members' companies, the card's thirteen parts, a name's line and
+            Past picks' eleven parts, against about thirty-two the plan counted; section 14's two steps moved, the
+            swing filter's gaining the book and the report's naming the heavyweights.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the swing filter's
+            and the rule versions' lists. `FamilyRule.cs` and `FamilyEvaluator.cs` changed in one comment line each, a
+            decision's citation renamed, which moves no pin (see: A comment or a blank line moves no pin, and every
+            other change to a pinned source does). This checkpoint amends its own done condition: it asked the entry
+            to state that its tree touched none, and now asks that no pin moved, naming any pinned file whose
+            comments alone it edited.
+Mutated:    the rule, stated before the run: each property the plan names for 14.3 broken alone, made by hand over
+            the working tree, filtered to the ten tests and reverted.
+            H1 the night's value read from the newest count whatever its filing day: red in the value test and the
+            book's.
+            H2 the look-back read one session short: red in the book's.
+            H3 the 200-day exit missed: red in the book's.
+            H4 the rebalance read on a month's last session: red in the calendar test.
+            H5 a holding carried from an earlier month asked a report: red in the night's request test.
+            Not mutated: the card's rows in both directions, Past picks' percent and a name's line.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 918e64c, over
+            dc234c8, the entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1809 of 1809 tests ran
+            with none failed, migrations 0 to 59 with none pending, schema version 59, against `data-ci` and never
+            `data`. `tools/verify-phase.ps1`: 44 tables, 952 claims, 952 PASS, 0 FAIL, 0 out of scope, 0 unexamined,
+            963 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster,
+            43 carried and 43 passed.
+Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-04-14.3-the-companies.txt`, then an
+            entry with the members answered and those filing no sector, no count or no CIK; the night of 2026-10-05
+            read, the book's first rebalance in it; the fork's ruling.
