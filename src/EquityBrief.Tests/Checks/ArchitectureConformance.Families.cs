@@ -73,7 +73,8 @@ public partial class ArchitectureConformance
     // 14.1's replay guarding a family rule's record, and 14.2's pulls and the readings over them.
     // 14.3's rows, whichever check reaches each: section 17's four, section 18's four and the fixture's row for the
     // members' companies, the book's catalogue and matrix rows, its two stores and each member's company, and the
-    // pages' parts. Read on each use, since the lists that sum it stand in other files of this class.
+    // pages' parts. Read on each use, since the lists that sum it stand in other files of this class. 14.4's context
+    // checks add section 17's three rows and section 18's two.
     internal static string[] HeavyweightRows =>
     [
         .. FixtureExpectations.HeavyweightClaims,
@@ -85,7 +86,7 @@ public partial class ArchitectureConformance
         .. Reading.ReadSurface.HeavyweightPageClaims,
     ];
 
-    internal static readonly string[] AfterPhaseThirteen = [.. FixtureExpectations.IdeasClaims, .. FixtureExpectations.StoreCopyRows, .. FixtureExpectations.MarketSwitchRows, .. Reading.ReadSurface.DrainStopRows, .. FixtureExpectations.FamilyReplayRows, .. FixtureExpectations.CompanyPullRows, .. HeavyweightRows];
+    internal static readonly string[] AfterPhaseThirteen = [.. FixtureExpectations.IdeasClaims, .. FixtureExpectations.StoreCopyRows, .. FixtureExpectations.MarketSwitchRows, .. Reading.ReadSurface.DrainStopRows, .. FixtureExpectations.FamilyReplayRows, .. FixtureExpectations.CompanyPullRows, .. HeavyweightRows, .. FixtureExpectations.ContextClaims];
 
     // Where a checkpoint landed more claims than the plan counted for it, the rows it landed more of and how
     // many of them the plan's count held, as the entry that landed them says: at 13.2 section 17's rows for the
@@ -156,7 +157,7 @@ public partial class ArchitectureConformance
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 952),
+            (789, 853, 6, 4, 855, 876, 957),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

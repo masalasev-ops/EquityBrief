@@ -37260,3 +37260,38 @@ Read back:  read-only over 2026-10-02's closes, each sector's five largest by va
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
             14.4 entry below states.
 Carried:    the night of 2026-10-05 read, the book's first rebalance in it; the fork's ruling.
+
+### 14.4 - the context checks over the history, the drift's revenue growth and the pullback's RSI fall   2026-10-04
+
+Built:      the context run, `sweep-context`, by hand from main's Release build, reading the store read-only and
+            writing nothing to it. The earnings drift as frozen with two ideas reading a print's revenue growth, its
+            quarter's revenue as first filed against the same quarter a year before: one keeping a print whose
+            revenue grew, one keeping the night's first three by the growth, each judged by the year tests, the test
+            without the five largest and 1,000 trades with no floor of nights. The pullback's base with one idea
+            keeping the night's first three by how far its RSI fell from its high session, judged by its own test,
+            the base's first three in the list's own order beside it. The sweep history reads each name's revenue
+            through the filer the companies pull names, nothing filed after the history's end. The report states
+            each family's tries against what luck passes, the drift's listings reading a growth, and each revenue
+            idea's trades reading a quarter first filed after their buy. No news is read. Four decisions; 13.9's
+            paragraph, section 17's three rows, 18's two and 23's two sources.
+Tests:      (unfilled), from 1809: seven added, the revenue growth by hand, the drift's filter and order, the
+            replay's read of each listing's print, the RSI fall and its first three, the drift's test with no floor
+            of nights, the history's revenue read and the report's tries against luck.
+Claims:     (unfilled), from 952: section 17's three rows and section 18's two, against about six the plan counted.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the swing filter's
+            and the rule versions' lists; no file this tree edits is in any of them.
+Mutated:    the rule, stated before the run: each property 14.4's done condition names broken alone, and each other
+            property a 14.4 test reaches, made by hand over the working tree, filtered to the seven tests and
+            reverted.
+            R1 a quarter read from its newest filing: red in the growth test.
+            R2 the year before read from the quarter before: red in the growth test and the replay's.
+            F1 the filter keeping a print reading no growth: red in the filter's test and the replay's.
+            A1 a quarter filed on the buy's session counted as filed after it: red in the replay's.
+            N1 the drift's ideas held to the floor of nights: red in the test's.
+            O1 the RSI fall read the other way round: red in the RSI test.
+            O2 a name reading no fall ordered first: red in the RSI test.
+            L1 the pullback's luck read over the drift's tries: red in the report's.
+            Not mutated: the history's revenue read through its filer, and the span's edge at 100 days.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: (unfilled).
+Carried:    after the merge, `sweep-context` from main's Release build, its figures as an entry and its report
+            brought; the night of 2026-10-05 read, the book's first rebalance in it; the fork's ruling.

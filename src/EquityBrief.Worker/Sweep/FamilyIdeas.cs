@@ -231,23 +231,28 @@ public sealed class FamilyIdeaReplay
         return read;
     }
 
+    // Listings as an idea reading the revenue takes them: as a filter, those whose print's revenue grew; as an order,
+    // every one, the largest growth first, a listing reading none after every one reading one, and the family's own
+    // order within each, which the walk keeps a night's first of.
+    public static IEnumerable<FamilyListing> ByRevenue(IEnumerable<FamilyListing> listings, RevenueUse use, Func<FamilyListing, PrintRevenue?> revenueOf) => use switch
+    {
+        RevenueUse.Grew => listings.Where(listing => revenueOf(listing) is { Growth: > 0 }),
+        RevenueUse.Order => listings.Select(listing => revenueOf(listing) is { } read
+            ? listing with { Order = read.Growth, ThenBy = listing.Order }
+            : listing with { Order = double.NegativeInfinity, ThenBy = listing.Order }),
+        _ => listings,
+    };
+
     // The rule's own figures, or an idea's on it.
     public IdeaFigures Evaluate(string key, FamilyIdea? idea)
     {
         var exit = idea?.Exit ?? IdeaExit.Base;
-        var chosen = listings.Where(listing =>
-            (idea?.Switch is not { } on || switches[(int)on][listing.Session])
-            && !(idea?.StopAtLeastAMove == true && listing.CloseStop)
-            && (idea?.Revenue != RevenueUse.Grew || RevenueOf(listing) is { Growth: > 0 }));
-
-        // Ordered by the growth, the largest first, a listing reading none after every one reading one, and the
-        // family's own order within each.
-        if (idea?.Revenue == RevenueUse.Order)
-        {
-            chosen = chosen.Select(listing => RevenueOf(listing) is { } read
-                ? listing with { Order = read.Growth, ThenBy = listing.Order }
-                : listing with { Order = double.NegativeInfinity, ThenBy = listing.Order });
-        }
+        var chosen = ByRevenue(
+            listings.Where(listing =>
+                (idea?.Switch is not { } on || switches[(int)on][listing.Session])
+                && !(idea?.StopAtLeastAMove == true && listing.CloseStop)),
+            idea?.Revenue ?? RevenueUse.None,
+            RevenueOf);
 
         var trades = FamilySweep.Walk(
             chosen,

@@ -52,6 +52,12 @@ public static class ContextIdeas
 
     public static IdeaRule PullbackFirstThree { get; } = SweepIdeas.BaseRule with { PerNight = SweepIdeas.BestOf };
 
+    // A drift idea against the drift as frozen, held to no floor of nights.
+    public static IdeaTest DriftTest(IdeaFigures idea, IdeaFigures frozen) => SweepIdeas.Test(idea, frozen, onTotals: false, nightFloor: false);
+
+    // The pullback's idea against its base, by the pullback's own test.
+    public static IdeaTest PullbackTest(IdeaFigures idea, IdeaFigures asBase) => SweepIdeas.Test(idea, asBase, onTotals: false);
+
     // The drift as frozen and its two ideas over the history, the market series and each name's revenue as filed.
     public static (string Frozen, IdeaFigures Base, int Listings, int WithRevenue, IReadOnlyList<ContextReading> Ideas) ReadDrift(
         SweepHistoryInputs inputs,
@@ -91,7 +97,7 @@ public static class ContextIdeas
                 var figures = replay.Evaluate(idea.Key, idea);
                 var read = replay.RevenueRead.GetValueOrDefault(idea.Key);
 
-                return new ContextReading(idea.Key, idea.Rule, figures, SweepIdeas.Test(figures, asFrozen, onTotals: false, nightFloor: false), read.Read, read.FiledAfterTheBuy);
+                return new ContextReading(idea.Key, idea.Rule, figures, DriftTest(figures, asFrozen), read.Read, read.FiledAfterTheBuy);
             }),
         ];
 
@@ -109,6 +115,6 @@ public static class ContextIdeas
         var asBase = replay.Evaluate("base", SweepIdeas.BaseRule);
         var figures = replay.Evaluate(PullbackKey, PullbackOrder);
 
-        return (asBase, [new ContextReading(PullbackKey, PullbackRule, figures, SweepIdeas.Test(figures, asBase, onTotals: false))], replay.Evaluate("c", PullbackFirstThree));
+        return (asBase, [new ContextReading(PullbackKey, PullbackRule, figures, PullbackTest(figures, asBase))], replay.Evaluate("c", PullbackFirstThree));
     }
 }
