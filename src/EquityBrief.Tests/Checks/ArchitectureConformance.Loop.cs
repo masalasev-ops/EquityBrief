@@ -1583,8 +1583,9 @@ public partial class ArchitectureConformance
         // Phase 13's rows came after the phase this pair is about, each named where it was added, and
         // the ones its record does not yet reach are out of scope, beside this pair's figures; and the store's
         // copy's, the market switches', a drain's stop's, 14.1's replay's, 14.2's pulls', 14.3's heavyweights', 14.4's
-        // context checks', 14.5's heavyweights' sweep's and 14.6's registrations' after phase 13's report.
-        var now = actual + PhaseThirteenRows.Length + FixtureExpectations.StoreCopyRows.Length + FixtureExpectations.MarketSwitchRows.Length + Reading.ReadSurface.DrainStopRows.Length + FixtureExpectations.FamilyReplayRows.Length + FixtureExpectations.CompanyPullRows.Length + HeavyweightRows.Length + FixtureExpectations.ContextClaims.Length + FixtureExpectations.HeavyweightSweepClaims.Length + RegistrationRows.Length;
+        // context checks', 14.5's heavyweights' sweep's and 14.6's registrations' after phase 13's report, and those after
+        // phase 14's.
+        var now = actual + PhaseThirteenRows.Length + FixtureExpectations.StoreCopyRows.Length + FixtureExpectations.MarketSwitchRows.Length + Reading.ReadSurface.DrainStopRows.Length + FixtureExpectations.FamilyReplayRows.Length + FixtureExpectations.CompanyPullRows.Length + HeavyweightRows.Length + FixtureExpectations.ContextClaims.Length + FixtureExpectations.HeavyweightSweepClaims.Length + RegistrationRows.Length + AfterPhaseFourteen.Length;
         var pending = PhaseThirteenPending(report);
 
         Assert.All(PhaseThirteenRows, key => Assert.Contains(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));
@@ -1727,6 +1728,7 @@ public partial class ArchitectureConformance
         .. FixtureExpectations.ContextClaims,
         .. FixtureExpectations.HeavyweightSweepClaims,
         .. RegistrationRows,
+        .. AfterPhaseFourteen,
     ];
 
 
@@ -1797,8 +1799,9 @@ public partial class ArchitectureConformance
         // the rows it took out are named too, 11.9's region among them.
         // And phase 13's after phase 12's, the ones its record does not yet reach out of scope, and the store's
         // copy's, the market switches', a drain's stop's, 14.1's replay's, 14.2's pulls', 14.3's heavyweights', 14.4's
-        // context checks', 14.5's heavyweights' sweep's and 14.6's registrations' after phase 13's report.
-        var now = expected + PhaseTwelveRows.Length - PhaseTwelveRemoved.Length - TakenOutAfterPhaseTwelve.Length + PhaseThirteenRows.Length + FixtureExpectations.StoreCopyRows.Length + FixtureExpectations.MarketSwitchRows.Length + Reading.ReadSurface.DrainStopRows.Length + FixtureExpectations.FamilyReplayRows.Length + FixtureExpectations.CompanyPullRows.Length + HeavyweightRows.Length + FixtureExpectations.ContextClaims.Length + FixtureExpectations.HeavyweightSweepClaims.Length + RegistrationRows.Length;
+        // context checks', 14.5's heavyweights' sweep's and 14.6's registrations' after phase 13's report, and those after
+        // phase 14's.
+        var now = expected + PhaseTwelveRows.Length - PhaseTwelveRemoved.Length - TakenOutAfterPhaseTwelve.Length + PhaseThirteenRows.Length + FixtureExpectations.StoreCopyRows.Length + FixtureExpectations.MarketSwitchRows.Length + Reading.ReadSurface.DrainStopRows.Length + FixtureExpectations.FamilyReplayRows.Length + FixtureExpectations.CompanyPullRows.Length + HeavyweightRows.Length + FixtureExpectations.ContextClaims.Length + FixtureExpectations.HeavyweightSweepClaims.Length + RegistrationRows.Length + AfterPhaseFourteen.Length;
         var pending = PhaseThirteenPending(report);
 
         Assert.All(PhaseTwelveRemoved, key => Assert.DoesNotContain(report.Claims, claim => CheckReach.Key(claim.Table, claim.Subject) == key));

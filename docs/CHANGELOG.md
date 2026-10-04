@@ -10861,3 +10861,10 @@ Was:
 Now:
 > "...; the heavyweights' sweep; the freezes and registrations on the operator's go; and a first test of the S&amp;P 1500 on today's members of the 400 and the 600" and "the build plan's phase 14 checkpoints, 14.0 to 14.8"
 Why: the row states what the phase builds, and the first test is part of it.
+### 2026-10-04 - .claude/rules/checks.md - architecture-conformance reads phase 14's pair
+Authorised by: `BUILD_PLAN.md`'s 14.7, the phase 14 report, which checks the pair the plan predicts against the actual
+Was:
+> `architecture-conformance`'s "Phase 12's pair is read off the plan and checked against the actual, every claim that moved named, and phase 13's is read and checked the same way, each row the phase added reached once and passing;"
+Now:
+> "Phase 12's pair is read off the plan and checked against the actual, every claim that moved named, and phase 13's and phase 14's are each read and checked the same way, each row the phase added reached once and passing and the rows after its report named beside it;"
+Why: 14.7 builds it, and the roster states what each check asserts.

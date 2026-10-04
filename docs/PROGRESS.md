@@ -37572,3 +37572,39 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry: c6e169d, the
             version 60, against `data-ci` and never `data`.
 Carried:    14.7, the phase report; then 14.8, the pull and the replay, and the rule's answer brought to the
             operator; the night of 2026-10-05 read.
+
+### 14.7 - the phase 14 report: every claim the phase added reached and passing, the pair checked against the actual with every claim that moved named, and Part C put to the operator   2026-10-04
+
+Built:      a test under `architecture-conformance` reading phase 14's pair off the plan: 898 before it, 958 after
+            14.6 within 940 to 975, counted as 3, 8, 32, 6, 3 and 8 at 14.1 to 14.6. Those checkpoints landed 5,
+            10, 39, 5, 3 and 10, so 970, inside the range. The five that moved are named in
+            `ArchitectureConformance.Families.PhaseFourteenMoved`: at 14.1 the replay's catalogue and matrix rows
+            and the setup families' two parts, four where the command's row and the run page's line held two; at
+            14.2 every row, the four pulled stores joining section 16's pulled history row and taking none of
+            their own, and section 17's five rows and section 18's five landing, the fifth at the correction; at
+            14.3 the members' companies' store, the fixture's row, a name's line and Past picks' eleven parts,
+            fourteen of which the plan's count held seven; at 14.4 five rows where the plan counted six; and at
+            14.6 Part B's five rows, of which the count held three. Each of the 72 rows the phase added is reached
+            once and passes, and the rows after the report, 14.8's, are named beside the pair, none yet. The
+            roster's `architecture-conformance` row says so, with its prior text in `CHANGELOG.md`.
+Operating:  phase 14 opened no operating row, and no carried obligation of either form;
+            `obligation-reconciles` states phase 14 at none.
+Part C:     put to the operator, who ruled on 2026-10-04, after the S&P 400 and 600 were asked again with
+            historical=1 and answered today's members alone: a first test on today's members at 14.8 before the
+            add-on is decided, the widening dropped unless a family's edge improves even on survivors and then
+            confirmed on membership as it stood before anything is adopted. Nothing is bought.
+Tests:      1832, from 1831: one added.
+Claims:     970, unchanged, with 970 PASS; the pair is 970 and 970.
+Pins:       none moves. The branch edits three tests, a rules file and the records, none of them in a pin list.
+Mutated:    the rule, stated before the run: each property this checkpoint adds, broken alone, made on the branch
+            in this checkout, filtered to the two tests and reverted.
+            T1 one of 14.3's moved rows left unnamed, Past picks' parts read as ten: red in the pair test alone.
+            T2 a row 14.6 landed left out of the rows the pair reads: red in the pair test alone.
+            T3 phase 14 stated as opening one operating row: red in the operating rows test alone.
+            Results: T1 to T3 each red where stated, the other test green each time, each reverted and the two
+            tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+Carried:    14.8, Part C's first test on today's members, and its rule's answer brought to the operator; phase
+            14's sign-off, owed on the phase as a whole by a session that committed none of its code, after 14.8;
+            the night of 2026-10-05 read.
