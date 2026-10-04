@@ -37337,10 +37337,10 @@ Built:      `sweep-family --family heavyweight`, by hand from main's Release bui
             to every rebalance the night's book stored. The rule gains a fund's return in the members' mean's place
             and the beta's floor, which the night reads at neither. One decision; 13.9's paragraph, section 17's row
             and 18's two.
-Tests:      (unfilled), from 1816: seven added, the grid and its neighbours, the rebalances of each period, a beta
+Tests:      1823, from 1816: seven added, the grid and its neighbours, the rebalances of each period, a beta
             by hand and its floor, a fund's return, the walk by hand under each exit, the replay held to a rebalance
             the night's book stored, and a constructed history's report.
-Claims:     (unfilled), from 957: section 17's row and section 18's two, against about three the plan counted.
+Claims:     960, from 957: section 17's row and section 18's two, against about three the plan counted.
 Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the swing filter's
             and the rule versions' lists; `HeavyweightRule.cs`, which the night reads, is in none of them before the
             freeze, and its reading at the provisional setting is unchanged.
@@ -37361,7 +37361,15 @@ Mutated:    the rule, stated before the run: each property 14.5's done condition
             W1 the week read as the month: red in the rebalance test.
             Not mutated: the history's read of the counts filed by its end, and every member's and the index's
             returns.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: (unfilled).
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 6a88eaa, over
+            fdc5aed, the entry's commit, whose first run stopped at the suite on `price-storage-form`, three casts
+            between the two worlds in the sweep, and on `register-append-only`, the sweep's averages read outside the
+            one file it names; 6a88eaa writes the casts away and reads the averages through that file.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1823 of 1823 tests ran with none failed, migrations
+            0 to 59 with none pending, schema version 59, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 960 claims, 960 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 971
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
 Carried:    after the merge, `sweep-family --family heavyweight` from main's Release build, its figures as an entry
             and its report brought; the night of 2026-10-05 read, the book's first rebalance in it; the fork's
             ruling; 14.6 on the operator's go.
