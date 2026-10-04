@@ -92,7 +92,8 @@ static int NoVerb()
         "'sweep' replays the swing filter over the stored history across its designs and settings, reading the store and " +
         "writing nothing to it, and writes its report in a run folder of its own beside it, '--run <name>' going on with a " +
         "run started before from its last saved chunk, " +
-        "'sweep-family --family <name>' replays a setup family's rule over the stored history across its settings, " +
+        "'sweep-family --family <name>' replays a setup family's rule over the stored history across its settings, the " +
+        "sector heavyweights' book among them over the companies, share counts, splits and funds the history pull stored, " +
         "reading the store and writing nothing to it, and writes its report in a run folder of its own, " +
         "'sweep-family-ideas --family <name>' adds each of the pullback's ideas that fits the breakout or the earnings " +
         "drift to its rule as frozen, one at a time over the stored history and the market series, reading the store " +

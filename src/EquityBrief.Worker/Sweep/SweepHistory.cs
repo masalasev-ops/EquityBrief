@@ -50,14 +50,28 @@ public sealed record SweepHistoryInputs(
     public IReadOnlyList<(string Ticker, DateOnly Session)> LiveListed => LiveListedNameSessions ?? [];
 }
 
-// One market series a pull stored, GSPC or VIX: its closes in session order through the history's end, and the
-// pull that wrote them with the first and last session it holds.
+// One market series a pull stored, GSPC, VIX or a sector fund: its closes in session order through the history's
+// end, and the pull that wrote them with the first and last session it holds.
 public sealed record SweepMarketSeries(string Series, IReadOnlyList<(DateOnly Session, double Close)> Closes, string Pull)
 {
     public DateOnly? First => Closes.Count > 0 ? Closes[0].Session : null;
 
     public DateOnly? Last => Closes.Count > 0 ? Closes[^1].Session : null;
 }
+
+// One row of a rebalance the night's book stored: the session, the sector, the company's place by value, the listing
+// held and its value, its lead over the sector, and whether it passed the trend gate and was a leader bought.
+public sealed record StoredHeavyweightRow(DateOnly Session, string Sector, int Place, string Ticker, decimal Value, double? Lead, bool Trend, bool Leader);
+
+// What the heavyweights' sweep reads beside the history: each name's filer and sector as the companies pull filed them,
+// its share counts with the days they were filed and the session whose basis they are stated on, and its splits; each
+// sector fund's closes; and every reading the night's book stored, which the sweep's replay is held to.
+public sealed record HeavyweightHistory(
+    IReadOnlyDictionary<string, (string? Cik, string? Sector)> Companies,
+    IReadOnlyDictionary<string, IReadOnlyList<FiledCount>> Counts,
+    IReadOnlyDictionary<string, IReadOnlyList<FiledSplit>> Splits,
+    IReadOnlyList<SweepMarketSeries> Funds,
+    IReadOnlyList<StoredHeavyweightRow> Stored);
 
 // The sweep's one read of the store.
 //
@@ -86,9 +100,12 @@ public sealed class SweepHistory : IComponent
             new StoreTouch(Store.PulledSurprise, Touch.Read),
             new StoreTouch(Store.PulledMarketBar, Touch.Read),
             new StoreTouch(Store.PulledCompany, Touch.Read),
+            new StoreTouch(Store.PulledShares, Touch.Read),
+            new StoreTouch(Store.PulledSplit, Touch.Read),
             new StoreTouch(Store.PulledRevenue, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
+            new StoreTouch(Store.HeavyweightNight, Touch.Read),
         ],
         Feeds: []);
 
@@ -247,10 +264,17 @@ public sealed class SweepHistory : IComponent
             return [];
         }
 
+        return await SeriesAsync(connection, ["GSPC", "VIX"], through, cancellation);
+    }
+
+    // Each named series' closes through the history's end with the pull that wrote them, one statement a series, and
+    // none for a series the store holds no session of.
+    static async Task<IReadOnlyList<SweepMarketSeries>> SeriesAsync(SqliteConnection connection, IReadOnlyList<string> named, DateOnly through, CancellationToken cancellation)
+    {
         var found = new List<SweepMarketSeries>();
         var stamp = through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-        foreach (var series in new[] { "GSPC", "VIX" })
+        foreach (var series in named)
         {
             var closes = new List<(DateOnly, double)>();
             var pull = string.Empty;
@@ -272,6 +296,89 @@ public sealed class SweepHistory : IComponent
         }
 
         return found;
+    }
+
+    // What the heavyweights' sweep reads beside the history: each name's filer and sector as the companies pull filed
+    // them, its counts filed by the history's end, every split, since a count is stated on the basis of the day the
+    // pull asked for it, each sector fund's closes through the history's end, and the readings the night's book stored
+    // through it; each none where the store holds no table for it.
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    // see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis
+    public async Task<HeavyweightHistory> HeavyweightAsync(DateOnly through, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(ConnectionString(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var tables = new HashSet<string>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('pulled_company', 'pulled_shares', 'pulled_split', 'pulled_market_bar', 'heavyweight_night');", [], cancellation))
+        {
+            tables.Add(row.GetString(0));
+        }
+
+        var stamp = through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        var companies = new Dictionary<string, (string? Cik, string? Sector)>(StringComparer.Ordinal);
+        var counts = new Dictionary<string, List<FiledCount>>(StringComparer.Ordinal);
+        var splits = new Dictionary<string, List<FiledSplit>>(StringComparer.Ordinal);
+        var stored = new List<StoredHeavyweightRow>();
+
+        static List<T> Of<T>(Dictionary<string, List<T>> held, string ticker) =>
+            held.TryGetValue(ticker, out var list) ? list : held[ticker] = [];
+
+        if (tables.Contains("pulled_company"))
+        {
+            await foreach (var row in RowsAsync(connection, "SELECT ticker, cik, sector FROM pulled_company;", [], cancellation))
+            {
+                companies[row.GetString(0)] = (row.IsDBNull(1) ? null : row.GetString(1), row.IsDBNull(2) ? null : row.GetString(2));
+            }
+        }
+
+        if (tables.Contains("pulled_shares"))
+        {
+            await foreach (var row in RowsAsync(connection, "SELECT ticker, period_end, filing_date, shares, basis_session FROM pulled_shares WHERE filing_date <= $through;", [("$through", stamp)], cancellation))
+            {
+                Of(counts, row.GetString(0)).Add(new FiledCount(Date(row.GetString(1)), Date(row.GetString(2)), Money.FromStorage(row.GetString(3)), Date(row.GetString(4))));
+            }
+        }
+
+        if (tables.Contains("pulled_split"))
+        {
+            await foreach (var row in RowsAsync(connection, "SELECT ticker, ex_date, new_shares, old_shares FROM pulled_split;", [], cancellation))
+            {
+                Of(splits, row.GetString(0)).Add(new FiledSplit(Date(row.GetString(1)), Money.FromStorage(row.GetString(2)), Money.FromStorage(row.GetString(3))));
+            }
+        }
+
+        var funds = tables.Contains("pulled_market_bar")
+            ? await SeriesAsync(connection, [.. GicsSectors.Funds.Values.Order(StringComparer.Ordinal)], through, cancellation)
+            : [];
+
+        if (tables.Contains("heavyweight_night"))
+        {
+            await foreach (var row in RowsAsync(
+                connection,
+                "SELECT session_date, sector, place, ticker, company_value, lead, trend, leader FROM heavyweight_night WHERE session_date <= $through ORDER BY session_date, sector, place;",
+                [("$through", stamp)],
+                cancellation))
+            {
+                stored.Add(new StoredHeavyweightRow(
+                    Date(row.GetString(0)),
+                    row.GetString(1),
+                    row.GetInt32(2),
+                    row.GetString(3),
+                    Money.FromStorage(row.GetString(4)),
+                    row.IsDBNull(5) ? null : row.GetDouble(5),
+                    row.GetInt32(6) == 1,
+                    row.GetInt32(7) == 1));
+            }
+        }
+
+        return new HeavyweightHistory(
+            companies,
+            counts.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<FiledCount>)pair.Value, StringComparer.Ordinal),
+            splits.ToDictionary(pair => pair.Key, pair => (IReadOnlyList<FiledSplit>)pair.Value, StringComparer.Ordinal),
+            funds,
+            stored);
     }
 
     // Each name's revenue as its filer's facts state it, every figure filed by the history's end under the revenue
@@ -480,7 +587,7 @@ public sealed class SweepHistory : IComponent
 
         await foreach (var row in RowsAsync(
             connection,
-            $"SELECT session_date, high, low, close, volume, open FROM {table} WHERE ticker = $ticker AND session_date <= $through ORDER BY session_date;",
+            $"SELECT session_date, high, low, close, volume, open, raw_close FROM {table} WHERE ticker = $ticker AND session_date <= $through ORDER BY session_date;",
             [("$ticker", ticker), ("$through", through)],
             cancellation))
         {
@@ -490,7 +597,8 @@ public sealed class SweepHistory : IComponent
                 Money.FromStorage(row.GetString(2)),
                 Money.FromStorage(row.GetString(3)),
                 row.GetInt64(4),
-                Money.FromStorage(row.GetString(5))));
+                Money.FromStorage(row.GetString(5)),
+                row.IsDBNull(6) ? 0m : Money.FromStorage(row.GetString(6))));
         }
 
         return [.. bars];

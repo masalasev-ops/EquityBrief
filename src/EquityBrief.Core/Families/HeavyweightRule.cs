@@ -4,7 +4,8 @@ namespace EquityBrief.Core.Families;
 
 // One member on a session as the heavyweights read it: its ticker, the company it belongs to, its sector on the
 // session, its value, the dollars it traded over the fifty sessions to the session, its return over the look-back,
-// and its close with its 50 and 200-session averages. A figure the night could not read is none.
+// its close with its 50 and 200-session averages, and its beta where a setting reads one. A figure the night could
+// not read is none.
 public sealed record HeavyweightMember(
     string Ticker,
     string Company,
@@ -14,11 +15,13 @@ public sealed record HeavyweightMember(
     double? Return,
     double Close,
     double? Average50,
-    double? Average200);
+    double? Average200,
+    double? Beta = null);
 
 // The settings the heavyweights are read at: how many of a sector's largest companies its leaders are chosen
-// among, the sessions a return is read over, and how many leaders a sector holds.
-public sealed record HeavyweightSettings(int Largest, int LookBack, int Leaders);
+// among, the sessions a return is read over, how many leaders a sector holds, and whether a leader needs a beta of
+// at least one, which the sweep reads as a variant.
+public sealed record HeavyweightSettings(int Largest, int LookBack, int Leaders, bool HighBeta = false);
 
 // One of a sector's largest companies on a rebalance session, by the listing held: its place by value, its value,
 // its return and its lead over the sector's, whether it passes the trend gate, and whether it is a leader bought.
@@ -49,6 +52,13 @@ public static class HeavyweightRule
 
     // The leaders a sector holds.
     public const int Leaders = 1;
+
+    // A beta's floor where a setting reads one, and the daily returns it is read over, the most the year of bars the
+    // store keeps holds.
+    // see: A heavyweight's beta is read over 251 daily returns against the index
+    public const double BetaFloor = 1.0;
+
+    public const int BetaReturns = 251;
 
     public static HeavyweightSettings Provisional { get; } = new(Largest, LookBack, Leaders);
 
@@ -88,18 +98,58 @@ public static class HeavyweightRule
     public static bool Broken(double close, double? average200) =>
         average200 is { } twoHundred && close < twoHundred;
 
+    // A stock's beta: the slope of its daily returns on the index's over the newest 251 of the sessions handed in, each
+    // return a session's close over the one before it, the stock's and the index's on the same sessions; none where
+    // fewer than 252 sessions are handed in, a close is nothing, or the index's returns do not vary.
+    // see: A heavyweight's beta is read over 251 daily returns against the index
+    public static double? Beta(IReadOnlyList<(double Stock, double Index)> closes)
+    {
+        if (closes.Count < BetaReturns + 1)
+        {
+            return null;
+        }
+
+        double stockSum = 0, indexSum = 0, products = 0, squares = 0;
+
+        for (var at = closes.Count - BetaReturns; at < closes.Count; at++)
+        {
+            var (stockBefore, indexBefore) = closes[at - 1];
+
+            if (stockBefore <= 0 || indexBefore <= 0)
+            {
+                return null;
+            }
+
+            var stock = (closes[at].Stock / stockBefore) - 1.0;
+            var index = (closes[at].Index / indexBefore) - 1.0;
+
+            stockSum += stock;
+            indexSum += index;
+            products += stock * index;
+            squares += index * index;
+        }
+
+        var spread = squares - (indexSum * indexSum / BetaReturns);
+
+        return spread > 0 ? (products - (stockSum * indexSum / BetaReturns)) / spread : null;
+    }
+
     // Every sector on a rebalance session, by name: the mean of its members' own returns, a member holding none left
     // out; its largest companies by value, one listing a company; and its leaders, the largest companies leading the
     // sector above nothing and passing the trend gate, the largest lead first and the ticker settling a tie. A member
-    // filing no sector stands in none, and a member with no value stands in its sector's mean and in no rank.
-    public static IReadOnlyList<HeavyweightSector> Read(IReadOnlyList<HeavyweightMember> members, HeavyweightSettings settings)
+    // filing no sector stands in none, and a member with no value stands in its sector's mean and in no rank. Where
+    // a sector's return is handed in, as the sweep hands in its fund's, the lead is read over that and none where it
+    // is none; where the settings ask for a beta, a leader holds one at the floor or above.
+    public static IReadOnlyList<HeavyweightSector> Read(IReadOnlyList<HeavyweightMember> members, HeavyweightSettings settings, IReadOnlyDictionary<string, double?>? sectorReturns = null)
     {
         var sectors = new List<HeavyweightSector>();
 
         foreach (var sector in members.Where(member => member.Sector is not null).GroupBy(member => member.Sector!, StringComparer.Ordinal).OrderBy(sector => sector.Key, StringComparer.Ordinal))
         {
             var returns = sector.Where(member => member.Return is not null).Select(member => member.Return!.Value).ToArray();
-            double? sectorReturn = returns.Length > 0 ? returns.Average() : null;
+            double? sectorReturn = sectorReturns is not null
+                ? sectorReturns.GetValueOrDefault(sector.Key)
+                : returns.Length > 0 ? returns.Average() : null;
             var byTicker = sector.ToDictionary(member => member.Ticker, StringComparer.Ordinal);
 
             var largest = CompanyRank
@@ -115,7 +165,7 @@ public static class HeavyweightRule
                 .ToArray();
 
             var leaders = largest
-                .Where(ranked => ranked.Lead > 0 && ranked.Trend)
+                .Where(ranked => ranked.Lead > 0 && ranked.Trend && (!settings.HighBeta || ranked.Member.Beta >= BetaFloor))
                 .OrderByDescending(ranked => ranked.Lead)
                 .ThenBy(ranked => ranked.Listing.Ticker, StringComparer.Ordinal)
                 .Take(settings.Leaders)

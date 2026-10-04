@@ -26,6 +26,7 @@ public sealed class FamilySweepRunner(IClock clock, string databaseFile, string 
         [BreakoutRule.Name] = "breakouts'",
         [DriftRule.Name] = "earnings drift's",
         [LeaderRule.Name] = "sector leaders'",
+        [HeavyweightRule.Name] = "sector heavyweights'",
     };
 
     // One family's sweep as the runner reads it: its grid, how many member-sessions its loosest setting could
@@ -123,6 +124,12 @@ public sealed class FamilySweepRunner(IClock clock, string databaseFile, string 
 
         Directory.CreateDirectory(folder);
         output.WriteLine("run " + Path.GetFileName(folder));
+
+        // The sector heavyweights rotate on rebalances rather than list a night, so their sweep walks a book of its own.
+        if (family == HeavyweightRule.Name)
+        {
+            return await new HeavyweightSweepRunner(clock, databaseFile, output).RunAsync(folder, started, cancellation);
+        }
 
         var history = new SweepHistory(databaseFile);
         var through = await history.NewestSessionAsync(cancellation);

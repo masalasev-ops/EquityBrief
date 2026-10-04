@@ -90,6 +90,8 @@ public partial class FixtureExpectations
             .. HeavyweightClaims,
             // 14.4, the context checks over the history: section 17's three rows and section 18's two.
             .. ContextClaims,
+            // 14.5, the heavyweights' sweep: section 17's row and section 18's two.
+            .. HeavyweightSweepClaims,
 
             // 12.6's correction, the model profiles: section 17's profiles over the shipped settings and the
             // fixture's own models file, and the half of section 18's row about a key the secrets file does not

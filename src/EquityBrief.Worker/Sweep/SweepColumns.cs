@@ -99,6 +99,36 @@ public static class SweepColumns
     // The gap check's reach, the year of sessions the night checks a name's series over.
     public const int GapSessions = 252;
 
+    // A series' 50 and 200-session averages on each of its bars, the night's own reading of them, none where too few
+    // bars stand behind a bar.
+    public static (double[] Average50, double[] Average200) Averages(IReadOnlyList<SweepBar> bars)
+    {
+        var fifty = Nan(bars.Count);
+        var twoHundred = Nan(bars.Count);
+
+        if (bars.Count == 0)
+        {
+            return (fifty, twoHundred);
+        }
+
+        var points = IndicatorSeries.For([.. bars.Select(bar => new SeriesBar(bar.Session, Statistic.FromPrice(bar.High), Statistic.FromPrice(bar.Low), Statistic.FromPrice(bar.Close), Statistic.FromVolume(bar.Volume)))]);
+        var index = bars.Select((bar, position) => (bar.Session, position)).ToDictionary(pair => pair.Session, pair => pair.position);
+
+        foreach (var point in points)
+        {
+            if (point.Value is { } value && point.Name == IndicatorSeries.Sma50)
+            {
+                fifty[index[point.SessionDate]] = value;
+            }
+            else if (point.Value is { } held && point.Name == IndicatorSeries.Sma200)
+            {
+                twoHundred[index[point.SessionDate]] = held;
+            }
+        }
+
+        return (fifty, twoHundred);
+    }
+
     public static SweepSeries Series(SweepName name, IReadOnlyDictionary<DateOnly, int> sessionAt)
     {
         // A bar on a day the history's calendar does not hold is a day the exchange did not trade.
