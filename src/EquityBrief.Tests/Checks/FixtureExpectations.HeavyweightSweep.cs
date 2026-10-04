@@ -156,9 +156,9 @@ public partial class FixtureExpectations
         Assert.Empty(none.Leaders);
     }
 
-    // Four names over ten sessions from Wednesday 2019-01-02: A rising a point a session, B leaving the index after its
-    // sixth session and trading on after it, C closing under its 200-day average of 19 on the sixth, and D with no close
-    // on the fifth.
+    // Four names over ten sessions from Wednesday 2019-01-02: A rising a point a session and closing under its 200-day
+    // average on the tenth, where the average is 120, B leaving the index after its sixth session and trading on after
+    // it, C closing under its average of 19 on the sixth, and D with no close on the fifth.
     static HeavyweightTape WalkTape()
     {
         static double[] Row(params double[] values) => values;
@@ -183,7 +183,7 @@ public partial class FixtureExpectations
             Tickers = ["A", "B", "C", "D"],
             Calendar = Weekdays(new DateOnly(2019, 1, 2), 10),
             Close = close,
-            Average200 = [[.. Enumerable.Repeat(90.0, 10)], [.. Enumerable.Repeat(40.0, 10)], [.. Enumerable.Repeat(19.0, 10)], [.. Enumerable.Repeat(9.0, 10)]],
+            Average200 = [[.. Enumerable.Repeat(90.0, 9), 120.0], [.. Enumerable.Repeat(40.0, 10)], [.. Enumerable.Repeat(19.0, 10)], [.. Enumerable.Repeat(9.0, 10)]],
             Member = member,
             LastMemberClose = [.. close.Zip(member, (closes, held) => HeavyweightTape.LastMemberCloseOf(held, closes))],
             Index = [.. Enumerable.Range(0, 10).Select(session => 1_000.0 + (10 * session))],
@@ -211,7 +211,8 @@ public partial class FixtureExpectations
 
         // Whichever comes first: A no longer the leader on the fifth session and sold there, B bought in its place and D,
         // with no close there, not bought; C under its average on the sixth; B sold at its last close as a member, the
-        // sixth's, once it has left; on the ninth A and D bought, both held at the end.
+        // sixth's, once it has left; on the ninth A and D bought, A sold under its average on the tenth and D held at
+        // the end.
         var both = HeavyweightSweep.Walk(tape, WalkRebalances, HeavyweightExit.Both, Every);
 
         Assert.Equal(
@@ -219,7 +220,7 @@ public partial class FixtureExpectations
                 "A 0-4 " + HeavyweightBook.NoLongerTheLeader,
                 "C 0-5 " + HeavyweightBook.UnderTheAverage,
                 "B 4-5 " + HeavyweightBook.LeftTheIndex,
-                "A 8-held -",
+                "A 8-9 " + HeavyweightBook.UnderTheAverage,
                 "D 8-held -",
             ],
             Walked(tape, both));
@@ -236,16 +237,19 @@ public partial class FixtureExpectations
         Assert.Equal((-0.1, 0.0, -0.1), (Math.Round(both[1].Result!.Value, 12), Math.Round(both[1].Cut!.Value, 12), Math.Round(both[1].Edge!.Value, 12)));
         Assert.Equal((0.0, (105.0 / 104.0 - 1.0) / 2), (both[2].Result!.Value, both[2].Cut!.Value));
 
-        // The figures over the three ended: the edge their mean, each in 2019, none above nothing; held 4, 5 and 1
-        // sessions, a median of 4; and two held at the end.
-        var figures = HeavyweightSweep.Figures("both", both);
-        var edge = (-0.08 - 0.1 - ((105.0 / 104.0 - 1.0) / 2)) / 3;
+        // A bought again on the ninth with a cut of itself alone: 109 over 108 against the same, an edge of nothing.
+        Assert.Equal(0.0, both[3].Edge!.Value, 12);
 
-        Assert.Equal((3, 2, 0), (figures.Trades, figures.Open, figures.YearsBeating));
+        // The figures over the four ended: the edge their mean, each in 2019, none above nothing; held 4, 5, 1 and 1
+        // sessions, a median of 2.5; and one held at the end.
+        var figures = HeavyweightSweep.Figures("both", both);
+        var edge = (-0.08 - 0.1 - ((105.0 / 104.0 - 1.0) / 2) + 0.0) / 4;
+
+        Assert.Equal((4, 1, 0), (figures.Trades, figures.Open, figures.YearsBeating));
         Assert.Equal(edge, figures.Edge!.Value, 12);
-        Assert.Equal([3, 0, 0, 0, 0, 0, 0, 0], figures.YearTrades);
+        Assert.Equal([4, 0, 0, 0, 0, 0, 0, 0], figures.YearTrades);
         Assert.Equal(edge, figures.YearEdge[0]!.Value, 12);
-        Assert.Equal((4.0, 10.0 / 3), (figures.HeldMedian!.Value, figures.HeldMean!.Value));
+        Assert.Equal((2.5, 11.0 / 4), (figures.HeldMedian!.Value, figures.HeldMean!.Value));
         Assert.False(figures.MeetsFloors);
 
         // On no longer leading alone: C kept under its average and sold on the ninth, no longer leading, at 18 against its
@@ -263,15 +267,20 @@ public partial class FixtureExpectations
             Walked(tape, drop));
         Assert.Equal((-0.1, 0.15), (Math.Round(drop[2].Result!.Value, 12), Math.Round(drop[2].Cut!.Value, 12)));
 
-        // On the average alone: A held through the fifth and the ninth, never bought twice, B bought beside it.
+        // On the average alone: A held through the fifth and the ninth, never bought twice, B bought beside it, and A sold
+        // under its average on the tenth: 109 over 100, 0.09, against its cut of A and of B read at B's last close as a
+        // member, 60 over 50, and never its 70 after it left: a mean of 0.145.
+        var broken = HeavyweightSweep.Walk(tape, WalkRebalances, HeavyweightExit.Break, Every);
+
         Assert.Equal(
             [
                 "C 0-5 " + HeavyweightBook.UnderTheAverage,
                 "B 4-5 " + HeavyweightBook.LeftTheIndex,
-                "A 0-held -",
+                "A 0-9 " + HeavyweightBook.UnderTheAverage,
                 "D 8-held -",
             ],
-            Walked(tape, HeavyweightSweep.Walk(tape, WalkRebalances, HeavyweightExit.Break, Every)));
+            Walked(tape, broken));
+        Assert.Equal((0.09, 0.145), (Math.Round(broken[2].Result!.Value, 12), Math.Round(broken[2].Cut!.Value, 12)));
     }
 
     // The sessions of the constructed store: the exchange's from June 2025 to September's first in 2026, the night.
@@ -384,6 +393,10 @@ public partial class FixtureExpectations
 
         Assert.Equal([["H1", "H2"], ["T2", "T1", "T3"]], replayed.Select(sector => sector.Largest.Select(ranked => ranked.Ticker).ToArray()));
         Assert.Equal([["H1"], ["T1"]], replayed.Select(sector => sector.Leaders.ToArray()));
+
+        // Read against the funds, Information Technology's holds two sessions, too few for a return over the look-back,
+        // and Health Care's none, so neither sector reads a return and nothing leads.
+        Assert.All(At(SweepNight, HeavyweightSweep.Provisional with { Sector = HeavyweightSectorReturn.Fund })!, sector => Assert.Empty(sector.Leaders));
 
         var compared = HeavyweightSweep.Compare(pulled.Stored, day => At(day, HeavyweightSweep.Provisional));
 

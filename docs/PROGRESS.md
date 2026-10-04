@@ -37322,3 +37322,46 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             14.5 entry states.
 Carried:    nothing registers, the report at `/sweep` brought to the operator; the night of 2026-10-05 read, the
             book's first rebalance in it; the fork's ruling.
+
+### 14.5 - the sector heavyweights' sweep over the pulled history   2026-10-04
+
+Built:      `sweep-family --family heavyweight`, by hand from main's Release build, reading the store read-only and
+            writing nothing to it. The sweep history reads besides each bar's unadjusted close, each name's company,
+            its counts filed by the history's end and its splits, the sector funds' closes and every rebalance the
+            night's book stored. Every member on each session a rebalance reads is valued as it stood and read by the
+            night's own rule at 432 settings: a size cut of 5, 10 or every company, a look-back of 63, 126 or 251
+            sessions, 1 or 2 leaders, the members' mean or the fund's, a beta of at least one or not, monthly or
+            weekly, and three exits. Holdings are walked as the book walks them, one a stock, each scored in percent
+            less its size cut's, every member's and the index's beside it; the proposal is held to the family sweeps'
+            floors with every one-step neighbour and what luck passes; the replay at the provisional setting is held
+            to every rebalance the night's book stored. The rule gains a fund's return in the members' mean's place
+            and the beta's floor, which the night reads at neither. One decision; 13.9's paragraph, section 17's row
+            and 18's two.
+Tests:      (unfilled), from 1816: seven added, the grid and its neighbours, the rebalances of each period, a beta
+            by hand and its floor, a fund's return, the walk by hand under each exit, the replay held to a rebalance
+            the night's book stored, and a constructed history's report.
+Claims:     (unfilled), from 957: section 17's row and section 18's two, against about three the plan counted.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the swing filter's
+            and the rule versions' lists; `HeavyweightRule.cs`, which the night reads, is in none of them before the
+            freeze, and its reading at the provisional setting is unchanged.
+Mutated:    the rule, stated before the run: each property 14.5's done condition names broken alone, the plan's
+            three, and each other property a 14.5 test reaches, made by hand over the working tree, filtered to the
+            seven tests and reverted.
+            S1 the edge read against every member: red in the walk test.
+            S2 a holding kept past a close under its average: red in the walk test and the report's.
+            S3 a neighbour dropped, the exit stepping to one of its other two: red in the grid test.
+            P1 the replay's look-back read a session short: red in the replay's.
+            K1 the report's row drawing the result as its edge: red in the report's.
+            L1 a size cut's member read at a close after it left the index: survived first, a missing property, no
+            sold holding's cut holding a member that had left; the walk extended so A, holding B in its cut, is sold
+            under its average after B left, then red in the walk test.
+            O1 a stock held bought again: red in the walk test and the report's.
+            B1 the beta's floor read as above one: red in the beta test.
+            F1 a fund setting read against the members' mean: red in the replay's.
+            W1 the week read as the month: red in the rebalance test.
+            Not mutated: the history's read of the counts filed by its end, and every member's and the index's
+            returns.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: (unfilled).
+Carried:    after the merge, `sweep-family --family heavyweight` from main's Release build, its figures as an entry
+            and its report brought; the night of 2026-10-05 read, the book's first rebalance in it; the fork's
+            ruling; 14.6 on the operator's go.
