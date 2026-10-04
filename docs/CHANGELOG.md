@@ -10644,3 +10644,45 @@ Was:
 Now:
 > "from a committed table the companies pull reads against the sectors and filers the provider files, refusing to land where it does not count 14;"
 Why: the sector and the filer are what the reading and the rank read, and the provider files each of the fourteen in the sector it moved to.
+### 2026-10-04 - ARCHITECTURE.html - a company's value divides by plain splits alone, and section 18 names a spin-off filed as a split
+Corrects: the value reading divided a session's close by every split the provider files, and the provider files a spin-off's or a merger's price adjustment as a split too, 68 of the 148 it filed for the history's names since 2018, which would have read a company before its spin-off at a fraction of its value, GE before GE HealthCare's at about four fifths. Found reading the splits the 14.2 remedy stored against the counts beside them.
+Was:
+> "Company value": "... divided by what one share became at every split after the session and on or before the session the count was asked on; none where no count was filed before the session (see: ...)", its reason ending "... against one paying none", and asserted "... and a company paying dividends valued as one paying none at the same close and count"; no row for a spin-off filed as a split
+Now:
+> "... at every plain split after the session and on or before the session the count was asked on, a plain split's ratio within a ten-thousandth of whole shares for one, of one share for whole shares, or of two whole numbers each at most 10, and a spin-off's or a merger's adjustment the provider files as a split dividing nothing; ...", the reason adding that the provider files about half its splits that way, the assertion adding each kind of plain split and the spin-off adjustments; section 18's row "A spin-off or a merger the provider files as a split"
+Why: a spin-off changes no company's shares, so it puts no close on another basis.
+### 2026-10-04 - SCHEMA.md - the pulled splits hold the provider's spin-off adjustments as sent
+Corrects: the same defect, `pulled_split` read as every row a change of shares.
+Was:
+> "... a ratio kept as its two numbers rather than as their quotient, which a split of one for three would round. Removed whole with its pull, ..."
+Now:
+> adds "The provider files a spin-off's and a merger's price adjustment as a split too, 1,281 for 1,000 at GE HealthCare's spin-off, and they are stored as sent: a value reads a plain split as a change of shares and the rest as none, told apart by the ratio (see: ...)."
+Why: the table keeps what the provider sends, and the reading says what it reads.
+### 2026-10-04 - RUNBOOK.md - the splits pull counts the plain splits, and the revenue pull asks each filer's facts once
+Corrects: the same defect's line; and the revenue pull asked the archive's endpoint for one concept, which answered an empty set of dollars for some filers whose facts hold the figures, so the first pull of 2026-10-04 left 11 filers holding revenue, Coca-Cola among them, with none. Found reading the 22 filers that pull named as filing under none of the concepts against their facts.
+Was:
+> "The splits pull asks each of the same names for its splits, about seven hundred requests at a weight of one, into `pulled_split`." and "... asks the SEC's archive once a filer and revenue concept, about four thousand requests that cost nothing against the allowance, a tenth of a second apart, which takes about fifteen minutes;"
+Now:
+> "... into `pulled_split`, and prints how many of the splits are plain and how many a spin-off's or a merger's adjustment the provider files as a split." and "... asks the SEC's archive once a filer for its whole facts, about seven hundred requests that cost nothing against the allowance, a tenth of a second apart, which takes about a quarter of an hour;"
+Why: the operator reads both off the run, and a filer's facts hold every concept it used.
+### 2026-10-04 - ARCHITECTURE.html - the history pull asks each filer's facts once for its revenue
+Corrects: the revenue pull's defect above.
+Was:
+> "... and asked for the revenue, it asks the archive for every figure each pulled company's filer stated under each revenue concept with the day it was filed, one request a filer and concept at no more than ten a second; ..."
+Now:
+> "... and asked for the revenue, it asks the archive for each pulled company's filer's whole facts and stores every figure stated under each revenue concept with the day it was filed, one request a filer at no more than ten a second; ..."
+Why: the endpoint for one concept answers some filers with no dollars where their facts hold them.
+### 2026-10-04 - SCHEMA.md - the pulled revenue is read from each filer's facts
+Corrects: the revenue pull's defect above.
+Was:
+> "The operator's `history-pull --revenue` asks the archive once a filer and revenue concept for the filers `pulled_company` carries, and stores every figure stated for a period, a figure stated for an instant being no revenue."
+Now:
+> "The operator's `history-pull --revenue` asks the archive once a filer for its whole facts, for the filers `pulled_company` carries, and stores every figure stated for a period under each revenue concept, a figure stated for an instant being no revenue."
+Why: the same.
+### 2026-10-04 - .claude/rules/checks.md - fixture-expectations reaches the plain split
+Corrects: the same defect.
+Was:
+> `fixture-expectations`: "... one after the counts were asked dividing nothing, and a company paying dividends ..." and "... name each name, fund or filer not served with why, the companies pull naming ..."
+Now:
+> adds "each kind of plain split read as one and the provider's spin-off and merger adjustments as none, a spin-off after a session dividing no close" and "the splits pull counting the plain splits among those answered", and "the revenue pull waiting a tenth of a second after each request" reads "the revenue pull reading each filer's facts once, a tenth of a second after the request before, a concept held as an empty set of dollars read as none"
+Why: the check reaches what the correction's tests assert.

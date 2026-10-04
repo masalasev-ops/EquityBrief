@@ -197,7 +197,6 @@ public static class SecEdgarArchive
         {
             ArchiveDocument.Submissions => new(document, DataHost, "submissions/CIK" + padded + ".json"),
             ArchiveDocument.CompanyFacts => new(document, DataHost, "api/xbrl/companyfacts/CIK" + padded + ".json"),
-            ArchiveDocument.CompanyConcept => new(document, DataHost, "api/xbrl/companyconcept/CIK" + padded + "/us-gaap/" + (file ?? string.Empty) + ".json"),
             _ => new(document, DocumentHost, Folder(padded, within) + "/" + (file ?? string.Empty)),
         };
 

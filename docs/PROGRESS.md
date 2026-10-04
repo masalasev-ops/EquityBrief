@@ -37127,3 +37127,41 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             correction's entry below states.
 Carried:    the correction's remedy, the revenue pulled again, then the check of 30 sampled releases; the night of
             2026-10-05 read; the fork's ruling before 14.3.
+
+### 14.2 - correction: a company's value divides by plain splits alone, and the revenue pull reads each filer's whole facts   2026-10-04
+
+Built:      a split is a change of shares only where its ratio lies within a ten-thousandth of whole shares for one,
+            of one for whole shares, or of two whole numbers each at most ten; a spin-off's or a merger's adjustment
+            the provider files as a split divides no close. The splits pull counts the plain splits it answered. The
+            revenue pull asks each filer's whole facts once and reads the six concepts out of them, an empty set of
+            dollars read as none, and the archive's endpoint for one concept is no longer asked. Section 18's row
+            for a spin-off filed as a split; the value's and the pulls' decisions corrected in place, each ruling
+            unchanged.
+Found:      reading the remedy's rows above: 68 of the 148 splits are spin-off and merger adjustments, which the
+            value reading divided by, reading GE before GE HealthCare's spin-off at about four fifths of its value;
+            three plain three for ones are filed as 959,692 for 319,897, which a ratio read in lowest terms takes for
+            an adjustment, as this correction's own first test showed; and the endpoint for one concept answered 11
+            filers holding revenue, Coca-Cola among them, with no dollars.
+Measured:   of the 80 plain splits, the 76 with counts on both sides: the provider restated its counts across 75,
+            and not across APH's two for one of 2024-06-12, which reads APH at half its value before it, the residue.
+            The fork over the pulled data: read with every filed split it is 14.0's to the trade, 438 heavyweight
+            trades, 112 swing picks hidden under A and 65 stocks on two cards under B. Read as corrected: 442 trades,
+            held a median 22 sessions, 376 ending where the stock no longer led, 62 at a close under its 200-day
+            average and 4 open; under A 113 of the 4,759 swing picks hidden, 60 pullbacks, 29 breakouts and 24
+            drifts, their results again better than the rest's, an average of 0.610 times the risk against 0.229
+            for the pullbacks, 0.273 against 0.113 for the breakouts and 0.275 against 0.220 for the drifts, and 83
+            of 479 heavyweight entries held back; under B 66 stocks on two cards at once on 1,235 of the 1,949
+            sessions, 2,223 stock-sessions in all and at most 6 on one.
+Tests:      (unfilled), from 1798: one added, each kind of plain split read as one and the adjustments as none, and
+            three widened, the captured facts of Activision read for its two concepts, a concept held as an empty set
+            of dollars, and the revenue pull asking each filer once.
+Claims:     (unfilled), from 912: section 18's row for a spin-off or a merger the provider files as a split.
+Mutated:    the rule, stated before the run: each property the correction adds broken alone, made by hand over the
+            working tree carrying it before its commit, filtered to the checkpoint's tests and reverted.
+            P7 every filed split applied whatever its ratio: red in the plain split test.
+            P8 a concept held as an empty set of dollars refused: red in the captured answers' test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: (unfilled).
+Carried:    after the merge, `tools/remedies/2026-10-04-14.2-the-revenue-again.txt`, the first revenue pull removed
+            whole and made again from each filer's facts, then an entry with the revenue by concept and the check of
+            30 sampled releases; the night of 2026-10-05 read; the fork's ruling before 14.3, the figures above
+            leaving the recommendation of B where it stood.

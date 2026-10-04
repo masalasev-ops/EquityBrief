@@ -30,7 +30,7 @@ namespace EquityBrief.Worker.Bars;
 // Asked for the companies, it pulls each name's filer, GICS classification, delisting and quarterly share
 // counts with the day each was filed, one request a name; for the splits, each name's splits, one request
 // a name; and for the revenue, every figure each pulled company's filer stated under each revenue concept,
-// with the day it was filed, one request a filer and concept, each into a table of its own marked and
+// with the day it was filed, one request a filer for its whole facts, each into a table of its own marked and
 // removed the same way.
 // see: The history pulled before the store's year sits apart from its bars, marked by the pull that wrote it, read by no night and removed whole by that pull
 // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
@@ -1147,7 +1147,8 @@ public sealed class HistoryPull(
             unanswered,
             answered.Count(entry => entry.Splits.Count > 0),
             written,
-            requests);
+            requests,
+            answered.Sum(entry => entry.Splits.Count(split => new FiledSplit(split.ExDate, split.NewShares, split.OldShares).Plain)));
 
         await AppendAsync(
             connection,
@@ -1166,6 +1167,7 @@ public sealed class HistoryPull(
                 answered = answered.Count,
                 withASplit = outcome.WithASplit,
                 splits = written,
+                plain = outcome.Plain,
                 unanswered,
             }),
             cancellation);
@@ -1279,9 +1281,9 @@ public sealed class HistoryPull(
     }
 
     // Pulls, for every filer the pulled companies carry, every figure it stated under each revenue concept with the
-    // day each filing was made, one request a filer and concept, waiting a tenth of a second after each. A concept a
-    // filer never filed under is no figure and no failure; a request not served is named and the rest stored. Refused
-    // where no pulled company carries a filer, since the companies pull is what names them.
+    // day each filing was made, one request a filer for its whole facts, waiting a tenth of a second after each. A
+    // concept a filer never filed under is no figure and no failure; a filer not served is named and the rest stored.
+    // Refused where no pulled company carries a filer, since the companies pull is what names them.
     // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
     public static async Task<HistoryRevenueOutcome> PullRevenueAsync(
         IFiledRevenueFeed revenue,
@@ -1315,23 +1317,22 @@ public sealed class HistoryPull(
 
         foreach (var cik in filers)
         {
-            foreach (var concept in FirstFiledRevenue.Concepts)
+            try
             {
-                try
-                {
-                    answered.Add((cik, concept, await revenue.ConceptAsync(cik, concept, cancellation)));
-                }
-                catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
-                {
-                    unanswered.Add($"CIK {cik} under {concept}: the archive did not answer in time on any try");
-                }
-                catch (Exception failure) when (failure is not OperationCanceledException)
-                {
-                    unanswered.Add(NotServed($"CIK {cik} under {concept}", failure));
-                }
+                var filed = await revenue.RevenueAsync(cik, FirstFiledRevenue.Concepts, cancellation);
 
-                await pause(TimeSpan.FromSeconds(1.0 / ArchiveRequestsASecond), cancellation);
+                answered.AddRange(FirstFiledRevenue.Concepts.Select(concept => (cik, concept, filed.TryGetValue(concept, out var facts) ? facts : (IReadOnlyList<ConceptFact>)[])));
             }
+            catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
+            {
+                unanswered.Add($"CIK {cik}: the archive did not answer in time on any try");
+            }
+            catch (Exception failure) when (failure is not OperationCanceledException)
+            {
+                unanswered.Add(NotServed($"CIK {cik}", failure));
+            }
+
+            await pause(TimeSpan.FromSeconds(1.0 / ArchiveRequestsASecond), cancellation);
 
             if (++asked % 50 == 0)
             {
@@ -1601,7 +1602,7 @@ public sealed class HistoryPull(
         + string.Concat(outcome.MovesNot.Select(line => Environment.NewLine + "  move not filed: " + line));
 
     public static string Detail(HistorySplitOutcome outcome) =>
-        FormattableString.Invariant($"pulled the splits {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Answered} of {outcome.Names} name(s) answered, {outcome.WithASplit} with a split, {outcome.Written} split(s) stored, {outcome.Requests} request(s)")
+        FormattableString.Invariant($"pulled the splits {outcome.From:yyyy-MM-dd} to {outcome.Through:yyyy-MM-dd}: {outcome.Answered} of {outcome.Names} name(s) answered, {outcome.WithASplit} with a split, {outcome.Written} split(s) stored, {outcome.Plain} of the splits answered plain and the rest a spin-off's or a merger's adjustment, {outcome.Requests} request(s)")
         + string.Concat(outcome.Unanswered.Select(line => Environment.NewLine + "  unanswered: " + line));
 
     public static string Detail(HistorySectorFundOutcome outcome) =>
@@ -1771,7 +1772,8 @@ public sealed record HistoryCompanyOutcome(
     int Requests);
 
 // What one splits pull did: the span, the names held over it and how many answered, each name not served and why,
-// the names with a split in the span, the splits stored and the requests made.
+// the names with a split in the span, the splits stored, the requests made, and how many of the splits answered are
+// plain ones rather than a spin-off's or a merger's adjustment the provider files as a split.
 public sealed record HistorySplitOutcome(
     DateOnly From,
     DateOnly Through,
@@ -1780,7 +1782,8 @@ public sealed record HistorySplitOutcome(
     IReadOnlyList<string> Unanswered,
     int WithASplit,
     int Written,
-    int Requests);
+    int Requests,
+    int Plain);
 
 // What one sector funds pull did: the span, each fund stored with its sessions, each fund refused and why, the rows
 // stored and the requests made.

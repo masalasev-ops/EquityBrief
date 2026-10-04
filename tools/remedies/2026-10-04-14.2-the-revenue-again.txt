@@ -1,0 +1,8 @@
+# The remedy of the 14.2 correction of 2026-10-04 (each filer's revenue read from its whole facts), as its PROGRESS
+# entry prints it: the revenue pull of 2026-10-04 asked the archive's endpoint for one concept, which answered an
+# empty set of dollars for some filers whose facts hold the figures, so it left 11 filers holding revenue, Coca-Cola
+# among them, with none. Its rows are removed whole by its run id and the pull is made again, one request a filer for
+# its whole facts, which bills nothing and takes about a quarter of an hour. Nothing a night, a listing, a score or a
+# page reads moves. Run after the merge, when no night is running.
+history-pull --purge history-pull-20261004T012907.2152667Z
+history-pull --revenue --live
