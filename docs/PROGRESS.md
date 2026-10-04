@@ -37526,3 +37526,28 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry: 4c688bb, the
             warnings, 0 errors, 1831 of 1831 tests ran with none failed, migrations 0 to 60 with none pending, schema
             version 60, against `data-ci` and never `data`.
 Carried:    14.7, the phase report, with Part C's add-on put to the operator after it; the night of 2026-10-05 read.
+
+### 14.7 ruling - the S&P 400's and 600's membership asked again with historical=1: today's members only, so Part C's add-on stands   2026-10-04
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-04 at about 16:30 UTC, asking why the 1500 cannot be reached with the
+            current subscription: before any S&P 1500 decision, ask the S&P 400 and 600 again as the provider's
+            fundamentals documentation now describes, with and without historical=1, in two calls and buying
+            nothing; record whether the spans of membership come back, and correct Part C's cost if no add-on is
+            needed. The words are kept in `prompts/`.
+Asked:      two calls at 2026-10-04T16:46:39Z, the key read inside the asking process and never printed:
+            `fundamentals/MID.INDX?historical=1&fmt=json` answered 200, 57,386 bytes, holding General and
+            Components, 400 members today; `fundamentals/SML.INDX?historical=1&fmt=json` answered 200, 86,826
+            bytes, holding General and Components, 603 members today.
+Found:      neither answer carries HistoricalTickerComponents, so neither holds a span of membership, a join or a
+            leave; the form without historical=1 is the probe of 2026-10-03, whose answer to
+            `fundamentals/MID.INDX?filter=HistoricalTickerComponents` was "NA", captured in the fixture as
+            `phase14-mid-cap-history.json`. The S&P 500's answer carries its spans without asking, 822 of them on
+            2026-09-09. On this key the S&P 400's and 600's history is not in the fundamentals answer whatever the
+            plan, so Part C's cost stands and nothing in it is corrected: the history needs the add-on or another
+            source, and today's members alone run the nights from now on but replay the eight years over the
+            companies that survived into today's index.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            14.7 entry states.
+Carried:    14.7, the phase report, with Part C put to the operator after it, the add-on, a widening measured from now
+            on and the 500 alone among its answers; the night of 2026-10-05 read.
