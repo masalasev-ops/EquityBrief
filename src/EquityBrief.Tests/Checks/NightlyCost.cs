@@ -117,6 +117,7 @@ public partial class NightlyCost
         "src/EquityBrief.Core/Providers/EodhdEarningsCalendarFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdFundamentalsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdHistoricalBarFeed.cs",
+        "src/EquityBrief.Core/Providers/EodhdIndexComponentsFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdIndexMembershipFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdMarketSeriesFeed.cs",
         "src/EquityBrief.Core/Providers/EodhdNameNewsFeed.cs",
@@ -292,10 +293,11 @@ public partial class NightlyCost
         // The exempt count is stated rather than left to be inferred from an
         // empty result. A carve-out that grew without anyone noticing reads
         // exactly like a scan that found nothing.
+        // Fifteen from 14.8, the wider indices' components feed, which the history pull asks by hand and no night does.
         Assert.True(
-            MayHoldAClient.Length <= 14,
-            $"{MayHoldAClient.Length} shipped files may hold a client, and there are fourteen feed " +
-            "implementations. A fifteenth is a file that is not one, or a feed nobody declared.");
+            MayHoldAClient.Length <= 15,
+            $"{MayHoldAClient.Length} shipped files may hold a client, and there are fifteen feed " +
+            "implementations. A sixteenth is a file that is not one, or a feed nobody declared.");
 
         // The model list, stated the same way: three files, the local lane's client and
         // the paid model's live feed in each of its two formats.

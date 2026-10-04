@@ -36,7 +36,8 @@ internal static class ComponentVocabulary
     // is the pulled bars beside the pulled earnings, which one pull writes and one
     // purge removes together, and beside them the surprises, the market series, and
     // the companies, their share counts, their splits and their revenue as first
-    // filed, each a pull's and removed whole with it. The fundamental readings are a computed table, one
+    // filed, and from 14.8 today's members of the S&P 400 and 600, each a pull's
+    // and removed whole with it. The fundamental readings are a computed table, one
     // row a member a night, as the swing readings are, and so are the family
     // results, one row a member a night under each setup family but the pullback.
     // From 13.9 the forward returns column holds the family trades beside the
@@ -56,7 +57,7 @@ internal static class ComponentVocabulary
         ("Membership", [DataStore.Membership]),
         ("Bars", [DataStore.Bar, DataStore.MarketBar]),
         ("Calendar", [DataStore.Calendar]),
-        ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue]),
+        ("Pulled history", [DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember]),
         ("Computed tables", [DataStore.Indicator, DataStore.Swing, DataStore.VolumeProfile, DataStore.Level, DataStore.Ladder, DataStore.Move, DataStore.PeerReading, DataStore.EarningsReaction, DataStore.SwingReading, DataStore.MarketReading, DataStore.GateResult, DataStore.FilterVersion, DataStore.ShapeProposal, DataStore.FundamentalReading, DataStore.FamilyResult]),
         ("Listings", [DataStore.Listing, DataStore.ListRule, DataStore.FamilyNight, DataStore.FamilyPick, DataStore.HeavyweightNight, DataStore.HeavyweightRuleNight]),
         ("Forward returns", [DataStore.ForwardReturn, DataStore.FamilyTrade, DataStore.HeavyweightHolding, DataStore.HeavyweightRuleHolding]),
@@ -111,7 +112,7 @@ internal static class ComponentVocabulary
     // splitting them produces fragments that resolve to nothing.
     static readonly Dictionary<string, DataStore[]> WholeCells = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["every store but the pulled history and the market series"] = [.. Columns.SelectMany(column => column.Stores).Except([DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.MarketBar])],
+        ["every store but the pulled history and the market series"] = [.. Columns.SelectMany(column => column.Stores).Except([DataStore.PulledBar, DataStore.PulledEarnings, DataStore.PulledSurprise, DataStore.PulledMarketBar, DataStore.PulledCompany, DataStore.PulledShares, DataStore.PulledSplit, DataStore.PulledRevenue, DataStore.PulledMember, DataStore.MarketBar])],
         ["none"] = [],
         ["read API"] = [],
         ["a file the user chooses"] = [],
@@ -203,6 +204,7 @@ internal static class ComponentVocabulary
         ["pulled share counts"] = DataStore.PulledShares,
         ["pulled splits"] = DataStore.PulledSplit,
         ["pulled revenue"] = DataStore.PulledRevenue,
+        ["pulled members"] = DataStore.PulledMember,
         ["market series"] = DataStore.MarketBar,
         ["candidate register"] = DataStore.CandidateRegister,
         ["rule versions"] = DataStore.RuleVersion,

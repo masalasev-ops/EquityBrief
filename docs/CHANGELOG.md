@@ -10868,3 +10868,31 @@ Was:
 Now:
 > "Phase 12's pair is read off the plan and checked against the actual, every claim that moved named, and phase 13's and phase 14's are each read and checked the same way, each row the phase added reached once and passing and the rows after its report named beside it;"
 Why: 14.7 builds it, and the roster states what each check asserts.
+### 2026-10-04 - ARCHITECTURE.html - the wider universe's first test in the history pull's and the sweep history's rows, sections 13.9, 16, 17 and 18
+Authorised by: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood
+Was:
+> the history pull's catalogue row reading "historical price feed, earnings calendar feed, ..., pulled splits, pulled revenue" and writing "pulled bars, ..., pulled revenue", ending "... and reads the fourteen moves of 2023-03-17 against the sectors filed (see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night)"; the sweep history's row reading "..., pulled revenue, calendar, gate results, heavyweight nights" and saying "... and the name-sessions the live list listed, which the point-in-time check adds to its sample; the sweep computes ..."; and section 16's pulled history row ending its grain "... its form and its accession, each row carrying the run id of the pull that wrote it" and its retention "... no night reads any of the eight tables, ..."
+Now:
+> the history pull's row reading the index membership feed and the pulled members and writing the pulled members, and going on "; asked for the S&amp;P 400's or 600's members, it asks that index's fundamentals once and stores each member its answer lists today, ..., and every other pull asked for that index reads its names from them, survivors alone, since the answer carries no span of membership"; the sweep history's row reading the pulled members and going on "; and with the wider universe asked for, today's S&amp;P 400 and 600 members a members pull stored, each read as a member on every session and one the S&amp;P 500 never held marked a survivor, which the wider universe's first test reads"; section 16's row adding "from a members pull, one row per wider index and member ..." and "the nine tables" with the new decision cited; and 13.9 gains the test's paragraph, 17 the wider universe test's row and 18 the rows for a wider index's answer listing no member and for a member a pull does not serve
+Why: 14.8, the operator's ruling of 2026-10-04 on Part C's first test.
+### 2026-10-04 - SCHEMA.md - the pulled members
+Authorised by: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood
+Was:
+> the ownership table ending its pulled rows at "`pulled_revenue` | HistoryPull | none | HistoryPull", and no `pulled_member` table
+Now:
+> "`pulled_member` | HistoryPull | none | HistoryPull" beside it, and the `pulled_member` table with its columns and its paragraph
+Why: migration 61, the members pull's table.
+### 2026-10-04 - RUNBOOK.md - the members pull, the wider indices' pulls and the wider universe's run
+Authorised by: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood
+Was:
+> "A purge removes every row that pull wrote from the eight tables and nothing else, ... under `history-pull`, `history-pull-surprises`, `history-pull-market`, `history-pull-sector-funds`, `history-pull-companies`, `history-pull-splits`, `history-pull-revenue` and `history-purge`, ..."
+Now:
+> the pulls' section gains the members pull and the wider indices' pulls with what they cost, the purge removes from "the nine tables" and names `history-pull-members` among the stages, and the sweeps gain "The S&P 1500 on today's members" with `sweep-wider`
+Why: 14.8's pulls and run are started by hand, and the operator needs the commands.
+### 2026-10-04 - .claude/rules/checks.md - fixture-expectations reaches the wider universe's first test
+Authorised by: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood
+Was:
+> `fixture-expectations` ending "... asks for none on a night run again for an earlier session or past the day's allowance, and writes its row on a night no rule asked"
+Now:
+> the row goes on with what 14.8's tests assert: the probe answers' members read and an empty answer refused, the members pull, a wider index's pull naming a name not served, the sweep history read both ways, and the run's answer with its survivors' words
+Why: the roster states what each check asserts.

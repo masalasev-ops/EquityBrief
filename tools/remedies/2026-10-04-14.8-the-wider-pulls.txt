@@ -1,0 +1,18 @@
+# The remedy of 14.8 (Part C's first test on today's members), as its PROGRESS entry prints it: run tools/migrate.ps1
+# first, which creates migration 61's pulled members. The members pull asks the S&P 400's and the S&P 600's
+# fundamentals once each and stores the members each answer lists today, survivors alone since the answers carry no
+# span of membership. The history pull's own pulls, given each index, then ask those members for their bars and
+# earnings prints from 2018, their surprises and their splits: about a thousand bars requests and a thousand splits
+# requests at a weight of one, and the calendar once a calendar month of the span for each index's bars and surprises,
+# about 2,450 weighted calls of the day's hundred thousand. A name already pulled for the S&P 500's history keeps the
+# rows that pull wrote, and a name not served is named on its pull's row. Everything goes into the pulled history's
+# tables, read by no night. No model call and nothing bought. Run after the merge, when no night is running, then run
+# the wider universe's test, sweep-wider, from main's Release build.
+history-pull --members --index MID --live
+history-pull --members --index SML --live
+history-pull --from 2018-01-01 --index MID --live
+history-pull --from 2018-01-01 --index SML --live
+history-pull --surprises --from 2018-01-01 --index MID --live
+history-pull --surprises --from 2018-01-01 --index SML --live
+history-pull --splits --from 2018-01-01 --index MID --live
+history-pull --splits --from 2018-01-01 --index SML --live

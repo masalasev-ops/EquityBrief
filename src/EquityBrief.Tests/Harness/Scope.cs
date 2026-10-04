@@ -3190,6 +3190,20 @@ internal static class Scope
             Verdict.Pass,
             "the table's columns and types are asserted against SCHEMA.md",
             ByMigration),
+
+        // 14.8, the wider universe's first test: section 17's row and section 18's two.
+        [CheckReach.Key(LimitsTable, "Wider universe test")] = new Scoped(
+            Verdict.Pass,
+            "the sweep history reads the 500 alone over its spans and the wider universe with today's members of the mid and small cap indices on every session, one the 500 never held a survivor, over a constructed store; each family's wider figures are judged against its own by the ideas' test, one passing waiting on membership as it stood and none passing dropping the widening; and every row and sentence giving a wider figure carries the survivors' words, read back off a constructed report",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A wider index's answer lists no member, or cannot be read")] = new Scoped(
+            Verdict.Pass,
+            "an answer carrying no components, the captured answer to the spans and one listing no code are refused, and a refused index stores nothing with its row saying why, over constructed feeds and the committed captures",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A member of the S&P 400 or 600 a pull does not serve")] = new Scoped(
+            Verdict.Pass,
+            "a pull given a wider index asks its members today, stores the two served and names the third, over a constructed feed",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "The labeller fails")] = new Scoped(
             Verdict.Pass,
             "a run refused before it asked anything writes its own row saying why and no row of the night's, and a labeller that stopped partway leaves the night's rows, listings and gate results as they were",
@@ -5336,6 +5350,9 @@ internal static class Scope
         // 14.6, the freezes and registrations.
         ["A sector fund or the index holds no close for a heavyweights' rebalance night"] = "14.6",
         ["The provider does not serve a member's estimates on the night"] = "14.6",
+        // 14.8, the wider universe's first test.
+        ["A wider index's answer lists no member, or cannot be read"] = "14.8",
+        ["A member of the S&P 400 or 600 a pull does not serve"] = "14.8",
         // 13.1, the family framework. The row about two families is read on the page once a second family is on it.
         ["A stock a family passes while a trade for it is still open"] = "13.1",
         ["A stock two families pass on one night"] = "13.2",
@@ -5479,6 +5496,8 @@ internal static class Scope
         ["Heavyweights' rebalance and exits"] = "14.3",
         ["Heavyweights' registrations"] = "14.6",
         ["Estimates raised"] = "14.6",
+        // The wider universe's first test, 14.8.
+        ["Wider universe test"] = "14.8",
         // The context checks, 14.4.
         ["A print's revenue quarter"] = "14.4",
         ["Context ideas' test"] = "14.4",

@@ -69,8 +69,9 @@ public class StoreNeverDeleted
         // ComparisonCommand and SourceMeasurementRun write a report file into a folder the operator names.
         // DrainLauncher copies the worker's build into a fresh partial folder, with no overwrite, moves the
         // finished copy into place and removes a partial or an old one, under the data root's own folder
-        // of builds. FamilySweepRunner, FamilyIdeasRunner, SweepIdeasRunner, ContextIdeasRunner and HeavyweightSweepRunner
-        // each write a run's report and its figures into the run folder they made for them under the sweep's folder.
+        // of builds. FamilySweepRunner, FamilyIdeasRunner, SweepIdeasRunner, ContextIdeasRunner, HeavyweightSweepRunner and
+        // WiderUniverseRunner each write a run's report and its figures into the run folder they made for them under the
+        // sweep's folder.
         // NightLock writes and removes the night's lock file.
         // SweepPointInTime removes the scratch stores it built under the machine's temporary folder, which
         // hold nothing of the operator's. SweepRunner writes and replaces its own run folder's files, and
@@ -103,6 +104,8 @@ public class StoreNeverDeleted
                 "SweepIdeasRunner.cs: File.WriteAllText(report)",
                 "SweepPointInTime.cs: Directory.Delete(scratchRoot)",
                 "SweepPointInTime.cs: File.Delete(file)",
+                "WiderUniverseRunner.cs: File.WriteAllText(figures)",
+                "WiderUniverseRunner.cs: File.WriteAllText(report)",
             ],
             sites.Where(site => !site.StartsWith("SweepRunner.cs: ", StringComparison.Ordinal)));
 

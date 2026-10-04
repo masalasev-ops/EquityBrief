@@ -95,6 +95,9 @@ public partial class FixtureExpectations
             // 14.6, the freezes and registrations: section 17's two rows and section 18's two.
             .. HeavyweightFreezeClaims,
 
+            // 14.8, the wider universe's first test: section 17's row and section 18's two.
+            .. WiderUniverseClaims,
+
             // 12.6's correction, the model profiles: section 17's profiles over the shipped settings and the
             // fixture's own models file, and the half of section 18's row about a key the secrets file does not
             // hold where the job stops and the drain settles its request.

@@ -681,7 +681,25 @@ public static class SchemaMigrations
         new Migration(58, "create pulled_company, pulled_shares, pulled_split and pulled_revenue", CreatePulledCompanies),
         new Migration(59, "add reported_quarter.shares, create company, heavyweight_night and heavyweight_holding", CreateHeavyweights),
         new Migration(60, "add heavyweight_night.beta, create heavyweight_rule_night, heavyweight_rule_holding and estimate_reading", CreateRuleBooks),
+        new Migration(61, "create pulled_member", CreatePulledMembers),
     ];
+
+    // Today's members of the S&P 400 and the S&P 600 as the indices' fundamentals answers list them, one row a member,
+    // marked by the pull that wrote it, removed whole by that pull and read by no night: the names the wider universe's
+    // first test pulls the history of, which hold survivors alone since the answers carry no span of membership.
+    // see: A wider universe is tested first on today's members, and widened only where a family's edge improves even so and holds on membership as it stood
+    const string CreatePulledMembers = @"
+        CREATE TABLE pulled_member (
+            index_code  TEXT NOT NULL,
+            ticker      TEXT NOT NULL,
+            exchange    TEXT NOT NULL,
+            name        TEXT,
+            sector      TEXT,
+            industry    TEXT,
+            pull        TEXT NOT NULL,
+            PRIMARY KEY (index_code, ticker)
+        ) STRICT;
+    ";
 
     // Each registered sector heavyweights rule's own book, read and held as the page's book is, the rule it belongs to
     // first in each key: every sector's largest companies at each of the rule's rebalances, and each holding the rule

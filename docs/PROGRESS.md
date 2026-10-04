@@ -37612,3 +37612,43 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    14.8, Part C's first test on today's members, and its rule's answer brought to the operator; phase
             14's sign-off, owed on the phase as a whole by a session that committed none of its code, after 14.8;
             the night of 2026-10-05 read.
+
+### 14.8 - Part C's first test on today's members: the S&P 400's and 600's members and their history pulled, and each swing family replayed on the 1,500 against the 500 alone   2026-10-04
+
+Built:      on the operator's ruling of 2026-10-04. `history-pull --members --index <MID or SML>` asks that index's
+            fundamentals once and stores each member its answer lists today in `pulled_member`, marked by the pull
+            and removed whole by its purge, migration 61; every other pull given that index asks those members, so
+            the bars and earnings prints, the surprises and the splits of today's 400 and 600 members land in the
+            pulled history's tables, read by no night. The sweep history, asked for the wider universe, reads them
+            beside the S&P 500's history as members on every session, one the 500 never held a survivor.
+            `sweep-wider` replays the pullback's base, the breakout and the earnings drift as frozen over the 1,500
+            and over the 500 alone, judges the 1,500 by the ideas' run's test on the edge with what luck passes over
+            the three tries, states on every 1,500 figure that it holds survivors only, and answers with the
+            operator's rule. The operator's two probe answers are committed to the fixture. One decision; sections
+            13.9, 16, 17 and 18, the history pull's and the sweep history's rows, SCHEMA and the runbook.
+Tests:      1837, from 1832: five added, the members read off the probe answers, the members pull, a wider index's
+            pull, the sweep history read both ways and the run's answer with its survivors' words. The fixture gains
+            the two probe answers, the S&P 600's less one member whose company name carries a word the credential scan
+            refuses, said in its manifest entry.
+Claims:     973, from 970: section 17's row and section 18's two, named beside phase 14's pair after its report.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the heavyweights'
+            own, the swing filter's and the rule versions' lists; no file this tree edits is in any of them.
+Mutated:    the rule, stated before the run: each property 14.8's done condition names broken alone, and each other
+            property a 14.8 test reaches, made by hand over the working tree, filtered to the five tests and
+            reverted.
+            W1 the wider universe read without today's members: red in the sweep history test.
+            W2 a pull given a wider index asking the night's membership: red in the wider pull test.
+            W3 the 1,500's rows without the survivors' words: survived first, a missing property, each figure's own
+            words still standing on the row so the row's label went unread; the report test extended to read the
+            label itself, then red in it.
+            W4 the rule dropping the widening where a family improves: red in the report test.
+            W5 an answer carrying no components read as an empty index: red in the components test.
+            W6 a refused index's members pull recorded as ok: red in the members pull test.
+            Results: W1 to W6 each red where stated once W3's test was extended, each reverted, and the five tests
+            green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
+            RUN.
+Carried:    after the merge, `tools/migrate.ps1`, `tools/remedies/2026-10-04-14.8-the-wider-pulls.txt` and
+            `sweep-wider` from main's Release build, then an entry with each family's edge on both universes, its
+            test, the luck figure and the rule's answer, brought to the operator; phase 14's sign-off; the night of
+            2026-10-05 read.
