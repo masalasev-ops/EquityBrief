@@ -37274,10 +37274,10 @@ Built:      the context run, `sweep-context`, by hand from main's Release build,
             each family's tries against what luck passes, the drift's listings reading a growth, and each revenue
             idea's trades reading a quarter first filed after their buy. No news is read. Four decisions; 13.9's
             paragraph, section 17's three rows, 18's two and 23's two sources.
-Tests:      (unfilled), from 1809: seven added, the revenue growth by hand, the drift's filter and order, the
+Tests:      1816, from 1809: seven added, the revenue growth by hand, the drift's filter and order, the
             replay's read of each listing's print, the RSI fall and its first three, the drift's test with no floor
             of nights, the history's revenue read and the report's tries against luck.
-Claims:     (unfilled), from 952: section 17's three rows and section 18's two, against about six the plan counted.
+Claims:     957, from 952: section 17's three rows and section 18's two, against about six the plan counted.
 Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the swing filter's
             and the rule versions' lists; no file this tree edits is in any of them.
 Mutated:    the rule, stated before the run: each property 14.4's done condition names broken alone, and each other
@@ -37292,6 +37292,12 @@ Mutated:    the rule, stated before the run: each property 14.4's done condition
             O2 a name reading no fall ordered first: red in the RSI test.
             L1 the pullback's luck read over the drift's tries: red in the report's.
             Not mutated: the history's revenue read through its filer, and the span's edge at 100 days.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: (unfilled).
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 68f9ba0, over
+            b5814ba, the entry's commit, whose first run stopped at the suite on `store-never-deleted`, the context
+            run's two writes not yet stated. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1816 of 1816 tests
+            ran with none failed, migrations 0 to 59 with none pending, schema version 59, against `data-ci` and
+            never `data`. `tools/verify-phase.ps1`: 44 tables, 957 claims, 957 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 968 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on
+            the roster, 43 carried and 43 passed.
 Carried:    after the merge, `sweep-context` from main's Release build, its figures as an entry and its report
             brought; the night of 2026-10-05 read, the book's first rebalance in it; the fork's ruling.
