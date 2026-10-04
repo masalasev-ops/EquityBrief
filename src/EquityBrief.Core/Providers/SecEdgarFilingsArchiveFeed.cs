@@ -25,8 +25,8 @@ namespace EquityBrief.Core.Providers;
 // The reader is `SecEdgarArchive`, shared with the recorded feed, and it was
 // written against thirteen captured responses at 6.2 before this existed.
 //
-// The history pull asks the archive for one concept of one filer at a time
-// through the same agent, one document a request, read by `ConceptAnswers.Parse`.
+// The history pull asks the archive for each filer's whole facts through the
+// same agent, one document a request, read by `ConceptAnswers.FromFacts`.
 public sealed class SecEdgarFilingsArchiveFeed(
     HttpClient client,
     ArchiveAgent agent,
@@ -81,18 +81,20 @@ public sealed class SecEdgarFilingsArchiveFeed(
             .ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<ConceptFact>> ConceptAsync(
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<ConceptFact>>> RevenueAsync(
         string cik,
-        string concept,
+        IReadOnlyList<string> concepts,
         CancellationToken cancellation = default)
     {
         Requests++;
 
         var padded = SecEdgarArchive.Padded(cik);
-        var body = await FetchAsync(SecEdgarArchive.Request(ArchiveDocument.CompanyConcept, padded, file: concept), cancellation)
+        var body = await FetchAsync(SecEdgarArchive.Request(ArchiveDocument.CompanyFacts, padded), cancellation)
             .ConfigureAwait(false);
 
-        return body is null ? [] : ConceptAnswers.Parse(body, padded, concept);
+        return body is null
+            ? concepts.ToDictionary(concept => concept, _ => (IReadOnlyList<ConceptFact>)[], StringComparer.Ordinal)
+            : ConceptAnswers.FromFacts(body, padded, concepts);
     }
 
     async Task<string?> FetchAsync(ArchiveRequest wanted, CancellationToken cancellation)

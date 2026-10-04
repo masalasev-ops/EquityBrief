@@ -448,6 +448,7 @@ public class PinnedConstants
             new("Family sweep test", "63", Core.Returns.Blocks.Sessions, "Blocks.Sessions"),
             new("Family sweep test", "0.05", (decimal)Core.Returns.ReasonVerdict.Significance, "ReasonVerdict.Significance"),
             // The pulls' readings, 14.2, the figures in each row's order.
+            new("Company value", "10", Core.Families.FiledSplit.PlainMost, "FiledSplit.PlainMost"),
             new("Sector on a session", "2018", Core.Families.GicsSectors.First.Year, "GicsSectors.First's year"),
             new("Sector on a session", "14", Core.Families.GicsSectors.Moves.Count, "GicsSectors.Moves"),
             new("Sector on a session", "2023", Core.Families.GicsSectors.MovedAfter.Year, "GicsSectors.MovedAfter's year"),

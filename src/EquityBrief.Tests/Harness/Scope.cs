@@ -3001,6 +3001,10 @@ internal static class Scope
             Verdict.Pass,
             "a constructed filer answering no figure under any concept is named among those filing under none and stores nothing, beside each concept's filers and figures",
             ByExpectations),
+        [CheckReach.Key(FailureTable, "A spin-off or a merger the provider files as a split")] = new Scoped(
+            Verdict.Pass,
+            "each kind of plain split is read as one and four of the provider's spin-off and merger adjustments as none, a spin-off after a session divides no close while a plain split beside it does, and the splits pull counts the plain ones among those answered, by hand",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "The labeller fails")] = new Scoped(
             Verdict.Pass,
             "a run refused before it asked anything writes its own row saying why and no row of the night's, and a labeller that stopped partway leaves the night's rows, listings and gate results as they were",
@@ -5055,6 +5059,7 @@ internal static class Scope
         ["A company filing no sector, no count with its date or no CIK"] = "14.2",
         ["One of the fourteen moves of 2023-03-17 filed in another sector or under another filer"] = "14.2",
         ["A filer stating its revenue under none of the concepts"] = "14.2",
+        ["A spin-off or a merger the provider files as a split"] = "14.2",
         // 13.1, the family framework. The row about two families is read on the page once a second family is on it.
         ["A stock a family passes while a trade for it is still open"] = "13.1",
         ["A stock two families pass on one night"] = "13.2",

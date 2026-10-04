@@ -30,6 +30,8 @@ public partial class FixtureExpectations
         CheckReach.Key(Scope.FailureTable, "A company filing no sector, no count with its date or no CIK"),
         CheckReach.Key(Scope.FailureTable, "One of the fourteen moves of 2023-03-17 filed in another sector or under another filer"),
         CheckReach.Key(Scope.FailureTable, "A filer stating its revenue under none of the concepts"),
+        // The 14.2 correction: a spin-off or a merger the provider files as a split.
+        CheckReach.Key(Scope.FailureTable, "A spin-off or a merger the provider files as a split"),
     ];
 
     // Every row the pulls add, whichever check reaches it, which the phase's pair names apart.
@@ -85,6 +87,33 @@ public partial class FixtureExpectations
 
         // No count filed before the session, no value.
         Assert.Null(CompanyValue.On(new SessionClose(PullDate(2024, 4, 30), 10m, 10m), ThreeSheets, split));
+    }
+
+    [Fact]
+    public void ASpinOffTheProviderFilesAsASplitChangesNoSharesAndAPlainSplitOfEachKindDoes()
+    {
+        // Plain: two for one, three for two, one for fifty, five for four, and three for one as the provider files CSX's,
+        // 959,692 for 319,897, three millionths from three. A spin-off's or a merger's adjustment: GE's 1,281
+        // for 1,000, DTE's 47 for 40, HON's 1,907 for 2,000, AIRC's one for 1.031190, MTCH's 1,751 for 500, two
+        // thousandths from seven for two, and DISH's 763 for 760, four thousandths from one.
+        static FiledSplit Filed(decimal made, decimal from) => new(PullDate(2025, 1, 2), made, from);
+
+        Assert.Equal(
+            [true, true, true, true, true, false, false, false, false, false, false],
+            new[]
+            {
+                Filed(2m, 1m), Filed(3m, 2m), Filed(1m, 50m), Filed(5m, 4m), Filed(959_692m, 319_897m),
+                Filed(1_281m, 1_000m), Filed(47m, 40m), Filed(1_907m, 2_000m), Filed(1m, 1.031190m), Filed(1_751m, 500m), Filed(763m, 760m),
+            }.Select(split => split.Plain));
+        Assert.Equal((10, 0.0001m), (FiledSplit.PlainMost, FiledSplit.PlainWithin));
+
+        // On 2024-08-30 a spin-off's adjustment after it divides nothing: 1,100 shares at 100, 110,000. A two for one beside
+        // it divides by two, 55,000, and a one for fifty multiplies by fifty, 5,500,000.
+        var session = new SessionClose(PullDate(2024, 8, 30), 100m, 100m);
+
+        Assert.Equal(110_000m, CompanyValue.On(session, ThreeSheets, [new(PullDate(2025, 1, 2), 1_281m, 1_000m)]));
+        Assert.Equal(55_000m, CompanyValue.On(session, ThreeSheets, [new(PullDate(2025, 1, 2), 1_281m, 1_000m), new(PullDate(2025, 3, 3), 2m, 1m)]));
+        Assert.Equal(5_500_000m, CompanyValue.On(session, ThreeSheets, [new(PullDate(2025, 3, 3), 1m, 50m)]));
     }
 
     [Fact]
@@ -322,6 +351,24 @@ public partial class FixtureExpectations
         Assert.Contains("2019-01-01 2019-03-31 29123000000 2019-05-02 RevenuesNetOfInterestExpense stated", bankQuarters.Select(RevenueLine));
         Assert.Contains("2018-10-01 2018-12-31 26109000000 2019-11-04 RevenuesNetOfInterestExpense year less nine months", bankQuarters.Select(RevenueLine));
 
+        // Activision's facts, the two concepts it moved its revenue between: the first quarter of 2018 as the 10-Q of
+        // 2018-05-03 stated it under revenue, and not as the 10-K and 10-Q of 2019 stated it again under revenue from
+        // contracts with customers.
+        var activisionFacts = ConceptAnswers.FromFacts(Capture("phase14-sec-facts-ATVI.json"), "0000718877", FirstFiledRevenue.Concepts);
+
+        Assert.Equal(
+            (17, 25, 0),
+            (activisionFacts["Revenues"].Count, activisionFacts["RevenueFromContractWithCustomerExcludingAssessedTax"].Count, activisionFacts["SalesRevenueNet"].Count));
+        Assert.Contains(
+            "2018-01-01 2018-03-31 1965000000 2018-05-03 Revenues stated",
+            FirstFiledRevenue.Quarters(activisionFacts.SelectMany(concept => concept.Value.Select(fact => new FiledRevenue(concept.Key, fact.Start, fact.End, fact.Value, fact.Filed, fact.Form, fact.Accession)))).Select(RevenueLine));
+
+        // A concept the archive holds no dollars under, sent as an empty object where the figures would be, reads as none,
+        // as Coca-Cola's revenue came back from the endpoint for one concept; anything else in that place is refused.
+        Assert.Empty(ConceptAnswers.Parse("{\"units\":{\"USD\":{}}}", "0000021344", "Revenues"));
+        Assert.Empty(ConceptAnswers.FromFacts("{\"facts\":{\"us-gaap\":{\"Revenues\":{\"units\":{\"USD\":{}}}}}}", "0000021344", ["Revenues"])["Revenues"]);
+        Assert.Throws<FormatException>(() => ConceptAnswers.Parse("{\"units\":{\"USD\":{\"val\":1}}}", "0000021344", "Revenues"));
+
         // Answers that cannot be read are refused rather than read as nothing: a company answer that is not one object, a
         // splits answer that is not an array or whose ratio is not two numbers, and a concept answer that is not one object.
         Assert.Throws<FormatException>(() => CompanyAnswers.Parse("[]", "AAA"));
@@ -403,15 +450,15 @@ public partial class FixtureExpectations
         }
     }
 
-    sealed class ConstructedRevenueFeed(Func<string, string, IReadOnlyList<ConceptFact>> answer) : IFiledRevenueFeed
+    sealed class ConstructedRevenueFeed(Func<string, IReadOnlyDictionary<string, IReadOnlyList<ConceptFact>>> answer) : IFiledRevenueFeed
     {
         public int Requests { get; private set; }
 
-        public Task<IReadOnlyList<ConceptFact>> ConceptAsync(string cik, string concept, CancellationToken cancellation = default)
+        public Task<IReadOnlyDictionary<string, IReadOnlyList<ConceptFact>>> RevenueAsync(string cik, IReadOnlyList<string> concepts, CancellationToken cancellation = default)
         {
             Requests++;
 
-            return Task.FromResult(answer(cik, concept));
+            return Task.FromResult(answer(cik));
         }
     }
 
@@ -502,7 +549,7 @@ public partial class FixtureExpectations
 
         var outcome = await HistoryPull.PullSplitsAsync(feed, PullClock(), store.DatabaseFile, "GSPC", PullFrom, "history-pull-splits-1");
 
-        Assert.Equal((4, 3, 1, 1, 4), (outcome.Names, outcome.Answered, outcome.WithASplit, outcome.Written, outcome.Requests));
+        Assert.Equal((4, 3, 1, 1, 4, 1), (outcome.Names, outcome.Answered, outcome.WithASplit, outcome.Written, outcome.Requests, outcome.Plain));
         Assert.Equal(["BBB: The splits history feed for BBB feed answered 500."], outcome.Unanswered);
         Assert.Equal(["AAA|2026-08-10|3|2|history-pull-splits-1"], FamilyRows(store, "SELECT * FROM pulled_split;"));
         Assert.Equal(["history-pull-splits|partial|1|4"], FamilyRows(store, "SELECT stage, outcome, rows_written, network_requests FROM run_log WHERE run_id = 'history-pull-splits-1';"));
@@ -535,31 +582,36 @@ public partial class FixtureExpectations
     }
 
     [Fact]
-    public async Task TheRevenuePullAsksEachPulledFilerForEachConceptATenthOfASecondApartAndStoresEveryFigureWithItsFilingDay()
+    public async Task TheRevenuePullAsksEachPulledFilerForItsFactsATenthOfASecondApartAndStoresEveryFigureWithItsFilingDay()
     {
         using var store = PullStore();
 
-        // Four pulled companies: AAA and its second class GGG under one filer, FFF under another, and EEE under none.
+        // Five pulled companies: AAA and its second class GGG under one filer, FFF and HHH under one each, and EEE under
+        // none.
         store.Execute(@"
             INSERT INTO pulled_company (ticker, cik, sector, industry_group, industry, sub_industry, delisted_on, pull) VALUES
                 ('AAA', '0000000001', 'Information Technology', NULL, NULL, NULL, NULL, 'history-pull-companies-1'),
                 ('GGG', '0000000001', 'Information Technology', NULL, NULL, NULL, NULL, 'history-pull-companies-1'),
                 ('FFF', '0000000002', 'Financials', NULL, NULL, NULL, NULL, 'history-pull-companies-1'),
+                ('HHH', '0000000003', 'Financials', NULL, NULL, NULL, NULL, 'history-pull-companies-1'),
                 ('EEE', NULL, NULL, NULL, NULL, NULL, NULL, 'history-pull-companies-1');");
 
-        // The first filer states two figures under revenue and one under revenue from contracts; the second states none,
-        // and the archive refuses one of its requests.
-        var feed = new ConstructedRevenueFeed((cik, concept) => (cik, concept) switch
+        // The first filer's facts state two figures under revenue and one under revenue from contracts; the archive
+        // refuses the second's, and the third's state none under any of the concepts.
+        var feed = new ConstructedRevenueFeed(cik => cik switch
         {
-            ("0000000001", "Revenues") =>
-            [
-                new(PullDate(2026, 1, 1), PullDate(2026, 3, 31), 100m, PullDate(2026, 5, 1), "10-Q", "0000000001-26-000001"),
-                new(PullDate(2026, 4, 1), PullDate(2026, 6, 30), 110m, PullDate(2026, 8, 1), "10-Q", "0000000001-26-000002"),
-            ],
-            ("0000000001", "RevenueFromContractWithCustomerExcludingAssessedTax") =>
-                [new(PullDate(2026, 4, 1), PullDate(2026, 6, 30), 105m, PullDate(2026, 8, 1), "10-Q", "0000000001-26-000002")],
-            ("0000000002", "SalesRevenueNet") => throw new ProviderRefusal("The archive refused CompanyConcept with status 429.", transient: true),
-            _ => [],
+            "0000000001" => new Dictionary<string, IReadOnlyList<ConceptFact>>
+            {
+                ["Revenues"] =
+                [
+                    new(PullDate(2026, 1, 1), PullDate(2026, 3, 31), 100m, PullDate(2026, 5, 1), "10-Q", "0000000001-26-000001"),
+                    new(PullDate(2026, 4, 1), PullDate(2026, 6, 30), 110m, PullDate(2026, 8, 1), "10-Q", "0000000001-26-000002"),
+                ],
+                ["RevenueFromContractWithCustomerExcludingAssessedTax"] =
+                    [new(PullDate(2026, 4, 1), PullDate(2026, 6, 30), 105m, PullDate(2026, 8, 1), "10-Q", "0000000001-26-000002")],
+            },
+            "0000000002" => throw new ProviderRefusal("The archive refused CompanyFacts with status 429.", transient: true),
+            _ => new Dictionary<string, IReadOnlyList<ConceptFact>>(),
         });
 
         var waits = new List<TimeSpan>();
@@ -575,13 +627,13 @@ public partial class FixtureExpectations
                 return Task.CompletedTask;
             });
 
-        // Two filers, six concepts each: twelve requests, each followed by a tenth of a second.
-        Assert.Equal((2, 3, 12), (outcome.Filers, outcome.Written, outcome.Requests));
-        Assert.Equal(Enumerable.Repeat(TimeSpan.FromMilliseconds(100), 12), waits);
+        // Three filers, one request each, each followed by a tenth of a second.
+        Assert.Equal((3, 3, 3), (outcome.Filers, outcome.Written, outcome.Requests));
+        Assert.Equal(Enumerable.Repeat(TimeSpan.FromMilliseconds(100), 3), waits);
         Assert.Equal(10, HistoryPull.ArchiveRequestsASecond);
         Assert.Equal(["EEE"], outcome.WithoutAFiler);
-        Assert.Equal(["0000000002"], outcome.NoRevenue);
-        Assert.Equal(["CIK 0000000002 under SalesRevenueNet: The archive refused CompanyConcept with status 429."], outcome.Unanswered);
+        Assert.Equal(["0000000003"], outcome.NoRevenue);
+        Assert.Equal(["CIK 0000000002: The archive refused CompanyFacts with status 429."], outcome.Unanswered);
         Assert.Equal(
             ["RevenuesNetOfInterestExpense 0 0", "Revenues 1 2", "RevenueFromContractWithCustomerExcludingAssessedTax 1 1", "RevenueFromContractWithCustomerIncludingAssessedTax 0 0", "RegulatedAndUnregulatedOperatingRevenue 0 0", "SalesRevenueNet 0 0"],
             outcome.ByConcept.Select(concept => FormattableString.Invariant($"{concept.Concept} {concept.Filers} {concept.Figures}")));
@@ -592,7 +644,7 @@ public partial class FixtureExpectations
                 "0000000001|Revenues|2026-04-01|2026-06-30|0000000001-26-000002|110|2026-08-01|10-Q|history-pull-revenue-1",
             ],
             FamilyRows(store, "SELECT * FROM pulled_revenue ORDER BY concept, period_start;"));
-        Assert.Equal(["history-pull-revenue|partial|3|12"], FamilyRows(store, "SELECT stage, outcome, rows_written, network_requests FROM run_log WHERE run_id = 'history-pull-revenue-1';"));
+        Assert.Equal(["history-pull-revenue|partial|3|3"], FamilyRows(store, "SELECT stage, outcome, rows_written, network_requests FROM run_log WHERE run_id = 'history-pull-revenue-1';"));
 
         var purged = await HistoryPull.PurgeAsync(PullClock(), store.DatabaseFile, "history-pull-revenue-1", "history-purge-1");
 
@@ -602,7 +654,7 @@ public partial class FixtureExpectations
         using var empty = PullStore();
 
         await Assert.ThrowsAsync<ArgumentException>(() => HistoryPull.PullRevenueAsync(feed, PullClock(), empty.DatabaseFile, "history-pull-revenue-2", (_, _) => Task.CompletedTask));
-        Assert.Equal(12, feed.Requests);
+        Assert.Equal(3, feed.Requests);
     }
 
     [Fact]
