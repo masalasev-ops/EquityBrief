@@ -86,6 +86,8 @@ public partial class FixtureExpectations
             .. FamilyReplayClaims,
             // 14.2, the pulls and the readings over them: section 17's five rows and section 18's four.
             .. CompanyPullClaims,
+            // 14.3, the sector heavyweights: section 17's four rows and section 18's four.
+            .. HeavyweightClaims,
 
             // 12.6's correction, the model profiles: section 17's profiles over the shipped settings and the
             // fixture's own models file, and the half of section 18's row about a key the secrets file does not

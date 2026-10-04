@@ -40,7 +40,7 @@ public sealed record FamilyNightInputs(IReadOnlyList<FamilyNightMember> Members,
 // and calls no model.
 // see: The nightly run is arithmetic only
 // see: The breakout and the earnings drift each register a variant listing only on nights its market switch is open, each family registered again whole and its records replayed
-// see: The market check closes every family's list together
+// see: The market check closes every swing family's list together, and the sector heavyweights read none
 // see: Each print's reaction is read from the nightly calendar and the stored bars, and the earnings drift is the one rule that reads it
 // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
 // see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end

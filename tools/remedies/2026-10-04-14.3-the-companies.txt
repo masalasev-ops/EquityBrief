@@ -1,0 +1,11 @@
+# The remedy of 14.3 (the sector heavyweights on screen, provisional), as its PROGRESS entry prints it: run
+# tools/migrate.ps1 first, which adds migration 59's share count to the reported quarters and creates the members'
+# companies and the heavyweights' two tables, then ask every member no fetch has stored a company for, once, through
+# the answer the quarters step already asks for: about five hundred asks at eleven weighted calls each, about 5,500 of
+# the day's hundred thousand. The step keeps its own limit of a quarter of an hour, so a run it stops leaves the
+# members still owed to the next line, which asks them and none already asked; a line with none owed asks nothing.
+# Each answer's quarters are stored beside its company as any fetch's are. The next night's book values every member
+# from them, rebalances on its first night and buys each sector's leader. Run after the merge, when no night is running.
+quarters --companies --live
+quarters --companies --live
+quarters --companies --live

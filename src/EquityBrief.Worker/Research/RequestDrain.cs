@@ -32,6 +32,7 @@ public sealed class RequestDrain : IComponent
         [
             new StoreTouch(Store.FamilyNight, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
+            new StoreTouch(Store.HeavyweightHolding, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.ResearchRequest, Touch.Read | Touch.Insert | Touch.Update),
@@ -126,6 +127,11 @@ public sealed class RequestDrain : IComponent
         ORDER BY " + FundamentalState.PlaceIn("f.state") + @", g.rank, g.ticker;
     ";
 
+    // The stocks the sector heavyweights bought on the night, which the page draws after the families' picks and the
+    // night asks for in that order; a holding carried from an earlier month is never one of them.
+    // see: The night asks for a report on the first six names its page draws
+    const string BoughtOnTheNight = "SELECT ticker FROM heavyweight_holding WHERE entered_on = $night ORDER BY sector, ticker;";
+
     // A request for the name nobody has settled, being one outstanding or being written.
     const string Waiting = @"
         SELECT state FROM research_request
@@ -212,6 +218,22 @@ public sealed class RequestDrain : IComponent
             while (await reader.ReadAsync(cancellation))
             {
                 passed.Add(reader.GetString(0));
+            }
+        }
+
+        await using (var bought = connection.CreateCommand())
+        {
+            bought.CommandText = BoughtOnTheNight;
+            bought.Parameters.AddWithValue("$night", night.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+            await using var reader = await bought.ExecuteReaderAsync(cancellation);
+
+            while (await reader.ReadAsync(cancellation))
+            {
+                if (!passed.Contains(reader.GetString(0), StringComparer.Ordinal))
+                {
+                    passed.Add(reader.GetString(0));
+                }
             }
         }
 

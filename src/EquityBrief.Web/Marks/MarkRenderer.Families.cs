@@ -6,7 +6,7 @@ namespace EquityBrief.Web.Marks;
 // page, the trade its family's plan states, with no target where the plan trails its stop, the reward to risk as the card
 // prints it, why the family lists it tonight in that family's words, and the labels of the other families
 // it qualified under.
-// see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
+// see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order
 public sealed record FamilyPickCell(
     ListingCell Row,
     int Place,
@@ -40,7 +40,7 @@ public sealed record FamilyCardView(
 // The line tonight's page opens on, on a night the families drew its list: whether the market check left
 // the lists open, the breadth it read against its floor, the buy points the page lists and how many of the
 // setups list one, the stocks a single gate short of one, and the trades still open.
-// see: The market check closes every family's list together
+// see: The market check closes every swing family's list together, and the sector heavyweights read none
 public sealed record MarketLineView(bool Open, double? Breadth, double? Floor, int BuyPoints, int SetupsListing, int Setups, int Close, int OpenTrades);
 
 // One stock a single gate short of a buy point under one setup, as the shared list draws it: the setup's

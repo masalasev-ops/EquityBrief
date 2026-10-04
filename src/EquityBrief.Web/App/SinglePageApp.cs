@@ -646,7 +646,8 @@ public sealed class SinglePageApp : IComponent
         (DateOnly Evening, EquityBrief.Core.Filter.MissedGate Gate)? missed = null,
         NumbersSayView? says = null,
         NewsView? news = null,
-        ListedUnderView? listedUnder = null)
+        ListedUnderView? listedUnder = null,
+        string? heavyweight = null)
     {
         var region = new StringBuilder();
         var sections = written ?? [];
@@ -1084,10 +1085,17 @@ public sealed class SinglePageApp : IComponent
 
         // Under which setup the page listed the name on the night, or why a setup that passed it does not
         // list it, on a night the setup families drew the page's list.
-        // see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
+        // see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order
         if (listedUnder is not null)
         {
             region.Append(marks.ListedUnder(listedUnder));
+        }
+
+        // Where the sector heavyweights hold the name at the night's close, which card holds it and since when.
+        // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+        if (heavyweight is not null)
+        {
+            region.Append(Invariant($"<p class=\"listed-under heavyweight-held\">{Escaped(heavyweight)}</p>"));
         }
 
         region.Append(body);
@@ -1501,7 +1509,8 @@ public sealed class SinglePageApp : IComponent
         IReadOnlyList<StillOpenCell>? stillOpen = null,
         IReadOnlyList<FamilyCardView>? families = null,
         MarketLineView? line = null,
-        IReadOnlyList<CloseToBuyCell>? closeAcross = null)
+        IReadOnlyList<CloseToBuyCell>? closeAcross = null,
+        HeavyweightCardView? heavyweights = null)
     {
         var region = new StringBuilder();
         var byFilter = rule is { Rule: EquityBrief.Core.Shortlist.ListRules.Filter };
@@ -1543,7 +1552,7 @@ public sealed class SinglePageApp : IComponent
         {
             // The line the page opens its setups on: whether the market check left the lists open, and the
             // night's counts across every setup.
-            // see: The market check closes every family's list together
+            // see: The market check closes every swing family's list together, and the sector heavyweights read none
             if (line is not null)
             {
                 region.Append(marks.MarketLine(line));
@@ -1561,6 +1570,24 @@ public sealed class SinglePageApp : IComponent
                     lede: Escaped(card.Rule),
                     stamp: Cards.Night(night),
                     region: "family"));
+            }
+
+            // The sector heavyweights' card after the swing families', its holdings, its last rebalance and its
+            // next, drawn whatever the market check read.
+            // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+            // see: The market check closes every swing family's list together, and the sector heavyweights read none
+            if (heavyweights is not null)
+            {
+                region.Append(Cards.Computed(
+                    Invariant($"Rotation · {heavyweights.Eyebrow}"),
+                    marks.HeavyweightCard(heavyweights) + Cards.Key(
+                        "How to read the card.",
+                        "Each row is a stock the sector heavyweights hold at tonight's close, bought at a month's first close as the leader of its sector's largest companies. It has no stop and no target: it is held while it leads, and sold at a month's first close where the rule would no longer buy it, at any close under its 200-day average, or at its last close as a member of the index. Its lead is how far its return over the look-back ran ahead of the average of its sector's members at the rebalance that read it.",
+                        "A month-long holding and not a swing trade, so the market check that closes the swing setups' lists does not close this card, and a stock held here can be listed by a swing setup too: each card keeps its own one trade a stock."),
+                    title: Escaped(heavyweights.Heading),
+                    lede: Escaped(heavyweights.Rule),
+                    stamp: Cards.Night(night),
+                    region: "heavyweights"));
             }
         }
         else
@@ -2213,7 +2240,7 @@ public sealed class SinglePageApp : IComponent
     // see: Every trade the live list recommended is shown, and their share waits for the minimum the reason records wait for
     // The counts and the rows are those of the setup the hash names, where it names one, and of every setup
     // where it names none; the setups are the ones the page has listed a trade under, each with its trades.
-    public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null)
+    public string PicksRegion(MarkRenderer marks, DateOnly? night, PicksSummary summary, IReadOnlyList<PickCell> shown, string? status, string? setup = null, IReadOnlyList<(string Family, string Label, int Trades)>? setups = null, IReadOnlyList<HeavyweightPickCell>? heavyweights = null)
     {
         var region = new StringBuilder();
         var drawn = night is { } day ? day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none";
@@ -2233,6 +2260,7 @@ public sealed class SinglePageApp : IComponent
                 title: "How the list's picks have done",
                 stamp: Cards.Night(night),
                 region: "picks-summary"));
+            region.Append(HeavyweightPicksCard(marks, night, heavyweights));
             region.Append("</section>");
 
             return region.ToString();
@@ -2280,9 +2308,38 @@ public sealed class SinglePageApp : IComponent
             lede: "Filters live in the address, so a filtered view is a link you can keep.",
             stamp: Cards.Night(night),
             region: "picks"));
+        region.Append(HeavyweightPicksCard(marks, night, heavyweights));
         region.Append("</section>");
 
         return region.ToString();
+    }
+
+    // Past picks' card of the sector heavyweights' holdings, each in percent beside its sector's largest companies
+    // over the same sessions, and nothing where the book has bought nothing.
+    // see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from
+    // see: A family runs on provisional settings until its freeze, and nothing before the freeze counts toward a checkpoint
+    static string HeavyweightPicksCard(MarkRenderer marks, DateOnly? night, IReadOnlyList<HeavyweightPickCell>? holdings)
+    {
+        if (holdings is not { Count: > 0 })
+        {
+            return string.Empty;
+        }
+
+        var ended = holdings.Count(holding => holding.Sold is not null);
+
+        return Cards.Computed(
+            "Past picks",
+            Invariant($"<p class=\"list-count\" data-holdings=\"{holdings.Count}\" data-ended=\"{ended}\">{holdings.Count} holding{(holdings.Count == 1 ? string.Empty : "s")}, {ended} sold and {holdings.Count - ended} held</p>")
+                + Invariant($"<p class=\"provisional-count\"><b class=\"provisional\">{Escaped(EquityBrief.Core.Families.SetupFamilies.Provisional)}</b>: followed like any other, and in no record until its freeze.</p>")
+                + marks.HeavyweightPicks(holdings)
+                + Cards.Key(
+                    "How to read it.",
+                    "A holding is bought at a month's first close and sold at a later month's first close where it no longer leads its sector, at a close under its 200-day average, or at its last close as a member of the index. Its result is what it made from its buy to its sale in percent, dividends counted, beside what the sector's largest companies it was chosen from made over the same sessions, each in equal part.",
+                    "The difference is what leading its sector was worth over being merely large, which is what this setup's record will ask; a holding still held has neither yet."),
+            title: "Sector heavyweights, newest first",
+            lede: "Held while leading: a result in percent rather than in multiples of a risk, since a holding has no stop.",
+            stamp: Cards.Night(night),
+            region: "heavyweight-picks");
     }
 
     // An evening before the swing filter's first night, which neither dated screen draws: the record

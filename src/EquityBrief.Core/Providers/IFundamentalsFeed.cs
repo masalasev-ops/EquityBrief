@@ -14,13 +14,20 @@ public sealed record QuarterFigures(
 
 // The balance sheet as of a filing. Five figures rather than the statement's
 // thirty, because these are the ones section 4's numbers row names and a column
-// nothing reads is a column that can be wrong without anyone noticing.
+// nothing reads is a column that can be wrong without anyone noticing; and the
+// shares outstanding, which a member's value on the night is read from, on the
+// split basis of the day the answer was asked for.
 public sealed record BalanceSheet(
     decimal? TotalAssets,
     decimal? TotalLiabilities,
     decimal? Equity,
     decimal? Cash,
-    decimal? NetDebt);
+    decimal? NetDebt,
+    decimal? SharesOutstanding = null);
+
+// The company's GICS classification as the provider files it, each level none
+// where it files none, which the sector heavyweights read a member's sector from.
+public sealed record CompanyClassification(string? Sector, string? IndustryGroup, string? Industry, string? SubIndustry);
 
 // What the provider filed about a print that has happened: the date it landed,
 // when in the session, what was earned and what had been expected.
@@ -144,7 +151,11 @@ public sealed record CompanyFundamentals(
     AnalystRatings Ratings,
     IReadOnlyList<string> PartsNotCarried,
     int QuartersWithNoFilingDate,
-    DividendFiled? Dividend = null);
+    DividendFiled? Dividend = null)
+{
+    // The company's GICS classification, none where the answer files no `General` levels for it.
+    public CompanyClassification? Classification { get; init; }
+}
 
 // One name's fundamentals, in one request.
 //

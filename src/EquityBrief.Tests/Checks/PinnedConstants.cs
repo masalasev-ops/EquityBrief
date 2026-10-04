@@ -464,6 +464,10 @@ public class PinnedConstants
             new("Revenue as first filed", "285", Core.Families.FirstFiledRevenue.NineMonthsMost, "FirstFiledRevenue.NineMonthsMost"),
             new("Revenue as first filed", "6", Core.Families.FirstFiledRevenue.Concepts.Count, "FirstFiledRevenue.Concepts"),
             new("Archive requests", "10", HistoryPull.ArchiveRequestsASecond, "HistoryPull.ArchiveRequestsASecond"),
+            // The sector heavyweights' provisional settings, 14.3.
+            new("Heavyweights' size cut", "5", Core.Families.HeavyweightRule.Largest, "HeavyweightRule.Largest"),
+            new("Heavyweights' look-back", "126", Core.Families.HeavyweightRule.LookBack, "HeavyweightRule.LookBack"),
+            new("Heavyweights' leaders", "1", Core.Families.HeavyweightRule.Leaders, "HeavyweightRule.Leaders"),
         ];
     }
 

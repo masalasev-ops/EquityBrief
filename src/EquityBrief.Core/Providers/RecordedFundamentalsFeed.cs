@@ -148,9 +148,13 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
                     Money(balance.Value, "totalLiab"),
                     Money(balance.Value, "totalStockholderEquity"),
                     Money(balance.Value, "cash"),
-                    Money(balance.Value, "netDebt")),
+                    Money(balance.Value, "netDebt"),
+                    Money(balance.Value, "commonStockSharesOutstanding") is > 0m and var shares ? shares : null),
                 Reported(print.Value)));
         }
+
+        // A GICS level the provider files no value for, or files as NA, is none.
+        string? Level(string name) => Text(general, name) is { Length: > 0 } level && level != "NA" ? level : null;
 
         return new CompanyFundamentals(
             Text(general, "Code") ?? ticker,
@@ -164,7 +168,10 @@ public sealed class RecordedFundamentalsFeed(IReadOnlyDictionary<string, string>
             Ratings(root),
             [.. MayBeAbsent.Where(part => !CarriesAKeyFor(root, part.Key)).Select(part => part.Part)],
             withNoFilingDate,
-            Dividend(root));
+            Dividend(root))
+        {
+            Classification = new CompanyClassification(Level("GicSector"), Level("GicGroup"), Level("GicIndustry"), Level("GicSubIndustry")),
+        };
     }
 
     // The next print, which is the row carrying an estimate and no actual. The

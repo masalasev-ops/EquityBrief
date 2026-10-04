@@ -1,0 +1,41 @@
+{
+ "stage": "companies",
+ "derivation": "derived",
+ "derivedFrom": "the four captured fundamentals payloads read by hand, not from a run. Each name's filer is the General section's CIK kept to ten digits with its leading zeros, and its sector, industry group, industry and sub-industry are the General section's GicSector, GicGroup, GicIndustry and GicSubIndustry as filed. Each quarter's share count is the commonStockSharesOutstanding its quarterly balance sheet files for the same period, the newest of which is stated here with the day its sheet was filed. The night stores them from the answer its quarters step already asks for, one company row a storing fetch beside that fetch's quarters, so a fetch that dropped the filer's zeros, read another section's sector or kept another quarter's count would read differently here.",
+ "tables": ["company"],
+ "night": "2026-09-08",
+ "names": {
+  "AAPL": {
+   "cik": "0000320193",
+   "sector": "Information Technology",
+   "group": "Technology Hardware & Equipment",
+   "industry": "Technology Hardware, Storage & Peripherals",
+   "subIndustry": "Technology Hardware, Storage & Peripherals",
+   "newestCount": ["2026-06-30", "2026-07-31", "14750302000"]
+  },
+  "KEYS": {
+   "cik": "0001601046",
+   "sector": "Information Technology",
+   "group": "Technology Hardware & Equipment",
+   "industry": "Electronic Equipment, Instruments & Components",
+   "subIndustry": "Electronic Equipment & Instruments",
+   "newestCount": ["2026-07-31", "2026-09-02", "173000000"]
+  },
+  "MSFT": {
+   "cik": "0000789019",
+   "sector": "Information Technology",
+   "group": "Software & Services",
+   "industry": "Software",
+   "subIndustry": "Systems Software",
+   "newestCount": ["2026-06-30", "2026-07-29", "7453000000"]
+  },
+  "NFLX": {
+   "cik": "0001065280",
+   "sector": "Communication Services",
+   "group": "Media & Entertainment",
+   "industry": "Entertainment",
+   "subIndustry": "Movies & Entertainment",
+   "newestCount": ["2026-06-30", "2026-07-17", "4261300000"]
+  }
+ }
+}

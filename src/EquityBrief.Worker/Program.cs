@@ -83,7 +83,9 @@ static int NoVerb()
         "share counts with the days they were filed, '--splits' each name's splits, 'history-pull --revenue' each pulled " +
         "company's revenue as its filer filed it, and " +
         "'--purge <pull>' removes a pull whole, and " +
-        "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill, and " +
+        "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill, " +
+        "'quarters --companies' asks instead every member no fetch has stored a company for, storing its filer, GICS " +
+        "sector and share counts beside its quarters, and " +
         "'measure-sources --sector <sector> --sites <a,b> --industries <x,y>' searches each proposed site for each declined " +
         "industry as a theme pass does and says which would join the sector's sites, writing a report and nothing to the store. '--live' " +
         "'sweep' replays the swing filter over the stored history across its designs and settings, reading the store and " +

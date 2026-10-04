@@ -451,7 +451,7 @@ public sealed record PickRow(
     string? State = null,
     // The setup family the page listed the trade under, and the other families the stock qualified under
     // that night, which a night the families did not draw holds none of.
-    // see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
+    // see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order
     string Family = EquityBrief.Core.Families.SetupFamilies.Pullback,
     IReadOnlyList<string>? Also = null,
     // What the plan put at risk from its fill, as the filler stored it beside the outcome.
@@ -469,6 +469,41 @@ public sealed record FamilyPickRow(
     IReadOnlyList<string> Also,
     string? HeldFamily,
     DateOnly? HeldNight);
+
+// One sector heavyweight holding as the book stored it as of a night: the stock, the session it was bought on, its
+// sector and company, its buy close, and where it had ended by the night, its sale close, why, its result and its
+// size cut's return over the same sessions, each none for a holding still open on the night.
+// see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+public sealed record HeavyweightHoldingRow(
+    string Ticker,
+    DateOnly EnteredOn,
+    string Sector,
+    string Company,
+    decimal EntryClose,
+    DateOnly? EndedOn,
+    decimal? ExitClose,
+    string? Reason,
+    double? Result,
+    double? CutReturn);
+
+// One of a sector's largest companies as the book read it at a rebalance: its place by value, its value, its
+// return over the look-back, the sector's, its lead over the sector's, whether it passed the trend gate and
+// whether the rule bought it as the sector's leader.
+public sealed record HeavyweightReadRow(
+    DateOnly Session,
+    string Sector,
+    int Place,
+    string Ticker,
+    string Company,
+    decimal CompanyValue,
+    double? LookBack,
+    double? SectorReturn,
+    double? Lead,
+    bool Trend,
+    bool Leader);
+
+// A holding's close on a night beside its 200-session average there, each none where the store holds none.
+public sealed record HeavyweightCloseRow(string Ticker, decimal? Close, double? Average200);
 
 // One member's answer under one setup family but the pullback on a night, as the family evaluator stored
 // it: whether it passed, the gates it missed, its place among the names the family passed, the trade it is
@@ -631,11 +666,14 @@ public sealed class ReadApi : IComponent
             new StoreTouch(Store.FamilyNight, Touch.Read),
             new StoreTouch(Store.FamilyPick, Touch.Read),
             new StoreTouch(Store.FamilyTrade, Touch.Read),
+            new StoreTouch(Store.HeavyweightNight, Touch.Read),
+            new StoreTouch(Store.HeavyweightHolding, Touch.Read),
             new StoreTouch(Store.ForwardReturn, Touch.Read),
             new StoreTouch(Store.Facts, Touch.Read),
             new StoreTouch(Store.Fundamentals, Touch.Read),
             new StoreTouch(Store.FundamentalsSnapshot, Touch.Read),
             new StoreTouch(Store.ReportedQuarter, Touch.Read),
+            new StoreTouch(Store.Company, Touch.Read),
             new StoreTouch(Store.FundamentalReading, Touch.Read),
             new StoreTouch(Store.NewsPulse, Touch.Read),
             new StoreTouch(Store.NewsArticle, Touch.Read),
@@ -3050,6 +3088,127 @@ public sealed class ReadApi : IComponent
                 reader.IsDBNull(2) ? null : DateOnly.ParseExact(reader.GetString(2), "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 reader.IsDBNull(3) ? null : reader.GetDouble(3),
                 reader.IsDBNull(4) || !EquityBrief.Core.Returns.Blocks.Closed(listed, on, reader.GetInt32(5)) ? null : reader.GetDouble(4)));
+        }
+
+        return rows;
+    }
+
+    // Every holding the sector heavyweights bought on or before a night, its end read only where it ended by the
+    // night, so a holding that ended after it is read as open on it.
+    const string HeavyweightHoldingsUpTo = @"
+        SELECT ticker, entered_on, sector, company, entry_close,
+               CASE WHEN ended_on <= $on THEN ended_on END,
+               CASE WHEN ended_on <= $on THEN exit_close END,
+               CASE WHEN ended_on <= $on THEN reason END,
+               CASE WHEN ended_on <= $on THEN result END,
+               CASE WHEN ended_on <= $on THEN cut_return END
+        FROM heavyweight_holding
+        WHERE entered_on <= $on
+        ORDER BY entered_on, sector, ticker;
+    ";
+
+    // The sector heavyweights' holdings as of a night, which tonight's card, a name's page and Past picks read.
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+    public async Task<IReadOnlyList<HeavyweightHoldingRow>> HeavyweightHoldingsAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = HeavyweightHoldingsUpTo;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<HeavyweightHoldingRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new HeavyweightHoldingRow(
+                reader.GetString(0),
+                DateOnly.ParseExact(reader.GetString(1), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(2),
+                reader.GetString(3),
+                Money.FromStorage(reader.GetString(4)),
+                reader.IsDBNull(5) ? null : DateOnly.ParseExact(reader.GetString(5), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.IsDBNull(6) ? null : Money.FromStorage(reader.GetString(6)),
+                reader.IsDBNull(7) ? null : reader.GetString(7),
+                reader.IsDBNull(8) ? null : reader.GetDouble(8),
+                reader.IsDBNull(9) ? null : reader.GetDouble(9)));
+        }
+
+        return rows;
+    }
+
+    // The book's reading at its last rebalance on or before a night, a sector at a time in order of value.
+    const string HeavyweightReadOn = @"
+        SELECT session_date, sector, place, ticker, company, company_value, look_back, sector_return, lead, trend, leader
+        FROM heavyweight_night
+        WHERE session_date = (SELECT MAX(session_date) FROM heavyweight_night WHERE session_date <= $on)
+        ORDER BY sector, place;
+    ";
+
+    // The sector heavyweights' last rebalance on or before a night: each sector's largest companies as the book read
+    // them, and nothing where the book read none by the night.
+    public async Task<IReadOnlyList<HeavyweightReadRow>> HeavyweightReadAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = HeavyweightReadOn;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var rows = new List<HeavyweightReadRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new HeavyweightReadRow(
+                DateOnly.ParseExact(reader.GetString(0), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                reader.GetString(1),
+                reader.GetInt32(2),
+                reader.GetString(3),
+                reader.GetString(4),
+                Money.FromStorage(reader.GetString(5)),
+                reader.IsDBNull(6) ? null : reader.GetDouble(6),
+                reader.IsDBNull(7) ? null : reader.GetDouble(7),
+                reader.IsDBNull(8) ? null : reader.GetDouble(8),
+                reader.GetInt32(9) == 1,
+                reader.GetInt32(10) == 1));
+        }
+
+        return rows;
+    }
+
+    // Each holding open on a night, its close there and its 200-session average there.
+    const string HeavyweightClosesOn = @"
+        SELECT h.ticker, b.close, i.value
+        FROM (SELECT DISTINCT ticker FROM heavyweight_holding WHERE entered_on <= $on AND (ended_on IS NULL OR ended_on > $on)) h
+        LEFT JOIN bar b ON b.ticker = h.ticker AND b.session_date = $on
+        LEFT JOIN indicator i ON i.ticker = h.ticker AND i.session_date = $on AND i.name = $average
+        ORDER BY h.ticker;
+    ";
+
+    // Where each holding open on a night closed against its 200-session average, which its row on the card states.
+    public async Task<IReadOnlyList<HeavyweightCloseRow>> HeavyweightClosesAsync(DateOnly on)
+    {
+        await using var connection = Open();
+        await using var command = connection.CreateCommand();
+
+        command.CommandText = HeavyweightClosesOn;
+        command.Parameters.AddWithValue("$on", on.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        command.Parameters.AddWithValue("$average", EquityBrief.Core.Indicators.IndicatorSeries.Sma200);
+
+        var rows = new List<HeavyweightCloseRow>();
+
+        await using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new HeavyweightCloseRow(
+                reader.GetString(0),
+                reader.IsDBNull(1) ? null : Money.FromStorage(reader.GetString(1)),
+                reader.IsDBNull(2) ? null : reader.GetDouble(2)));
         }
 
         return rows;

@@ -63,12 +63,15 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `family_night` | FamilyLister | none | FamilyLister |
 | `family_pick` | FamilyLister | none | FamilyLister |
 | `family_trade` | FamilyRecorder | FamilyRecorder | FamilyRecorder |
+| `heavyweight_night` | HeavyweightBook | none | HeavyweightBook |
+| `heavyweight_holding` | HeavyweightBook | HeavyweightBook | HeavyweightBook |
 | `forward_return` | ForwardReturnFiller | ForwardReturnFiller | none |
 | `facts` | FactsAssembler | ChangeDetector | FactsAssembler |
 | `fundamentals` | FundamentalsFetcher | none | none |
 | `fundamentals_snapshot` | FundamentalsFetcher | none | none |
 | `reported_quarter` | QuarterFetcher | none | none |
 | `quarter_ask` | QuarterFetcher | none | none |
+| `company` | QuarterFetcher | none | none |
 | `fundamental_reading` | FundamentalReader | none | FundamentalReader |
 | `news_pulse` | NewsPulseCounter | none | NewsPulseCounter |
 | `news_article` | NewsPulseCounter | none | NewsPulseCounter |
@@ -665,7 +668,7 @@ Grain: one row per session, member and setup family but the pullback.
 
 Primary key: `session_date`, `ticker`, `family`.
 
-**The family evaluator writes it in the swing filter's step and is its own deleter** (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: Every computed table's writer is its own deleter). After the swing filter has stored its rows, it evaluates every member the filter evaluated under each family but the pullback, whose answers are the filter's own `gate_result` rows, and stores every answer, the ones that did not pass included, since a card that lists nothing says how far the members got and a name one gate short is drawn as close to a buy point. The market gate on each row is the one answer the filter stored for the night, so no family passes a member on a night it closed (see: The market check closes every family's list together). A night run again replaces its own rows whole. A row that passed is a trade its family's record counts and is kept; a row that did not is deleted once its session is older than the oldest bar the store holds, since nothing reads a near miss whose bars are gone.
+**The family evaluator writes it in the swing filter's step and is its own deleter** (see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night) (see: Every computed table's writer is its own deleter). After the swing filter has stored its rows, it evaluates every member the filter evaluated under each family but the pullback, whose answers are the filter's own `gate_result` rows, and stores every answer, the ones that did not pass included, since a card that lists nothing says how far the members got and a name one gate short is drawn as close to a buy point. The market gate on each row is the one answer the filter stored for the night, so no family passes a member on a night it closed (see: The market check closes every swing family's list together, and the sector heavyweights read none). A night run again replaces its own rows whole. A row that passed is a trade its family's record counts and is kept; a row that did not is deleted once its session is older than the oldest bar the store holds, since nothing reads a near miss whose bars are gone.
 
 **A passed row's trade is scored on `forward_return` under its family's horizon,** from the night's close: a breakout's under `breakout`, sold on its trailing stop (see: A breakout is a close above the year's high on heavy volume after its ranges narrowed, sold on a trailing stop with no target), and an earnings drift's under `drift`, to its target, its stop or its cap as a setup is (see: The earnings drift buys a beat with a strong reaction within five sessions, stopped under the reaction session's low). A sector leader's row, stored on a night before the sector leaders became a variant of the pullback, holds the pullback's plan as the swing filter's row stored it, and its trade is scored on that `gate_result` row, under the horizon of the plan its night's filter version read, so no outcome row is written for it here (see: The sector leaders are a variant of the pullback's starting point and not a family of their own). The prices here keep the scale the series had on the night, as a setup's plan does.
 
@@ -697,7 +700,7 @@ Grain: one row per session, stock and family that passed it.
 
 Primary key: `session_date`, `ticker`, `family`.
 
-**The family lister writes the page's list here and is its own deleter** (see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order). After the swing filter has stored its rows it reads the names each family passed, in that family's own order, and every trade a list made on an earlier night with what became of it, and draws the list by one rule: the families in the page's order; a stock whose trade is still open is listed by none and its row names the family and the night that listed that trade; a stock already listed tonight is not listed again; and a family lists at most five, a name past its five still listed by a later family it qualified under. So a stock holds at most one `listed` row a session, and that row's `also` carries the labels the page draws beside it. The pullback family's names are the ones `gate_result` holds as passed, improving businesses first and then the filter's own order, and its trade is the plan its night's trade gate read; another family's names are the ones `family_result` holds as passed, in the places its evaluator stored, and its trade is that row's; nothing here restates a plan. A trade's outcome is the `forward_return` row of its stock and session under its family's horizon. A night run again replaces its own rows whole and touches no other night's.
+**The family lister writes the page's list here and is its own deleter** (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order). After the swing filter has stored its rows it reads the names each family passed, in that family's own order, and every trade a list made on an earlier night with what became of it, and draws the list by one rule: the families in the page's order; a stock whose trade is still open is listed by none and its row names the family and the night that listed that trade; a stock already listed tonight is not listed again; and a family lists at most five, a name past its five still listed by a later family it qualified under. So a stock holds at most one `listed` row a session, and that row's `also` carries the labels the page draws beside it. The pullback family's names are the ones `gate_result` holds as passed, improving businesses first and then the filter's own order, and its trade is the plan its night's trade gate read; another family's names are the ones `family_result` holds as passed, in the places its evaluator stored, and its trade is that row's; nothing here restates a plan. A trade's outcome is the `forward_return` row of its stock and session under its family's horizon. A night run again replaces its own rows whole and touches no other night's.
 
 ### family_trade
 Grain: one row per registered family rule, stock and session the rule's own list kept a trade on.
@@ -723,6 +726,50 @@ Grain: one row per registered family rule, stock and session the rule's own list
 Primary key: `candidate`, `ticker`, `session_date`.
 
 **The family recorder writes it in the swing filter's step, after the family lister, and is its own deleter** (see: A registered family rule is evaluated every night at its own settings and keeps its own list, its trades stored with their benchmark when they end). For each family candidate standing when the night started it reads the verdicts the family evaluator stored on that family's rows, the members it fired on in the family's own order, and keeps at most five, none whose trade on its own list is still open, a trade freeing its stock the night after it ends, so each rule's record counts the trades it alone would have made and is never held by another rule's (see: A stock holds one open trade on each rule's list, and it is free the night after its trade ends). Each night it first walks every trade not yet ended over the closes since, at the scale the series has now, and writes where it ended and its result; and once a trade's cap has passed it writes the benchmark and how many members it averaged. Each is written once and never recomputed, because the bars and the typical moves they are read from are kept a year and a record is read over many. A night run again replaces the trades it kept for that night and touches no other night's. The rows are never deleted otherwise: they are the record each rule's checkpoints read.
+
+### heavyweight_night
+Grain: one row per rebalance session, sector and place among the sector's largest companies.
+
+| Column | Type | Notes |
+|---|---|---|
+| `session_date` | TEXT | the rebalance session |
+| `sector` | TEXT | the GICS sector, as read on the session |
+| `place` | INTEGER | the company's place by value in its sector, counted from one, at most five at the provisional setting |
+| `ticker` | TEXT | the listing held for the company, the class that traded the more dollars over the fifty sessions to the session |
+| `company` | TEXT | the company the listing belongs to: `CIK` and its filer where the provider files one, and `ticker` and the stock where not |
+| `company_value` | TEXT | decimal in code, the company's value on the session, the newest count filed before it times the session's close on the count's split basis |
+| `look_back` | REAL | the stock's return over the look-back to the session, null where it holds too few closes |
+| `sector_return` | REAL | the mean of the sector's members' own returns over the look-back, null where no member holds one |
+| `lead` | REAL | the stock's return less the sector's, null where either is |
+| `trend` | INTEGER | 1 where the session's close is above its 50-day average and that above its 200-day, 0 otherwise |
+| `leader` | INTEGER | 1 where the rule bought the stock as its sector's leader on the session, 0 otherwise |
+
+Primary key: `session_date`, `sector`, `place`.
+
+**The heavyweight book writes it in the swing filter's step on each rebalance and is its own deleter** (see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month) (see: A heavyweight is bought where it leads its sector above nothing and passes the trend gate, and sold where the rule would not buy it). On the first night of a month it runs, and on its first night, it reads every member's company and its newest count, values each, ranks each sector's companies once a company and stores the largest with their returns, leads and trend gate and which it bought; a member with no sector filed stands in no sector and one with no value in no rank, its return still in its sector's mean (see: A sector's return is the mean of its members' own returns over the look-back). A night run again replaces its own session's rows and touches no other. Kept forever otherwise, the record of what each rebalance read, which the family's sweep is read against on sampled sessions.
+
+### heavyweight_holding
+Grain: one row per stock and the session the sector heavyweights bought it on.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `entered_on` | TEXT | the rebalance session it was bought on, at that close |
+| `sector` | TEXT | the sector it was bought as the leader of |
+| `company` | TEXT | the company the listing belongs to, as `heavyweight_night` names it |
+| `entry_close` | TEXT | decimal in code, the close it was bought at |
+| `growth` | REAL | its close carried over its buy's, the product of each night's close over the close of the session it was last carried to |
+| `cut` | TEXT | JSON: each of the size cut it was chosen from, its ticker, its growth carried the same way and the session it was carried to |
+| `through` | TEXT | the session the holding's own growth was last carried to |
+| `ended_on` | TEXT | the session it was sold on, null while it is held |
+| `exit_close` | TEXT | decimal in code, the close it was sold at, null while held |
+| `reason` | TEXT | `no longer the leader`, `a close under its 200-day average` or `left the index`, null while held |
+| `result` | REAL | its growth less one at the sale, its return in percent of the buy as a fraction, null while held |
+| `cut_return` | REAL | the mean of the size cut's growths less one at the sale, null while held |
+
+Primary key: `ticker`, `entered_on`.
+
+**The heavyweight book writes it in the swing filter's step, after the family recorder, and is its own deleter** (see: A heavyweight's result is the product of its daily close ratios since its buy, carried each night) (see: A heavyweight leaving the index is sold at its last session's close as a member). Every night it carries each holding's growth, and its size cut's, by tonight's closes over the closes of the session each was last carried to, both read as the store holds them tonight, ends one whose stock is no longer a member at the session it was last carried to and one closing under its 200-day average tonight, and on a rebalance ends each the rule would not buy and buys each leader it does not hold, with the sector's largest as its size cut. It reads no market check and holds no stock back for a trade a swing family holds, nor any swing family's for it (see: The market check closes every swing family's list together, and the sector heavyweights read none) (see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order). A night run again deletes what it bought that night, opens again what it ended that night, and writes the night again; a night for a session earlier than one it has read is read for nothing. The rows are never deleted otherwise: they are the record the family's checkpoints will read once its freeze registers it, and Past picks draws each in percent beside its size cut's return (see: A sector heavyweight's trade is scored by its percent return less the equal-weighted return of the size cut it was chosen from).
 
 ### forward_return
 Grain: one row per listing per horizon, and one per swing filter row carrying a plan per swing horizon.
@@ -837,12 +884,15 @@ Grain: one row per ticker per fetch per quarter.
 | `close_after_session` | TEXT | the session that close is on |
 | `basis_session` | TEXT | the newest session of the closes this fetch asked for |
 | `basis_close` | TEXT | decimal in code, that session's close, which tonight's close is brought to this fetch's basis by |
+| `shares` | TEXT | decimal in code, the shares outstanding the quarter's balance sheet files, on this fetch's split basis, null where it files none and on every row a fetch stored before the column existed |
 
 Primary key: `ticker`, `fetched_at`, `period_end`.
 
 Kept forever, never updated and never deleted. One fetch writes the twelve newest quarters it returns, whether or not an earlier fetch stored some of them, so a reading reads one fetch's rows and never mixes two (see: Reported quarters are stored per fetch, so every quarter a reading reads shares one fetch's per-share basis). The provider restates earnings a share after a split and adjusts its closes as of the day it is asked, so a quarter's earnings and the close after its report are on one basis only beside the other quarters the same fetch returned. The growths, the margins, the trailing earnings and the close after each report are worked out at the fetch because they read quarters and closes older than the twelve kept: the twelfth quarter's trailing earnings need three quarters before it, and a close three years back is held by no bar the store keeps. About four fetches a member a year write about 25,000 rows a year.
 
 This table is apart from `fundamentals` and the report pass's own fetch, which are unchanged. The rows `fundamentals` holds carry no operating income and no operating cash flow and are never updated, so they could never gain the two, and writing that table nightly would read the filings archive on the night after a release, often before the quarterly report exists, and change every member's facts file.
+
+From 14.3 each row carries the shares its quarter's balance sheet files, read from the answer the fetch already asked for, and the sector heavyweights value a member from the newest fetch carrying any: the newest count filed before the session times tonight's close brought to the count's basis by `basis_close` over the store's close on `basis_session` tonight (see: The night values a member from its newest fetch, tonight's close brought to the count's basis by the fetch's own close). The provider restates its counts to its split basis as of the day it is asked, which is the fetch's, so the counts a fetch stored share that basis with its closes.
 
 ### quarter_ask
 Grain: one row per ticker per night asked.
@@ -864,6 +914,23 @@ Grain: one row per ticker per night asked.
 Primary key: `ticker`, `session_date`.
 
 Kept forever, never updated and never deleted. It is the record the schedule reads: a member is asked on the first night after its report and, where the answer does not yet carry the quarter, on each of the five nights after and weekly after that, until the quarter appears or the next report date passes (see: A member's reported quarters are fetched on the night after it reports, and asked for again on the five nights after and weekly after that until the quarter is posted). A night run again for its session keeps the ask it made, so the insert ignores the conflict rather than asking twice. The run page reads it for who was asked tonight and why, who is still waiting and when each is asked next, and how far the fill has come.
+
+### company
+Grain: one row per ticker per storing fetch.
+
+| Column | Type | Notes |
+|---|---|---|
+| `ticker` | TEXT | |
+| `fetched_at` | TEXT | UTC instant of the fetch, the one its `reported_quarter` rows carry |
+| `cik` | TEXT | the company's filer at the filings archive, ten digits with the leading zeros, null where the provider files none |
+| `sector` | TEXT | the GICS sector the provider files, null where it files none |
+| `industry_group` | TEXT | the GICS industry group, null where none is filed |
+| `industry` | TEXT | the GICS industry, null where none is filed |
+| `sub_industry` | TEXT | the GICS sub-industry, null where none is filed |
+
+Primary key: `ticker`, `fetched_at`.
+
+Kept forever, never updated and never deleted. Each fetch the quarters step stores writes one row in the same write as its quarters, from the answer it already asked for and with no request of its own, and `quarters --companies` asks every member no fetch has stored one for, once, so the sector heavyweights read every member from their first night. The heavyweights read each member's newest row: the CIK ranks a company once whatever classes it lists (see: Companies are ranked by CIK with one listing held, the class that traded the more dollars over fifty sessions), and the sector places it, with the fourteen moves of 2023-03-17 read by date (see: A company's sector on a session is the GICS sector the provider files, with the fourteen moves of 2023-03-17 read by date). The provider files the classification as of its last update with no dated history, which is why the moves are a committed table, and `membership.sector` is the index snapshot's own scheme and is not read for it.
 
 ### fundamental_reading
 Grain: one row per ticker per night.

@@ -82,6 +82,17 @@ public static class CompanyValue
             .Where(split => split.Plain && split.ExDate > session && split.ExDate <= basis)
             .Aggregate(rawClose, (close, split) => close * split.OldShares / split.NewShares);
 
+    // A member's value on the night, from the counts its newest fetch holds: the count of the latest quarter filed
+    // before the night, times tonight's close brought to the fetch's split basis by the fetch's own close of its newest
+    // session against that session's close as the store holds it tonight. The night keeps no history of splits, and
+    // the store rescales a session's close at every split since, so the two closes of one session carry the splits
+    // between the fetch and the night. None where no count was filed before the night or the session is not held.
+    // see: The night values a member from its newest fetch, tonight's close brought to the count's basis by the fetch's own close
+    public static decimal? Tonight(DateOnly night, decimal close, IEnumerable<FiledCount> counts, decimal basisClose, decimal? basisCloseNow) =>
+        CountOn(night, counts) is { } count && basisCloseNow is { } now && now > 0m
+            ? count.Shares * close * basisClose / now
+            : null;
+
     // The company's value on a session, from the session's unadjusted close and never its adjusted one, none where no
     // count was filed before it.
     public static decimal? On(SessionClose close, IEnumerable<FiledCount> counts, IEnumerable<FiledSplit> splits) =>

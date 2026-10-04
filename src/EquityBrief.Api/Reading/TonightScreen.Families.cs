@@ -328,7 +328,7 @@ public static partial class TonightScreen
 
     // The notes beneath a family's picks: each stock it passed that a trade still open holds back, each one
     // the page lists under an earlier family, and how many it passed beyond the five it lists.
-    // see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
+    // see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order
     static IReadOnlyList<string> Notes(SetupFamily family, IReadOnlyList<FamilyPickRow> own, IReadOnlyDictionary<string, string> listedUnder)
     {
         var notes = new List<string>();
@@ -362,7 +362,7 @@ public static partial class TonightScreen
 
     // Why a family lists nothing on a night it lists none: the market check closed every list, no stock
     // passed its gates, or every stock it passed is held back, which its notes say.
-    // see: The market check closes every family's list together
+    // see: The market check closes every swing family's list together, and the sector heavyweights read none
     static string Empty(SetupFamily family, IReadOnlyList<FamilyPickRow> own, ListRuleView rule, IReadOnlyList<FamilyResultRow> results)
     {
         if (own.Count > 0)
@@ -559,7 +559,7 @@ public static partial class TonightScreen
     // lists it, its place and the labels of the other setups it qualified under, and a sentence for a setup
     // that passed it while a trade for it is still open or past that setup's five. Nothing where the
     // families drew no row for the name.
-    // see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
+    // see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order
     public static ListedUnderView? ListedUnder(string ticker, IReadOnlyList<FamilyPickRow> picks)
     {
         var own = picks.Where(pick => pick.Ticker == ticker).ToArray();
@@ -592,7 +592,7 @@ public static partial class TonightScreen
 
     // The line the page opens its setups on: the market check's answer with its figures, the buy points the
     // cards list and how many setups list one, the stocks close to one, and the trades still open on the night.
-    // see: The market check closes every family's list together
+    // see: The market check closes every swing family's list together, and the sector heavyweights read none
     public static MarketLineView Line(ListRuleView rule, IReadOnlyList<FamilyCardView> cards, int close, int openTrades) =>
         new(
             rule.MarketOpen,

@@ -679,6 +679,7 @@ public static class SchemaMigrations
         new Migration(56, "add family_result.shadow and create family_trade", AddFamilyShadowAndTrades),
         new Migration(57, "create market_bar", CreateMarketBar),
         new Migration(58, "create pulled_company, pulled_shares, pulled_split and pulled_revenue", CreatePulledCompanies),
+        new Migration(59, "add reported_quarter.shares, create company, heavyweight_night and heavyweight_holding", CreateHeavyweights),
     ];
 
     // One member's answer under one setup family on one night, for every family but the pullback, whose
@@ -713,7 +714,7 @@ public static class SchemaMigrations
     // each family that passed it, listed with its place down the page and the other families it qualified
     // under, or held back with why, a trade still open naming the family and the night that listed it.
     // see: Tonight's page is drawn from setup families, each a rule of its own listing at most five a night
-    // see: A stock holds one trade across every family, and one qualifying under two is listed once under the first in the page's order
+    // see: A stock holds one trade across every swing family, and one qualifying under two is listed once under the first in the page's order
     const string CreateFamilyPick = @"
         CREATE TABLE family_night (
             session_date TEXT NOT NULL PRIMARY KEY,
@@ -1289,6 +1290,62 @@ public static class SchemaMigrations
             form          TEXT NOT NULL,
             pull          TEXT NOT NULL,
             PRIMARY KEY (cik, concept, period_start, period_end, accession)
+        ) STRICT;
+    ";
+
+    // The sector heavyweights' data and book. Each storing quarters fetch keeps the shares its balance sheet files
+    // beside the quarter, on the fetch's split basis, and the company it answered for: its filer and its GICS
+    // classification, one row a fetch. The book keeps, for each rebalance session, every sector's largest companies
+    // with their values, returns, leads, trend and whether each was bought; and each holding, its sector and company,
+    // its entry and exit, why it ended, and its growth and its size cut's carried each night from that night's closes,
+    // which a corporate action's refetch of the year leaves standing. Values and closes are text, growths and returns
+    // statistics.
+    // see: The sector heavyweights hold the largest companies leading their sectors, rotated on the first session of each month
+    // see: A heavyweight's result is the product of its daily close ratios since its buy, carried each night
+    const string CreateHeavyweights = @"
+        ALTER TABLE reported_quarter ADD COLUMN shares TEXT;
+
+        CREATE TABLE company (
+            ticker          TEXT NOT NULL,
+            fetched_at      TEXT NOT NULL,
+            cik             TEXT,
+            sector          TEXT,
+            industry_group  TEXT,
+            industry        TEXT,
+            sub_industry    TEXT,
+            PRIMARY KEY (ticker, fetched_at)
+        ) STRICT;
+
+        CREATE TABLE heavyweight_night (
+            session_date   TEXT    NOT NULL,
+            sector         TEXT    NOT NULL,
+            place          INTEGER NOT NULL,
+            ticker         TEXT    NOT NULL,
+            company        TEXT    NOT NULL,
+            company_value  TEXT    NOT NULL,
+            look_back      REAL,
+            sector_return  REAL,
+            lead           REAL,
+            trend          INTEGER NOT NULL,
+            leader         INTEGER NOT NULL,
+            PRIMARY KEY (session_date, sector, place)
+        ) STRICT;
+
+        CREATE TABLE heavyweight_holding (
+            ticker       TEXT NOT NULL,
+            entered_on   TEXT NOT NULL,
+            sector       TEXT NOT NULL,
+            company      TEXT NOT NULL,
+            entry_close  TEXT NOT NULL,
+            growth       REAL NOT NULL,
+            cut          TEXT NOT NULL,
+            through      TEXT NOT NULL,
+            ended_on     TEXT,
+            exit_close   TEXT,
+            reason       TEXT,
+            result       REAL,
+            cut_return   REAL,
+            PRIMARY KEY (ticker, entered_on)
         ) STRICT;
     ";
 

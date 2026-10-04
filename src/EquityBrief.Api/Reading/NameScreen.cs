@@ -1110,7 +1110,9 @@ public static class NameScreen
         // What was written about the company in the thirty days before the night, with its labels.
         NewsView? news = null,
         // The name's rows on the page's list for the night, on a night the setup families drew it.
-        IReadOnlyList<FamilyPickRow>? familyPicks = null)
+        IReadOnlyList<FamilyPickRow>? familyPicks = null,
+        // The sector heavyweights' holdings as of the night, which say whether they hold the name.
+        IReadOnlyList<HeavyweightHoldingRow>? heavyweights = null)
     {
         var accepted = written ?? [];
         var leftOut = LeftOut(sections ?? []);
@@ -1245,7 +1247,8 @@ public static class NameScreen
             gates is not null && missed is not null ? (gates.SessionDate, missed) : null,
             says,
             news,
-            TonightScreen.ListedUnder(ticker, familyPicks ?? []));
+            TonightScreen.ListedUnder(ticker, familyPicks ?? []),
+            TonightScreen.HeldAsAHeavyweight(ticker, heavyweights ?? []));
     }
 
     // "What the numbers say" for a night's readings: the heading carrying the state, the quarter read from,

@@ -31,7 +31,8 @@ public sealed record ReportedQuarter(
     decimal? OperatingMargin,
     decimal? MarginYearEarlier,
     decimal? CloseAfter,
-    DateOnly? CloseAfterSession);
+    DateOnly? CloseAfterSession,
+    decimal? Shares = null);
 
 // One fetch's quarters and the close its per-share basis is read against: the newest session of the
 // closes it fetched and that session's close, which tonight's close is brought to the fetch's basis by.
@@ -107,7 +108,8 @@ public sealed record QuarterFetch(IReadOnlyList<ReportedQuarter> Quarters, DateO
                     Margin(quarter),
                     earlier is null ? null : Margin(earlier),
                     after?.Close,
-                    after?.SessionDate);
+                    after?.SessionDate,
+                    quarter.Sheet.SharesOutstanding);
             })
             .ToArray();
 
