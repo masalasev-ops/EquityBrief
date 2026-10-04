@@ -37657,3 +37657,36 @@ Carried:    after the merge, `tools/migrate.ps1`, `tools/remedies/2026-10-04-14.
             `sweep-wider` from main's Release build, then an entry with each family's edge on both universes, its
             test, the luck figure and the rule's answer, brought to the operator; phase 14's sign-off; the night of
             2026-10-05 read.
+
+### 14.8 - the pulls and the run: no swing family's edge improves on the 1,500 even on survivors, so the widening is dropped and not adopted   2026-10-04
+
+Ran:        `tools/migrate.ps1` from main at 0d31b3b, 60 to 61, then `tools/remedy.ps1 tools/remedies/2026-10-04-14.8-
+            the-wider-pulls.txt` from 19:20 to 19:31 UTC with no night, queue, report pass, labeller or store copy
+            running and no night lock, all eight steps; then `sweep-wider` from main's Release build at 0d31b3b, from
+            19:33 to 20:00 UTC, reading the store read-only and writing nothing to it.
+Members:    one request an index: the S&P 400's 400 and the S&P 600's 603, 1,003 names, 125 of them in the S&P 500's
+            membership the store holds and 878 never in it.
+Bars:       399 of the 400 and 599 of the 603 served, 759,380 and 1,118,686 bars and 12,213 and 18,028 earnings
+            prints over 106 calendar months; TLN_old, MRP_old, SIX, TMST and VSNT_old not served, the provider
+            sending no session; 8 and 15 names missing sessions, kept as sent.
+Surprises:  13,394 and 19,783 prints, 12,212 and 18,026 stored and the rest held by the S&P 500's pull.
+Splits:     every name answered, 46 and 82 splits, 31 and 57 of them plain.
+Requests:   2,432 on the run log, about 2,450 weighted calls of the day's 100,000.
+Run:        run 20261004T193344Z, 828 names on the 500 and 1,706 on the 1,500, 878 of them survivors, over 1,949
+            nights scored from 2019-01-02 to 2026-10-02. Every 1,500 figure below holds survivors only: today's S&P
+            400 and 600 members read as members on every session, which flatters the wider universe.
+Pullback:   the base: 1,903 trades, edge 0.100, on the 500; 5,354 trades, edge -0.017, on the 1,500, survivors only;
+            better in 0 of the 8 years and 0 of the last 3, and lower without the five largest: does not improve.
+Breakout:   as frozen: 1,009 trades, edge 0.082, on the 500; 2,454, edge 0.067, on the 1,500, survivors only;
+            better in 3 of 8 and 1 of the last 3, the last three lower: does not improve.
+Drift:      as frozen: 2,243 trades, edge 0.121, on the 500; 3,809, edge -0.222, on the 1,500, survivors only;
+            better in 0 of 8 and 0 of the last 3, and lower without the five largest: does not improve.
+Luck:       3 tries, where luck alone passes about 0.40; 0 passed.
+Answer:     no family's edge improves even on survivors, so on the operator's rule the widening is dropped and
+            recorded as not adopted (see: The wider universe is not adopted, since no swing family's edge improves
+            on it even on survivors).
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: a67d06e, the entry's commit, all six steps, 0
+            warnings, 0 errors, 1837 of 1837 tests ran with none failed, migrations 0 to 61 with none pending, schema
+            version 61, against `data-ci` and never `data`.
+Carried:    phase 14's sign-off, owed on the phase as a whole by a session that committed none of its code; the
+            night of 2026-10-05 read.
