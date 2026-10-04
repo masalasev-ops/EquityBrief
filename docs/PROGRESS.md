@@ -37100,3 +37100,30 @@ Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-04-
             with the names answered, those lacking a sector, a count or a CIK, the splits, the revenue figures by
             concept, the fourteen moves' line, the check of 30 sampled releases and the fork's figures over the
             pulled data; the night of 2026-10-05 read; the fork's ruling before 14.3.
+
+### 14.2 - the remedy run: migration 58 and the four pulls, every history name answered and all fourteen moves filed where they moved   2026-10-04
+
+Ran:        `tools/migrate.ps1` from main at 492d571, 57 to 58, then `tools/remedy.ps1 tools/remedies/2026-10-04-14.2-
+            the-pulls.txt` from 01:23 to 01:58 UTC with no night, drain or labeller running and no night lock, all
+            four steps.
+Companies:  692 of the 692 names the index held since 2018 answered, one request each: 692 companies and 81,131
+            quarterly share counts stored over 685 of them, 1,705 balance sheets carrying no count or no filing date
+            left out; 5 filing no sector (MRP_old, RAL_old, VMRK, VSNT_old, VYLR), 7 no count with its date (BCR,
+            MRP_old, RAL_old, TFCF, TFCFA, VSNT_old, VYLR) and 16 no CIK (BNY, ECHO, FDXF, FISV, HONA, MBGL, MRP_old,
+            MRSH, P, PSKY, Q, SNDK, SOLS, VGNT, VMRK, VYLR); the moves of 2023-03-17: 14 of 14 filed in the sector
+            they moved to under the filer the table names.
+Splits:     692 answered, 118 names with a split, 148 stored. Read against the counts beside them, 68 of the 148
+            are a spin-off's or a merger's price adjustment the provider files as a split, GE's 1,281 for 1,000 at GE
+            HealthCare's spin-off among them, which the value reading divided by: the correction below.
+Funds:      11 of 11, 24,084 sessions, ten from 2018-01-02 and XLC from 2018-06-19, each to 2026-10-02.
+Revenue:    670 filers asked under six concepts, 4,020 requests, 163,341 figures stored: revenue net of interest
+            expense 13 filers and 1,628 figures, revenue 512 and 74,736, revenue from contracts excluding the tax
+            assessed 444 and 40,953, including it 120 and 5,675, a utility's operating revenue 11 and 1,780, and the
+            concept retired in 2018 297 and 38,569. 44 answers were refused, the archive's endpoint for one concept
+            sending the dollars as an empty object, and 22 filers stated revenue under none of the six, 11 of whom
+            hold it under them in their whole facts, Coca-Cola under revenue among them: the correction below.
+Weighted:   7,623 calls of the day's 100,000, the companies 6,920, the splits 692 and the funds 11; the archive none.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            correction's entry below states.
+Carried:    the correction's remedy, the revenue pulled again, then the check of 30 sampled releases; the night of
+            2026-10-05 read; the fork's ruling before 14.3.
