@@ -37373,3 +37373,27 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
 Carried:    after the merge, `sweep-family --family heavyweight` from main's Release build, its figures as an entry
             and its report brought; the night of 2026-10-05 read, the book's first rebalance in it; the fork's
             ruling; 14.6 on the operator's go.
+
+### 14.5 - the heavyweights' sweep run: 32 of 432 settings meet the floors, the proposal's edge 1.34 points   2026-10-04
+
+Ran:        `sweep-family --family heavyweight` from main's Release build at 7e26dbf, from 07:07 to 07:08 UTC with
+            no night, queue, report pass or labeller running, reading the store read-only and writing nothing to it:
+            run 20261004T070756Z, 828 names over 1,949 sessions from 2019-01-02 to 2026-10-02, 687 with a sector and
+            685 with share counts, 94 monthly and 405 weekly rebalances.
+Provisional: size 5, look-back 126, 1 leader, the members' mean, no beta, monthly, either exit: 438 trades, 4 held
+            at the end, edge 0.10 points with a standard error of 0.43, above nothing in 4 of the 8 years and -0.46
+            without the five largest; held a median of 22 sessions.
+Proposal:   size 10, look-back 251, 2 leaders, the fund's return, a beta of at least one, monthly, sold on no longer
+            leading: 374 trades, 4 held, edge 1.34 points with a standard error of 0.68, above nothing in 6 of 8
+            years, 1.78 over the last three and 0.43 without the five largest; its result 4.08 per cent a trade, its
+            size cut's 2.74, every member's 2.09 and the index's 2.44; held a median of 23 sessions.
+Neighbours: 3 of its 9 meet the floors: either exit 1.29, the members' mean 1.24 and every company 1.03; the beta not
+            read 0.26 over 812 trades, a week 0.35, a look-back of 126 0.73, one leader 1.15 over 264 trades, five
+            companies 0.73 and the average's exit alone 0.90.
+Luck:       32 of the 432 settings meet the floors, where luck alone would put about 62 above nothing in 6 of 8
+            years were the settings independent.
+Replay:     the night's book has stored no rebalance, so none is compared; its first is the night of 2026-10-05.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            next code entry states.
+Carried:    nothing registers, the report at `/sweep` brought to the operator for 14.6's go; the night of 2026-10-05
+            read; the fork's ruling.
