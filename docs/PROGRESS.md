@@ -37397,3 +37397,20 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             next code entry states.
 Carried:    nothing registers, the report at `/sweep` brought to the operator for 14.6's go; the night of 2026-10-05
             read; the fork's ruling.
+
+### 14.6 ruling - the heavyweights freeze at the sweep's proposal, Part B's two registrations, and the fork stays B   2026-10-04
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-04, answering three questions after the reports of the context run and the
+            heavyweights' sweep run, the answers kept word for word in `prompts/`.
+Freeze:     "The proposal (Recommended)": the heavyweights' rule registered at size 10, a look-back of 251
+            sessions, 2 leaders a sector, the sector fund's return, a beta of at least one, monthly, sold on no
+            longer leading, with its 3 passing neighbours as variants, either exit, the members' mean and every
+            company; the night asks for the eleven funds' closes and reads each stock's beta.
+Part B:     "Yes, both": the pullback's sector leaders' rule retired, and the analyst revisions variant registered
+            with the night's request for fundamentals on each name the pullback passes, a carve-out named in the
+            rule that the night makes no request a name.
+Fork:       "B, each card its own (Recommended)": each card keeps its own one trade a stock, as 14.3 built it and
+            the decision it wrote states (see: A stock holds one trade across every swing family, and one qualifying
+            under two is listed once under the first in the page's order).
+Carried:    14.6 built on these; the night of 2026-10-05 read.
