@@ -37485,3 +37485,29 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             carried and 43 passed.
 Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-04-14.6-the-freezes.txt`, then an entry
             with each rule's replay and registration; the night of 2026-10-05 read, the books' first rebalance in it.
+
+### 14.6 - the remedy run: migration 60, the revisions in the sector leaders' place, the sixteen family rules carrying their records on, and the heavyweights' four   2026-10-04
+
+Ran:        `tools/migrate.ps1` from main at 100d323, 59 to 60, then `tools/remedy.ps1 tools/remedies/2026-10-04-14.6-
+            the-freezes.txt` from 15:59:58 to 16:00:07 UTC with no night, queue, report pass, labeller or store copy
+            running and no night lock: all three lines registered.
+Swing:      run register-20261004T160001.0600620Z, the family registered again whole under filter version 5 at one
+            instant, 9 retired and 9 registered at b4425b7cbb05: the eight under their names, and 'the swing filter
+            with estimates raised over the last 30 days, from version 5' in the place of 'the pullback in the top 3
+            sectors, top quarter of each, from version 5', which stays retired.
+Replays:    run replay-20261004T160002.0306674Z, the breakout's and the drift's sixteen rules each replayed over the
+            nights since its record began: all 16 reproduced their stored trades and carry their records on, fourteen
+            from 2026-10-02 over its one night, two of the drift's keeping 1 trade each, and the two switched
+            variants from 2026-10-05 over none. Registered again unchanged at one instant under run
+            register-20261004T160002.0236421Z, the breakout at 3ceed1865bf4 and the drift at acfc9db2b20b.
+Freeze:     run register-20261004T160007.4522213Z, the heavyweights' live rule as 220 and its three variants at one
+            instant at dc6589c2124b, a family of 4 of 9; each book reads its first rebalance on the night of
+            2026-10-05.
+Register:   29 standing: 9 swing filter rules, 8 breakout, 8 drift and 4 heavyweights, each at the version the code
+            carries.
+Page:       5152 restarted from main's Release build at 100d323; the heavyweights' card on 2026-10-02's page reads
+            provisional with its look-back at 251, since the freeze was written after that night.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            next code entry states.
+Carried:    the night of 2026-10-05 read, the books' first rebalance and the first estimates asked in it; 14.7 the
+            queue's names.
