@@ -10847,3 +10847,17 @@ Was:
 Now:
 > "...; the heavyweights' sweep; and the freezes and registrations on the operator's go" and "the build plan's phase 14 checkpoints, 14.0 to 14.7"
 Why: the row states what the phase builds, and the rename is no longer part of it.
+### 2026-10-04 - BUILD_PLAN.md - Part C's re-probe, its first test on today's members at 14.8, and the add-on waiting on it
+Authorised by: the operator's ruling of 2026-10-04, recorded as the 14.8 ruling "Part C's first test on today's members" in PROGRESS.md
+Was:
+> "Membership history for the S&P 400 and 600 needs the provider's add-on at $29.99 a month. Bars, ..."; "... A later phase would replay each swing family at its frozen settings on the 1,500 against the 500 over the eight years and widen a family only where its edge improves; the heavyweights stay on the 500."; "The add-on of Part C, decided after this phase's report. No paid model call ..."; and the pair's paragraph ending "... and about 8 at 14.6, the freeze's rows and the record's parts."
+Now:
+> "Membership history for the S&P 400 and 600 needs the provider's add-on at $29.99 a month: asked again on 2026-10-04 with historical=1, as the provider's documentation describes, the fundamentals answer for each still held today's members alone, 400 and 603, and no span of membership. Bars, ..."; the widening's sentence going on with "On the operator's ruling of 2026-10-04 a first test of it runs after this phase's report, at 14.8, on today's members of the 400 and the 600, whose history holds survivors only and so flatters the wider universe: where no family's edge improves even so, the widening is dropped and recorded as not adopted, and where one improves, nothing is adopted until the result is confirmed on membership as it stood, from the provider or from the iShares IJH and IJR holdings by date."; "The add-on of Part C, decided after this phase's report and 14.8's test, and needed only where that test finds a family's edge improving and the membership as it stood is not read from the iShares holdings."; the pair's paragraph going on with "14.8 comes after the report, and the rows it adds are named beside the pair and never counted in it."; and the checkpoint "### 14.8 Part C's first test, on today's members" with its done condition after the report
+Why: the operator asked again whether the history needs the add-on, and ruled a first test on today's members before deciding it.
+### 2026-10-04 - ARCHITECTURE.html - section 20's phase 14 row with Part C's first test
+Authorised by: the operator's ruling of 2026-10-04, recorded as the 14.8 ruling "Part C's first test on today's members" in PROGRESS.md
+Was:
+> "...; the heavyweights' sweep; and the freezes and registrations on the operator's go" and "the build plan's phase 14 checkpoints, 14.0 to 14.7"
+Now:
+> "...; the heavyweights' sweep; the freezes and registrations on the operator's go; and a first test of the S&amp;P 1500 on today's members of the 400 and the 600" and "the build plan's phase 14 checkpoints, 14.0 to 14.8"
+Why: the row states what the phase builds, and the first test is part of it.

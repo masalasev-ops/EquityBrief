@@ -37551,3 +37551,22 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             14.7 entry states.
 Carried:    14.7, the phase report, with Part C put to the operator after it, the add-on, a widening measured from now
             on and the 500 alone among its answers; the night of 2026-10-05 read.
+
+### 14.8 ruling - Part C's first test on today's members after the report, the widening dropped unless a family's edge improves even on survivors and is then confirmed on membership as it stood   2026-10-04
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-04 at about 16:55 UTC, after the re-probe above: "Part C, a first test on
+            today's members, after phase 14's report", eight years of bars, splits and earnings dates for today's
+            S&P 400 and 600 members, 1,003 names, pulled into tables of their own marked by the pull inside the day's
+            allowance; each swing family replayed at its frozen settings on the 1,500 against the 500 alone with the
+            ideas' run's edge, pass test and luck figure; every figure saying the 400's and 600's history holds
+            survivors only, which flatters the wider universe; nothing bought and no paid model call. The rule: "if
+            no family's edge improves even so, the expansion is dropped and recorded as not adopted. If one improves,
+            nothing is adopted until the result is confirmed on membership as it stood, from the provider or from
+            the iShares IJH and IJR holdings by date." The words are kept in `prompts/`.
+Plan:       `BUILD_PLAN.md` gains 14.8 after the report, the test and its rule, with its done condition; Part C's
+            paragraph states the re-probe and the first test; the add-on waits on the test; 14.8's rows are named
+            beside phase 14's pair and never counted in it; section 20's row names the test and 14.0 to 14.8.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: FILLED FROM THE RUN.
+Carried:    14.7, the phase report; then 14.8, the pull and the replay, and the rule's answer brought to the
+            operator; the night of 2026-10-05 read.
