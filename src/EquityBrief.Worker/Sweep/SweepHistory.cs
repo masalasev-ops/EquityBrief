@@ -1,5 +1,6 @@
 using System.Globalization;
 using EquityBrief.Core.Components;
+using EquityBrief.Core.Families;
 using EquityBrief.Core.Sweep;
 using EquityBrief.Data;
 using Microsoft.Data.Sqlite;
@@ -84,6 +85,8 @@ public sealed class SweepHistory : IComponent
             new StoreTouch(Store.PulledEarnings, Touch.Read),
             new StoreTouch(Store.PulledSurprise, Touch.Read),
             new StoreTouch(Store.PulledMarketBar, Touch.Read),
+            new StoreTouch(Store.PulledCompany, Touch.Read),
+            new StoreTouch(Store.PulledRevenue, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
         ],
@@ -269,6 +272,56 @@ public sealed class SweepHistory : IComponent
         }
 
         return found;
+    }
+
+    // Each name's revenue as its filer's facts state it, every figure filed by the history's end under the revenue
+    // concepts, found through the filer the companies pull names for the name; none for a name the pull names no
+    // filer for, and none at all where the store holds no revenue pull.
+    // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
+    public async Task<IReadOnlyDictionary<string, IReadOnlyList<FiledRevenue>>> RevenueAsync(DateOnly through, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(ConnectionString(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var tables = new HashSet<string>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, "SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('pulled_company', 'pulled_revenue');", [], cancellation))
+        {
+            tables.Add(row.GetString(0));
+        }
+
+        var byTicker = new Dictionary<string, IReadOnlyList<FiledRevenue>>(StringComparer.Ordinal);
+
+        if (tables.Count < 2)
+        {
+            return byTicker;
+        }
+
+        var byFiler = new Dictionary<string, List<FiledRevenue>>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(
+            connection,
+            "SELECT cik, concept, period_start, period_end, dollars, filed, form, accession FROM pulled_revenue WHERE filed <= $through;",
+            [("$through", through.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))],
+            cancellation))
+        {
+            if (!byFiler.TryGetValue(row.GetString(0), out var facts))
+            {
+                byFiler[row.GetString(0)] = facts = [];
+            }
+
+            facts.Add(new FiledRevenue(row.GetString(1), Date(row.GetString(2)), Date(row.GetString(3)), Money.FromStorage(row.GetString(4)), Date(row.GetString(5)), row.GetString(6), row.GetString(7)));
+        }
+
+        await foreach (var row in RowsAsync(connection, "SELECT ticker, cik FROM pulled_company WHERE cik IS NOT NULL;", [], cancellation))
+        {
+            if (byFiler.TryGetValue(row.GetString(1), out var facts))
+            {
+                byTicker[row.GetString(0)] = facts;
+            }
+        }
+
+        return byTicker;
     }
 
     // The surprises the fifth condition reads: every pulled surprise carrying a percent where a pull stored any,

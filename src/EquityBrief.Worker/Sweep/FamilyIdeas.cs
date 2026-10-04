@@ -4,10 +4,19 @@ using EquityBrief.Core.Sweep;
 
 namespace EquityBrief.Worker.Sweep;
 
+// How an idea reads a drift print's revenue growth: not at all, as a filter keeping a print whose quarter's revenue
+// grew on the same quarter a year before, or as the order a night's listings are kept in, the largest growth first.
+public enum RevenueUse
+{
+    None,
+    Grew,
+    Order,
+}
+
 // One idea added alone to a frozen family's rule: its key and its rule in words, what it changes, the exit its
-// trades are sold by, the most a night keeps, the market switch a night must pass, and whether a listing whose stop
-// sits nearer the buy than one typical move is left off.
-public sealed record FamilyIdea(string Key, string Rule, IdeaKind Kind, IdeaExit Exit, int PerNight, MarketSwitch? Switch, bool StopAtLeastAMove)
+// trades are sold by, the most a night keeps, the market switch a night must pass, whether a listing whose stop
+// sits nearer the buy than one typical move is left off, and how it reads a print's revenue growth.
+public sealed record FamilyIdea(string Key, string Rule, IdeaKind Kind, IdeaExit Exit, int PerNight, MarketSwitch? Switch, bool StopAtLeastAMove, RevenueUse Revenue = RevenueUse.None)
 {
     public bool Market => Kind == IdeaKind.Market;
 }
@@ -155,8 +164,23 @@ public sealed class FamilyIdeaReplay
     readonly double[][] lows;
     readonly double[][] closes;
     readonly Dictionary<(int Session, IdeaExit Exit, bool Trails, double StopMoves, double Second), double> benchmarks = [];
+    readonly IReadOnlyList<DateOnly>? calendar;
+    readonly Dictionary<string, IReadOnlyList<QuarterRevenue>> quarters = new(StringComparer.Ordinal);
+    readonly Dictionary<(int Name, int Bar), PrintRevenue?> growths = [];
+    readonly Dictionary<string, (int Read, int FiledAfterTheBuy)> revenueRead = new(StringComparer.Ordinal);
 
-    public FamilyIdeaReplay(FamilySweepRunner.Adapter adapter, int[] frozen, IReadOnlyList<SweepSeries> series, SweepBenchmark.Members members, bool[][] switches, Func<int, int> yearOf, int nights)
+    // Over a drift's history, the calendar its sessions index and each name's revenue as its filer filed it give each
+    // listing its print's revenue growth, which the ideas reading it read; without them no listing has one.
+    public FamilyIdeaReplay(
+        FamilySweepRunner.Adapter adapter,
+        int[] frozen,
+        IReadOnlyList<SweepSeries> series,
+        SweepBenchmark.Members members,
+        bool[][] switches,
+        Func<int, int> yearOf,
+        int nights,
+        IReadOnlyList<DateOnly>? calendar = null,
+        IReadOnlyDictionary<string, IReadOnlyList<FiledRevenue>>? revenue = null)
     {
         this.adapter = adapter;
         this.series = series;
@@ -164,14 +188,48 @@ public sealed class FamilyIdeaReplay
         this.switches = switches;
         this.yearOf = yearOf;
         this.nights = nights;
+        this.calendar = calendar;
         listings = [.. adapter.Listings(frozen)];
         tickers = [.. series.Select(one => one.Name.Ticker)];
         opens = [.. series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Open)).ToArray())];
         lows = [.. series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Low)).ToArray())];
         closes = [.. series.Select(one => one.Bars.Select(bar => Statistic.FromPrice(bar.Close)).ToArray())];
+
+        foreach (var (ticker, facts) in revenue ?? new Dictionary<string, IReadOnlyList<FiledRevenue>>())
+        {
+            quarters[ticker] = FirstFiledRevenue.Quarters(facts);
+        }
     }
 
     public int Listings => listings.Length;
+
+    // How many of the rule's own listings read a revenue growth.
+    public int ListingsWithRevenue => listings.Count(listing => RevenueOf(listing) is not null);
+
+    // For an idea reading the revenue, how many of its trades read a growth, and of those how many read a quarter first
+    // filed after the session they were bought on.
+    public IReadOnlyDictionary<string, (int Read, int FiledAfterTheBuy)> RevenueRead => revenueRead;
+
+    // A listing's print's revenue growth: the newest print on or before its bar, read over its filer's quarters as
+    // first filed; none where the name has no print, no filer or no quarter the reading finds.
+    // see: A drift print's revenue growth is its quarter's revenue as first filed against the same quarter a year before
+    public PrintRevenue? RevenueOf(FamilyListing listing)
+    {
+        if (growths.TryGetValue((listing.Name, listing.Bar), out var known))
+        {
+            return known;
+        }
+
+        var one = series[listing.Name];
+        var newest = one.NewestSurprise[listing.Bar];
+        var read = newest >= 0 && quarters.TryGetValue(one.Name.Ticker, out var filed)
+            ? RevenueGrowth.Of(one.Name.Surprises[newest].EventDate, filed)
+            : null;
+
+        growths[(listing.Name, listing.Bar)] = read;
+
+        return read;
+    }
 
     // The rule's own figures, or an idea's on it.
     public IdeaFigures Evaluate(string key, FamilyIdea? idea)
@@ -179,7 +237,18 @@ public sealed class FamilyIdeaReplay
         var exit = idea?.Exit ?? IdeaExit.Base;
         var chosen = listings.Where(listing =>
             (idea?.Switch is not { } on || switches[(int)on][listing.Session])
-            && !(idea?.StopAtLeastAMove == true && listing.CloseStop));
+            && !(idea?.StopAtLeastAMove == true && listing.CloseStop)
+            && (idea?.Revenue != RevenueUse.Grew || RevenueOf(listing) is { Growth: > 0 }));
+
+        // Ordered by the growth, the largest first, a listing reading none after every one reading one, and the
+        // family's own order within each.
+        if (idea?.Revenue == RevenueUse.Order)
+        {
+            chosen = chosen.Select(listing => RevenueOf(listing) is { } read
+                ? listing with { Order = read.Growth, ThenBy = listing.Order }
+                : listing with { Order = double.NegativeInfinity, ThenBy = listing.Order });
+        }
+
         var trades = FamilySweep.Walk(
             chosen,
             tickers,
@@ -187,6 +256,13 @@ public sealed class FamilyIdeaReplay
             listing => exit == IdeaExit.Base ? adapter.Exit(listing) : (FamilyIdeas.ExitOf(exit, listing, opens[listing.Name], lows[listing.Name], closes[listing.Name], listing.Move, out var held), held),
             listing => exit == IdeaExit.Base ? adapter.Benchmark(listing) : Benchmark(listing, exit),
             idea?.PerNight ?? FamilySweep.PerNight);
+
+        if (idea is { Revenue: not RevenueUse.None } && calendar is not null)
+        {
+            var read = trades.Select(trade => (Trade: trade, Revenue: RevenueOf(trade.Listing))).Where(one => one.Revenue is not null).ToArray();
+
+            revenueRead[key] = (read.Length, read.Count(one => one.Revenue!.Quarter.Filed > calendar[one.Trade.Listing.Session]));
+        }
 
         return SweepIdeas.Figures(key, [.. trades.Select((trade, at) => new IdeaTrade(
             new IdeaListing(at, trade.Listing.Name, trade.Listing.Bar, trade.Listing.Session, trade.Year, 0, trade.Listing.Order, 0, StopMoves(trade.Listing), null!),
