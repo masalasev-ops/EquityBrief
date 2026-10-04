@@ -37526,3 +37526,49 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry: 4c688bb, the
             warnings, 0 errors, 1831 of 1831 tests ran with none failed, migrations 0 to 60 with none pending, schema
             version 60, against `data-ci` and never `data`.
 Carried:    14.7, the phase report, with Part C's add-on put to the operator after it; the night of 2026-10-05 read.
+
+### 14.7 ruling - the S&P 400's and 600's membership asked again with historical=1: today's members only, so Part C's add-on stands   2026-10-04
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-04 at about 16:30 UTC, asking why the 1500 cannot be reached with the
+            current subscription: before any S&P 1500 decision, ask the S&P 400 and 600 again as the provider's
+            fundamentals documentation now describes, with and without historical=1, in two calls and buying
+            nothing; record whether the spans of membership come back, and correct Part C's cost if no add-on is
+            needed. The words are kept in `prompts/`.
+Asked:      two calls at 2026-10-04T16:46:39Z, the key read inside the asking process and never printed:
+            `fundamentals/MID.INDX?historical=1&fmt=json` answered 200, 57,386 bytes, holding General and
+            Components, 400 members today; `fundamentals/SML.INDX?historical=1&fmt=json` answered 200, 86,826
+            bytes, holding General and Components, 603 members today.
+Found:      neither answer carries HistoricalTickerComponents, so neither holds a span of membership, a join or a
+            leave; the form without historical=1 is the probe of 2026-10-03, whose answer to
+            `fundamentals/MID.INDX?filter=HistoricalTickerComponents` was "NA", captured in the fixture as
+            `phase14-mid-cap-history.json`. The S&P 500's answer carries its spans without asking, 822 of them on
+            2026-09-09. On this key the S&P 400's and 600's history is not in the fundamentals answer whatever the
+            plan, so Part C's cost stands and nothing in it is corrected: the history needs the add-on or another
+            source, and today's members alone run the nights from now on but replay the eight years over the
+            companies that survived into today's index.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            14.7 entry states.
+Carried:    14.7, the phase report, with Part C put to the operator after it, the add-on, a widening measured from now
+            on and the 500 alone among its answers; the night of 2026-10-05 read.
+
+### 14.8 ruling - Part C's first test on today's members after the report, the widening dropped unless a family's edge improves even on survivors and is then confirmed on membership as it stood   2026-10-04
+
+Not a checkpoint entry: it lands nothing.
+Ruled:      by the operator on 2026-10-04 at about 16:55 UTC, after the re-probe above: "Part C, a first test on
+            today's members, after phase 14's report", eight years of bars, splits and earnings dates for today's
+            S&P 400 and 600 members, 1,003 names, pulled into tables of their own marked by the pull inside the day's
+            allowance; each swing family replayed at its frozen settings on the 1,500 against the 500 alone with the
+            ideas' run's edge, pass test and luck figure; every figure saying the 400's and 600's history holds
+            survivors only, which flatters the wider universe; nothing bought and no paid model call. The rule: "if
+            no family's edge improves even so, the expansion is dropped and recorded as not adopted. If one improves,
+            nothing is adopted until the result is confirmed on membership as it stood, from the provider or from
+            the iShares IJH and IJR holdings by date." The words are kept in `prompts/`.
+Plan:       `BUILD_PLAN.md` gains 14.8 after the report, the test and its rule, with its done condition; Part C's
+            paragraph states the re-probe and the first test; the add-on waits on the test; 14.8's rows are named
+            beside phase 14's pair and never counted in it; section 20's row names the test and 14.0 to 14.8.
+Verified:   `tools/ci.ps1` green over the tree carrying this entry: c6e169d, the entry's commit, all six steps, 0
+            warnings, 0 errors, 1831 of 1831 tests ran with none failed, migrations 0 to 60 with none pending, schema
+            version 60, against `data-ci` and never `data`.
+Carried:    14.7, the phase report; then 14.8, the pull and the replay, and the rule's answer brought to the
+            operator; the night of 2026-10-05 read.
