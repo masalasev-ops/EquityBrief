@@ -187,8 +187,41 @@ public partial class ReadSurface
         var none = HeavyweightCardOf(WebUtility.HtmlDecode(await emptyClient.GetStringAsync($"/screens/tonight/{TheSwitch}")));
 
         Assert.Contains("data-holdings=\"0\" data-state=\"provisional\" data-live-since=\"none\" data-variants=\"0\" data-last-rebalance=\"none\"", none, StringComparison.Ordinal);
-        Assert.Contains("<p class=\"degraded family-empty\" data-holdings=\"0\">No rebalance has been read yet. The book reads its first on the first night every member's company and share count are stored, which the quarters fetch writes from the answer it already asks for, and the store holds the night's closes of the index and of each sector's fund.</p>", none, StringComparison.Ordinal);
+        Assert.Contains("<p class=\"degraded family-empty\" data-holdings=\"0\">No rebalance has been read yet. The book reads its first on the next night the store holds that night's closes of the index and of each sector's fund, ranking each member by the company and share counts the quarters fetch stores from the answer it already asks for.</p>", none, StringComparison.Ordinal);
         Assert.DoesNotContain("heavyweight-table", none, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheHeavyweightsCardNamesTheNextSessionAsItsNextRebalanceWhereTheBookHasReadNoneInThatMonth()
+    {
+        // A book that has read no rebalance reads its first on the next night it runs, so Friday 2026-10-02's card names
+        // Monday the 5th, the next session, and not November's first.
+        using var none = await FamilyNightStore();
+
+        using (var host = new Host(none.Root))
+        using (var client = host.CreateClient())
+        {
+            var card = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")));
+
+            Assert.Contains("data-last-rebalance=\"none\" data-next-rebalance=\"2026-10-05\"", card, StringComparison.Ordinal);
+            Assert.Contains("· no rebalance read yet · next rebalance <b class=\"next-rebalance\">2026-10-05</b></p>", card, StringComparison.Ordinal);
+        }
+
+        // One whose last rebalance was September's, drawn on an October night that read none, rebalances on the next night
+        // it runs as well, since no rebalance of October has been read.
+        using var september = await FamilyNightStore();
+
+        september.Execute(
+            "INSERT INTO heavyweight_night (session_date, sector, place, ticker, company, company_value, look_back, sector_return, lead, trend, leader) " +
+            "VALUES ('2026-09-01', 'Energy', 1, 'Y1', 'CIK 0000000104', '6000', 0.3, 0.1, 0.2, 1, 0);");
+
+        using (var host = new Host(september.Root))
+        using (var client = host.CreateClient())
+        {
+            var card = HeavyweightCardOf(WebUtility.HtmlDecode(await client.GetStringAsync($"/screens/tonight/{TheSwitch}")));
+
+            Assert.Contains("data-last-rebalance=\"2026-09-01\" data-next-rebalance=\"2026-10-05\"", card, StringComparison.Ordinal);
+        }
     }
 
     [Fact]

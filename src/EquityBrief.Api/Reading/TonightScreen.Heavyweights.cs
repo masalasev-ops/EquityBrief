@@ -1,3 +1,4 @@
+using EquityBrief.Core.Bars;
 using EquityBrief.Core.Families;
 using EquityBrief.Core.Prices;
 using EquityBrief.Web.Marks;
@@ -13,8 +14,9 @@ public static partial class TonightScreen
 {
     // The card on a night: the holdings open at its close in the order of their sectors, each with its lead at the last
     // rebalance on or before the night and its close there against its 200-session average; what that rebalance
-    // bought; what ended at it or since; the next rebalance on the exchange's calendar; and the day the family's live
-    // rule registered with the variants standing beside it, read off the register as it stood at the night's end.
+    // bought; what ended at it or since; the next rebalance on the exchange's calendar, the next session where the book
+    // has read none in that session's month; and the day the family's live rule registered with the variants standing
+    // beside it, read off the register as it stood at the night's end.
     // see: The sector heavyweights freeze at their sweep's proposal, the proposal's three passing neighbours registered beside them as variants
     public static HeavyweightCardView Heavyweights(
         DateOnly night,
@@ -69,12 +71,33 @@ public static partial class TonightScreen
         var empty = cells.Length > 0
             ? null
             : last is not { } rebalance
-                ? "No rebalance has been read yet. The book reads its first on the first night every member's company and share count are stored, which the quarters fetch writes from the answer it already asks for, and the store holds the night's closes of the index and of each sector's fund."
+                ? "No rebalance has been read yet. The book reads its first on the next night the store holds that night's closes of the index and of each sector's fund, ranking each member by the company and share counts the quarters fetch stores from the answer it already asks for."
                 : entered.Length == 0
                     ? FormattableString.Invariant($"No sector's largest companies led their sector's fund above nothing while passing the trend gate with a beta of at least one at the rebalance of {rebalance:yyyy-MM-dd}, so the book holds nothing until the next.")
                     : FormattableString.Invariant($"Every holding the rebalance of {rebalance:yyyy-MM-dd} bought has been sold since, as the notes beneath say.");
 
-        return new HeavyweightCardView(words.Heading, words.Eyebrow, words.Rule, HeavyweightRule.Live.LookBack, last, HeavyweightRule.NextRebalance(night), cells, entered, ended, empty, liveSince, variants);
+        return new HeavyweightCardView(words.Heading, words.Eyebrow, words.Rule, HeavyweightRule.Live.LookBack, last, NextRebalance(night, last), cells, entered, ended, empty, liveSince, variants);
+    }
+
+    // The session the book next rebalances on after a night: the next session where the book has read no rebalance in
+    // that session's month, since it rebalances on the first night it reads where none was read before, and the first
+    // session of the month after the night's otherwise; none past the exchange calendar's table.
+    static DateOnly? NextRebalance(DateOnly night, DateOnly? last)
+    {
+        if (night < ExchangeClosures.CoveredFrom)
+        {
+            return null;
+        }
+
+        for (var day = night.AddDays(1); day <= ExchangeClosures.CoveredThrough; day = day.AddDays(1))
+        {
+            if (ExchangeClosures.IsSession(day))
+            {
+                return HeavyweightRule.Rebalances(day, last) ? day : HeavyweightRule.NextRebalance(night);
+            }
+        }
+
+        return null;
     }
 
     // What a name's page says where the sector heavyweights hold the name at its night's close, and nothing where
