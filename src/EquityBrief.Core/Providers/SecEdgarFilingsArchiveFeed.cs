@@ -24,10 +24,13 @@ namespace EquityBrief.Core.Providers;
 //
 // The reader is `SecEdgarArchive`, shared with the recorded feed, and it was
 // written against thirteen captured responses at 6.2 before this existed.
+//
+// The history pull asks the archive for one concept of one filer at a time
+// through the same agent, one document a request, read by `ConceptAnswers.Parse`.
 public sealed class SecEdgarFilingsArchiveFeed(
     HttpClient client,
     ArchiveAgent agent,
-    ProviderRequest? request = null) : IFilingsArchiveFeed
+    ProviderRequest? request = null) : IFilingsArchiveFeed, IFiledRevenueFeed
 {
     readonly ProviderRequest request = request ?? new ProviderRequest(RetryPolicy.Standard);
 
@@ -76,6 +79,20 @@ public sealed class SecEdgarFilingsArchiveFeed(
         return await SecEdgarArchive
             .ReadAsync(FetchAsync, ticker, cik, cancellation)
             .ConfigureAwait(false);
+    }
+
+    public async Task<IReadOnlyList<ConceptFact>> ConceptAsync(
+        string cik,
+        string concept,
+        CancellationToken cancellation = default)
+    {
+        Requests++;
+
+        var padded = SecEdgarArchive.Padded(cik);
+        var body = await FetchAsync(SecEdgarArchive.Request(ArchiveDocument.CompanyConcept, padded, file: concept), cancellation)
+            .ConfigureAwait(false);
+
+        return body is null ? [] : ConceptAnswers.Parse(body, padded, concept);
     }
 
     async Task<string?> FetchAsync(ArchiveRequest wanted, CancellationToken cancellation)

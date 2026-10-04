@@ -447,6 +447,22 @@ public class PinnedConstants
             new("Family sweep floors", "8", Worker.Sweep.FamilySweep.Variants, "FamilySweep.Variants"),
             new("Family sweep test", "63", Core.Returns.Blocks.Sessions, "Blocks.Sessions"),
             new("Family sweep test", "0.05", (decimal)Core.Returns.ReasonVerdict.Significance, "ReasonVerdict.Significance"),
+            // The pulls' readings, 14.2, the figures in each row's order.
+            new("Sector on a session", "2018", Core.Families.GicsSectors.First.Year, "GicsSectors.First's year"),
+            new("Sector on a session", "14", Core.Families.GicsSectors.Moves.Count, "GicsSectors.Moves"),
+            new("Sector on a session", "2023", Core.Families.GicsSectors.MovedAfter.Year, "GicsSectors.MovedAfter's year"),
+            new("Sector on a session", "8", Core.Families.GicsSectors.Moves.Count(move => move.To == Core.Families.GicsSectors.Financials), "the moves GicsSectors.Moves makes to Financials"),
+            new("Sector on a session", "3", Core.Families.GicsSectors.Moves.Count(move => move.To == Core.Families.GicsSectors.Industrials), "the moves GicsSectors.Moves makes to Industrials"),
+            new("Sector on a session", "3", Core.Families.GicsSectors.Moves.Count(move => move.To == Core.Families.GicsSectors.ConsumerStaples), "the moves GicsSectors.Moves makes to Consumer Staples"),
+            new("Rank by company", "50", Core.Families.CompanyRank.DollarVolumeSessions, "CompanyRank.DollarVolumeSessions"),
+            new("Revenue as first filed", "80", Core.Families.FirstFiledRevenue.QuarterFewest, "FirstFiledRevenue.QuarterFewest"),
+            new("Revenue as first filed", "100", Core.Families.FirstFiledRevenue.QuarterMost, "FirstFiledRevenue.QuarterMost"),
+            new("Revenue as first filed", "350", Core.Families.FirstFiledRevenue.YearFewest, "FirstFiledRevenue.YearFewest"),
+            new("Revenue as first filed", "380", Core.Families.FirstFiledRevenue.YearMost, "FirstFiledRevenue.YearMost"),
+            new("Revenue as first filed", "260", Core.Families.FirstFiledRevenue.NineMonthsFewest, "FirstFiledRevenue.NineMonthsFewest"),
+            new("Revenue as first filed", "285", Core.Families.FirstFiledRevenue.NineMonthsMost, "FirstFiledRevenue.NineMonthsMost"),
+            new("Revenue as first filed", "6", Core.Families.FirstFiledRevenue.Concepts.Count, "FirstFiledRevenue.Concepts"),
+            new("Archive requests", "10", HistoryPull.ArchiveRequestsASecond, "HistoryPull.ArchiveRequestsASecond"),
         ];
     }
 

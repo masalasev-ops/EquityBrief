@@ -37056,3 +37056,42 @@ Replayed:   the fourteen the freezes registered on 2026-10-02 each over that one
 Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
             14.2 entry below states.
 Carried:    the night of 2026-10-05 read; the fork's ruling before 14.3.
+
+### 14.2 - the pulls behind the sector heavyweights and the context checks, and the readings over them   2026-10-04
+
+Built:      `history-pull` gains four pulls, each into a table of its own marked by its pull, removed whole by it
+            and read by no night, each naming a name, fund or filer not served while it stores the rest:
+            `--companies`, each history name's filer, GICS classification, delisting and quarterly share counts
+            with their filing days, one fundamentals request a name with a filter, into `pulled_company` and
+            `pulled_shares`; `--splits`, one request a name, into `pulled_split`; `--sector-etfs`, the eleven funds'
+            series into `pulled_market_bar`; and `--revenue`, every figure each pulled filer stated under six revenue
+            concepts with its filing day, one archive request a filer and concept a tenth of a second apart, into
+            `pulled_revenue`. Migration 58. The requests sit on the existing fundamentals, corporate action and
+            archive feeds behind three interfaces, read by parsers written against four new captures. Four
+            readings in the core, each a decision: a company's value on a session, its sector on a session with the
+            fourteen moves of 2023-03-17 from a committed table the companies pull reads against the sectors and
+            filers filed, the rank by company, and a quarter's revenue as first filed. A fifth decision for the
+            pulls. 14.2's own text amends "the provider's sub-industries" to the sectors and filers filed, since the
+            provider files Corpay under Diversified Financial Services.
+Tests:      0 of 0, from 1787: eleven added, the four readings by hand, the captured answers read, and each pull,
+            the moves' check and the verb over constructed answers; the night over a store holding pulled history
+            now holds hostile rows in all eight tables, and the scan of the shipped source names the four new ones.
+Claims:     0, from 903: section 17's five rows and section 18's four, against about eight the plan counted.
+Pins:       none moved. The family rules' lists, the candidates' shared evaluation sources, the swing filter's and
+            the rule versions' lists were read and no file on any is touched; the readings' files call nothing the
+            evaluation path's reader finds.
+Mutated:    the rule, stated before the run: each property the readings and the pulls add broken alone, made by
+            hand over the working tree carrying them before its commit, filtered to the tests of this checkpoint
+            and reverted.
+            P1 a rank from today's counts, the count read whatever its filing day: red in the value test and the
+            rank test.
+            P2 a balance sheet filed on the session read on it: red in the value test.
+            P3 revenue read from the newest filing stating it: red in the revenue test and the captured answers'.
+            P4 the fourteen moves of 2023-03-17 not applied: red in the sector test.
+            P5 the value read off the dividend-adjusted close: red in the value test.
+            P6 the companies pull's try a name catching a refusal alone: red in the companies pull's test.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: (unfilled).
+Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-04-14.2-the-pulls.txt`, then an entry
+            with the names answered, those lacking a sector, a count or a CIK, the splits, the revenue figures by
+            concept, the fourteen moves' line, the check of 30 sampled releases and the fork's figures over the
+            pulled data; the night of 2026-10-05 read; the fork's ruling before 14.3.

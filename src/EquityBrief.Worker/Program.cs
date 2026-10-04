@@ -78,7 +78,10 @@ static int NoVerb()
         "night can read them, and " +
         "'history-pull --from <yyyy-MM-dd>' stores the daily bars and earnings prints of every name the index held from that " +
         "date to tonight apart from the store's own, each row marked by its pull, '--surprises' with it stores the earnings " +
-        "surprises the calendar files over the span instead, '--market' the index's and the VIX's daily series, and " +
+        "surprises the calendar files over the span instead, '--market' the index's and the VIX's daily series, " +
+        "'--sector-etfs' the eleven sector funds' daily series, '--companies' each name's filer, GICS sector and quarterly " +
+        "share counts with the days they were filed, '--splits' each name's splits, 'history-pull --revenue' each pulled " +
+        "company's revenue as its filer filed it, and " +
         "'--purge <pull>' removes a pull whole, and " +
         "'quarters' runs the night's quarters step by hand, asking for the members due and the next of the fill, and " +
         "'measure-sources --sector <sector> --sites <a,b> --industries <x,y>' searches each proposed site for each declined " +
@@ -210,7 +213,34 @@ static async Task<int> HistoryPullRun(string[] args)
             () => EodhdMarketSeriesFeed.Live(
                 string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address,
                 new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty)),
-            "a market pull"));
+            "a market pull"),
+        () => FeedSource.Resolve<ICompanyFeed>(
+            source,
+            fixture,
+            _ => throw new InvalidOperationException(NoCapture("company")),
+            () => EodhdFundamentalsFeed.Live(
+                string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address,
+                new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty)),
+            "a companies pull"),
+        () => FeedSource.Resolve<ISplitHistoryFeed>(
+            source,
+            fixture,
+            _ => throw new InvalidOperationException(NoCapture("splits")),
+            () => EodhdCorporateActionFeed.Live(
+                string.IsNullOrWhiteSpace(address) ? EodhdBulkPriceFeed.DefaultBaseAddress : address,
+                new ProviderCredentials(configuration[ProviderCredentials.ApiKeyName] ?? string.Empty)),
+            "a splits pull"),
+        () => FeedSource.Resolve<IFiledRevenueFeed>(
+            source,
+            fixture,
+            _ => throw new InvalidOperationException(NoCapture("revenue")),
+            () => SecEdgarFilingsArchiveFeed.Live(new ArchiveAgent(configuration[ArchiveAgent.ContactName] ?? string.Empty)),
+            "a revenue pull"));
+
+    // The companies, splits and revenue pulls ask the provider alone: the fixture holds the answers their readers were
+    // written against and no replay of a pull, so a pull over the fixture is refused rather than answered with nothing.
+    static string NoCapture(string what) =>
+        $"The {what} pull asks the provider live and has no recorded answers to replay. Run it with '--live' or the source set to live.";
 }
 
 // A sector's proposed sites measured for its declined industries before any joins the industry list. The search

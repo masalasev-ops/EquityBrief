@@ -69,9 +69,9 @@ public partial class ArchitectureConformance
 
     // The rows the document gained after phase 13, each named where it was added: the ideas' run, a 12.5
     // correction built once the phase was finished, the store's copy, the operator's ruling of 2026-10-02, the
-    // market switches, the operator's ruling of 2026-10-03, a drain's stop, the 9.2 correction of 2026-10-03, and
-    // 14.1's replay guarding a family rule's record.
-    internal static readonly string[] AfterPhaseThirteen = [.. FixtureExpectations.IdeasClaims, .. FixtureExpectations.StoreCopyRows, .. FixtureExpectations.MarketSwitchRows, .. Reading.ReadSurface.DrainStopRows, .. FixtureExpectations.FamilyReplayRows];
+    // market switches, the operator's ruling of 2026-10-03, a drain's stop, the 9.2 correction of 2026-10-03,
+    // 14.1's replay guarding a family rule's record, and 14.2's pulls and the readings over them.
+    internal static readonly string[] AfterPhaseThirteen = [.. FixtureExpectations.IdeasClaims, .. FixtureExpectations.StoreCopyRows, .. FixtureExpectations.MarketSwitchRows, .. Reading.ReadSurface.DrainStopRows, .. FixtureExpectations.FamilyReplayRows, .. FixtureExpectations.CompanyPullRows];
 
     // Where a checkpoint landed more claims than the plan counted for it, the rows it landed more of and how
     // many of them the plan's count held, as the entry that landed them says: at 13.2 section 17's rows for the
@@ -142,7 +142,7 @@ public partial class ArchitectureConformance
 
         // Stated, so a claim added or lost without being named here moves this rather than the sum.
         Assert.Equal(
-            (789, 853, 6, 4, 855, 876, 903),
+            (789, 853, 6, 4, 855, 876, 912),
             (before, predicted, PhaseThirteenMoved[0].Rows.Length, PhaseThirteenMoved[1].Rows.Length, actual, now, total));
     }
 }

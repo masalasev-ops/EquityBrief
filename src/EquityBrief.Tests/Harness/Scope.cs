@@ -2963,6 +2963,44 @@ internal static class Scope
             Verdict.Pass,
             "over a store whose night the evaluator and the recorder ran, a stored trade whose end and result alone differ from the replay's restarts its rule at the registration with that trade named on its row and in the line the verb prints, while every rule the replay reproduced carries its record on from its first registration",
             ByExpectations),
+
+        // 14.2, the pulls and the readings over them: section 17's five rows and section 18's four.
+        [CheckReach.Key(LimitsTable, "Company value")] = new Scoped(
+            Verdict.Pass,
+            "a session reads the count of a sheet filed the day before it and not one filed the day after or on it, a split between a filing and a session moves no value while one after the counts were asked divides nothing, and a company paying dividends is worth what one paying none is at the same unadjusted close and count, by hand",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Sector on a session")] = new Scoped(
+            Verdict.Pass,
+            "the table counts the fourteen, eight, three and three, each named once; a moved member reads the sector it left on 2023-03-17 and the one it joined on the session after, a member the table does not name the sector filed on both, and a session before the eleven or a sector filed outside them none, by hand",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Rank by company")] = new Scoped(
+            Verdict.Pass,
+            "two companies ranked on their counts as they stood and not today's, two classes of one company holding one place by the newest fifty sessions' dollars, a tie settled by the ticker and two listings with no CIK ranked apart, by hand",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Revenue as first filed")] = new Scoped(
+            Verdict.Pass,
+            "over constructed filings a quarter is read as first filed and never as restated or as a later column, a fiscal fourth quarter as the year less its nine months under one concept and none across two, the earlier concept read where a filing states two and the spans at their edges; and the captured answers of a filer and a bank read the same way",
+            ByExpectations),
+        [CheckReach.Key(LimitsTable, "Archive requests")] = new Scoped(
+            Verdict.Pass,
+            "the revenue pull over a constructed feed waits a tenth of a second after each of its requests, two filers and six concepts twelve waits",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A name or a filer a companies, splits or revenue pull asks for is not served")] = new Scoped(
+            Verdict.Pass,
+            "over constructed answers a refused name and a name answered with a page that cannot be read are named with why and store nothing while the others are stored and the row says partial, for the companies pull, the splits pull and a filer the revenue pull asks",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A company filing no sector, no count with its date or no CIK")] = new Scoped(
+            Verdict.Pass,
+            "a company answered filing none of the three is stored with each field empty and named under each, sheets carrying no count or no filing date are counted unread, and a listing with no CIK ranks as a company of its own",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "One of the fourteen moves of 2023-03-17 filed in another sector or under another filer")] = new Scoped(
+            Verdict.Pass,
+            "the pull's reading of the table counts fourteen filed where they moved over answers that file them so, and with one filed in the sector it left, one under another filer and one not answered counts eleven and names the three in the table's order",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A filer stating its revenue under none of the concepts")] = new Scoped(
+            Verdict.Pass,
+            "a constructed filer answering no figure under any concept is named among those filing under none and stores nothing, beside each concept's filers and figures",
+            ByExpectations),
         [CheckReach.Key(FailureTable, "The labeller fails")] = new Scoped(
             Verdict.Pass,
             "a run refused before it asked anything writes its own row saying why and no row of the night's, and a labeller that stopped partway leaves the night's rows, listings and gate results as they were",
@@ -5012,6 +5050,11 @@ internal static class Scope
         ["The drain stops on an error outside a pass"] = "9.2",
         // 14.1, a family rule's record guarded by a replay.
         ["A replay at a family rule's registration finds a trade the rule would keep differently"] = "14.1",
+        // 14.2, the pulls.
+        ["A name or a filer a companies, splits or revenue pull asks for is not served"] = "14.2",
+        ["A company filing no sector, no count with its date or no CIK"] = "14.2",
+        ["One of the fourteen moves of 2023-03-17 filed in another sector or under another filer"] = "14.2",
+        ["A filer stating its revenue under none of the concepts"] = "14.2",
         // 13.1, the family framework. The row about two families is read on the page once a second family is on it.
         ["A stock a family passes while a trade for it is still open"] = "13.1",
         ["A stock two families pass on one night"] = "13.2",
@@ -5144,6 +5187,10 @@ internal static class Scope
         // The freezes, 13.9.
         ["Pullback base"] = "13.9",
         ["A family rule's list"] = "13.9",
+        // The pulls' readings, 14.2; the sector on a session, the rank by company and revenue as first filed are named
+        // by the plan's own text and derive from it.
+        ["Company value"] = "14.2",
+        ["Archive requests"] = "14.2",
         // The research template, 12.6 corrections.
         ["Risk kinds"] = "12.6",
         ["Sector sites"] = "12.6",
