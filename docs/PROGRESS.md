@@ -37690,3 +37690,37 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry: a67d06e, the
             version 61, against `data-ci` and never `data`.
 Carried:    phase 14's sign-off, owed on the phase as a whole by a session that committed none of its code; the
             night of 2026-10-05 read.
+
+### 14.3 - correction: the heavyweights' card names the next night as its next rebalance where the book has read none that month, and says what its first waits for   2026-10-04
+
+Built:      the card's next rebalance is the next session where the book has read no rebalance in that session's
+            month, read by the rule's own test of a rebalance over the exchange's calendar, and the first session of
+            the month after the night's otherwise. The line a book that has read none draws names what its first
+            waits for, the night's closes of the index and of each sector's fund. The read surface alone.
+Found:      answering the operator's question of where the card is: tonight's card, drawn for 2026-10-02 with no
+            rebalance read, named 2026-11-02 as its next rebalance, where every book reads its first on the night of
+            2026-10-05, and its line said the book waits for every member's company and share count, which nothing
+            the book reads waits for.
+Tests:      1838, from 1837: one added, the next session named for a book that has read none and for one whose last
+            rebalance was the month before; the empty card's test reads the new line.
+Claims:     973, unchanged.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the heavyweights' own,
+            the swing filter's and the rule versions' lists; the read surface's projection is in none of them.
+Mutated:    the rule, stated before the run: each property the correction adds broken alone, made by hand over the
+            working tree before its commit, filtered to the four card tests and reverted.
+            N1 the next rebalance read as the next month's first session whatever the book has read: red in the new
+            test alone.
+            N2 the next session named whatever the book has read: red in the card's first test alone, its book read
+            on 2026-10-01 naming 2026-10-05.
+            N3 a rebalance read in the month before taken for this month's: red in the new test alone, at its
+            September book.
+            N4 the empty card's line back to its old words: red in the empty card's test alone.
+            Results: N1 to N4 each red where stated, each reverted, and the four tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: f825b12, the
+            entry's commit. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1838 of 1838 tests ran with none
+            failed, migrations 0 to 61 with none pending, schema version 61, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 973 claims, 973 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 984
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed.
+Carried:    5152 restarted from main's Release build after the merge; the night of 2026-10-05 read, the books' first
+            rebalance in it; phase 14's sign-off.
