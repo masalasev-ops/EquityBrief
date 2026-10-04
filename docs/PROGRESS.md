@@ -37301,3 +37301,24 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             the roster, 43 carried and 43 passed.
 Carried:    after the merge, `sweep-context` from main's Release build, its figures as an entry and its report
             brought; the night of 2026-10-05 read, the book's first rebalance in it; the fork's ruling.
+
+### 14.4 - the context run: no idea passed, the drift's two on revenue growth and the pullback's on its RSI's fall   2026-10-04
+
+Ran:        `sweep-context` from main's Release build at 4929dc4, from 05:42 to 05:50 UTC with no night, queue,
+            report pass or labeller running, reading the store read-only and writing nothing to it: run
+            20261004T054243Z, 828 names over 1,949 sessions scored from 2019-01-02 to 2026-10-02, 665 of them
+            reading a filer's revenue.
+Drift:      as frozen, a window of 3, a reaction of 0.5, a volume of 2 and a target of 2.5: 2,243 trades, edge 0.121;
+            6,099 of its 6,279 listings read a revenue growth. r1, a print whose revenue grew: 1,775 trades, edge
+            0.216, better than the drift in 4 of the 8 years and 1 of the last 3, failing the year tests; 892 of the
+            1,790 trades reading a growth read a quarter first filed after their buy. r2, the night's first three by
+            the growth: 1,843 trades, edge 0.139, better in 5 of 8 and 1 of the last 3 and the last three lower,
+            failing; 938 of 1,821 read one filed after their buy.
+Pullback:   the base: 1,903 trades, edge 0.100. o1, the night's first three by the RSI's fall: 1,733 trades, edge
+            0.099, better in 4 of 8 and 1 of the last 3 and lower without the five largest, failing; the base's first
+            three in the list's own order beside it: 1,743 trades, edge 0.116.
+Luck:       2 tries on the drift, where luck alone passes about 0.27, and 1 on the pullback, about 0.13; 0 passed.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry, the run the
+            14.5 entry states.
+Carried:    nothing registers, the report at `/sweep` brought to the operator; the night of 2026-10-05 read, the
+            book's first rebalance in it; the fork's ruling.
