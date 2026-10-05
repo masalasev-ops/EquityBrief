@@ -383,11 +383,9 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
             shown.AddRange(SweepNonePassed.StrongestOf(read.Select(one => new Strongest(one.Figures.Key, one.Figures.Trades, one.Figures.YearsBeating, one.Figures.Edge))).Select(one => one.Key));
         }
 
-        var report = Path.Combine(folder, SweepFolder.ReportFile);
-        var figures = Path.Combine(folder, FiguresFile);
-
-        File.WriteAllText(report, FamilySweepReport.Build(run, adapter.Grid, read, proposal) + Costs([.. shown.Distinct(StringComparer.Ordinal)], before, read.ToDictionary(one => one.Figures.Key, one => one.Figures, StringComparer.Ordinal), doubled) + stage);
-        File.WriteAllText(figures, JsonSerializer.Serialize(
+        var report = WriteRun(
+            folder,
+            FamilySweepReport.Build(run, adapter.Grid, read, proposal) + Costs([.. shown.Distinct(StringComparer.Ordinal)], before, read.ToDictionary(one => one.Figures.Key, one => one.Figures, StringComparer.Ordinal), doubled) + stage,
             new
             {
                 index = indexCode,
@@ -403,8 +401,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
                 tries = tries.Select(one => new { one.Dial, one.Level, one.Switch, one.Setting, one.Kept, with = one.With }),
                 crossedLevels = crossedLevels.Select(level => level.Dial + ", " + level.Name),
                 crossed = crossed.Select((measures, at) => new { setting = adapter.Grid.Key(ten[at]), after = measures }),
-            },
-            SweepRunner.Json));
+            });
 
         output.WriteLine(proposal.Proposed is { } shownProposal
             ? FormattableString.Invariant($"proposed {shownProposal.Key}, edge after costs {FamilySweepReport.Number(shownProposal.Edge)} over {shownProposal.Trades} trades, before costs {FamilySweepReport.Number(before[shownProposal.Key].Edge)}, at double {FamilySweepReport.Number(doubled[shownProposal.Key].Edge)}")
@@ -472,10 +469,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         page.Append("</tbody></table></div></main></body></html>");
 
-        var report = Path.Combine(folder, SweepFolder.ReportFile);
-
-        File.WriteAllText(report, page.ToString());
-        File.WriteAllText(Path.Combine(folder, FiguresFile), JsonSerializer.Serialize(new { index = indexCode, family = Pullback, note, listed, kept, all, before, after, doubled }, SweepRunner.Json));
+        var report = WriteRun(folder, page.ToString(), new { index = indexCode, family = Pullback, note, listed, kept, all, before, after, doubled });
 
         output.WriteLine(FormattableString.Invariant($"the base: edge after costs {SweepIdeasReport.Number(after.Edge)} over {after.Trades} trades, before costs {SweepIdeasReport.Number(before.Edge)}, at double {SweepIdeasReport.Number(doubled.Edge)}, with no floors or gate {SweepIdeasReport.Number(all.Edge)} over {all.Trades}"));
         output.WriteLine("report " + report);
@@ -800,10 +794,9 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         page.Append("</main></body></html>");
 
-        var report = Path.Combine(folder, SweepFolder.ReportFile);
-
-        File.WriteAllText(report, page.ToString());
-        File.WriteAllText(Path.Combine(folder, FiguresFile), JsonSerializer.Serialize(
+        var report = WriteRun(
+            folder,
+            page.ToString(),
             new
             {
                 index = indexCode,
@@ -825,8 +818,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
                 tries = tries.Select(one => new { one.Dial, one.Level, one.Switch, one.Setting, one.Kept, with = one.With }),
                 crossedLevels = crossedLevels.Select(level => level.Dial + ", " + level.Name),
                 crossed = crossed.Select((measures, at) => new { setting = space.Describe(ten[at]), after = measures, meets = Meets(measures) }),
-            },
-            SweepRunner.Json));
+            });
 
         output.WriteLine(proposed
             ? FormattableString.Invariant($"proposed {space.Describe(proposal!.Point)}, edge after costs {FamilySweepReport.Number(after[1].Edge)} over {after[1].Scored:N0} trades, {YearsAbove(after[1])} of 8 years above nothing, before costs {FamilySweepReport.Number(before[1].Edge)}, at double {FamilySweepReport.Number(doubled[1].Edge)}")
@@ -844,6 +836,17 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
     // The file a run creates in its folder to hold it, created only where none is.
     public const string ClaimFile = "run.claim";
+
+    // A run's report and its figures, written into the run folder it claimed; the report's path.
+    static string WriteRun(string folder, string page, object figures)
+    {
+        var report = Path.Combine(folder, SweepFolder.ReportFile);
+
+        File.WriteAllText(report, page);
+        File.WriteAllText(Path.Combine(folder, FiguresFile), JsonSerializer.Serialize(figures, SweepRunner.Json));
+
+        return report;
+    }
 
     // The second stage's levels: half the provisional dollar volume floor, the higher minimum price, the drift's wider
     // window and the sessions before a reaction its peers' reports are read over.
@@ -1072,10 +1075,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         page.Append("</tbody></table></div></main></body></html>");
 
-        var report = Path.Combine(folder, SweepFolder.ReportFile);
-
-        File.WriteAllText(report, page.ToString());
-        File.WriteAllText(Path.Combine(folder, FiguresFile), JsonSerializer.Serialize(new { index = indexCode, family = Heavyweights, note, provisional, proposal = proposal.Proposed?.Key, settings = after.Select(one => new { one.After.Key, figures[one.After.Key].Before, figures[one.After.Key].After, figures[one.After.Key].Doubled }) }, SweepRunner.Json));
+        var report = WriteRun(folder, page.ToString(), new { index = indexCode, family = Heavyweights, note, provisional, proposal = proposal.Proposed?.Key, settings = after.Select(one => new { one.After.Key, figures[one.After.Key].Before, figures[one.After.Key].After, figures[one.After.Key].Doubled }) });
 
         var (firstBefore, firstAfter, firstDoubled) = figures[provisional];
 
@@ -1240,10 +1240,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         page.Append("</tbody></table></div></main></body></html>");
 
-        var report = Path.Combine(folder, SweepFolder.ReportFile);
-
-        File.WriteAllText(report, page.ToString());
-        File.WriteAllText(Path.Combine(folder, FiguresFile), JsonSerializer.Serialize(new { index = indexCode, family = Followers, note, proposal = proposed?.Key, settings = after.Select(one => new { one.Key, figures[one.Key].Before, figures[one.Key].After, figures[one.Key].Doubled }) }, SweepRunner.Json));
+        var report = WriteRun(folder, page.ToString(), new { index = indexCode, family = Followers, note, proposal = proposed?.Key, settings = after.Select(one => new { one.Key, figures[one.Key].Before, figures[one.Key].After, figures[one.Key].Doubled }) });
 
         var best = after.OrderByDescending(one => one.Edge ?? double.MinValue).First();
 
