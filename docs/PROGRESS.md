@@ -37837,8 +37837,13 @@ Mutated:    the rule, stated before the run: each property the night's half of t
             stock, so the test gained a swap on a name held no other way, then red in the fund's file test.
             Results: N1 to N8 each red where stated once N8's test was extended, each reverted, and the eleven tests
             green over the reverted tree.
-Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: FILLED FROM THE
-            RUN.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: db7f755, over
+            02c21e4, the entry's commit, whose full suite read three tests that still stated thirteen series and the
+            hour's deadline, corrected in db7f755. `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1850 of 1850
+            tests ran with none failed, migrations 0 to 61 with none pending, schema version 61, against `data-ci` and
+            never `data`. `tools/verify-phase.ps1`: 44 tables, 975 claims, 975 PASS, 0 FAIL, 0 out of scope, 0
+            unexamined, 986 placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the
+            roster, 43 carried and 43 passed.
 Carried:    after the merge, `tools/remedies/2026-10-05-15.1-the-three-indices.txt` from main's Release build
             before the night and 5152 restarted from it; the night of 2026-10-05 read the next morning, its time to
             the close against 40 minutes and two hours, its rows per index, its requests and weighted calls and the
