@@ -160,7 +160,11 @@ public sealed class SweepHistory : IComponent
     // Given one wider index alone, the history is that index's members today as a members pull stored them, each a
     // survivor read as a member on every session, and none of the S&P 500's: the sweeps of each index's own rules read it.
     // see: Each index runs every family as rules of its own, ranked and benchmarked on that index's members alone
-    public async Task<SweepHistoryInputs> ReadAsync(DateOnly through, Action<string>? progress = null, CancellationToken cancellation = default, bool wider = false, string? index = null)
+    //
+    // Asked for membership as it stood where the store holds the index's fund's snapshots, the history is every code a
+    // snapshot matched instead, each over its own span and none a survivor.
+    // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
+    public async Task<SweepHistoryInputs> ReadAsync(DateOnly through, Action<string>? progress = null, CancellationToken cancellation = default, bool wider = false, string? index = null, bool asItStood = false)
     {
         await using var connection = new SqliteConnection(ConnectionString(databaseFile));
         await connection.OpenAsync(cancellation);
@@ -185,7 +189,19 @@ public sealed class SweepHistory : IComponent
         var survivors = new HashSet<string>(StringComparer.Ordinal);
         var widerMembers = 0;
 
-        if (index is not null && await TableHeldAsync(connection, "pulled_member", cancellation))
+        var stood = index is not null && asItStood
+            ? await AsItStoodAsync(index, cancellation)
+            : new Dictionary<string, (DateOnly? Joined, DateOnly? Left)>(StringComparer.Ordinal);
+
+        if (stood.Count > 0)
+        {
+            foreach (var (ticker, span) in stood.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+            {
+                widerMembers++;
+                spans[ticker] = [span];
+            }
+        }
+        else if (index is not null && await TableHeldAsync(connection, "pulled_member", cancellation))
         {
             await foreach (var row in RowsAsync(connection, "SELECT DISTINCT ticker FROM pulled_member WHERE index_code = $index ORDER BY ticker;", [("$index", index)], cancellation))
             {

@@ -56,7 +56,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
     // Given a stop floor, the drift's stop is held that many typical moves under the buy where the reaction's low sits
     // nearer, which a risk a hair wide would otherwise turn into a result of thousands of risks.
-    public async Task<int> RunAsync(string indexCode, string family, CancellationToken cancellation = default, double stopFloor = 0)
+    public async Task<int> RunAsync(string indexCode, string family, CancellationToken cancellation = default, double stopFloor = 0, bool survivorsOnly = false)
     {
         if (!Indices.TryGetValue(indexCode, out var named))
         {
@@ -89,7 +89,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         var started = clock.UtcNow;
         var history = new SweepHistory(databaseFile);
         var through = await history.NewestSessionAsync(cancellation);
-        var inputs = await history.ReadAsync(through, output.WriteLine, cancellation, index: indexCode);
+        var inputs = await history.ReadAsync(through, output.WriteLine, cancellation, index: indexCode, asItStood: !survivorsOnly);
 
         if (inputs.Names.Count == 0)
         {
@@ -157,7 +157,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         var proposal = FamilySweep.Propose(adapter.Grid, read);
         var note = FormattableString.Invariant(
-            $"Survivors only: the {named}'s {inputs.Names.Count:N0} members today, each read as a member on every session, which flatters the index, its strength, market check and benchmark read among them alone. A listing is kept only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing; {kept:N0} of the {listed:N0} listings every setting made together cleared them, and {withIncome:N0} of the {inputs.Names.Count:N0} members hold quarters of income. Every edge on this page is after each trade's cost at the published table's value, and the table below sets the edge before costs and at double the cost beside it.");
+            $"{Membership(named, inputs)} A listing is kept only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing; {kept:N0} of the {listed:N0} listings every setting made together cleared them, and {withIncome:N0} of the {inputs.Names.Count:N0} members hold quarters of income. Every edge on this page is after each trade's cost at the published table's value, and the table below sets the edge before costs and at double the cost beside it.");
         var run = new FamilySweepRun(family, $"{named} {words}", calendar[firstScored], through, inputs.Names.Count, nights, open, adapter.Readings, started, clock.UtcNow, floored ? note + FormattableString.Invariant($" The stop is held at least {stopFloor:0.##} typical moves under the buy where the reaction's low sits nearer, as the drift's stop floor variant holds it.") : note);
         var provisional = adapter.Grid.Key([.. adapter.Grid.Provisional]);
         var shown = new List<string> { provisional };
@@ -240,7 +240,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         var before = SweepIdeas.Figures("the base, before costs", trades, nights);
         var after = SweepIdeas.Figures("the base, after costs", [.. trades.Select(trade => After(trade, 1))], nights);
         var doubled = SweepIdeas.Figures("the base, at double the cost", [.. trades.Select(trade => After(trade, TradeCost.Doubled))], nights);
-        var note = FormattableString.Invariant($"Survivors only: the {named}'s {inputs.Names.Count:N0} members today, each read as a member on every session, which flatters the index, its strength, market check and benchmark read among them alone. A listing is kept only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing; {kept:N0} of the {listed:N0} listings the base made cleared them.");
+        var note = FormattableString.Invariant($"{Membership(named, inputs)} A listing is kept only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing; {kept:N0} of the {listed:N0} listings the base made cleared them.");
         var page = new StringBuilder("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + WebUtility.HtmlEncode(named) + " pullback base</title><style>" + SweepReport.Style + "</style></head><body><main>");
 
         page.Append(FormattableString.Invariant($"<h1>The {WebUtility.HtmlEncode(named)} {WebUtility.HtmlEncode(words)}, at its provisional settings</h1><p class=\"survivors\">{WebUtility.HtmlEncode(note)}</p><div class=\"table\"><table><thead><tr><th>Read</th><th>Trades</th><th>Edge</th><th>Error</th><th>2024 to 2026 edge</th><th>Without the five largest</th><th>Years above nothing</th><th>Near stops</th></tr></thead><tbody>"));
@@ -346,7 +346,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         var after = settings.Select(setting => (setting, figures[setting.Key].After)).ToArray();
         var proposal = HeavyweightSweep.Propose(after);
         var provisional = (HeavyweightSweep.Frozen with { Sector = HeavyweightSectorReturn.Members }).Key;
-        var note = FormattableString.Invariant($"Survivors only: the {named}'s {inputs.Names.Count:N0} members today, each read as a member on every session. Each sector's return is its members' mean and a leader's beta is read against {fund?.Series ?? "no fund"}. A member is read by a rebalance only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing: {clearing:N0} of {members:N0} member-sessions. Edges are in points of the buy, after each holding's round trip at the published table, its size cut paying none.");
+        var note = FormattableString.Invariant($"{Membership(named, inputs)} Each sector's return is its members' mean and a leader's beta is read against {fund?.Series ?? "no fund"}. A member is read by a rebalance only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing: {clearing:N0} of {members:N0} member-sessions. Edges are in points of the buy, after each holding's round trip at the published table, its size cut paying none.");
 
         static string Points(double? value) => value is { } one ? FormattableString.Invariant($"{one * 100:+0.00;-0.00}") : "none";
 
@@ -381,6 +381,14 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         return 0;
     }
+
+    // The words every figure of a run carries for the membership it read: today's members on every session, survivors
+    // only, or the members of each session as the fund's quarter-end holdings filed them.
+    // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
+    public static string Membership(string named, SweepHistoryInputs inputs) =>
+        inputs.Survivors > 0
+            ? FormattableString.Invariant($"Survivors only: the {named}'s {inputs.Names.Count:N0} members today, each read as a member on every session, which flatters the index, its strength, market check and benchmark read among them alone.")
+            : FormattableString.Invariant($"As it stood: the {inputs.Names.Count:N0} names the {named}'s fund held at a quarter end it filed with the SEC from 2019-09-30, each a member from the first snapshot holding it to the last and read among the members of each session, the sessions before the first read on its holdings and a holding matched to no code left out.");
 
     // Whether a listing clears the index's floors and the profit gate on its session: the close as it traded, the mean
     // dollar volume over the 50 bars to it on the adjusted close and the provider's split-adjusted volume, and the quarters
