@@ -54,7 +54,9 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         ["SML"] = "IJR",
     };
 
-    public async Task<int> RunAsync(string indexCode, string family, CancellationToken cancellation = default)
+    // Given a stop floor, the drift's stop is held that many typical moves under the buy where the reaction's low sits
+    // nearer, which a risk a hair wide would otherwise turn into a result of thousands of risks.
+    public async Task<int> RunAsync(string indexCode, string family, CancellationToken cancellation = default, double stopFloor = 0)
     {
         if (!Indices.TryGetValue(indexCode, out var named))
         {
@@ -129,7 +131,8 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         int YearOf(int session) => calendar[session].Year - SweepColumns.FirstScored.Year;
 
-        var adapter = FamilySweepRunner.For(family, series, sessions, members, firstScored, calendar);
+        var floored = family == DriftRule.Name && stopFloor > 0;
+        var adapter = FamilySweepRunner.For(family, series, sessions, members, firstScored, calendar, floored ? stopFloor : 0);
         var read = new List<(int[] Setting, FamilyFigures Figures)>();
         var before = new Dictionary<string, FamilyFigures>(StringComparer.Ordinal);
         var doubled = new Dictionary<string, FamilyFigures>(StringComparer.Ordinal);
@@ -155,7 +158,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         var proposal = FamilySweep.Propose(adapter.Grid, read);
         var note = FormattableString.Invariant(
             $"Survivors only: the {named}'s {inputs.Names.Count:N0} members today, each read as a member on every session, which flatters the index, its strength, market check and benchmark read among them alone. A listing is kept only where its close was at least $5, its mean dollar volume over the 50 sessions to it at least {MemberReadings.DollarVolumeFloor(indexCode)!.Value:N0} dollars and its four newest quarters filed before it summed above nothing; {kept:N0} of the {listed:N0} listings every setting made together cleared them, and {withIncome:N0} of the {inputs.Names.Count:N0} members hold quarters of income. Every edge on this page is after each trade's cost at the published table's value, and the table below sets the edge before costs and at double the cost beside it.");
-        var run = new FamilySweepRun(family, $"{named} {words}", calendar[firstScored], through, inputs.Names.Count, nights, open, adapter.Readings, started, clock.UtcNow, note);
+        var run = new FamilySweepRun(family, $"{named} {words}", calendar[firstScored], through, inputs.Names.Count, nights, open, adapter.Readings, started, clock.UtcNow, floored ? note + FormattableString.Invariant($" The stop is held at least {stopFloor:0.##} typical moves under the buy where the reaction's low sits nearer, as the drift's stop floor variant holds it.") : note);
         var provisional = adapter.Grid.Key([.. adapter.Grid.Provisional]);
         var shown = new List<string> { provisional };
 

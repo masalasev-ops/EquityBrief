@@ -459,7 +459,10 @@ static async Task<int> SweepIndexRun(string[] args)
         store.DatabaseFile,
         store.DataRoot,
         configuration[EquityBrief.Core.Sweep.SweepFolder.Key],
-        Console.Out).RunAsync(VerbArguments.Value(args, "--index") ?? string.Empty, VerbArguments.Value(args, "--family") ?? string.Empty);
+        Console.Out).RunAsync(
+            VerbArguments.Value(args, "--index") ?? string.Empty,
+            VerbArguments.Value(args, "--family") ?? string.Empty,
+            stopFloor: double.TryParse(VerbArguments.Value(args, "--stop-floor"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var floor) ? floor : 0);
 }
 
 // The ideas' run on a frozen family, by hand: each of the pullback's ideas that fits the family added to its rule

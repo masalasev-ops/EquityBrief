@@ -129,8 +129,9 @@ public sealed class DriftSweep
 
     // The listings one setting makes: a reaction inside the setting's window, on its rise and its volume, bought
     // at the close, stopped at the reaction's low and aimed at the nearer of the band and the setting's
-    // multiple of the risk, in the order of the surprise.
-    public static IEnumerable<FamilyListing> Listings(IReadOnlyList<DriftReading> readings, int[] setting)
+    // multiple of the risk, in the order of the surprise. Given a floor, the stop is moved down to that many
+    // typical moves under the close where the low sits nearer, as the drift's stop floor variant moves it.
+    public static IEnumerable<FamilyListing> Listings(IReadOnlyList<DriftReading> readings, int[] setting, double stopFloorMoves = 0)
     {
         var window = Grid.Value(setting, 0);
         var rise = Grid.Value(setting, 1);
@@ -144,10 +145,11 @@ public sealed class DriftSweep
                 continue;
             }
 
-            var byRisk = reading.Close + (multiple * (reading.Close - reading.Stop));
+            var stop = stopFloorMoves > 0 && reading.Move > 0 ? Math.Min(reading.Stop, reading.Close - (stopFloorMoves * reading.Move)) : reading.Stop;
+            var byRisk = reading.Close + (multiple * (reading.Close - stop));
             var target = !double.IsNaN(reading.Band) && reading.Band < byRisk ? reading.Band : byRisk;
 
-            yield return new FamilyListing(reading.Name, reading.Bar, reading.Session, reading.Surprise, 0, reading.Close, reading.Stop, target, double.NaN, DriftRule.CapSessions, reading.Move);
+            yield return new FamilyListing(reading.Name, reading.Bar, reading.Session, reading.Surprise, 0, reading.Close, stop, target, double.NaN, DriftRule.CapSessions, reading.Move);
         }
     }
 

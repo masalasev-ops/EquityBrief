@@ -40,7 +40,7 @@ public sealed class FamilySweepRunner(IClock clock, string databaseFile, string 
         Func<FamilyListing, double> Benchmark,
         string? Note = null);
 
-    public static Adapter For(string family, IReadOnlyList<SweepSeries> series, IReadOnlyList<SweepColumns.Session> sessions, SweepBenchmark.Members members, int firstScored, IReadOnlyList<DateOnly>? calendar = null)
+    public static Adapter For(string family, IReadOnlyList<SweepSeries> series, IReadOnlyList<SweepColumns.Session> sessions, SweepBenchmark.Members members, int firstScored, IReadOnlyList<DateOnly>? calendar = null, double driftStopFloor = 0)
     {
         switch (family)
         {
@@ -57,7 +57,7 @@ public sealed class FamilySweepRunner(IClock clock, string databaseFile, string 
                 var sweep = new DriftSweep(series, members);
                 var readings = sweep.Readings(sessions, firstScored);
 
-                return new(DriftSweep.Grid, readings.Count, setting => DriftSweep.Listings(readings, setting), sweep.Exit, sweep.Benchmark);
+                return new(DriftSweep.Grid, readings.Count, setting => DriftSweep.Listings(readings, setting, driftStopFloor), sweep.Exit, sweep.Benchmark);
             }
 
             case LeaderRule.Name:
