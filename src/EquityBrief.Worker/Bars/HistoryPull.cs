@@ -465,9 +465,11 @@ public sealed class HistoryPull(
                     fetched[ticker] = series;
                 }
             }
-            catch (ProviderRefusal refusal)
+            // A series the reader cannot take, a session with no positive close among them, is named as a refusal
+            // is, so one departed name the provider sends a broken year for does not stop a pull of eighteen hundred.
+            catch (Exception failure) when (failure is ProviderRefusal or FormatException)
             {
-                unanswered.Add($"{ticker}: {refusal.Message}");
+                unanswered.Add($"{ticker}: {failure.Message}");
             }
 
             if ((fetched.Count + unanswered.Count) % 50 == 0)
