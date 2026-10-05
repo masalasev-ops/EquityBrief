@@ -38270,3 +38270,71 @@ Verified:   `tools/ci.ps1` green over the tree carrying this entry: edce9cc, the
 Carried:    the 15.3 remedy, running; the same 30 checked again by hand and the final unmatched names; each family's
             sweep on each index on the corrected membership; 15.2's second half; 15.1's second half; phase 14's
             sign-off.
+
+### 15.3 - the correction's remedy: every stored holding matched again under the name rule and the value a share, the N-Q and the annual report read, and the history of the names they now match pulled   2026-10-05
+
+Ran:        `tools/remedies/2026-10-05-15.3-the-names-matched-again.txt` from main's Release build at cec6052, 14:25
+            to 14:57 UTC, with no night, queue, report pass, labeller or store copy running and no night lock; no
+            migration.
+Snapshots:  each fund's 30, the N-Q of 2018-12-31 and the annual report of 2019-03-31 new beside its 28 N-PORT
+            filings, every filing read.
+Holdings:   IJH, 12,014 holdings of common stock: 11,011 matched by ISIN, 937 by name alone, 16 of them by the
+            wider reading, and 66 by neither, 41 of those because every code their name reads traded at a close
+            more than 5 per cent from the fund's value a share; 243 holdings of earlier quarters matched again to
+            another code or to none; 416 codes asked of the provider whether they traded at a quarter's end. IJR,
+            18,091: 16,355, 1,545 with 2 by the wider reading, and 191 with 109 at another price; 407 matched again;
+            840 codes asked.
+By hand:    the same 30 name matches, drawn from the store as it stood before this remedy with the seed 20261005:
+            25 read their own company's code at its close, none another security, and 5 none. Aaron's Inc trades on
+            as PROG Holdings, which no name of it reads, while AAN names its 2020 spin-off; Aqua America's shares
+            trade as WTRG under its later name, where its own name reads its units; GrubHub's GRUB carries another
+            security's prices from 2020-03, about $10 where GrubHub traded near $70; Safehold of 2019 to 2022 has a
+            SAFE carrying iStar's history; and A. Schulman was held as rights after its 2018 takeover. McDermott
+            International now reads MDR, its listing before the 2020 bankruptcy, and Noble Corp plc of 2019 reads
+            NE_old. The count before the fix is corrected by this one: GrubHub's GRUB was read by its name alone and
+            its prices make it another security, so it was 23 the company's own, 1 uncertain and 6 another security.
+Unmatched:  257 holdings of 30,105, 66 of IJH's and 191 of IJR's, over 52 companies, Cabot Microelectronics in
+            both. Later, 2 went bankrupt, Pennsylvania REIT and Providence Service as ModivCare, 10 holdings; 22 were
+            taken over, 113 holdings: Apergy as ChampionX, Cabot Microelectronics as CMC Materials, Caesars
+            Entertainment, Coherent, CoreSite, GrubHub, Six Flags, U.S. Steel, A. Schulman, Cadence Bancorp, Dime
+            Community, El Paso Electric, Fidelity Southern, HFF, KEMET, Navigant, Office Depot as ODP, Premier, RPT
+            Realty, Safehold, US Ecology and US Silica; none was delisted for another reason; 27 still trade under a
+            later name, a form of their name the rule does not read or a close the provider sends adjusted, 132
+            holdings; and 1 is a contra line, 2 holdings.
+Value:      the tolerance is 5 per cent of the code's close on the quarter's end, as the provider sends it or with the
+            splits it files after that day undone. The 150 holdings left unmatched at another price are mostly
+            another company's code: Coherent read with II-VI's prices, Caesars with Eldorado's, CoreSite with
+            AmerisourceBergen's, Safehold with iStar's, Cadence and Dime with their acquirers', Aqua America's units
+            and A. Schulman's preferred line. On the S&P 400, 6 of its 41 are the company's own code with a close the
+            provider sends adjusted for a later spin-off or stock dividend: XPO, j2 Global, Worthington Industries
+            and Commerce Bancshares, which sits at 5.00007 per cent of its close and 4.76 per cent of the fund's value
+            a share. The decision's sentence reads the tolerance against the fund's value a share where the
+            operator's ruling and the code read it against the close; its wording is carried to the next change it
+            names.
+Found:      eight delisted codes the provider serves carry another security's prices and reach the history through
+            the ISIN key, which reads no price, 61 holdings: COR_old, AmerisourceBergen's prices for CoreSite; EE_old,
+            FG_old and GOV at a few cents; ARCH_old, BABY, BBBY_old and RPT_old. Each traded at closes whose ratio to
+            the fund's values a share wanders across the quarters, where a code the provider adjusts for a later
+            spin-off or dividend holds that ratio steady between adjustments, as WOR, SSP and RGR do. Put to the
+            operator with two rules: a code kept for a holding only where its quarter-end closes move with the fund's
+            values a share, on every key; and a renamed company matched to a code the same fund held by ISIN within a
+            year whose close equals the fund's value a share to the cent on two quarter ends or more, 37 holdings and
+            none of them another company, where one quarter end alone adds 3 more of the company's own and 2 of
+            another.
+Bars:       756 of 761 names and 1,193 of 1,211 served, 15,624 and 38,990 bars and 243 and 590 earnings prints new;
+            DOC_old1, SIX, TLN_old, MRP_old, TMST and VSNT_old not served, the provider sending no session, and
+            PACW, STOR, AEL, CIR, CONN, CONNQ, FRGI, HIBB, HT, LL, NXGN, PGTI, SLCA, TRHC and WIRE named, each year
+            carrying a close of 0; 19 and 57 names missing sessions, kept as sent.
+Surprises:  23,778 and 35,817 prints over 106 calendar months, 243 and 590 stored and the rest held by an earlier
+            pull.
+Companies:  every name answered, 761 and 1,211; 22 and 47 companies new, 1,079 and 2,176 share counts and 1,711
+            and 2,324 quarters of income stored.
+Splits:     every name answered, 2 and 5 splits new.
+Requests:   25,348 weighted calls of the day's 100,000, read off the provider's own count before and after, leaving
+            8,508 for the night of 2026-10-05; the archive's requests free.
+Verified:   `tools/ci.ps1` green over edce9cc, the tree main holds at d3fefe5 but for the 15.1 ruling's own figures,
+            1870 of 1870 tests; this entry read by the checks that read the record, run filtered over the tree
+            carrying it, 40 of 40 passing.
+Carried:    the operator's ruling on the two rules found and the decision's wording; each family's sweep on each
+            index on the corrected membership, its figures in 15.4's run entries; 15.2's second half; 15.1's second
+            half; phase 14's sign-off.
