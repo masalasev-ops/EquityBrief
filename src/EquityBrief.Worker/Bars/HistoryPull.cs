@@ -306,7 +306,10 @@ public sealed class HistoryPull(
     // `history-pull --revenue` for each pulled company's revenue as its filer filed it, `history-pull --members
     // --index <MID or SML>` for a wider index's members today, or `history-pull --purge <pull>`. Every pull but the
     // revenue's and the market series' takes `--index`, a wider index's names being its members today as a members
-    // pull stored them. The feeds are asked for only by a pull, so removing one needs no key and reaches no provider.
+    // pull stored them, and the bars, surprises, companies and splits pulls take `--names` with codes between commas,
+    // asking only those of the index's names, so a pull for the few codes a match added does not ask every name again
+    // at the allowance's cost. The feeds are asked for only by a pull, so removing one needs no key and reaches no
+    // provider.
     public static async Task<int> RunAsync(
         string[] args,
         Func<NightFeeds> feeds,
@@ -368,14 +371,19 @@ public sealed class HistoryPull(
             return await MarketAsync(from, market, clock, databaseFile, output, error);
         }
 
+        // The codes a pull is narrowed to, none where it asks every name.
+        IReadOnlyCollection<string>? only = VerbArguments.Value(args, "--names") is { } listed
+            ? [.. listed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)]
+            : null;
+
         if (VerbArguments.Has(args, "--companies"))
         {
-            return await CompaniesAsync(from, VerbArguments.Value(args, "--index") ?? "GSPC", companies, clock, databaseFile, output, error);
+            return await CompaniesAsync(from, VerbArguments.Value(args, "--index") ?? "GSPC", companies, clock, databaseFile, output, error, only);
         }
 
         if (VerbArguments.Has(args, "--splits"))
         {
-            return await SplitsAsync(from, VerbArguments.Value(args, "--index") ?? "GSPC", splits, clock, databaseFile, output, error);
+            return await SplitsAsync(from, VerbArguments.Value(args, "--index") ?? "GSPC", splits, clock, databaseFile, output, error, only);
         }
 
         NightFeeds resolved;
@@ -421,7 +429,7 @@ public sealed class HistoryPull(
 
             if (VerbArguments.Has(args, "--surprises"))
             {
-                var surprises = await puller.PullSurprisesAsync(VerbArguments.Value(args, "--index") ?? "GSPC", from, runId, error.WriteLine);
+                var surprises = await puller.PullSurprisesAsync(VerbArguments.Value(args, "--index") ?? "GSPC", from, runId, error.WriteLine, only: only);
 
                 output.WriteLine("pull " + runId);
                 output.WriteLine(Detail(surprises));
@@ -429,7 +437,7 @@ public sealed class HistoryPull(
                 return 0;
             }
 
-            var outcome = await puller.PullAsync(VerbArguments.Value(args, "--index") ?? "GSPC", from, runId, error.WriteLine);
+            var outcome = await puller.PullAsync(VerbArguments.Value(args, "--index") ?? "GSPC", from, runId, error.WriteLine, only: only);
 
             output.WriteLine("pull " + runId);
             output.WriteLine(Detail(outcome));
@@ -451,7 +459,8 @@ public sealed class HistoryPull(
         DateOnly from,
         string runId,
         Action<string>? progress = null,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        IReadOnlyCollection<string>? only = null)
     {
         var startedAt = clock.UtcNow;
         var through = clock.SessionDateAt(startedAt);
@@ -466,7 +475,7 @@ public sealed class HistoryPull(
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var names = await NamesAsync(connection, indexCode, from, through, cancellation);
+        var names = await NamesAsync(connection, indexCode, from, through, cancellation, only);
         var requestsBefore = bars.Requests + earnings.Requests;
 
         // Fetched before anything is stored, so the calendar the holes are read against is the whole
@@ -634,7 +643,8 @@ public sealed class HistoryPull(
         DateOnly from,
         string runId,
         Action<string>? progress = null,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        IReadOnlyCollection<string>? only = null)
     {
         var startedAt = clock.UtcNow;
         var through = clock.SessionDateAt(startedAt);
@@ -649,7 +659,7 @@ public sealed class HistoryPull(
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var names = await NamesAsync(connection, indexCode, from, through, cancellation);
+        var names = await NamesAsync(connection, indexCode, from, through, cancellation, only);
         var held = names.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var requestsBefore = earnings.Requests;
         var prints = new Dictionary<(string Ticker, DateOnly Date), CalendarEvent>();
@@ -904,7 +914,8 @@ public sealed class HistoryPull(
         IClock clock,
         string databaseFile,
         TextWriter output,
-        TextWriter error)
+        TextWriter error,
+        IReadOnlyCollection<string>? only = null)
     {
         if (Resolved(companies, "company", error) is not { } feed)
         {
@@ -915,7 +926,7 @@ public sealed class HistoryPull(
 
         try
         {
-            var pulled = await PullCompaniesAsync(feed, clock, databaseFile, indexCode, from, runId, error.WriteLine);
+            var pulled = await PullCompaniesAsync(feed, clock, databaseFile, indexCode, from, runId, error.WriteLine, only: only);
 
             output.WriteLine("pull " + runId);
             output.WriteLine(Detail(pulled));
@@ -938,7 +949,8 @@ public sealed class HistoryPull(
         IClock clock,
         string databaseFile,
         TextWriter output,
-        TextWriter error)
+        TextWriter error,
+        IReadOnlyCollection<string>? only = null)
     {
         if (Resolved(splits, "splits", error) is not { } feed)
         {
@@ -949,7 +961,7 @@ public sealed class HistoryPull(
 
         try
         {
-            var pulled = await PullSplitsAsync(feed, clock, databaseFile, indexCode, from, runId, error.WriteLine);
+            var pulled = await PullSplitsAsync(feed, clock, databaseFile, indexCode, from, runId, error.WriteLine, only: only);
 
             output.WriteLine("pull " + runId);
             output.WriteLine(Detail(pulled));
@@ -1720,7 +1732,8 @@ public sealed class HistoryPull(
         DateOnly from,
         string runId,
         Action<string>? progress = null,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        IReadOnlyCollection<string>? only = null)
     {
         var startedAt = clock.UtcNow;
         var through = clock.SessionDateAt(startedAt);
@@ -1730,7 +1743,7 @@ public sealed class HistoryPull(
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var names = await NamesAsync(connection, indexCode, from, through, cancellation);
+        var names = await NamesAsync(connection, indexCode, from, through, cancellation, only);
         var requestsBefore = companies.Requests;
         var answered = new List<CompanyAnswer>();
         var unanswered = new List<string>();
@@ -1924,7 +1937,8 @@ public sealed class HistoryPull(
         DateOnly from,
         string runId,
         Action<string>? progress = null,
-        CancellationToken cancellation = default)
+        CancellationToken cancellation = default,
+        IReadOnlyCollection<string>? only = null)
     {
         var startedAt = clock.UtcNow;
         var through = clock.SessionDateAt(startedAt);
@@ -1934,7 +1948,7 @@ public sealed class HistoryPull(
         await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
         await connection.OpenAsync(cancellation);
 
-        var names = await NamesAsync(connection, indexCode, from, through, cancellation);
+        var names = await NamesAsync(connection, indexCode, from, through, cancellation, only);
         var requestsBefore = splits.Requests;
         var answered = new List<(string Ticker, IReadOnlyList<SplitAnswer> Splits)>();
         var unanswered = new List<string>();
@@ -2501,8 +2515,9 @@ public sealed class HistoryPull(
     }
 
     // The names a pull asks for: every name the index held over the span, or, for a wider index, its members today as a
-    // members pull stored them, which holds no span to read the dates against.
-    static async Task<IReadOnlyList<string>> NamesAsync(SqliteConnection connection, string indexCode, DateOnly from, DateOnly through, CancellationToken cancellation)
+    // members pull stored them, which holds no span to read the dates against; and where the pull is narrowed to codes,
+    // those of them alone, a code the index does not hold asked for by none.
+    static async Task<IReadOnlyList<string>> NamesAsync(SqliteConnection connection, string indexCode, DateOnly from, DateOnly through, CancellationToken cancellation, IReadOnlyCollection<string>? only = null)
     {
         var wider = WiderIndices.Contains(indexCode, StringComparer.Ordinal);
 
@@ -2525,7 +2540,7 @@ public sealed class HistoryPull(
             names.Add(reader.GetString(0));
         }
 
-        return names;
+        return only is null ? names : [.. names.Where(name => only.Contains(name, StringComparer.Ordinal))];
     }
 
     static async Task<int> CountAsync(SqliteConnection connection, string sql, string? pull, CancellationToken cancellation)

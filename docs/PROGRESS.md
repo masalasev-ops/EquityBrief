@@ -38563,3 +38563,29 @@ Carried:    the companies, splits and surprises pulls for the codes no earlier p
             allowance, once the pulls are narrowed to them; the operator's ruling on the S&P 600's pullback, which
             misses the plateau's one-step test, and on the two settings newly meeting the floors; 15.4's landing on
             the branch rebased onto main; 15.1's third pull request; phase 14's sign-off.
+
+### 15.3 - correction: a pull narrowed to named codes, so the few codes a match added cost their own asks   2026-10-05
+
+Built:      the bars, surprises, companies and splits pulls take `--names` with codes between commas and ask only
+            those of the index's names, a code the index does not hold asked for by none; unnarrowed, each asks every
+            name as before. The runbook states the option, what an unnarrowed companies pull costs and that a pull is
+            run on a day's allowance no night is drawing on. A remedy file runs the three pulls the afternoon's remedy
+            could not finish for the five codes the matching added that the history holds no company or no income for:
+            ARCH, OPITQ, CIR_old and BBBYQ in the S&P 600's fund and BBBYQ in the S&P 400's, about 270 weighted calls.
+Tests:      1885, from 1884: one added, a companies pull narrowed to a held code and one the index does not hold
+            asking the held one alone, a splits pull narrowed asking once, and the same companies pull unnarrowed
+            asking every name.
+Claims:     983, unchanged.
+Pins:       none moved.
+Mutated:    the rule, stated before the run: the property this change adds, broken alone by hand, filtered to the
+            test holding it and reverted. M1 the narrowing left out of the names a pull asks: red in the narrowed pull's
+            test. Results: M1 red, reverted, the test green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: fb9cb26.
+            `tools/ci.ps1`: all six steps, 0 warnings, 0 errors, 1885 of 1885 tests ran with none failed, migrations
+            0 to 64 with none pending, schema version 64, against `data-ci` and never `data`.
+            `tools/verify-phase.ps1`: 44 tables, 983 claims, 983 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 994
+            placements and verdicts reconciled against a floor of 34, fixture PRESENT, 43 checks on the roster, 43
+            carried and 43 passed, 1885 of 1885 tests ran.
+Carried:    `tools/remedies/2026-10-05-15.3-the-named-pulls.txt` from main's build after the merge, once the night of
+            2026-10-05 has finished and on the next day's allowance; then the searches the profit gate reads the
+            added codes in, read again.

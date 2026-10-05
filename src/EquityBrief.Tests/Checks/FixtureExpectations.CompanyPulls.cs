@@ -559,6 +559,35 @@ public partial class FixtureExpectations
         Assert.Equal(1, purged.Splits);
     }
 
+    // A companies or splits pull narrowed by the verb to named codes asks only those of the index's names, a code the
+    // index does not hold by none, so a pull for the few codes a match added costs their asks alone.
+    [Fact]
+    public async Task APullNarrowedToNamedCodesAsksOnlyThoseOfTheIndexsNames()
+    {
+        using var store = PullStore();
+
+        var companies = new ConstructedCompanyFeed(new Dictionary<string, Func<CompanyAnswer>>
+        {
+            ["AAA"] = () => new("AAA", "0000000001", GicsSectors.InformationTechnology, "Software & Services", "Software", "Application Software", null, [], 1),
+            ["CCC"] = () => new("CCC", "0000000003", GicsSectors.InformationTechnology, "Software & Services", "Software", "Application Software", null, [], 1),
+        });
+        var splits = new ConstructedSplitFeed(new Dictionary<string, Func<IReadOnlyList<SplitAnswer>>> { ["AAA"] = () => [], ["CCC"] = () => [] });
+        var from = PullFrom.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        EquityBrief.Worker.NightFeeds NoFeeds() => throw new InvalidOperationException("this pull is handed no night feeds");
+
+        await HistoryPull.RunAsync(["--companies", "--from", from, "--names", "CCC, ZZZ"], NoFeeds, PullClock(), store.DatabaseFile, TextWriter.Null, TextWriter.Null, companies: () => companies);
+        await HistoryPull.RunAsync(["--splits", "--from", from, "--names", "AAA"], NoFeeds, PullClock(), store.DatabaseFile, TextWriter.Null, TextWriter.Null, splits: () => splits);
+
+        Assert.Equal(["CCC"], companies.Asked);
+        Assert.Equal(1, splits.Requests);
+        Assert.Equal(["CCC"], FamilyRows(store, "SELECT ticker FROM pulled_company;"));
+
+        // Unnarrowed, the same pull a minute later asks every name the index held over the span.
+        await HistoryPull.RunAsync(["--companies", "--from", from], NoFeeds, FixedClock.At(PullInstant.AddMinutes(1), SessionZones.UnitedStates), store.DatabaseFile, TextWriter.Null, TextWriter.Null, companies: () => companies);
+
+        Assert.Equal(["CCC", "AAA", "BBB", "CCC", "EEE"], companies.Asked);
+    }
+
     [Fact]
     public async Task TheSectorFundsPullStoresEachFundsSeriesBesideTheMarketSeriesAndNamesAFundNotServed()
     {

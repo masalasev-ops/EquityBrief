@@ -1,0 +1,13 @@
+# The remedy of the 15.3 correction of 2026-10-05 (a pull narrowed to named codes), as its PROGRESS entry prints it. No
+# migration. The companies, splits and surprises pulls the remedy of that afternoon could not finish, the day's
+# allowance spent, run again for the codes the matching added that the pulled history holds no company or no income
+# for, each narrowed to them: four codes of the S&P 600's fund and one of the S&P 400's, ten weighted calls a code for
+# the companies and one for the splits, and the surprises pull reading every calendar month, one weighted call a month,
+# about 270 in all. Everything goes into the pulled history's tables, read by no night. No model call and nothing bought.
+# Run after the merge, when no night is running and on a day's allowance no night is drawing on.
+history-pull --companies --from 2018-01-01 --index SML --names ARCH,OPITQ,CIR_old,BBBYQ --live
+history-pull --companies --from 2018-01-01 --index MID --names BBBYQ --live
+history-pull --splits --from 2018-01-01 --index SML --names ARCH,OPITQ,CIR_old,BBBYQ --live
+history-pull --splits --from 2018-01-01 --index MID --names BBBYQ --live
+history-pull --surprises --from 2018-01-01 --index SML --names ARCH,OPITQ,CIR_old,BBBYQ --live
+history-pull --surprises --from 2018-01-01 --index MID --names BBBYQ --live
