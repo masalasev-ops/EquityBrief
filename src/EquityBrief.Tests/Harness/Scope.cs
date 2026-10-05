@@ -2989,6 +2989,16 @@ internal static class Scope
             "over constructed answers, a statement carrying no filing date stores nothing and is counted, a company filing none is named on the pull's line, and the purge takes the stored quarters whole",
             ByExpectations),
 
+        // 15.3, the history for the sweeps: section 18's two rows on the funds' holdings.
+        [CheckReach.Key(FailureTable, "A fund's holdings filing the history pull cannot read")] = new Scoped(
+            Verdict.Pass,
+            "over constructed answers, a filing the archive holds no document for and one for the trust's other fund are each named on the pull's line with why while the others are stored, the row saying partial, and a filing list that cannot be read stores nothing and says why",
+            ByExpectations),
+        [CheckReach.Key(FailureTable, "A fund's holding matched to no provider code")] = new Scoped(
+            Verdict.Pass,
+            "over constructed answers, a holding matched by neither its ISIN nor its name is stored with no code, counted beside those matched by each key and named on the pull's line, and read as no member by the sweep history",
+            ByExpectations),
+
         // 14.2, the pulls and the readings over them: section 17's five rows and section 18's four.
         [CheckReach.Key(LimitsTable, "Company value")] = new Scoped(
             Verdict.Pass,

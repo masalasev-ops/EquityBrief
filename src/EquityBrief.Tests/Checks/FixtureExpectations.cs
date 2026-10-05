@@ -89,6 +89,8 @@ public partial class FixtureExpectations
             // 15.2, the readings the S&P 400's and 600's rules and their sweeps read: section 17's three rows and
             // section 18's.
             .. ReadingsClaims,
+            // 15.3, the history for the sweeps: section 18's two rows on the funds' holdings.
+            .. HoldingsClaims,
             // 14.3, the sector heavyweights: section 17's four rows and section 18's four.
             .. HeavyweightClaims,
             // 14.4, the context checks over the history: section 17's three rows and section 18's two.

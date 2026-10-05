@@ -37954,3 +37954,61 @@ Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tre
             the roster, 43 carried and 43 passed.
 Carried:    the night of 2026-10-05 asks for BLDR's, TAP's and TTD's years, read the next morning on its actions
             row; P's gap put to the operator; 15.2's second half; 15.1's second half; phase 14's sign-off.
+
+### 15.3 - the history for the sweeps: the funds' quarter-end holdings from the SEC matched to the provider's codes by ISIN and then by name, the names they held and let go pulled, and membership as it stood   2026-10-05
+
+Built:      `history-pull --holdings --index MID|SML` reads the fund's public quarter-end filings at the SEC, IJH's
+            and IJR's from the quarter to 2019-09-30, a tenth of a second apart at no weight, and the provider's
+            listed and delisted US symbols, one weighted call each, and stores each snapshot and each holding of
+            common stock with the code it matched: by its ISIN, filed or made from its CUSIP, then by its name with
+            the corporate suffixes taken out, a name the form cut at its width read by its other words, two codes
+            for one key settled by which holds a pulled bar on the snapshot's date where exactly one does and
+            otherwise listed before delisted; a filing it cannot read or one for the trust's other fund is named,
+            and a filing list or a symbol list it cannot read stores nothing. Migration 63, `pulled_snapshot` and
+            `pulled_holding`, the purge taking twelve tables. Every other pull of a wider index asks for each code a
+            snapshot matched beside the members today, so the remedy pulls the names the funds let go. The sweep
+            history reads a wider index's membership as it stood, a name a member from the first snapshot holding it
+            to the last, from the history's start where the first holds it and open where the newest holds a member
+            today. Section 18's two rows, sections 7, 13.9 and 16, SCHEMA, the runbook, the roster's
+            fixture-expectations row and the remedy file. The plan's 15.3 text is amended, its done condition not:
+            the N-Q for 2018-12-31 and the annual report for 2019-03-31 name each holding with no identifier, the
+            annual report one page for every fund the trust files under, so the sessions before the first snapshot
+            are read on its holdings, which every figure read that way says; reading the two is put to the operator.
+Measured:   a trial of the pull over a freshly migrated scratch store holding nothing else, on 2026-10-05, before the
+            rule for a cut name: 62 requests in twenty seconds. IJR, 28 snapshots from 2019-09-30 to 2026-06-30,
+            16,887 holdings of common stock, 16,355 matched by ISIN, 403 by name alone and 129 by neither; IJH,
+            11,214, 11,011, 177 and 26. The lowest snapshot was 98.34 per cent matched, IJR's of 2019-09-30, above the
+            98 per cent the rule stated before 15.0's run; 1,105 and 706 codes were held by some snapshot, against
+            603 and 400 today, and 14 of each fund's names matched by neither were cut at the form's width.
+Tests:      1863, from 1858: five added, the captured filing and symbol list, the holdings pull over constructed
+            answers with each key, a cut name, a bond, a fund sharing an ISIN, a filing for the other fund, one not
+            served, a second pull and the purge, a filing list not read, a reused ticker matched to its own
+            security, and a name a member on both sides of a quarter end, read back through the sweep history; and
+            the checks the two tables and the two feeds reach.
+Claims:     981, from 979: section 18's filing the history pull cannot read and holding matched to no provider
+            code, named beside phase 14's pair after its report.
+Pins:       none moved. Read: the family rules' and the candidates' shared evaluation sources, the heavyweights'
+            own, the swing filter's and the rule versions' lists; no file this tree edits is in any of them.
+Mutated:    the rule, stated before the run: each property the done condition names broken alone, made by hand over
+            the working tree, filtered to the five tests and reverted.
+            H1 no match by ISIN: red in the pull and the reused ticker.
+            H2 no match by name: red in the pull.
+            H3 a filing for the other fund stored as this fund's: red in the pull.
+            H4 a name leaving on its last snapshot's quarter end: red in the quarter end test and the pull.
+            H5 a name the first snapshot holds read from that quarter end: red in the quarter end test and the pull.
+            H6 every other pull of the index asking for its members today alone: red in the pull.
+            H7 no reading of a cut name: red in the pull.
+            H8 the purge leaving the two tables: red in the pull.
+            Results: H1 to H8 each red where stated, each reverted, and the five tests green over the reverted tree.
+Verified:   `tools/ci.ps1` green and `tools/verify-phase.ps1` green over the tree carrying this entry: 2b91507, over
+            d60ce39, the entry's commit, whose suite failed one test, the provider tests' count of the files that
+            may hold a client still reading sixteen, corrected in 2b91507. `tools/ci.ps1`: all six steps, 0
+            warnings, 0 errors, 1863 of 1863 tests ran with none failed, migrations 0 to 63 with none pending,
+            schema version 63, against `data-ci` and never `data`. `tools/verify-phase.ps1`: 44 tables, 981 claims,
+            981 PASS, 0 FAIL, 0 out of scope, 0 unexamined, 992 placements and verdicts reconciled against a floor
+            of 34, fixture PRESENT, 43 checks on the roster, 43 carried and 43 passed.
+Carried:    after the merge, `tools/migrate.ps1` and `tools/remedies/2026-10-05-15.3-the-holdings.txt` from main's
+            Release build; the remedy's entry records the snapshots read, the holdings matched by each key and by
+            neither, and 30 name matches checked by hand; then each family's sweep on each index again on membership
+            as it stood; the two schedules before 2019-09-30 put to the operator; 15.2's second half; 15.1's second
+            half; phase 14's sign-off.

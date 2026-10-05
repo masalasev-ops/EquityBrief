@@ -110,6 +110,8 @@ public sealed class SweepHistory : IComponent
             new StoreTouch(Store.PulledRevenue, Touch.Read),
             new StoreTouch(Store.PulledMember, Touch.Read),
             new StoreTouch(Store.PulledIncome, Touch.Read),
+            new StoreTouch(Store.PulledSnapshot, Touch.Read),
+            new StoreTouch(Store.PulledHolding, Touch.Read),
             new StoreTouch(Store.Calendar, Touch.Read),
             new StoreTouch(Store.GateResult, Touch.Read),
             new StoreTouch(Store.HeavyweightNight, Touch.Read),
@@ -276,6 +278,46 @@ public sealed class SweepHistory : IComponent
             liveListed,
             survivors.Count,
             widerMembers);
+    }
+
+    // A wider index's membership as it stood, from its fund's snapshots as the holdings pull stored them: each code a
+    // snapshot matched, held from the first holding it to the last, with today's members as a members pull stored them
+    // telling a name the newest snapshot holds that is still a member from one since let go. None where the store holds
+    // no snapshot of the index, which leaves a sweep reading survivors alone and saying so.
+    // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
+    public async Task<IReadOnlyDictionary<string, (DateOnly? Joined, DateOnly? Left)>> AsItStoodAsync(string indexCode, CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(ConnectionString(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        if (!await TableHeldAsync(connection, "pulled_snapshot", cancellation))
+        {
+            return new Dictionary<string, (DateOnly?, DateOnly?)>(StringComparer.Ordinal);
+        }
+
+        var periods = new List<DateOnly>();
+        var held = new List<(DateOnly, string)>();
+        var today = new HashSet<string>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, "SELECT period FROM pulled_snapshot WHERE index_code = $index;", [("$index", indexCode)], cancellation))
+        {
+            periods.Add(Date(row.GetString(0)));
+        }
+
+        await foreach (var row in RowsAsync(connection, "SELECT period, ticker FROM pulled_holding WHERE index_code = $index AND ticker IS NOT NULL;", [("$index", indexCode)], cancellation))
+        {
+            held.Add((Date(row.GetString(0)), row.GetString(1)));
+        }
+
+        if (await TableHeldAsync(connection, "pulled_member", cancellation))
+        {
+            await foreach (var row in RowsAsync(connection, "SELECT ticker FROM pulled_member WHERE index_code = $index;", [("$index", indexCode)], cancellation))
+            {
+                today.Add(row.GetString(0));
+            }
+        }
+
+        return HoldingSpans.From(periods, held, today);
     }
 
     // Whether the store holds a table, so a store migrated before it read none rather than failing.

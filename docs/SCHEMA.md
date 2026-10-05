@@ -46,6 +46,8 @@ Operations are Insert, Update and Delete. A table may have different owners for 
 | `pulled_revenue` | HistoryPull | none | HistoryPull |
 | `pulled_member` | HistoryPull | none | HistoryPull |
 | `pulled_income` | HistoryPull | none | HistoryPull |
+| `pulled_snapshot` | HistoryPull | none | HistoryPull |
+| `pulled_holding` | HistoryPull | none | HistoryPull |
 | `indicator` | IndicatorEngine | IndicatorEngine | IndicatorEngine |
 | `swing` | SwingFinder | SwingFinder | SwingFinder |
 | `volume_profile` | VolumeProfileBuilder | VolumeProfileBuilder | VolumeProfileBuilder |
@@ -390,6 +392,40 @@ Grain: one row per ticker per quarter a companies pull answered with an income s
 Primary key: `ticker`, `period_end`.
 
 **Each company's quarterly income as its filer filed it, read by no night** (see: The 400 and 600 rules start provisional with liquidity floors and a profit gate before any testing). From 15.2 the companies pull stores each quarter of the income statements the same answer carries beside its balance sheets, at no request of its own. The S&P 400's and 600's profit gate sums the net income of the four newest quarters filed before a session, and their coverage reads the operating income against the interest expense of the same four, so a sweep reads each as it stood. A statement carrying no filing date cannot be read as it stood and stores no row; the pull counts them on its row. Removed whole with its pull, and a second pull adds only the quarters no earlier pull holds.
+
+### pulled_snapshot
+Grain: one row per wider index per quarter end its fund filed its holdings for.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | `MID` for the S&P 400's fund, IJH, and `SML` for the S&P 600's, IJR |
+| `period` | TEXT | the quarter end the filing's holdings are as of |
+| `accession` | TEXT | the filing's accession number at the SEC |
+| `filed` | TEXT | the day the filing was filed |
+| `holdings` | INTEGER | every holding the filing lists |
+| `equity` | INTEGER | the holdings of common stock among them, each a row of `pulled_holding` |
+| `pull` | TEXT | the run id of the pull that wrote the row |
+
+Primary key: `index_code`, `period`.
+
+### pulled_holding
+Grain: one row per wider index per quarter end per holding of common stock its fund filed, keyed by the holding's ISIN, its CUSIP where it carries no ISIN, or its name where it carries neither.
+
+| Column | Type | Notes |
+|---|---|---|
+| `index_code` | TEXT | as `pulled_snapshot` |
+| `period` | TEXT | as `pulled_snapshot` |
+| `holding` | TEXT | the key the holding is stored under |
+| `name` | TEXT | the holding's name as the fund filed it |
+| `cusip` | TEXT | null where the fund filed none |
+| `isin` | TEXT | the ISIN filed, or the one the CUSIP makes, null where neither is filed |
+| `ticker` | TEXT | the provider's code the holding matched, null where it matched none |
+| `matched_by` | TEXT | `isin` or `name`, null where it matched none |
+| `pull` | TEXT | the run id of the pull that wrote the row |
+
+Primary key: `index_code`, `period`, `holding`.
+
+**The S&P 400's and 600's funds' quarter-end holdings, read by no night** (see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name). From 15.3 the holdings pull reads each fund's public quarter-end filings at the SEC, the 28 from the quarter to 2019-09-30, and the provider's listed and delisted US symbols, and stores every holding of common stock with the code it matched: by its ISIN first, which names one security however its ticker was later reused, then by its name with the corporate suffixes taken out, a name standing between codes settled by which holds a pulled bar on the snapshot's date where exactly one does, and a holding matched by neither stored with no code and named on the pull's row. The sweeps read membership as it stood off these rows, a name a member from the first snapshot holding it to the last, and every other pull of a wider index asks for each code a snapshot matched beside the members today. Removed whole with its pull, and a second pull adds only the quarters no earlier pull holds.
 
 ### indicator
 Grain: one row per ticker, session and indicator name.

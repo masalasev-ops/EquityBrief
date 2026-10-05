@@ -58,6 +58,8 @@ public sealed class HistoryPull(
             new StoreTouch(Store.PulledRevenue, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.PulledMember, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.PulledIncome, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.PulledSnapshot, Touch.Read | Touch.Insert | Touch.Delete),
+            new StoreTouch(Store.PulledHolding, Touch.Read | Touch.Insert | Touch.Delete),
             new StoreTouch(Store.RunLog, Touch.Insert),
         ],
         Feeds: [Feed.IndexMembership, Feed.HistoricalPrice, Feed.EarningsCalendar, Feed.CompanyFinancials, Feed.SplitsAndDividends, Feed.FilingsArchive]);
@@ -90,6 +92,9 @@ public sealed class HistoryPull(
 
     // The members pull's own stage, since it asks one index's components and stores one table.
     public const string MembersStage = "history-pull-members";
+
+    // The holdings pull's own stage, since it asks a fund's filings and the symbol lists and stores two tables.
+    public const string HoldingsStage = "history-pull-holdings";
 
     // The indices beside the night's own whose members today a members pull stores, the S&P 400 and the S&P 600, and
     // which every other pull reads its names from, in place of the night's membership.
@@ -190,8 +195,33 @@ public sealed class HistoryPull(
         ON CONFLICT (index_code, ticker) DO NOTHING;
     ";
 
-    // The names a pull asks for on a wider index: its members today, as a members pull stored them.
-    const string MembersHeld = "SELECT ticker FROM pulled_member WHERE index_code = $index ORDER BY ticker;";
+    // The names a pull asks for on a wider index: its members today, as a members pull stored them, and from 15.3 every
+    // code its fund's snapshots matched a holding to, so the names it held and let go are pulled beside them.
+    // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
+    const string MembersHeld = @"
+        SELECT ticker FROM pulled_member WHERE index_code = $index
+        UNION
+        SELECT ticker FROM pulled_holding WHERE index_code = $index AND ticker IS NOT NULL
+        ORDER BY ticker;
+    ";
+
+    // A fund's snapshot as filed, insert only, so a quarter an earlier pull holds keeps that pull's row.
+    const string InsertSnapshot = @"
+        INSERT INTO pulled_snapshot (index_code, period, accession, filed, holdings, equity, pull)
+        VALUES ($index_code, $period, $accession, $filed, $holdings, $equity, $pull)
+        ON CONFLICT (index_code, period) DO NOTHING;
+    ";
+
+    // A holding of common stock with the code it matched and the key it matched by, insert only.
+    const string InsertHolding = @"
+        INSERT INTO pulled_holding (index_code, period, holding, name, cusip, isin, ticker, matched_by, pull)
+        VALUES ($index_code, $period, $holding, $name, $cusip, $isin, $ticker, $matched_by, $pull)
+        ON CONFLICT (index_code, period, holding) DO NOTHING;
+    ";
+
+    // Whether a code holds a pulled bar in the days to a snapshot's quarter end, which settles a holding standing between
+    // two codes.
+    const string PulledBarNear = "SELECT EXISTS (SELECT 1 FROM pulled_bar WHERE ticker = $ticker AND session_date BETWEEN $from AND $to);";
 
     // The filers the revenue pull asks for: every CIK the pulled companies carry, and the tickers carrying none.
     const string PulledFilers = "SELECT DISTINCT cik FROM pulled_company WHERE cik IS NOT NULL ORDER BY cik;";
@@ -218,6 +248,8 @@ public sealed class HistoryPull(
     const string RevenueOfPull = "SELECT COUNT(*) FROM pulled_revenue WHERE pull = $pull;";
     const string MembersOfPull = "SELECT COUNT(*) FROM pulled_member WHERE pull = $pull;";
     const string IncomeOfPull = "SELECT COUNT(*) FROM pulled_income WHERE pull = $pull;";
+    const string SnapshotsOfPull = "SELECT COUNT(*) FROM pulled_snapshot WHERE pull = $pull;";
+    const string HoldingsOfPull = "SELECT COUNT(*) FROM pulled_holding WHERE pull = $pull;";
 
     // The removal, which takes a pull's rows whole and nothing else.
     const string DeleteBarsOfPull = "DELETE FROM pulled_bar WHERE pull = $pull;";
@@ -230,6 +262,8 @@ public sealed class HistoryPull(
     const string DeleteRevenueOfPull = "DELETE FROM pulled_revenue WHERE pull = $pull;";
     const string DeleteMembersOfPull = "DELETE FROM pulled_member WHERE pull = $pull;";
     const string DeleteIncomeOfPull = "DELETE FROM pulled_income WHERE pull = $pull;";
+    const string DeleteSnapshotsOfPull = "DELETE FROM pulled_snapshot WHERE pull = $pull;";
+    const string DeleteHoldingsOfPull = "DELETE FROM pulled_holding WHERE pull = $pull;";
 
     const string AppendRun = @"
         INSERT INTO run_log (
@@ -260,7 +294,9 @@ public sealed class HistoryPull(
         Func<ICompanyFeed>? companies = null,
         Func<ISplitHistoryFeed>? splits = null,
         Func<IFiledRevenueFeed>? revenue = null,
-        Func<IIndexComponentsFeed>? members = null)
+        Func<IIndexComponentsFeed>? members = null,
+        Func<IFundSnapshotFeed>? snapshots = null,
+        Func<ISymbolListFeed>? symbols = null)
     {
         if (VerbArguments.Value(args, "--purge") is { } pull)
         {
@@ -268,7 +304,7 @@ public sealed class HistoryPull(
             {
                 var purged = await PurgeAsync(clock, databaseFile, pull, RunIdAt(PurgePrefix, clock.UtcNow));
 
-                output.WriteLine(FormattableString.Invariant($"removed the pull {purged.Pull}: {purged.Bars} bar(s), {purged.Earnings} earnings print(s), {purged.Surprises} surprise(s), {purged.MarketBars} market session(s), {purged.Companies} compan(ies), {purged.Shares} share count(s), {purged.Splits} split(s), {purged.Revenue} revenue figure(s), {purged.Members} member(s) and {purged.Income} quarter(s) of income"));
+                output.WriteLine(FormattableString.Invariant($"removed the pull {purged.Pull}: {purged.Bars} bar(s), {purged.Earnings} earnings print(s), {purged.Surprises} surprise(s), {purged.MarketBars} market session(s), {purged.Companies} compan(ies), {purged.Shares} share count(s), {purged.Splits} split(s), {purged.Revenue} revenue figure(s), {purged.Members} member(s), {purged.Income} quarter(s) of income, {purged.Snapshots} snapshot(s) and {purged.Holdings} holding(s)"));
 
                 return 0;
             }
@@ -288,6 +324,11 @@ public sealed class HistoryPull(
         if (VerbArguments.Has(args, "--members"))
         {
             return await MembersAsync(VerbArguments.Value(args, "--index"), members, clock, databaseFile, output, error);
+        }
+
+        if (VerbArguments.Has(args, "--holdings"))
+        {
+            return await HoldingsAsync(VerbArguments.Value(args, "--index"), snapshots, symbols, clock, databaseFile, output, error);
         }
 
         if (VerbArguments.Value(args, "--from") is not { } given
@@ -1044,6 +1085,231 @@ public sealed class HistoryPull(
         return Convert.ToInt32(await command.ExecuteScalarAsync(cancellation), CultureInfo.InvariantCulture);
     }
 
+    static async Task<int> HoldingsAsync(
+        string? indexCode,
+        Func<IFundSnapshotFeed>? snapshots,
+        Func<ISymbolListFeed>? symbols,
+        IClock clock,
+        string databaseFile,
+        TextWriter output,
+        TextWriter error)
+    {
+        if (indexCode is null || !WiderIndices.Contains(indexCode, StringComparer.Ordinal))
+        {
+            error.WriteLine($"history-pull: name a wider index to pull its fund's holdings for with '--index', one of {string.Join(", ", WiderIndices)}.");
+
+            return 2;
+        }
+
+        if (Resolved(snapshots, "fund holdings", error) is not { } filings || Resolved(symbols, "symbol list", error) is not { } listed)
+        {
+            return 1;
+        }
+
+        var runId = RunIdAt(RunPrefix, clock.UtcNow);
+        var pulled = await PullHoldingsAsync(filings, listed, clock, databaseFile, indexCode, runId, error.WriteLine);
+
+        output.WriteLine("pull " + runId);
+        output.WriteLine(Detail(pulled));
+
+        return pulled.Refused is null && pulled.Unread.Count == 0 ? 0 : 1;
+    }
+
+    // Pulls a wider index's fund's quarter-end holdings, the S&P 400's IJH or the S&P 600's IJR: the fund's filings of its
+    // holdings as the archive lists them, each read at the archive's pace, and the provider's listed and delisted symbols,
+    // one request a list; each holding of common stock is stored with the provider's code it matched by ISIN, by name or
+    // by neither, and each snapshot with its quarter's end and how many holdings it filed. A filing that cannot be read or
+    // is for another series is named and the others stored; a filing list or a symbol list that cannot be read stores
+    // nothing and says why.
+    // see: Membership as it stood is rebuilt from the funds' quarterly holdings filed with the SEC, matched by ISIN and then by name
+    public static async Task<HistoryHoldingOutcome> PullHoldingsAsync(
+        IFundSnapshotFeed feed,
+        ISymbolListFeed symbols,
+        IClock clock,
+        string databaseFile,
+        string indexCode,
+        string runId,
+        Action<string>? progress = null,
+        CancellationToken cancellation = default)
+    {
+        if (!WiderIndices.Contains(indexCode, StringComparer.Ordinal))
+        {
+            throw new ArgumentException($"A holdings pull asks for a wider index's fund, one of {string.Join(", ", WiderIndices)}, and {indexCode} is not one.", nameof(indexCode));
+        }
+
+        var startedAt = clock.UtcNow;
+        var series = FundSnapshots.Series[indexCode];
+        var requestsBefore = feed.Requests + symbols.Requests;
+        var snapshots = new List<(FundFiling Filing, FundSnapshot Snapshot)>();
+        var unread = new List<string>();
+        IReadOnlyList<FundFiling> filings = [];
+        HoldingMatcher? matcher = null;
+        string? refused = null;
+
+        try
+        {
+            filings = [.. (await feed.FilingsAsync(series, cancellation)).Where(filing => filing.Form == FundSnapshots.Form).OrderBy(filing => filing.Filed)];
+
+            foreach (var filing in filings)
+            {
+                try
+                {
+                    var snapshot = await feed.SnapshotAsync(filing.Accession, cancellation);
+
+                    if (snapshot.Series == series)
+                    {
+                        snapshots.Add((filing, snapshot));
+                        progress?.Invoke(FormattableString.Invariant($"{indexCode}: read the holdings as of {snapshot.Period:yyyy-MM-dd}"));
+                    }
+                    else
+                    {
+                        unread.Add($"{filing.Accession}: the filing is for {snapshot.Series} and not {series}");
+                    }
+                }
+                catch (Exception failure) when (failure is not OperationCanceledException || !cancellation.IsCancellationRequested)
+                {
+                    unread.Add($"{filing.Accession}: {failure.Message}");
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(1.0 / ArchiveRequestsASecond), cancellation);
+            }
+
+            matcher = new HoldingMatcher([.. await symbols.SymbolsAsync(false, cancellation), .. await symbols.SymbolsAsync(true, cancellation)]);
+        }
+        catch (Exception failure) when (failure is not OperationCanceledException || !cancellation.IsCancellationRequested)
+        {
+            refused = failure.Message;
+        }
+
+        await using var connection = new SqliteConnection(StoreConnection.For(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var (stored, equity, byIsin, byName, between) = (0, 0, 0, 0, 0);
+        var unmatched = new List<string>();
+
+        await using var transaction = await connection.BeginTransactionAsync(cancellation);
+
+        if (refused is null && matcher is not null)
+        {
+            foreach (var (filing, snapshot) in snapshots.OrderBy(one => one.Snapshot.Period))
+            {
+                var held = snapshot.Equity
+                    .GroupBy(holding => FundSnapshots.IsinOf(holding) ?? holding.Cusip ?? holding.Name, StringComparer.Ordinal)
+                    .Select(group => (Key: group.Key, Holding: group.First()))
+                    .ToArray();
+                var traded = new Dictionary<string, bool>(StringComparer.Ordinal);
+
+                bool TradedOn(string code)
+                {
+                    if (!traded.TryGetValue(code, out var answer))
+                    {
+                        using var command = connection.CreateCommand();
+                        command.CommandText = PulledBarNear;
+                        command.Parameters.AddWithValue("$ticker", code);
+                        command.Parameters.AddWithValue("$from", snapshot.Period.AddDays(-SnapshotSessionDays).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                        command.Parameters.AddWithValue("$to", snapshot.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                        traded[code] = answer = Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture) > 0;
+                    }
+
+                    return answer;
+                }
+
+                await using (var insert = connection.CreateCommand())
+                {
+                    insert.CommandText = InsertSnapshot;
+                    insert.Parameters.AddWithValue("$index_code", indexCode);
+                    insert.Parameters.AddWithValue("$period", snapshot.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                    insert.Parameters.AddWithValue("$accession", snapshot.Accession);
+                    insert.Parameters.AddWithValue("$filed", filing.Filed.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                    insert.Parameters.AddWithValue("$holdings", snapshot.Holdings.Count);
+                    insert.Parameters.AddWithValue("$equity", held.Length);
+                    insert.Parameters.AddWithValue("$pull", runId);
+
+                    stored += await insert.ExecuteNonQueryAsync(cancellation);
+                }
+
+                foreach (var (key, holding) in held)
+                {
+                    var match = matcher.Match(holding, TradedOn);
+
+                    equity++;
+                    byIsin += match.By == HoldingMatcher.ByIsin ? 1 : 0;
+                    byName += match.By == HoldingMatcher.ByName ? 1 : 0;
+                    between += match.Between.Count > 1 ? 1 : 0;
+
+                    if (match.Ticker is null)
+                    {
+                        unmatched.Add(FormattableString.Invariant($"{holding.Name} on {snapshot.Period:yyyy-MM-dd}"));
+                    }
+
+                    await using var insert = connection.CreateCommand();
+                    insert.CommandText = InsertHolding;
+                    insert.Parameters.AddWithValue("$index_code", indexCode);
+                    insert.Parameters.AddWithValue("$period", snapshot.Period.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                    insert.Parameters.AddWithValue("$holding", key);
+                    insert.Parameters.AddWithValue("$name", holding.Name);
+                    insert.Parameters.AddWithValue("$cusip", (object?)holding.Cusip ?? DBNull.Value);
+                    insert.Parameters.AddWithValue("$isin", (object?)FundSnapshots.IsinOf(holding) ?? DBNull.Value);
+                    insert.Parameters.AddWithValue("$ticker", (object?)match.Ticker ?? DBNull.Value);
+                    insert.Parameters.AddWithValue("$matched_by", (object?)match.By ?? DBNull.Value);
+                    insert.Parameters.AddWithValue("$pull", runId);
+
+                    await insert.ExecuteNonQueryAsync(cancellation);
+                }
+            }
+        }
+
+        var periods = snapshots.Select(one => one.Snapshot.Period).Order().ToArray();
+        var outcome = new HistoryHoldingOutcome(
+            indexCode,
+            filings.Count,
+            refused is null ? snapshots.Count : 0,
+            stored,
+            refused is null && periods.Length > 0 ? periods[0] : null,
+            refused is null && periods.Length > 0 ? periods[^1] : null,
+            equity,
+            byIsin,
+            byName,
+            equity - byIsin - byName,
+            between,
+            unmatched,
+            unread,
+            refused,
+            feed.Requests + symbols.Requests - requestsBefore);
+
+        await AppendAsync(
+            connection,
+            runId,
+            HoldingsStage,
+            startedAt,
+            clock.UtcNow,
+            refused is not null ? "refused" : unread.Count > 0 ? Partial : "ok",
+            equity,
+            outcome.Requests,
+            Detail(outcome),
+            cancellation);
+
+        await transaction.CommitAsync(cancellation);
+
+        return outcome;
+    }
+
+    // A holdings pull in words, as its row and the command state it: the snapshots read and their span, the holdings of
+    // common stock and the keys they matched by, the holdings matched by neither and the filings not read, each named.
+    public static string Detail(HistoryHoldingOutcome outcome) =>
+        outcome.Refused is { } why
+            ? FormattableString.Invariant($"{outcome.Index}: nothing was stored, {why}; {outcome.Requests} request(s)")
+            : FormattableString.Invariant($"{outcome.Index}: {outcome.Snapshots} snapshot(s) of {outcome.Filings} filing(s), {outcome.Stored} new, from {outcome.First:yyyy-MM-dd} to {outcome.Last:yyyy-MM-dd}, {outcome.Equity} holding(s) of common stock, {outcome.ByIsin} matched by ISIN, {outcome.ByName} by name alone and {outcome.Unmatched} by neither, {outcome.Between} standing between codes; {outcome.Requests} request(s)")
+              + (outcome.Unread.Count == 0 ? string.Empty : "; not read: " + string.Join("; ", outcome.Unread))
+              + (outcome.UnmatchedNames.Count == 0 ? string.Empty : "; matched by neither: " + string.Join("; ", outcome.UnmatchedNames.Take(HoldingsNamed)) + (outcome.UnmatchedNames.Count > HoldingsNamed ? FormattableString.Invariant($" and {outcome.UnmatchedNames.Count - HoldingsNamed} more") : string.Empty));
+
+    // How many of the holdings matched by neither a pull's row names, the rest counted.
+    public const int HoldingsNamed = 40;
+
+    // How many days before a snapshot's quarter end a code's pulled bar still says it traded then, a quarter's end
+    // falling on a weekend or a holiday.
+    public const int SnapshotSessionDays = 6;
+
     // A members pull in words, as its row and the command state it.
     public static string Detail(HistoryMemberOutcome outcome) =>
         outcome.Refused is { } why
@@ -1645,7 +1911,7 @@ public sealed class HistoryPull(
             ? percent
             : null;
 
-    // Removes one pull's rows from the ten tables and says so on the run log. A pull no row carries is
+    // Removes one pull's rows from the twelve tables and says so on the run log. A pull no row carries is
     // refused and nothing is written, so a mistyped id cannot record a removal that removed nothing.
     public static async Task<HistoryPurgeOutcome> PurgeAsync(
         IClock clock,
@@ -1669,8 +1935,10 @@ public sealed class HistoryPull(
         var revenueHeld = await CountAsync(connection, RevenueOfPull, pull, cancellation);
         var membersHeld = await CountAsync(connection, MembersOfPull, pull, cancellation);
         var incomeHeld = await CountAsync(connection, IncomeOfPull, pull, cancellation);
+        var snapshotsHeld = await CountAsync(connection, SnapshotsOfPull, pull, cancellation);
+        var holdingsHeld = await CountAsync(connection, HoldingsOfPull, pull, cancellation);
 
-        if (barsHeld + earningsHeld + surprisesHeld + marketHeld + companiesHeld + sharesHeld + splitsHeld + revenueHeld + membersHeld + incomeHeld == 0)
+        if (barsHeld + earningsHeld + surprisesHeld + marketHeld + companiesHeld + sharesHeld + splitsHeld + revenueHeld + membersHeld + incomeHeld + snapshotsHeld + holdingsHeld == 0)
         {
             throw new ArgumentException($"No pulled row carries the pull '{pull}', so there is nothing to remove.", nameof(pull));
         }
@@ -1681,7 +1949,7 @@ public sealed class HistoryPull(
         {
             DeleteBarsOfPull, DeleteEarningsOfPull, DeleteSurprisesOfPull, DeleteMarketBarsOfPull,
             DeleteCompaniesOfPull, DeleteSharesOfPull, DeleteSplitsOfPull, DeleteRevenueOfPull, DeleteMembersOfPull,
-            DeleteIncomeOfPull,
+            DeleteIncomeOfPull, DeleteSnapshotsOfPull, DeleteHoldingsOfPull,
         })
         {
             await using var delete = connection.CreateCommand();
@@ -1713,12 +1981,14 @@ public sealed class HistoryPull(
                 revenue = revenueHeld,
                 members = membersHeld,
                 income = incomeHeld,
+                snapshots = snapshotsHeld,
+                holdings = holdingsHeld,
             }),
             cancellation);
 
         await transaction.CommitAsync(cancellation);
 
-        return new HistoryPurgeOutcome(pull, barsHeld, earningsHeld, surprisesHeld, marketHeld, companiesHeld, sharesHeld, splitsHeld, revenueHeld, membersHeld, incomeHeld);
+        return new HistoryPurgeOutcome(pull, barsHeld, earningsHeld, surprisesHeld, marketHeld, companiesHeld, sharesHeld, splitsHeld, revenueHeld, membersHeld, incomeHeld, snapshotsHeld, holdingsHeld);
     }
 
     // The windows the earnings calendar is asked for: each calendar month the span touches, cut to
@@ -2060,7 +2330,29 @@ public sealed record HistoryPurgeOutcome(
     int Splits = 0,
     int Revenue = 0,
     int Members = 0,
-    int Income = 0);
+    int Income = 0,
+    int Snapshots = 0,
+    int Holdings = 0);
+
+// What one holdings pull did: the wider index's fund, the filings listed and the snapshots read with how many were new
+// and their span, the holdings of common stock and the keys they matched by, those standing between codes, each holding
+// matched by neither and each filing not read, why nothing was stored where a list could not be read, and the requests.
+public sealed record HistoryHoldingOutcome(
+    string Index,
+    int Filings,
+    int Snapshots,
+    int Stored,
+    DateOnly? First,
+    DateOnly? Last,
+    int Equity,
+    int ByIsin,
+    int ByName,
+    int Unmatched,
+    int Between,
+    IReadOnlyList<string> UnmatchedNames,
+    IReadOnlyList<string> Unread,
+    string? Refused,
+    int Requests);
 
 // What one members pull did: the wider index asked, the members its answer listed today, those new to the store and
 // those it holds, why nothing was stored where the answer was refused or could not be read, and the requests made.
