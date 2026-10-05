@@ -1182,4 +1182,173 @@ public class CorporateActions
         Assert.Equal(3L, reader.GetInt64(0));
         Assert.Contains("1 of the 3 request(s) per name", reader.GetString(1), StringComparison.Ordinal);
     }
+
+    // The S&P 400 and 600, which the night reads beside its own index.
+    static readonly IReadOnlyList<string> Wider = ["MID", "SML"];
+
+    // One night of the check over the three indices on a session, with no action.
+    static Task<ActionCheckOutcome> ThreeIndicesOn(TemporaryStore store, DateOnly session, IHistoricalBarFeed history) =>
+        new CorporateActionChecker(new NoActionFeed(), history, FixedClock.At(NightOn(session), SessionZones.UnitedStates), store.DatabaseFile)
+            .RunAsync(Index, RunIdOf(session), default, Wider);
+
+    static string Day(DateOnly session) => session.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    // A member leaving the index on one session and joining the S&P 600 on another, with the
+    // bars a night stores taken out of the store for every session it was in no index and every
+    // session after the night of the test, which is the one it joins on unless one is given.
+    static void Returns(TemporaryStore store, string ticker, DateOnly left, DateOnly joined, DateOnly? night = null)
+    {
+        store.Execute($"UPDATE membership SET \"left\" = '{Day(left)}' WHERE index_code = 'GSPC' AND ticker = '{ticker}';");
+        store.Execute(
+            "INSERT INTO membership (index_code, ticker, joined, \"left\", observed_at) " +
+            $"VALUES ('SML', '{ticker}', '{Day(joined)}', NULL, '{Day(joined)}T21:10:00Z');");
+        store.Execute($"DELETE FROM bar WHERE ticker = '{ticker}' AND session_date >= '{Day(left)}' AND session_date < '{Day(joined)}';");
+        store.Execute($"DELETE FROM bar WHERE ticker = '{ticker}' AND session_date > '{Day(night ?? joined)}';");
+    }
+
+    static IReadOnlyList<DateOnly> SessionsHeld(TemporaryStore store, string ticker) =>
+        [.. Series(store, ticker).Select(row => DateOnly.ParseExact(row[..10], "yyyy-MM-dd", CultureInfo.InvariantCulture))];
+
+    // The weeks of 2026-08-03 and 2026-08-10, being every session from the Monday it left on
+    // to the Monday it joins on.
+    static readonly DateOnly Left = new(2026, 8, 3);
+    static readonly DateOnly Joined = new(2026, 8, 17);
+
+    [Fact]
+    public async Task AMemberBackAfterSessionsInNoIndexHasItsYearAskedForAgainWholeOnItsFirstNightBack()
+    {
+        // BLDR, TAP and TTD left the S&P 500 on 2026-09-21 and the S&P 600's file first listed
+        // them on 2026-10-02, the first night the night read it, so their stored years stopped
+        // on 2026-09-18 and the backfill, which asks only for a name holding no bar, asked for
+        // none of them. Each would have held a gap for a year with every computation withheld.
+        using var store = await Stored();
+
+        Returns(store, "MSFT", Left, Joined);
+
+        var away = SessionsFrom(Left, 10);
+
+        Assert.All(away, session => Assert.DoesNotContain(session, SessionsHeld(store, "MSFT")));
+
+        var history = RecordedHistoricalBarFeed.FromFolder(FixtureFolder());
+        var outcome = await ThreeIndicesOn(store, Joined, history);
+
+        Assert.Equal(["MSFT"], outcome.Returning ?? []);
+        Assert.Equal(1, outcome.Refetched);
+        Assert.Equal(1, outcome.RefetchRequests);
+        Assert.Empty(outcome.Suspect);
+
+        // The whole year the provider serves to tonight, replaced and not added to: the ten
+        // sessions it was away among them, every bar the refetch's.
+        var year = await RecordedHistoricalBarFeed.FromFolder(FixtureFolder()).BarsAsync("MSFT", Joined.AddYears(-1), Joined);
+
+        Assert.Equal([.. year.Select(bar => bar.SessionDate)], SessionsHeld(store, "MSFT"));
+        Assert.All(away, session => Assert.Contains(session, SessionsHeld(store, "MSFT")));
+        Assert.Equal(Rows(store, "MSFT").ToString(CultureInfo.InvariantCulture), ScalarOf(store, $"SELECT CAST(COUNT(*) AS TEXT) FROM bar WHERE ticker = 'MSFT' AND source = '{CorporateActionChecker.Source}';"));
+        Assert.Equal(CorporateActionChecker.Ok, StateOf(store, "MSFT").State);
+
+        var stage = StageOf(store, RunIdOf(Joined));
+
+        Assert.Equal("ok", stage.Outcome);
+        Assert.Contains("1 back after sessions in no index the night reads: MSFT", stage.Detail, StringComparison.Ordinal);
+
+        // Once: the night after asks nothing for it.
+        var after = await ThreeIndicesOn(store, SessionsFrom(Joined.AddDays(1), 1)[0], history);
+
+        Assert.Empty(after.Returning ?? []);
+        Assert.Equal(0, after.RefetchRequests);
+    }
+
+    [Fact]
+    public async Task ANameMovingBetweenIndicesOnOneNightOrHoldingNoBarOrStillAwayIsNotAskedFor()
+    {
+        // The three populations beside the one asked for. A name the loader moves from one
+        // index to another closes one span and opens the other on the same session, so the
+        // night stored every session and nothing is missing, whether it moved tonight or a
+        // week before. A name holding no bar is the backfill's, which asks for its year. And a
+        // name that left and joined nothing is no member, which no request is ever made for.
+        using var store = await Stored();
+
+        Returns(store, "NFLX", Joined, Joined);
+        Returns(store, "MSFT", Joined.AddDays(-7), Joined.AddDays(-7), Joined);
+        Returns(store, "KEYS", Left, Joined);
+        store.Execute("DELETE FROM bar WHERE ticker = 'KEYS';");
+        store.Execute($"UPDATE membership SET \"left\" = '{Day(Left)}' WHERE ticker = 'AAPL';");
+        store.Execute($"DELETE FROM bar WHERE ticker = 'AAPL' AND session_date >= '{Day(Left)}';");
+
+        var history = RecordedHistoricalBarFeed.FromFolder(FixtureFolder());
+        var outcome = await ThreeIndicesOn(store, Joined, history);
+
+        Assert.Empty(outcome.Returning ?? []);
+        Assert.Equal(0, outcome.RefetchRequests);
+        Assert.Equal(0, history.Requests);
+        Assert.Equal("absent", StateOf(store, "NFLX").State);
+        Assert.Equal("absent", StateOf(store, "MSFT").State);
+        Assert.Equal("absent", StateOf(store, "KEYS").State);
+        Assert.Equal("absent", StateOf(store, "AAPL").State);
+    }
+
+    // The recorded year with the sessions a name was away taken out, which is a provider that
+    // cannot serve them, and counts each ask.
+    sealed class AwayUnserved(IHistoricalBarFeed inner, IReadOnlyCollection<DateOnly> away) : IHistoricalBarFeed
+    {
+        public int Requests => inner.Requests;
+
+        public async Task<IReadOnlyList<ProviderBar>> BarsAsync(string ticker, DateOnly from, DateOnly to, CancellationToken cancellationToken = default) =>
+            [.. (await inner.BarsAsync(ticker, from, to, cancellationToken)).Where(bar => !away.Contains(bar.SessionDate))];
+    }
+
+    [Fact]
+    public async Task AReturnTheProviderCannotFillIsAskedForOnceAndThenStandsAsAGap()
+    {
+        // The bound. A name whose stretch away the provider does not serve would read as back
+        // after sessions in no index on every night, so a check asking whenever the sessions
+        // are missing would make a per-name request every night for a year. It is asked for on
+        // its first night back alone, and what the year lacks stands as a gap.
+        using var store = await Stored();
+
+        Returns(store, "MSFT", Left, Joined);
+
+        var away = SessionsFrom(Left, 10);
+        var history = new AwayUnserved(RecordedHistoricalBarFeed.FromFolder(FixtureFolder()), away);
+
+        var back = await ThreeIndicesOn(store, Joined, history);
+
+        Assert.Equal(["MSFT"], back.Returning ?? []);
+        Assert.Equal(1, back.RefetchRequests);
+        Assert.Equal(CorporateActionChecker.Ok, StateOf(store, "MSFT").State);
+        Assert.Equal(away[0], EquityBrief.Core.Bars.TradingCalendar.Check(SessionsHeld(store, "MSFT")).Earliest);
+
+        foreach (var session in SessionsFrom(Joined.AddDays(1), 2))
+        {
+            var night = await ThreeIndicesOn(store, session, history);
+
+            Assert.Empty(night.Returning ?? []);
+            Assert.Equal(0, night.RefetchRequests);
+        }
+    }
+
+    [Fact]
+    public async Task AReturningNameWhoseRefetchFailsIsSuspectAndAskedForOnTheRetriesFromItsFirstNightBack()
+    {
+        // A refetch that fails on the night a name comes back marks it suspect as a failed
+        // refetch after an action does, its count starting at none on that night, so the
+        // suspect's schedule asks for it from the night after and its return asks nothing more.
+        using var store = await Stored();
+
+        Returns(store, "MSFT", Left, Joined);
+
+        var back = await ThreeIndicesOn(store, Joined, Refusing());
+
+        Assert.Equal(["MSFT"], back.Returning ?? []);
+        Assert.Equal(["MSFT"], back.Suspect);
+        Assert.Equal(1, back.RefetchRequests);
+        Assert.Equal(("suspect", 0), (CountOf(store, "MSFT").State, CountOf(store, "MSFT").Retries));
+
+        var next = await ThreeIndicesOn(store, SessionsFrom(Joined.AddDays(1), 1)[0], Refusing());
+
+        Assert.Empty(next.Returning ?? []);
+        Assert.Equal(["MSFT"], next.Retried ?? []);
+        Assert.Equal(1, next.RefetchRequests);
+        Assert.Equal(("suspect", 1), (CountOf(store, "MSFT").State, CountOf(store, "MSFT").Retries));
+    }
 }
