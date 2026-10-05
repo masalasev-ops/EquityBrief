@@ -470,6 +470,23 @@ public sealed class SweepHistory : IComponent
     // through it; each none where the store holds no table for it.
     // see: The pulls behind the heavyweights and the context checks store into tables of their own and are read by no night
     // see: A company's value on a session is the newest share count filed before it times the session's close on the count's split basis
+    // Each pulled company's GICS industry as the companies pull filed it, the newest pull's where two filed one, none for
+    // a company filing none; the heavyweights' second design reads an industry's lead off it.
+    public async Task<IReadOnlyDictionary<string, string>> IndustriesAsync(CancellationToken cancellation = default)
+    {
+        await using var connection = new SqliteConnection(ConnectionString(databaseFile));
+        await connection.OpenAsync(cancellation);
+
+        var industries = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        await foreach (var row in RowsAsync(connection, "SELECT ticker, industry FROM pulled_company WHERE industry IS NOT NULL ORDER BY pull;", [], cancellation))
+        {
+            industries[row.GetString(0)] = row.GetString(1);
+        }
+
+        return industries;
+    }
+
     public async Task<HeavyweightHistory> HeavyweightAsync(DateOnly through, CancellationToken cancellation = default)
     {
         await using var connection = new SqliteConnection(ConnectionString(databaseFile));

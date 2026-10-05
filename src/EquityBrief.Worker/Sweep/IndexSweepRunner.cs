@@ -51,6 +51,7 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         [BreakoutRule.Name] = "breakouts'",
         [DriftRule.Name] = "earnings drift's",
         [Heavyweights] = "sector heavyweights'",
+        [Followers] = "followers of the S&P 500's industry leaders, the sector heavyweights'",
     };
 
     public const string Pullback = "pullback";
@@ -61,6 +62,18 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
     public static readonly TimeSpan SearchBudget = SweepSearch.SampleBudget;
 
     public const string Heavyweights = "heavyweights";
+
+    public const string Followers = "heavyweights-b";
+
+    // Design (b)'s dials: the sessions an industry's lead is read over, how many leading industries are read, and how many
+    // of the index's members in each are bought.
+    public static IReadOnlyList<int> LeadWindows { get; } = [21, 63];
+
+    public static IReadOnlyList<int> IndustriesKept { get; } = [5, 10, EveryLeading];
+
+    public static IReadOnlyList<int> MembersPerIndustry { get; } = [1, 2];
+
+    public const int EveryLeading = int.MaxValue;
 
     // The fund each index's heavyweights read a leader's beta against.
     public static IReadOnlyDictionary<string, string> IndexFunds { get; } = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -133,6 +146,11 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
         if (family == Heavyweights)
         {
             return await HeavyweightsAsync(indexCode, named, words, history, through, inputs, companies, income, folder, cancellation);
+        }
+
+        if (family == Followers)
+        {
+            return await FollowersAsync(indexCode, named, words, history, through, inputs, companies, income, folder, cancellation);
         }
 
         var calendar = inputs.Sessions;
@@ -673,6 +691,202 @@ public sealed class IndexSweepRunner(IClock clock, string databaseFile, string d
 
         output.WriteLine(FormattableString.Invariant($"provisional {provisional}: edge after costs {Points(firstAfter.Edge)} points over {firstAfter.Trades} holdings, before {Points(firstBefore.Edge)}, at double {Points(firstDoubled.Edge)}, {firstAfter.YearsBeating} of 8 years"));
         output.WriteLine(proposal.Proposed is { } shown ? "proposed " + shown.Key : "none passed: no setting meets the floors after costs");
+        output.WriteLine("report " + report);
+
+        return 0;
+    }
+
+    // The sector heavyweights' design (b) on the index alone, followers of the S&P 500's industry leaders: on the first
+    // session of each month, the GICS industries whose S&P 500 members' return, each weighted by its value at the window's
+    // start, leads SPY's over the lead window, the strongest first; in each industry kept, the index's members clearing
+    // the floors and the quality, by their own return over the window, the strongest bought; each held while its
+    // industry still leads and it stays among those bought, sold at a rebalance where it does not and at its last close
+    // as a member. Each holding scored in points against the equal-weighted members of its sector in the index after its
+    // round trip, the benchmark paying none. The proposal is the strongest edge meeting the family sweeps' floors, with
+    // no plateau read across this smaller grid.
+    // see: The 400 and 600 each sweep two heavyweight designs and keep the stronger after costs
+    async Task<int> FollowersAsync(string indexCode, string named, string words, SweepHistory history, DateOnly through, SweepHistoryInputs inputs, HeavyweightHistory companies, IReadOnlyDictionary<string, IReadOnlyList<FiledIncome>> income, string folder, CancellationToken cancellation)
+    {
+        var industries = await history.IndustriesAsync(cancellation);
+        var spy = (await history.SeriesOfAsync(["SPY"], through, cancellation)).FirstOrDefault();
+
+        output.WriteLine("reading the S&P 500 as it stood for its industries' leads");
+
+        var large = await history.ReadAsync(through, null, cancellation);
+        var calendar = inputs.Sessions;
+        var first = Array.FindIndex(calendar, session => session >= SweepColumns.FirstScored);
+        var months = HeavyweightSweep.Rebalances(calendar, first, HeavyweightPeriod.Month);
+        var (tape, _) = HeavyweightSweep.Lay(inputs, companies, null, months.ToHashSet(), first);
+        var sessionAt = calendar.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        var series = new SweepSeries[inputs.Names.Count];
+
+        Parallel.For(0, inputs.Names.Count, name => series[name] = SweepColumns.Series(inputs.Names[name], sessionAt));
+
+        var largeAt = large.Sessions.Select((session, at) => (session, at)).ToDictionary(pair => pair.session, pair => pair.at);
+        var largeSeries = new SweepSeries[large.Names.Count];
+
+        Parallel.For(0, large.Names.Count, name => largeSeries[name] = SweepColumns.Series(large.Names[name], largeAt));
+
+        var spyCloses = (spy?.Closes ?? []).ToDictionary(pair => pair.Session, pair => pair.Close);
+
+        int BarOf(int name, int session) => Array.BinarySearch(series[name].SessionAt, session);
+
+        SweepBar? LargeBar(int name, DateOnly day) =>
+            largeAt.TryGetValue(day, out var at) && Array.BinarySearch(largeSeries[name].SessionAt, at) is var bar && bar >= 0 ? largeSeries[name].Bars[bar] : null;
+
+        string? SectorOf(string ticker) => companies.Companies.GetValueOrDefault(ticker).Sector;
+
+        // Each industry's lead over SPY on a rebalance at a window, read once.
+        var leads = new System.Collections.Concurrent.ConcurrentDictionary<(int Session, int Window), IReadOnlyList<(string Industry, double Lead)>>();
+
+        IReadOnlyList<(string Industry, double Lead)> LeadsOn(int session, int window) => leads.GetOrAdd((session, window), key =>
+        {
+            if (key.Session - key.Window < 0)
+            {
+                return [];
+            }
+
+            var (day, start) = (calendar[key.Session], calendar[key.Session - key.Window]);
+
+            if (!spyCloses.TryGetValue(day, out var spyNow) || !spyCloses.TryGetValue(start, out var spyThen) || spyThen <= 0)
+            {
+                return [];
+            }
+
+            var sums = new Dictionary<string, (double Weighted, double Weight)>(StringComparer.Ordinal);
+
+            for (var name = 0; name < large.Names.Count; name++)
+            {
+                var ticker = large.Names[name].Ticker;
+
+                if (!large.Names[name].MemberOn(day) || !industries.TryGetValue(ticker, out var industry)
+                    || LargeBar(name, day) is not { } now || LargeBar(name, start) is not { } then || then.Close <= 0m
+                    || CompanyValue.On(new SessionClose(then.Session, then.Close, then.RawClose > 0m ? then.RawClose : then.Close), companies.Counts.GetValueOrDefault(ticker) ?? [], companies.Splits.GetValueOrDefault(ticker) ?? []) is not { } value
+                    || value <= 0m)
+                {
+                    continue;
+                }
+
+                var weight = Statistic.FromPrice(value);
+                var held = sums.GetValueOrDefault(industry);
+
+                sums[industry] = (held.Weighted + (weight * (Statistic.FromRatio(now.Close / then.Close) - 1.0)), held.Weight + weight);
+            }
+
+            var market = (spyNow / spyThen) - 1.0;
+
+            return [.. sums.Where(pair => pair.Value.Weight > 0).Select(pair => (pair.Key, (pair.Value.Weighted / pair.Value.Weight) - market)).Where(pair => pair.Item2 > 0).OrderByDescending(pair => pair.Item2).ThenBy(pair => pair.Key, StringComparer.Ordinal)];
+        });
+
+        HeavyweightTrade Costed(HeavyweightTrade trade, int multiple)
+        {
+            if (trade.Result is not { } result || trade.End is not { } end || BarOf(trade.Name, trade.Entry) is var buy && buy < 0 || BarOf(trade.Name, end) is var sale && sale < 0)
+            {
+                return trade;
+            }
+
+            var bars = series[trade.Name].Bars;
+            var ticker = series[trade.Name].Name.Ticker;
+            var bought = bars[buy];
+            var sold = bars[sale];
+            var entry = bought.RawClose > 0m ? bought.RawClose : bought.Close;
+            var exit = sold.RawClose > 0m ? sold.RawClose : sold.Close;
+            var value = CompanyValue.On(new SessionClose(bought.Session, bought.Close, entry), companies.Counts.GetValueOrDefault(ticker) ?? [], companies.Splits.GetValueOrDefault(ticker) ?? []);
+
+            return trade with { Result = result - (TradeCost.InPercent(value, entry, exit, multiple) / 100.0) };
+        }
+
+        var every = new System.Collections.Concurrent.ConcurrentDictionary<(int From, int To), double?>();
+
+        double? EveryOnce(int from, int to) => every.GetOrAdd((from, to), span => HeavyweightSweep.EveryMember(tape, span.From, span.To));
+
+        var settings = (
+            from window in LeadWindows
+            from kept in IndustriesKept
+            from perIndustry in MembersPerIndustry
+            from variant in HeavyweightVariants
+            select (Window: window, Kept: kept, PerIndustry: perIndustry, variant.Quality, variant.Floors)).ToArray();
+
+        string KeyOf((int Window, int Kept, int PerIndustry, IndexQuality Quality, decimal Floors) setting) =>
+            FormattableString.Invariant($"window={setting.Window}|industries={(setting.Kept == EveryLeading ? "every leading" : setting.Kept.ToString(CultureInfo.InvariantCulture))}|members={setting.PerIndustry}|") + VariantKey(setting.Quality, setting.Floors).TrimEnd('|');
+
+        var figures = new System.Collections.Concurrent.ConcurrentDictionary<string, (HeavyweightFigures Before, HeavyweightFigures After, HeavyweightFigures Doubled)>(StringComparer.Ordinal);
+
+        output.WriteLine(FormattableString.Invariant($"walking {settings.Length} setting(s) over {months.Count} monthly rebalances, SPY {(spy is null ? "not held" : "held")}, {industries.Count:N0} companies' industries"));
+
+        Parallel.ForEach(settings, setting =>
+        {
+            var rebalances = new Dictionary<int, HeavyweightRebalance>();
+
+            foreach (var session in months)
+            {
+                var kept = LeadsOn(session, setting.Window).Take(setting.Kept).Select(pair => pair.Industry).ToHashSet(StringComparer.Ordinal);
+                var bought = new List<int>();
+
+                foreach (var industry in kept)
+                {
+                    bought.AddRange(Enumerable.Range(0, series.Length)
+                        .Where(name => tape.Member[name][session] && industries.GetValueOrDefault(series[name].Name.Ticker) == industry
+                            && session - setting.Window >= 0 && tape.Close[name][session - setting.Window] > 0 && !double.IsNaN(tape.Close[name][session])
+                            && BarOf(name, session) is var bar && bar >= 0
+                            && Clears(indexCode, series[name], bar, income.GetValueOrDefault(series[name].Name.Ticker) ?? [], setting.Quality, setting.Floors, SectorOf(series[name].Name.Ticker)))
+                        .OrderByDescending(name => (tape.Close[name][session] / tape.Close[name][session - setting.Window]) - 1.0)
+                        .ThenBy(name => series[name].Name.Ticker, StringComparer.Ordinal)
+                        .Take(setting.PerIndustry));
+                }
+
+                rebalances[session] = new HeavyweightRebalance([
+                    .. bought
+                        .GroupBy(name => SectorOf(series[name].Name.Ticker) ?? "none", StringComparer.Ordinal)
+                        .Select(sector => (
+                            sector.Key,
+                            sector.ToArray(),
+                            Enumerable.Range(0, series.Length).Where(name => tape.Member[name][session] && (SectorOf(series[name].Name.Ticker) ?? "none") == sector.Key).ToArray())),
+                ]);
+            }
+
+            var trades = HeavyweightSweep.Walk(tape, rebalances, HeavyweightExit.Drop, EveryOnce);
+            var key = KeyOf(setting);
+
+            figures[key] = (
+                HeavyweightSweep.Figures(key, trades),
+                HeavyweightSweep.Figures(key, [.. trades.Select(trade => Costed(trade, 1))]),
+                HeavyweightSweep.Figures(key, [.. trades.Select(trade => Costed(trade, TradeCost.Doubled))]));
+        });
+
+        var after = settings.Select(setting => figures[KeyOf(setting)].After).ToArray();
+        var proposed = after.Where(one => one.MeetsFloors && one.Edge is not null).OrderByDescending(one => one.Edge).ThenBy(one => one.Key, StringComparer.Ordinal).FirstOrDefault();
+        var note = FormattableString.Invariant($"{Membership(named, inputs)} An industry's lead is its S&P 500 members' return over the window, each weighted by its value at the window's start, the S&P 500 read as it stood, less SPY's; {industries.Count:N0} companies carry a GICS industry. Every setting rebalances monthly and is read at three qualities and the index's dollar volume floor once and twice, a member read only where its close was at least $5. Edges are in points of the buy against the equal-weighted members of the holding's sector in the index, after each holding's round trip at the published table, the benchmark paying none.");
+
+        static string Points(double? value) => value is { } one ? FormattableString.Invariant($"{one * 100:+0.00;-0.00}") : "none";
+
+        var page = new StringBuilder("<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + WebUtility.HtmlEncode(named) + " heavyweights design (b)</title><style>" + SweepReport.Style + "</style></head><body><main>");
+
+        page.Append(FormattableString.Invariant($"<h1>The {WebUtility.HtmlEncode(named)} {WebUtility.HtmlEncode(words)} design (b)</h1><p class=\"survivors\">{WebUtility.HtmlEncode(note)}</p>"));
+        page.Append("<p>Hou (2007) finds big firms lead small ones within an industry mainly in taking in bad news; this design buys on the leaders' good news, the weaker side of that finding.</p>");
+        page.Append(proposed is not null ? $"<p>Proposed: {WebUtility.HtmlEncode(proposed.Key)}.</p>" : "<p>No setting meets the floors after costs.</p>");
+        page.Append(FormattableString.Invariant($"<p>{after.Count(one => one.MeetsFloors)} of {after.Length} settings meet the floors, where luck alone passes about {HeavyweightSweep.Luck(after.Length):0} with no effect at all.</p>"));
+        page.Append("<div class=\"table\"><table><thead><tr><th>Setting</th><th>Holdings</th><th>Edge before costs, points</th><th>After</th><th>At double</th><th>Years above nothing after</th><th>Without the five largest</th><th>Error</th></tr></thead><tbody>");
+
+        foreach (var shown in after.OrderByDescending(one => one.Edge ?? double.MinValue).Take(15))
+        {
+            var (shownBefore, shownAfter, shownDoubled) = figures[shown.Key];
+
+            page.Append(FormattableString.Invariant($"<tr><td>{WebUtility.HtmlEncode(shown.Key)}</td><td class=\"num\">{shownAfter.Trades:N0}</td><td class=\"num\">{Points(shownBefore.Edge)}</td><td class=\"num\">{Points(shownAfter.Edge)}</td><td class=\"num\">{Points(shownDoubled.Edge)}</td><td class=\"num\">{shownAfter.YearsBeating} of 8</td><td class=\"num\">{Points(shownAfter.EdgeWithoutLargest)}</td><td class=\"num\">{Points(shownAfter.StandardError)}</td></tr>"));
+        }
+
+        page.Append("</tbody></table></div></main></body></html>");
+
+        var report = Path.Combine(folder, SweepFolder.ReportFile);
+
+        File.WriteAllText(report, page.ToString());
+        File.WriteAllText(Path.Combine(folder, FiguresFile), JsonSerializer.Serialize(new { index = indexCode, family = Followers, note, proposal = proposed?.Key, settings = after.Select(one => new { one.Key, figures[one.Key].Before, figures[one.Key].After, figures[one.Key].Doubled }) }, SweepRunner.Json));
+
+        var best = after.OrderByDescending(one => one.Edge ?? double.MinValue).First();
+
+        output.WriteLine(proposed is not null
+            ? FormattableString.Invariant($"proposed {proposed.Key}: edge after costs {Points(proposed.Edge)} points over {proposed.Trades} holdings, {proposed.YearsBeating} of 8 years")
+            : FormattableString.Invariant($"none passed: no setting meets the floors after costs; the strongest, {best.Key}, reads {Points(best.Edge)} points over {best.Trades} holdings, {best.YearsBeating} of 8 years"));
         output.WriteLine("report " + report);
 
         return 0;
