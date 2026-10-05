@@ -11334,3 +11334,52 @@ Was:
 Now:
 > nightly-run's adding "; and an S&P 400 book that throws on a holding it cannot read leaves the S&P 500's list, the night's close and its report step built, the S&P 400's night row and the stage's row naming the failure under "not computed" and the S&P 600 read"; read-surface's adding "; and an S&P 600 night whose part failed opens on "Not computed tonight" in place of its market line, every card of it saying the same and listing nothing, and its Run page names the failure"
 Why: the roster is where a check states what it asserts, and the ruling added a test under each.
+
+### 2026-10-05 - ARCHITECTURE.html - the history pull's catalogue row keeps a code only where it moves in step, reads a renamed company by the code its fund held, and states the 5 per cent against the close
+Authorised by: A holding's code is kept only where its closes move in step with the fund's values a share from one quarter end to the next
+Was:
+> ... a name match kept only where its code traded in the six days to the quarter's end at a close within 5 per cent of the fund's value a share, ... and a name nothing matched read again against the symbols sharing its first word and half its words under the same tests, a filing it cannot read named and a holding matched by neither stored with no code and named, those whose codes traded only at another price among them; ... (see: The funds' holdings before their first public N-PORT are read from their N-Q of 2018-12-31 and their annual report of 2019-03-31)</td></tr>
+Now:
+> "at a close the fund's value a share stands within 5 per cent of"; then "; every code a holding matched then kept only where its closes move in step with the fund's values a share over the quarters it matched, the holding's codes by name read in place of one that does not, and a holding still matched to none at two quarters or more read against the codes its fund held by ISIN within a year, one kept where its close equals the value a share to the cent at two of them"; "a holding matched by none", "and those whose codes did not move in step"; and the two new decisions cited
+Why: the operator ruled (A) and (B) on 2026-10-05, and ruled that the 5 per cent is measured against the code's close, as the code reads it.
+
+### 2026-10-05 - ARCHITECTURE.html - section 13.9's paragraph on membership as it stood names the tracking check and the renamed companies
+Authorised by: A renamed company is matched to a code its fund held by ISIN within a year where its close equals the value a share to the cent at two quarter ends
+Was:
+> each holding matched to the provider's code by its ISIN and then by its name, a name match kept only where its code traded at the quarter's end at the fund's value a share, and a name a member from the first snapshot holding it to the last (see: ...) (see: ...) (see: The funds' holdings before their first public N-PORT are read from their N-Q of 2018-12-31 and their annual report of 2019-03-31).
+Now:
+> the same, with "every code kept only where its closes move in step with the fund's values a share from one quarter end to the next, a company renamed since matched to the code its fund held by ISIN within a year," before "and a name a member", and the two new decisions cited
+Why: the same rulings.
+
+### 2026-10-05 - ARCHITECTURE.html - section 18's row for a holding matched to no code names the codes not in step
+Authorised by: A holding's code is kept only where its closes move in step with the fund's values a share from one quarter end to the next
+Was:
+> ... and one whose codes traded only at a close more than 5 per cent from the fund's value a share named apart, and a provider's ask it did not answer named beside them; ... | the pull's line counts the holdings matched by ISIN, by name and by neither and the codes asked of the provider, and names those matched by neither and the asks not answered |
+Now:
+> "one whose codes traded only at a close the fund's value a share stood more than 5 per cent from named apart, and each code matched to none at a holding's quarters because its closes did not move in step with the fund's values a share named with the holding" with the new decision cited; and "the pull's line counts the holdings matched by ISIN, by name, by a code their fund held by ISIN within a year and by none, the codes not in step and the codes asked of the provider, and names those matched by none, the codes not in step and the asks not answered"
+Why: the same rulings; the pull's line now counts and names what each adds.
+
+### 2026-10-05 - SCHEMA.md - pulled_holding's key gains held, and its paragraph names the tracking check and the renamed companies
+Authorised by: A renamed company is matched to a code its fund held by ISIN within a year where its close equals the value a share to the cent at two quarter ends
+Was:
+> | `matched_by` | TEXT | `isin` or `name`, null where it matched none; matched again with `ticker` |
+> ... a name match kept only where its code traded in the six days to the quarter's end at a close within 5 per cent of the fund's value a share, ... (see: A holding matched by name is kept only where its code traded at the quarter's end), and a holding matched by neither stored with no code and named on the pull's row.
+Now:
+> `isin`, `name` or `held`, the last for a code its fund held by ISIN within a year; "at a close the fund's value a share stands within 5 per cent of"; then the tracking check and the codes its fund held by ISIN within a year, each decision cited, and "a holding matched by none stored with no code"
+Why: the same rulings.
+
+### 2026-10-05 - RUNBOOK.md - membership as it stood states the 5 per cent against the close and adds the tracking check and the renamed companies
+Authorised by: A holding's code is kept only where its closes move in step with the fund's values a share from one quarter end to the next
+Was:
+> A name match is kept only where its code traded in the six days to the quarter's end at a close within 5 per cent of the fund's value a share, as the provider sends the close or with the splits it files after undone, ... (see: A holding matched by name is kept only where its code traded at the quarter's end).
+Now:
+> "at a close the fund's value a share stands within 5 per cent of", then two sentences: every code kept only where it moves in step, a delisted listing asked of the provider once a quarter, and a holding still matched to none at two quarters or more read against the codes its fund held by ISIN within a year, off the pulled history alone
+Why: the same rulings.
+
+### 2026-10-05 - .claude/rules/checks.md - the fixture-expectations row carries the tracking check and the renamed companies
+Authorised by: A holding's code is kept only where its closes move in step with the fund's values a share from one quarter end to the next
+Was:
+> fixture-expectations' row ending "... and the S&P 500's list holds back a stock whose trade on an S&P 400 list is still open, its row naming that index |"
+Now:
+> the same, then "; and over four constructed quarters of a fund, a holding's code by ISIN whose closes wander is matched to none and its delisted listing by name, asked of the provider, kept in its place, a code stepping to a level it holds kept, a name's code at a constant distance from the value a share kept where the price alone refused it, and a renamed company matched to the code its fund held by ISIN at two quarter ends equal to the cent and not at one, with the tracking check worked by hand"
+Why: the roster is where a check states what it asserts, and the rulings added the two tests the clause names (see: A renamed company is matched to a code its fund held by ISIN within a year where its close equals the value a share to the cent at two quarter ends).

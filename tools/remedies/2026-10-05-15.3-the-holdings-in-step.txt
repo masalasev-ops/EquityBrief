@@ -1,0 +1,20 @@
+# The remedy of the 15.3 correction of 2026-10-05 (a holding's code kept only where its closes move in step with the
+# fund's values a share, and a renamed company matched to the code its fund held by ISIN within a year), as its PROGRESS
+# entry prints it. No migration. The holdings pulls read each fund's filings at the SEC again, free and a tenth of a
+# second apart, and the provider's two symbol lists, one weighted call each, and ask the provider's daily prices for each
+# code a holding's name could be read as where no pulled bar stands in the six days to its quarter's end, the delisted
+# listings read in place of a code not in step among them, one weighted call a code a quarter; they match every stored
+# holding again, changing a holding's code and key alone, so no pull is removed. The bars, companies, splits and
+# surprises pulls then run again for each index, a name an earlier pull holds keeping its rows. Everything goes into the
+# pulled history's tables, read by no night. No model call and nothing bought. Run after the merge, when no night is
+# running and on a day's allowance no night is drawing on.
+history-pull --holdings --index MID --live
+history-pull --holdings --index SML --live
+history-pull --from 2018-01-01 --index MID --live
+history-pull --from 2018-01-01 --index SML --live
+history-pull --companies --from 2018-01-01 --index MID --live
+history-pull --companies --from 2018-01-01 --index SML --live
+history-pull --splits --from 2018-01-01 --index MID --live
+history-pull --splits --from 2018-01-01 --index SML --live
+history-pull --surprises --from 2018-01-01 --index MID --live
+history-pull --surprises --from 2018-01-01 --index SML --live

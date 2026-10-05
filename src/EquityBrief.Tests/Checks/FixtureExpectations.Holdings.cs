@@ -204,9 +204,9 @@ public partial class FixtureExpectations
 
         QuarterEndClose? CloseOn(string code) => closes.GetValueOrDefault(code);
 
-        // The tolerance the decision states is the one the matcher holds.
+        // The tolerance the decision states is the one the matcher holds, measured against the code's close as it reads it.
         Assert.Contains(
-            FormattableString.Invariant($"is within {HoldingMatcher.ValueTolerance * 100:0} per cent of the value per share the fund filed"),
+            FormattableString.Invariant($"the value per share the fund filed is within {HoldingMatcher.ValueTolerance * 100:0} per cent of the code's close"),
             Corpus.Read("docs/DECISIONS.md"),
             StringComparison.Ordinal);
 
@@ -464,10 +464,10 @@ public partial class FixtureExpectations
 
         var detail = HistoryPull.Detail(outcome);
 
-        Assert.Contains("SML: 4 snapshot(s) of 6 filing(s), 4 new, from 2018-12-31 to 2019-12-31, 22 holding(s) of common stock, 6 matched by ISIN, 13 by name alone, 1 of them by its wider reading, and 3 by neither, 1 of them because each code its name reads traded at a close more than 5% from the fund's value a share, 2 standing between codes, 0 holding(s) of quarters an earlier pull stored matched again to another code or to none, 4 code(s) asked of the provider whether they traded at a quarter's end; 13 request(s)", detail, StringComparison.Ordinal);
+        Assert.Contains("SML: 4 snapshot(s) of 6 filing(s), 4 new, from 2018-12-31 to 2019-12-31, 22 holding(s) of common stock, 6 matched by ISIN, 13 by name alone, 1 of them by its wider reading, 0 by a code its fund held by ISIN within a year, and 3 by none, 1 of them because each code its name reads traded at a close the fund's value a share stood more than 5% from, 0 code(s) matched to none at a holding's quarters because their closes did not move in step with the fund's values a share, 2 standing between codes, 0 holding(s) of quarters an earlier pull stored matched again to another code or to none, 4 code(s) asked of the provider whether they traded at a quarter's end; 13 request(s)", detail, StringComparison.Ordinal);
         Assert.Contains($"not read: 0000000001-20-000003: the filing is for {FundSnapshots.Series["MID"]} and not {Small}; 0000000001-20-000004: No recorded holdings document for the filing 0000000001-20-000004.", detail, StringComparison.Ordinal);
         Assert.Contains("; at another price: November Inc. on 2018-12-31;", detail, StringComparison.Ordinal);
-        Assert.Contains("matched by neither: November Inc. on 2018-12-31; Sierra Co. on 2018-12-31; Charlie Co on 2019-09-30", detail, StringComparison.Ordinal);
+        Assert.Contains("matched by none: November Inc. on 2018-12-31; Sierra Co. on 2018-12-31; Charlie Co on 2019-09-30", detail, StringComparison.Ordinal);
         Assert.Equal(
             "history-pull-holdings|partial",
             Assert.Single(FamilyRows(store, "SELECT stage, outcome FROM run_log WHERE run_id = 'history-pull-holdings-1';")));
